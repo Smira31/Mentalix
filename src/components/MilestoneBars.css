@@ -1,0 +1,41 @@
+/* ── Ближайшее — карточка прогресс-баров к ближайшим вехам (H11) ──
+   Тонкая полоса с золотым заполнением, радиус 24px, фон --c-card2.
+   Переиспользуется в шторке огонька (StatsView) и в Профиле. */
+
+.mx-milestone-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 18px 20px;
+  border-radius: 24px;
+  background: rgb(var(--c-card2, 17 17 17));
+}
+
+.mx-milestone-row {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.mx-milestone-label {
+  font-size: 14px;
+  line-height: 1.4;
+  color: rgb(var(--c-muted, 133 133 133));
+}
+
+.mx-milestone-track {
+  display: block;
+  width: 100%;
+  height: 3px;
+  border-radius: 999px;
+  background: rgb(var(--c-border, 41 41 41));
+  overflow: hidden;
+}
+
+.mx-milestone-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: rgb(var(--c-gold, 237 189 96));
+  transition: width 200ms ease;
+}

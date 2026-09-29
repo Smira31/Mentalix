@@ -8,14 +8,22 @@ const apiSource = await readFile(new URL('../../src/lib/api.js', import.meta.url
 
 
 test('the morning visual flow is the default check-in entry point', () => {
-  assert.match(checkinSource, /function MorningCheckInFlow\(\{ user, onDone \}\)/)
-  assert.match(checkinSource, /if \(mode !== 'evening'\) \{\s*return <MorningCheckInFlow user=\{user\} onDone=\{onDone\} \/>/s)
+  assert.match(checkinSource, /function MorningCheckInFlow\(\{ user, onDone, onCompleted, redo = false, existing = null \}\)/)
+  assert.match(checkinSource, /if \(mode !== 'evening'\)/)
+  assert.match(checkinSource, /<MorningCheckInFlow/)
+  assert.match(checkinSource, /existing=\{existing\}/)
   assert.doesNotMatch(checkinSource, /if \(previewDemoMode && mode !== 'evening'\)/)
 })
 
 test('the legacy core remains available for evening review and rollback', () => {
-  assert.match(checkinSource, /function CheckInCore\(\{ user, onDone, mode = 'checkin', existing = null \}\)/)
-  assert.match(checkinSource, /return <CheckInCore user=\{user\} onDone=\{onDone\} mode=\{mode\} existing=\{existing\} \/>/)
+  assert.match(checkinSource, /function CheckInCore\(/)
+  assert.match(checkinSource, /onRecoveryExpired,/)
+  assert.match(checkinSource, /recovery = null,/)
+  assert.match(checkinSource, /mode = 'checkin',/)
+  assert.match(checkinSource, /<CheckInCore/)
+  assert.match(checkinSource, /recovery=\{recovery\}/)
+  assert.match(checkinSource, /mode=\{mode\}/)
+  assert.match(checkinSource, /redo=\{redo\}/)
 })
 
 test('evening first text step has no pre-declaration question access', () => {
@@ -25,7 +33,7 @@ test('evening first text step has no pre-declaration question access', () => {
   )
   const compactStepDisabled = core.slice(
     core.indexOf('const compactStepDisabled'),
-    core.indexOf('const streakDays')
+    core.indexOf('if (isStreakStep')
   )
   const eveningQuestionDeclaration = core.indexOf('const eveningQuestion =')
   const firstEveningQuestionUse = core.indexOf('eveningQuestion', eveningQuestionDeclaration + 1)
@@ -44,21 +52,35 @@ test('the default morning flow persists real user data through the check-in API'
     checkinSource.indexOf('function MorningCheckInFlow'),
     checkinSource.indexOf('// ── Чек-ин и вечерний')
   )
-  assert.match(morningFlow, /api\.checkin\.save\(user\.id, \{/)
+  assert.match(morningFlow, /const saveApi = redo \? api\.checkin\.redo : api\.checkin\.save/)
+  assert.match(morningFlow, /redo \? \{ \.\.\.morningResetPayload\(existing\), \.\.\.morningPayload \} : morningPayload/)
   assert.match(morningFlow, /mood: values\.mood \|\| 3/)
   assert.match(morningFlow, /energy: values\.energy \|\| 3/)
-  assert.match(morningFlow, /focus: values\.focus \|\| 3/)
-  assert.match(morningFlow, /note: note\.trim\(\) \|\| undefined/)
+  assert.match(morningFlow, /note: note\.trim\(\) \|\| \(redo \? null : undefined\)/)
   assert.match(morningFlow, /api\.checkin\.history\(user\.id, 90\)/)
   assert.match(apiSource, /checkin: \{[\s\S]*?save: \(/)
   assert.match(apiSource, /request\('\/checkin', \{[\s\S]*?method: 'POST'/)
+  assert.match(apiSource, /request\('\/checkin\/today', \{[\s\S]*?method: 'PUT'/)
+})
+
+test('morning flow does not send anxiety or focus when the user did not answer them', () => {
+  const morningFlow = checkinSource.slice(
+    checkinSource.indexOf('function MorningCheckInFlow'),
+    checkinSource.indexOf('// ── Чек-ин и вечерний')
+  )
+  // anxiety and focus are conditionally added, not defaulted to 3
+  assert.match(morningFlow, /if \(values\.anxiety != null\) morningPayload\.anxiety = values\.anxiety/)
+  assert.match(morningFlow, /if \(values\.focus != null\) morningPayload\.focus = values\.focus/)
+  // Must NOT contain unconditional defaults
+  assert.doesNotMatch(morningFlow, /anxiety: values\.anxiety \|\| 3/)
+  assert.doesNotMatch(morningFlow, /focus: values\.focus \|\| 3/)
 })
 
 test('seeded demo state remains opt-in and isolated in the API wrapper', () => {
   assert.match(demoModeSource, /const demoRequested = params\.get\('demo'\) === '1'/)
   assert.match(demoModeSource, /const pwaDemoRequested = params\.get\('source'\) === 'pwa'/)
   assert.match(demoModeSource, /return \(\s*\(demoRequested \|\| pwaDemoRequested\)/s)
-  assert.match(apiSource, /if \(isPreviewDemoMode\(\)\) return demoRequest\(path, options\)/)
+  assert.match(apiSource, /if \(isPreviewDemoMode\(\)\) \{\s*const result = await demoRequest\(path, options\)/)
 })
 
 test('morning flow keeps the visual viewport height when the keyboard opens', () => {
@@ -67,23 +89,162 @@ test('morning flow keeps the visual viewport height when the keyboard opens', ()
     checkinSource.indexOf('// ── Чек-ин и вечерний')
   )
   assert.match(morningFlow, /const \{ style: viewportStyle \} = useFullscreenSurface\(\)/)
-  assert.match(morningFlow, /const demoSurfaceStyle = \{[\s\S]*\.\.\.viewportStyle[\s\S]*paddingTop: 0/)
+  assert.match(morningFlow, /const demoSurfaceStyle = \{[\s\S]*\.\.\.viewportStyle[\s\S]*paddingBottom: 0/)
   assert.match(checkinSource, /className="mx-demo-checkin__editor-scene"/)
 })
 
-test('morning completion uses design-system SVG art instead of the raster bird', () => {
+test('completion screen uses original monochrome Stoic silhouette art (morning sun, evening moon); MoodPractice keeps its art', async () => {
+  const component = await readFile(new URL('../../src/components/CheckInCompletion.jsx', import.meta.url), 'utf8')
+  const morningArt = await readFile(new URL('../../src/components/CompletionArtMorning.jsx', import.meta.url), 'utf8')
+  const eveningArt = await readFile(new URL('../../src/components/CompletionArtEvening.jsx', import.meta.url), 'utf8')
+  // MoodPractice keeps its own character art — separate export, not touched.
   assert.match(checkinSource, /function CheckInCompletionArt\(\)/)
-  assert.match(checkinSource, /<CheckInCompletionArt \/>/)
-  assert.match(checkinSource, /rgb\(var\(--c-(text|gold|muted|bg)\)\)/)
-  assert.doesNotMatch(checkinSource, /checkin-bird-reference\.png/)
+  assert.match(checkinSource, /<CheckInCompletion/)
+  // Завершение выбирает силуэт по ветке (утро/вечер).
+  assert.match(component, /CompletionArtMorning/)
+  assert.match(component, /CompletionArtEvening/)
+  assert.match(component, /evening \? <CompletionArtEvening \/> : <CompletionArtMorning \/>/)
+  // Плоский силуэт в стиле Stoic: один цвет --c-text, вырезы --c-bg, без контуров и градиентов.
+  assert.match(morningArt, /rgb\(var\(--c-text\)\)/)
+  assert.match(eveningArt, /rgb\(var\(--c-text\)\)/)
+  assert.match(eveningArt, /rgb\(var\(--c-bg\)\)/)
+  assert.doesNotMatch(morningArt, /stroke=|gradient/)
+  assert.doesNotMatch(eveningArt, /stroke=|gradient/)
+  // Цветка-лепестков больше нет; общие рисунки Stoic не переиспользуются.
+  assert.doesNotMatch(component, /CompletionFlower/)
+  assert.doesNotMatch(component, /checkin-bird-reference|cardMorningDone/)
 })
 
-test('morning streak screen uses the shared Telegram BackButton and sprout flower', () => {
+test('morning flow uses the shared Telegram BackButton; streak screen is StreakCelebration petals', () => {
   const morningFlow = checkinSource.slice(
     checkinSource.indexOf('function MorningCheckInFlow'),
     checkinSource.indexOf('// ── Чек-ин и вечерний')
   )
   assert.match(morningFlow, /<BackButton onClick=\{handleBack\} label="Сегодня" \/>/)
-  assert.match(checkinSource, /function StreakFlower\(\)/)
-  assert.match(checkinSource, /stroke="rgb\(var\(--c-gold\)\)"/)
+  // Росток заменён экраном серии с лепестками (один компонент, без второго экрана).
+  assert.doesNotMatch(checkinSource, /function StreakFlower\(\)/)
+  assert.match(morningFlow, /<StreakCelebration/)
+})
+
+test('восстановление сохраняет только вчерашний разбор через PUT и не меняет утренний redo', () => {
+  assert.match(apiSource, /recovery: async userId =>/)
+  assert.match(apiSource, /if \(error\.status === 404\) return null/)
+  assert.match(apiSource, /request\('\/checkin\/yesterday', \{\s*method: 'PUT'/)
+  assert.match(apiSource, /review_completed: true/)
+  assert.match(checkinSource, /withRetry\(\(\) => api\.checkin\.saveYesterday\(userId, payload\)\)/)
+  assert.match(checkinSource, /if \(recovery && error\?\.status === 409\)/)
+  assert.match(demoModeSource, /pathname === '\/checkin\/yesterday' && method === 'PUT'/)
+})
+
+test('redo mode calls api.checkin.redo, not api.checkin.save', () => {
+  const morningFlow = checkinSource.slice(
+    checkinSource.indexOf('function MorningCheckInFlow'),
+    checkinSource.indexOf('// ── Чек-ин и вечерний')
+  )
+  assert.match(morningFlow, /const saveApi = redo \? api\.checkin\.redo : api\.checkin\.save/)
+
+  const core = checkinSource.slice(
+    checkinSource.indexOf('function CheckInCore'),
+    checkinSource.indexOf('function CheckIn({')
+  )
+  assert.match(core, /const saveApi = redo \? api\.checkin\.redo : api\.checkin\.save/)
+})
+
+test('redo mode starts with empty fields — no pre-fill from existing', () => {
+  const core = checkinSource.slice(
+    checkinSource.indexOf('function CheckInCore'),
+    checkinSource.indexOf('function CheckIn({')
+  )
+  assert.match(core, /const fieldSource = redo \? null : existing/)
+  assert.match(core, /mood: fieldSource\?\.mood \?\? /)
+  assert.match(core, /emotion, setEmotion\] = useState\(fieldSource\?\.emotion \|\| null\)/)
+  assert.match(core, /existingLessons\(fieldSource\?\.lessons\)/)
+})
+
+test('повтор утра показывает тот же экран завершения, не открывая экран серии', () => {
+  const morningFlow = checkinSource.slice(
+    checkinSource.indexOf('function MorningCheckInFlow'),
+    checkinSource.indexOf('// ── Чек-ин и вечерний')
+  )
+  assert.match(morningFlow, /setStep\(doneStep\)/)
+  assert.match(morningFlow, /<CheckInCompletion/)
+  assert.doesNotMatch(morningFlow, /if \(redo\) \{\s*onDone\(\)\s*return\s*\}/)
+})
+
+test('redo evening review sends review_completed: true via redo API', () => {
+  const core = checkinSource.slice(
+    checkinSource.indexOf('function CheckInCore'),
+    checkinSource.indexOf('function CheckIn({')
+  )
+  assert.match(core, /const saveApi = redo \? api\.checkin\.redo : api\.checkin\.save/)
+  assert.match(core, /review_completed: true/)
+  assert.match(core, /isEvening && !redo && existing\?\.review_completed_at \? 1 : 0/)
+})
+
+test('scale steps never auto-advance — «Далее» is the only way forward', () => {
+  const morningFlow = checkinSource.slice(
+    checkinSource.indexOf('function MorningCheckInFlow'),
+    checkinSource.indexOf('// ── Чек-ин и вечерний')
+  )
+  const morningPick = morningFlow.slice(
+    morningFlow.indexOf('function pick('),
+    morningFlow.indexOf('async function finish()')
+  )
+  assert.doesNotMatch(morningPick, /setStep/, 'утренний pick не должен двигать шаг')
+  assert.doesNotMatch(morningPick, /setTimeout/)
+
+  const core = checkinSource.slice(
+    checkinSource.indexOf('function CheckInCore'),
+    checkinSource.indexOf('function CheckIn({')
+  )
+  const corePick = core.slice(core.indexOf('function pick('), core.indexOf('useEffect('))
+  assert.doesNotMatch(corePick, /setStep/, 'pick ядра не должен двигать шаг')
+  // нигде в флоу не осталось таймера, который сам переключает шаг шкалы
+  assert.doesNotMatch(checkinSource, /setTimeout\(\(\) => \{\s*setStep/)
+})
+
+test('morning redo sends PUT with cleared unanswered morning fields', () => {
+  const morningFlow = checkinSource.slice(
+    checkinSource.indexOf('function MorningCheckInFlow'),
+    checkinSource.indexOf('// ── Чек-ин и вечерний')
+  )
+  assert.match(morningFlow, /const saveApi = redo \? api\.checkin\.redo : api\.checkin\.save/)
+  // Форма повтора пуста, но существующая запись нужна для сохранения вечера.
+  assert.match(checkinSource, /function MorningCheckInFlow\(\{ user, onDone, onCompleted, redo = false, existing = null \}\)/)
+  // В redo значения не предзаполняются; пропущенные поля сбрасываются явно.
+  assert.match(morningFlow, /anxiety: null/)
+  assert.match(morningFlow, /focus: redo \? null : \(existing\?\.focus \?\? null\)/)
+  assert.match(morningFlow, /if \(values\.anxiety != null\) morningPayload\.anxiety = values\.anxiety/)
+  assert.match(morningFlow, /if \(values\.focus != null\) morningPayload\.focus = values\.focus/)
+  assert.match(morningFlow, /morningResetPayload\(existing\)/)
+  // утренний флоу спрашивает только настроение и энергию как обязательные
+  assert.match(checkinSource, /export const MORNING_SCALE_STEPS = \[SCALE_STEPS\[0\], SCALE_STEPS\[1\]\]/)
+  // redo — атомарный PUT сегодняшней записи
+  assert.match(apiSource, /redo: \(/)
+  assert.match(apiSource, /request\('\/checkin\/today', \{[\s\S]*?method: 'PUT'/)
+})
+
+test('redo exit without saving makes no API requests', () => {
+  const morningFlow = checkinSource.slice(
+    checkinSource.indexOf('function MorningCheckInFlow'),
+    checkinSource.indexOf('// ── Чек-ин и вечерний')
+  )
+  // handleBack at step 0 calls onDone() — no save, no redo, no history fetch
+  const handleBack = morningFlow.slice(
+    morningFlow.indexOf('function handleBack()'),
+    morningFlow.indexOf('async function finish()')
+  )
+  assert.match(handleBack, /step === 0[\s\S]*?onDone\(\)/)
+
+  const core = checkinSource.slice(
+    checkinSource.indexOf('function CheckInCore'),
+    checkinSource.indexOf('function CheckIn({')
+  )
+  // requestClose in evening (redo) calls onDone() directly — no API calls
+  const requestClose = core.slice(
+    core.indexOf('function requestClose()'),
+    core.indexOf('function buildNote()')
+  )
+  assert.match(requestClose, /if \(!isEvening && draftHasContent\(morningDraft\)\)/)
+  assert.match(requestClose, /onDone\(\)/)
 })

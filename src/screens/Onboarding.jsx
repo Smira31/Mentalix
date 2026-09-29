@@ -3,6 +3,7 @@ import { platform } from '../platform'
 import { api } from '../lib/api'
 import { Check } from 'lucide-react'
 import BackButton from '../components/BackButton'
+import { DEFAULT_REVIEW_HOUR } from '../lib/todayCardState'
 import {
   useFullscreenSurface,
   FULLSCREEN_SHELL_CLASS,
@@ -52,11 +53,11 @@ const AGE_OPTIONS = ['До 18', '18–24', '25–34', '35–44', '45+']
 const REMINDER_OPTIONS = [
   { key: 'morning', label: 'Утро', time: '08:00', hour: 8, note: 'задать курс на день' },
   { key: 'day', label: 'День', time: '14:00', hour: 14, note: 'вернуться к себе в середине дня' },
-  { key: 'evening', label: 'Вечер', time: '19:00', hour: 19, note: 'разобрать день, пока свежий' },
+  { key: 'evening', label: 'Вечер', time: '19:00', hour: DEFAULT_REVIEW_HOUR, note: 'разобрать день, пока свежий' },
 ]
 
 const PLAN_CARDS = [
-  'Всё, что ты пишешь, остаётся только твоим',
+  'Твои записи сохраняются в профиле Mentalix',
   'Наставник, Собеседник и Следопыт готовы к разговору',
   'Первый шаг уже ждёт тебя на главной',
 ]
@@ -139,6 +140,7 @@ export default function Onboarding({ user, onFinish }) {
   }, [step])
 
   function next() {
+    if (step === 2 && (!age || age === 'До 18')) return
     platform.haptic('light')
     setStep(s => s + 1)
   }
@@ -153,7 +155,13 @@ export default function Onboarding({ user, onFinish }) {
     }
     try {
       if (user?.id && opt) {
-        await api.profile.saveSettings(user.id, { reminder_enabled: true, reminder_hour: opt.hour })
+        await api.profile.saveSettings(user.id, {
+          reminder_enabled: true,
+          reminder_hour: opt.hour,
+          // Вечерний разбор по умолчанию в 19:00 — синхронизируем с онбордингом,
+          // чтобы review_hour был задан с самого начала (единый источник).
+          review_hour: DEFAULT_REVIEW_HOUR,
+        })
       }
     } catch (e) {
       console.error(e)
@@ -254,10 +262,18 @@ export default function Onboarding({ user, onFinish }) {
                 />
               ))}
             </div>
-            <p className="text-[12px] text-muted text-center mt-6">Это остаётся только у тебя.</p>
+            {age === 'До 18' ? (
+              <p role="alert" className="text-[12px] text-muted text-center mt-6">
+                Mentalix доступен с 18 лет
+              </p>
+            ) : (
+              <p className="text-[12px] text-muted text-center mt-6">
+                Возрастная группа сохраняется в настройках знакомства.
+              </p>
+            )}
             <button
               onClick={next}
-              disabled={!age}
+              disabled={!age || age === 'До 18'}
               className="cta-pill text-[16px] px-14 py-4 mx-auto mt-8 disabled:opacity-30"
             >
               Дальше

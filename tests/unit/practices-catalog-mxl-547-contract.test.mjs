@@ -10,6 +10,10 @@ const practices = await readFile(
   new URL('../../src/screens/Practices.jsx', import.meta.url),
   'utf8'
 )
+const themesCache = await readFile(
+  new URL('../../src/lib/themesDataCache.js', import.meta.url),
+  'utf8'
+)
 const lab = await readFile(
   new URL('../../src/components/ui-lab/LayeredPracticeCatalogExperiment.jsx', import.meta.url),
   'utf8'
@@ -19,9 +23,9 @@ const styles = await readFile(
   'utf8'
 )
 
-test('MXL-547: production rail содержит Лилу и две честные карточки «Скоро»', () => {
+test('MXL-547: production rail содержит практику и две честные карточки «Скоро»', () => {
   assert.match(catalog, /Новое и рекомендованное/)
-  assert.match(catalog, /Разобраться через Лилу/)
+  assert.match(catalog, /Разобраться со Следопытом/)
   assert.match(catalog, /Импульс к действию с Львом/)
   assert.match(catalog, /title: 'Фокус'/)
   assert.match(catalog, /disabled={!card\.active}/)
@@ -29,7 +33,7 @@ test('MXL-547: production rail содержит Лилу и две честны�
   assert.doesNotMatch(catalog, /•••/)
 })
 
-test('MXL-547: отдельная Лила скрыта только из отображаемых коллекций', () => {
+test('MXL-547: отдельная коллекция скрыта только из отображаемых коллекций', () => {
   assert.match(catalog, /PRACTICE_COLLECTIONS\.filter\(collection => collection\.key !== 'lila'\)/)
   assert.match(catalog, /VISIBLE_COLLECTIONS\.length/)
   assert.match(
@@ -39,8 +43,9 @@ test('MXL-547: отдельная Лила скрыта только из ото
 })
 
 test('MXL-547: каталог показывает максимум четыре реальных дня текущей темы', () => {
-  assert.match(practices, /api\.themes\.get\(currentTheme\.id, user\.id\)/)
-  assert.match(practices, /setThemes\(\[\{ \.\.\.currentTheme, \.\.\.detail \}\]\)/)
+  // api.themes.get и merge перенесены из Practices.jsx в themesDataCache.js.
+  assert.match(themesCache, /api\.themes\.get\(currentTheme\.id, userId\)/)
+  assert.match(themesCache, /\.\.\.theme, \.\.\.detail/)
   assert.match(catalog, /theme\.days\.slice\(0, 4\)/)
   assert.match(catalog, /question\.day/)
   assert.match(catalog, /question\.text/)

@@ -1,3 +1,5 @@
+import { DEFAULT_REVIEW_HOUR } from '../../lib/todayCardState.js'
+
 const BASE_FIXTURE = {
   rituals: [
     { id: 'ui-lab-ritual-1', name: 'Один честный шаг', today_level: null },
@@ -15,7 +17,7 @@ const BASE_FIXTURE = {
       is_current: true,
     },
   ],
-  settings: { review_hour: 19 },
+  settings: { review_hour: DEFAULT_REVIEW_HOUR },
 }
 
 const CHECKIN = { mood: 3, emotion: 'ровно', review_completed_at: null }

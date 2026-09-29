@@ -53,7 +53,7 @@ import { isPreviewDemoMode } from './demoMode'
 export const TG_CONTROLS_HEIGHT = 56
 
 export const FULLSCREEN_SHELL_CLASS =
-  'fixed top-0 left-0 right-0 z-[60] bg-emerald-deep flex flex-col overflow-hidden'
+  'mx-fullscreen-surface fixed top-0 left-0 right-0 z-[60] bg-emerald-deep flex flex-col overflow-hidden'
 
 export const FULLSCREEN_HEADER_SLOT_CLASS = 'h-[52px] shrink-0'
 
@@ -66,12 +66,16 @@ export const FULLSCREEN_HEADER_SLOT_CLASS = 'h-[52px] shrink-0'
  * ничего не обрезается.
  */
 export const FULLSCREEN_SCROLL_CLASS =
-  'w-full flex-1 min-h-0 flex flex-col overflow-y-auto overscroll-contain scroll-pb-6'
+  'mx-fullscreen-scroll w-full flex-1 min-h-0 flex flex-col overflow-y-auto overscroll-contain scroll-pb-6'
 
 export function getFullscreenPortalTarget() {
   if (typeof document === 'undefined') return null
 
-  return document.querySelector('[data-mentalix-demo-frame]') || document.body
+  return (
+    document.querySelector('[data-mentalix-demo-frame]') ||
+    document.querySelector('[data-mentalix-app-root]') ||
+    document.body
+  )
 }
 
 export function useFullscreenSurface() {

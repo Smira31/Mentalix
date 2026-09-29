@@ -35,21 +35,43 @@ function JournalBanner({ onOpen }) {
 function PracticeRail({ practices, onOpen }) {
   const lila = getPracticeByKey(practices, 'lila-discover') || {
     key: 'lila-discover',
-    title: 'Разобраться через Лилу',
+    title: 'Разобраться со Следопытом',
     subtitle: 'Карта, несколько вопросов и один рабочий шаг',
     kind: 'journal',
     sub: 'lila-discover',
   }
+  const mood = getPracticeByKey(practices, 'mood')
+  const alterEgo = getPracticeByKey(practices, 'alter-ego')
   const railCards = [
     {
       key: 'lila-discover',
-      title: 'Разобраться через Лилу',
-      category: 'Лила',
+      title: 'Разобраться со Следопытом',
+      category: 'Следопыт',
       description: 'Карта, несколько вопросов и один рабочий шаг',
       status: 'НОВОЕ',
       kind: 'journal',
       active: true,
       practice: lila,
+    },
+    {
+      key: 'alter-ego',
+      title: 'Альтер-эго',
+      category: 'Уверенность',
+      description: 'Собери маску, в которой ты сильнее',
+      status: 'НОВОЕ',
+      kind: 'purpose',
+      active: Boolean(alterEgo),
+      practice: alterEgo,
+    },
+    {
+      key: 'mood',
+      title: 'Настроение',
+      category: 'Эмоции',
+      description: 'Заметь эмоцию и при желании разбери её',
+      status: 'НОВОЕ',
+      kind: 'mood',
+      active: Boolean(mood),
+      practice: mood,
     },
     {
       key: 'lion-action',
@@ -101,7 +123,7 @@ function PracticeRail({ practices, onOpen }) {
   )
 }
 
-function ThemeCarousel({ theme, themeLoading = false, themeError = false, onOpen }) {
+function ThemeCarousel({ theme, themeLoading = false, themeError = false, onOpen, onRetry }) {
   const [questionIndex, setQuestionIndex] = useState(0)
   const trackRef = useRef(null)
   const questions = useMemo(
@@ -129,26 +151,28 @@ function ThemeCarousel({ theme, themeLoading = false, themeError = false, onOpen
   }
 
   if (themeLoading || themeError || !theme || questions.length === 0) {
-    const title = themeLoading
-      ? 'Загружаю вопросы'
-      : themeError
-        ? 'Вопросы не загрузились'
-        : 'Пока нет вопросов'
-    const copy = themeLoading
-      ? 'Текущая тема появится через несколько секунд.'
-      : themeError
-        ? 'Не удалось загрузить тему. Проверь соединение и попробуй ещё раз.'
-        : 'Опубликованная тема появится здесь, когда будет доступна для тебя.'
-
     return (
-      <section className="mx-layered-catalog__section" aria-label="Тема недели" aria-live="polite">
+      <section className="mx-layered-catalog__section mx-layered-catalog__theme-section" aria-label="Тема недели" aria-live="polite">
         <div className="mx-layered-catalog__section-head">
           <div>
             <span>Тема недели:</span>
-            <h2 className="mx-type-section">{title}</h2>
+            <h2 className="mx-type-section">{themeLoading ? 'Один вопрос.' : themeError ? 'Вопросы не загрузились' : 'Пока нет вопросов'}</h2>
           </div>
         </div>
-        <p className="mx-layered-catalog__empty-copy">{copy}</p>
+        {themeLoading ? (
+          <div className="mx-layered-catalog__theme-skeleton" role="status" aria-label="Загрузка вопросов">
+            <span className="mx-layered-catalog__theme-copy animate-pulse" aria-hidden="true" />
+          </div>
+        ) : (
+          <>
+            <p className="mx-layered-catalog__empty-copy">
+              {themeError
+                ? 'Не удалось загрузить тему. Проверь соединение и попробуй ещё раз.'
+                : 'Опубликованная тема появится здесь, когда будет доступна для тебя.'}
+            </p>
+            {themeError && <button type="button" className="mx-layered-catalog__pill" onClick={onRetry}>Повторить</button>}
+          </>
+        )}
       </section>
     )
   }
@@ -161,7 +185,9 @@ function ThemeCarousel({ theme, themeLoading = false, themeError = false, onOpen
       <div className="mx-layered-catalog__section-head">
         <div>
           <span>Тема недели:</span>
-          <h2 className="mx-type-section" id="production-theme-title">Один вопрос.</h2>
+          <h2 className="mx-type-section" id="production-theme-title">
+            Один вопрос.
+          </h2>
         </div>
       </div>
       <div className="mx-layered-catalog__theme-track" ref={trackRef} onScroll={handleScroll}>
@@ -221,7 +247,6 @@ function CollectionTile({ collection, onOpen }) {
       </span>
       <strong>{collection.title}</strong>
       <small>{isSoon ? 'Скоро' : collection.description}</small>
-      {isSoon && <span className="mx-layered-category__completion">Скоро</span>}
       <ChevronRight
         className="mx-layered-catalog__collection-chevron"
         size={17}
@@ -267,7 +292,9 @@ function CollectionScreen({ collection, practices, rituals, ascezas, onOpenPract
     <section className="mx-layered-category" aria-labelledby="production-category-title">
       <header className="mx-layered-category__header">
         <div className="mx-layered-category__heading">
-          <h2 className="mx-type-section" id="production-category-title">{collection.title}.</h2>
+          <h2 className="mx-type-section" id="production-category-title">
+            {collection.title}.
+          </h2>
           <p>{collection.description}</p>
         </div>
         <span aria-hidden="true" />
@@ -355,6 +382,7 @@ export default function PracticeCatalogV2({
   themes,
   themeLoading = false,
   themesError = false,
+  onRetryThemes,
   onOpenPractice,
   selectedCollectionKey = null,
   onCollectionChange,
@@ -392,6 +420,7 @@ export default function PracticeCatalogV2({
         theme={themes?.[0] || null}
         themeLoading={themeLoading}
         themeError={themesError}
+        onRetry={onRetryThemes}
         onOpen={onOpenTheme}
       />
       <CollectionGrid onOpen={collection => onCollectionChange?.(collection.key)} />

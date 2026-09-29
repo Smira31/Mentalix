@@ -1,7 +1,22 @@
-.mx-path-surface {
+.mx-path-layer {
   position: fixed;
-  inset: 0;
+  right: 0;
+  left: 0;
   z-index: 70;
+  background: rgba(0, 0, 0, 0.65);
+}
+
+/* Шторка значка на выходе (200 ms анимации) больше не ловит тапы:
+   сегмент «Значки | Статистика» под ней отвечает на первый тап сразу. */
+.mx-badge-sheet-layer--exit,
+.mx-badge-sheet-layer--exit * {
+  pointer-events: none;
+}
+
+.mx-path-surface {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -19,6 +34,16 @@
   gap: 12px;
   padding: 8px var(--mx-screen-x, 16px) 0;
   background: rgb(var(--c-bg, 5 4 3));
+}
+
+/* В демо-режиме полноэкранная страница стартует от верхнего края,
+   где висит демо-бейдж (z-index 9999). Сдвигаем вкладки ниже бейджа,
+   чтобы зона нажатия не перекрывалась.
+   mx-real-phone-demo — на <html> в мобильном демо-режиме;
+   data-mentalix-demo-frame — в десктоп-демо-фрейме. */
+[data-mentalix-demo-frame='true'] .mx-path-surface:not(.mx-path-surface--tg-fullscreen) .mx-path-header,
+.mx-real-phone-demo .mx-path-surface:not(.mx-path-surface--tg-fullscreen) .mx-path-header {
+  padding-top: 44px;
 }
 
 .mx-path-tabs {
@@ -68,11 +93,47 @@
 .mx-path-scroll {
   width: 100%;
   min-height: 0;
-  flex: 1;
+  flex: 0 1 auto;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 20px var(--mx-screen-x, 16px) calc(var(--app-safe-bottom, 0px) + 28px);
+  padding: 20px var(--mx-screen-x, 16px) calc(var(--app-safe-bottom, 0px) + 16px);
+  scrollbar-width: none;
 }
+.mx-path-scroll::-webkit-scrollbar { display: none; }
+.mx-path-surface--all .mx-path-scroll { flex: 1; }
+.mx-path-header > .mx-nested-screen-back { display: none; }
+/* «все значки.» вне Telegram: одна круглая «Назад» 43×43 слева. */
+.mx-path-surface--all .mx-path-header { justify-content: flex-start; }
+.mx-path-surface--all .mx-path-header > .mx-nested-screen-back { display: grid; }
+.mx-path-all-badges > h1 {
+  margin: 12px 0 28px;
+  font-size: 34px;
+  font-weight: 700;
+  text-align: center;
+}
+.mx-path-all-group { margin-bottom: 32px; }
+.mx-path-all-group h2 {
+  margin-bottom: 16px;
+  color: rgb(var(--c-muted, 133 133 133));
+  font-size: 13px;
+  text-align: center;
+}
+.mx-path-badge-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.mx-path-badge-grid button {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 4px;
+  border: 0;
+  border-radius: 20px;
+  background: rgb(var(--c-card2, 17 17 17));
+  color: inherit;
+  text-align: center;
+}
+.mx-path-badge-grid strong { font-size: 12px; font-weight: 500; line-height: 1.2; }
+.mx-path-badge-grid span { color: rgb(var(--c-muted, 133 133 133)); font-size: 12px; }
 
 .mx-path-content {
   width: 100%;
@@ -137,9 +198,8 @@
 }
 .mx-reward-icon__glass {
   fill: #111;
-  stroke: #707070;
-  stroke-width: 1.5;
 }
+.mx-reward-icon__glass--locked { stroke: #707070; stroke-width: 1.5; }
 .mx-reward-icon__shine {
   fill: none;
   stroke: #8d8d8d;
@@ -196,6 +256,7 @@
 }
 .mx-path-award-list {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 7px;
 }
 .mx-path-award-row {
@@ -237,6 +298,9 @@
   line-height: 1.2;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.mx-path-row-progress-copy {
+  white-space: normal;
 }
 .mx-path-row-value {
   display: flex;
@@ -380,15 +444,16 @@
   right: 0;
   bottom: 0;
   left: 0;
-  min-height: 55vh;
-  padding-bottom: calc(var(--app-safe-bottom, 0px) + 16px);
+  max-height: 88%;
+  overflow-y: auto;
+  scrollbar-width: none;
+  padding-bottom: calc(var(--app-safe-bottom, 0px) + 24px);
   border-radius: 24px 24px 0 0;
   background: rgb(var(--c-bg, 5 4 3));
   color: rgb(var(--c-text, 243 243 243));
 }
-.mx-badge-sheet--new {
-  min-height: 52vh;
-}
+.mx-badge-sheet::-webkit-scrollbar { display: none; }
+.mx-badge-sheet--new { min-height: 0; }
 .mx-badge-sheet > .mx-path-close {
   position: absolute;
   top: 14px;
@@ -438,6 +503,11 @@
 .mx-badge-sheet__progress span,
 .mx-badge-sheet__received span {
   color: rgb(var(--c-muted, 133 133 133));
+}
+.mx-badge-sheet__body > .mx-path-progress {
+  width: 100%;
+  height: 4px;
+  margin-top: 12px;
 }
 .mx-badge-sheet__action {
   min-width: 177px;

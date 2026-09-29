@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { platform } from '../platform'
-import { api } from '../lib/api'
 import { fetchPracticesData, peekPracticesData } from '../lib/practicesDataCache'
+import { fetchThemesData, peekThemesData } from '../lib/themesDataCache'
 import { buildPracticeViewModels } from '../lib/practiceCatalogRegistry'
+import { previewPracticeAction } from '../lib/demoMode'
 
 import PracticeCatalogV2 from '../components/PracticeCatalogV2'
 
@@ -13,7 +14,9 @@ import Rituals from './Rituals'
 import Ascezas from './Ascezas'
 import GuidedSelfDiscoveryFlow from './GuidedSelfDiscoveryFlow'
 import LilaDiscoverFlow from './LilaDiscoverFlow'
-import ThemeScreen from './ThemeScreen'
+import ThemeCarouselScreen from './ThemeCarouselScreen'
+import MoodPractice from './MoodPractice'
+import AlterEgo from './AlterEgo'
 
 function PracticesCatalogLoading() {
   return (
@@ -23,11 +26,7 @@ function PracticesCatalogLoading() {
       role="status"
       aria-live="polite"
     >
-      <div className="mx-practices-catalog-title w-full grid grid-cols-[1fr_auto_1fr] items-center min-h-[42px] mb-[28px]">
-        <span aria-hidden="true" />
-        <h1 className="font-display mx-type-page text-cream lowercase">практики.</h1>
-        <span aria-hidden="true" />
-      </div>
+      <h1 className="font-display mx-type-page text-cream lowercase mb-[28px]">практики.</h1>
       <div className="mx-practices-catalog-loading" aria-hidden="true">
         <span className="mx-practices-catalog-loading__hero" />
         <span className="mx-practices-catalog-loading__label" />
@@ -43,22 +42,29 @@ function PracticesCatalogLoading() {
 }
 
 export default function Practices({ user, initialSub = null, onGameChange, onRegisterBack }) {
-  const [sub, setSub] = useState(initialSub)
+  const [sub, setSub] = useState(() => {
+    if (initialSub) return initialSub
+    const action = previewPracticeAction()
+    if (action === 'rituals_list' || action === 'ritual_detail') return 'rituals'
+    if (action === 'ascezas_list' || action === 'asceza_detail') return 'ascezas'
+    return null
+  })
   const [selectedCollectionKey, setSelectedCollectionKey] = useState(null)
 
   const returnToPracticeOrigin = () => setSub(null)
 
   const [initialPracticesData] = useState(() => (user ? peekPracticesData(user.id) : null))
+  const [initialThemesData] = useState(() => (user ? peekThemesData(user.id) : null))
   const [rituals, setRituals] = useState(initialPracticesData?.rituals ?? [])
   const [ascezas, setAscezas] = useState(initialPracticesData?.ascezas ?? [])
-  const [themes, setThemes] = useState([])
-  const [themeLoading, setThemeLoading] = useState(true)
+  const [themes, setThemes] = useState(initialThemesData ?? [])
+  const [themeLoading, setThemeLoading] = useState(!initialThemesData)
   const [themesError, setThemesError] = useState(false)
   const themeRequestRef = useRef(0)
   const [selectedThemeId, setSelectedThemeId] = useState(null)
   const [isLoading, setIsLoading] = useState(!initialPracticesData)
   const [loadError, setLoadError] = useState(null)
-  const focusedFlowOpen = ['journal', 'self-discovery', 'lila-discover'].includes(sub)
+  const focusedFlowOpen = ['journal', 'self-discovery', 'lila-discover', 'mood'].includes(sub)
   const nestedFlowOpen = focusedFlowOpen || Boolean(selectedThemeId)
 
   useEffect(() => {
@@ -117,53 +123,47 @@ export default function Practices({ user, initialSub = null, onGameChange, onReg
     Promise.resolve().then(() => loadPractices())
   }, [initialPracticesData, loadPractices, sub, user])
 
-  const loadThemes = useCallback(async () => {
-    if (!user) return
+  const loadThemes = useCallback(
+    async ({ force = false } = {}) => {
+      if (!user) return
 
-    const requestId = ++themeRequestRef.current
-    setThemeLoading(true)
-    setThemesError(false)
-
-    try {
-      const themesData = await api.themes.list(user.id)
-      const list = Array.isArray(themesData) ? themesData : []
-      // MXL-525 G5: текущая неделя (is_current) должна идти первой в карусели.
-      const sorted = list
-        .slice()
-        .sort((a, b) => (b.is_current === true ? 1 : 0) - (a.is_current === true ? 1 : 0))
-      const currentTheme = sorted[0]
-
-      if (!currentTheme) {
-        if (themeRequestRef.current === requestId) setThemes([])
-        return
-      }
-
-      const detail = await api.themes.get(currentTheme.id, user.id)
-      if (themeRequestRef.current !== requestId) return
-
-      setThemes([{ ...currentTheme, ...detail }])
+      const requestId = ++themeRequestRef.current
+      setThemeLoading(true)
       setThemesError(false)
-    } catch {
-      if (themeRequestRef.current !== requestId) return
-      setThemes([])
-      setThemesError(true)
-    } finally {
-      if (themeRequestRef.current === requestId) setThemeLoading(false)
-    }
-  }, [user])
+
+      try {
+        const themesData = await fetchThemesData(user.id, { force })
+        if (themeRequestRef.current !== requestId) return
+
+        setThemes(themesData)
+        setThemesError(false)
+      } catch {
+        if (themeRequestRef.current !== requestId) return
+        setThemes([])
+        setThemesError(true)
+      } finally {
+        if (themeRequestRef.current === requestId) setThemeLoading(false)
+      }
+    },
+    [user]
+  )
 
   useEffect(() => {
-    if (!user || sub !== null) return
-    Promise.resolve().then(loadThemes)
+    if (!user || sub !== null || initialThemesData) return
+    Promise.resolve().then(() => loadThemes())
 
     return () => {
       themeRequestRef.current += 1
     }
-  }, [loadThemes, sub, user])
+  }, [initialThemesData, loadThemes, sub, user])
 
   if (selectedThemeId) {
     return (
-      <ThemeScreen user={user} themeId={selectedThemeId} onBack={() => setSelectedThemeId(null)} />
+      <ThemeCarouselScreen
+        user={user}
+        themeId={selectedThemeId}
+        onBack={() => setSelectedThemeId(null)}
+      />
     )
   }
 
@@ -193,6 +193,14 @@ export default function Practices({ user, initialSub = null, onGameChange, onReg
     )
   }
 
+  if (sub === 'mood') {
+    return <MoodPractice user={user} onDone={() => setSub(null)} />
+  }
+
+  if (sub === 'alter-ego') {
+    return <AlterEgo user={user} onBack={() => setSub(null)} />
+  }
+
   if (isLoading) {
     return <PracticesCatalogLoading />
   }
@@ -219,11 +227,7 @@ export default function Practices({ user, initialSub = null, onGameChange, onReg
 
   return (
     <div className="mx-practices-catalog-shell w-full max-w-md px-[var(--mx-screen-x)]">
-      <div className="mx-practices-catalog-title w-full grid grid-cols-[1fr_auto_1fr] items-center min-h-[42px] mb-[28px]">
-        <span aria-hidden="true" />
-        <h1 className="font-display mx-type-page text-cream lowercase">практики.</h1>
-        <span aria-hidden="true" />
-      </div>
+      <h1 className="font-display mx-type-page text-cream lowercase mb-[28px]">практики.</h1>
       <PracticeCatalogV2
         practices={catalogPractices}
         rituals={rituals}
@@ -231,6 +235,7 @@ export default function Practices({ user, initialSub = null, onGameChange, onReg
         themes={themes}
         themeLoading={themeLoading}
         themesError={themesError}
+        onRetryThemes={() => loadThemes({ force: true })}
         selectedCollectionKey={selectedCollectionKey}
         onCollectionChange={setSelectedCollectionKey}
         onOpenPractice={(practice, collectionKey = null) => {

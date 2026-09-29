@@ -3,6 +3,7 @@ import { readLocal, writeLocal } from '../../lib/store'
 import { cloud } from '../../platform/telegram.hooks'
 import { toLocalCalendarDate } from '../../lib/dateTimezonePolicy'
 import { deriveConclusions, MIN_CHECKINS } from '../Analytics'
+import { insightIntervalElapsed } from './surpriseRules'
 
 // ── «Дайджест от Следопыта» (ROADMAP.md, идея 3) ──
 //
@@ -13,7 +14,7 @@ import { deriveConclusions, MIN_CHECKINS } from '../Analytics'
 // с сервера сообщение исчезает само, это ожидаемо.
 
 const INSIGHT_SEEN_KEY = 'mx-insight-seen'
-const MIN_DAYS_BETWEEN_INSIGHTS = 4
+export const SURPRISE_MESSAGE_KEY = 'mx-surprise-insight-message'
 
 /*
  * Дата последнего показа — как readSeenEverywhere/writeSeen в
@@ -21,7 +22,7 @@ const MIN_DAYS_BETWEEN_INSIGHTS = 4
  * множества id хранится одна ISO-дата: при расхождении между
  * устройствами берётся более поздняя, а не объединение множеств.
  */
-async function readLastInsightDate() {
+export async function readLastInsightDate() {
   const local = readLocal(INSIGHT_SEEN_KEY)
   const remote = await cloud.get(INSIGHT_SEEN_KEY)
   const dates = [local, remote].filter(Boolean)
@@ -31,16 +32,9 @@ async function readLastInsightDate() {
   return dates.sort().at(-1)
 }
 
-function writeInsightSeen(dateIso) {
+export function writeInsightSeen(dateIso) {
   writeLocal(INSIGHT_SEEN_KEY, dateIso)
   cloud.set(INSIGHT_SEEN_KEY, dateIso)
-}
-
-function daysSince(dateIso) {
-  const then = new Date(`${dateIso}T00:00:00`)
-  const now = new Date()
-
-  return (now - then) / (1000 * 60 * 60 * 24)
 }
 
 function todayIso() {
@@ -57,7 +51,7 @@ export async function maybeBuildInsightMessage(user) {
   try {
     const lastDate = await readLastInsightDate()
 
-    if (lastDate && daysSince(lastDate) < MIN_DAYS_BETWEEN_INSIGHTS) {
+    if (!insightIntervalElapsed(lastDate, todayIso())) {
       return null
     }
 

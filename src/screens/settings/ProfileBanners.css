@@ -1,0 +1,202 @@
+/* Баннеры профиля — DESIGN_SYSTEM.md §5.4. Геометрия Stoic, решение владельца
+   PR #929: замеры в pt для 440 (1 pt = 1 px), на 393 ширина по полям 16 px
+   задаётся .mx-profile-body, высоты фиксированные. Рисунки — свои SVG
+   (ProfileBannerArt.jsx), персонажи-демоны убраны. */
+
+.mx-profile-banners {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  margin-bottom: 28px;
+}
+
+.mx-profile-banner {
+  position: relative;
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  padding: 0;
+  border: 0;
+  border-radius: 16px;
+  background: rgb(var(--c-card2));
+  color: rgb(var(--c-text));
+  font: inherit;
+  text-align: left;
+  transition: transform 160ms ease;
+}
+
+button.mx-profile-banner:active {
+  transform: scale(0.97);
+}
+
+/* Рисунки — декоративные SVG, размеры заданы по месту. */
+.mx-profile-banner__art {
+  display: block;
+  pointer-events: none;
+}
+
+/* 1. «Потенциал» — 227 px, замок целиком справа (не по центру),
+   обрезан нижним краем, под текстом и кнопкой. */
+.mx-profile-banner--potential {
+  display: flex;
+  height: 227px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 28px;
+  text-align: center;
+}
+
+.mx-profile-banner--potential .mx-profile-banner__art--lock {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 128px;
+  height: 172px;
+  z-index: 0;
+}
+
+/* 393 и 440: balance держит одинаковый перенос строк на обеих ширинах —
+   заголовок в две строки, «потенциал» не отрывается от «весь». */
+.mx-profile-banner--potential .mx-profile-banner__title {
+  position: relative;
+  z-index: 1;
+  max-width: 200px;
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.25;
+  text-wrap: balance;
+}
+
+.mx-profile-banner--potential .mx-profile-banner__text {
+  position: relative;
+  z-index: 1;
+  max-width: 280px;
+  margin: 10px 0 0;
+  color: rgb(var(--c-text));
+  opacity: 0.85;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.35;
+  text-wrap: balance;
+}
+
+.mx-profile-banner__pill {
+  position: relative;
+  z-index: 1;
+  width: 162px;
+  height: 49px;
+  margin-top: 20px;
+  border: 0;
+  border-radius: 999px;
+  background: #d0d0d0;
+  color: rgb(var(--c-bg));
+  font-size: 16px;
+  font-weight: 700;
+  transition: transform 160ms ease;
+}
+
+.mx-profile-banner__pill:active {
+  transform: scale(0.97);
+}
+
+/* 2. «Поддержать» — 117 px, темнее фон (--c-card), текст слева x = 16,
+   справа полоса-«коробка» 89 px на всю высоту (--c-card2) с лентой. */
+.mx-profile-banner--support {
+  display: flex;
+  height: 117px;
+  align-items: center;
+  background: rgb(var(--c-card));
+}
+
+.mx-profile-banner--support .mx-profile-banner__text {
+  flex: 1;
+  margin: 0;
+  padding: 12px 12px 12px 16px;
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 1.35;
+  text-wrap: balance;
+}
+
+.mx-profile-banner--support .mx-profile-banner__text strong {
+  font-weight: 700;
+}
+
+.mx-profile-banner__panel {
+  position: relative;
+  display: flex;
+  align-self: stretch;
+  width: 89px;
+  flex-shrink: 0;
+  background: rgb(var(--c-card2));
+}
+
+.mx-profile-banner--support .mx-profile-banner__art--gift {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* 3. «На сайте» — 176 px, заголовок 28 px сверху слева, перо справа
+   сверху обрезано верхним краем, текст и шеврон внизу. */
+.mx-profile-banner--web {
+  height: 176px;
+}
+
+.mx-profile-banner--web .mx-profile-banner__art--feather {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 123px;
+  height: 85px;
+  z-index: 0;
+}
+
+/* Заголовок как в референсе Stoic: один размер шрифта, «Mentalix»
+   выделен жирным, «на сайте» — обычным весом. */
+.mx-profile-banner--web .mx-profile-banner__title {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 1;
+  max-width: calc(100% - 134px);
+  font-size: 28px;
+  font-weight: 400;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.mx-profile-banner--web .mx-profile-banner__title strong {
+  font-weight: 700;
+}
+
+.mx-profile-banner--web .mx-profile-banner__text {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  z-index: 1;
+  max-width: calc(100% - 76px);
+  color: rgb(var(--c-text));
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.35;
+}
+
+.mx-profile-banner--web .mx-profile-banner__chevron {
+  position: absolute;
+  bottom: 14px;
+  right: 20px;
+  color: rgb(var(--c-muted));
+  font-size: 20px;
+  line-height: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-profile-banner,
+  .mx-profile-banner__pill {
+    transition: none;
+  }
+}

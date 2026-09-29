@@ -7,16 +7,26 @@ const checkinSource = await readFile(
   'utf8'
 )
 
-test('PWA preview uses the three-question morning set in the agreed order', () => {
+test('PWA preview uses the morning set in the agreed order', () => {
   assert.match(checkinSource, /export const MORNING_SCALE_STEPS = \[/)
   assert.match(checkinSource, /SCALE_STEPS\[0\],\s*SCALE_STEPS\[1\]/s)
-  assert.match(checkinSource, /const noteStep = MORNING_SCALE_STEPS\.length/)
+  assert.match(checkinSource, /const dayFocusStep = allScales\.length/)
+  assert.match(checkinSource, /const noteStep = dayFocusStep \+ 1/)
   assert.match(checkinSource, /const doneStep = noteStep \+ 1/)
   assert.match(checkinSource, /<CheckInScaleQuestion\s+scale=\{scale\}/)
   assert.match(checkinSource, /<CheckInQuestion\s+title="Что на уме\?"/)
-  assert.match(checkinSource, /Утренний чек-ин/)
-  assert.match(checkinSource, /завершён\./)
-  assert.match(checkinSource, /Вернуться в Сегодня/)
+  assert.match(checkinSource, /<CheckInCompletion[\s\S]*?evening=\{false\}/)
+  assert.match(
+    checkinSource.slice(
+      checkinSource.indexOf('function MorningCheckInFlow'),
+      checkinSource.indexOf('// ── Чек-ин и вечерний')
+    ),
+    /sendCheckinFeedback\(api\.checkin\.feedback, savedMorningId, label\)/
+  )
+  assert.match(
+    checkinSource,
+    /\{ text: 'Сохранить и выйти', testId: 'checkin-back-to-today', onClick: exitCompletion \}/
+  )
 })
 
 test('PWA and core flows share the same question renderer and do not render scale numbers', () => {

@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef } from 'react'
+import { isTelegramBackMode } from '../lib/backButtonMode'
 
 /*
  * TELEGRAM: REACT-ХУКИ НАД MINI APP API
@@ -55,7 +56,7 @@ let bound = false
 function syncBackButton() {
   const backButton = api()?.BackButton
 
-  if (!backButton) return
+  if (!isTelegramBackMode(api()) || !backButton) return
 
   safely(() => (stack.length ? backButton.show() : backButton.hide()), 'BackButton')
 }
@@ -66,27 +67,45 @@ function handleBackClick() {
   top?.()
 }
 
+/**
+ * Текущее действие «Назад» — верхний элемент стека.
+ * Используется глобальным edge-swipe слушателем на корне приложения.
+ * Возвращает null, если стек пуст (корень вкладки — «Назад» нет).
+ */
+export function getCurrentBackAction() {
+  return stack.length ? stack[stack.length - 1] : null
+}
+
+// Debug-экспорт для тестов edge-swipe back (только в dev, не влияет на прод)
+if (typeof window !== 'undefined' && import.meta.env.DEV) {
+  window.__mxGetCurrentBackAction = getCurrentBackAction
+}
+
 export function useBackButton(handler, active = true) {
   const ref = useRef(handler)
 
-  useEffect(() => {
+  /*
+   * Регистрация стека обязана быть синхронной (useLayoutEffect):
+   * useEffect срабатывает после отрисовки, и системный «Назад»,
+   * нажатый в момент перехода, попадал в устаревшую запись стека.
+   */
+  useLayoutEffect(() => {
     ref.current = handler
   })
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!active) return
-
-    const backButton = api()?.BackButton
-
-    if (!backButton) return
 
     const entry = () => ref.current?.()
 
+    // Стек всегда поддерживается — даже в web-режиме, где нет системной
+    // кнопки Telegram. Глобальный edge-swipe читает верхний элемент стека.
     stack.push(entry)
 
-    if (!bound) {
-      safely(() => backButton.onClick(handleBackClick), 'BackButton.onClick')
+    const backButton = api()?.BackButton
 
+    if (isTelegramBackMode(api()) && backButton && !bound) {
+      safely(() => backButton.onClick(handleBackClick), 'BackButton.onClick')
       bound = true
     }
 
@@ -100,6 +119,10 @@ export function useBackButton(handler, active = true) {
       }
 
       syncBackButton()
+      if (!stack.length && bound) {
+        safely(() => backButton?.offClick(handleBackClick), 'BackButton.offClick')
+        bound = false
+      }
     }
   }, [active])
 }
@@ -516,5 +539,11 @@ export function requestMessages() {
 // Иконка на домашнем экране — самый честный ответ на вопрос
 // «почему человек откроет Mentalix завтра».
 export function offerHomeScreen() {
-  safely(() => api()?.addToHomeScreen?.(), 'addToHomeScreen')
+  const webApp = api()
+
+  // addToHomeScreen появился в Bot API 8.0; на старых клиентах SDK 8
+  // пишет console.error и бросает WebAppMethodUnsupported.
+  if (typeof webApp?.isVersionAtLeast === 'function' && !webApp.isVersionAtLeast('8.0')) return
+
+  safely(() => webApp?.addToHomeScreen?.(), 'addToHomeScreen')
 }

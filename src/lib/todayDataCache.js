@@ -1,4 +1,6 @@
 import { api } from './api'
+import { withRetry, isRetryableError, RETRY_DELAYS_MS } from './todayRetry'
+import { DEFAULT_REVIEW_HOUR } from './todayCardState.js'
 
 /*
  * IN-MEMORY КЕШ ДАННЫХ ЭКРАНА «СЕГОДНЯ»
@@ -74,7 +76,11 @@ function sanitizeCheckin(checkin) {
   if (!checkin || typeof checkin !== 'object') return null
 
   return {
+    id: safeId(checkin.id),
+    date: typeof checkin.date === 'string' ? checkin.date : null,
     mood: finiteNumber(checkin.mood) ? checkin.mood : null,
+    energy: finiteNumber(checkin.energy) ? checkin.energy : null,
+    note: typeof checkin.note === 'string' ? checkin.note : null,
     emotion: typeof checkin.emotion === 'string' ? checkin.emotion : null,
     review_completed_at:
       typeof checkin.review_completed_at === 'string' ? checkin.review_completed_at : null,
@@ -102,7 +108,7 @@ function sanitizeTodayData(data) {
     checkin: sanitizeCheckin(data?.checkin),
     themes: sanitizeThemes(data?.themes),
     settings: {
-      review_hour: finiteNumber(data?.settings?.review_hour) ? data.settings.review_hour : 19,
+      review_hour: finiteNumber(data?.settings?.review_hour) ? data.settings.review_hour : DEFAULT_REVIEW_HOUR,
     },
   }
 }
@@ -221,6 +227,16 @@ export async function fetchTodayData(userId, { force = false } = {}) {
   return request
 }
 
+/*
+ * Автоповтор загрузки данных «Сегодня» — переживает сон бесплатного
+ * Render (первый запрос после сна отвечает до 50 с). Повторяем с
+ * паузами 3, 8, 20 с (4 попытки), общий срок ожидания ≥ 60 с.
+ * Логика в todayRetry.js, чтобы unit-тесты могли её импортировать.
+ */
+export function fetchTodayDataWithRetry(userId, options = {}) {
+  return withRetry(() => fetchTodayData(userId, options))
+}
+
 export function invalidateTodayData(userId) {
   cache.delete(userId)
 }
@@ -229,3 +245,5 @@ export function clearTodayDataCache() {
   cache.clear()
   inFlight.clear()
 }
+
+export { isRetryableError, RETRY_DELAYS_MS }

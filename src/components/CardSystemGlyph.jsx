@@ -4,10 +4,38 @@ const GLYPH_BY_PRACTICE = {
   breathing: 'breath-flow',
   meditation: 'meditation-contours',
   journal: 'focus-convergence',
+  rituals: 'ritual-cycle',
+  mood: 'mood-face',
+  'alter-ego': 'alter-ego-mask',
 }
 
 function GlyphShape({ kind }) {
   switch (kind) {
+    case 'ritual-cycle':
+      return (
+        <>
+          <path d="M45 18a19 19 0 1 1-26 0" fill="none" />
+          <path d="M19 10v8h-8" fill="none" />
+          <circle cx="32" cy="32" r="4" className="mx-card-system-glyph__accent" />
+        </>
+      )
+    case 'mood-face':
+      return (
+        <>
+          <circle cx="32" cy="32" r="20" fill="none" />
+          <path d="M23 37c5 6 13 6 18 0" fill="none" />
+          <circle cx="25" cy="27" r="2.5" className="mx-card-system-glyph__accent" />
+          <circle cx="39" cy="27" r="2.5" className="mx-card-system-glyph__accent" />
+        </>
+      )
+    case 'alter-ego-mask':
+      return (
+        <>
+          <path d="M12 20c10-5 30-5 40 0 0 15-8 26-20 26S12 35 12 20Z" fill="none" />
+          <path d="M19 28c3-3 7-3 10 0M35 28c3-3 7-3 10 0" fill="none" />
+          <circle cx="32" cy="38" r="3" className="mx-card-system-glyph__accent" />
+        </>
+      )
     case 'asceza-boundary':
       return (
         <>

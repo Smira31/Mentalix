@@ -11,7 +11,7 @@ function freshEntry(userId) {
 }
 
 export function peekPinnedPractices(userId) {
-  return freshEntry(userId)?.data ?? null
+  return cache.get(userId)?.data ?? null
 }
 
 export async function fetchPinnedPractices(userId, { force = false } = {}) {

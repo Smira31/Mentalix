@@ -1,5 +1,6 @@
 import { getFullscreenPortalTarget } from '../../lib/fullscreenSurface'
 import { useCallback, useEffect, useRef, useState } from 'react'
+
 import { createPortal } from 'react-dom'
 
 import { ArrowRight, LoaderCircle, Mic, Square } from 'lucide-react'
@@ -50,6 +51,7 @@ export default function Conversation({
   const { style: surfaceStyle, keyboardOpen } = useFullscreenSurface()
 
   const scrollRef = useRef(null)
+  const screenRef = useRef(null)
   const inputRef = useRef(null)
   const restoreComposerFocusRef = useRef(false)
   const previousMessageCount = useRef(0)
@@ -320,6 +322,7 @@ export default function Conversation({
 
   return createPortal(
     <div
+      ref={screenRef}
       className={`${FULLSCREEN_SHELL_CLASS} ${demoVoice ? 'mx-conversation-surface--demo' : ''}`}
       style={{
         ...surfaceStyle,
@@ -399,6 +402,7 @@ export default function Conversation({
                     {isLong && (
                       <button
                         type="button"
+                        data-testid="ai-expand-reply"
                         className="mx-ai-meta mt-3 text-gold"
                         onClick={() => {
                           setExpandedMessages(previous => {
@@ -473,10 +477,11 @@ export default function Conversation({
           </div>
         )}
 
-        <div className="mx-ai-composer w-full max-w-md mx-auto min-h-[72px] rounded-[36px] bg-black/45 border border-cream/10 flex items-center gap-2.5 px-2.5">
+        <div className="mx-ai-composer mx-glass w-full max-w-md mx-auto min-h-[72px] rounded-[36px] flex items-center gap-2.5 px-2.5">
           <input
             ref={inputRef}
             value={input}
+            data-testid="mentor-input"
 
             onFocus={() => {
               restoreComposerFocusRef.current = true
@@ -507,7 +512,7 @@ export default function Conversation({
               }
             }}
 
-            placeholder={`Написать ${meta.name}…`}
+            placeholder={`Написать ${meta.dative ?? meta.name}…`}
 
             name="mentor-message"
             autoComplete="off"

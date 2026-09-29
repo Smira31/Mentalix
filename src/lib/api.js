@@ -1,13 +1,17 @@
 import { platform } from '../platform'
 import { withQuery } from './apiQuery'
 import { demoRequest, isPreviewDemoMode } from './demoMode'
+import { resetGuestState, dispatchGuestMerged } from './guestAuth'
 
 const BASE = import.meta.env.VITE_API_BASE_URL || '/api'
 const API_TIMEOUT_MS = 10_000
 const API_MAX_RETRIES = 1
 const RETRYABLE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS'])
 const RETRYABLE_STATUS_CODES = new Set([408, 425, 429])
-const API_DIAGNOSTICS_ENABLED = import.meta.env.DEV || import.meta.env.VERCEL_ENV === 'preview'
+const API_DIAGNOSTICS_ENABLED =
+  import.meta.env.DEV ||
+  (typeof window !== 'undefined' &&
+    new URLSearchParams(window.location.search).get('debug') === 'api')
 export const MAX_JOURNEY_TAGS_PER_ENTRY = 8
 
 function emitApiDiagnostic(detail) {
@@ -106,11 +110,16 @@ function authHeader() {
   if (initData) return { Authorization: `tma ${initData}` }
 
   const webUserId = platform.getUser?.()?.web_user_id
-  return webUserId ? { 'X-Web-User-ID': String(webUserId) } : {}
+  const token = platform.getSessionToken?.()
+  return {
+    ...(webUserId ? { 'X-Web-User-ID': String(webUserId) } : {}),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  }
 }
 
 async function download(path, filename) {
-  const response = await fetch(`${BASE}${path}`, { headers: authHeader() })
+  const response = await fetch(`${BASE}${path}`, { credentials: 'include', headers: authHeader() })
+  if (response.status === 401) platform.clearSessionToken?.()
   if (!response.ok) throw new Error(`Export ${path} failed: ${response.status}`)
   const blob = await response.blob()
   const href = URL.createObjectURL(blob)
@@ -123,8 +132,29 @@ async function download(path, filename) {
   URL.revokeObjectURL(href)
 }
 
+// Только подтверждённые записи активности: сигнал не зависит от конкретного экрана.
+const ACTIVITY_WRITE = [
+  /^\/checkin(?:\/today)?$/,
+  /^\/(?:rituals|ascezas)\/\d+\/log$/,
+  /^\/mood-practices$/,
+  /^\/journal\/templates\/sessions\/complete$/,
+  /^\/journey\/entries(?:\/[^/]+)?$/,
+]
+
+function notifyActivity(path, options) {
+  const method = (options.method || 'GET').toUpperCase()
+  if (!['POST', 'PUT', 'PATCH'].includes(method) || !ACTIVITY_WRITE.some(pattern => pattern.test(path))) return
+  let userId = null
+  try { userId = JSON.parse(options.body)?.user_id ?? null } catch { /* empty body */ }
+  window.dispatchEvent(new CustomEvent('mentalix:activity-saved', { detail: { userId } }))
+}
+
 async function request(path, options = {}) {
-  if (isPreviewDemoMode()) return demoRequest(path, options)
+  if (isPreviewDemoMode()) {
+    const result = await demoRequest(path, options)
+    notifyActivity(path, options)
+    return result
+  }
 
   const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData
   const method = (options.method || 'GET').toUpperCase()
@@ -132,6 +162,8 @@ async function request(path, options = {}) {
   const timeoutMs = options.timeoutMs || API_TIMEOUT_MS
   const fetchOptions = { ...options }
   delete fetchOptions.timeoutMs
+  delete fetchOptions.silentDiagnostics
+  const silentDiagnostics = options.silentDiagnostics === true
 
   for (let attempt = 0; ; attempt += 1) {
     try {
@@ -151,12 +183,21 @@ async function request(path, options = {}) {
       const raw = await res.text()
 
       if (!res.ok) {
-        emitApiDiagnostic({
-          path,
-          status: res.status,
-          body: raw.slice(0, 500),
-          kind: 'http',
-        })
+        if (res.status === 401) platform.clearSessionToken?.()
+        // 401 guest_merged: гостевая cookie устарела после переноса записей.
+        // Сбрасываем гостевое состояние и показываем экран входа.
+        if (res.status === 401 && raw.includes('guest_merged')) {
+          resetGuestState()
+          dispatchGuestMerged()
+        }
+        if (!silentDiagnostics) {
+          emitApiDiagnostic({
+            path,
+            status: res.status,
+            body: raw.slice(0, 500),
+            kind: 'http',
+          })
+        }
         const error = new ApiError(`API ${path} failed: ${res.status}`, {
           path,
           status: res.status,
@@ -179,7 +220,15 @@ async function request(path, options = {}) {
       }
 
       try {
-        return JSON.parse(raw)
+        const result = JSON.parse(raw)
+        if (
+          ['/auth/guest', '/auth/guest/merge', '/auth/email/verify'].includes(path) &&
+          result?.session_token
+        ) {
+          platform.setSessionToken?.(result.session_token)
+        }
+        notifyActivity(path, options)
+        return result
       } catch (error) {
         throw new ApiError(`API ${path} вернул не JSON`, {
           path,
@@ -194,7 +243,7 @@ async function request(path, options = {}) {
           ? error
           : new ApiError(`API ${path} request failed`, { path, kind: 'unknown', cause: error })
 
-      if (normalized.kind !== 'http') {
+      if (normalized.kind !== 'http' && !silentDiagnostics) {
         emitApiDiagnostic({
           path,
           status: normalized.status,
@@ -232,7 +281,13 @@ export const api = {
         method: 'POST',
         body: JSON.stringify(payload),
       }),
-    logout: () => request('/auth/logout', { method: 'POST' }),
+    logout: async () => {
+      try {
+        return await request('/auth/logout', { method: 'POST' })
+      } finally {
+        platform.clearSessionToken?.()
+      }
+    },
     requestCode: email =>
       request('/auth/email/request-code', {
         method: 'POST',
@@ -247,6 +302,16 @@ export const api = {
       request('/auth/link/confirm', {
         method: 'POST',
         body: JSON.stringify({ web_user_id: webUserId, code }),
+      }),
+    guest: () =>
+      request('/auth/guest', {
+        method: 'POST',
+        body: JSON.stringify({}),
+      }),
+    guestMerge: mergeToken =>
+      request('/auth/guest/merge', {
+        method: 'POST',
+        body: JSON.stringify({ merge_token: mergeToken }),
       }),
   },
   habits: {
@@ -379,15 +444,79 @@ export const api = {
       ),
   },
 
+  moodPractices: {
+    list: (userId, { from, to } = {}) =>
+      request(withQuery('/mood-practices', { user_id: userId, from, to }), {
+        silentDiagnostics: true,
+      }),
+
+    create: ({ mood, emotion, context, note, breathing_completed }) =>
+      request('/mood-practices', {
+        method: 'POST',
+        body: JSON.stringify({ mood, emotion, context, note, breathing_completed }),
+      }),
+  },
+
+  /*
+   * Дни с отметками практик (ритуалы, аскезы) за период — для серии.
+   * Бэкенд-эндпоинт ещё в разработке: при 404/ошибке тихо возвращаем [].
+   */
+  practiceDays: {
+    list: async (userId, { from, to } = {}) => {
+      try {
+        const res = await request(withQuery('/practice-days', { user_id: userId, from, to }), {
+          silentDiagnostics: true,
+        })
+        return Array.isArray(res?.days) ? res.days : []
+      } catch {
+        return []
+      }
+    },
+  },
+
+  streak: userId =>
+    request(withQuery('/streak', { user_id: userId }), {
+      silentDiagnostics: true,
+    }),
+
   checkin: {
     today: userId => request(withQuery('/checkin/today', { user_id: userId })),
+
+    recovery: async userId => {
+      try {
+        return await request(withQuery('/streak/recovery', { user_id: userId }), {
+          silentDiagnostics: true,
+        })
+      } catch (error) {
+        if (error.status === 404) return null
+        throw error
+      }
+    },
+
+    saveYesterday: (userId, payload) =>
+      request('/checkin/yesterday', {
+        method: 'PUT',
+        body: JSON.stringify({ user_id: userId, ...payload, review_completed: true }),
+      }),
 
     history: (userId, days = 14) =>
       request(withQuery('/checkin/history', { user_id: userId, days })),
 
     save: (
       userId,
-      { mood, energy, anxiety, focus, note, emotion, lessons, wins, review_completed }
+      {
+        mood,
+        energy,
+        anxiety,
+        focus,
+        note,
+        emotion,
+        lessons,
+        wins,
+        review_completed,
+        sleep_quality,
+        day_focus,
+      }
     ) =>
       request('/checkin', {
         method: 'POST',
@@ -402,7 +531,59 @@ export const api = {
           lessons,
           wins,
           ...(typeof review_completed === 'boolean' ? { review_completed } : {}),
+          sleep_quality,
+          day_focus,
         }),
+      }),
+
+    /*
+     * Атомарная замена сегодняшнего чек-ина (idempotent PUT).
+     * Бэкенд заменяет запись за текущий день целиком, сохраняя
+     * серию и streak — см. спецификацию PUT /api/checkin/today.
+     */
+    redo: (
+      userId,
+      {
+        mood,
+        energy,
+        anxiety,
+        focus,
+        note,
+        emotion,
+        lessons,
+        wins,
+        review_completed,
+        sleep_quality,
+        day_focus,
+      }
+    ) =>
+      request('/checkin/today', {
+        method: 'PUT',
+        body: JSON.stringify({
+          user_id: userId,
+          mood,
+          energy,
+          anxiety,
+          focus,
+          note,
+          emotion,
+          lessons,
+          wins,
+          ...(typeof review_completed === 'boolean' ? { review_completed } : {}),
+          sleep_quality,
+          day_focus,
+        }),
+      }),
+
+    /*
+     * Обратная связь с экрана завершения чек-ина (утро и разбор). Необязательная:
+     * экран закрывается независимо от ответа, ошибка сети не блокирует выход.
+     * Контракт: POST /api/checkins/{id}/feedback { value: 'no' | 'some' | 'yes' }.
+     */
+    feedback: (checkinId, value) =>
+      request(`/checkins/${checkinId}/feedback`, {
+        method: 'POST',
+        body: JSON.stringify({ value }),
       }),
   },
 
@@ -426,9 +607,8 @@ export const api = {
         method: 'DELETE',
       }),
     startOrResume: (templateId, userId) =>
-      request(`/journal/templates/${templateId}/sessions`, {
+      request(withQuery(`/journal/templates/${templateId}/sessions`, { user_id: userId }), {
         method: 'POST',
-        body: JSON.stringify({ user_id: userId }),
       }),
     updateSession: (sessionId, userId, answers, complete = false) =>
       request(`/journal/templates/sessions/${sessionId}`, {
@@ -437,6 +617,16 @@ export const api = {
       }),
     sessions: (userId, status) =>
       request(withQuery('/journal/templates/sessions/mine', { user_id: userId, status })),
+    completeSession: (userId, templateId, answers, idempotencyKey) =>
+      request('/journal/templates/sessions/complete', {
+        method: 'POST',
+        body: JSON.stringify({
+          user_id: userId,
+          template_id: templateId,
+          answers,
+          idempotency_key: idempotencyKey,
+        }),
+      }),
   },
 
   journey: {
@@ -483,19 +673,34 @@ export const api = {
 
   analytics: {
     get: (userId, days = 14) => request(withQuery('/analytics', { user_id: userId, days })),
+
+    influences: (userId, period, offset = 0) =>
+      request(withQuery('/analytics/influences', { user_id: userId, period, offset }), {
+        silentDiagnostics: true,
+      }),
   },
 
   mentalix: {
+    dailyTask: date =>
+      request(withQuery('/mentalix/daily-task', { date }), { silentDiagnostics: true }),
+
+    answerDailyTask: (date, taskId, status) =>
+      request('/mentalix/daily-task', {
+        method: 'POST',
+        body: JSON.stringify({ date, task_id: taskId, status }),
+      }),
+
     history: (userId, persona = 'mayak') =>
       request(withQuery('/mentalix/messages', { user_id: userId, persona })),
 
-    send: (userId, content, persona = 'mayak') =>
+    send: (userId, content, persona = 'mayak', handoff = null) =>
       request('/mentalix/messages', {
         method: 'POST',
         body: JSON.stringify({
           user_id: userId,
           content,
           persona,
+          ...(handoff ? { handoff } : {}),
         }),
       }),
 
@@ -719,6 +924,7 @@ export const api = {
   events: {
     log: (userId, eventType, entityType = null, entityId = null) =>
       request('/events', {
+        silentDiagnostics: true,
         method: 'POST',
         body: JSON.stringify({
           user_id: userId,
@@ -730,15 +936,20 @@ export const api = {
   },
 
   returnFlow: {
-    log: (event, idempotencyKey, occurredAt = new Date().toISOString()) =>
+    log: (event, idempotencyKey, occurredAt = new Date().toISOString(), flow = 'morning_v1') =>
       request('/return-flow/events', {
+        silentDiagnostics: true,
         method: 'POST',
         body: JSON.stringify({
-          flow: 'morning_v1',
+          flow,
           event,
           idempotency_key: idempotencyKey,
           occurred_at: occurredAt,
         }),
       }),
+  },
+
+  health: {
+    check: () => request('/health', { silentDiagnostics: true }),
   },
 }

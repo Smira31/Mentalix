@@ -15,7 +15,8 @@ test('privacy delete API всегда передаёт owner id и server-side c
 })
 
 test('History удаляет только выбранный check-in после явного confirmation и сохраняет activity', () => {
-  assert.match(historySource, /Удалить эту сохранённую запись\? Это действие нельзя отменить\./)
+  assert.match(historySource, /Удалить запись\?/)
+  assert.match(historySource, /Это нельзя отменить\./)
   assert.match(historySource, /api\.privacy\.deleteCheckin\(user\.id, checkin\.id\)/)
   assert.match(historySource, /\{ \.\.\.day, checkin: null \}/)
   assert.match(historySource, /Активность ритуалов за этот день сохранена\./)
@@ -24,7 +25,13 @@ test('History удаляет только выбранный check-in после
 test('Settings не обещают privacy actions для web identity без server-side session', () => {
   assert.match(settingsSource, /privacyProtectedByTelegram = platformName === 'telegram' && Number\(user\?\.id\) > 0/)
   assert.match(settingsSource, /потребуется два подтверждения/)
-  assert.match(settingsSource, /В web-версии нет серверной сессии/)
-  assert.match(settingsSource, /Незавершённый draft остаётся\s+только на текущем устройстве/)
+  assert.match(settingsSource, /Веб-вход доступен/)
+  assert.doesNotMatch(settingsSource, /В веб-версии нет входа на сервере/)
+  assert.match(settingsSource, /Часть данных: профиль, чек-ины, завершённые направленные записи/)
+  assert.match(settingsSource, /Только данные чек-инов для чтения/)
+  assert.match(settingsSource, /Только данные чек-инов в таблице/)
+  assert.match(settingsSource, /Удалить аккаунт и связанные данные Mentalix/)
+  assert.doesNotMatch(settingsSource, /Удалить все данные сейчас/)
+  assert.match(settingsSource, /Незавершённый черновик остаётся\s+только на этом устройстве/)
   assert.match(settingsSource, /а не шифрование данных/)
 })

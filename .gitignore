@@ -2,7 +2,11 @@ node_modules
 dist
 graphify-out/
 artifacts/ux-check/
+artifacts/**/playwright-output/
 .claude/settings.local.json
+qa-report/
 .vercel
 .firebaserc
 .env*
+test-results/
+playwright-report/

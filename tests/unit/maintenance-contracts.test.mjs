@@ -27,11 +27,7 @@ import {
 } from '../../src/lib/checkinDraft.js'
 
 test('allowlist сохраняет доступные практики и активирует Lila entry', () => {
-  assert.deepEqual(AVAILABLE_PRACTICES, [
-    'lila-discover',
-    'rituals',
-    'ascezas',
-  ])
+  assert.deepEqual(AVAILABLE_PRACTICES, ['lila-discover', 'rituals', 'ascezas', 'mood', 'alter-ego'])
 
   assert.equal(isPracticeAvailable('unknown-practice'), false)
 })
@@ -87,7 +83,7 @@ test('MXL-MOOD-CHECK-ERROR-GUARD-001 не блокирует запуск при
 test('MXL-HOME-QUIET-V2-002 сохраняет нижний воздух и различимое active CTA-состояние', () => {
   const styles = readFileSync(new URL('../../src/index.css', import.meta.url), 'utf8')
 
-  assert.match(styles, /--bottom-nav-content-gap:\s*46px/)
+  assert.match(styles, /--bottom-nav-content-gap:\s*16px/)
   assert.match(styles, /\.cta-pill:active\s*\{[\s\S]*background:\s*rgb\(var\(--btn-bg\) \/ 0\.88\)/)
   assert.match(styles, /\.cta-pill:active\s*\{[\s\S]*box-shadow:\s*inset 0 0 0 2px/)
 })
@@ -186,7 +182,7 @@ test('MXL-TODAY-PROD-HERO-001 Preview использует PR-aware demo fixture
   assert.match(demo, /checkin\/today.*state\.checkins\[0\]/)
   assert.match(
     demo,
-    /previewTodayState\(\) === 'reviewPending' \|\| previewTodayState\(\) === 'dayClosed' \? 0 : 24/
+    /eveningStates\.has\(previewTodayState\(\)\)\s*\? 0\s*: \(state\.profile\.review_hour \?\? DEFAULT_REVIEW_HOUR\)/
   )
   assert.ok(
     demo.indexOf("pathname === '/profile/settings' && method === 'GET'") <
@@ -207,10 +203,7 @@ test('MXL-PREVIEW-CLOUDFLARE-001 разрешает Quick Tunnel только ч
     demo,
     /const isQaProductionHost =\s+host === 'mentalix-preview\.vercel\.app' \|\| host === 'mentalix-owner-qa\.pages\.dev'/
   )
-  assert.match(
-    demo,
-    /const demoRequested = params\.get\('demo'\) === '1'/
-  )
+  assert.match(demo, /const demoRequested = params\.get\('demo'\) === '1'/)
   assert.match(demo, /const pwaDemoRequested = params\.get\('source'\) === 'pwa'/)
   assert.match(demo, /\(isPreviewRuntime \|\| isQaProductionHost\)/)
 })
@@ -253,8 +246,8 @@ test('MXL-007 публикует reference Today chrome with streak/calendar and
   assert.match(today, /mx-demo-today-streak/)
   assert.doesNotMatch(today, /<DayThread|DayThreadTrigger/)
   assert.doesNotMatch(conversation, /AiFlowIndicator|flowPhase/)
-  assert.match(analytics, /mx-progress-redesign__chart-line/)
-  assert.match(analytics, /График настроения/)
+  assert.match(analytics, /mx-progress-mood-calendar/)
+  assert.match(analytics, /Календарь настроения/)
   assert.doesNotMatch(analytics, /🛡/)
 })
 
@@ -543,8 +536,8 @@ test('MXL-009 ограничивает insights описательными на�
     'utf8'
   )
 
-  assert.match(analytics, /selectDescriptiveInsights\(safeData\.insights\)/)
-  assert.match(analytics, /не диагнозы и не доказанные причины/)
+  assert.match(analytics, /api\.analytics\s*\.influences/)
+  assert.match(analytics, /deriveConclusions/)
   assert.match(analytics, /чаще совпадала/)
   assert.doesNotMatch(analytics, /Собранность не зависит от энергии/)
   assert.match(safety, /UNSAFE_INSIGHT_PATTERNS/)
@@ -728,36 +721,36 @@ test('MXL-DS-LABEL-FONT-001 разрешает font-label только на eyeb
   // Manrope — ответственность design-system слоя, не отдельного экрана.
   assert.match(tailwindConfig, /label:\s*\[\s*['"]Manrope['"]/)
 
-  assert.match(analytics, /function SectionHeading/)
-  assert.match(analytics, /<span className="font-label">\{eyebrow\}<\/span>/)
-  assert.match(analytics, /<span className="font-label">Данные<\/span>/)
-  for (const label of ['Наблюдения', 'Цифры', 'По существующим данным']) {
-    assert.match(analytics, new RegExp(`eyebrow="${label}"`))
+  // §5.5: секционные caps-лейблы «Общее»/«Эмоции»/«Практики» — единственное
+  // место font-label на вкладке Аналитика (компонент SectionLabel).
+  assert.match(analytics, /function SectionLabel\(\{ children \}\)/)
+  assert.match(analytics, /<h3 className="mx-progress-section-label font-label"/)
+  const cardPreferences = readFileSync(
+    new URL('../../src/screens/progress/analyticsCardPreferences.js', import.meta.url),
+    'utf8'
+  )
+  assert.match(analytics, /<SectionLabel>\{card\.section\}<\/SectionLabel>/)
+  for (const label of ['Общее', 'Эмоции']) {
+    assert.match(cardPreferences, new RegExp(`section: '${label}'`))
   }
 
-  // font-label встречается только в общем eyebrow-компоненте и календаре —
-  // не расползается на Metric/графики/остальной экран.
+  // font-label встречается только в SectionLabel — не расползается на
+  // числа/графики/остальной экран.
   const fontLabelOccurrences = (analytics.match(/font-label/g) || []).length
-  assert.equal(fontLabelOccurrences, 2)
-
-  const metricComponent = analytics.slice(analytics.indexOf('function Metric('))
-  const metricValueBlock = metricComponent.slice(0, metricComponent.indexOf('{value}'))
-  assert.doesNotMatch(metricValueBlock, /font-label/)
-  assert.match(metricValueBlock, /font-display/)
+  assert.equal(fontLabelOccurrences, 1)
 })
 
-test('MXL-527 отображает один главный вывод с evidence и safety caveat', () => {
+test('MXL-527 отображает серверные факторы влияния с метрикой delta', () => {
   const analytics = readFileSync(
     new URL('../../src/screens/Analytics.jsx', import.meta.url),
     'utf8'
   )
 
-  assert.match(analytics, /function PrimaryObservationCard\(\{ observation \}\)/)
-  assert.match(analytics, /data-primary-observation="true"/)
-  assert.match(analytics, /observations\[0\] \?\? null/)
-  assert.match(analytics, /sampleSize/)
-  assert.match(analytics, /sourceDates/)
-  assert.match(analytics, /observation\.caveat/)
+  assert.match(analytics, /function InfluencesCard\(\{ direction, influences \}\)/)
+  assert.match(analytics, /testId=\{`progress-conclusions-/)
+  assert.match(analytics, /api\.analytics\s*\.influences/)
+  assert.match(analytics, /MIN_GROUP/)
+  assert.match(analytics, /compareGroups/)
   assert.doesNotMatch(analytics, /observations\.map\(/)
 })
 
@@ -766,14 +759,14 @@ test('MXL-HOME-QUIET-FOUNDATION-001 публикует одну главную �
   const styles = readFileSync(new URL('../../src/index.css', import.meta.url), 'utf8')
   const todayStyles = readFileSync(new URL('../../src/screens/Today.css', import.meta.url), 'utf8')
   const app = readFileSync(new URL('../../src/App.jsx', import.meta.url), 'utf8')
-  assert.match(styles, /--bottom-nav-content-gap:\s*46px/)
+  assert.match(styles, /--bottom-nav-content-gap:\s*16px/)
   assert.match(today, /mx-today-day-card-slot/)
   assert.match(today, /mx-today-day-cards/)
   assert.match(today, /renderDayCard\('morning'\)/)
   assert.match(today, /renderDayCard\('evening'\)/)
   assert.match(today, /'data-state': state/)
   assert.match(today, /const cardStates = resolveTodayCardStates/)
-  assert.match(today, /const moodPillText = MOOD_PILL_WORDS/)
+  assert.doesNotMatch(today, /mx-today-day-card__pill/)
   assert.match(today, /checkinRecap/)
   assert.match(today, /checkin\?\.mood/)
   assert.doesNotMatch(today, /TodayFocusCard|TodayFocusFlow|Разгрузить голову/)
@@ -783,7 +776,7 @@ test('MXL-HOME-QUIET-FOUNDATION-001 публикует одну главную �
   assert.match(todayStyles, /\.mx-today-day-card\[data-state='active'\]/)
   assert.match(todayStyles, /\.mx-today-pulse\s*\{[\s\S]*margin-top:\s*16px/)
   assert.match(todayStyles, /\.mx-today-affirmation-card\s*\{[\s\S]*min-height:\s*340px/)
-  assert.match(app, /ref={scrollRootRef}[\s\S]*paddingBottom: contentBottomPadding/)
+  assert.match(app, /'mx-scroll-content [\s\S]*paddingBottom: contentBottomPadding/)
   assert.match(app, /scrollPaddingBottom: contentBottomPadding/)
 })
 
@@ -909,7 +902,7 @@ test('MXL-JOURNAL-UI-247 выравнивает Journal слева и не по�
   assert.match(themeScreen, /aria-label="Дни журнала"/)
   assert.match(
     themeScreen,
-    /className="font-display text-\[24px\] text-cream lowercase leading-tight text-left"/
+    /className="font-display mx-type-page text-cream lowercase leading-tight text-left"/
   )
   assert.doesNotMatch(themeScreen, />\s*Тема недели\s*</)
   assert.doesNotMatch(themeScreen, /Тема недели · День/)
@@ -981,7 +974,7 @@ test('MXL-PREVIEW-DEMO-001 ограничивает demo mode явным Vercel 
   assert.match(demo, /preview-demo-user/)
   assert.match(app, /useState\(\(\) => \(isPreviewDemoMode\(\) \? DEMO_USER : null\)\)/)
   assert.match(app, /Preview Demo Mode/)
-  assert.match(api, /if \(isPreviewDemoMode\(\)\) return demoRequest\(path, options\)/)
+  assert.match(api, /if \(isPreviewDemoMode\(\)\) \{\s*const result = await demoRequest\(path, options\)/)
 })
 
 test('MXL-WEB-LINKED-WRITE-001 guards every secondary frontend write path', () => {

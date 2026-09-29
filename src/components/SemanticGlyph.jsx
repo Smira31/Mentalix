@@ -720,6 +720,28 @@ function Drawing({ kind, debugSource }) {
           <circle cx="65" cy="76" r="4" fill="rgb(var(--c-text))" />
         </g>
       )
+    case 'mood':
+      return (
+        <>
+          <Guide />
+          <g className="mx-semantic-glyph__mood-wave">
+            <path d="M28 56C44 36 60 36 80 56C100 76 116 76 132 56" />
+            <path d="M28 56C44 76 60 76 80 56C100 36 116 36 132 56" opacity="0.5" />
+          </g>
+          <circle className="mx-semantic-glyph__point" cx="80" cy="56" r="4.5" />
+        </>
+      )
+    case 'alter-ego':
+      return (
+        <>
+          <Guide />
+          <g className="mx-semantic-glyph__brackets">
+            <path d="M52 46V32H66M108 46V32H94M52 66V80H66M108 66V80H94" />
+          </g>
+          <path className="mx-semantic-glyph__template-axis" d="M62 56H98M80 38V74" />
+          <circle className="mx-semantic-glyph__point" cx="80" cy="56" r="4" />
+        </>
+      )
     default:
       if (import.meta.env.DEV) {
         console.error(

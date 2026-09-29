@@ -21,12 +21,30 @@ export const PRACTICE_CATALOG_REGISTRY = [
   },
   {
     key: PRACTICE_KEYS.lilaDiscover || 'lila-discover',
-    title: 'Разобраться через Лилу',
+    title: 'Разобраться со Следопытом',
     subtitle: 'карта, несколько вопросов и один рабочий шаг',
-    section: 'Лила',
+    section: 'Следопыт',
     kind: 'journal',
     completionSource: 'none',
     sub: 'lila-discover',
+  },
+  {
+    key: PRACTICE_KEYS.mood,
+    title: 'Настроение',
+    subtitle: 'заметить эмоцию и при желании разобрать её',
+    section: 'Практики',
+    kind: 'mood',
+    completionSource: 'none',
+    sub: 'mood',
+  },
+  {
+    key: PRACTICE_KEYS.alterEgo,
+    title: 'Альтер-эго',
+    subtitle: 'собери маску, в которой ты сильнее',
+    section: 'Практики',
+    kind: 'alter-ego',
+    completionSource: 'none',
+    sub: 'alter-ego',
   },
 ]
 
@@ -61,7 +79,7 @@ export const PRACTICE_COLLECTIONS = [
   },
   {
     key: 'lila',
-    title: 'Лила',
+    title: 'Следопыт',
     description: 'Карта, несколько вопросов и один рабочий шаг.',
     kind: 'journal',
     practiceKeys: ['lila-discover'],

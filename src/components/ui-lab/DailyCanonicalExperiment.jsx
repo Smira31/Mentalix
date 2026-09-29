@@ -156,7 +156,7 @@ export default function DailyCanonicalExperiment() {
         <span>MXL-DAILY-CANONICAL-UI-LAB-001 · Preview-only</span>
         <h2 id="daily-canonical-title">Дневной цикл целиком</h2>
         <p>
-          Welcome → Check-in → первый шаг → день → разбор → закрытие дня. Собрано из существующих UI
+          Welcome → Чек-ин → первый шаг → день → разбор → закрытие дня. Собрано из существующих UI
           Lab прототипов, API не подключён.
         </p>
       </div>
@@ -214,7 +214,7 @@ export default function DailyCanonicalExperiment() {
       </div>
       <footer className="mx-daily__footer">
         Preview-only · главное свойство теста непрерывности: First Step дословно доходит от Morning
-        Check-in до Today/dayInProgress.
+        Чек-ин до Today/dayInProgress.
       </footer>
     </section>
   )

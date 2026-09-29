@@ -1,28 +1,45 @@
-import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
 
 import { ChevronDown, Ellipsis, X } from 'lucide-react'
+
+import ErrorBoundary from './components/ErrorBoundary'
+import ScreenErrorBoundary from './components/ScreenErrorBoundary'
+
+import { lazyWithRetry } from './lib/lazyWithRetry'
 
 import { platform, platformName } from './platform'
 import { paintChrome, lockVerticalSwipes, useSettingsButton } from './platform/telegram.hooks'
 
 import Today from './screens/Today'
-import WebAuthScreen from './screens/WebAuthScreen'
-import Onboarding from './screens/Onboarding'
-import AppLock from './screens/AppLock'
 
 import BookLogo from './components/BookLogo'
 import BackButton from './components/BackButton'
 import BottomNavigation from './components/BottomNavigation'
 import PreviewApiDiagnostic from './components/PreviewApiDiagnostic'
+import SessionRestoreError from './components/SessionRestoreError'
+import TabSkeleton from './components/TabSkeleton'
 import { useSynced } from './lib/store'
 import { hasPinRecord, APP_LOCK_ENABLED_KEY } from './lib/appLock'
 import { ACCENT_COLOR_KEY, DEFAULT_ACCENT, parseAccent } from './lib/accentColor'
 import { DEFAULT_THEME, parseTheme, THEME_KEY } from './lib/theme'
 import { api } from './lib/api'
-import { parseReturnFlow, returnFlowEventKey, returnFlowOccurredAt } from './lib/returnFlow'
-import { MOOD_CHECK_ENABLED_KEY, shouldOfferMoodCheck } from './lib/moodCheckDraft'
-import { MOOD_CHECK_CHECKIN_ERROR, shouldShowMoodCheckGate } from './lib/moodCheckGate'
-import { DEMO_USER, isPreviewDemoMode } from './lib/demoMode'
+import {
+  claimReturnFlowEvent,
+  returnFlowEvent,
+  returnFlowEventKey,
+  returnFlowOccurredAt,
+} from './lib/returnFlow'
+import { parseContextualDeepLink } from './lib/contextualDeepLink'
+import {
+  DEMO_USER,
+  isPreviewDemoMode,
+  isRealPhone,
+  isDemoGuestMode,
+  DEMO_GUEST_USER,
+  previewSeriesAction,
+  isProfileDemoRequested,
+  previewProfileAction,
+} from './lib/demoMode'
 import { installDemoPressFeedback } from './lib/demoPressFeedback'
 import { shouldRenderDemoTelegramChrome } from './lib/demoChrome'
 import { switchUserDataScope } from './lib/userDataScope'
@@ -30,9 +47,11 @@ import { clearTodayDataCache } from './lib/todayDataCache'
 import { clearHistoryCache } from './lib/mentalixHistoryCache'
 import { clearSeriesSnapshots } from './lib/series'
 import { clearTrendsDataCache } from './lib/trendsDataCache'
+import { GUEST_MERGED_EVENT, loginAsGuest } from './lib/guestAuth'
 
 import { getFullscreenSnapshot, initFullscreen } from './lib/tgFullscreen'
 import { useVisualViewportHeight } from './lib/visualViewport'
+import { useGlobalEdgeSwipeBack } from './lib/gestures/useGlobalEdgeSwipeBack'
 
 /* ============================================================
    STORAGE
@@ -43,22 +62,40 @@ const ONBOARDED_KEY = 'mx-onboarded-v2'
 /* ============================================================
    LAZY SCREENS
 
-   Первый экран, авторизация, онбординг и блокировка остаются в
-   стартовом bundle. Остальные вкладки и настройки загружаются
-   только при первом переходе к ним.
+   Первый экран (Today) и Splash остаются в стартовом bundle.
+   Авторизация, онбординг и блокировка загружаются только когда
+   нужны — большинство пользователей их не видит при запуске.
+   Остальные вкладки и настройки — при первом переходе.
    ============================================================ */
 
-const Practices = lazy(() => import('./screens/Practices'))
-const Analytics = lazy(() => import('./screens/Analytics'))
-const MentalixChat = lazy(() => import('./screens/Mentalix'))
-const Profile = lazy(() => import('./screens/Profile'))
-const Settings = lazy(() => import('./screens/Settings'))
-const Library = lazy(() => import('./screens/Library'))
-const History = lazy(() => import('./screens/History'))
+// Первый экран (Today) и Splash остаются в стартовом bundle.
+// Авторизация, онбординг и блокировка загружаются только когда нужны —
+// большинство пользователей их не видит при запуске.
+/*
+ * lazyWithRetry (src/lib/lazyWithRetry.js): у ленивого импорта есть
+ * срок и один повтор, при окончательной ошибке чанка — одна
+ * перезагрузка страницы, и только затем ошибка уходит в границу.
+ * Это лечит «чёрный экран» под-экранов в Telegram WebView: зависший
+ * или исчезнувший после деплоя чанк больше не оставляет пустой
+ * shell без кнопок.
+ */
+const WebAuthScreen = lazyWithRetry(() => import('./screens/WebAuthScreen'))
+const Onboarding = lazyWithRetry(() => import('./screens/Onboarding'))
+const AppLock = lazyWithRetry(() => import('./screens/AppLock'))
 
-// Opt-in (MOOD_CHECK_ENABLED_KEY по умолчанию '0') — большинство никогда
-// его не увидит, поэтому вне стартового bundle, в отличие от AppLock.
-const MoodCheckGate = lazy(() => import('./screens/MoodCheckGate'))
+const Practices = lazyWithRetry(() => import('./screens/Practices'))
+const Analytics = lazyWithRetry(() => import('./screens/Analytics'))
+const MentalixChat = lazyWithRetry(() => import('./screens/Mentalix'))
+// Профиль и его под-экраны («подписка.», «поддержать проект.», опрос) лежат
+// в одном чанке. Грузим его заранее, когда «Сегодня» уже показан, — иначе
+// первый тап по кнопке профиля ждёт загрузку кода.
+const loadSettings = () => import('./screens/Settings')
+const Settings = lazyWithRetry(loadSettings)
+const Library = lazyWithRetry(() => import('./screens/Library'))
+const History = lazyWithRetry(() => import('./screens/History'))
+
+// Код панели попадает в сеть только после проверки демо и отсутствия Telegram.
+const DemoPanel = lazyWithRetry(() => import('./components/DemoPanel'))
 
 /* ============================================================
    SPLASH
@@ -117,25 +154,30 @@ function DemoTelegramChrome({ onBack }) {
         ? 'Библиотека'
         : chromeTab === 'practices'
           ? 'Практики'
-          : ''
+          : 'MENTALIX'
   const tabMeta = chromeTab === 'progress' ? '14 дней' : ''
 
   return (
     <div className="mx-demo-telegram-chrome" aria-label="Telegram preview controls">
-      <button
-        type="button"
-        aria-label={hasBack ? 'Назад' : 'Закрыть превью'}
-        className="mx-demo-telegram-chrome__close"
-        onClick={hasBack ? onBack : undefined}
-      >
-        {hasBack ? (
-          <ChevronDown size={18} strokeWidth={2.2} className="rotate-90" aria-hidden="true" />
-        ) : (
+      {!hasBack && (
+        <button
+          type="button"
+          aria-label="Закрыть превью"
+          className="mx-demo-telegram-chrome__close"
+        >
           <X size={18} strokeWidth={2.2} aria-hidden="true" />
-        )}
-        {!hasBack && <span>Закрыть</span>}
-      </button>
-      {tabTitle && <div className="mx-demo-telegram-chrome__title">{tabTitle}</div>}
+          <span>Закрыть</span>
+        </button>
+      )}
+      {tabTitle && (
+        <div
+          className={`mx-demo-telegram-chrome__title${
+            tabTitle === 'MENTALIX' ? ' mx-demo-telegram-chrome__title--wordmark' : ''
+          }`}
+        >
+          {tabTitle}
+        </div>
+      )}
       <div className="mx-demo-telegram-chrome__right">
         <div className="mx-demo-telegram-chrome__menu" aria-hidden="true">
           <ChevronDown size={22} strokeWidth={2.2} />
@@ -148,15 +190,7 @@ function DemoTelegramChrome({ onBack }) {
 }
 
 function ScreenLoading() {
-  return (
-    <div
-      role="status"
-      aria-live="polite"
-      className="w-full max-w-md px-5 pt-8 text-center text-[13px] text-muted"
-    >
-      Загрузка…
-    </div>
-  )
+  return <TabSkeleton />
 }
 
 /* ============================================================
@@ -217,10 +251,20 @@ function applyDarkTheme() {
    APP
    ============================================================ */
 
-export default function App() {
+function App() {
   const [user, setUser] = useState(() => (isPreviewDemoMode() ? DEMO_USER : null))
 
+  // Демо-гостевой режим: ?guest=1 переключает на гостевого пользователя.
+  // isDemoGuestMode уже включает проверку isPreviewDemoMode — нового пути
+  // включения демо нет.
+  useEffect(() => {
+    if (isDemoGuestMode()) setUser(DEMO_GUEST_USER)
+  }, [])
+
   const [authChecked, setAuthChecked] = useState(() => isPreviewDemoMode())
+
+  const [authError, setAuthError] = useState(null)
+  const [showGuestAuth, setShowGuestAuth] = useState(false)
 
   const acceptUser = useCallback(nextUser => {
     if (nextUser?.id) {
@@ -235,7 +279,10 @@ export default function App() {
     setUser(nextUser)
   }, [])
 
-  const [overlay, setOverlay] = useState(null)
+  // ?demo=1&action=profile — превью-ссылка прямо на «твой профиль.»
+  const [overlay, setOverlay] = useState(
+    isProfileDemoRequested() || previewProfileAction() ? 'settings' : null
+  )
 
   const [fullscreen, setFullscreen] = useState(false)
 
@@ -258,13 +305,15 @@ export default function App() {
 
   const [todayFlowOpen, setTodayFlowOpen] = useState(false)
 
-  const [todaySeriesOpen, setTodaySeriesOpen] = useState(false)
+  const [todaySeriesOpen, setTodaySeriesOpen] = useState(() => Boolean(previewSeriesAction()))
 
   const [practiceGameOpen, setPracticeGameOpen] = useState(false)
-  const demoBackRefs = useRef({ mentor: null, today: null, practices: null })
+  const [libraryInputMode, setLibraryInputMode] = useState(false)
+  const demoBackRefs = useRef({ mentor: null, today: null, practices: null, settings: null })
   const [demoMotionTick, setDemoMotionTick] = useState(0)
 
   const registerDemoBack = useCallback((key, handler) => {
+    if (demoBackRefs.current[key] === handler) return
     demoBackRefs.current[key] = handler
     setDemoMotionTick(tick => tick + 1)
   }, [])
@@ -279,12 +328,21 @@ export default function App() {
     [registerDemoBack]
   )
 
+  const registerSettingsBack = useCallback(
+    handler => registerDemoBack('settings', handler),
+    [registerDemoBack]
+  )
+
   const registerMentorBack = useCallback(
     handler => registerDemoBack('mentor', handler),
     [registerDemoBack]
   )
 
   const closeTodaySeries = useCallback(() => setTodaySeriesOpen(false), [])
+
+  const openSettings = useCallback(() => setOverlay('settings'), [])
+  const openTodaySeries = useCallback(() => setTodaySeriesOpen(true), [])
+  const openDemoPanel = useCallback(() => setDemoPanelOpen(true), [])
 
   useEffect(() => {
     if (!isPreviewDemoMode()) return undefined
@@ -315,6 +373,15 @@ export default function App() {
   /* Единый scroll-root обычных вкладок, ограниченный видимым viewport. */
   const scrollRootRef = useRef(null)
 
+  /* Корневой элемент приложения — на нём висит глобальный edge-swipe. */
+  const appRootRef = useRef(null)
+  const [appRootMounted, setAppRootMounted] = useState(false)
+  const setAppRootElement = useCallback(el => {
+    appRootRef.current = el
+    setAppRootMounted(Boolean(el))
+  }, [])
+  useGlobalEdgeSwipeBack(appRootRef, { enabled: appRootMounted })
+
   /*
    * Оба значения принадлежат человеку, а не устройству: знакомство
    * пройдено один раз, тема выбрана один раз. Поэтому они живут в
@@ -334,6 +401,7 @@ export default function App() {
   // Vercel Preview, without writing the user's synced onboarding flag.
   // isPreviewDemoMode itself requires ?demo=1 and an allowed preview host.
   const onboarded = onboardedFlag === '1' || isPreviewDemoMode()
+  const [recoveryAllowedAtLaunch] = useState(() => onboardedFlag === '1' || isPreviewDemoMode())
 
   /*
    * Блокировка приложения (PIN/биометрия). Синхронизируется только факт
@@ -370,75 +438,39 @@ export default function App() {
 
   const [locked, setLocked] = useState(() => appLockEnabled && hasPinRecord())
 
-  /*
-   * MXL-MOOD-CHECK-001 — быстрый mood-check при запуске (opt-in,
-   * см. src/lib/moodCheckDraft.js). Тумблер синхронизируется как
-   * appLockEnabled/accent выше; "показывать сегодня" и данные
-   * чек-ина за сегодня — чисто локальные и решаются здесь, а не в
-   * Today.jsx, потому что гейт должен показаться ДО монтирования
-   * Today (см. рендер ниже, сразу после AppLock).
-   *
-   * moodCheckCheckin: undefined — ещё не фетчили, null — фетчили,
-   * чек-ина на сегодня нет, объект — чек-ин уже есть, error — backend
-   * недоступен. Гейт разрешён только для null: неизвестное состояние не
-   * должно блокировать запуск приложения.
-   * Фетчится только если тумблер включён — большинство его не видит.
-   */
-  const [moodCheckEnabledFlag] = useSynced(MOOD_CHECK_ENABLED_KEY, '0')
-
-  const moodCheckEnabled = moodCheckEnabledFlag === '1'
-
-  const [moodCheckDismissedToday, setMoodCheckDismissedToday] = useState(
-    () => !shouldOfferMoodCheck()
-  )
-
-  const [moodCheckCheckin, setMoodCheckCheckin] = useState(undefined)
-
-  useEffect(() => {
-    if (!user || !onboarded || locked || !moodCheckEnabled || moodCheckDismissedToday) return
-
-    let alive = true
-
-    api.checkin
-      .today(user.id)
-      .then(checkin => {
-        if (alive) setMoodCheckCheckin(checkin ?? null)
-      })
-      .catch(() => {
-        if (alive) setMoodCheckCheckin(MOOD_CHECK_CHECKIN_ERROR)
-      })
-
-    return () => {
-      alive = false
-    }
-  }, [user, onboarded, locked, moodCheckEnabled, moodCheckDismissedToday])
-
-  const showMoodCheckGate = shouldShowMoodCheckGate({
-    user,
-    onboarded,
-    locked,
-    enabled: moodCheckEnabled,
-    dismissedToday: moodCheckDismissedToday,
-    todayCheckin: moodCheckCheckin,
-  })
-
   const searchParams = new URLSearchParams(window.location.search)
-  const initialReturnFlow = parseReturnFlow(platform.getStartParam?.())
-  const initialTab = initialReturnFlow ? null : searchParams.get('tab')
-  const initialAction = searchParams.get('action')
-  const validTabs = ['today', 'practices', 'mentor', 'library', 'trends', 'history']
-  const actionTab = initialAction === 'breathing' ? 'practices' : 'today'
-  const initialTodaySub =
-    initialAction === 'checkin' || initialAction === 'evening' ? initialAction : null
+  const { sub: initialTodaySub, returnFlow: initialReturnFlow } = parseContextualDeepLink(
+    window.location.search,
+    platform.getStartParam?.()
+  )
+  const initialTab = initialTodaySub ? null : searchParams.get('tab')
+  const validTabs = ['today', 'practices', 'mentor', 'library', 'trends']
 
-  const [tab, setTab] = useState(validTabs.includes(initialTab) ? initialTab : actionTab)
+  // ?tab=history → открывает «Прогресс» на вкладке «История»
+  const isHistoryInitial = initialTab === 'history'
+  const [tab, setTab] = useState(
+    isHistoryInitial ? 'trends' : validTabs.includes(initialTab) ? initialTab : 'today'
+  )
+  const [progressHistoryTrigger, setProgressHistoryTrigger] = useState(() =>
+    isHistoryInitial ? 1 : 0
+  )
   const tabRef = useRef(tab)
   useEffect(() => {
     tabRef.current = tab
   }, [tab])
 
+  // ?tab=history → заменяем на ?tab=trends (история теперь сегмент внутри Прогресса)
+  useEffect(() => {
+    if (isHistoryInitial) {
+      const url = new URL(window.location.href)
+      url.searchParams.set('tab', 'trends')
+      window.history.replaceState(null, '', url)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const bottomNavigationHidden =
-    mentorPersonaOpen || todayFlowOpen || todaySeriesOpen || practiceGameOpen || tab === 'history'
+    mentorPersonaOpen || todayFlowOpen || todaySeriesOpen || practiceGameOpen || libraryInputMode
 
   useEffect(() => {
     if (!isPreviewDemoMode()) return
@@ -449,41 +481,48 @@ export default function App() {
   }, [overlay, tab, mentorPersonaOpen, todayFlowOpen, todaySeriesOpen, practiceGameOpen])
 
   const demoBackAction =
-    overlay === 'profile'
-      ? () => setOverlay('settings')
-      : overlay === 'settings'
-        ? () => setOverlay(null)
-        : tab === 'mentor'
-          ? demoBackRefs.current.mentor
-          : tab === 'today'
-            ? demoBackRefs.current.today
-            : tab === 'practices'
-              ? demoBackRefs.current.practices
-              : null
+    overlay === 'settings'
+      ? demoBackRefs.current.settings || (() => setOverlay(null))
+      : tab === 'mentor'
+        ? demoBackRefs.current.mentor
+        : tab === 'today'
+          ? demoBackRefs.current.today
+          : tab === 'practices'
+            ? demoBackRefs.current.practices
+            : null
 
-  // Разрешены только известные contextual deep-links. Остальные query-параметры не
-  // меняют состояние приложения и не могут открыть произвольный экран.
-  const [practicesSub, setPracticesSub] = useState(
-    initialAction === 'breathing' ? 'breathing' : null
-  )
+  // Только разрешённые contextual deep-links открывают вложенный экран «Сегодня».
+  const [practicesSub, setPracticesSub] = useState(null)
 
   const reportReturnFlowEvent = useCallback(
-    async event => {
-      if (!user || !initialReturnFlow) return
+    async suffix => {
+      if (
+        !user?.id ||
+        user.demo ||
+        (user.is_guest && !platform.getSessionToken?.()) ||
+        isPreviewDemoMode() ||
+        !initialReturnFlow
+      )
+        return
 
+      const event = returnFlowEvent(initialReturnFlow, suffix)
+      if (!claimReturnFlowEvent(user.id, initialReturnFlow, event)) return
       try {
-        await api.returnFlow.log(event, returnFlowEventKey(user.id, event), returnFlowOccurredAt())
-      } catch (error) {
-        console.warn('Не удалось записать событие утреннего flow', error)
+        await api.returnFlow.log(
+          event,
+          returnFlowEventKey(user.id, event, initialReturnFlow),
+          returnFlowOccurredAt(),
+          initialReturnFlow
+        )
+      } catch {
+        // События необязательны; недоступность сети не влияет на чек-ин.
       }
     },
     [initialReturnFlow, user]
   )
 
   useEffect(() => {
-    if (user && initialReturnFlow) {
-      reportReturnFlowEvent('morning_flow_opened')
-    }
+    if (user && initialReturnFlow) reportReturnFlowEvent('flow_opened')
   }, [initialReturnFlow, reportReturnFlowEvent, user])
 
   /* ============================================================
@@ -530,15 +569,24 @@ export default function App() {
      ============================================================ */
 
   const previewDemoMode = isPreviewDemoMode()
-  const demoToolbar = new URLSearchParams(window.location.search).get('toolbar') === '1'
+  const demoPanelAllowed = previewDemoMode && platformName !== 'telegram'
+  const [demoPanelOpen, setDemoPanelOpen] = useState(
+    () => new URLSearchParams(window.location.search).get('panel') === '1'
+  )
+  const realPhone = isRealPhone()
+  const toolbarParam = searchParams.get('toolbar') === '1'
+  const frameParam = searchParams.get('frame')
+  // На настоящем телефоне в демо-режиме инструменты ПК выключены;
+  // ?toolbar=1 принудительно включает переключатель, ?frame=0 — выключает фрейм на ПК.
+  const demoToolbar = previewDemoMode ? !realPhone || toolbarParam : toolbarParam
   const [demoDevice, setDemoDevice] = useState(() => {
     const device = new URLSearchParams(window.location.search).get('device')
-    return device === 'pro' ? 'pro' : 'pro-max'
+    return device === 'max' ? 'max' : 'standard'
   })
   const demoViewport =
-    demoDevice === 'pro'
-      ? { width: 402, height: 874, label: 'iPhone 16 Pro' }
-      : { width: 430, height: 932, label: 'iPhone 16 Pro Max' }
+    demoDevice === 'max'
+      ? { width: 440, height: 956, label: 'iPhone 16 Pro Max' }
+      : { width: 393, height: 852, label: 'iPhone 15 Pro' }
   const [demoScale, setDemoScale] = useState(1)
   const [desktopDeviceFrame, setDesktopDeviceFrame] = useState(
     () =>
@@ -560,7 +608,7 @@ export default function App() {
     return () => window.removeEventListener('resize', updateDesktopFrame)
   }, [])
 
-  const deviceFrameMode = previewDemoMode || desktopDeviceFrame
+  const deviceFrameMode = previewDemoMode ? !realPhone && frameParam !== '0' : desktopDeviceFrame
 
   useEffect(() => {
     if (!deviceFrameMode) return undefined
@@ -575,26 +623,59 @@ export default function App() {
     return () => window.removeEventListener('resize', updateScale)
   }, [demoDevice, demoToolbar, demoViewport.height, deviceFrameMode, previewDemoMode])
 
+  const checkAuth = useCallback(async () => {
+    setAuthError(null)
+    try {
+      const existing = await platform.requestAuth()
+
+      if (existing) {
+        acceptUser(existing)
+      } else if (platformName === 'web' && !platform.getSessionToken?.()) {
+        const params = new URLSearchParams(window.location.search)
+        const emailLink =
+          window.location.pathname.startsWith('/auth/') ||
+          ['email', 'code', 'token'].some(key => params.has(key))
+        if (!emailLink) {
+          try {
+            await loginAsGuest(api, acceptUser)
+          } catch {
+            // Не прячем email и Telegram вход, если гостевой сервер недоступен.
+          }
+        }
+      }
+    } catch {
+      // Бэкенд недоступен (Render спит, нет сети, таймаут) — показываем
+      // экран ошибки с «Повторить» вместо бесконечного splash или входа.
+      setAuthError(true)
+    } finally {
+      setAuthChecked(true)
+    }
+  }, [acceptUser])
+
+  const retryAuth = useCallback(() => {
+    setAuthChecked(false)
+    checkAuth()
+  }, [checkAuth])
+
   useEffect(() => {
     platform.init()
 
     if (previewDemoMode) return
 
-    ;(async () => {
-      try {
-        const existing = await platform.requestAuth()
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    checkAuth()
+  }, [checkAuth, previewDemoMode])
 
-        if (existing) {
-          acceptUser(existing)
-        }
-      } catch {
-        // A missing or temporarily unavailable web session must fall through
-        // to WebAuthScreen instead of leaving standalone Safari on the splash.
-      } finally {
-        setAuthChecked(true)
-      }
-    })()
-  }, [acceptUser, previewDemoMode])
+  // 401 guest_merged: гостевая cookie устарела после переноса записей.
+  // Сбрасываем user → показывается экран входа.
+  useEffect(() => {
+    function handleGuestMerged() {
+      setUser(null)
+    }
+
+    window.addEventListener(GUEST_MERGED_EVENT, handleGuestMerged)
+    return () => window.removeEventListener(GUEST_MERGED_EVENT, handleGuestMerged)
+  }, [])
 
   /* ============================================================
      БЛОКИРОВКА ПРИЛОЖЕНИЯ
@@ -634,6 +715,19 @@ export default function App() {
     lockVerticalSwipes()
   }, [])
 
+  // На реальном телефоне в демо-режиме без фрейма document может
+  // прокручиваться вместо scroll-root. Блокируем прокрутку html/body,
+  // чтобы единственным скролл-контейнером оставался mx-app-scroll-root.
+  useEffect(() => {
+    if (!previewDemoMode || !realPhone) return
+
+    document.documentElement.classList.add('mx-real-phone-demo')
+
+    return () => {
+      document.documentElement.classList.remove('mx-real-phone-demo')
+    }
+  }, [previewDemoMode, realPhone])
+
   /*
    * Настройки уезжают в системное меню «⋯»: они нужны редко,
    * а место на экране занимали каждый день.
@@ -641,6 +735,29 @@ export default function App() {
   useSettingsButton(() => {
     setOverlay('settings')
   })
+
+  useEffect(() => {
+    if (!user) return undefined
+    // Prefetch вкладок после первой отрисовки «Сегодня» —
+    // requestIdleCallback не блокирует отрисовку, setTimeout — fallback.
+    const prefetch = () => {
+      // Профиль — грузим заранее (нужен чаще всего).
+      loadSettings().catch(() => {})
+      // Остальные вкладки — prefetch после первой отрисовки «Сегодня»,
+      // чтобы первый тап по вкладке не ждал загрузки чанка.
+      import('./screens/Practices').catch(() => {})
+      import('./screens/History').catch(() => {})
+      import('./screens/Library').catch(() => {})
+      import('./screens/Analytics').catch(() => {})
+      import('./screens/Mentalix').catch(() => {})
+    }
+    if (typeof window.requestIdleCallback === 'function') {
+      const ricId = window.requestIdleCallback(prefetch, { timeout: 2000 })
+      return () => window.cancelIdleCallback?.(ricId)
+    }
+    const timeoutId = window.setTimeout(prefetch, 1500)
+    return () => window.clearTimeout(timeoutId)
+  }, [user])
 
   /* ============================================================
      ZOOM
@@ -704,7 +821,7 @@ export default function App() {
         return
       }
 
-      const currentY = Math.max(scrollRootRef.current?.scrollTop || 0, 0)
+      const currentY = Math.max(scrollRootRef.current?.scrollTop || 0, window.scrollY || 0)
 
       const previousY = lastScrollY.current
 
@@ -778,7 +895,7 @@ export default function App() {
       scrollFrame.current = window.requestAnimationFrame(processScroll)
     }
 
-    lastScrollY.current = Math.max(scrollRootRef.current?.scrollTop || 0, 0)
+    lastScrollY.current = Math.max(scrollRootRef.current?.scrollTop || 0, window.scrollY || 0)
 
     resetGesture()
 
@@ -788,8 +905,13 @@ export default function App() {
 
     scrollRoot.addEventListener('scroll', handleScroll, { passive: true })
 
+    // На реальном телефоне без фрейма document может прокручиваться вместо
+    // scroll-root. Слушаем оба источника — currentY берёт максимум.
+    window.addEventListener('scroll', handleScroll, { passive: true })
+
     return () => {
       scrollRoot.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('scroll', handleScroll)
 
       if (scrollFrame.current !== null) {
         window.cancelAnimationFrame(scrollFrame.current)
@@ -880,6 +1002,16 @@ export default function App() {
     scrollAppToTop()
   }, [scrollAppToTop])
 
+  /*
+   * Выход из ошибки экрана в ScreenErrorBoundary: снимает оверлей
+   * (например, Settings) и возвращает на «Сегодня». resetKey границы
+   * меняется вместе с вкладкой/оверлеем, поэтому ошибка не застревает.
+   */
+  const goHome = useCallback(() => {
+    setOverlay(null)
+    goToday()
+  }, [goToday])
+
   const openPractice = useCallback(
     sub => {
       platform.haptic('light')
@@ -940,18 +1072,35 @@ export default function App() {
   }
 
   /* ============================================================
+     ОШИБКА ВОССТАНОВЛЕНИЯ СЕССИИ
+
+     Бэкенд недоступен (Render спит, нет сети, таймаут 7с) —
+     показываем понятное сообщение и «Повторить» вместо
+     бесконечного splash или экрана входа. Только для web —
+     Telegram requestAuth не бросает.
+     ============================================================ */
+
+  if (authError && !user && platformName === 'web') {
+    return <SessionRestoreError onRetry={retryAuth} />
+  }
+
+  /* ============================================================
      ONBOARDING
      ============================================================ */
 
-  if (user && !onboarded) {
-    return <Onboarding user={user} onFinish={completeOnboarding} />
+  if (user && !onboarded && !showGuestAuth) {
+    return (
+      <Suspense fallback={<Splash />}>
+        <Onboarding user={user} onFinish={completeOnboarding} />
+      </Suspense>
+    )
   }
 
   /* ============================================================
      WEB AUTH
      ============================================================ */
 
-  if (!user && platformName === 'web') {
+  if ((!user || showGuestAuth) && platformName === 'web') {
     return (
       <div
         className="mx-web-auth-shell
@@ -964,7 +1113,14 @@ export default function App() {
           font-body
         "
       >
-        <WebAuthScreen onAuthed={acceptUser} />
+        <Suspense fallback={<Splash />}>
+          <WebAuthScreen
+            onAuthed={nextUser => {
+              setShowGuestAuth(false)
+              acceptUser(nextUser)
+            }}
+          />
+        </Suspense>
       </div>
     )
   }
@@ -978,21 +1134,9 @@ export default function App() {
      ============================================================ */
 
   if (user && locked) {
-    return <AppLock mode="unlock" onUnlock={() => setLocked(false)} />
-  }
-
-  /* ============================================================
-     MOOD-CHECK ПРИ ЗАПУСКЕ (MXL-MOOD-CHECK-001)
-
-     Тот же порядок, что у AppLock выше: гейт поверх готового
-     приложения, ДО основного UI, но не альтернативная авторизация.
-     Условия показа — см. showMoodCheckGate.
-     ============================================================ */
-
-  if (showMoodCheckGate) {
     return (
-      <Suspense fallback={null}>
-        <MoodCheckGate onDismiss={() => setMoodCheckDismissedToday(true)} />
+      <Suspense fallback={<Splash />}>
+        <AppLock mode="unlock" onUnlock={() => setLocked(false)} />
       </Suspense>
     )
   }
@@ -1042,18 +1186,32 @@ export default function App() {
     ? 'var(--app-safe-bottom)'
     : 'var(--app-content-bottom)'
 
+  // Полноэкранные листы Истории остаются внутри shell, но не закрывают шапку Telegram.
+  const shellTopPadding =
+    previewDemoMode &&
+    !realPhone &&
+    (!overlay || overlay === 'settings') &&
+    !todaySeriesOpen &&
+    !todayFlowOpen
+      ? '56px'
+      : topSafeArea
+
   /* ============================================================
      UI
      ============================================================ */
 
   return (
-    <div className={deviceFrameMode ? 'mx-preview-stage' : undefined}>
+    <div
+      ref={setAppRootElement}
+      data-mentalix-app-root="true"
+      className={deviceFrameMode ? 'mx-preview-stage' : undefined}
+    >
       {previewDemoMode && demoToolbar && (
         <div className="mx-preview-device-switcher" role="tablist" aria-label="Размер экрана">
           <span className="mx-preview-device-switcher__label">Demo viewport</span>
           {[
-            { key: 'pro', label: 'iPhone 16 Pro', size: '402×874' },
-            { key: 'pro-max', label: 'iPhone 16 Pro Max', size: '430×932' },
+            { key: 'standard', label: '393', size: 'iPhone 15 Pro' },
+            { key: 'max', label: '440', size: 'iPhone 16 Pro Max' },
           ].map(device => (
             <button
               key={device.key}
@@ -1080,7 +1238,7 @@ export default function App() {
         </div>
       )}
       <div
-        data-mentalix-demo-frame={previewDemoMode ? 'true' : undefined}
+        data-mentalix-demo-frame={deviceFrameMode ? 'true' : undefined}
         data-mentalix-desktop-frame={desktopDeviceFrame ? 'true' : undefined}
         data-demo-tab={previewDemoMode ? (tab === 'trends' ? 'progress' : tab) : undefined}
         className={`
@@ -1108,16 +1266,16 @@ export default function App() {
           marginBottom: deviceFrameMode
             ? `${-(demoViewport.height * (1 - demoScale))}px`
             : undefined,
-          paddingTop:
-            previewDemoMode && !overlay && !todaySeriesOpen && !todayFlowOpen
-              ? '56px'
-              : topSafeArea,
+          /* Профиль (overlay 'settings') в демо живёт под шапкой Telegram,
+             как на устройстве: инсет шапки сохраняется и внутри оверлея. */
+          paddingTop: shellTopPadding,
+          '--mx-progress-overlay-top': shellTopPadding,
           paddingRight: 'var(--app-safe-right)',
           paddingLeft: 'var(--app-safe-left)',
         }}
       >
-        {shouldRenderDemoTelegramChrome({ previewDemoMode, platformName }) &&
-          !overlay &&
+        {shouldRenderDemoTelegramChrome({ previewDemoMode, platformName, realPhone }) &&
+          (!overlay || overlay === 'settings') &&
           !todaySeriesOpen &&
           !todayFlowOpen && (
             // eslint-disable-next-line react-hooks/refs
@@ -1163,11 +1321,10 @@ export default function App() {
 
         <div
           ref={scrollRootRef}
-          className={`mx-app-scroll-root w-full flex-1 min-h-0 overscroll-contain flex flex-col items-center ${
+          className={`mx-app-scroll-root w-full flex-1 min-h-0 flex flex-col items-center ${
             tab === 'mentor' && !overlay ? 'mx-dialog-runtime-scroll' : 'overflow-y-auto'
           }`}
           style={{
-            paddingBottom: contentBottomPadding,
             scrollPaddingBottom: contentBottomPadding,
           }}
         >
@@ -1182,7 +1339,7 @@ export default function App() {
           <div
             key={overlay || 'main'}
             className={[
-              'flex-1 w-full flex flex-col items-center',
+              'mx-scroll-content flex-1 w-full flex flex-col items-center',
               tab === 'mentor' && !overlay
                 ? 'mx-dialog-runtime-shell'
                 : mentorPersonaOpen
@@ -1191,180 +1348,161 @@ export default function App() {
               previewDemoMode && 'mx-demo-screen-transition',
               previewDemoMode && `mx-demo-screen-transition--${demoMotionTick % 2}`,
             ].join(' ')}
+            // Нижний отступ — внутри содержимого, а не на скролл-контейнере:
+            // WebKit (iPhone/Telegram) игнорирует padding-bottom у flex-контейнера
+            // с overflow, и конец экрана уходил под нижнюю панель.
+            style={
+              tab === 'mentor' && !overlay ? undefined : { paddingBottom: contentBottomPadding }
+            }
           >
-            <Suspense fallback={<ScreenLoading />}>
-              {!user && (
-                <p
-                  className="
+            <ScreenErrorBoundary resetKey={overlay || tab} onHome={goHome}>
+              <Suspense fallback={<ScreenLoading />}>
+                {!user && (
+                  <p
+                    className="
               text-muted
               text-[13px]
               px-6
               text-center
               pt-8
             "
-                >
-                  Открой приложение через кнопку в боте, чтобы Менталикс увидел тебя
-                </p>
-              )}
-
-              {/* Settings */}
-
-              {overlay === 'settings' && (
-                <Settings
-                  user={user}
-                  onBack={() => {
-                    setOverlay(null)
-                  }}
-                  onNavigate={destination => {
-                    if (destination === 'profile') {
-                      setOverlay('profile')
-                    }
-                  }}
-                  accent={accent}
-                  onAccentChange={setAccentRaw}
-                  theme={theme}
-                  onThemeChange={setThemeRaw}
-                />
-              )}
-
-              {/* Profile */}
-
-              {overlay === 'profile' && (
-                <div
-                  className="
-              w-full
-              flex
-              flex-col
-              items-center
-            "
-                >
-                  <div
-                    className="
-                w-full
-                max-w-md
-
-                px-5
-                pb-2
-
-                relative
-                grid
-                grid-cols-[1fr_auto_1fr]
-                items-center
-              "
                   >
-                    <div className="justify-self-start">
-                      <BackButton
-                        showInDemo
-                        onClick={() => {
-                          setOverlay('settings')
-                        }}
-                      />
-                    </div>
+                    Открой приложение через кнопку в боте, чтобы Менталикс увидел тебя
+                  </p>
+                )}
 
-                    <span
-                      className="
-                  font-display
-                  mx-type-card
-                  text-cream
-                  lowercase
-                "
-                    >
-                      профиль.
-                    </span>
+                {/* Settings */}
 
-                    <span aria-hidden="true" />
-                  </div>
+                {overlay === 'settings' && (
+                  <Settings
+                    user={user}
+                    onBack={() => {
+                      setOverlay(null)
+                    }}
+                    onRegisterBack={registerSettingsBack}
+                    onScrollTop={scrollAppToTop}
+                    accent={accent}
+                    onAccentChange={setAccentRaw}
+                    theme={theme}
+                    onThemeChange={setThemeRaw}
+                    onGuestLogin={() => setShowGuestAuth(true)}
+                  />
+                )}
 
-                  <Profile user={user} />
-                </div>
-              )}
-
-              {/* ======================================================
+                {/* ======================================================
             MAIN TABS
            ====================================================== */}
 
-              {!overlay && user && tab === 'history' && (
-                <div className="w-full max-w-md px-5 animate-fade-in">
-                  <div className="flex min-h-[42px] items-center">
-                    <BackButton
-                      showInDemo
-                      onClick={() => {
-                        setTab('trends')
-                        scrollAppToTop()
-                      }}
-                    />
-                  </div>
-                  <History user={user} />
-                </div>
-              )}
+                {!overlay && (
+                  <>
+                    {user && tab === 'today' && (
+                      <Today
+                        user={user}
+                        recoveryAllowed={recoveryAllowedAtLaunch}
+                        onOpenPractice={openPractice}
+                        initialSub={initialTodaySub}
+                        returnFlowActive={initialReturnFlow}
+                        onReturnFlowEvent={reportReturnFlowEvent}
+                        onGoMentor={goMentor}
+                        onFlowChange={setTodayFlowOpen}
+                        onRegisterBack={registerTodayBack}
+                        onOpenSettings={openSettings}
+                        onOpenDemoPanel={demoPanelAllowed ? openDemoPanel : undefined}
+                        onOpenSeries={openTodaySeries}
+                        seriesOpen={todaySeriesOpen}
+                        onCloseSeries={closeTodaySeries}
+                      />
+                    )}
 
-              {!overlay && tab !== 'history' && (
-                <>
-                  {user && tab === 'today' && (
-                    <Today
-                      user={user}
-                      onOpenPractice={openPractice}
-                      initialSub={initialTodaySub}
-                      returnFlowActive={Boolean(initialReturnFlow)}
-                      onReturnFlowEvent={reportReturnFlowEvent}
-                      onGoMentor={goMentor}
-                      onFlowChange={setTodayFlowOpen}
-                      onRegisterBack={registerTodayBack}
-                      onOpenSettings={() => setOverlay('settings')}
-                      onOpenSeries={() => setTodaySeriesOpen(true)}
-                      seriesOpen={todaySeriesOpen}
-                      onCloseSeries={closeTodaySeries}
-                    />
-                  )}
+                    {user && tab === 'practices' && (
+                      <Practices
+                        user={user}
+                        initialSub={practicesSub}
+                        onGameChange={setPracticeGameOpen}
+                        onRegisterBack={registerPracticesBack}
+                        onReturnToToday={goToday}
+                      />
+                    )}
 
-                  {user && tab === 'practices' && (
-                    <Practices
-                      user={user}
-                      initialSub={practicesSub}
-                      onGameChange={setPracticeGameOpen}
-                      onRegisterBack={registerPracticesBack}
-                      onReturnToToday={goToday}
-                    />
-                  )}
+                    {user && tab === 'mentor' && (
+                      <MentalixChat
+                        user={user}
+                        onPersonaChange={setMentorPersonaOpen}
+                        onRegisterBack={registerMentorBack}
+                      />
+                    )}
 
-                  {user && tab === 'mentor' && (
-                    <MentalixChat
-                      user={user}
-                      onPersonaChange={setMentorPersonaOpen}
-                      onRegisterBack={registerMentorBack}
-                    />
-                  )}
+                    {user && tab === 'library' && (
+                      <Library user={user} onInputModeChange={setLibraryInputMode} />
+                    )}
 
-                  {user && tab === 'library' && <Library user={user} />}
+                    {user && tab === 'trends' && (
+                      <Analytics
+                        user={user}
+                        historyTrigger={progressHistoryTrigger}
+                        navCollapsed={navCollapsed}
+                        onOpenHistory={() => {
+                          platform.haptic('light')
+                          setProgressHistoryTrigger(n => n + 1)
+                          scrollAppToTop()
+                        }}
+                        onGoCheckin={() => {
+                          platform.haptic('light')
 
-                  {user && tab === 'trends' && (
-                    <Analytics
-                      user={user}
-                      onOpenHistory={() => {
-                        platform.haptic('light')
-                        setTab('history')
-                        scrollAppToTop()
-                      }}
-                      onGoCheckin={() => {
-                        platform.haptic('light')
+                          setMentorPersonaOpen(false)
 
-                        setMentorPersonaOpen(false)
+                          setTab('today')
 
-                        setTab('today')
+                          setPracticesSub(null)
 
-                        setPracticesSub(null)
+                          setNavCollapsed(false)
 
-                        setNavCollapsed(false)
+                          resetNavigationGesture()
 
-                        resetNavigationGesture()
-
-                        scrollAppToTop()
-                      }}
-                    />
-                  )}
-                </>
-              )}
-            </Suspense>
+                          scrollAppToTop()
+                        }}
+                        onStartMood={() => {
+                          platform.haptic('light')
+                          setMentorPersonaOpen(false)
+                          setTab('practices')
+                          setPracticesSub('mood')
+                          setNavCollapsed(false)
+                          resetNavigationGesture()
+                          scrollAppToTop()
+                        }}
+                        onOpenNotifications={() => {
+                          platform.haptic('light')
+                          try {
+                            sessionStorage.setItem('mx-settings-initial-sub', 'notifications')
+                          } catch {
+                            /* */
+                          }
+                          setOverlay('settings')
+                        }}
+                        onRedo={() => {
+                          platform.haptic('light')
+                          setMentorPersonaOpen(false)
+                          setTab('today')
+                          setPracticesSub(null)
+                          setNavCollapsed(false)
+                          resetNavigationGesture()
+                          scrollAppToTop()
+                        }}
+                        onRedoReview={() => {
+                          platform.haptic('light')
+                          setMentorPersonaOpen(false)
+                          setTab('today')
+                          setPracticesSub(null)
+                          setNavCollapsed(false)
+                          resetNavigationGesture()
+                          scrollAppToTop()
+                        }}
+                      />
+                    )}
+                  </>
+                )}
+              </Suspense>
+            </ScreenErrorBoundary>
           </div>
         </div>
 
@@ -1382,7 +1520,33 @@ export default function App() {
         )}
 
         <PreviewApiDiagnostic />
+        {demoPanelAllowed && (
+          <Suspense fallback={null}>
+            <DemoPanel
+              open={demoPanelOpen}
+              onOpen={() => setDemoPanelOpen(true)}
+              onClose={() => setDemoPanelOpen(false)}
+            />
+          </Suspense>
+        )}
       </div>
     </div>
   )
+}
+
+/* ============================================================
+   ERROR BOUNDARY WRAPPER
+   ============================================================
+   ErrorBoundary оборачивает всё приложение. Тестовый компонент
+   активируется через ?error_test=1 для проверки ловушки.
+   */
+
+function ErrorTest() {
+  throw new Error('Тестовая ошибка ErrorBoundary')
+}
+
+export default function AppRoot() {
+  const errorTest = new URLSearchParams(window.location.search).get('error_test') === '1'
+
+  return <ErrorBoundary>{errorTest ? <ErrorTest /> : <App />}</ErrorBoundary>
 }

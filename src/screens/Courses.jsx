@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
 import ThemeScreen from './ThemeScreen'
+import ScreenBack from '../components/ScreenBack'
 import { MotifArt } from '../components/Motif'
 import EmptyState from '../components/EmptyState'
 import { BookOpen, ArrowLeft, Clock, Trash2, Plus, Check } from 'lucide-react'
@@ -164,9 +165,7 @@ function CourseDetail({ user, course, onBack, onDelete, onToggleStatus }) {
   return (
     <div className="w-full max-w-md px-[var(--mx-screen-x)]">
       <div className="flex items-center justify-between mb-4">
-        <button onClick={onBack} className="flex items-center gap-1.5 text-muted text-[13px]">
-          <ArrowLeft size={16} /> Назад
-        </button>
+        <ScreenBack onBack={onBack} />
         {confirming ? (
           <div className="flex items-center gap-2">
             <button

@@ -1,12 +1,16 @@
 export const PRACTICE_KEYS = Object.freeze({
   rituals: 'rituals',
   ascezas: 'ascezas',
+  mood: 'mood',
+  alterEgo: 'alter-ego',
 })
 
 export const AVAILABLE_PRACTICES = Object.freeze([
   'lila-discover',
   PRACTICE_KEYS.rituals,
   PRACTICE_KEYS.ascezas,
+  PRACTICE_KEYS.mood,
+  PRACTICE_KEYS.alterEgo,
 ])
 
 export function isPracticeAvailable(practiceKey) {

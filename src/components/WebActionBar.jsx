@@ -1,5 +1,5 @@
 import { platform, platformName } from '../platform'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, Loader2 } from 'lucide-react'
 
 /*
  * Telegram MainButton/SecondaryButton (platform/telegram.hooks.js)
@@ -17,7 +17,13 @@ import { ArrowRight } from 'lucide-react'
  * кнопка остаётся над виртуальной клавиатурой по той же схеме,
  * что уже сузила высоту шелла под visualViewport.
  */
-export default function WebActionBar({ action, secondaryAction, className = '', compact = false }) {
+export default function WebActionBar({
+  action,
+  secondaryAction,
+  className = '',
+  compact = false,
+  loading = false,
+}) {
   if (platformName === 'telegram') return null
   if (!action && !secondaryAction) return null
 
@@ -33,23 +39,37 @@ export default function WebActionBar({ action, secondaryAction, className = '', 
       {action && (
         <button
           type="button"
+          data-testid={action.testId}
           aria-label={action.ariaLabel || action.text}
           onClick={() => {
+            if (loading) return
             platform.haptic('light')
             action.onClick()
           }}
-          disabled={action.disabled}
+          disabled={action.disabled || loading}
           className={
             compact ? 'mx-reference-next' : 'cta-pill w-full py-4 text-[16px] disabled:opacity-40'
           }
         >
-          {compact ? <ArrowRight size={24} strokeWidth={2} /> : action.text}
+          {loading ? (
+            // Спиннер внутри кнопки рядом с текстом: подпись не исчезает
+            // на время сохранения, кнопка остаётся на месте (disabled).
+            <span className="inline-flex items-center justify-center gap-2">
+              <Loader2 size={20} strokeWidth={2.4} className="animate-spin" aria-hidden="true" />
+              <span>{action.text}</span>
+            </span>
+          ) : compact ? (
+            <ArrowRight size={24} strokeWidth={2} />
+          ) : (
+            action.text
+          )}
         </button>
       )}
 
       {secondaryAction && (
         <button
           type="button"
+          data-testid={secondaryAction.testId}
           onClick={() => {
             platform.haptic('light')
             secondaryAction.onClick()

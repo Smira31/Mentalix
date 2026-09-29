@@ -173,6 +173,25 @@
   justify-content: center;
 }
 
+.mx-web-auth-guest {
+  display: block;
+  width: min(100%, 330px);
+  min-height: 56px;
+  margin: 20px auto 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #999;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.mx-web-auth-guest:disabled {
+  opacity: 0.5;
+}
+
 @media (max-width: 520px) {
   .mx-web-auth-page {
     padding-right: 43px;

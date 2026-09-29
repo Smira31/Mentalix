@@ -3,22 +3,36 @@ import { readFile } from 'node:fs/promises'
 import test from 'node:test'
 
 const source = await readFile(new URL('../../src/screens/Profile.jsx', import.meta.url), 'utf8')
+const settings = await readFile(new URL('../../src/screens/Settings.jsx', import.meta.url), 'utf8')
 
-test('Profile exposes explicit domain status, auth/error copy, and retry action', () => {
-  assert.match(source, /const \[loadResult, setLoadResult\] = useState\(null\)/)
-  assert.match(source, /Профиль требует повторной авторизации/)
-  assert.match(source, /Не удалось загрузить профиль и историю пути/)
+test('Profile exposes error copy and retry action', () => {
+  assert.match(settings, /const \[profileError, setProfileError\] = useState\(false\)/)
+  assert.match(source, /Не удалось загрузить профиль/)
   assert.match(source, /role="alert"/)
   assert.match(source, /onClick=\{retryProfile\}/)
-  assert.match(source, /setReloadToken\(token => token \+ 1\)/)
+  assert.match(settings, /setProfileReloadToken\(token => token \+ 1\)/)
 })
 
-test('Profile loads path sources independently and never masks failures as empty arrays', () => {
-  assert.match(source, /loadIndependentSources\(/)
-  assert.match(source, /profile: \(\) => api\.profile\.get\(user\.id\)/)
-  assert.match(source, /checkins: \(\) => api\.checkin\.history\(user\.id, 90\)/)
-  assert.match(source, /ascezas: \(\) => api\.ascezas\.list\(user\.id\)/)
-  assert.match(source, /rituals: \(\) => api\.rituals\.list\(user\.id\)/)
-  assert.doesNotMatch(source, /\.catch\(\(\) => \[\]\)/)
-  assert.match(source, /retrySources\(previous\)/)
+test('Profile берёт серию с сервера, без восстановления из истории', () => {
+  assert.match(settings, /api\.profile\.get\(user\.id\)/)
+  assert.doesNotMatch(source, /api\.profile\.get\(user\.id\)/)
+  assert.match(source, /api\.streak\(user\.id\)/)
+  assert.match(source, /readCanonicalStreakStats\(payload\)/)
+  // Числа серии приходят только из canonical-ответа; fallback по истории удалён.
+  assert.match(source, /const currentStreak = canonical\?\.currentStreak/)
+  assert.match(source, /const bestStreak = canonical\?\.bestStreak/)
+  assert.doesNotMatch(source, /canonical\?\.currentStreak \?\? legacy/)
+  // Значки серии тоже пересчитываются серверной статистикой.
+  assert.match(source, /serverSeriesBadges\(legacy\.badges, canonical, daysInSystem\)/)
+  assert.match(source, /buildServerSeriesViewModel/)
+  assert.doesNotMatch(source, /\bbuildSeriesViewModel\(/)
+  // Восстановление серии из неполной истории не возвращается.
+  assert.doesNotMatch(source, /api\.moodPractices\.list/)
+  assert.doesNotMatch(source, /api\.practiceDays\.list/)
+  assert.doesNotMatch(source, /loadIndependentSources/)
+  assert.doesNotMatch(source, /api\.themes\.list/)
+  assert.doesNotMatch(source, /api\.analytics\.get/)
+  assert.doesNotMatch(source, /Achievements/)
+  assert.doesNotMatch(source, /buildPath/)
+  assert.doesNotMatch(source, /мой путь/)
 })

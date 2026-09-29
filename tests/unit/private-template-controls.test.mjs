@@ -8,22 +8,20 @@ const source = await readFile(
 )
 const apiSource = await readFile(new URL('../../src/lib/api.js', import.meta.url), 'utf8')
 
-test('Guided Journals запрашивает только поддерживаемые draft sessions для resume hub', () => {
-  assert.match(source, /journalTemplates\s*\.sessions\(user\.id,\s*'draft'\)/)
+test('Guided Journals использует локальные драфты вместо server draft sessions для resume hub', () => {
+  // V3: no server draft session calls — local drafts only
+  assert.doesNotMatch(source, /journalTemplates\s*\.sessions\(user\.id,\s*'draft'\)/)
   assert.doesNotMatch(source, /journalTemplates\s*\.sessions\(user\.id,\s*'active'\)/)
+  assert.match(source, /listJournalDrafts/)
 })
 
-test('Guided Journals закрывает private API для legacy web-ID до server-side sessions', () => {
+test('Guided Journals доступен в web-режиме с валидным user ID', () => {
   assert.match(
     source,
-    /const canUseGuidedJournals = platformName === 'telegram' && Number\(user\?\.id\) > 0/
+    /const canUseGuidedJournals = Number\(user\?\.id\) > 0/
   )
-  assert.match(source, /if \(!canUseGuidedJournals\) return undefined/)
-  assert.match(
-    source,
-    /Личные шаблоны и сохранённые ответы доступны в Telegram Mini App с проверенной подписью\./
-  )
-  assert.match(source, /пока для неё не появятся server-side\s+sessions\./)
+  assert.match(source, /if \(!canUseGuidedJournals\) return/)
+  assert.match(source, /Направленные записи доступны после входа\./)
 })
 
 test('private template builder использует update contract и объясняет versioning', () => {
@@ -39,9 +37,20 @@ test('private template detail требует подтверждение soft del
   assert.match(source, /api\.journalTemplates\.remove\(selected\.id, user\.id\)/)
   assert.match(source, /Редактировать шаблон/)
   assert.match(source, /Удалить шаблон/)
+  // V3: no server active sessions to filter
   assert.doesNotMatch(source, /setActiveSessions\(current => current\.filter/)
 })
 
+test('запуск направленной записи использует локальный драф вместо server session', () => {
+  // V3: completeSession replaces startOrResume; local draft instead of server session
+  assert.match(apiSource, /completeSession: \(userId, templateId, answers, idempotencyKey\)/)
+  assert.match(apiSource, /\/journal\/templates\/sessions\/complete/)
+  assert.match(source, /readJournalDraft/)
+  assert.match(source, /api\.journalTemplates\.completeSession/)
+  assert.doesNotMatch(source, /api\.journalTemplates\.startOrResume/)
+})
+
 test('completion text честно не обещает появления template session в Journey', () => {
-  assert.match(source, /не станет отдельной записью в Journey автоматически/)
+  // V3: completion text updated for local-draft flow
+  assert.match(source, /Ответы отправлены/)
 })

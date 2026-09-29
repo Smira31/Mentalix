@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowLeft, ArrowRight } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 
 import SemanticGlyph, { semanticKindForArticle } from '../components/SemanticGlyph'
+import NestedScreenHeader from '../components/NestedScreenHeader'
 import ArticleCover from '../components/ArticleCover'
 import { ARTICLES } from '../data/articles'
 import { fetchArticles, peekArticles, peekArticlesSnapshot } from '../lib/libraryDataCache'
 import { platform } from '../platform'
+import { useBackButton } from '../platform/telegram.hooks'
 import Articles from './Articles'
 import GuidedJournals from './GuidedJournals'
 import HeroJourneyMap from './HeroJourneyMap'
@@ -24,7 +26,7 @@ function LibraryV2FeaturedBanner({ title, description, art, action, onOpen, neut
       <div className="mx-library-v2__featured-copy">
         <h3>{title}</h3>
         <p>{description}</p>
-        <button type="button" className="mx-library-v2__pill" onClick={onOpen}>
+        <button type="button" className="mx-library-v2__pill" onClick={() => onOpen()}>
           {action} <ArrowRight size={15} />
         </button>
       </div>
@@ -112,19 +114,10 @@ function LibraryV2JournalLanding({ onOpen }) {
 function LibraryV2ProgramDetail({ title, onBack }) {
   return (
     <div className="mx-library-v2__program-detail animate-fade-in">
-      <button
-        type="button"
-        className="mx-library-collection-back"
-        onClick={onBack}
-        aria-label="Назад"
-      >
-        <ArrowLeft size={19} />
-      </button>
+      <NestedScreenHeader title={title.toLowerCase() + '.'} onBack={onBack} registerSystemBack={false} />
       <div className="mx-library-v2__program-detail-art" aria-hidden="true">
         <SemanticGlyph kind="focus" animated={false} />
       </div>
-      <span className="mx-library-v2__article-tag">ПРОГРАММЫ</span>
-      <h1>{title}</h1>
       <p>Выстроить устойчивый ритм и доводить важное до конца без давления на себя.</p>
       <strong>Скоро</strong>
     </div>
@@ -150,15 +143,7 @@ function LibraryV2CatalogCard({ title, description, kind, article, onOpen }) {
 function LibraryV2ProgramsCatalog({ onBack, onOpen }) {
   return (
     <div className="mx-library-v2__catalog animate-fade-in">
-      <button
-        type="button"
-        className="mx-library-collection-back"
-        onClick={onBack}
-        aria-label="Назад"
-      >
-        <ArrowLeft size={19} />
-      </button>
-      <h1 className="font-display mx-type-page text-cream lowercase">программы.</h1>
+      <NestedScreenHeader title="программы." onBack={onBack} registerSystemBack={false} />
       <div className="mx-library-v2__catalog-grid" aria-label="Каталог программ">
         {LIBRARY_V2_PROGRAMS.map(([title, kind, description]) => (
           <LibraryV2CatalogCard
@@ -177,15 +162,7 @@ function LibraryV2ProgramsCatalog({ onBack, onOpen }) {
 function LibraryV2ArticlesCatalog({ onBack, onOpen }) {
   return (
     <div className="mx-library-v2__catalog animate-fade-in">
-      <button
-        type="button"
-        className="mx-library-collection-back"
-        onClick={onBack}
-        aria-label="Назад"
-      >
-        <ArrowLeft size={19} />
-      </button>
-      <h1 className="font-display mx-type-page text-cream lowercase">статьи.</h1>
+      <NestedScreenHeader title="статьи." onBack={onBack} registerSystemBack={false} />
       <div className="mx-library-v2__catalog-grid" aria-label="Каталог статей">
         {ARTICLES.map(article => (
           <LibraryV2CatalogCard
@@ -207,14 +184,7 @@ function LibraryV2ArticleReader({ article, onBack }) {
     .filter(Boolean)
   return (
     <div className="mx-library-v2__reader animate-fade-in">
-      <button
-        type="button"
-        className="mx-library-collection-back"
-        onClick={onBack}
-        aria-label="Назад"
-      >
-        <ArrowLeft size={19} />
-      </button>
+      <NestedScreenHeader title="статья." onBack={onBack} registerSystemBack={false} />
       <ArticleCover article={article} variant="banner" className="mb-5" />
       <h1>{article.title}</h1>
       <div className="mx-library-v2__reader-meta">
@@ -461,11 +431,30 @@ function LibraryHome({
   )
 }
 
-export default function Library({ user }) {
+export default function Library({ user, onInputModeChange }) {
   const [screen, setScreen] = useState('home')
   const [initialArticle, setInitialArticle] = useState(null)
   const [libraryV2Article, setLibraryV2Article] = useState(null)
   const [libraryV2Program, setLibraryV2Program] = useState('Самодисциплина')
+
+  /*
+   * Edge-swipe «назад» для вложенных экранов библиотеки.
+   * Под-экраны V2 (каталог программ, детальная программа, каталог статей,
+   * читалка статьи) не используют компонент BackButton, поэтому без
+   * явной регистрации в стеке useBackButton свайп от левого края не работает.
+   * Под-экраны articles и journals имеют собственный BackButton —
+   * их запись в стеке выше, Library-уровень срабатывает только когда
+   * внутренний экран уже закрыт.
+   */
+  const libraryBackHandler = libraryV2Article
+    ? () => setLibraryV2Article(null)
+    : screen === 'library-v2-program'
+      ? () => setScreen('library-v2-programs')
+      : screen !== 'home'
+        ? () => setScreen('home')
+        : null
+
+  useBackButton(libraryBackHandler, Boolean(libraryBackHandler))
 
   if (screen === 'library-v2-programs' && LIBRARY_V2_ENABLED) {
     return (
@@ -497,7 +486,7 @@ export default function Library({ user }) {
   if (screen === 'library-v2-program' && LIBRARY_V2_ENABLED) {
     return (
       <div className="w-full max-w-md px-[var(--mx-screen-x)]">
-        <LibraryV2ProgramDetail title={libraryV2Program} onBack={() => setScreen('home')} />
+        <LibraryV2ProgramDetail title={libraryV2Program} onBack={() => setScreen('library-v2-programs')} />
       </div>
     )
   }
@@ -509,7 +498,7 @@ export default function Library({ user }) {
           article={libraryV2Article}
           onBack={() => {
             setLibraryV2Article(null)
-            setScreen('home')
+            setScreen('library-v2-articles')
           }}
           onOpen={articleId =>
             setLibraryV2Article(ARTICLES.find(article => article.id === articleId))
@@ -540,7 +529,7 @@ export default function Library({ user }) {
   if (screen === 'journals') {
     return (
       <div className="w-full max-w-md px-[var(--mx-screen-x)]">
-        <GuidedJournals user={user} onExit={() => setScreen('home')} />
+        <GuidedJournals user={user} onExit={() => setScreen('home')} onInputModeChange={onInputModeChange} />
       </div>
     )
   }

@@ -1,6 +1,6 @@
 ---
 status: normative
-last_verified: 2026-09-22
+last_verified: 2026-09-27
 ---
 
 # Mentalix — Architecture v1
@@ -21,7 +21,7 @@ Backend находится в приватном `Smira31/mentalix-bot`; его 
 - lucide-react;
 - Recharts.
 
-Production frontend автоматически публикуется из `main` в Firebase Hosting Live channel. Demo Preview публикуется отдельно в Cloudflare Pages. В Firebase frontend получает Render API через `VITE_API_BASE_URL`; относительный `/api` остаётся локальным fallback.
+Production frontend автоматически публикуется из `main` в Firebase Hosting Live channel. `Demo Preview` публикуется отдельно в Cloudflare Pages. В Firebase frontend получает Render API через `VITE_API_BASE_URL`; относительный `/api` остаётся локальным fallback.
 
 Отдельный приватный `mentalix-bot` содержит FastAPI, SQLAlchemy, aiogram и PostgreSQL; актуальный deployment-контур — Render + Neon. Подробности и текущие secrets/contracts должны проверяться только в `mentalix-bot/main` и его `RENDER.md`.
 
@@ -56,12 +56,11 @@ main.jsx
 → App
 → определить platform
 → инициализировать fullscreen и тёмный Telegram chrome
-→ requestAuth()
-→ onboarding или web auth
-→ одна из пяти вкладок
-→ screen
-→ api.js
-→ /api
+→ requestAuth(): Telegram ждёт user + signed initData (#903); web восстанавливает /auth/session
+→ web/PWA без сессии: automatic server-backed guest (POST /auth/guest, #847/#863)
+→ bearer session (Authorization: Bearer <token>, #861) → onboarding или Today
+→ опционально email OTP / Telegram Login → guest merge/save (#883)
+→ одна из пяти вкладок → screen → api.js → /api
 ```
 
 Примечание: первый экран Onboarding реализован и переведён на новый визуальный стиль (смёржено в `main`, 19.08.2026, PR #116). Дальнейшие финальные правки зафиксированы в Issue #117.
@@ -80,8 +79,8 @@ main.jsx
 
 - серверные данные преимущественно запрашиваются напрямую из экранов через `useEffect`;
 - `QueryClientProvider` и базовая конфигурация React Query подключены, но существующие экраны пока не мигрированы на единый query-слой;
-- onboarding и web user сохраняются в `localStorage`;
-- идентификатор пользователя проходит в API как `user_id`;
+- web user, bearer session token и гостевой merge token сохраняются в `localStorage`; восстановление реальной web-сессии запрашивает `/auth/session`, а не доверяет только локальному user;
+- идентификатор пользователя проходит в API как `user_id`; отрицательный guest id не является канонической строкой `users` в backend. Известное production-ограничение: `pinned_practices` с отрицательным guest id даёт HTTP 500; отсутствие fatal 5xx на разрешённых гостю функциях остаётся release gate. Это наблюдение, не диагноз backend и не исправление кода;
 - `Today` отделяет ошибку критичной загрузки от empty-state и даёт повторную загрузку; на остальных экранах error-state пока реализованы неравномерно.
 
 ## 6. Положительные решения
@@ -108,7 +107,7 @@ main.jsx
 8. `habits` остаётся в API рядом с продуктовой моделью ритуалов — возможный legacy-контракт.
 9. Навигационные состояния не отражены в URL, deep-link ограничен только `?tab=`.
 10. Части дизайна задаются hardcoded значениями внутри компонентов. Частично исправлено 30.07.2026 (`BottomNavigation`/`QuickAdd`) и 16.08.2026 (`MXL-DESIGN-TOKENS-001` — ещё 10 файлов). Оставшиеся случаи без точного токена (`QuickAdd.jsx` тень, `Path.jsx` иллюстрация, error/danger-цвет) зафиксированы явно, не тронуты.
-11. Backend, безопасность Telegram `initData`, авторизация и права доступа требуют проверки по приватному `mentalix-bot` contract. Frontend-документация фиксирует только известные security findings и не должна объявлять backend исправленным без backend evidence. Security contract и оставшийся auth backlog описаны в связанном security-документе и `PROJECT_STATE.md`.
+11. Frontend gate #903 требует signed Telegram `initData` до монтирования user screens; `api.js` передаёт `Authorization: tma` для Telegram, `Authorization: Bearer` для web. Это не утверждение о backend-валидации подписи или доступов: проверять отдельно по приватному `mentalix-bot` и production evidence. Оставшийся auth/release статус — в `PROJECT_STATE.md`.
 
 Активный backlog — только `docs/TASK_INDEX.md`. `TASKS.md` и `CHANGES.md` являются историческим слоем и не должны использоваться как текущий список работ.
 

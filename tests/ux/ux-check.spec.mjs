@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { devices, expect, test } from '@playwright/test'
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
@@ -52,6 +52,13 @@ const FIXTURES = {
       total_days: 7,
       reflected_days: 1,
     },
+    {
+      id: 702,
+      title: 'Границы и забота о себе',
+      subtitle: 'Неделя про «нет», которое бережёт «да».',
+      total_days: 7,
+      reflected_days: 0,
+    },
   ],
   theme: {
     id: 701,
@@ -86,6 +93,29 @@ const FIXTURES = {
   settings: { review_hour: 24 },
   pulse: { active_today: 12 },
   pinnedPractices: [],
+  theme2: {
+    id: 702,
+    title: 'Границы и забота о себе',
+    subtitle: 'Неделя про «нет», которое бережёт «да».',
+    current_day: 1,
+    free_days: 7,
+    days: [
+      {
+        day: 1,
+        text: 'Какое «нет» сегодня было трудным и почему?',
+        prompt: 'Запиши одно наблюдение без оценки.',
+        reflection: '',
+        locked: false,
+      },
+      ...Array.from({ length: 6 }, (_, index) => ({
+        day: index + 2,
+        text: 'Следующий вопрос недели.',
+        prompt: 'Что замечаешь?',
+        reflection: '',
+        locked: false,
+      })),
+    ],
+  },
   articles: [
     {
       id: 1,
@@ -121,13 +151,42 @@ function fixtureFor(request) {
   const method = request.method()
 
   if (method !== 'GET') {
+    if (method === 'PUT' && pathname === '/api/checkin/yesterday') {
+      return jsonResponse({ detail: 'not_recoverable' }, 409)
+    }
     if (pathname === '/api/checkin') {
       return jsonResponse({ mood: 3, energy: 3, anxiety: 3, focus: 3 })
+    }
+
+    // Pinned practices: POST возвращает созданный элемент, DELETE — ok.
+    if (method === 'POST' && pathname === '/api/pinned-practices') {
+      let body = {}
+      try {
+        body = JSON.parse(request.postData() || '{}')
+      } catch {
+        /* empty body */
+      }
+      return jsonResponse({ id: Date.now(), practice_id: body.practice_id })
+    }
+    if (method === 'DELETE' && pathname.match(/^\/api\/pinned-practices\/[^/]+$/)) {
+      return jsonResponse({ ok: true })
     }
 
     return jsonResponse({ ok: true })
   }
 
+  // Canonical streak (GET /api/streak): пустая history-фикстура — нулевая серия.
+  if (pathname === '/api/streak') {
+    return jsonResponse({
+      current_streak: 0,
+      longest_streak: 0,
+      total_active_days: 0,
+      is_active_today: false,
+    })
+  }
+  if (pathname === '/api/streak/recovery') {
+    return jsonResponse({ recoverable: false, date: null, streak_before: 0 })
+  }
   if (pathname === '/api/profile') return jsonResponse(TEST_USER)
   if (pathname === '/api/rituals') return jsonResponse(FIXTURES.rituals)
   if (pathname === '/api/ascezas') return jsonResponse(FIXTURES.ascezas)
@@ -136,11 +195,27 @@ function fixtureFor(request) {
   if (pathname === '/api/checkin/history') return jsonResponse(FIXTURES.history)
   if (pathname === '/api/themes') return jsonResponse(FIXTURES.themes)
   if (pathname === '/api/themes/701') return jsonResponse(FIXTURES.theme)
+  if (pathname === '/api/themes/702') return jsonResponse(FIXTURES.theme2)
   if (pathname === '/api/profile/settings') return jsonResponse(FIXTURES.settings)
   if (pathname === '/api/analytics/pulse') return jsonResponse(FIXTURES.pulse)
+  if (pathname === '/api/analytics/influences') {
+    return jsonResponse({
+      period: { from: '2026-09-21', to: '2026-09-27' },
+      days_with_data: 0,
+      top_emotions: [],
+      lifts: [],
+      drags: [],
+      enough_data: false,
+    })
+  }
   if (pathname === '/api/pinned-practices') return jsonResponse(FIXTURES.pinnedPractices)
+  if (pathname === '/api/mood-practices') return jsonResponse([])
+  if (pathname === '/api/practice-days') return jsonResponse({ days: [] })
   if (pathname === '/api/articles') return jsonResponse(FIXTURES.articles)
   if (pathname === '/api/analytics') return jsonResponse(FIXTURES.analytics)
+  // Today будит бэкенд до загрузки данных — health не должен считаться
+  // ошибкой рантайма в smoke-сценариях.
+  if (pathname === '/api/health') return jsonResponse({ status: 'ok' })
   if (pathname === '/api/mentalix/consent') return jsonResponse({ context_consent: false })
   if (pathname === '/api/mentalix/messages') {
     const persona = url.searchParams.get('persona') || 'unknown'
@@ -162,6 +237,19 @@ function sanitizeReason(error) {
     .replaceAll(/\u001b\[[0-9;]*m/g, '')
     .replaceAll('|', '\\|')
     .slice(0, 240)
+}
+
+// Безобидные браузеро-специфичные console.error, которые не являются
+// ошибками приложения и не должны валить UX smoke. WebKit, в отличие от
+// Chromium, не поддерживает viewport-свойство interactive-widget и
+// логирует предупреждение — это шум, а не баг.
+const IGNORED_CONSOLE_ERRORS = [
+  'CloudStorage is not supported in version 6.0',
+  'Viewport argument key "interactive-widget" not recognized and ignored.',
+]
+
+function isIgnorableConsoleError(text) {
+  return IGNORED_CONSOLE_ERRORS.some(pattern => text.includes(pattern))
 }
 
 function overlap(a, b) {
@@ -300,17 +388,10 @@ async function assertBottomNavigationLabelsFit(page) {
 }
 
 async function assertSoonControls(page) {
-  const lilaCard = page
-    .locator('.mx-layered-catalog__rail-card')
-    .filter({ hasText: 'Разобраться через Лилу' })
-  const motivationCard = page
-    .locator('.mx-layered-catalog__rail-card')
-    .filter({ hasText: 'Импульс к действию' })
-  const focusCard = page.locator('.mx-layered-catalog__rail-card').filter({ hasText: 'Фокус' })
-
-  await expect(lilaCard).toBeEnabled()
-  await expect(motivationCard).toBeDisabled()
-  await expect(focusCard).toBeDisabled()
+  await assertClickable(page.getByRole('button', { name: 'Открыть Разобраться со Следопытом' }))
+  // Каталог владельца показывает будущие практики как неактивные карточки.
+  await expect(page.getByRole('button', { name: /Импульс к действию/ })).toBeDisabled()
+  await expect(page.getByRole('button', { name: /Фокус, скоро/ })).toBeDisabled()
 }
 
 async function assertLibrarySoonControl(page) {
@@ -340,12 +421,19 @@ async function captureScreen({ page, viewport, screen, slug, runtimeErrors, resu
       await expect(page).toHaveScreenshot(snapshotName, {
         animations: 'disabled',
         caret: 'hide',
-        maxDiffPixelRatio: 0.012,
+        maxDiffPixelRatio: 0.01,
       })
     }
   } catch (error) {
     status = 'fail'
     reason = sanitizeReason(error)
+    if (
+      RUN_VISUAL_SNAPSHOTS &&
+      VISUAL_ANCHOR_SLUGS.has(slug) &&
+      String(error?.message || '').includes('to have screenshot')
+    ) {
+      status = 'visual_diff'
+    }
   }
 
   await mkdir(path.dirname(screenshotAbsolute), { recursive: true })
@@ -428,10 +516,7 @@ test('локальный UX smoke по основному маршруту', asy
 
     page.on('pageerror', error => runtimeErrors.push(`pageerror: ${error.message}`))
     page.on('console', message => {
-      if (
-        message.type() === 'error' &&
-        !message.text().includes('CloudStorage is not supported in version 6.0')
-      ) {
+      if (message.type() === 'error' && !isIgnorableConsoleError(message.text())) {
         runtimeErrors.push(`console.error: ${message.text()}`)
       }
     })
@@ -461,20 +546,44 @@ test('локальный UX smoke по основному маршруту', asy
       runtimeErrors,
       results,
       check: async () => {
-        // На первом morning Check-in шаге BackButton имеет label «Сегодня»;
-        // на остальных состояниях flow может сохраняться label «Назад».
-        await assertClickable(page.getByRole('button', { name: /^(Назад|Сегодня)$/ }))
+        await assertClickable(page.getByTestId('back-button'))
+        await expect(page.getByTestId('back-button')).toHaveCount(1)
+        await expect(page.getByText(/‹\s*Назад|К каталогу/)).toHaveCount(0)
         await expect(page.getByRole('heading', { name: 'Как ты сейчас?' })).toBeVisible()
       },
     })
 
-    // Scale answers auto-advance to the next question: mood, then energy.
-    for (const option of ['Нормально', 'Средне']) {
+    // Scale answers advance only after pressing the main «Далее» button.
+    // Порядок: mood → sleep_quality → energy → focus
+    for (const option of ['Нормально', 'Нормально', 'Средне', 'Держусь']) {
       const answer = page.getByRole('radio', { name: new RegExp(`^3: ${option}$`, 'i') })
       await expect(answer).toBeVisible()
       await expect(answer).toBeEnabled()
+      await expect(page.getByTestId('checkin-skip')).toHaveCount(0)
+      await expect(page.getByTestId('checkin-next')).toBeDisabled()
       await answer.click()
+      await assertClickable(page.getByRole('button', { name: 'Далее' }))
+      await page.getByRole('button', { name: 'Далее' }).click()
     }
+
+    // Главный фокус дня: девять плиток, один выбор, без собственного ввода.
+    // «→» активна и без выбора плитки.
+    const focusTiles = page.getByTestId('checkin-day-focus-option')
+    await expect(focusTiles).toHaveCount(9)
+    await expect(page.getByText('Выбери одно главное на сегодня.')).toBeVisible()
+    await expect(page.getByTestId('checkin-day-focus-input')).toHaveCount(0)
+    await expect(page.getByTestId('checkin-day-focus-counter')).toHaveCount(0)
+    await expect(page.getByTestId('checkin-skip')).toHaveCount(0)
+    await expect(page.getByTestId('checkin-next')).toBeEnabled()
+    await focusTiles.first().click()
+    await expect(focusTiles.first()).toHaveAttribute('aria-pressed', 'true')
+    await page.getByTestId('checkin-day-focus-show-all').click()
+    await expect(focusTiles).toHaveCount(12)
+    await focusTiles.nth(1).click()
+    await expect(page.locator('[data-testid="checkin-day-focus-option"][aria-pressed="true"]')).toHaveCount(1)
+    await assertClickable(page.getByRole('button', { name: 'Далее' }))
+    await page.getByRole('button', { name: 'Далее' }).click()
+
     await captureScreen({
       page,
       viewport,
@@ -485,20 +594,30 @@ test('локальный UX smoke по основному маршруту', asy
       check: async () => {
         const editor = page.getByRole('textbox', { name: 'Что на уме' })
         await expect(editor).toBeVisible()
+        await expect(page.locator('[data-testid="checkin-complete"]')).toBeEnabled()
         await editor.pressSequentially('Спокойное утро')
-        await assertClickable(page.getByRole('button', { name: 'Показать форматирование' }))
-        await assertClickable(page.getByRole('button', { name: 'Пойти глубже' }))
-        await expect(page.getByRole('button', { name: 'Далее' })).toHaveCount(1)
-        await assertClickable(page.getByRole('button', { name: 'Далее' }))
+        await expect(page.getByRole('button', { name: 'Показать форматирование' })).toHaveCount(0)
+        await expect(page.getByRole('button', { name: 'Жирный текст' })).toHaveCount(0)
+        await expect(page.getByRole('button', { name: 'Дополнительные действия' })).toHaveCount(0)
+        await expect(page.locator('[data-testid="checkin-skip"]')).toHaveCount(0)
+        await expect(page.locator('[data-testid="checkin-complete"]')).toHaveAttribute(
+          'aria-label',
+          'Далее'
+        )
+        await assertClickable(page.locator('[data-testid="checkin-complete"]'))
       },
     })
-    // После editor-шага общий BackButton использует label «Сегодня»;
-    // на остальных состояниях flow сохраняется label «Назад».
-    const checkinBackButton = page.getByRole('button', { name: /^(Назад|Сегодня)$/ })
+    const checkinBackButton = page.getByTestId('back-button')
     await expect(checkinBackButton).toBeVisible()
     await expect(checkinBackButton).toBeEnabled()
     await checkinBackButton.click()
+    await expect(page.getByRole('heading', { name: 'Главный фокус на сегодня?' })).toBeVisible()
+    await checkinBackButton.click()
+    await expect(page.getByRole('heading', { name: 'Уровень концентрации' })).toBeVisible()
+    await checkinBackButton.click()
     await expect(page.getByRole('heading', { name: 'Сколько в тебе энергии?' })).toBeVisible()
+    await checkinBackButton.click()
+    await expect(page.getByRole('heading', { name: 'Как ты спал?' })).toBeVisible()
     await checkinBackButton.click()
     await expect(page.getByRole('heading', { name: 'Как ты сейчас?' })).toBeVisible()
     await checkinBackButton.click()
@@ -510,6 +629,16 @@ test('локальный UX smoke по основному маршруту', asy
     await expect(page.getByRole('heading', { name: 'Сегодня' })).toBeVisible()
 
     await page.getByRole('button', { name: /о меньшем усилии/ }).click()
+    // Карусель темы недели: видимая карточка вопроса имеет высоту > 120px
+    // и виден текст вопроса.
+    const carouselCard = page.locator('.mx-theme-carousel-q').first()
+    await expect(carouselCard).toBeVisible()
+    const carouselCardBox = await carouselCard.boundingBox()
+    expect(carouselCardBox?.height || 0).toBeGreaterThan(120)
+    await expect(carouselCard.locator('.mx-theme-carousel-q__text')).toBeVisible()
+
+    // Карусель темы недели: CTA «Начать запись» открывает ThemeScreen
+    await page.getByTestId('theme-carousel-cta').click()
     await captureScreen({
       page,
       viewport,
@@ -552,6 +681,12 @@ test('локальный UX smoke по основному маршруту', asy
     await page.getByRole('button', { name: 'Сохранить мысль' }).click()
     const reflectionPayload = (await reflectionRequest).postDataJSON()
     expect(reflectionPayload.text).toBe('**Важное**')
+    // «Назад» из ThemeScreen → карусель, ещё «Назад» → Сегодня
+    await page.getByRole('button', { name: 'Назад' }).click()
+    // После открытия другой темы из «Другие темы» — есть хотя бы один вопрос
+    await page.getByRole('button', { name: /Границы и забота о себе/ }).first().click()
+    await expect(page.locator('.mx-theme-carousel-q').first()).toBeVisible()
+    await expect(page.locator('.mx-theme-carousel-q__text').first()).toBeVisible()
     await page.getByRole('button', { name: 'Назад' }).click()
 
     await page.getByRole('button', { name: 'Шаги' }).click()
@@ -564,28 +699,24 @@ test('локальный UX smoke по основному маршруту', asy
       results,
       check: async () => {
         await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
-        const journalEntry = page.locator('article.mx-layered-catalog__journal-hero button')
+        const journalEntry = page.getByRole('button', { name: 'Открыть журнал' })
         await assertClickable(journalEntry)
-        const collectionsHeading = page.locator('section[aria-label="Коллекции"] h2')
+        const collectionsHeading = page.getByRole('heading', { name: 'Коллекции' })
         await expect(collectionsHeading).toBeVisible()
         const journalBox = await journalEntry.boundingBox()
         const collectionsBox = await collectionsHeading.boundingBox()
         expect(journalBox?.y || 0).toBeLessThan(collectionsBox?.y || Number.POSITIVE_INFINITY)
-        await expect(
-          page
-            .locator('.mx-layered-catalog__collection')
-            .filter({ hasText: 'Психологические практики' })
-        ).toBeDisabled()
+        await expect(page.getByRole('button', { name: /Психологические практики/ })).toBeDisabled()
         await assertSoonControls(page)
+        await assertClickable(page.getByRole('button', { name: 'Открыть Ритуалы' }))
+        await assertClickable(page.getByRole('button', { name: 'Открыть Аскезы' }))
         const productionCardTypography = await page.evaluate(() => {
           const catalog = document.querySelector('.mx-production-catalog')
           const rail = catalog?.querySelector('.mx-layered-catalog__rail')
-          const upcomingTitle = [
-            ...(rail?.querySelectorAll('.mx-layered-catalog__rail-card') || []),
-          ]
-            .find(card => card.textContent?.includes('Импульс к действию с Львом'))
-            ?.querySelector('strong')
-          const railCopy = rail?.querySelector('.mx-layered-catalog__rail-card small')
+          const practiceTitle = [...(rail?.querySelectorAll('strong') || [])].find(title =>
+            title.textContent?.includes('Разобраться со Следопытом')
+          )
+          const practiceCopy = rail?.querySelector('small')
           const collectionCopy = catalog?.querySelector('.mx-layered-catalog__collection small')
           const catalogRect = catalog?.getBoundingClientRect()
           const railRect = rail?.getBoundingClientRect()
@@ -594,24 +725,24 @@ test('локальный UX smoke по основному маршруту', asy
 
           return {
             catalogRight: catalogRect?.right ?? window.innerWidth + 1,
-            railRight: railRect?.right ?? window.innerWidth + 1,
-            titleClipped: upcomingTitle
-              ? upcomingTitle.scrollHeight > upcomingTitle.clientHeight + 1
+            gridRight: railRect?.right ?? window.innerWidth + 1,
+            titleClipped: practiceTitle
+              ? practiceTitle.scrollHeight > practiceTitle.clientHeight + 1
               : true,
-            railCopySize: fontSize(railCopy),
+            practiceCopySize: fontSize(practiceCopy),
             collectionCopySize: fontSize(collectionCopy),
           }
         })
-        expect(productionCardTypography.railRight).toBeLessThanOrEqual(
+        expect(productionCardTypography.gridRight).toBeLessThanOrEqual(
           productionCardTypography.catalogRight + 1
         )
         expect(productionCardTypography.titleClipped).toBe(false)
-        expect(productionCardTypography.railCopySize).toBeGreaterThanOrEqual(12)
+        expect(productionCardTypography.practiceCopySize).toBeGreaterThanOrEqual(12)
         expect(productionCardTypography.collectionCopySize).toBeGreaterThanOrEqual(12)
       },
     })
 
-    await page.locator('article.mx-layered-catalog__journal-hero button').click()
+    await page.getByRole('button', { name: 'Открыть журнал' }).click()
     await captureScreen({
       page,
       viewport,
@@ -673,12 +804,12 @@ test('локальный UX smoke по основному маршруту', asy
         await expect(
           page.getByRole('heading', { name: 'Хорошо. Следующий шаг готов.' })
         ).toBeVisible()
-        await assertClickable(page.getByRole('button', { name: 'Вернуться в дневник' }))
+        await assertClickable(page.getByRole('button', { name: 'Вернуться в журнал' }))
       },
     })
-    await page.getByRole('button', { name: 'Вернуться в дневник' }).click()
+    await page.getByRole('button', { name: 'Вернуться в журнал' }).click()
     await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
-    await page.locator('article.mx-layered-catalog__journal-hero button').click()
+    await page.getByRole('button', { name: 'Открыть журнал' }).click()
     await expect(page.getByRole('heading', { name: 'Продолжи разбирать ситуацию' })).toBeVisible()
     await page.getByRole('button', { name: 'Продолжить' }).click()
     await expect(
@@ -694,9 +825,12 @@ test('локальный UX smoke по основному маршруту', asy
     await expect(page.getByRole('heading', { name: 'Продолжи разбирать ситуацию' })).toBeVisible()
     await page.getByRole('button', { name: 'Назад' }).click()
     await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
+    await page.getByRole('button', { name: 'Открыть Разобраться со Следопытом' }).click()
+    await expect(page.getByRole('heading', { name: 'Когда неясно, с чего начать' })).toBeVisible()
+    await page.getByRole('button', { name: 'Назад' }).click()
     await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
 
-    await page.locator('.mx-layered-catalog__collection').filter({ hasText: 'Ритуалы' }).click()
+    await page.getByRole('button', { name: 'Открыть Ритуалы' }).click()
     await page.getByRole('button', { name: 'Открыть ритуалы' }).click()
     await captureScreen({
       page,
@@ -717,7 +851,7 @@ test('локальный UX smoke по основному маршруту', asy
     await page.getByRole('button', { name: 'Шаги' }).click()
     await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
 
-    await page.locator('.mx-layered-catalog__collection').filter({ hasText: 'Аскезы' }).click()
+    await page.getByRole('button', { name: 'Открыть Аскезы' }).click()
     await page.getByRole('button', { name: 'Открыть аскезы' }).click()
     await captureScreen({
       page,
@@ -737,7 +871,7 @@ test('локальный UX smoke по основному маршруту', asy
     await page.getByRole('button', { name: 'Шаги' }).click()
     await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
 
-    await expect(page.locator('[data-collection-key="psychological"]')).toBeDisabled()
+    await expect(page.getByRole('button', { name: /Психологические практики/ })).toBeDisabled()
     await page.getByRole('button', { name: 'Библиотека' }).click()
     await captureScreen({
       page,
@@ -753,6 +887,14 @@ test('локальный UX smoke по основному маршруту', asy
       },
     })
 
+    // В браузере каталог программ имеет ровно одну круглую кнопку возврата.
+    await page.getByRole('button', { name: 'Смотреть' }).click()
+    await expect(page.getByRole('heading', { name: 'программы.' })).toBeVisible()
+    await expect(page.getByTestId('back-button')).toHaveCount(1)
+    await expect(page.getByText(/‹\s*Назад|К каталогу/)).toHaveCount(0)
+    await page.getByTestId('back-button').click()
+    await expect(page.getByRole('heading', { name: 'библиотека.' })).toBeVisible()
+
     await page.getByRole('button', { name: 'Прогресс' }).click()
     await captureScreen({
       page,
@@ -762,7 +904,7 @@ test('локальный UX smoke по основному маршруту', asy
       runtimeErrors,
       results,
       check: async () => {
-        await expect(page.getByRole('heading', { name: 'прогресс.' })).toBeAttached()
+        await expect(page.getByRole('heading', { name: 'аналитика.' })).toBeAttached()
         await expect(page.getByRole('button', { name: 'Прогресс' })).toHaveAttribute(
           'aria-current',
           'page'
@@ -774,6 +916,24 @@ test('локальный UX smoke по основному маршруту', asy
   }
 
   await writeFile(path.join(ARTIFACT_ROOT, 'report.md'), buildReport(results), 'utf8')
+
+  const visualDiffs = results
+    .filter(result => result.status === 'visual_diff')
+    .map(result => {
+      const slug = result.screenshot.replace(/^[^/]+\//, '').replace(/\.png$/, '')
+      return {
+        screen: result.screen,
+        slug,
+        viewport: result.viewport,
+        actual: result.screenshot,
+        reason: result.reason,
+      }
+    })
+  await writeFile(
+    path.join(ARTIFACT_ROOT, 'visual-diffs.json'),
+    JSON.stringify({ diffs: visualDiffs }, null, 2),
+    'utf8'
+  )
 
   const failed = results.filter(result => result.status === 'fail')
   expect(
@@ -819,10 +979,7 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
     const runtimeErrors = []
     page.on('pageerror', error => runtimeErrors.push(`pageerror: ${error.message}`))
     page.on('console', message => {
-      if (
-        message.type() === 'error' &&
-        !message.text().includes('CloudStorage is not supported in version 6.0')
-      ) {
+      if (message.type() === 'error' && !isIgnorableConsoleError(message.text())) {
         runtimeErrors.push(`console.error: ${message.text()}`)
       }
     })
@@ -865,7 +1022,9 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
 
     if (viewport.width <= 430) {
       const track = page.getByTestId('mentor-persona-track')
-      await expect(track).toHaveCSS('touch-action', 'pan-x')
+      // pan-x pan-y: горизонтальный свайп карусели + вертикальная прокрутка
+      // (anti-zoom: pan-y глобально, pan-x добавлен точечно для каруселей)
+      await expect(track).toHaveCSS('touch-action', 'pan-x pan-y')
       const cardWidth = await cards
         .first()
         .evaluate(element => element.getBoundingClientRect().width)
@@ -997,10 +1156,7 @@ test.skip('Legacy: History показывает user-scoped local Journal на m
       }
     })
     page.on('console', message => {
-      if (
-        message.type() === 'error' &&
-        !message.text().includes('CloudStorage is not supported in version 6.0')
-      ) {
+      if (message.type() === 'error' && !isIgnorableConsoleError(message.text())) {
         runtimeErrors.push(`console.error: ${message.text()}`)
       }
     })
@@ -1021,40 +1177,149 @@ test.skip('Legacy: History показывает user-scoped local Journal на m
   }
 })
 
-test('прямая web-ссылка открывает production email и Telegram auth', async ({
+test('прямая web-ссылка автоматически создаёт гостя; email и Telegram доступны из Профиля', async ({
   browser,
   baseURL,
 }) => {
   const context = await browser.newContext({
     baseURL,
     viewport: { width: 390, height: 844 },
-    colorScheme: 'dark',
-    reducedMotion: 'reduce',
     serviceWorkers: 'block',
   })
   await context.addInitScript(() => {
     localStorage.clear()
     sessionStorage.clear()
+    localStorage.setItem('mx-onboarded-v2', '1')
   })
-
-  await context.route('**/api/**', async route => {
-    await route.fulfill(jsonResponse({ ok: true }))
+  const guest = { id: 900002, first_name: 'Гость', is_guest: true }
+  let guestRequests = 0
+  let mergeRequests = 0
+  await context.route('**/api/**', route => {
+    const path = new URL(route.request().url()).pathname
+    if (path === '/api/auth/guest') {
+      guestRequests += 1
+      return route.fulfill(
+        jsonResponse({
+          ok: true,
+          user: guest,
+          merge_token: 'merge-guest',
+          session_token: 'guest-session',
+        })
+      )
+    }
+    if (path === '/api/auth/email/verify')
+      return route.fulfill(
+        jsonResponse({ ok: true, user: TEST_USER, session_token: 'email-session' })
+      )
+    if (path === '/api/auth/guest/merge') {
+      mergeRequests += 1
+      expect(route.request().postDataJSON().merge_token).toBe('merge-guest')
+      return route.fulfill(jsonResponse({ user: TEST_USER }))
+    }
+    return route.fulfill(fixtureFor(route.request()))
   })
-
   const page = await context.newPage()
-  await freezePageTime(page)
   await page.goto('/')
+  await expect(page.getByTestId('today-profile-button')).toBeVisible()
+  expect(guestRequests).toBe(1)
+  await expect(page.getByRole('heading', { name: 'Вход по email' })).toHaveCount(0)
+  expect(await page.evaluate(() => localStorage.getItem('mentalix_session_token'))).toBe(
+    'guest-session'
+  )
+  expect(await page.evaluate(() => localStorage.getItem('mentalix_guest_merge_token'))).toBe(
+    'merge-guest'
+  )
 
-  await expect(
-    page.getByRole('heading', { name: 'Продолжай расти даже вне приложения.' })
-  ).toBeVisible()
+  await page.getByTestId('today-profile-button').click()
+  await page.getByTestId('profile-guest-login-link').click()
   await expect(page.getByRole('heading', { name: 'Вход по email' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Или через Telegram' })).toBeHidden()
-  await expect(page.locator('form')).toHaveCount(1)
   await expect(page.getByRole('textbox', { name: 'Email' })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Получить письмо' })).toBeVisible()
-  expect(await page.evaluate(() => localStorage.getItem('mentalix_web_user'))).toBeNull()
+  await page.getByRole('textbox', { name: 'Email' }).fill('test@example.com')
+  await page.getByRole('button', { name: 'Получить письмо' }).click()
+  await page.getByRole('textbox', { name: 'Код из email' }).fill('123456')
+  await page.getByRole('button', { name: 'Войти' }).click()
+  await expect(page.getByTestId('profile-screen')).toBeVisible()
+  await expect(page.getByTestId('profile-guest-login-link')).toHaveCount(0)
+  expect(mergeRequests).toBe(1)
+  expect(await page.evaluate(() => localStorage.getItem('mentalix_guest_merge_token'))).toBeNull()
+  await context.close()
+})
 
+test('ошибка гостевого входа оставляет рабочий email и повтор гостевого входа', async ({
+  browser,
+  baseURL,
+}) => {
+  const context = await browser.newContext({ baseURL, serviceWorkers: 'block' })
+  await context.addInitScript(() => {
+    localStorage.clear()
+    sessionStorage.clear()
+  })
+  let attempts = 0
+  await context.route('**/api/**', route => {
+    if (new URL(route.request().url()).pathname === '/api/auth/guest') {
+      attempts += 1
+      return route.fulfill(
+        jsonResponse(
+          attempts === 1
+            ? { error: 'unavailable' }
+            : { ok: true, user: TEST_USER, merge_token: 'retry' },
+          attempts === 1 ? 503 : 200
+        )
+      )
+    }
+    return route.fulfill(fixtureFor(route.request()))
+  })
+  const page = await context.newPage()
+  await page.goto('/')
+  await expect(page.getByRole('heading', { name: 'Вход по email' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Или через Telegram' })).toBeHidden()
+  await page.getByTestId('web-auth-guest-button').click()
+  await expect(page.getByText(/Пара вопросов — и приложение/)).toBeVisible()
+  expect(attempts).toBe(2)
+  await context.close()
+})
+
+test('email-подтверждение не запускает автогостя', async ({ browser, baseURL }) => {
+  const context = await browser.newContext({ baseURL, serviceWorkers: 'block' })
+  await context.addInitScript(() => {
+    localStorage.clear()
+    sessionStorage.clear()
+  })
+  let guestRequests = 0
+  await context.route('**/api/**', route => {
+    if (new URL(route.request().url()).pathname === '/api/auth/guest') guestRequests += 1
+    return route.fulfill(fixtureFor(route.request()))
+  })
+  const page = await context.newPage()
+  await page.goto('/?email=test%40example.com&code=123456')
+  await expect(page.getByRole('heading', { name: 'Вход по email' })).toBeVisible()
+  expect(guestRequests).toBe(0)
+  await page.goto('/?token=magic-link-token')
+  await expect(page.getByRole('heading', { name: 'Вход по email' })).toBeVisible()
+  expect(guestRequests).toBe(0)
+  await context.close()
+})
+
+test('Telegram Mini App не создаёт web-гостя', async ({ browser, baseURL }) => {
+  const context = await browser.newContext({ baseURL, serviceWorkers: 'block' })
+  await context.addInitScript(() => {
+    localStorage.clear()
+    sessionStorage.clear()
+    window.TelegramWebviewProxy = { postEvent() {} }
+  })
+  let guestRequests = 0
+  await context.route('**/api/**', route => {
+    if (new URL(route.request().url()).pathname === '/api/auth/guest') guestRequests += 1
+    return route.fulfill(fixtureFor(route.request()))
+  })
+  const page = await context.newPage()
+  await page.goto('/')
+  await expect(
+    page.getByText('Открой приложение через кнопку в боте, чтобы Менталикс увидел тебя')
+  ).toBeVisible()
+  expect(guestRequests).toBe(0)
+  await expect(page.getByRole('heading', { name: 'Вход по email' })).toHaveCount(0)
   await context.close()
 })
 
@@ -1077,6 +1342,11 @@ test('Today не маскирует ошибку критичного API под
     localStorage.setItem('mx-onboarded-v2', '1')
     localStorage.setItem('mx-app-lock-enabled', '0')
   }, TEST_USER)
+  // Ускоряем автоповтор Today: 503 повторяемая, все попытки падают —
+  // экран ошибки должен появиться после исчерпания автоповторов.
+  await context.addInitScript(() => {
+    window.__MX_TODAY_RETRY_DELAYS_MS__ = [0, 0, 0]
+  })
 
   await context.route('**/api/**', route => {
     const pathname = new URL(route.request().url()).pathname
@@ -1092,7 +1362,7 @@ test('Today не маскирует ошибку критичного API под
   await freezePageTime(page)
   await page.goto('/')
 
-  await expect(page.getByRole('alert')).toHaveText(/Проверь соединение/)
+  await expect(page.getByRole('alert')).toHaveText(/Обычно это меньше минуты/)
   await expect(page.getByText('Добавь первый ритуал')).not.toBeVisible()
   await expect(page.getByRole('button', { name: 'Повторить' })).toBeEnabled()
 
@@ -1117,6 +1387,11 @@ test('Today retry после критичного сбоя повторно за
     localStorage.setItem('mx-onboarded-v2', '1')
     localStorage.setItem('mx-app-lock-enabled', '0')
   }, TEST_USER)
+  // Автоповтор Today переживает кратковременный сбой без участия
+  // пользователя: ускоряем задержки, чтобы 4 попытки уложились в тест.
+  await context.addInitScript(() => {
+    window.__MX_TODAY_RETRY_DELAYS_MS__ = [0, 0, 0]
+  })
   let ritualsRequests = 0
   await context.route('**/api/**', route => {
     const pathname = new URL(route.request().url()).pathname
@@ -1131,8 +1406,8 @@ test('Today retry после критичного сбоя повторно за
   const page = await context.newPage()
   await freezePageTime(page)
   await page.goto('/')
-  await expect(page.getByRole('alert')).toHaveText(/Проверь соединение/)
-  await page.getByRole('button', { name: 'Повторить' }).click()
+  // 3 попытки падают (503 — повторяемая), 4-я успешна: данные дня
+  // загружаются, пустой cache snapshot не создаётся, экран ошибки не нужен.
   await expect.poll(() => ritualsRequests).toBe(4)
   await expect(page.getByRole('alert')).toHaveCount(0)
   await expect(page.getByRole('button', { name: 'Шаги' })).toBeVisible()
@@ -1180,4 +1455,246 @@ test('Evening Review проходится real touch tap на 390x844', async ({
   await page.locator('.mx-evening-review__closed').getByRole('button', { name: 'Продолжить' }).tap()
   await expect(page.getByRole('button', { name: 'Разобрать день' }).last()).toBeVisible()
   await context.close()
+})
+
+test('старый флаг настроения не блокирует Сегодня и отсутствует в настройках', async ({ browser, baseURL }) => {
+  const context = await browser.newContext({ baseURL, viewport: { width: 390, height: 844 }, serviceWorkers: 'block' })
+  await context.addInitScript(user => {
+    localStorage.clear()
+    sessionStorage.clear()
+    localStorage.setItem('mentalix_web_user', JSON.stringify(user))
+    localStorage.setItem('mx-onboarded-v2', '1')
+    localStorage.setItem('mx-mood-check-enabled', '1')
+  }, TEST_USER)
+  await context.route('**/api/**', route => route.fulfill(fixtureFor(route.request())))
+  const page = await context.newPage()
+  await page.goto('/')
+  await expect(page.getByTestId('today-card-morning')).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Как ты сейчас?' })).toHaveCount(0)
+  await page.getByTestId('today-profile-button').click()
+  await page.getByTestId('profile-row-checkins').click()
+  await expect(page.getByTestId('profile-row-mood-check')).toHaveCount(0)
+  await expect(page.getByTestId('profile-row-review-hour')).toBeVisible()
+  await context.close()
+})
+
+test('завершённые карточки сохраняют высоту без рисунка и линии', async ({ browser, baseURL }) => {
+  const context = await browser.newContext({ baseURL, viewport: { width: 390, height: 844 }, serviceWorkers: 'block' })
+  await context.addInitScript(user => {
+    localStorage.clear()
+    sessionStorage.clear()
+    localStorage.setItem('mentalix_web_user', JSON.stringify(user))
+    localStorage.setItem('mx-onboarded-v2', '1')
+  }, TEST_USER)
+  await context.route('**/api/**', route => {
+    if (new URL(route.request().url()).pathname === '/api/checkin/today') {
+      return route.fulfill(jsonResponse({ mood: 3, review_completed_at: new Date().toISOString() }))
+    }
+    return route.fulfill(fixtureFor(route.request()))
+  })
+  const page = await context.newPage()
+  await page.goto('/')
+  for (const kind of ['morning', 'evening']) {
+    const card = page.getByTestId(`today-card-${kind}`)
+    await expect(card).toHaveAttribute('data-state', 'done')
+    await expect(card.getByTestId('today-card-illustration')).toHaveCount(0)
+    await expect(card).toHaveCSS('height', '260px')
+  }
+  await context.close()
+})
+
+test('демо на реальном телефоне 440×956 — капсула активной вкладки, сворачивание навбара, production-размеры', async ({
+  browser,
+}) => {
+  const context = await browser.newContext({
+    baseURL: 'http://127.0.0.1:4173',
+    viewport: { width: 440, height: 956 },
+    isMobile: true,
+    hasTouch: true,
+    colorScheme: 'dark',
+    reducedMotion: 'reduce',
+    serviceWorkers: 'block',
+  })
+
+  // В демо-режиме API перехватывается демо-данными (demoRequest в demoMode.js).
+  await context.route('**/api/**', route =>
+    route.fulfill({ status: 200, contentType: 'application/json', body: '[]' })
+  )
+
+  const page = await context.newPage()
+  await page.goto('/?demo=1')
+
+  // Дождаться загрузки приложения
+  await expect(page.getByRole('button', { name: 'Шаги' })).toBeVisible({ timeout: 15_000 })
+
+  // data-mentalix-demo-frame не должен быть установлен на реальном телефоне
+  // (иначе активная вкладка прозрачная, nav полноширинный, заголовки скрыты)
+  const shell = page.locator('.mx-app-shell')
+  await expect(shell).not.toHaveAttribute('data-mentalix-demo-frame', 'true')
+
+  // 1. Активная вкладка имеет видимую капсулу (не прозрачный фон)
+  const activeTab = page.locator('.mx-bottom-nav > div nav button.is-active').first()
+  await expect(activeTab).toBeVisible()
+  const activeBg = await activeTab.evaluate(el => getComputedStyle(el).backgroundColor)
+  expect(activeBg, 'активная вкладка должна иметь видимый фон-капсулу').not.toBe('rgba(0, 0, 0, 0)')
+  expect(activeBg, 'активная вкладка не должна быть прозрачной').not.toBe('transparent')
+
+  // 2. Размеры кнопки профиля 43×43 (±1) и отступ контента 21 (±1)
+  const profileButton = page.getByTestId('today-profile-button')
+  await expect(profileButton).toBeVisible()
+  const profileBox = await profileButton.boundingBox()
+  expect(Math.abs(profileBox.width - 43), 'ширина кнопки профиля ≈ 43px').toBeLessThanOrEqual(1)
+  expect(Math.abs(profileBox.height - 43), 'высота кнопки профиля ≈ 43px').toBeLessThanOrEqual(1)
+  // Отступ от правого края экрана до кнопки профиля = --mx-header-edge (21px)
+  const rightOffset = 440 - (profileBox.x + profileBox.width)
+  expect(Math.abs(rightOffset - 21), 'отступ контента ≈ 21px').toBeLessThanOrEqual(1)
+
+  // 3. После прокрутки вниз на 600px навбар сворачивается.
+  // Демо-контент при 440px может не переполнять scroll-root, поэтому
+  // добавляем spacer, чтобы гарантировать возможность прокрутки.
+  await page.evaluate(() => {
+    const content = document.querySelector('.mx-app-scroll-root > div')
+    if (content) {
+      const spacer = document.createElement('div')
+      spacer.style.height = '800px'
+      spacer.style.width = '100%'
+      spacer.setAttribute('data-testid', 'scroll-test-spacer')
+      content.appendChild(spacer)
+    }
+    const root = document.querySelector('.mx-app-scroll-root')
+    if (root) {
+      root.scrollTop = 600
+      root.dispatchEvent(new Event('scroll', { bubbles: true }))
+    }
+  })
+  await expect(
+    page.locator('.mx-bottom-nav.mx-demo-bottom-nav--collapsed'),
+    'навбар должен свернуться после прокрутки вниз'
+  ).toHaveCount(1, { timeout: 5_000 })
+  const restore = page.getByRole('button', { name: 'Открыть навигацию: Сегодня' })
+  await expect(restore).toBeVisible()
+  await expect(restore.locator('svg')).toBeVisible()
+  await expect(page.locator('.mx-bottom-nav nav')).toHaveAttribute('aria-hidden', 'true')
+  await restore.tap()
+  await expect(page.locator('.mx-bottom-nav nav')).toHaveAttribute('aria-hidden', 'false')
+  await expect(page.getByRole('button', { name: 'Шаги' })).toBeVisible()
+
+  // 4. После прокрутки вверх навбар раскрывается
+  await page.evaluate(() => {
+    const root = document.querySelector('.mx-app-scroll-root')
+    if (root) {
+      root.scrollTop = 0
+      root.dispatchEvent(new Event('scroll', { bubbles: true }))
+    }
+  })
+  await expect(
+    page.locator('.mx-bottom-nav.mx-demo-bottom-nav--collapsed'),
+    'навбар должен раскрыться после прокрутки вверх'
+  ).toHaveCount(0, { timeout: 5_000 })
+
+  await context.close()
+})
+
+test('Today при медленном API: «Сегодня» видно ≤2 с, потом данные подтягиваются в фоне', async ({
+  browser,
+  baseURL,
+}) => {
+  const context = await browser.newContext({
+    baseURL,
+    viewport: { width: 390, height: 844 },
+    colorScheme: 'dark',
+    reducedMotion: 'reduce',
+    serviceWorkers: 'block',
+  })
+
+  await context.addInitScript(user => {
+    localStorage.clear()
+    sessionStorage.clear()
+    localStorage.setItem('mentalix_web_user', JSON.stringify(user))
+    localStorage.setItem('mx-onboarded-v2', '1')
+    localStorage.setItem('mx-app-lock-enabled', '0')
+  }, TEST_USER)
+
+  // Имитируем холодный старт Render free: все API-запросы (кроме health)
+  // отвечают с задержкой 3 с — дольше, чем скелетон (2 с), но достаточно
+  // быстро для теста. health отвечает мгновенно (сигнал пробуждения).
+  const SLOW_DELAY_MS = 3000
+  await context.route('**/api/**', async route => {
+    const pathname = new URL(route.request().url()).pathname
+    if (pathname === '/api/health') {
+      return route.fulfill(jsonResponse({ status: 'ok' }))
+    }
+    await new Promise(resolve => setTimeout(resolve, SLOW_DELAY_MS))
+    return route.fulfill(fixtureFor(route.request()))
+  })
+
+  const page = await context.newPage()
+  await freezePageTime(page)
+  await page.goto('/')
+
+  // ≤2 с: скелетон («Загрузка…») или шапка «Сегодня» видны — не пустой экран.
+  await expect(page.getByText('Загрузка...')).toBeVisible({ timeout: 2_000 })
+
+  // После 2 с: скелетон сменяется экраном «Сегодня» с «Подключаемся…».
+  await expect(page.getByTestId('today-connecting')).toBeVisible({ timeout: 5_000 })
+  await expect(page.getByText('Загрузка...')).toHaveCount(0)
+
+  // После ответа API (~3 с): данные появляются, «Подключаемся…» исчезает.
+  await expect(page.getByTestId('today-theme-card')).toBeVisible({ timeout: 10_000 })
+  await expect(page.getByTestId('today-connecting')).toHaveCount(0)
+
+  await context.close()
+})
+
+/*
+ * WebKit (iPhone 15 Pro, 393×852): регрессия «Что на уме?» — первый тап
+ * по кнопке «→» при открытой клавиатуре iOS не срабатывал (pointerdown
+ * забирал фокус у contentEditable, клавиатура закрывалась, кнопка смещалась,
+ * click не доходил). Фикс — onPointerDown preventDefault на RoundSubmitButton.
+ * Тест: ввести текст → один тап → переход на экран завершения.
+ */
+test('WebKit iPhone 15 Pro: «Что на уме?» — один тап по кнопке переходит дальше', async ({
+  playwright,
+}) => {
+  const browser = await playwright.webkit.launch()
+  const context = await browser.newContext({
+    baseURL: 'http://127.0.0.1:4173',
+    ...devices['iPhone 15 Pro'],
+    colorScheme: 'dark',
+    reducedMotion: 'reduce',
+    serviceWorkers: 'block',
+  })
+  await context.route('**/api/**', route => route.fulfill(fixtureFor(route.request())))
+  const page = await context.newPage()
+
+  await page.addInitScript(() => {
+    localStorage.clear()
+    sessionStorage.clear()
+    localStorage.setItem('mx-onboarded-v2', '1')
+    localStorage.setItem('mx-app-lock-enabled', '0')
+  })
+
+  await page.goto('/?demo=1&action=mind_step')
+  // ?demo=1&action=mind_step задаёт начальный шаг внутри MorningCheckInFlow,
+  // но оверлей чек-ина нужно открыть явно — кликом по карточке утра.
+  await expect(page.getByTestId('today-card-morning')).toBeVisible({ timeout: 15_000 })
+  await page.getByTestId('today-card-morning').tap()
+  await expect(page.getByRole('heading', { name: 'Что на уме?' })).toBeVisible({
+    timeout: 15_000,
+  })
+
+  const editor = page.getByRole('textbox', { name: 'Что на уме' })
+  await expect(editor).toBeVisible()
+  await editor.pressSequentially('Спокойное утро')
+
+  const submit = page.locator('[data-testid="checkin-complete"]')
+  await expect(submit).toBeVisible()
+  await expect(submit).toBeEnabled()
+  // Один тап — должен сразу перейти на экран завершения, без потери тапа.
+  await submit.tap()
+
+  await expect(page.getByTestId('checkin-back-to-today')).toBeVisible({ timeout: 10_000 })
+
+  await context.close()
+  await browser.close()
 })

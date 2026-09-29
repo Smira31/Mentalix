@@ -11,7 +11,7 @@
 
 .mx-practice-flow__body {
   width: 100%;
-  max-width: 430px;
+  max-width: 440px;
   margin-inline: auto;
   padding-inline: var(--mx-space-5);
   padding-bottom: var(--mx-space-8);
@@ -203,7 +203,7 @@
 .mx-practice-flow .no-blame-stage,
 .mx-practice-flow .one-finish-stage {
   width: 100%;
-  max-width: 430px;
+  max-width: 440px;
   margin-inline: auto;
   padding-block: var(--mx-space-8);
 }

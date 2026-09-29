@@ -7,6 +7,17 @@ last_verified: 2026-09-22
 
 Точка входа по документации: [`docs/INDEX.md`](docs/INDEX.md).
 
+## Стандарт работы агента (выполнять всегда, даже если промпт короткий)
+
+- Перед работой прочитай docs/MENTALIX_CONTEXT.md и docs/STATUS.md.
+- Проверь репозиторий (git remote -v, git fetch --all --prune). Ветка из промпта: есть на origin — переключись и продолжай, готовое не переделывай; нет — создай от свежего origin/main и сразу запушь.
+- Сохранение: после каждого изменённого файла commit + push; перед тестами — commit + push.
+- Экономия: не читать репозиторий целиком, только нужные файлы, остальное grep. Тесты по одному файлу, полный набор (lint, build, test:unit, docs:check, MXL-010, ux:check) — один раз в конце.
+- Запреты: src/main.jsx и src/tgShell.js не трогать (падение build в контейнере на top-level await — окружение, арбитр — Checks в PR). В main не коммитить, не мержить. MXL-010 не ослаблять. Изоляцию пользователей (#780) не ломать. Не менять то, о чём не просили (дизайн, картинки, тексты).
+- В main 0 падающих тестов: любое падение после твоих правок — твоё, не «предсуществующее». Тест проверяет старое правило, которое задача меняет, — обнови тест; ловит поломку — чини код.
+- Даты в тестах — только относительно текущего дня.
+- В конце: сам создай PR в main; дождись комментария бота Firebase и пришли ГОТОВУЮ ссылку-превью с ?demo=1; дождись Checks, если обязательная проверка красная — почини; обнови свою строку в docs/STATUS.md; отчёт до 8 строк.
+
 Guidance for AI coding agents (Codex, Claude Code, and others) working in this
 repository. Claude Code loads this file automatically via the `@AGENTS.md` import in
 `CLAUDE.md`; Codex and other AGENTS.md-aware tools read it directly.
@@ -18,6 +29,10 @@ Russian-only — never introduce English strings into product-facing text.
 
 **Отвечай пользователю только по-русски** — во всех сессиях и во всех ответах,
 независимо от языка тикетов/кода/коммитов.
+
+**Весь контент в GitHub пишется на русском** — заголовки и описания PR, комментарии
+в ревью-тредах, общие комментарии к PR, ответы на ревью, сообщения коммитов. Это
+правило обязательно для Base44 и любых других агентов.
 
 ## Project
 
@@ -68,6 +83,17 @@ npm run ux:check
 работу и сообщить владельцу о блокере. Нельзя переводить PR в Ready for review и
 нельзя сообщать, что задача завершена, пока все четыре команды не стали зелёными
 локально.
+
+## MXL-010 и Playwright-помощники
+
+Если PR меняет шаги, кнопки или переходы потока чек-ина (CheckIn.jsx, Today.jsx,
+WebActionBar.jsx, Conversation.jsx, BackButton.jsx, JournalTextarea.jsx), в том же PR:
+
+1. Обнови помощники в `tests/ux/checkin-helpers.mjs` (data-testid, шаги шкалы, текстовые шаги, эмоции, завершение, возврат).
+2. Добавь `data-testid` в новые или изменённые ключевые элементы (кнопки, инпуты, карточки дня, pill эмоций, опции шкалы).
+3. Не используй текст или CSS-классы для поиска элементов в тестах — только `data-testid`. Текст допустим только для проверки, что он показан (`expect(page.getByText(...))`).
+4. Никаких `waitForTimeout` — только ожидание состояния (`waitFor`, `expect(...).toBeVisible()`).
+5. Прогони MXL-010 локально до пуша: `npx playwright test --config=playwright.mxl010.config.mjs`.
 
 ## Documentation map
 
@@ -197,6 +223,11 @@ screens, and keep article cards unchanged unless the owner explicitly approves t
   copies expecting them to compile or ship.
 - Firebase Production uses `VITE_API_BASE_URL` to call the Render backend directly.
   `src/lib/api.js` keeps relative `/api` only as a local fallback; Firebase Hosting does not proxy API requests.
+
+## Запреты
+
+- src/main.jsx и src/tgShell.js нельзя менять без метки allow-entry-change. Ошибка сборки в контейнере агента — не причина.
+  Правило принудительно проверяется в CI (job «Frontend quality», входит в «Функциональная проверка проекта»).
 
 ## Context economy
 

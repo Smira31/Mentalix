@@ -1,0 +1,192 @@
+name: Firebase Preview Channels Cleanup
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  # 1. Автоудаление канала pr-<N> при закрытии PR (смержен или просто закрыт).
+  delete-on-close:
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: 22.22.1
+
+      - name: Install firebase-tools
+        run: npm install -g firebase-tools
+
+      - name: Configure Firebase auth
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$HOME/firebase-service-account.json"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$HOME/firebase-service-account.json" >> "$GITHUB_ENV"
+
+      - name: Delete PR preview channel
+        env:
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          CHANNEL: pr-${{ github.event.number }}
+        run: |
+          set -euo pipefail
+          raw="$(firebase hosting:channel:list --project "$FIREBASE_PROJECT_ID" --json)"
+          # stdout firebase может содержать лишние строки перед JSON — берём от первой «{».
+          json="$(printf '%s' "$raw" | sed -n '/^[[:space:]]*{/,$p')"
+          if printf '%s' "$json" | jq -e --arg c "$CHANNEL" \
+               '[.result.channels[]?.name] | any(. == $c or endswith("/" + $c))' >/dev/null; then
+            firebase hosting:channel:delete "$CHANNEL" --project "$FIREBASE_PROJECT_ID" --force
+            echo "Канал $CHANNEL удалён."
+          else
+            echo "Канал $CHANNEL не найден — удалять нечего. Job зелёный."
+          fi
+
+  # 2. Разовая чистка: вручную. Для каждого канала pr-<N> проверяет через GitHub API,
+  #    открыт ли PR #N; закрытые/смержённые — удаляет. Канал live НИКОГДА не трогает.
+  cleanup-closed:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: 22.22.1
+
+      - name: Install firebase-tools
+        run: npm install -g firebase-tools
+
+      - name: Configure Firebase auth
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$HOME/firebase-service-account.json"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$HOME/firebase-service-account.json" >> "$GITHUB_ENV"
+
+      - name: Delete channels of closed/merged PRs
+        uses: actions/github-script@v7
+        env:
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { execSync } = require('child_process');
+            const { owner, repo } = context.repo;
+            const projectId = process.env.FIREBASE_PROJECT_ID;
+
+            const raw = execSync(
+              `firebase hosting:channel:list --project ${projectId} --json`,
+              { encoding: 'utf8' }
+            );
+
+            // stdout firebase может содержать лишние строки перед JSON — берём от первого «{» или «[».
+            const startIdx = raw.search(/[[{]/);
+            if (startIdx === -1) {
+              core.setFailed('hosting:channel:list --json не вернул JSON. Первые 500 символов ответа:\n' + raw.slice(0, 500));
+              return;
+            }
+
+            let parsed;
+            try {
+              parsed = JSON.parse(raw.slice(startIdx));
+            } catch {
+              core.setFailed('Не удалось разобрать вывод hosting:channel:list --json. Первые 500 символов ответа:\n' + raw.slice(0, 500));
+              return;
+            }
+
+            // Разбираем список надёжно: result.channels → result → channels → корень.
+            let channels = null;
+            if (Array.isArray(parsed?.result?.channels)) {
+              channels = parsed.result.channels;
+            } else if (Array.isArray(parsed?.result)) {
+              channels = parsed.result;
+            } else if (Array.isArray(parsed?.channels)) {
+              channels = parsed.channels;
+            } else if (Array.isArray(parsed)) {
+              channels = parsed;
+            }
+
+            if (!Array.isArray(channels)) {
+              core.setFailed('Не удалось найти массив каналов в ответе. Первые 500 символов ответа:\n' + raw.slice(0, 500));
+              return;
+            }
+
+            core.info(`Найдено каналов: ${channels.length}.`);
+
+            const prRe = /^pr-(\d+)$/;
+            let deleted = 0;
+            let skipped = 0;
+            const deletedNames = [];
+            const keptNames = [];
+
+            for (const ch of channels) {
+              const lastSeg = String(ch?.name ?? '').split('/').pop();
+
+              // Канал live НИКОГДА не трогаем.
+              if (lastSeg === 'live') {
+                core.info('Канал live — пропущен (не трогаем).');
+                keptNames.push(`${lastSeg} (live)`);
+                skipped++;
+                continue;
+              }
+
+              const m = lastSeg.match(prRe);
+              if (!m) {
+                core.info(`Канал ${lastSeg} не вида pr-<N> — пропущен.`);
+                keptNames.push(`${lastSeg} (не pr-<N>)`);
+                skipped++;
+                continue;
+              }
+
+              const num = parseInt(m[1], 10);
+
+              let pr;
+              try {
+                const res = await github.rest.pulls.get({ owner, repo, pull_number: num });
+                pr = res.data;
+              } catch (e) {
+                core.warning(`PR #${num} не найден (status ${e.status}) — канал ${lastSeg} пропущен.`);
+                keptNames.push(`${lastSeg} (PR #${num} не найден)`);
+                skipped++;
+                continue;
+              }
+
+              if (pr.state === 'open') {
+                core.info(`PR #${num} открыт — канал ${lastSeg} не трогаем.`);
+                keptNames.push(`${lastSeg} (PR #${num} открыт)`);
+                skipped++;
+                continue;
+              }
+
+              const reason = pr.merged ? 'смержен' : 'закрыт';
+              core.info(`PR #${num} ${reason} — удаляем канал ${lastSeg}.`);
+              try {
+                execSync(
+                  `firebase hosting:channel:delete ${lastSeg} --project ${projectId} --force`,
+                  { encoding: 'utf8', stdio: 'inherit' }
+                );
+                deleted++;
+                deletedNames.push(lastSeg);
+              } catch (e) {
+                core.warning(`Не удалось удалить канал ${lastSeg}: ${e.message}`);
+              }
+            }
+
+            core.info('--- Итог чистки ---');
+            core.info(`Всего каналов: ${channels.length}.`);
+            core.info(`Удалено: ${deleted}${deletedNames.length ? ' — ' + deletedNames.join(', ') : ''}.`);
+            core.info(`Оставлено: ${skipped}${keptNames.length ? ' — ' + keptNames.join('; ') : ''}.`);

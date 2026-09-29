@@ -3,6 +3,7 @@ import { Check, Cloud, Lightbulb, Lock, LockKeyhole, PenLine, Sparkles } from 'l
 import { createPortal } from 'react-dom'
 import BackButton from '../components/BackButton'
 import { isPreviewDemoMode } from '../lib/demoMode'
+import { ProfileBody, ProfilePage } from './settings/ProfileUi'
 import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
 import './SubscriptionManager.css'
 
@@ -16,7 +17,7 @@ const TIERS = [
       'Один собеседник (Компас)',
       'Базовая аналитика',
       '1 блок нейротренажёра в день',
-      'Считка дня — один источник',
+      'Мысль дня — один источник',
     ],
   },
   {
@@ -27,7 +28,7 @@ const TIERS = [
       'Все три собеседника',
       'Полная аналитика с корреляциями',
       'Весь нейротренажёр без ограничений',
-      'Чередование источников считки дня',
+      'Чередование источников мысли дня',
       'Напоминания в Telegram',
       'Курсы без ограничений',
     ],
@@ -134,28 +135,33 @@ export default function SubscriptionManager({ user: _user, tier, onBack }) {
   }
 
   return (
-    <div className="w-full max-w-md px-4 pt-2 pb-28 flex flex-col items-center">
-      <div className="w-full grid grid-cols-[1fr_auto_1fr] items-center min-h-[42px] mb-6">
-        <div className="justify-self-start">
-          <BackButton showInDemo onClick={onBack} />
-        </div>
-        <h1 className="font-display text-[18px] text-cream">Подписка</h1>
-        <span aria-hidden="true" />
-      </div>
+    <ProfilePage title="подписка." onBack={onBack} testId="profile-screen-subscription">
+      <ProfileBody>
+        {/* Тарифы — статичные данные, показываем сразу; с сервера приходит
+            только текущий тариф (tier), плашка «Текущий» появляется после ответа. */}
+        <SubscriptionTiers tier={tier} />
+      </ProfileBody>
+    </ProfilePage>
+  )
+}
 
+function SubscriptionTiers({ tier }) {
+  return (
+    <>
       {TIERS.map(t => {
         const isCurrent = tier === t.key
         return (
           <div
             key={t.key}
-            className={`w-full rounded-2xl border p-5 mb-4 ${
-              isCurrent ? 'border-gold bg-gold/5' : 'border-cream/[0.08] bg-cream/[0.03]'
+            data-testid={`subscription-tier-${t.key}`}
+            className={`w-full rounded-2xl border p-5 mb-4 bg-[rgb(var(--c-card2))] ${
+              isCurrent ? 'border-muted' : 'border-transparent'
             }`}
           >
             <div className="flex items-center justify-between mb-1">
               <h2 className="font-display text-[16px] text-cream">{t.name}</h2>
               {isCurrent && (
-                <span className="text-[10px] font-medium px-2.5 py-1 rounded-full bg-gold text-emerald-deep">
+                <span className="text-[10px] font-medium px-2.5 py-1 rounded-full bg-cream text-emerald-deep">
                   Текущий
                 </span>
               )}
@@ -164,7 +170,7 @@ export default function SubscriptionManager({ user: _user, tier, onBack }) {
             <ul className="space-y-2 mb-4">
               {t.features.map(f => (
                 <li key={f} className="flex items-start gap-2 text-[13px] text-cream">
-                  <Check size={15} className="text-gold shrink-0 mt-0.5" />
+                  <Check size={15} className="text-muted shrink-0 mt-0.5" />
                   {f}
                 </li>
               ))}
@@ -185,6 +191,6 @@ export default function SubscriptionManager({ user: _user, tier, onBack }) {
         Приём платежей за тариф Про пока не подключён — раздел появится здесь в следующем
         обновлении.
       </p>
-    </div>
+    </>
   )
 }

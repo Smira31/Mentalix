@@ -15,7 +15,9 @@
   align-items: center;
   justify-content: space-between;
   flex: 0 0 auto;
-  padding: max(4px, var(--app-safe-top, env(safe-area-inset-top, 0px))) 20px 8px;
+  /* 16 px, как у тела шага и левого края текста: капсула «Назад» на той же
+     линии. Вертикальные отступы прежние — высота кнопки не меняется. */
+  padding: 4px var(--mx-screen-x) 8px;
 }
 
 .mx-demo-checkin__header-left {
@@ -400,6 +402,13 @@
   max-width: 650px;
   font-size: clamp(24px, 5.6vw, 36px);
 }
+/* Вопрос «Что на уме?» и подсказка центрируются, как в шагах шкал;
+   поле ввода остаётся выровненным влево. */
+.mx-demo-checkin__editor-scene h1,
+.mx-demo-checkin__editor-scene .mx-checkin-question__hint {
+  text-align: center;
+  margin-inline: auto;
+}
 .mx-demo-checkin__hint {
   margin: 16px 0 0;
   color: #777;
@@ -408,12 +417,13 @@
 .mx-demo-checkin__editor {
   min-height: 300px;
   margin-top: 22px;
-  background: #000 !important;
+  background: rgb(var(--c-bg)) !important;
 }
 .mx-demo-checkin__editor [contenteditable] {
   min-height: 300px;
-  background: #000 !important;
-  padding: 4px 0;
+  background: rgb(var(--c-bg)) !important;
+  /* Внутренний отступ поля: §5.2 его не задаёт — 16 px, как --mx-screen-x. */
+  padding: 4px 16px;
 }
 .mx-demo-checkin__scene--upsell {
   max-width: 410px;
@@ -466,6 +476,13 @@
   margin: 0 auto 10px;
   object-fit: contain;
 }
+.mx-demo-checkin__character {
+  display: block;
+  width: 132px;
+  height: auto;
+  margin: 0 auto 12px;
+  object-fit: contain;
+}
 .mx-demo-checkin__complete-eyebrow {
   margin: 0 auto 16px !important;
   color: #888 !important;
@@ -490,6 +507,13 @@
   max-width: 420px;
   color: rgb(var(--c-muted));
   line-height: 1.45;
+}
+.mx-demo-checkin__scene--complete [data-testid='daily-task'] p {
+  margin: 0;
+  max-width: none;
+}
+.mx-demo-checkin__scene--complete [data-testid='daily-task'] .text-cream {
+  color: rgb(var(--c-text));
 }
 .mx-demo-checkin__note-chip {
   display: inline-flex;
@@ -558,6 +582,17 @@
 }
 .mx-demo-checkin__error {
   color: #d99;
+}
+/* Слот ошибки резервирует высоту заранее: появление сообщения
+   не сдвигает иллюстрацию и заголовок экрана завершения. */
+.mx-demo-checkin__error-slot {
+  display: flex;
+  justify-content: center;
+  min-height: 40px;
+  margin-top: 18px;
+}
+.mx-demo-checkin__error-slot .mx-demo-checkin__error {
+  margin: 0;
 }
 
 .mx-demo-checkin__tags {
@@ -667,6 +702,9 @@
   width: min(100%, 337px);
   gap: 8px;
   margin-top: 30px;
+  /* Фиксированная ширина шкалы меньше тела шага — центрируем её саму,
+     иначе шкала прижимается влево (MXL-440). */
+  margin-inline: auto;
 }
 
 .mx-checkin-scale__option {
@@ -718,6 +756,9 @@
   color: rgb(var(--c-muted));
   font-size: 14px;
   font-weight: 500;
+  /* «Через край» и другие крайние подписи — в одну строку:
+     перенос на две строки ломает нижнюю линию шага. */
+  white-space: nowrap;
 }
 
 .mx-checkin-next-controls {
@@ -730,31 +771,6 @@
   padding: 12px var(--mx-screen-x) calc(var(--app-safe-bottom) + 16px);
 }
 
-.mx-checkin-next-controls__skip {
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: rgb(var(--c-muted));
-  font-size: 17px;
-  font-weight: 500;
-}
-
-.mx-checkin-next-controls__next {
-  display: grid;
-  width: 45px;
-  height: 45px;
-  place-items: center;
-  border: 0;
-  border-radius: 50%;
-  background: #f2f2f2;
-  color: rgb(var(--c-bg));
-}
-
-.mx-checkin-next-controls__next:disabled {
-  background: rgb(var(--c-border));
-  color: rgb(var(--c-muted));
-}
-
 .mx-demo-checkin__scene--complete {
   transform: none;
 }
@@ -763,6 +779,10 @@
 .mx-demo-checkin__bird {
   width: 90px;
   height: 120px;
+}
+
+.mx-demo-checkin__character {
+  width: 112px;
 }
 
 .mx-demo-checkin__scene--complete h1 {
@@ -783,7 +803,12 @@
   display: none;
 }
 
+/* Кнопки фиксированной ширины 72 px: колонки той же ширины и ряд по центру,
+   иначе в колонках 1fr кнопки прижимаются к левому краю ячейки и ряд
+   визуально съезжает влево. */
 .mx-demo-checkin__feedback {
+  grid-template-columns: repeat(3, 72px);
+  justify-content: center;
   gap: 8px;
 }
 
@@ -826,40 +851,86 @@
   }
 }
 
-.mx-checkin-emotion-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-  width: min(100%, calc(100vw - 56px));
-  margin-top: 30px;
+/* ── Шаг «Эмоции» — §5.2 блок 4 ── */
+
+.mx-emotion-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
 }
 
-.mx-checkin-emotion-button {
-  min-height: 53px;
-  padding: 0 8px;
-  border: 1px solid rgb(var(--c-border));
-  border-radius: var(--mx-radius-control);
+.mx-emotion-step__face {
+  margin-bottom: 20px;
+}
+
+.mx-emotion-step__face .mx-face__frame {
+  stroke: rgb(var(--c-line));
+}
+
+.mx-emotion-carousel {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  width: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mx-emotion-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.mx-emotion-column {
+  flex: 0 0 243px;
+  scroll-snap-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 16px;
+  transition: opacity 200ms ease;
+}
+
+.mx-emotion-column.is-active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.mx-emotion-column.is-adjacent {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.mx-emotion-pill {
+  height: 38px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: var(--mx-radius-pill);
   background: rgb(var(--c-card2));
   color: rgb(var(--c-text));
-  font-size: 17px;
-  font-weight: 700;
+  font-size: 15px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition:
+    background 140ms ease,
+    color 140ms ease;
 }
 
-.mx-checkin-emotion-button.is-selected {
+.mx-emotion-pill.is-selected {
   background: rgb(var(--c-line));
   color: rgb(var(--c-bg));
 }
 
-.mx-checkin-emotion-more {
-  min-height: 40px;
-  margin-top: 24px;
-  padding: 0 20px;
-  border: 1px solid rgb(var(--c-border));
-  border-radius: var(--mx-radius-pill);
+.mx-emotion-heavy {
+  margin-top: 16px;
+  padding: 0;
+  border: 0;
   background: transparent;
-  color: rgb(var(--c-text));
-  font-size: 17px;
-  font-weight: 500;
+  color: rgb(var(--c-gold));
+  font-size: 15px;
+  font-weight: 600;
 }
 
 .mx-checkin-completion-title {
@@ -875,4 +946,236 @@
 
 .mx-checkin-completion-title strong {
   font-weight: 700;
+}
+
+/* ── StepSlide — §6, горизонтальный переход между шагами вбок ── */
+
+.mx-step-slide {
+  position: relative;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  /*
+   * overflow-x: hidden обрезает уходящий клон при горизонтальном сдвиге.
+   * По спеке CSS, когда одна ось не visible, вторая вычисляется как auto —
+   * поэтому вертикальный контент (текстовые шаги) скроллится внутри сцены.
+   */
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+}
+
+.mx-step-slide__panel {
+  position: relative;
+  width: 100%;
+  flex: 1 1 0%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.mx-step-slide__clone {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  /* Клон неинтерактивен (inert задаётся из JS); pointer-events —
+     страховка на случай, если inert не поддерживается. */
+  pointer-events: none;
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-step-slide__clone {
+    display: none;
+  }
+}
+
+/*
+ * Утренний флоу (mx-demo-checkin): центрирование контента шага по вертикали
+ * раньше держалось на body > .mx-checkin-question { margin: auto }. StepSlide
+ * добавляет панель между body и контентом — переносим то же правило на
+ * прямых детей панели.
+ */
+.mx-demo-checkin__body .mx-step-slide__panel {
+  min-height: 0;
+}
+
+.mx-demo-checkin__body:not(.is-editor) .mx-step-slide__panel > .mx-checkin-question,
+.mx-demo-checkin__body:not(.is-editor) .mx-step-slide__panel > section {
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.mx-demo-checkin__body .mx-step-slide__panel > .mx-checkin-question--scale {
+  transform: translateY(10vh);
+}
+
+/* Утренние шкалы: одна и та же степень заливки для всех вопросов. */
+.mx-demo-checkin .mx-checkin-scale--filled .mx-checkin-scale__inner {
+  background: linear-gradient(
+    to top,
+    rgb(var(--c-line)) var(--scale-fill),
+    rgb(var(--c-card2)) var(--scale-fill)
+  );
+}
+
+.mx-demo-checkin .mx-checkin-scale--filled .mx-checkin-scale__option:not(.is-selected) .mx-checkin-scale__circle {
+  border: 1.5px solid transparent;
+  opacity: 0.65;
+}
+
+.mx-demo-checkin .mx-checkin-scale--filled .mx-checkin-scale__option.is-selected .mx-checkin-scale__circle {
+  border: 1.5px solid rgb(var(--c-line));
+}
+
+.mx-demo-checkin .mx-checkin-question > h1 {
+  font-family: 'Onest', sans-serif;
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+}
+
+.mx-demo-checkin .mx-checkin-question__hint {
+  margin-top: 8px;
+  color: rgb(var(--c-muted));
+  font-size: 15px;
+}
+
+.mx-demo-checkin .mx-checkin-scale__label {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* day_focus остаётся свободным текстом API; плитки предлагают готовые значения. */
+.mx-demo-checkin__editor-scene--focus {
+  overflow: visible;
+  flex: 0 0 auto;
+  padding-bottom: 24px;
+}
+
+/* Вопрос «Главный фокус на сегодня?» — эталон Stoic, ≈ 22 pt / 600, --c-text 85% */
+.mx-demo-checkin__editor-scene--focus > h1 {
+  font-size: 22px;
+  font-weight: 600;
+  color: rgb(var(--c-text) / 0.85);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.mx-demo-checkin__day-focus {
+  width: 100%;
+  max-width: 440px;
+  margin: 0 auto;
+  /* Поля слева/справа ≈ 36 pt: 16 px (body) + 20 px здесь */
+  padding-inline: 20px;
+}
+
+.mx-demo-checkin .mx-demo-checkin__focus-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  /* Зазор ≈ 5 pt */
+  gap: 5px;
+  /* ≈ 60 pt под вопросом */
+  margin-top: 60px;
+}
+
+.mx-demo-checkin .mx-demo-checkin__focus-grid button {
+  display: flex;
+  min-width: 0;
+  /* Плитка ≈ 114 pt высота */
+  min-height: 114px;
+  flex-direction: column;
+  align-items: center;
+  /* Иконка в верхней трети */
+  justify-content: flex-start;
+  /* ≈ 30 pt между иконкой и подписью */
+  gap: 30px;
+  padding: 16px 4px 12px;
+  /* БЕЗ рамки */
+  border: 0;
+  /* Радиус ≈ 20 pt */
+  border-radius: 20px;
+  /* Фон ≈ #141414 */
+  background: #141414;
+  /* Иконка светло-серая ≈ #D0D0D0 */
+  color: #D0D0D0;
+  font-family: 'Onest', sans-serif;
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.mx-demo-checkin .mx-demo-checkin__focus-grid button span {
+  margin: 0;
+  /* Подпись ≈ 17 pt / 500, text-muted ≈ #8A8A8A */
+  font-size: 17px;
+  font-weight: 500;
+  color: rgb(var(--c-muted));
+}
+
+.mx-demo-checkin .mx-demo-checkin__focus-grid button.is-selected {
+  /* Выбранная плитка: фон --c-text, иконка и подпись --c-bg */
+  background: rgb(var(--c-text));
+  color: rgb(var(--c-bg));
+}
+
+.mx-demo-checkin .mx-demo-checkin__focus-grid button.is-selected span {
+  color: rgb(var(--c-bg));
+}
+
+.mx-demo-checkin__show-all {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  /* ≈ 40 pt под сеткой */
+  margin: 40px auto 0;
+  padding: 8px 16px;
+  border: 0;
+  background: transparent;
+  /* 17 pt / 600 --c-text */
+  color: rgb(var(--c-text));
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.mx-demo-checkin__show-all svg {
+  color: rgb(var(--c-text));
+}
+
+/* Письмо начинается под вопросом; высота shell меняется вместе с клавиатурой. */
+.mx-demo-checkin__body.is-editor {
+  padding-top: 16px;
+}
+
+.mx-demo-checkin__editor-scene:not(.mx-demo-checkin__editor-scene--focus) h1,
+.mx-demo-checkin__editor-scene:not(.mx-demo-checkin__editor-scene--focus) .mx-checkin-question__hint {
+  text-align: left;
+}
+
+.mx-demo-checkin__editor {
+  min-height: 0;
+  flex: 1;
+}
+
+.mx-demo-checkin__editor [contenteditable] {
+  min-height: 140px;
+  padding: 4px 0;
+}
+
+.mx-demo-checkin .journal-textarea__floating-actions {
+  justify-content: flex-end;
+}
+
+@media (max-width: 359px) {
+  .mx-demo-checkin .mx-checkin-scale--filled {
+    gap: 2px;
+  }
+  .mx-demo-checkin .mx-checkin-scale--filled .mx-checkin-scale__circle {
+    width: 48px;
+    height: 48px;
+  }
 }

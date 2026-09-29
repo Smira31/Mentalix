@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowRight, Bold, Check, Highlighter, Italic, Plus } from 'lucide-react'
+import { Bold, Highlighter, Italic, Plus } from 'lucide-react'
 
 import { platform } from '../platform'
 import { parseInlineMarkdown, parseMarkdownBlocks } from '../lib/journalMarkdown'
@@ -9,6 +9,7 @@ import {
   useVisualViewportGeometry,
 } from '../lib/visualViewport'
 import PracticeWritingCanvas from './PracticeWritingCanvas'
+import RoundSubmitButton from './RoundSubmitButton'
 import './WritingControls.css'
 
 const FORMATS = [
@@ -156,6 +157,8 @@ export default function JournalTextarea({
   onChange,
   placeholder,
   ariaLabel,
+  testId,
+  submitTestId,
   className = '',
   editorClassName = '',
   floatingToolbar = false,
@@ -177,6 +180,7 @@ export default function JournalTextarea({
   writingCanvas = false,
   guidedFlow = false,
   showAddAction = false,
+  hideAddAction = false,
 }) {
   const editorRef = useRef(null)
   const emittedValueRef = useRef(null)
@@ -298,6 +302,7 @@ export default function JournalTextarea({
         aria-multiline="true"
         autoFocus={autoFocus}
         contentEditable
+        data-testid={testId}
         suppressContentEditableWarning
         data-placeholder={placeholder}
         onInput={() => {
@@ -365,7 +370,7 @@ export default function JournalTextarea({
           <div
             className={[
               'fixed bottom-[calc(var(--app-safe-bottom)+10px)] left-[var(--mx-screen-x)] right-[var(--mx-screen-x)] z-[70] mx-auto flex min-w-0 items-center justify-between gap-2',
-              'max-w-[430px]',
+              'max-w-[440px]',
               'journal-textarea__floating-actions',
               desktopInline
                 ? 'md:static md:bottom-auto md:left-auto md:right-auto md:z-0 md:mx-0 md:mt-6 md:w-full md:max-w-none'
@@ -375,7 +380,7 @@ export default function JournalTextarea({
             style={keyboardDockStyle}
           >
             <div className="flex shrink-0 items-center gap-1.5">
-              {(showAddAction || floatingToolbar) && (
+              {(showAddAction || floatingToolbar) && !hideAddAction && (
                 <button
                   type="button"
                   aria-label={
@@ -427,10 +432,10 @@ export default function JournalTextarea({
                 </button>
               ) : null}
 
-              <button
-                type="button"
-                aria-label={submitLabel}
-                title={submitLabel}
+              <RoundSubmitButton
+                label={submitLabel}
+                testId={submitTestId}
+                icon={submitIcon}
                 onClick={() => {
                   if (!keepFocusOnSubmit) {
                     editorRef.current?.blur()
@@ -438,14 +443,7 @@ export default function JournalTextarea({
                   onSubmit?.()
                 }}
                 disabled={submitDisabled || submitLoading || deepenLoading}
-                className="mx-keyboard-control mx-keyboard-submit flex h-[45px] w-[45px] shrink-0 items-center justify-center rounded-full border border-[rgb(var(--c-border))] bg-[#F2F2F2] text-emerald-deep transition-transform active:scale-95 disabled:opacity-35"
-              >
-                {submitIcon === 'arrow' ? (
-                  <ArrowRight size={25} strokeWidth={2.4} />
-                ) : (
-                  <Check size={25} strokeWidth={2.4} />
-                )}
-              </button>
+              />
             </div>
           </div>
           {showAddAction && addOpen && (

@@ -1,4 +1,5 @@
 import { buildBadges } from './badges.js'
+import { now as clockNow } from './clock.js'
 
 const seriesSnapshots = new Map()
 const SNAPSHOT_PREFIX = 'mx-series-snapshot:'
@@ -7,6 +8,27 @@ function dayNumber(value) {
   const match = String(value).match(/^(\d{4})-(\d{2})-(\d{2})/)
   if (!match) return NaN
   return Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])) / 86400000
+}
+
+function logicalDateKey(value, timezone) {
+  if (!timezone) return localDayKey(value)
+  try {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: timezone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      hourCycle: 'h23',
+    }).formatToParts(value)
+    const fields = Object.fromEntries(parts.map(part => [part.type, part.value]))
+    const day = `${fields.year}-${fields.month}-${fields.day}`
+    return Number(fields.hour) < 5
+      ? new Date((dayNumber(day) - 1) * 86400000).toISOString().slice(0, 10)
+      : day
+  } catch {
+    return localDayKey(value)
+  }
 }
 
 function dateKey(checkin, timezone = 'UTC') {
@@ -19,18 +41,7 @@ function dateKey(checkin, timezone = 'UTC') {
   const parsed = new Date(raw)
   if (Number.isNaN(parsed.getTime())) return null
 
-  try {
-    const parts = new Intl.DateTimeFormat('en-CA', {
-      timeZone: timezone || 'UTC',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    }).formatToParts(parsed)
-    const values = Object.fromEntries(parts.map(part => [part.type, part.value]))
-    return `${values.year}-${values.month}-${values.day}`
-  } catch {
-    return parsed.toISOString().slice(0, 10)
-  }
+  return logicalDateKey(parsed, timezone || 'UTC')
 }
 
 function isCompleted(checkin) {
@@ -39,78 +50,81 @@ function isCompleted(checkin) {
   )
 }
 
-function completedDays(checkins = [], timezone = 'UTC') {
-  return [
-    ...new Set(
-      checkins
-        .filter(isCompleted)
-        .map(checkin => dateKey(checkin, timezone))
-        .filter(Boolean)
-    ),
-  ]
-    .sort()
-    .map(dayNumber)
+function localDayKey(now) {
+  const day = new Date(now)
+  if (day.getHours() < 5) day.setDate(day.getDate() - 1)
+  const pad = value => String(value).padStart(2, '0')
+  return `${day.getFullYear()}-${pad(day.getMonth() + 1)}-${pad(day.getDate())}`
 }
 
-export function currentCheckinStreak(checkins = [], options = {}) {
-  const days = completedDays(checkins, options.timezone)
-  if (!days.length) return 0
-
-  let streak = 1
-  for (let index = days.length - 1; index > 0; index -= 1) {
-    if (days[index] - days[index - 1] !== 1) break
-    streak += 1
-  }
-  return streak
+/**
+ * История чек-инов + сегодняшний чек-ин (GET /checkin/today). История с
+ * бэкенда может отставать от записи за сегодня; утренний чек-ин уже есть —
+ * значит, сегодняшний день засчитан в серию.
+ */
+export function withTodayCheckin(history = [], today = null, now = clockNow()) {
+  const list = Array.isArray(history) ? history : []
+  if (!today || typeof today !== 'object') return list
+  const date = Number.isFinite(dayNumber(today.date))
+    ? String(today.date).slice(0, 10)
+    : localDayKey(now)
+  // Сегодняшний день уже засчитан в истории — дубль не нужен.
+  if (list.some(checkin => String(checkin?.date ?? '').slice(0, 10) === date)) return list
+  return [...list, { ...today, date }]
 }
 
-export function longestCheckinStreak(checkins = [], options = {}) {
-  const days = completedDays(checkins, options.timezone)
-  if (!days.length) return 0
-
-  let longest = 1
-  let run = 1
-  for (let index = 1; index < days.length; index += 1) {
-    if (days[index] - days[index - 1] === 1) run += 1
-    else run = 1
-    longest = Math.max(longest, run)
-  }
-  return longest
-}
-
-export function buildSeriesViewModel({
-  stats = {},
-  checkins = [],
-  rituals,
-  ascezas,
-  timezone,
-} = {}) {
-  const resolvedTimezone =
-    timezone || stats?.timezone || stats?.user_timezone || stats?.time_zone || 'UTC'
+// View-model значков без клиентского восстановления серии из неполной истории.
+// Числа мягкой серии приходят исключительно из GET /api/streak.
+export function buildServerSeriesViewModel({ stats = {}, checkins = [], rituals = [], ascezas = [], canonicalStats = null, registrationDays = null } = {}) {
   const completed = checkins.filter(isCompleted)
-  const activeDays = completedDays(checkins, resolvedTimezone).length
-  const currentStreak = currentCheckinStreak(checkins, { timezone: resolvedTimezone })
-  const bestStreak = longestCheckinStreak(checkins, { timezone: resolvedTimezone })
-  const metrics = {
-    ...stats,
-    total_checkins: completed.length,
-    days_active: activeDays,
-    best_streak: bestStreak,
-  }
-
   return {
-    currentStreak,
-    bestStreak: metrics.best_streak,
-    activeDays: metrics.days_active,
-    totalCheckins: metrics.total_checkins,
-    timezone: resolvedTimezone,
+    currentStreak: canonicalStats?.currentStreak ?? null,
+    bestStreak: canonicalStats?.bestStreak ?? null,
+    activeDays: canonicalStats?.activeDays ?? null,
+    totalCheckins: stats.total_checkins ?? completed.length,
     badges: buildBadges({
-      stats: metrics,
+      stats: { ...stats, best_streak: canonicalStats?.bestStreak ?? 0, days_active: canonicalStats?.activeDays ?? 0 },
       checkins: completed,
-      rituals: rituals || [],
-      ascezas: ascezas || [],
+      rituals,
+      ascezas,
+      registrationDays,
     }),
   }
+}
+
+/**
+ * Разделить историю на «до сегодняшнего чек-ина» и «с сегодняшним чек-ином»,
+ * чтобы сравнить значки и определить, какие открылись именно сейчас, а какие
+ * были получены задним числом (ретро-зачёт при первом появлении значка в
+ * каталоге). Обе модели строятся из одной свежей истории — это исключает
+ * гонку с ещё не загруженным React-состоянием checkinHistory.
+ */
+export function splitCheckinsForComparison(history = [], todayCheckin = null, now = clockNow()) {
+  const list = Array.isArray(history) ? history : []
+  if (!todayCheckin || typeof todayCheckin !== 'object') {
+    return { previous: list, next: list }
+  }
+  const todayKey = Number.isFinite(dayNumber(todayCheckin.date))
+    ? String(todayCheckin.date).slice(0, 10)
+    : localDayKey(now)
+  const previous = list.filter(c => String(c.date).slice(0, 10) !== todayKey)
+  const next = withTodayCheckin(list, todayCheckin, now)
+  return { previous, next }
+}
+
+/**
+ * Найти первый значок, который открыт в nextModel, но не был открыт в
+ * previousModel. Используется для шторки «Новый значок» — показывает
+ * только значки, полученные в момент нового чек-ина, а не ретро-зачёт.
+ */
+export function detectNewlyUnlockedBadge(previousModel, nextModel) {
+  if (!nextModel?.badges) return null
+  return (
+    nextModel.badges.find(
+      badge =>
+        badge.done && !previousModel?.badges?.find(previous => previous.id === badge.id)?.done
+    ) || null
+  )
 }
 
 export function peekSeriesSnapshot(userId) {
@@ -139,6 +153,10 @@ export function rememberSeriesSnapshot(userId, model) {
 
 export function clearSeriesSnapshots() {
   seriesSnapshots.clear()
+}
+
+export function seriesLogicalDateKey(value = clockNow(), timezone) {
+  return logicalDateKey(value, timezone)
 }
 
 export function seriesDateKey(checkin, timezone = 'UTC') {

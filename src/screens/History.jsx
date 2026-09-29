@@ -1,14 +1,19 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+
 import { api } from '../lib/api'
 import { MotifArt } from '../components/Motif'
 import EmptyState from '../components/EmptyState'
 import MarkdownText from '../components/MarkdownText'
 import { buildBadges } from '../lib/badges'
+import { daysSinceRegistration } from '../lib/badgeCatalog'
 import { readJournalHistory } from '../lib/journalHistory'
 import JourneySearch from './JourneySearch'
+import HistorySkeleton from '../components/HistorySkeleton'
 import { platform, platformName } from '../platform'
 import { MoreHorizontal } from 'lucide-react'
+import BackButton from '../components/BackButton'
 import { MENTOR_DRAFT_KEY, MENTOR_PERSONA_KEY, MENTOR_SAFETY_KEY } from './mentalix/personas'
+import { moodPracticeDate } from '../lib/moodPracticeLogic'
 
 // ── История: лента дней из чек-инов, активности и local-only journal, как
 // history. у stoic. ──
@@ -24,6 +29,42 @@ import { MENTOR_DRAFT_KEY, MENTOR_PERSONA_KEY, MENTOR_SAFETY_KEY } from './menta
 
 const MOOD_WORDS = ['тяжко', 'так себе', 'нормально', 'хорошо', 'отлично']
 const MONTHS = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек']
+const LESSON_LABELS = ['Что получилось?', 'Что было трудно?', 'Какой вывод забираешь?']
+const ALTER_EGO_PREFIX = 'Был ли ты сегодня '
+
+function capitalize(s) {
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : s
+}
+
+function moodWord(level) {
+  return capitalize(MOOD_WORDS[(level || 3) - 1])
+}
+
+function parseLessons(lessons) {
+  if (!lessons) return []
+  const lines = lessons.split('\n')
+  const result = []
+  let current = null
+  for (const line of lines) {
+    const label = LESSON_LABELS.find(l => line.startsWith(l + ' '))
+    if (label) {
+      if (current) result.push(current)
+      current = { question: label, answer: line.slice(label.length + 1) }
+    } else if (line.startsWith(ALTER_EGO_PREFIX)) {
+      const qEnd = line.indexOf('? ')
+      if (qEnd !== -1) {
+        if (current) result.push(current)
+        current = { question: line.slice(0, qEnd + 1), answer: line.slice(qEnd + 2) }
+      } else if (current) {
+        current.answer += '\n' + line
+      }
+    } else if (current) {
+      current.answer += '\n' + line
+    }
+  }
+  if (current) result.push(current)
+  return result
+}
 
 function dayTitle(iso) {
   const d = new Date(iso + 'T00:00:00')
@@ -33,6 +74,54 @@ function dayTitle(iso) {
   if (diff === 0) return 'Сегодня'
   if (diff === 1) return 'Вчера'
   return `${d.getDate()} ${MONTHS[d.getMonth()]}`
+}
+
+function moodPracticeTime(mp) {
+  const raw = mp.recorded_at
+  if (!raw) return ''
+  const d = new Date(raw)
+  if (Number.isNaN(d.getTime())) return ''
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+}
+
+/*
+ * Запись практики «Настроение» в ленте истории — монохромная строка
+ * в стиле существующих строк (активность, журнал). Без новых цветов
+ * и эмодзи. data-testid — history-mood-entry.
+ */
+function MoodPracticeEntry({ entry }) {
+  const time = moodPracticeTime(entry)
+  const emotion = entry.emotion || moodWord(entry.mood)
+  return (
+    <div
+      data-testid="history-mood-entry"
+      className="flex items-center gap-2 text-[13px] text-muted"
+    >
+      <span className="font-semibold">Настроение</span>
+      {time && <span>{time}</span>}
+      <span className="text-cream">{emotion}</span>
+      {entry.breathing_completed && <span>· дыхание</span>}
+    </div>
+  )
+}
+
+/*
+ * Разовая практика в ленте истории — монохромная строка в стиле
+ * MoodPracticeEntry: название практики + время. data-testid —
+ * history-oneoff-entry.
+ */
+function OneOffPracticeEntry({ entry }) {
+  const time = moodPracticeTime(entry)
+  const name = entry.name || entry.title || 'Практика'
+  return (
+    <div
+      data-testid="history-oneoff-entry"
+      className="flex items-center gap-2 text-[13px] text-muted"
+    >
+      <span className="font-semibold">{name}</span>
+      {time && <span>{time}</span>}
+    </div>
+  )
 }
 
 /*
@@ -89,47 +178,103 @@ export function HistoryDetail({
   contextError,
   onDiscuss,
   recapOnly = false,
+  onRedo = null,
+  onRedoReview = null,
 }) {
   const checkin = day.checkin
   const wins = checkin?.wins || []
+  const [redoMenuOpen, setRedoMenuOpen] = useState(false)
+  const [redoConfirm, setRedoConfirm] = useState(null)
+  const [deleteConfirm, setDeleteConfirm] = useState(false)
+
+  const isToday = day.date === new Date().toISOString().slice(0, 10)
+  const canRedo = isToday && (onRedo || onRedoReview)
+
+  const screenRef = useRef(null)
 
   return (
-    <section aria-label={`Запись за ${dayTitle(day.date)}`} className="mt-1 animate-fade-in">
+    <section
+      ref={screenRef}
+      aria-label={`Запись за ${dayTitle(day.date)}`}
+      className="mt-1 animate-fade-in"
+    >
       <div className="grid min-h-[42px] grid-cols-[1fr_auto_1fr] items-center">
-        <button
-          type="button"
-          onClick={onBack}
-          className="min-h-11 justify-self-start rounded-full px-3 py-2 text-[13px] font-semibold text-muted active:text-gold"
-        >
-          Назад
-        </button>
-        <h2 className="font-display mx-type-section text-cream">{dayTitle(day.date)}</h2>
-        <span aria-hidden="true" />
-      </div>
-
-      {recapOnly ? (
-        <div className="mt-5 rounded-3xl bg-emerald p-5">
-          <div className="mb-5 flex items-center justify-between">
-            <span className="text-[12px] font-bold uppercase tracking-wide text-muted">
-              Сегодняшний check-in
-            </span>
+        <BackButton onClick={onBack} />
+        {/* Явные колонки: в Telegram BackButton не рендерится, и без них
+            заголовок и «…» съезжают на колонку левее. */}
+        <h2 className="col-start-2 font-display mx-type-section text-cream">
+          {dayTitle(day.date)}
+        </h2>
+        {canRedo ? (
+          <div className="relative col-start-3 flex justify-end" data-testid="history-redo-slot">
             <button
               type="button"
-              aria-label="Открыть меню check-in"
+              aria-label="Действия с чек-ин"
+              data-testid="history-redo-button"
               className="mx-icon-button"
-              onClick={() => {}}
+              onClick={() => setRedoMenuOpen(open => !open)}
             >
               <MoreHorizontal size={20} aria-hidden="true" />
             </button>
+            {redoMenuOpen && (
+              <div
+                role="menu"
+                data-testid="history-redo-menu"
+                className="absolute right-0 top-full z-50 mt-1 min-w-[200px] whitespace-nowrap rounded-2xl border border-cream/10 bg-emerald p-1 shadow-xl"
+              >
+                {onRedo && (
+                  <button
+                    type="button"
+                    role="menuitem"
+                    className="w-full rounded-xl px-4 py-3 text-left text-[14px] font-medium text-cream hover:bg-cream/5"
+                    onClick={() => {
+                      setRedoMenuOpen(false)
+                      setRedoConfirm('morning')
+                    }}
+                  >
+                    Пройти утро заново
+                  </button>
+                )}
+                {onRedoReview && checkin?.review_completed_at && (
+                  <button
+                    type="button"
+                    role="menuitem"
+                    className="w-full rounded-xl px-4 py-3 text-left text-[14px] font-medium text-cream hover:bg-cream/5"
+                    onClick={() => {
+                      setRedoMenuOpen(false)
+                      setRedoConfirm('evening')
+                    }}
+                  >
+                    Пройти разбор заново
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        ) : (
+          <span aria-hidden="true" />
+        )}
+      </div>
+
+      {recapOnly ? (
+        <div className="mt-5 rounded-3xl bg-emerald p-5" data-testid="history-today-card">
+          <div className="mb-5 flex items-center">
+            <span className="text-[12px] font-bold uppercase tracking-wide text-muted">
+              Сегодняшний чек-ин
+            </span>
           </div>
           {[
-            ['Как ты сейчас?', `настроение: ${MOOD_WORDS[(checkin?.mood || 3) - 1]}`],
-            ['Сколько в тебе энергии?', `${checkin?.energy || 3}/5`],
-            ['Сколько шума в голове?', `${checkin?.anxiety || 3}/5`],
-            ['Насколько ты собран?', `${checkin?.focus || 3}/5`],
-            checkin?.emotion ? ['Что ты чувствуешь?', checkin.emotion] : null,
+            // T11: все ответы утра в порядке шагов чек-ина.
+            // Незаполненные (null/пусто) не показываются.
+            checkin?.mood != null ? ['Как ты сейчас?', moodWord(checkin.mood)] : null,
+            checkin?.sleep_quality != null
+              ? ['Как ты спал?', `${checkin.sleep_quality}/5`]
+              : null,
+            checkin?.energy != null ? ['Сколько в тебе энергии?', `${checkin.energy}/5`] : null,
+            checkin?.focus != null ? ['Насколько ты собран?', `${checkin.focus}/5`] : null,
+            checkin?.day_focus ? ['Главный фокус на сегодня?', checkin.day_focus] : null,
             checkin?.note ? ['Что на уме?', checkin.note] : null,
-            checkin?.lessons ? ['Что получилось и чему научился?', checkin.lessons] : null,
+            ...parseLessons(checkin?.lessons).map(({ question, answer }) => [question, answer]),
             ...(checkin?.wins || []).map((win, index) => [`Чем ты гордишься? ${index + 1}`, win]),
           ]
             .filter(Boolean)
@@ -146,12 +291,12 @@ export function HistoryDetail({
             ))}
         </div>
       ) : (
-        <div className="mt-5 space-y-4 rounded-3xl bg-emerald p-5">
+        <div className="mt-5 space-y-4 rounded-3xl bg-emerald p-5" data-testid="history-today-card">
           {checkin ? (
             <>
               <div className="flex flex-wrap gap-2">
                 <span className="rounded-full bg-gold/10 px-3 py-1 text-[12px] font-bold text-gold">
-                  настроение: {MOOD_WORDS[(checkin.mood || 3) - 1]}
+                  {moodWord(checkin.mood)}
                 </span>
                 {checkin.energy && (
                   <span className="rounded-full bg-cream/5 px-3 py-1 text-[12px] font-semibold text-muted">
@@ -165,7 +310,7 @@ export function HistoryDetail({
                 )}
                 {checkin.emotion && (
                   <span className="rounded-full bg-cream/5 px-3 py-1 text-[12px] font-semibold text-muted">
-                    {checkin.emotion}
+                    {capitalize(checkin.emotion)}
                   </span>
                 )}
               </div>
@@ -182,15 +327,17 @@ export function HistoryDetail({
                 </div>
               )}
 
-              {checkin.lessons && (
-                <div className="rounded-2xl bg-emerald-light p-4">
-                  <div className="mb-2 font-label text-[12px] font-bold uppercase tracking-wide text-muted">
-                    Уроки дня
-                  </div>
-                  <MarkdownText
-                    content={checkin.lessons}
-                    className="space-y-2 text-[14px] leading-relaxed text-cream"
-                  />
+              {parseLessons(checkin.lessons).length > 0 && (
+                <div className="space-y-4">
+                  {parseLessons(checkin.lessons).map(({ question, answer }) => (
+                    <div key={question}>
+                      <h3 className="mb-1 text-[14px] font-bold text-cream">{question}</h3>
+                      <MarkdownText
+                        content={answer}
+                        className="space-y-2 text-[14px] leading-relaxed text-muted"
+                      />
+                    </div>
+                  ))}
                 </div>
               )}
 
@@ -223,7 +370,7 @@ export function HistoryDetail({
             </>
           ) : (
             <p className="text-[14px] leading-relaxed text-muted">
-              В этот день сохранена активность или практика, но check-in не сохранён.
+              В этот день сохранена активность или практика, но чек-ин не сохранён.
             </p>
           )}
 
@@ -236,8 +383,22 @@ export function HistoryDetail({
             </p>
           )}
 
+          {day.moodPractices?.length > 0 && (
+            <div className="space-y-1.5 border-t border-cream/10 pt-3">
+              {day.moodPractices.map(mp => (
+                <MoodPracticeEntry key={mp.id} entry={mp} />
+              ))}
+            </div>
+          )}
+
           {day.journal && <JournalDayCard entry={day.journal} />}
-          {day.oneOffPractices && <OneOffPracticeDayCard entries={day.oneOffPractices} />}
+          {day.oneOffPractices?.length > 0 && (
+            <div className="space-y-1.5 border-t border-cream/10 pt-3">
+              {day.oneOffPractices.map(p => (
+                <OneOffPracticeEntry key={p.id} entry={p} />
+              ))}
+            </div>
+          )}
 
           {checkin && (
             <div className="border-t border-cream/10 pt-4">
@@ -286,12 +447,12 @@ export function HistoryDetail({
                 </p>
               )}
               <p className="mb-3 mt-5 text-[12px] leading-relaxed text-muted">
-                Удаление необратимо: исчезнет только этот check-in и его личные теги. Активность
+                Удаление необратимо: исчезнет только этот чек-ин и его личные теги. Активность
                 ритуалов за день сохранится.
               </p>
               <button
                 type="button"
-                onClick={onDelete}
+                onClick={() => setDeleteConfirm(true)}
                 disabled={deleting}
                 className="min-h-11 rounded-full px-4 text-[13px] font-semibold text-red-300 disabled:cursor-not-allowed disabled:opacity-60"
               >
@@ -306,6 +467,100 @@ export function HistoryDetail({
           )}
         </div>
       )}
+
+      {deleteConfirm && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="delete-confirm-title"
+          aria-describedby="delete-confirm-desc"
+          className="fixed inset-0 z-[90] flex items-end bg-black/70 p-5 sm:items-center"
+          onClick={() => !deleting && setDeleteConfirm(false)}
+        >
+          <div
+            className="w-full max-w-md mx-auto rounded-[28px] bg-emerald p-6 shadow-xl animate-fade-in"
+            onClick={e => e.stopPropagation()}
+          >
+            <h2 id="delete-confirm-title" className="font-display text-[22px] text-cream">
+              Удалить запись?
+            </h2>
+            <p id="delete-confirm-desc" className="mt-3 text-[14px] leading-relaxed text-muted">
+              Это нельзя отменить.
+            </p>
+            <div className="mt-6 grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                autoFocus
+                onClick={() => setDeleteConfirm(false)}
+                disabled={deleting}
+                className="min-h-12 rounded-full border border-cream/15 px-4 text-[14px] font-semibold text-cream disabled:opacity-60"
+              >
+                Отмена
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setDeleteConfirm(false)
+                  onDelete()
+                }}
+                disabled={deleting}
+                className="min-h-12 rounded-full bg-red-500 px-4 text-[14px] font-bold text-cream disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {deleting ? 'Удаляем…' : 'Удалить'}
+              </button>
+            </div>
+            {deleteError && (
+              <p role="alert" className="mt-3 text-[12px] text-red-300">
+                {deleteError}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {redoConfirm && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="redo-confirm-title"
+          aria-describedby="redo-confirm-desc"
+          className="fixed inset-0 z-[90] flex items-end bg-black/70 p-5 sm:items-center"
+          onClick={() => setRedoConfirm(null)}
+        >
+          <div
+            className="w-full max-w-md mx-auto rounded-[28px] bg-emerald p-6 shadow-xl animate-fade-in"
+            onClick={e => e.stopPropagation()}
+          >
+            <h2 id="redo-confirm-title" className="font-display text-[22px] text-cream">
+              Пройти заново?
+            </h2>
+            <p id="redo-confirm-desc" className="mt-3 text-[14px] leading-relaxed text-muted">
+              Текущие ответы заменятся.
+            </p>
+            <div className="mt-6 grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                autoFocus
+                onClick={() => setRedoConfirm(null)}
+                className="min-h-12 rounded-full border border-cream/15 px-4 text-[14px] font-semibold text-cream"
+              >
+                Отмена
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const fn = redoConfirm === 'evening' ? onRedoReview : onRedo
+                  setRedoConfirm(null)
+                  fn?.()
+                }}
+                className="min-h-12 rounded-full bg-cream px-4 text-[14px] font-bold text-emerald-deep"
+              >
+                Пройти заново
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   )
 }
@@ -315,6 +570,8 @@ export default function History({
   initialSelectedDay = null,
   onInitialBack = null,
   recapOnly = false,
+  onRedo = null,
+  onRedoReview = null,
 }) {
   const [days, setDays] = useState(null)
   const [badges, setBadges] = useState(null)
@@ -357,10 +614,18 @@ export default function History({
 
   useEffect(() => {
     if (!user) return
+    const moodFrom = new Date()
+    moodFrom.setDate(moodFrom.getDate() - 30)
     Promise.all([
       api.checkin.history(user.id, 30).catch(() => []),
       api.analytics.get(user.id, 30).catch(() => null),
-    ]).then(([checkins, analytics]) => {
+      api.moodPractices
+        .list(user.id, {
+          from: moodFrom.toISOString().slice(0, 10),
+          to: new Date().toISOString().slice(0, 10),
+        })
+        .catch(() => []),
+    ]).then(([checkins, analytics, moodPractices]) => {
       const byDate = {}
       for (const c of checkins || []) {
         byDate[c.date] = { ...(byDate[c.date] || {}), checkin: c }
@@ -369,6 +634,12 @@ export default function History({
         if (d.count > 0 || byDate[d.date]) {
           byDate[d.date] = { ...(byDate[d.date] || {}), activity: d }
         }
+      }
+      for (const mp of moodPractices || []) {
+        const date = moodPracticeDate(mp)
+        if (!date) continue
+        if (!byDate[date]) byDate[date] = { date }
+        byDate[date].moodPractices = [...(byDate[date].moodPractices || []), mp]
       }
       const list = Object.entries(byDate)
         .map(([date, v]) => ({ date, ...v }))
@@ -384,7 +655,7 @@ export default function History({
       api.rituals.list(user.id).catch(() => []),
       api.ascezas.list(user.id).catch(() => []),
     ]).then(([stats, rituals, ascezas]) => {
-      setBadges(buildBadges({ stats, rituals, ascezas }).filter(b => b.done))
+      setBadges(buildBadges({ stats, rituals, ascezas, registrationDays: daysSinceRegistration(stats?.created_at) }).filter(b => b.done))
     })
   }, [user])
 
@@ -424,7 +695,6 @@ export default function History({
   async function deleteSelectedCheckin() {
     const checkin = selectedDay?.checkin
     if (!checkin || deletingCheckin) return
-    if (!window.confirm('Удалить эту сохранённую запись? Это действие нельзя отменить.')) return
 
     setDeletingCheckin(true)
     setDeleteError('')
@@ -433,7 +703,7 @@ export default function History({
       setDays(current =>
         current
           .map(day => (day.date === selectedDay.date ? { ...day, checkin: null } : day))
-          .filter(day => day.checkin || day.activity?.count > 0)
+          .filter(day => day.checkin || day.activity?.count > 0 || day.moodPractices?.length > 0)
       )
       setSelectedDay(null)
       setHistoryStatus('Запись удалена. Активность ритуалов за этот день сохранена.')
@@ -522,9 +792,10 @@ export default function History({
     window.location.href = url.toString()
   }
 
-  if (days === null)
-    return <p className="text-muted text-sm px-[var(--mx-screen-x)] pt-6">Загрузка...</p>
-
+  // T10: при переходе из карточки «Утро отмечено» / «Разбор дня»
+  // (initialSelectedDay) показываем экран дня сразу, без промежуточного
+  // скелетона «история.» — он нужен только для ленты, а не для детальной
+  // записи, данные которой уже переданы.
   if (selectedDay) {
     return (
       <HistoryDetail
@@ -539,9 +810,13 @@ export default function History({
         contextError={contextError}
         onDiscuss={discussSelectedCheckinWithAI}
         recapOnly={recapOnly}
+        onRedo={onRedo}
+        onRedoReview={onRedoReview}
       />
     )
   }
+
+  if (days === null) return <HistorySkeleton />
 
   if (journeySearchOpen) {
     return (
@@ -633,7 +908,17 @@ export default function History({
         const wins = d.checkin?.wins || []
         return (
           <div key={d.date}>
-            <div className="text-[13px] text-muted font-semibold mb-2 px-1">{dayTitle(d.date)}</div>
+            {/* «…» у правого края — намёк, что за строкой дня лежит
+                раскрываемая запись (открытие по тапу в карточку ниже). */}
+            <div
+              data-testid="history-day-header"
+              className="mb-2 flex items-center justify-between px-1"
+            >
+              <span className="text-[13px] font-semibold text-muted">{dayTitle(d.date)}</span>
+              <span className="text-[13px] font-semibold text-muted" aria-hidden="true">
+                …
+              </span>
+            </div>
             <button
               type="button"
               onClick={() => setSelectedDay(d)}
@@ -644,14 +929,18 @@ export default function History({
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-[12px] font-bold text-gold bg-gold/10 rounded-full px-3 py-1">
-                      настроение: {MOOD_WORDS[(d.checkin.mood || 3) - 1]}
+                      {moodWord(d.checkin.mood)}
                     </span>
-                    <span className="text-[12px] font-semibold text-muted bg-cream/5 rounded-full px-3 py-1">
-                      энергия {d.checkin.energy}/5
-                    </span>
-                    <span className="text-[12px] font-semibold text-muted bg-cream/5 rounded-full px-3 py-1">
-                      фокус {d.checkin.focus}/5
-                    </span>
+                    {d.checkin.energy != null && (
+                      <span className="text-[12px] font-semibold text-muted bg-cream/5 rounded-full px-3 py-1">
+                        энергия {d.checkin.energy}/5
+                      </span>
+                    )}
+                    {d.checkin.focus != null && (
+                      <span className="text-[12px] font-semibold text-muted bg-cream/5 rounded-full px-3 py-1">
+                        фокус {d.checkin.focus}/5
+                      </span>
+                    )}
                   </div>
 
                   {d.checkin.note && (
@@ -665,15 +954,17 @@ export default function History({
                     />
                   )}
 
-                  {d.checkin.lessons && (
-                    <div className="rounded-2xl bg-emerald-light p-4 mt-3">
-                      <div className="font-label text-[12px] font-bold text-muted uppercase tracking-wide mb-2">
-                        Уроки дня
-                      </div>
-                      <MarkdownText
-                        content={d.checkin.lessons}
-                        className="space-y-2 text-[14px] text-cream leading-relaxed"
-                      />
+                  {parseLessons(d.checkin.lessons).length > 0 && (
+                    <div className="space-y-3 mt-3">
+                      {parseLessons(d.checkin.lessons).map(({ question, answer }) => (
+                        <div key={question}>
+                          <div className="text-[12px] font-bold text-muted mb-1">{question}</div>
+                          <MarkdownText
+                            content={answer}
+                            className="space-y-1 text-[14px] text-cream leading-snug"
+                          />
+                        </div>
+                      ))}
                     </div>
                   )}
 
@@ -706,6 +997,22 @@ export default function History({
                   {d.activity.breaks > 0 && (
                     <span className="text-muted"> · срывов аскез: {d.activity.breaks}</span>
                   )}
+                </div>
+              )}
+
+              {d.moodPractices?.length > 0 && (
+                <div className="space-y-1.5">
+                  {d.moodPractices.map(mp => (
+                    <MoodPracticeEntry key={mp.id} entry={mp} />
+                  ))}
+                </div>
+              )}
+
+              {d.oneOffPractices?.length > 0 && (
+                <div className="space-y-1.5">
+                  {d.oneOffPractices.map(p => (
+                    <OneOffPracticeEntry key={p.id} entry={p} />
+                  ))}
                 </div>
               )}
 

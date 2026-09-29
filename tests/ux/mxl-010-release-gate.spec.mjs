@@ -1,4 +1,16 @@
 import { expect, test } from '@playwright/test'
+import {
+  scaleStep,
+  textStep,
+  emotionStep,
+  completeCheckin,
+  feedbackStep,
+  backToToday,
+  openDayCard,
+  goBack,
+  expectWeekStrip,
+  dayFocusOptionStep,
+} from './checkin-helpers.mjs'
 
 const TEST_USER = {
   id: 900010,
@@ -21,10 +33,23 @@ function buildFixtureRouter() {
   let reviewHour = 24
   const savedCheckins = []
   const sentMessages = []
+  const sentFeedback = []
+  const streakRequests = []
+  let streakResponse = {
+    current_streak: 0,
+    longest_streak: 0,
+    total_active_days: 0,
+    is_active_today: false,
+  }
 
   return {
     savedCheckins,
     sentMessages,
+    sentFeedback,
+    streakRequests,
+    setStreakResponse(value) {
+      streakResponse = value
+    },
     async handle(route) {
       const request = route.request()
       const url = new URL(request.url())
@@ -40,6 +65,8 @@ function buildFixtureRouter() {
           energy: payload.energy,
           anxiety: payload.anxiety,
           focus: payload.focus,
+          sleep_quality: payload.sleep_quality,
+          day_focus: payload.day_focus || null,
           note: payload.note || null,
           lessons: payload.lessons || null,
           wins: payload.wins || null,
@@ -61,32 +88,56 @@ function buildFixtureRouter() {
         )
       }
 
+      if (pathname.match(/^\/api\/checkins\/\d+\/feedback$/) && request.method() === 'POST') {
+        sentFeedback.push(request.postDataJSON())
+        return route.fulfill(jsonResponse({ ok: true }))
+      }
+
       if (request.method() !== 'GET') return route.fulfill(jsonResponse({ ok: true }))
 
+      if (pathname === '/api/streak') {
+        streakRequests.push(url.searchParams.get('user_id'))
+        return route.fulfill(jsonResponse(streakResponse))
+      }
       if (pathname === '/api/profile') return route.fulfill(jsonResponse(TEST_USER))
       if (pathname === '/api/checkin/today') return route.fulfill(jsonResponse(checkin))
       if (pathname === '/api/checkin/history') {
         return route.fulfill(jsonResponse(checkin ? [checkin] : []))
       }
       if (pathname === '/api/rituals') {
-        return route.fulfill(jsonResponse([{ id: 701, title: 'Fixture ritual', today_level: null }]))
+        return route.fulfill(
+          jsonResponse([{ id: 701, title: 'Fixture ritual', today_level: null }])
+        )
       }
       if (pathname === '/api/ascezas') return route.fulfill(jsonResponse([]))
       if (pathname === '/api/quotes/today') {
         return route.fulfill(jsonResponse({ text: 'Fixture quote.' }))
       }
-      if (pathname === '/api/profile/settings') return route.fulfill(jsonResponse({ review_hour: reviewHour }))
-      if (pathname === '/api/analytics/pulse') return route.fulfill(jsonResponse({ active_today: 1 }))
+      if (pathname === '/api/profile/settings')
+        return route.fulfill(jsonResponse({ review_hour: reviewHour }))
+      if (pathname === '/api/analytics/pulse')
+        return route.fulfill(jsonResponse({ active_today: 1 }))
       if (pathname === '/api/analytics') {
-        return route.fulfill(jsonResponse({ period_days: 14, rituals: [], ascezas: [], insights: [], daily_activity: [] }))
+        return route.fulfill(
+          jsonResponse({
+            period_days: 14,
+            rituals: [],
+            ascezas: [],
+            insights: [],
+            daily_activity: [],
+          })
+        )
       }
       if (pathname === '/api/pinned-practices') return route.fulfill(jsonResponse([]))
       if (pathname === '/api/articles') return route.fulfill(jsonResponse([]))
       if (pathname === '/api/themes') return route.fulfill(jsonResponse([]))
-      if (pathname === '/api/mentalix/consent') return route.fulfill(jsonResponse({ context_consent: false }))
+      if (pathname === '/api/mentalix/consent')
+        return route.fulfill(jsonResponse({ context_consent: false }))
       if (pathname === '/api/mentalix/messages') {
         return route.fulfill(
-          jsonResponse([{ id: 'fixture-history-1', role: 'assistant', content: 'История fixture.' }])
+          jsonResponse([
+            { id: 'fixture-history-1', role: 'assistant', content: 'История fixture.' },
+          ])
         )
       }
 
@@ -104,7 +155,10 @@ async function seedUser(context) {
 }
 
 test.describe('MXL-010 automated technical gate', () => {
-  test('web auth contract is deterministic and does not expose private data', async ({ browser, baseURL }) => {
+  test('web auth fallback after guest failure exposes email and Telegram without private data', async ({
+    browser,
+    baseURL,
+  }) => {
     const context = await browser.newContext({ baseURL, viewport: { width: 390, height: 844 } })
     const fixtures = buildFixtureRouter()
     await context.addInitScript(() => {
@@ -116,7 +170,14 @@ test.describe('MXL-010 automated technical gate', () => {
         window.Telegram = undefined
       }
     })
-    await context.route('**/api/**', route => fixtures.handle(route))
+    let guestRequests = 0
+    await context.route('**/api/**', route => {
+      if (new URL(route.request().url()).pathname === '/api/auth/guest') {
+        guestRequests += 1
+        return route.fulfill(jsonResponse({ error: 'unavailable' }, 503))
+      }
+      return fixtures.handle(route)
+    })
     const page = await context.newPage()
 
     await page.goto('/')
@@ -128,11 +189,16 @@ test.describe('MXL-010 automated technical gate', () => {
     await expect(page.locator('form')).toHaveCount(1)
     await expect(page.getByRole('textbox', { name: 'Email' })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Получить письмо' })).toBeVisible()
+    await expect(page.getByTestId('web-auth-guest-button')).toBeEnabled()
+    expect(guestRequests).toBe(1)
 
     await context.close()
   })
 
-  test('fixture-backed journey covers check-in, completion, evening review, handoff, AI response and reopen', async ({ browser, baseURL }) => {
+  test('fixture-backed journey covers check-in, completion, evening review, handoff, AI response and reopen', async ({
+    browser,
+    baseURL,
+  }) => {
     const context = await browser.newContext({
       baseURL,
       viewport: { width: 390, height: 844 },
@@ -149,81 +215,140 @@ test.describe('MXL-010 automated technical gate', () => {
     // UTC гарантирует, что new Date().getHours() ≥ 19 после перевода clocks.
     await page.clock.setFixedTime('2026-09-23T08:00:00Z')
     await page.goto('/')
-    await expect(page.getByRole('button', { name: /Утренний чек-ин/ })).toBeVisible()
 
-    await page.getByRole('button', { name: /Утренний чек-ин/ }).click()
+    // ── Утренний чек-ин ──
+    await openDayCard(page, 'morning')
     await expect(page.getByRole('radiogroup', { name: 'Как ты сейчас?' })).toBeVisible()
     await expect(page.getByRole('button', { name: /^(Назад|Сегодня)$/ })).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Далее' })).toBeVisible()
+    await expect(page.locator('[data-testid="checkin-next"]')).toBeVisible()
 
-    for (const option of ['Нормально', 'Средне']) {
-      await page.getByRole('radio', { name: new RegExp(`^3: ${option}$`, 'i') }).click()
+    // Все пять кружков показывают уровень заливки 0/25/50/75/100%.
+    const circles = page.locator('[data-testid="checkin-scale-option"] .mx-checkin-scale__inner')
+    await expect(circles).toHaveCount(5)
+    for (const [index, fill] of [0, 25, 50, 75, 100].entries()) {
+      await expect(circles.nth(index)).toHaveCSS('background-image', new RegExp(`${fill}%`))
     }
+    // Шкалы: mood=3, sleep_quality=3, energy=3, focus=3
+    await scaleStep(page, 3)
+    await scaleStep(page, 3)
+    await scaleStep(page, 3)
+    await scaleStep(page, 3)
 
-    const morningNote = page.getByRole('textbox', { name: 'Что на уме' })
-    await morningNote.fill('Fixture morning note')
-    await page.getByRole('button', { name: 'Далее' }).dispatchEvent('click')
-    await expect(page.getByRole('heading', { name: /Утренний чек-ин/ })).toBeVisible()
-    expect(fixtures.savedCheckins).toHaveLength(0)
+    // Главный фокус дня: 12 плиток за «Показать все».
+    await dayFocusOptionStep(page, 'Продуктивность')
 
-    await page.getByRole('button', { name: 'Завершить' }).click()
-    await expect(page.getByRole('heading', { name: /-дневная серия\./ })).toBeVisible()
+    // Текстовый шаг → завершение (submitTestId=checkin-complete вызывает finish)
+    await textStep(page, 'Fixture morning note', 'checkin-complete')
+
+    // Экран завершения
+    await expect(page.getByRole('heading', { name: 'Ты прошёл Утренний чек-ин!' })).toBeVisible()
+    await page.setViewportSize({ width: 393, height: 667 })
+    const tiles = await page.getByTestId('checkin-feedback-option').last().boundingBox()
+    const exitButton = await page.getByTestId('checkin-back-to-today').boundingBox()
+    expect(tiles.y + tiles.height).toBeLessThan(exitButton.y)
+    await page.setViewportSize({ width: 390, height: 844 })
     expect(fixtures.savedCheckins).toHaveLength(1)
     expect(fixtures.savedCheckins[0].note).toContain('Fixture morning note')
+    expect(fixtures.savedCheckins[0].sleep_quality).toBe(3)
+    expect(fixtures.savedCheckins[0].day_focus).toBe('Продуктивность')
+    expect(fixtures.sentFeedback).toEqual([])
+    await feedbackStep(page, 'no')
+    await expect(page.locator('[data-testid="checkin-feedback-option"][aria-pressed="true"]')).toHaveCount(1)
+    await expect.poll(() => fixtures.sentFeedback.length).toBe(1)
+    expect(fixtures.sentFeedback[0]).toEqual({ value: 'no' })
 
+    // ── Возврат и переход к вечернему разбору ──
     // После утреннего чек-ина fixture меняет review_hour на 0 (→ 19:00 в
     // resolveTodayCardStates). Переводим часы на 19:00, чтобы вечерняя
     // карточка стала active (button), а не locked (div).
     await page.clock.setFixedTime('2026-09-23T19:00:00Z')
-    await page.getByRole('button', { name: 'Вернуться в Сегодня' }).click()
-    await expect(page.getByRole('button', { name: /Разбор дня/ })).toBeVisible()
+    await backToToday(page)
+    await openDayCard(page, 'evening')
+    fixtures.setStreakResponse({
+      current_streak: 4,
+      longest_streak: 4,
+      total_active_days: 4,
+      is_active_today: true,
+    })
+    const streakRequestsBeforeEvening = fixtures.streakRequests.length
 
-    await page.getByRole('button', { name: /Разбор дня/ }).click()
-    await expect(page.getByRole('heading', { name: 'Какой был день?' })).toBeVisible()
-    await page.getByRole('button', { name: 'ровно' }).click()
-    await page.getByRole('button', { name: 'Далее' }).click()
+    // ── Вечерний разбор ──
+    await expect(
+      page.getByRole('heading', { name: 'Что ближе всего к тому, что ты чувствуешь?' })
+    ).toBeVisible()
+    await emotionStep(page, 'ровно')
+    await page.locator('[data-testid="checkin-next"]').click()
 
-    for (const [label, value] of [
-      ['Что получилось?', 'Fixture result'],
-      ['Что было трудно?', 'Fixture difficulty'],
-      ['Какой вывод забираешь?', 'Fixture lesson'],
-    ]) {
-      await page.locator(`[aria-label="${label}"]`).fill(value)
-      await page.getByRole('button', { name: 'Далее' }).click()
+    // Три текстовых шага
+    for (const value of ['Fixture result', 'Fixture difficulty', 'Fixture lesson']) {
+      await textStep(page, value)
     }
 
-    await expect(page.getByRole('heading', { name: /Разбор дня/ })).toBeVisible()
+    // Экран завершения вечернего разбора
+    await expect(page.getByRole('heading', { name: 'Ты завершил Разбор дня!' })).toBeVisible()
     expect(fixtures.savedCheckins).toHaveLength(2)
     expect(fixtures.savedCheckins[1].review_completed).toBe(true)
+    await expect(page.getByTestId('checkin-streak')).toHaveText('4-дневная серия')
+    expect(fixtures.streakRequests.slice(streakRequestsBeforeEvening)).toContain(
+      String(TEST_USER.id)
+    )
+    await expect(page.getByText('Было полезно сегодня?')).toBeVisible()
+    await expect(page.getByTestId('checkin-back-to-today')).toHaveText('Сохранить и выйти')
 
-    await page.getByRole('button', { name: 'Разобрать со Следопытом' }).click()
+    // Ответ «Немного» уходит сразу: запись уже сохранена
+    await feedbackStep(page, 'some')
+    await expect
+      .poll(() => fixtures.sentFeedback.length, { message: 'ответ разбора дошёл до бэкенда' })
+      .toBe(2)
+    expect(fixtures.sentFeedback[1]).toEqual({ value: 'some' })
+    await expect(page.locator('[data-testid="checkin-feedback-option"][aria-pressed="true"]')).toHaveCount(1)
+    await feedbackStep(page, 'yes')
+    await expect.poll(() => fixtures.sentFeedback.length).toBe(3)
+    expect(fixtures.sentFeedback[2]).toEqual({ value: 'yes' })
+    await expect(page.locator('[data-testid="checkin-feedback-option"][aria-pressed="true"]')).toHaveCount(1)
+    await expect(page.locator('[data-value="some"][data-testid="checkin-feedback-option"]')).toHaveAttribute('aria-pressed', 'false')
+    await feedbackStep(page, 'yes')
+    await expect(page.locator('[data-testid="checkin-feedback-option"][aria-pressed="true"]')).toHaveCount(0)
+
+
+    // ── Хендофф к Следопыту ──
+    const scoutBtn = page.locator('[data-testid="checkin-open-scout"]')
+    await expect(scoutBtn).toBeVisible()
+    await scoutBtn.click()
     await expect(page).toHaveURL(/tab=mentor/)
     await expect(page.locator('#root')).not.toHaveText('', { timeout: 30_000 })
-    const chatInput = page.locator('input[placeholder^="Написать "]')
+
+    // ── AI-диалог ──
+    const chatInput = page.locator('[data-testid="mentor-input"]')
     await expect(chatInput).toBeVisible()
     await chatInput.fill('Fixture AI question')
     await chatInput.press('Enter')
     await expect(page.getByText('Fixture AI question')).toBeVisible()
     await expect(page.getByText(LONG_AI_REPLY.slice(0, 70))).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Читать полностью' })).toBeVisible()
-    await page.getByRole('button', { name: 'Читать полностью' }).click()
-    await expect(page.getByRole('button', { name: 'Свернуть ответ' })).toBeVisible()
 
-    await page.getByRole('button', { name: 'Назад' }).click()
+    // Раскрыть длинный ответ
+    const expandBtn = page.locator('[data-testid="ai-expand-reply"]')
+    await expect(expandBtn).toBeVisible()
+    await expandBtn.click()
+    await expect(page.getByText('Свернуть ответ')).toBeVisible()
+
+    // ── Возврат на Today ──
+    await goBack(page)
     await expect(page.getByRole('heading', { name: /О чём хочешь/ })).toBeVisible()
     // Первый Back закрывает conversation и оставляет fullscreen picker Mentor;
     // возврат на Today выполняется следующим шагом browser history.
     await page.goBack()
     await expect(page).toHaveURL(/\/$/)
-    await expect(page.getByRole('button', { name: /Утренний чек-ин/ })).toBeVisible()
+    await expect(page.locator('[data-testid="today-card-morning"]')).toBeVisible()
 
+    // ── Перезагрузка ──
     await page.reload()
     await expect(page).toHaveURL(/\/$/)
-    await expect(page.getByRole('button', { name: /Утренний чек-ин/ })).toBeVisible()
+    await expect(page.locator('[data-testid="today-card-morning"]')).toBeVisible()
     expect(fixtures.savedCheckins.filter(item => item.review_completed === true)).toHaveLength(1)
 
-    const calendarDays = page.getByLabel('Календарь недели').locator('.mx-today-week-day')
-    await expect(calendarDays).toHaveCount(7)
+    // ── Календарь недели ──
+    await expectWeekStrip(page)
 
     await context.close()
   })

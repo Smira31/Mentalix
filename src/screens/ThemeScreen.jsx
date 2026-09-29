@@ -3,13 +3,15 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import { api } from '../lib/api'
+import { peekThemeDetail, fetchThemeDetail, invalidateThemeDetail } from '../lib/themeDetailCache'
+import { peekThemesData, fetchThemesData } from '../lib/themesDataCache'
 import { Lock, Check, Sparkles } from 'lucide-react'
-import BackButton from '../components/BackButton'
+import { RoundBackButton } from '../components/NestedScreenHeader'
 import JournalTextarea from '../components/JournalTextarea'
 import MarkdownText from '../components/MarkdownText'
 import Motif, { MotifArt } from '../components/Motif'
 import WebActionBar from '../components/WebActionBar'
-import { useMainButton, offerHomeScreen, cloud } from '../platform/telegram.hooks'
+import { useMainButton, useBackButton, offerHomeScreen, cloud } from '../platform/telegram.hooks'
 import { MENTOR_DRAFT_KEY, MENTOR_PERSONA_KEY } from './mentalix/personas'
 import {
   useFullscreenSurface,
@@ -67,16 +69,36 @@ function Fact({ children }) {
   )
 }
 
-export default function ThemeScreen({ user, themeId, onBack }) {
-  const [themes, setThemes] = useState([])
+export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
+  const [themes, setThemes] = useState(() => (user ? peekThemesData(user.id) || [] : []))
   const [activeId, setActiveId] = useState(themeId)
-  const [data, setData] = useState(null)
-  const [day, setDay] = useState(1)
+  const cachedDetail = peekThemeDetail(user?.id, themeId)
+  const [data, setData] = useState(cachedDetail)
+  const [day, setDay] = useState(
+    cachedDetail
+      ? Math.min(initialDay || cachedDetail.current_day || 1, cachedDetail.days.length)
+      : 1
+  )
   const [text, setText] = useState('')
   const [saving, setSaving] = useState(false)
-  const [view, setView] = useState(null)
+  const [view, setView] = useState(
+    cachedDetail
+      ? initialDay || cachedDetail.days.some(d => d.reflection)
+        ? 'day'
+        : 'intro'
+      : null
+  )
 
   const { style } = useFullscreenSurface()
+
+  useBackButton(() => {
+    if (view === 'review' || view === 'list') {
+      platform.haptic('light')
+      setView('day')
+    } else {
+      onBack()
+    }
+  })
 
   /*
    * Три ниже — синхронизация локального состояния с внешним пропом/
@@ -94,7 +116,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
   const [seenActiveId, setSeenActiveId] = useState(activeId)
   if (seenActiveId !== activeId) {
     setSeenActiveId(activeId)
-    setData(null)
+    setData(peekThemeDetail(user?.id, activeId))
   }
 
   const [seenTextKey, setSeenTextKey] = useState({ day: null, data: null })
@@ -107,8 +129,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
   useEffect(() => {
     if (!user) return
 
-    api.themes
-      .list(user.id)
+    fetchThemesData(user.id)
       .then(list => setThemes(Array.isArray(list) ? list : []))
       .catch(() => setThemes([]))
   }, [user])
@@ -118,22 +139,22 @@ export default function ThemeScreen({ user, themeId, onBack }) {
 
     let alive = true
 
-    api.themes
-      .get(activeId, user.id)
+    fetchThemeDetail(user.id, activeId)
       .then(fresh => {
-        if (!alive) return
+        if (!alive || !fresh) return
 
         setData(fresh)
-        setDay(Math.min(fresh.current_day || 1, fresh.days.length))
+        setDay(Math.min(initialDay || fresh.current_day || 1, fresh.days.length))
 
         /*
          * Первый вид выбирается по состоянию, а не по умолчанию:
          * тот, кто уже пишет вторую неделю подряд, не должен
          * каждый раз проходить через вступление.
+         * initialDay передаётся из карусели — пропускаем intro.
          */
         const started = fresh.days.some(d => d.reflection)
 
-        setView(started ? 'day' : 'intro')
+        setView(initialDay || started ? 'day' : 'intro')
       })
       .catch(console.error)
 
@@ -151,7 +172,8 @@ export default function ThemeScreen({ user, themeId, onBack }) {
       await api.themes.reflect(activeId, user.id, day, text)
       platform.haptic('success')
 
-      const fresh = await api.themes.get(activeId, user.id)
+      invalidateThemeDetail(user.id, activeId)
+      const fresh = await fetchThemeDetail(user.id, activeId, { force: true })
 
       setData(fresh)
 
@@ -293,7 +315,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
   if (!data) {
     return createPortal(
       <Shell style={style}>
-        <BackButton onClick={onBack} />
+        <RoundBackButton onClick={onBack} />
 
         <p className="w-full m-auto px-6 text-center text-muted text-[13px]">Загрузка...</p>
       </Shell>,
@@ -313,14 +335,14 @@ export default function ThemeScreen({ user, themeId, onBack }) {
   if (view === 'intro') {
     return createPortal(
       <Shell style={style} footer={<WebActionBar action={webAction} />}>
-        <BackButton onClick={onBack} />
+        <RoundBackButton onClick={onBack} />
 
         <div className="flex-1 flex flex-col pt-4 pb-6">
           <div className="-mx-[var(--mx-screen-x)] h-[150px] text-gold mb-6">
             <Motif name="ryad" className="w-full h-full" />
           </div>
 
-          <h2 className="font-display text-[24px] text-cream lowercase leading-tight text-left">
+          <h2 className="font-display mx-type-page text-cream lowercase leading-tight text-left">
             {data.title}
           </h2>
 
@@ -355,7 +377,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
 
     return createPortal(
       <Shell style={style} footer={<WebActionBar action={webAction} />}>
-        <BackButton onClick={back} />
+        <RoundBackButton onClick={back} />
 
         <div className="text-left mt-4 mb-7">
           <div className="font-label text-[12px] text-faint font-semibold uppercase tracking-wide mb-2">
@@ -423,7 +445,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
   if (view === 'list') {
     return createPortal(
       <Shell style={style}>
-        <BackButton onClick={back} />
+        <RoundBackButton onClick={back} />
 
         <h2 className="font-display text-[22px] text-cream lowercase leading-tight mt-4 mb-1">
           все темы.
@@ -488,7 +510,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
   return createPortal(
     <Shell style={style} footer={<WebActionBar action={webAction} />}>
       <div className="flex items-center justify-between gap-3 mb-5">
-        <BackButton onClick={onBack} />
+        <RoundBackButton onClick={onBack} />
 
         <button
           type="button"

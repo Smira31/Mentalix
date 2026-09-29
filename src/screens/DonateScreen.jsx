@@ -1,183 +1,47 @@
 import { useState } from 'react'
-import { Heart, Check } from 'lucide-react'
-import { createPortal } from 'react-dom'
-import { api } from '../lib/api'
-import BackButton from '../components/BackButton'
-import { isPreviewDemoMode } from '../lib/demoMode'
-import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
-import './DonateScreen.css'
-
-function DemoDonateScreen({ user, onBack }) {
-  const [selected, setSelected] = useState(AMOUNTS[1])
-  const [sending, setSending] = useState(false)
-  const [done, setDone] = useState(false)
-
-  async function send() {
-    if (sending) return
-    setSending(true)
-    try {
-      await api.subscription.donate(user.id, selected)
-      setDone(true)
-    } catch (e) {
-      console.error(e)
-    } finally {
-      setSending(false)
-    }
-  }
-
-  if (done) {
-    return (
-      <div className="mx-demo-donate mx-demo-donate--done">
-        <BackButton showInDemo onClick={onBack} />
-        <div className="mx-demo-donate__intro-card">
-          <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4">
-            <Check size={28} />
-          </div>
-          <h2>Спасибо!</h2>
-          <p>Твоя поддержка помогает Mentalix развиваться дальше.</p>
-        </div>
-        <button type="button" onClick={onBack}>
-          Готово
-        </button>
-      </div>
-    )
-  }
-
-  return (
-    <div className="mx-demo-donate">
-      <div className="mx-demo-donate__header">
-        <BackButton showInDemo onClick={onBack} />
-        <h1>Поддержать проект</h1>
-        <span aria-hidden="true" />
-      </div>
-      <div className="mx-demo-donate__intro-card">
-        <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4">
-          <Heart size={26} />
-        </div>
-        <p>Донат не связан с тарифами — просто способ поддержать развитие Mentalix.</p>
-      </div>
-      <div className="grid grid-cols-2">
-        {AMOUNTS.map(amount => (
-          <button
-            key={amount}
-            type="button"
-            onClick={() => setSelected(amount)}
-            className={selected === amount ? 'bg-gold' : ''}
-          >
-            {amount} ₽
-          </button>
-        ))}
-      </div>
-      <button type="button" onClick={send} disabled={sending}>
-        {sending ? 'Отправляю...' : `Поддержать на ${selected} ₽`}
-      </button>
-      <p>
-        Оплата через Telegram Payments подключится в следующем обновлении — сейчас донат фиксируется
-        без реального списания средств.
-      </p>
-    </div>
-  )
-}
+import { Lock } from 'lucide-react'
+import {
+  ProfileBody,
+  ProfileChips,
+  ProfileGroup,
+  ProfileNote,
+  ProfilePage,
+} from './settings/ProfileUi'
 
 const AMOUNTS = [100, 300, 500, 1000]
 
-function ProductionDonateScreen({ user, onBack }) {
+/*
+ * «поддержать проект.» — DESIGN_SYSTEM.md §5.4. Оплата ещё не подключена,
+ * поэтому кнопка неактивна и ничего не записывает: «донат» без списания
+ * выглядел бы как настоящий платёж, которого не было.
+ */
+export default function DonateScreen({ onBack }) {
   const [selected, setSelected] = useState(AMOUNTS[1])
-  const [sending, setSending] = useState(false)
-  const [done, setDone] = useState(false)
-
-  async function send() {
-    if (sending) return
-    setSending(true)
-    try {
-      // заглушка: реальная оплата подключится через Telegram Payments позже.
-      // сейчас донат просто фиксируется в базе как намерение поддержки.
-      await api.subscription.donate(user.id, selected)
-      setDone(true)
-    } catch (e) {
-      console.error(e)
-    } finally {
-      setSending(false)
-    }
-  }
-
-  if (done) {
-    return (
-      <div className="w-full max-w-md px-6 pt-16 flex flex-col items-center text-center">
-        <div className="w-16 h-16 rounded-full bg-gold/20 flex items-center justify-center mb-4">
-          <Check size={28} className="text-gold" />
-        </div>
-        <h2 className="font-display text-[18px] text-cream mb-2">Спасибо!</h2>
-        <p className="text-[13px] text-muted mb-8">
-          Твоя поддержка помогает Mentalix развиваться дальше.
-        </p>
-        <button
-          onClick={onBack}
-          className="w-full py-3.5 rounded-2xl bg-gold text-emerald-deep text-[13px] font-medium active:scale-95 transition-transform"
-        >
-          Готово
-        </button>
-      </div>
-    )
-  }
 
   return (
-    <div className="w-full max-w-md px-4 pt-2 pb-28 flex flex-col items-center">
-      <div className="w-full grid grid-cols-[1fr_auto_1fr] items-center min-h-[42px] mb-6">
-        <div className="justify-self-start">
-          <BackButton showInDemo onClick={onBack} />
-        </div>
-        <h1 className="font-display text-[18px] text-cream">Поддержать проект</h1>
-        <span aria-hidden="true" />
-      </div>
-
-      <div className="mx-demo-donate__intro-card">
-        <div className="w-16 h-16 rounded-full bg-mint/20 flex items-center justify-center mb-4">
-          <Heart size={26} className="text-mint" />
-        </div>
-
-        <p className="text-[13px] text-muted text-center mb-8 px-4">
-          Донат не связан с тарифами — просто способ поддержать развитие Mentalix.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3 w-full mb-8">
-        {AMOUNTS.map(a => (
+    <ProfilePage title="поддержать проект." onBack={onBack} testId="profile-screen-donate">
+      <ProfileBody>
+        <ProfileGroup label="Сумма">
+          <ProfileChips
+            label="Сумма поддержки"
+            value={selected}
+            onChange={setSelected}
+            options={AMOUNTS.map(amount => ({ value: amount, label: `${amount} ₽` }))}
+          />
           <button
-            key={a}
-            onClick={() => setSelected(a)}
-            className={`py-4 rounded-2xl text-[16px] font-display transition-colors ${
-              selected === a ? 'bg-gold text-emerald-deep' : 'bg-cream/[0.05] text-muted'
-            }`}
+            type="button"
+            disabled
+            data-testid="donate-pay-button"
+            className="mx-profile-disabled-cta"
           >
-            {a} ₽
+            <Lock size={14} aria-hidden="true" /> Оплата скоро появится
           </button>
-        ))}
-      </div>
-
-      <button
-        onClick={send}
-        disabled={sending}
-        className="w-full py-3.5 rounded-2xl bg-gold text-emerald-deep text-[13px] font-medium disabled:opacity-40 active:scale-95 transition-transform"
-      >
-        {sending ? 'Отправляю...' : `Поддержать на ${selected} ₽`}
-      </button>
-
-      <p className="text-[11px] text-muted text-center mt-4 px-4">
-        Оплата через Telegram Payments подключится в следующем обновлении — сейчас донат фиксируется
-        без реального списания средств.
-      </p>
-    </div>
+          <ProfileNote>
+            Поддержка не связана с тарифами — это просто способ помочь Mentalix расти. Как только
+            оплата появится, выбрать сумму можно будет здесь.
+          </ProfileNote>
+        </ProfileGroup>
+      </ProfileBody>
+    </ProfilePage>
   )
-}
-
-export default function DonateScreen({ user, onBack }) {
-  if (isPreviewDemoMode()) {
-    return createPortal(
-      <DemoDonateScreen user={user} onBack={onBack} />,
-      getFullscreenPortalTarget()
-    )
-  }
-
-  return <ProductionDonateScreen user={user} onBack={onBack} />
 }

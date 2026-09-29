@@ -136,7 +136,7 @@ const historyEntries = [
   },
   {
     date: 'Вчера',
-    type: 'Утренний check-in',
+    type: 'Утренний чек-ин',
     time: '09:04',
     preview: 'Состояние: рассеянность · фокус: один шаг',
     answer: 'Сначала записать мысль, потом открыть задачу.',
@@ -316,7 +316,7 @@ function MoodHero({ state, summary, monthLabel }) {
         <h2>среднее настроение.</h2>
         <p>
           {state === 'progress'
-            ? 'Пока рано считать среднее — сделай ещё несколько check-in, чтобы картина стала честной.'
+            ? 'Пока рано считать среднее — сделай ещё несколько чек-инов, чтобы картина стала честной.'
             : 'Здесь появится честное среднее, как только наберётся пара отметок настроения.'}
         </p>
       </div>
@@ -396,7 +396,7 @@ function MonthLineChart({ state, days, activeMonth, onMonthChange }) {
           <span>
             {state === 'empty'
               ? 'Отметь настроение — точки появятся день за днём.'
-              : 'Ещё несколько check-in — и линия станет заметной.'}
+              : 'Ещё несколько чек-инов — и линия станет заметной.'}
           </span>
         </div>
       )}
@@ -442,7 +442,7 @@ function EmotionsSection({ state, emotions, risers, fallers }) {
     <div className="mx-history-trends__emotions" role="region" aria-labelledby="emotions-title">
       <div className="mx-history-trends__emotions-heading">
         <strong id="emotions-title">Эмоции</strong>
-        <span>Те же слова из check-in, собранные в частоты за месяц — без эмодзи-рожиц.</span>
+        <span>Те же слова из чек-ина, собранные в частоты за месяц — без эмодзи-рожиц.</span>
       </div>
       {hasData ? (
         <>
@@ -495,7 +495,7 @@ function EmotionsSection({ state, emotions, risers, fallers }) {
           </strong>
           <span>
             {state === 'empty'
-              ? 'Выбери слово в check-in — здесь появится первая точка.'
+              ? 'Выбери слово в чек-ине — здесь появится первая точка.'
               : 'Ещё немного отметок — и появится честная картина.'}
           </span>
         </div>
@@ -593,7 +593,7 @@ function TrendsPreview() {
                 </strong>
                 <span>
                   {state === 'empty'
-                    ? 'Сделай check-in, чтобы начать наблюдение.'
+                    ? 'Сделай чек-ин, чтобы начать наблюдение.'
                     : 'Прогресс 6 из 10 дней'}
                 </span>
                 <i>

@@ -7,8 +7,13 @@ function isStandaloneDisplayMode(windowLike = typeof window !== 'undefined' ? wi
   )
 }
 
-export function shouldRenderDemoTelegramChrome({ previewDemoMode, platformName, windowLike }) {
-  if (!previewDemoMode || platformName === 'telegram') return false
+export function shouldRenderDemoTelegramChrome({
+  previewDemoMode,
+  platformName,
+  realPhone,
+  windowLike,
+}) {
+  if (!previewDemoMode || platformName === 'telegram' || realPhone) return false
 
   // Standalone Safari/PWA должен выглядеть как обычный Safari: без
   // нарисованной поверх приложения Telegram-панели управления.

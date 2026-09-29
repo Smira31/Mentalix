@@ -52,19 +52,18 @@ export const telegramAdapter = {
   },
 
   async requestAuth({ timeoutMs = 3000, intervalMs = 50 } = {}) {
-    // Telegram user обычно доступен сразу, но в некоторых WebView initDataUnsafe
-    // заполняется после первого bridge-цикла. Не отдаём управление App, пока
-    // user_id не появился: иначе Practices/Today/Analytics могут сделать запросы
-    // с undefined и получить 422 user_id is required.
+    // В некоторых WebView user и подписанный initData появляются в разные моменты.
+    // Не открываем пользовательские экраны до появления обоих: иначе запросы
+    // уходят с user_id без Authorization: tma.
     const deadline = Date.now() + timeoutMs
     let user = this.getUser()
 
-    while (!user && Date.now() < deadline) {
+    while ((!user || !this.getInitData()) && Date.now() < deadline) {
       await new Promise(resolve => setTimeout(resolve, intervalMs))
       user = this.getUser()
     }
 
-    return user
+    return user && this.getInitData() ? user : null
   },
 
   haptic(style = 'light') {
@@ -86,5 +85,15 @@ export const telegramAdapter = {
 
   openInvoice(url, callback) {
     WebApp.openInvoice?.(url, callback)
+  },
+
+  // t.me-ссылки открываются внутри Telegram; window.open в Telegram iOS
+  // уводит во внешний браузер.
+  openTelegramLink(url) {
+    if (WebApp.openTelegramLink) {
+      WebApp.openTelegramLink(url)
+    } else {
+      window.open(url, '_blank', 'noopener,noreferrer')
+    }
   },
 }
