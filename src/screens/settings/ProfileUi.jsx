@@ -14,8 +14,10 @@ import './ProfileUi.css'
 /*
  * Крупный заголовок «твой профиль.» при скролле уходит под липкую шапку —
  * тогда в центре шапки появляется маленький на фоне экрана с затуханием
- * вниз (контент уходит под него, а не обрезается). Следим за самим заголовком,
- * а не за scroll-событиями: скроллится корень App, а не этот экран.
+ * вниз (контент уходит под него, а не обрезается). Следим за самим заголовком:
+ * IntersectionObserver ловит layout/viewport-изменения, а scroll-listener
+ * на корне App — программный scrollTop (IntersectionObserver в headless Chrome
+ * срабатывает по нему ненадёжно).
  */
 function useTitleCollapsed(headerRef, titleRef) {
   const [collapsed, setCollapsed] = useState(false)
@@ -23,15 +25,27 @@ function useTitleCollapsed(headerRef, titleRef) {
   useEffect(() => {
     const header = headerRef.current
     const title = titleRef.current
-    if (!header || !title || typeof IntersectionObserver === 'undefined') return undefined
+    if (!header || !title) return undefined
     const headerBottom = Math.max(0, Math.round(header.getBoundingClientRect().bottom))
-    const observer = new IntersectionObserver(
-      ([entry]) =>
-        setCollapsed(!entry.isIntersecting && entry.boundingClientRect.top < headerBottom),
-      { rootMargin: `-${headerBottom}px 0px 0px 0px`, threshold: 0 }
-    )
-    observer.observe(title)
-    return () => observer.disconnect()
+
+    let observer
+    if (typeof IntersectionObserver !== 'undefined') {
+      observer = new IntersectionObserver(
+        ([entry]) =>
+          setCollapsed(!entry.isIntersecting && entry.boundingClientRect.top < headerBottom),
+        { rootMargin: `-${headerBottom}px 0px 0px 0px`, threshold: 0 }
+      )
+      observer.observe(title)
+    }
+
+    const check = () => setCollapsed(title.getBoundingClientRect().top < headerBottom)
+    const scrollRoot = title.closest('.mx-app-scroll-root')
+    if (scrollRoot) scrollRoot.addEventListener('scroll', check, { passive: true })
+
+    return () => {
+      if (observer) observer.disconnect()
+      if (scrollRoot) scrollRoot.removeEventListener('scroll', check)
+    }
   }, [headerRef, titleRef])
 
   return collapsed
@@ -46,7 +60,9 @@ export function ProfilePage({ title, isRoot = false, onBack, testId, children })
   const headerRef = useRef(null)
   const titleRef = useRef(null)
   const collapsed = useTitleCollapsed(headerRef, titleRef)
-  const showOwnButton = !isTelegramBackMode(typeof window === 'undefined' ? null : window.Telegram?.WebApp)
+  const showOwnButton = !isTelegramBackMode(
+    typeof window === 'undefined' ? null : window.Telegram?.WebApp
+  )
   useBackButton(onBack, isRoot)
   const screenRef = useRef(null)
 
@@ -57,12 +73,24 @@ export function ProfilePage({ title, isRoot = false, onBack, testId, children })
       data-testid={testId}
     >
       <div className="mx-profile-page__bar">
-        {isRoot ? (showOwnButton &&
-          <button type="button" data-testid="profile-close-button" className="mx-profile-page__button mx-profile-page__button--close" aria-label="Закрыть профиль" onClick={onBack}>
-            <X size={22} aria-hidden="true" />
-          </button>
+        {isRoot ? (
+          showOwnButton && (
+            <button
+              type="button"
+              data-testid="profile-close-button"
+              className="mx-profile-page__button mx-profile-page__button--close"
+              aria-label="Закрыть профиль"
+              onClick={onBack}
+            >
+              <X size={22} aria-hidden="true" />
+            </button>
+          )
         ) : (
-          <ScreenBack onBack={onBack} testId="profile-close-button" className="mx-profile-page__button mx-profile-page__button--back" />
+          <ScreenBack
+            onBack={onBack}
+            testId="profile-close-button"
+            className="mx-profile-page__button mx-profile-page__button--back"
+          />
         )}
         <div
           ref={headerRef}
@@ -115,7 +143,16 @@ export function ProfileNote({ children, role, danger = false }) {
  * Строка списка: 50 px, текст слева в 20 px от края карточки, справа —
  * значение жирным и шеврон (у кликабельных) либо свой элемент (right).
  */
-export function ProfileRow({ title, subtitle, value, right, onClick, danger = false, testId, valueHeading = false }) {
+export function ProfileRow({
+  title,
+  subtitle,
+  value,
+  right,
+  onClick,
+  danger = false,
+  testId,
+  valueHeading = false,
+}) {
   const Component = onClick ? 'button' : 'div'
   const showChevron = Boolean(onClick) && !right
   // valueHeading: значение строки становится заголовком (h3) — нужно,
