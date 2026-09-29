@@ -91,9 +91,12 @@ export default function BottomNavigation({ tab, collapsed, onCollapseChange, onT
 
           borderRadius: 'var(--mx-radius-pill)',
 
-          backgroundColor: 'rgb(var(--c-nav))',
+          backgroundColor: 'var(--mx-glass-bg)',
 
-          borderColor: 'rgb(var(--c-nav-border))',
+          borderColor: 'rgba(255, 255, 255, 0.08)',
+
+          backdropFilter: 'blur(20px) saturate(160%)',
+          WebkitBackdropFilter: 'blur(20px) saturate(160%)',
 
           boxShadow: 'var(--shadow-float)',
           transition: `width var(--mx-motion-slow) ${MOTION}, height var(--mx-motion-slow) ${MOTION}, border-radius var(--mx-motion-slow) ${MOTION}`,

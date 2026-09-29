@@ -11,7 +11,7 @@
   flex-direction: column;
   align-items: center;
   padding: 8px 0 0;
-  background: rgb(var(--c-bg, 5 4 3));
+  background: transparent;
 }
 
 .mx-progress-segment {
@@ -20,9 +20,11 @@
   height: 42px;
   grid-template-columns: 1fr 1fr;
   padding: 0;
-  border: 1px solid rgb(var(--c-border, 41 41 41));
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 999px;
-  background: rgb(var(--c-card2, 17 17 17));
+  background: var(--mx-glass-bg);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
 }
 
 .mx-progress-segment button {

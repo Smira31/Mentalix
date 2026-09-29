@@ -28,9 +28,11 @@
   gap: 7px;
   min-height: 36px;
   padding: 0 12px;
-  border: 1px solid rgb(var(--c-line) / 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--mx-radius-pill);
-  background: rgb(var(--c-card2));
+  background: var(--mx-glass-bg);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
   color: rgb(var(--c-ink));
   white-space: nowrap;
 }
@@ -50,9 +52,11 @@
   width: max-content;
   min-width: 132px;
   padding: 5px;
-  border: 1px solid rgb(var(--c-line) / 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 14px;
-  background: rgb(var(--c-card));
+  background: var(--mx-glass-bg);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
   box-shadow: 0 14px 32px rgb(0 0 0 / 0.24);
 }
 
@@ -72,7 +76,7 @@
 
 .mx-progress-layout-v2__period-menu button:hover,
 .mx-progress-layout-v2__period-menu button[aria-checked='true'] {
-  background: rgb(var(--c-card2));
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .mx-progress-layout-v2__period-menu button[aria-checked='true'] > span:last-child {
