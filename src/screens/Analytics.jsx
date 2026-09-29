@@ -27,7 +27,7 @@ import {
   periodName,
 } from './progress/progressAnalyticsPeriods'
 import { ProgressGlassMenu, ProgressGlassMenuItem } from '../components/ProgressGlassMenu'
-import { BarChart3, Eye } from 'lucide-react'
+import { Eye } from 'lucide-react'
 
 const CALENDAR_WEEKDAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
 
@@ -364,6 +364,7 @@ function MoodCalendarCard({ periodCheckins, granularity, window, onOpenFull }) {
           <button type="button" className="mx-progress-mood-calendar__all" onClick={onOpenFull}>
             Все дни ›
           </button>
+          <div className="mx-progress-mood-calendar__line" aria-hidden="true" />
         </div>
       </CardShell>
     )
@@ -493,9 +494,9 @@ function InfluencesCard({ direction, influences }) {
         subtitle="Из твоих отметок"
         testId={`progress-conclusions-${direction}`}
       >
-        <div className="mx-progress-card__empty">
-          <span className="mx-progress-card__empty-title">Пока нет данных</span>
-          <span className="mx-progress-card__empty-hint">
+        <div className="mx-progress-influences__empty">
+          <span className="mx-progress-influences__empty-title">Пока нет данных</span>
+          <span className="mx-progress-influences__empty-hint">
             Отметь настроение ещё {formatDays(remaining)} — здесь появятся выводы
           </span>
         </div>
@@ -537,7 +538,16 @@ function PracticesCard({ analyticsData, isCurrentPeriod }) {
   if (!isCurrentPeriod || items.length === 0) {
     return (
       <CardShell title="Твои практики" subtitle="За текущий период" testId="progress-practices">
-        <CardEmpty hint="Отмечай практики и чек-ины — здесь появится кольцо" />
+        <div className="mx-progress-practices__empty">
+          <div className="mx-progress-practices__empty-ring" aria-hidden="true" />
+          <div className="mx-progress-practices__empty-text">
+            <span className="mx-progress-practices__empty-dot" aria-hidden="true" />
+            <span className="mx-progress-practices__empty-title">Пока нет данных</span>
+            <span className="mx-progress-practices__empty-hint">
+              Отмечай практики и чек-ины — здесь появится кольцо
+            </span>
+          </div>
+        </div>
       </CardShell>
     )
   }
@@ -714,22 +724,13 @@ function CustomizeLayer({ preferences, onToggle, onClose }) {
 
 /* ── Нижняя пилюля периода ── */
 
-function BottomPeriodPill({ granularity, offset, onPrev, onNext, canNext, hidden, onCustomize }) {
+function BottomPeriodPill({ granularity, offset, onPrev, onNext, canNext, hidden, collapsed }) {
   const window = getPeriodWindow(granularity, offset)
   return (
     <div
-      className={`mx-progress-bottom-pill-wrapper${hidden ? ' mx-progress-bottom-pill-wrapper--hidden' : ''}`}
+      className={`mx-progress-bottom-pill-wrapper${hidden ? ' mx-progress-bottom-pill-wrapper--hidden' : ''}${collapsed ? ' mx-progress-bottom-pill-wrapper--collapsed' : ''}`}
       data-testid="progress-bottom-pill"
     >
-      <button
-        type="button"
-        className="mx-progress-customize-fab"
-        aria-label="Настроить графики"
-        data-testid="progress-customize-trigger"
-        onClick={onCustomize}
-      >
-        <BarChart3 size={20} />
-      </button>
       <div className="mx-progress-bottom-pill">
         <button
           type="button"
@@ -981,9 +982,9 @@ export default function Analytics({
     practices: <PracticesCard analyticsData={safeData} isCurrentPeriod={isCurrentPeriod} />,
   }
 
-  // Нижний отступ: пилюля (50) + панель (53 + 8 offset) + 16 = 127.
-  // При скрытой навигации (P1: уехала целиком) пилюля тоже скрыта — отступ 16.
-  const bottomSpacerHeight = navCollapsed ? 16 : 50 + 53 + 8 + 16
+  // Нижний отступ: пилюля (50) + панель + 16.
+  // При свёрнутой навигации пилюля в одну линию с кнопкой — отступ 50 + 16.
+  const bottomSpacerHeight = navCollapsed ? 50 + 16 : 50 + 8 + 53 + 16
 
   return (
     <div
@@ -991,63 +992,67 @@ export default function Analytics({
       className="mx-progress-redesign mx-progress-redesign--live mx-type-page w-full max-w-md px-[var(--mx-screen-x)] animate-fade-in"
     >
       <div className="mx-progress-segment-bar">
-        <div
-          className="mx-progress-segment"
-          role="tablist"
-          aria-label="Прогресс: Аналитика и История"
-        >
-          <button
-            type="button"
-            role="tab"
-            data-testid="progress-tab-analytics"
-            aria-selected={activeTab === 'analytics'}
-            onClick={() => handleSegmentClick('analytics')}
+        <div className="mx-progress-segment-row">
+          <div
+            className="mx-progress-segment"
+            role="tablist"
+            aria-label="Прогресс: Аналитика и История"
           >
-            Аналитика
-          </button>
-          <button
-            type="button"
-            role="tab"
-            data-testid="progress-tab-history"
-            aria-selected={activeTab === 'history'}
-            onClick={() => handleSegmentClick('history')}
-          >
-            История
-          </button>
+            <button
+              type="button"
+              role="tab"
+              data-testid="progress-tab-analytics"
+              aria-selected={activeTab === 'analytics'}
+              onClick={() => handleSegmentClick('analytics')}
+            >
+              Аналитика
+            </button>
+            <button
+              type="button"
+              role="tab"
+              data-testid="progress-tab-history"
+              aria-selected={activeTab === 'history'}
+              onClick={() => handleSegmentClick('history')}
+            >
+              История
+            </button>
+          </div>
         </div>
-        {activeTab === 'analytics' && (
-          <button
-            type="button"
-            className="mx-progress-period-trigger"
-            data-testid="progress-period-trigger"
-            aria-expanded={periodMenuOpen}
-            aria-controls="progress-period-menu"
-            onClick={() => setPeriodMenuOpen(v => !v)}
-          >
-            {gran.label}
-            <span className="mx-progress-period-trigger__chevron" aria-hidden="true">
-              ⌄
-            </span>
-          </button>
-        )}
-        {activeTab === 'analytics' && periodMenuOpen && (
-          <ProgressGlassMenu
-            id="progress-period-menu"
-            role="menu"
-            aria-label="Период аналитики"
-            style={{ position: 'absolute', right: 0, top: '56px' }}
-          >
-            {ANALYTICS_GRANULARITIES.map(g => (
-              <ProgressGlassMenuItem
-                key={g.id}
-                label={g.label}
-                role="menuitemradio"
-                selected={granularity === g.id}
-                onClick={() => selectGranularity(g.id)}
-              />
-            ))}
-          </ProgressGlassMenu>
-        )}
+        <div className="mx-progress-actions-row" data-testid="progress-actions-row">
+          {activeTab === 'analytics' && (
+            <button
+              type="button"
+              className="mx-progress-period-trigger"
+              data-testid="progress-period-trigger"
+              aria-expanded={periodMenuOpen}
+              aria-controls="progress-period-menu"
+              onClick={() => setPeriodMenuOpen(v => !v)}
+            >
+              {gran.label}
+              <span className="mx-progress-period-trigger__chevron" aria-hidden="true">
+                ⌄
+              </span>
+            </button>
+          )}
+          {activeTab === 'analytics' && periodMenuOpen && (
+            <ProgressGlassMenu
+              id="progress-period-menu"
+              role="menu"
+              aria-label="Период аналитики"
+              style={{ position: 'absolute', right: 16, top: '100%' }}
+            >
+              {ANALYTICS_GRANULARITIES.map(g => (
+                <ProgressGlassMenuItem
+                  key={g.id}
+                  label={g.label}
+                  role="menuitemradio"
+                  selected={granularity === g.id}
+                  onClick={() => selectGranularity(g.id)}
+                />
+              ))}
+            </ProgressGlassMenu>
+          )}
+        </div>
       </div>
 
       {activeTab === 'analytics' && view === 'calendar' && (
@@ -1167,7 +1172,7 @@ export default function Analytics({
           onNext={handleNext}
           canNext={offset > 0}
           hidden={navCollapsed}
-          onCustomize={() => setView('customize')}
+          collapsed={navCollapsed}
         />
       )}
 

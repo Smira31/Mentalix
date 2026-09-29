@@ -220,7 +220,11 @@ export function buildEntriesByDay(checkins, moodPractices, journalEntries, activ
     })
   }
 
-  return Object.values(byDate).sort((a, b) => (a.date < b.date ? 1 : -1))
+  // Дни с активностью, но без записей (чек-ин/настроение/дневник) не показываем —
+  // иначе в ленте появляются пустые подписи дат без карточек (§5.5, баг пустых провалов).
+  return Object.values(byDate)
+    .filter(day => day.entries.length > 0)
+    .sort((a, b) => (a.date < b.date ? 1 : -1))
 }
 
 /* ============================================================

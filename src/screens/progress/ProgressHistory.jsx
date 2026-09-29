@@ -1,6 +1,27 @@
 import { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Filter, MoreHorizontal, RotateCcw, Search, Trash2 } from 'lucide-react'
+import { MoreHorizontal, RotateCcw, Search, Trash2 } from 'lucide-react'
+
+/** Иконка фильтра — три горизонтальные линии убывающей длины (как Stoic). */
+function FilterIcon({ size = 20, ...rest }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      aria-hidden="true"
+      {...rest}
+    >
+      <line x1="3" y1="6" x2="17" y2="6" />
+      <line x1="3" y1="10" x2="13" y2="10" />
+      <line x1="3" y1="14" x2="9" y2="14" />
+    </svg>
+  )
+}
 
 import { api } from '../../lib/api'
 import { platform, platformName } from '../../platform'
@@ -458,6 +479,31 @@ function entryMoodChip(entry) {
   return null
 }
 
+function entryPreview(entry) {
+  const moodChip = entryMoodChip(entry)
+  if (moodChip) {
+    return (
+      <span className="mx-progress-history__row-chip" aria-hidden="true">
+        <span
+          className="mx-progress-history__row-chip-dot"
+          style={{ background: moodColor(moodChip.mood) }}
+        />
+        {moodChip.text}
+      </span>
+    )
+  }
+  if (entry.type === ENTRY_TYPES.JOURNAL && entry.journal?.phases?.length) {
+    const phase = entry.journal.phases[0]
+    return (
+      <div className="mx-progress-history__row-preview-text">
+        <span className="mx-progress-history__row-preview-q">{phase.label}</span>
+        <span className="mx-progress-history__row-preview-a">{phase.text}</span>
+      </div>
+    )
+  }
+  return null
+}
+
 function DayList({ days, onSelectEntry }) {
   return days.map(day => (
     <div className="mx-progress-history__group" key={day.date}>
@@ -468,7 +514,7 @@ function DayList({ days, onSelectEntry }) {
         </span>
       </div>
       {day.entries.map((entry, index) => {
-        const moodChip = entryMoodChip(entry)
+        const preview = entryPreview(entry)
         return (
           <button
             type="button"
@@ -477,19 +523,13 @@ function DayList({ days, onSelectEntry }) {
             data-testid="progress-history-row"
             onClick={() => onSelectEntry(entry)}
           >
-            <span className="mx-progress-history__row-left">
+            <div className="mx-progress-history__row-top">
               <span className="mx-progress-history__row-name">{entryListName(entry.type)}</span>
-              {moodChip && (
-                <span className="mx-progress-history__row-mood" aria-hidden="true">
-                  <span
-                    className="mx-progress-history__row-mood-dot"
-                    style={{ background: moodColor(moodChip.mood) }}
-                  />
-                  {moodChip.text}
-                </span>
-              )}
-            </span>
-            {entry.time && <span className="mx-progress-history__row-time">{entry.time}</span>}
+              {entry.time && <span className="mx-progress-history__row-time">{entry.time}</span>}
+            </div>
+            {preview && (
+              <div className="mx-progress-history__row-preview">{preview}</div>
+            )}
           </button>
         )
       })}
@@ -560,7 +600,7 @@ export default function ProgressHistory({ user, onGoCheckin, onRedo, onRedoRevie
 
   // ── Портал кнопок в сегмент-бар ──
   useEffect(() => {
-    const el = document.querySelector('.mx-progress-segment-bar')
+    const el = document.querySelector('.mx-progress-actions-row')
     if (el) setPortalTarget(el)
   }, [])
 
@@ -765,7 +805,7 @@ export default function ProgressHistory({ user, onGoCheckin, onRedo, onRedoRevie
               setFilterOpen(true)
             }}
           >
-            <Filter size={20} aria-hidden="true" />
+            <FilterIcon size={20} />
           </button>
           <button
             type="button"
@@ -794,7 +834,7 @@ export default function ProgressHistory({ user, onGoCheckin, onRedo, onRedoRevie
             role="menu"
             aria-label="Группировка истории"
             data-testid="history-grouping-menu"
-            style={{ position: 'absolute', right: 0, top: '108px' }}
+            style={{ position: 'absolute', right: 0, top: '100%' }}
           >
             {HISTORY_GRANULARITIES.map(g => (
               <ProgressGlassMenuItem

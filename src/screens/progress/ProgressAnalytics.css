@@ -2,17 +2,36 @@
 
 .mx-progress-segment-bar {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 0 0;
+  background: rgb(var(--c-bg, 5 4 3));
 }
 
-/* Пилюля периода справа в строке сегмента */
+.mx-progress-segment-row {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.mx-progress-actions-row {
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 8px 16px 0;
+}
+
+/* Пилюля периода в строке действий (справа) */
 .mx-progress-period-trigger {
-  position: absolute;
-  right: 0;
-  top: 8px;
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  height: 44px;
+  height: 36px;
   padding: 0 14px;
   border: 0;
   border-radius: 999px;
@@ -31,7 +50,9 @@
 }
 
 .mx-progress-period-trigger__chevron {
-  font-size: 12px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1;
   color: rgb(var(--c-muted, 133 133 133));
 }
 
@@ -229,15 +250,15 @@
 
 .mx-progress-need-data__remind {
   margin-top: 16px;
-  min-height: 36px;
-  padding: 0 20px;
-  border: 1px solid rgba(243, 243, 243, 0.15);
+  min-height: 44px;
+  padding: 0 24px;
+  border: 0;
   border-radius: 999px;
-  background: rgba(243, 243, 243, 0.08);
-  color: rgb(var(--c-text, 243 243 243));
+  background: rgb(var(--c-text, 243 243 243));
+  color: rgb(var(--c-bg, 5 4 3));
   font: inherit;
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 15px;
+  font-weight: 600;
   cursor: pointer;
   transition: transform 0.15s ease;
 }
@@ -277,14 +298,14 @@
 
 .mx-progress-card__title {
   margin: 0;
-  font-size: 17px;
-  font-weight: 700;
+  font-size: 20px;
+  font-weight: 600;
   color: rgb(var(--c-text, 243 243 243));
 }
 
 .mx-progress-card__subtitle {
   margin: 4px 0 0;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 400;
   color: rgb(var(--c-muted, 133 133 133));
 }
@@ -301,7 +322,7 @@
   border-radius: 999px;
   background: transparent;
   color: rgb(var(--c-muted, 133 133 133));
-  font-size: 18px;
+  font-size: 20px;
   cursor: pointer;
 }
 
@@ -349,6 +370,75 @@
 .mx-progress-card__empty-hint {
   margin-top: 4px;
   font-size: 11px;
+  font-weight: 400;
+  line-height: 1.35;
+  color: rgb(var(--c-muted, 133 133 133));
+}
+
+/* ── «Твои практики»: пустое состояние — кольцо слева, текст справа (§5.5) ── */
+.mx-progress-practices__empty {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 90px;
+  padding: 8px 0;
+}
+
+.mx-progress-practices__empty-ring {
+  flex-shrink: 0;
+  width: 90px;
+  height: 90px;
+  border-radius: 999px;
+  border: 10px solid rgb(var(--c-card3, 46 46 46));
+}
+
+.mx-progress-practices__empty-text {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mx-progress-practices__empty-dot {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgb(var(--c-card3, 46 46 46));
+}
+
+.mx-progress-practices__empty-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: rgb(var(--c-text, 243 243 243));
+}
+
+.mx-progress-practices__empty-hint {
+  width: 100%;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.35;
+  color: rgb(var(--c-muted, 133 133 133));
+}
+
+/* ── «Что поднимает/опускает»: пустое состояние — по левому краю, без кольца (§5.5) ── */
+.mx-progress-influences__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 8px 0;
+  text-align: left;
+}
+
+.mx-progress-influences__empty-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: rgb(var(--c-muted, 133 133 133));
+}
+
+.mx-progress-influences__empty-hint {
+  margin-top: 4px;
+  font-size: 15px;
   font-weight: 400;
   line-height: 1.35;
   color: rgb(var(--c-muted, 133 133 133));
@@ -448,13 +538,20 @@
   width: 15px;
   height: 15px;
   border-radius: 999px;
-  background: rgb(var(--c-card3, 46 46 46));
+  border: 1.5px solid rgb(var(--c-border, 41 41 41));
+  background: transparent;
 }
 
 .mx-progress-mood-calendar__wd {
   font-size: 11px;
   font-weight: 600;
   color: rgb(var(--c-muted, 133 133 133));
+}
+
+.mx-progress-mood-calendar__line {
+  height: 1px;
+  margin-top: 8px;
+  background: rgb(var(--c-border, 41 41 41));
 }
 
 .mx-progress-mood-calendar__month {
@@ -481,10 +578,10 @@
   margin-top: 8px;
   border: 0;
   background: transparent;
-  color: rgb(var(--c-muted, 133 133 133));
+  color: rgb(var(--c-text, 243 243 243));
   font: inherit;
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 17px;
+  font-weight: 600;
   cursor: pointer;
 }
 
@@ -810,52 +907,41 @@
   outline: 2px solid rgb(var(--c-text));
 }
 
-/* ── Нижняя плавающая пилюля периода ── */
+/* ── Нижняя плавающая пилюля периода (§5.5) ── */
 .mx-progress-bottom-pill-wrapper {
   position: fixed;
   bottom: calc(var(--app-safe-bottom, 0px) + var(--bottom-nav-offset, 8px) + var(--bottom-nav-height, 53px) + 8px);
-  left: 50%;
-  transform: translateX(-50%);
+  left: var(--mx-screen-x, 16px);
+  right: var(--mx-screen-x, 16px);
   z-index: 20;
   transition:
-    transform var(--mx-motion-slow) cubic-bezier(0.22, 1, 0.36, 1),
+    bottom var(--mx-motion-slow) cubic-bezier(0.22, 1, 0.36, 1),
+    left var(--mx-motion-slow) cubic-bezier(0.22, 1, 0.36, 1),
+    right var(--mx-motion-slow) cubic-bezier(0.22, 1, 0.36, 1),
     opacity var(--mx-motion-slow) ease;
 }
 
 .mx-progress-bottom-pill-wrapper--hidden {
-  transform: translateX(-50%) translateY(120%);
+  transform: translateY(120%);
   opacity: 0;
   pointer-events: none;
 }
 
-/* FAB-кнопка «Настроить» рядом с пилюлей периода */
-.mx-progress-customize-fab {
-  display: grid;
-  place-items: center;
-  width: 50px;
-  height: 50px;
-  margin-right: 10px;
-  border: 0;
-  border-radius: 999px;
-  background: rgb(var(--c-card2, 17 17 17));
-  box-shadow: var(--shadow-float-compact, 0 6px 26px rgba(0, 0, 0, 0.45));
-  color: rgb(var(--c-text, 243 243 243));
-  cursor: pointer;
-  transition: transform 0.15s ease;
-}
-
-.mx-progress-customize-fab:active {
-  transform: scale(0.92);
+/* Свернутая навигация: пилюля в одну линию с круглой кнопкой слева */
+.mx-progress-bottom-pill-wrapper--collapsed {
+  bottom: calc(var(--app-safe-bottom, 0px) + var(--bottom-nav-offset, 8px));
+  left: calc(var(--bottom-nav-edge, 20px) + var(--bottom-nav-collapsed-size, 50px) + 11px);
+  right: 16px;
 }
 
 .mx-progress-bottom-pill {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 12px;
-  min-width: 0;
+  width: 100%;
   height: 50px;
-  padding: 0 14px;
-  border-radius: 999px;
+  padding: 0 20px;
+  border: 1px solid rgb(var(--c-border, 41 41 41));
+  border-radius: 16px;
   background: rgb(var(--c-card2, 17 17 17));
   box-shadow: var(--shadow-float-compact, 0 6px 26px rgba(0, 0, 0, 0.45));
 }
@@ -865,11 +951,13 @@
   place-items: center;
   width: 28px;
   height: 28px;
+  flex-shrink: 0;
   border: 0;
   border-radius: 999px;
   background: transparent;
-  color: rgb(var(--c-muted, 133 133 133));
-  font-size: 16px;
+  color: rgb(var(--c-text, 243 243 243));
+  font-size: 20px;
+  line-height: 1;
   cursor: pointer;
 }
 
@@ -879,21 +967,25 @@
 }
 
 .mx-progress-bottom-pill__label {
+  flex: 1;
   display: flex;
-  align-items: baseline;
-  gap: 8px;
-  white-space: nowrap;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  text-align: center;
 }
 
 .mx-progress-bottom-pill__name {
   font-size: 15px;
   font-weight: 600;
+  line-height: 1.2;
   color: rgb(var(--c-text, 243 243 243));
 }
 
 .mx-progress-bottom-pill__range {
   font-size: 12px;
   font-weight: 500;
+  line-height: 1.3;
   color: rgb(var(--c-muted, 133 133 133));
 }
 

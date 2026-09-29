@@ -8,7 +8,8 @@
   top: 0;
   z-index: 10;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
   padding: 8px 0 0;
   background: rgb(var(--c-bg, 5 4 3));
 }
@@ -43,17 +44,6 @@
 .mx-progress-segment button[aria-selected='true'] {
   background: rgb(var(--c-nav-active, 58 58 58));
   color: rgb(var(--c-text, 243 243 243));
-}
-
-/* У Истории три действия: не ставим их поверх центрированного сегмента. */
-.mx-progress-segment-bar:has(.mx-progress-history-actions) {
-  flex-direction: column;
-  align-items: stretch;
-  gap: 8px;
-}
-
-.mx-progress-segment-bar:has(.mx-progress-history-actions) .mx-progress-segment {
-  align-self: flex-start;
 }
 
 /* ── Вкладка «История»: список по дням ── */
