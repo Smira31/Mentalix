@@ -2,14 +2,10 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Check, Settings2, X } from 'lucide-react'
 
-import { RoundBackButton } from './NestedScreenHeader'
 import CardSystemGlyph, { practiceGlyphKind } from './CardSystemGlyph'
 import { api } from '../lib/api'
 import { buildPracticeViewModels } from '../lib/practiceCatalogRegistry'
-import {
-  getFullscreenPortalTarget,
-  useFullscreenSurface,
-} from '../lib/fullscreenSurface'
+import { getFullscreenPortalTarget, useFullscreenSurface } from '../lib/fullscreenSurface'
 import { isTelegramRuntime } from '../lib/visualViewport'
 import { useBackButton } from '../platform/telegram.hooks'
 import {
@@ -18,7 +14,15 @@ import {
   peekPinnedPractices,
 } from '../lib/pinnedPracticesDataCache'
 
-function Sheet({ title, subtitle = null, onClose, children, footer = null, undo = null, onUndo = null }) {
+function Sheet({
+  title,
+  subtitle = null,
+  onClose,
+  children,
+  footer = null,
+  undo = null,
+  onUndo = null,
+}) {
   const { style: viewportStyle } = useFullscreenSurface()
   const telegram = isTelegramRuntime()
 
@@ -39,9 +43,13 @@ function Sheet({ title, subtitle = null, onClose, children, footer = null, undo 
       >
         <div className="mx-pinned-sheet__header">
           <div className="mx-pinned-sheet__header-top">
-            <RoundBackButton onClick={onClose} />
             {!telegram && (
-              <button type="button" className="mx-icon-button" aria-label="Закрыть" onClick={onClose}>
+              <button
+                type="button"
+                className="mx-icon-button"
+                aria-label="Закрыть"
+                onClick={onClose}
+              >
                 <X size={19} aria-hidden="true" />
               </button>
             )}
@@ -98,7 +106,13 @@ function normalizePinnedPractices(value) {
   return Array.isArray(value) ? value : []
 }
 
-export default function PinnedPractices({ user, onOpenPractice, rituals = [], ascezas = [], initialSheet = null }) {
+export default function PinnedPractices({
+  user,
+  onOpenPractice,
+  rituals = [],
+  ascezas = [],
+  initialSheet = null,
+}) {
   const [pinned, setPinned] = useState(() => normalizePinnedPractices(peekPinnedPractices(user.id)))
   const [loading, setLoading] = useState(() => !peekPinnedPractices(user.id))
   const [error, setError] = useState(false)
@@ -365,7 +379,12 @@ export default function PinnedPractices({ user, onOpenPractice, rituals = [], as
       )}
 
       {sheet === 'library' && (
-        <Sheet title="библиотека практик." onClose={() => setSheet('manage')} undo={undo} onUndo={undoRemove}>
+        <Sheet
+          title="библиотека практик."
+          onClose={() => setSheet('manage')}
+          undo={undo}
+          onUndo={undoRemove}
+        >
           <div className="mx-pinned-library" role="list">
             {catalog.map(practice => {
               const isPinned = pinnedIds.has(practice.key)

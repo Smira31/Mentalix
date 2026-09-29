@@ -86,3 +86,71 @@
   gap: 6px;
   align-self: flex-start;
 }
+
+/* Карточки тем по контракту экрана «Тема недели». */
+.mx-theme-directory {
+  gap: 32px;
+  margin-top: 32px;
+}
+.mx-theme-directory section {
+  gap: 12px;
+}
+.mx-theme-directory h3 {
+  font-size: 29px;
+  line-height: 1.08;
+  font-weight: 400;
+  text-align: center;
+}
+.mx-theme-directory__rows {
+  gap: 8px;
+}
+.mx-theme-directory__row {
+  min-height: 192px;
+  padding: 20px;
+  border-radius: 28px;
+}
+.mx-theme-directory__info {
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+.mx-theme-directory__info strong {
+  font-size: 29px;
+  font-weight: 800;
+  line-height: 1.08;
+}
+.mx-theme-directory__info small {
+  display: -webkit-box;
+  max-width: 300px;
+  overflow: hidden;
+  font-size: 17px;
+  line-height: 1.3;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.mx-theme-directory__progress {
+  width: 109px;
+  height: 3px;
+  margin-top: auto;
+  align-self: flex-start;
+}
+.mx-theme-directory__row > svg {
+  align-self: flex-end;
+  color: rgb(var(--c-muted));
+}
+.mx-theme-directory__filters {
+  justify-content: center;
+  gap: 8px;
+  overflow: visible;
+}
+.mx-theme-directory__filters button,
+.mx-theme-directory__surprise {
+  height: 34px;
+  padding: 0 14px;
+  font-size: 17px;
+  font-weight: 500;
+}
+.mx-theme-directory__surprise {
+  align-self: center;
+  margin-top: 4px;
+}
