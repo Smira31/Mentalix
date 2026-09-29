@@ -1,35 +1,16 @@
 // src/screens/settings/ProfileBanners.jsx
 //
 // Три баннера в начале «твой профиль.» — DESIGN_SYSTEM.md §5.4 «Баннеры профиля».
-// Иллюстрации — готовые файлы владельца, WebP с прозрачным фоном @2x/@3x:
-// персонаж лежит в src/assets/profile/, фон прозрачный — прямоугольника
-// на карточке нет. alt="" — рядом есть текст, картинка декоративная;
-// width/height равны месту на баннере, чтобы вёрстка не прыгала.
+// Геометрия как у Stoic (решение владельца, PR #929), тексты — свои из main.
+// Рисунки — свои SVG без персонажей: ProfileBannerArt.jsx; картинки-демоны
+// (src/assets/profile/*.webp) убраны.
+// alt не нужен: рисунки декоративные, aria-hidden внутри SVG.
+// PR2: строка «Держит форму — До „Находит путь" — N дня» убрана.
 
 import './ProfileBanners.css'
-import potentialArt2x from '../../assets/profile/banner-potential@2x.webp'
-import potentialArt3x from '../../assets/profile/banner-potential@3x.webp'
-import supportArt2x from '../../assets/profile/banner-support@2x.webp'
-import supportArt3x from '../../assets/profile/banner-support@3x.webp'
-import webArt2x from '../../assets/profile/banner-web@2x.webp'
-import webArt3x from '../../assets/profile/banner-web@3x.webp'
+import { PotentialLockArt, SupportGiftArt, ProfileFeatherArt } from './ProfileBannerArt'
 
-function BannerArt({ art2x, art3x, width, height }) {
-  return (
-    <img
-      className="mx-profile-banner__art"
-      src={art2x}
-      srcSet={`${art2x} 2x, ${art3x} 3x`}
-      width={width}
-      height={height}
-      loading="lazy"
-      alt=""
-      draggable={false}
-    />
-  )
-}
-
-export function PotentialBanner({ onOpen, stageImage }) {
+export function PotentialBanner({ onOpen }) {
   return (
     // Тап по всей карточке ведёт туда же, куда кнопка: клик по кнопке всплывает сюда.
     <div
@@ -37,8 +18,8 @@ export function PotentialBanner({ onOpen, stageImage }) {
       data-testid="profile-banner-potential"
       onClick={onOpen}
     >
-      {/* Персонаж справа снизу, крупный, частично обрезан краем карточки. */}
-      <BannerArt art2x={stageImage || potentialArt2x} art3x={stageImage || potentialArt3x} width={200} height={139} />
+      {/* Замок справа снизу, обрезан нижним краем карточки, под текстом. */}
+      <PotentialLockArt />
       <h2 className="mx-profile-banner__title">Открой весь потенциал Mentalix</h2>
       {/* «Mentalix Pro» не разрывается переносом строки. */}
       <p className="mx-profile-banner__text">
@@ -49,7 +30,7 @@ export function PotentialBanner({ onOpen, stageImage }) {
         className="mx-profile-banner__pill"
         data-testid="profile-banner-potential-button"
       >
-        Подробнее
+        Смотреть тарифы
       </button>
     </div>
   )
@@ -68,10 +49,9 @@ export function SupportBanner({ onOpen }) {
         Поддержи <strong>Mentalix</strong>
         {'\u00A0— это помогает проекту расти.'}
       </p>
+      {/* Справа полоса-«коробка»: лента с бантом. */}
       <span className="mx-profile-banner__panel">
-        {/* Персонаж крупнее (видно сердечко), смещён влево отрицательным
-            отступом в CSS — внутри WebP он прижат к правому краю холста. */}
-        <BannerArt art2x={supportArt2x} art3x={supportArt3x} width={120} height={101} />
+        <SupportGiftArt />
       </span>
     </button>
   )
@@ -85,12 +65,8 @@ export function WebBanner({ onOpen }) {
       data-testid="profile-banner-web"
       onClick={onOpen}
     >
-      {/* Персонаж справа целиком, кадр берёт файл от кончика поднятого
-          пальца: в иллюстрации владельца рядом с пальцем нарисована
-          маленькая тусклая плашка браузера — персонаж указывает на неё. */}
-      <span className="mx-profile-banner__web-character">
-        <BannerArt art2x={webArt2x} art3x={webArt3x} width={234} height={162} />
-      </span>
+      {/* Перо справа сверху, обрезано верхним краем карточки. */}
+      <ProfileFeatherArt />
       {/* Заголовок как в референсе Stoic: «Mentalix» выделен, «на сайте»
           обычным весом, одним размером шрифта, строка одна. */}
       <span className="mx-profile-banner__title">
@@ -99,26 +75,17 @@ export function WebBanner({ onOpen }) {
       <span className="mx-profile-banner__text">
         Свяжи аккаунт с сайтом, чтобы записи были и в браузере.
       </span>
+      <span className="mx-profile-banner__chevron" aria-hidden="true">
+        ›
+      </span>
     </button>
   )
 }
 
-export function ProfileBanners({ showWeb, onOpenSubscription, onOpenDonate, onOpenWeb, maskStage, maskNext, maskDaysUntilNext }) {
+export function ProfileBanners({ showWeb, onOpenSubscription, onOpenDonate, onOpenWeb }) {
   return (
     <div className="mx-profile-banners" data-testid="profile-banners">
-      <div>
-        <PotentialBanner onOpen={onOpenSubscription} stageImage={maskStage?.image} />
-        {maskStage && (
-          <div className="mx-profile-mask-stage" data-testid="profile-mask-stage">
-            <p className="mx-profile-mask-stage__name">{maskStage.name}</p>
-            {maskNext && (
-              <p className="mx-profile-mask-stage__next">
-                До „{maskNext.name}“ — {maskDaysUntilNext} {maskDaysUntilNext === 1 ? 'день' : maskDaysUntilNext < 5 ? 'дня' : 'дней'}
-              </p>
-            )}
-          </div>
-        )}
-      </div>
+      <PotentialBanner onOpen={onOpenSubscription} />
       <SupportBanner onOpen={onOpenDonate} />
       {showWeb && <WebBanner onOpen={onOpenWeb} />}
     </div>

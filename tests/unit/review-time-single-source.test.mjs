@@ -77,17 +77,15 @@ test('единый источник: Today.jsx использует DEFAULT_REVI
   assert.doesNotMatch(source, /review_hour\s*\?\?\s*19[^0-9]/)
 })
 
-test('единый источник: Settings.jsx использует DEFAULT_REVIEW_HOUR и синхронизирует напоминание', async () => {
+test('единый источник: Settings.jsx использует DEFAULT_REVIEW_HOUR и фиксированные слоты', async () => {
   const source = await readFile(
     new URL('../../src/screens/Settings.jsx', import.meta.url),
     'utf8'
   )
   assert.match(source, /DEFAULT_REVIEW_HOUR/)
-  // Динамический чип «Вечер» берёт час из reviewHour
-  assert.match(source, /label:\s*'Вечер',\s*hour:\s*reviewHour/)
-  // Синхронизация: saveReviewHour проверяет wasInSync и пишет reminder_hour
-  assert.match(source, /wasInSync/)
-  assert.match(source, /payload\.reminder_hour/)
+  // PR11: фиксированные слоты времени напоминания, «Вечер» = 19:00
+  assert.match(source, /label:\s*'Вечер',\s*hour:\s*19/)
+  assert.match(source, /REMINDER_TIMES/)
   // Не должно остаться хардкода ?? 19
   assert.doesNotMatch(source, /\?\?\s*19\b(?!:00)/)
 })

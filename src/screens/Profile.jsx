@@ -2,11 +2,15 @@ import { useEffect, useState } from 'react'
 import { CalendarDays, Flame, Leaf, Moon, PartyPopper, Sprout, Star, Trophy } from 'lucide-react'
 import { api } from '../lib/api'
 import { useSynced } from '../lib/store'
+import { pluralize } from '../lib/pluralize'
 import { buildServerSeriesViewModel } from '../lib/series'
 import { readCanonicalStreakStats, serverSeriesBadges } from '../lib/canonicalStreak'
 import { getNearestMilestones } from '../lib/milestones'
 import { daysSinceRegistration } from '../lib/badgeCatalog'
 import MilestoneBars from '../components/MilestoneBars'
+
+const DAY_FORMS = ['день', 'дня', 'дней']
+const CHECKIN_FORMS = ['чек-ин', 'чек-ина', 'чек-инов']
 import {
   ProfileBody,
   ProfileGroup,
@@ -70,6 +74,9 @@ export default function Profile({ user, stats, loading, error, retryProfile }) {
   const [birthdayRaw, setBirthdayRaw] = useSynced(BIRTHDAY_KEY, '')
   const [canonicalStats, setCanonicalStats] = useState(null)
   const [seriesModel, setSeriesModel] = useState(null)
+  // PR17: год для навигации календаря. По умолчанию 2000 (как в задаче).
+  // Не сохраняется — хранится только месяц-день.
+  const [viewYear, setViewYear] = useState(2000)
 
   useEffect(() => {
     if (!user) return
@@ -143,7 +150,7 @@ export default function Profile({ user, stats, loading, error, retryProfile }) {
             subtitle={
               stats ? (
                 <span data-testid="profile-about-stats">
-                  {daysInSystem ?? '—'} дней в системе · {stats.total_checkins || 0} чек-инов
+                  {daysInSystem ?? '—'} {pluralize(daysInSystem ?? 0, DAY_FORMS)} в системе · {stats.total_checkins || 0} {pluralize(stats.total_checkins || 0, CHECKIN_FORMS)}
                 </span>
               ) : null
             }
@@ -161,28 +168,41 @@ export default function Profile({ user, stats, loading, error, retryProfile }) {
                       </>
                     )
                   : daysToBirthday != null
-                    ? `До дня рождения ${daysToBirthday} ${daysToBirthday === 1 ? 'день' : daysToBirthday < 5 ? 'дня' : 'дней'}`
+                    ? `До дня рождения ${daysToBirthday} ${pluralize(daysToBirthday, DAY_FORMS)}`
                     : null
                 : null
             }
             right={
-              <input
-                type="date"
-                value={birthdayRaw ? `2000-${birthdayRaw}` : ''}
-                onChange={e => {
-                  const val = e.target.value
-                  // Храним только месяц-день, год не важен.
-                  if (val) {
-                    const [, m, d] = val.split('-')
-                    setBirthdayRaw(`${m}-${d}`)
-                  } else {
-                    setBirthdayRaw('')
-                  }
-                }}
-                className="mx-profile-date-input"
-                aria-label="Дата рождения"
-                data-testid="profile-birthday-input"
-              />
+              <div className="mx-profile-birthday-controls">
+                <select
+                  value={viewYear}
+                  onChange={e => setViewYear(Number(e.target.value))}
+                  className="mx-profile-year-select"
+                  aria-label="Год для навигации"
+                  data-testid="profile-birthday-year"
+                >
+                  {Array.from({ length: 2010 - 1940 + 1 }, (_, i) => 1940 + i).map(y => (
+                    <option key={y} value={y}>{y}</option>
+                  ))}
+                </select>
+                <input
+                  type="date"
+                  value={`${viewYear}-${birthdayRaw || '01-01'}`}
+                  onChange={e => {
+                    const val = e.target.value
+                    // Храним только месяц-день, год не важен.
+                    if (val) {
+                      const [, m, d] = val.split('-')
+                      setBirthdayRaw(`${m}-${d}`)
+                    } else {
+                      setBirthdayRaw('')
+                    }
+                  }}
+                  className="mx-profile-date-input"
+                  aria-label="Дата рождения"
+                  data-testid="profile-birthday-input"
+                />
+              </div>
             }
           />
         </ProfileCard>
@@ -197,13 +217,13 @@ export default function Profile({ user, stats, loading, error, retryProfile }) {
             {bestStreak != null && (
               <ProfileRow
                 title="Лучшая серия"
-                value={`${bestStreak} ${bestStreak === 1 ? 'день' : 'дней'}`}
+                value={`${bestStreak} ${pluralize(bestStreak, DAY_FORMS)}`}
               />
             )}
             {currentStreak != null && (
               <ProfileRow
                 title="Текущая серия"
-                value={`${currentStreak} ${currentStreak === 1 ? 'день' : 'дней'}`}
+                value={`${currentStreak} ${pluralize(currentStreak, DAY_FORMS)}`}
               />
             )}
           </ProfileCard>

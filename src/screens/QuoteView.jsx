@@ -138,7 +138,7 @@ export default function QuoteView({ user, todayQuote, onClose }) {
             <p className="text-[14px] text-muted leading-relaxed">
               Здесь будут твои цитаты.
               <br />
-              Добавляй мысли, которые держат, — в настройках считки дня.
+              Добавляй мысли, которые держат, — в настройках мысли дня.
             </p>
           </>
         )}
