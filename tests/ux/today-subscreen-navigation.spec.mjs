@@ -24,11 +24,11 @@ test.describe('Сегодня — переходы в под-экраны', () =
     await expect(quoteCard).toBeVisible({ timeout: 15_000 })
     await quoteCard.click()
 
-    await expect(page.getByRole('button', { name: 'Поделиться' })).toBeVisible({
+    await expect(page.getByTestId('daily-thought-write')).toBeVisible({
       timeout: 10_000,
     })
 
-    await page.getByTestId('back-button').click()
+    await page.getByTestId('daily-thought-back').click()
     await expect(quoteCard).toBeVisible({ timeout: 10_000 })
   })
 
