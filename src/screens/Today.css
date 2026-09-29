@@ -2029,3 +2029,31 @@
     opacity: 0;
   }
 }
+
+/*
+ * «Подключаемся…» — ненавязчивый индикатор фонового подключения
+ * после перехода со скелетона на экран «Сегодня». Мягкая пульсация
+ * привлекает внимание, но не перекрывает контент.
+ */
+.mx-today-connecting {
+  padding: var(--mx-screen-x) var(--mx-screen-x) 0;
+  text-align: center;
+  animation: mx-today-connecting-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes mx-today-connecting-pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-today-connecting {
+    animation: none;
+    opacity: 0.7;
+  }
+}
