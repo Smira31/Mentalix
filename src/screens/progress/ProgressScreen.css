@@ -356,9 +356,11 @@
   height: 39px;
   display: grid;
   place-items: center;
-  border: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 999px;
-  background: rgb(var(--c-card2, 17 17 17));
+  background: var(--mx-glass-bg);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
   color: rgb(var(--c-text, 243 243 243));
   font-size: 18px;
   cursor: pointer;
@@ -398,9 +400,11 @@
   place-items: center;
   width: 39px;
   height: 39px;
-  border: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 999px;
-  background: rgb(var(--c-card2, 17 17 17));
+  background: var(--mx-glass-bg);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
   color: rgb(var(--c-text, 243 243 243));
   font: inherit;
   font-size: 20px;
@@ -417,9 +421,11 @@
   place-items: center;
   width: 39px;
   height: 39px;
-  border: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 999px;
-  background: rgb(var(--c-card2, 17 17 17));
+  background: var(--mx-glass-bg);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
   color: rgb(var(--c-text, 243 243 243));
   cursor: pointer;
   transition: transform 0.15s ease;
@@ -427,40 +433,6 @@
 
 .mx-progress-entry__menu-button:active {
   transform: scale(0.97);
-}
-
-.mx-progress-entry__menu {
-  position: absolute;
-  right: 16px;
-  z-index: 50;
-  min-width: 200px;
-  border-radius: 14px;
-  background: rgb(var(--c-nav, 28 28 28));
-  padding: 4px;
-  box-shadow: var(--shadow-float, 0 8px 32px rgba(0, 0, 0, 0.35));
-}
-
-.mx-progress-entry__menu-item {
-  display: block;
-  width: 100%;
-  padding: 13px 16px;
-  border: 0;
-  border-radius: 12px;
-  background: transparent;
-  color: rgb(var(--c-text, 243 243 243));
-  font: inherit;
-  font-size: 17px;
-  font-weight: 400;
-  text-align: left;
-  cursor: pointer;
-}
-
-.mx-progress-entry__menu-item:active {
-  background: rgb(var(--c-card2, 17 17 17));
-}
-
-.mx-progress-entry__menu-item--danger {
-  color: #ef6b6b;
 }
 
 .mx-progress-entry__date {
@@ -777,9 +749,11 @@
   gap: 6px;
   height: 39px;
   padding: 0 14px;
-  border: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 999px;
-  background: rgb(var(--c-card2, 17 17 17));
+  background: var(--mx-glass-bg);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
   color: rgb(var(--c-text, 243 243 243));
   font: inherit;
   font-size: 14px;
@@ -803,9 +777,11 @@
   place-items: center;
   width: 39px;
   height: 39px;
-  border: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 999px;
-  background: rgb(var(--c-card2, 17 17 17));
+  background: var(--mx-glass-bg);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
   color: rgb(var(--c-text, 243 243 243));
   cursor: pointer;
   transition: transform 0.15s ease;
@@ -818,47 +794,6 @@
 .mx-progress-action-btn--active {
   background: rgb(var(--c-text, 243 243 243));
   color: rgb(var(--c-bg, 5 4 3));
-}
-
-/* Выпадающее меню группировки */
-.mx-progress-grouping-menu {
-  position: absolute;
-  right: 0;
-  top: 108px;
-  z-index: 30;
-  width: 250px;
-  border-radius: 14px;
-  background: rgb(var(--c-nav, 28 28 28));
-  padding: 6px;
-  box-shadow: var(--shadow-float, 0 8px 32px rgba(0, 0, 0, 0.35));
-  backdrop-filter: blur(12px);
-}
-
-.mx-progress-grouping-menu__item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  min-height: 44px;
-  padding: 0 16px;
-  border: 0;
-  border-radius: 12px;
-  background: transparent;
-  color: rgb(var(--c-text, 243 243 243));
-  font: inherit;
-  font-size: 17px;
-  font-weight: 400;
-  text-align: left;
-  cursor: pointer;
-}
-
-.mx-progress-grouping-menu__item:active {
-  background: rgb(var(--c-card2, 17 17 17));
-}
-
-.mx-progress-grouping-menu__check {
-  color: rgb(var(--c-text, 243 243 243));
-  font-size: 16px;
 }
 
 /* ── Группировка: заголовки и карточки периодов (§5.5) ── */
@@ -939,9 +874,11 @@
   place-items: center;
   width: 39px;
   height: 39px;
-  border: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 999px;
-  background: rgb(var(--c-card2, 17 17 17));
+  background: var(--mx-glass-bg);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
   color: rgb(var(--c-text, 243 243 243));
   font-size: 18px;
   cursor: pointer;
@@ -1181,9 +1118,11 @@
   width: 39px;
   height: 39px;
   flex-shrink: 0;
-  border: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 999px;
-  background: rgb(var(--c-card2, 17 17 17));
+  background: var(--mx-glass-bg);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
   color: rgb(var(--c-text, 243 243 243));
   cursor: pointer;
 }
