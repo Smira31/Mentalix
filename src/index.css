@@ -1876,9 +1876,11 @@ button {
   height: 43px;
   padding: 0;
   place-items: center;
-  border: 1px solid rgb(var(--c-border));
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 50%;
-  background: rgb(var(--c-card2));
+  background: var(--mx-glass-bg);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
   color: rgb(var(--c-text));
   transition: transform 140ms ease;
 }
