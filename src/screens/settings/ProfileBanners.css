@@ -49,10 +49,10 @@ button.mx-profile-banner:active {
 
 .mx-profile-banner--potential .mx-profile-banner__art--lock {
   position: absolute;
-  right: 20px;
-  top: 67px;
-  width: 108px;
-  height: 200px;
+  right: 0;
+  bottom: 0;
+  width: 128px;
+  height: 172px;
   z-index: 0;
 }
 
@@ -150,8 +150,8 @@ button.mx-profile-banner:active {
   position: absolute;
   top: 0;
   right: 0;
-  width: 118px;
-  height: 80px;
+  width: 123px;
+  height: 85px;
   z-index: 0;
 }
 
