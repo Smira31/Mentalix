@@ -274,13 +274,19 @@ export default function Today({
 
   const [ascezas, setAscezas] = useState(() => initialTodaySnapshot?.ascezas || [])
 
-  // На холодном старте без снимка рендер не ждёт ответа API: экран
-  // рисуется сразу с пустыми данными, данные заполняются по мере
-  // поступления. «Загрузка…» остаётся только для contextualCheckin
-  // (нужен checkin для выбора режима) и для явного retry.
+  // На холодном старте без снимка показываем скелетон («Загрузка…»),
+  // а не пустой экран без обратной связи. После 2 с скелетон сменяется
+  // экраном «Сегодня» с ненавязчивым «Подключаемся…» — данные
+  // подтягиваются в фоне, вечного экрана загрузки нет.
+  // contextualCheckin требует checkin до выбора режима — для него
+  // скелетон остаётся до ответа API.
   const [loading, setLoading] = useState(
-    () => initialSub === 'contextualCheckin' && !previewFixture
+    () => !previewFixture && (initialSub === 'contextualCheckin' || !initialTodaySnapshot)
   )
+
+  // «Подключаемся…» — ненавязчивый индикатор после перехода со скелетона
+  // на экран «Сегодня», пока сервер ещё не ответил (Render free спит).
+  const [connecting, setConnecting] = useState(false)
 
   const [loadError, setLoadError] = useState(false)
 
@@ -527,6 +533,7 @@ export default function Today({
     invalidateTodayData(user.id)
     setLoadError(false)
     setLoading(true)
+    setConnecting(false)
     setReloadToken(token => token + 1)
   }
 
@@ -623,6 +630,21 @@ export default function Today({
     changeSub('redoCheckin')
   }, [changeSub])
 
+  // Скелетон («Загрузка…») показывается не дольше 2 с: после этого —
+  // экран «Сегодня» с ненавязчивым «Подключаемся…», данные
+  // подтягиваются в фоне. Не применяется при наличии снимка (данные
+  // уже есть — скелетон не нужен) и для contextualCheckin (нужен
+  // checkin до выбора режима — ждём ответа API).
+  useEffect(() => {
+    if (!loading || previewFixture || initialTodaySnapshot) return undefined
+    if (initialSub === 'contextualCheckin') return undefined
+    const timer = setTimeout(() => {
+      setLoading(false)
+      setConnecting(true)
+    }, 2000)
+    return () => clearTimeout(timer)
+  }, [loading, previewFixture, initialTodaySnapshot, initialSub])
+
   useEffect(() => {
     if (previewFixture) return undefined
     if (!user || (sub !== null && !initialSub)) {
@@ -694,7 +716,10 @@ export default function Today({
         // заменяем экраном «Сервер просыпается».
         if (active && !initialTodaySnapshot) setLoadError(true)
       } finally {
-        if (active) setLoading(false)
+        if (active) {
+          setLoading(false)
+          setConnecting(false)
+        }
       }
     })()
 
@@ -1256,6 +1281,15 @@ export default function Today({
           changeSub('path')
         }}
       />
+      {connecting && (
+        <p
+          className="mx-today-connecting mx-type-meta text-muted"
+          role="status"
+          data-testid="today-connecting"
+        >
+          Подключаемся…
+        </p>
+      )}
       {visibleHint === 'series' && (
         <aside
           ref={seriesTooltipRef}

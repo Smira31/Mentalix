@@ -1594,3 +1594,54 @@ test('демо на реальном телефоне 440×956 — капсул�
 
   await context.close()
 })
+
+test('Today при медленном API: «Сегодня» видно ≤2 с, потом данные подтягиваются в фоне', async ({
+  browser,
+  baseURL,
+}) => {
+  const context = await browser.newContext({
+    baseURL,
+    viewport: { width: 390, height: 844 },
+    colorScheme: 'dark',
+    reducedMotion: 'reduce',
+    serviceWorkers: 'block',
+  })
+
+  await context.addInitScript(user => {
+    localStorage.clear()
+    sessionStorage.clear()
+    localStorage.setItem('mentalix_web_user', JSON.stringify(user))
+    localStorage.setItem('mx-onboarded-v2', '1')
+    localStorage.setItem('mx-app-lock-enabled', '0')
+  }, TEST_USER)
+
+  // Имитируем холодный старт Render free: все API-запросы (кроме health)
+  // отвечают с задержкой 3 с — дольше, чем скелетон (2 с), но достаточно
+  // быстро для теста. health отвечает мгновенно (сигнал пробуждения).
+  const SLOW_DELAY_MS = 3000
+  await context.route('**/api/**', async route => {
+    const pathname = new URL(route.request().url()).pathname
+    if (pathname === '/api/health') {
+      return route.fulfill(jsonResponse({ status: 'ok' }))
+    }
+    await new Promise(resolve => setTimeout(resolve, SLOW_DELAY_MS))
+    return route.fulfill(fixtureFor(route.request()))
+  })
+
+  const page = await context.newPage()
+  await freezePageTime(page)
+  await page.goto('/')
+
+  // ≤2 с: скелетон («Загрузка…») или шапка «Сегодня» видны — не пустой экран.
+  await expect(page.getByText('Загрузка...')).toBeVisible({ timeout: 2_000 })
+
+  // После 2 с: скелетон сменяется экраном «Сегодня» с «Подключаемся…».
+  await expect(page.getByTestId('today-connecting')).toBeVisible({ timeout: 5_000 })
+  await expect(page.getByText('Загрузка...')).toHaveCount(0)
+
+  // После ответа API (~3 с): данные появляются, «Подключаемся…» исчезает.
+  await expect(page.getByTestId('today-theme-card')).toBeVisible({ timeout: 10_000 })
+  await expect(page.getByTestId('today-connecting')).toHaveCount(0)
+
+  await context.close()
+})
