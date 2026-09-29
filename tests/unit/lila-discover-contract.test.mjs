@@ -232,7 +232,7 @@ test('MXL-LILA-UX-010 merges late history load with live sends instead of replac
 })
 
 test('MXL-LILA-UX-011 scopes composer focus reset and removes blue/native focus chrome', () => {
-  assert.match(conversation, /className="mx-ai-composer w-full/)
+  assert.match(conversation, /className="mx-ai-composer mx-glass w-full/)
   assert.match(conversationCss, /\.mx-ai-composer \.mx-ai-input:focus-visible/)
   assert.match(conversationCss, /outline: 0/)
   assert.match(conversationCss, /box-shadow: none/)
