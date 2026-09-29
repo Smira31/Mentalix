@@ -44,7 +44,7 @@ import {
   DEFAULT_REVIEW_HOUR,
 } from '../lib/todayCardState'
 import { now as clockNow } from '../lib/clock'
-import { demoScenario, demoReviewNow } from '../lib/demoMode'
+import { demoScenario, demoReviewNow, previewPinnedPracticesAction } from '../lib/demoMode'
 import { pickVisibleTodayHint } from '../lib/todayHints'
 
 /* ============================================================
@@ -1477,6 +1477,7 @@ export default function Today({
         onOpenPractice={onOpenPractice}
         rituals={rituals}
         ascezas={ascezas}
+        initialSheet={previewPinnedPracticesAction()}
       />
 
       {/* ======================================================

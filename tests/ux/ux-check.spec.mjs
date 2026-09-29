@@ -158,6 +158,20 @@ function fixtureFor(request) {
       return jsonResponse({ mood: 3, energy: 3, anxiety: 3, focus: 3 })
     }
 
+    // Pinned practices: POST возвращает созданный элемент, DELETE — ok.
+    if (method === 'POST' && pathname === '/api/pinned-practices') {
+      let body = {}
+      try {
+        body = JSON.parse(request.postData() || '{}')
+      } catch {
+        /* empty body */
+      }
+      return jsonResponse({ id: Date.now(), practice_id: body.practice_id })
+    }
+    if (method === 'DELETE' && pathname.match(/^\/api\/pinned-practices\/[^/]+$/)) {
+      return jsonResponse({ ok: true })
+    }
+
     return jsonResponse({ ok: true })
   }
 
