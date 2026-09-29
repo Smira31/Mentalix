@@ -32,6 +32,5 @@ export async function fetchPinnedPractices(userId, { force = false } = {}) {
 }
 
 export function invalidatePinnedPractices(userId) {
-  const entry = cache.get(userId)
-  if (entry) entry.fetchedAt = 0
+  cache.delete(userId)
 }
