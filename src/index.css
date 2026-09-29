@@ -99,7 +99,7 @@
   /* Общая геометрия нижней навигации и резерва под неё. */
 
   --bottom-nav-height: 53px;
-  --bottom-nav-collapsed-size: 58px;
+  --bottom-nav-collapsed-size: 50px;
   --bottom-nav-offset: 8px;
   --bottom-nav-edge: 20px;
   /* Дополнительный воздух после последнего контента перед fixed-навигацией. */
@@ -253,6 +253,14 @@
   --mx-motion-base: 220ms;
   --mx-motion-slow: 320ms;
   --mx-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --mx-glass-bg: rgba(38, 38, 38, 0.92);
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  :root {
+    --mx-glass-bg: rgba(38, 38, 38, 0.55);
+  }
 }
 
 /* Legacy-варианты акцента теперь различаются только оттенком серого.
@@ -637,6 +645,16 @@ svg .animate-celebrate-pop {
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 0.024),
     0 18px 44px rgb(0 0 0 / 0.16);
+}
+
+/* Единый класс «стекло» (референс Stoic): полупрозрачный тёмный фон +
+   blur(20px) saturate(160%), тонкая светлая граница. Без поддержки
+   backdrop-filter фон становится непрозрачным (0.92) через --mx-glass-bg. */
+.mx-glass {
+  background: var(--mx-glass-bg);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .mx-section-label {
