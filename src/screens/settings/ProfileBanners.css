@@ -1,16 +1,13 @@
-/* Баннеры профиля — DESIGN_SYSTEM.md §5.4. 1 pt эталона = 1 px.
-   Поля 16 px задаёт .mx-profile-body; ширина на 440 — 408 px. */
+/* Баннеры профиля — DESIGN_SYSTEM.md §5.4. Геометрия Stoic, решение владельца
+   PR #929: замеры в pt для 440 (1 pt = 1 px), на 393 ширина по полям 16 px
+   задаётся .mx-profile-body, высоты фиксированные. Рисунки — свои SVG
+   (ProfileBannerArt.jsx), персонажи-демоны убраны. */
 
 .mx-profile-banners {
   display: flex;
   flex-direction: column;
   gap: 28px;
   margin-bottom: 28px;
-  /* Референс владельца: все три баннера одинаковые по стилю, фон —
-     приглушённый почти чёрный #1A1A1A (как торс персонажа на референсе),
-     детали не ярче фона, а чуть темнее. */
-  --mx-banner-bg: 26 26 26;
-  --mx-banner-panel: 20 20 20;
 }
 
 .mx-profile-banner {
@@ -32,42 +29,39 @@ button.mx-profile-banner:active {
   transform: scale(0.97);
 }
 
-/* Иллюстрация баннера — готовый WebP владельца с прозрачным фоном;
-   размер задаётся width/height в разметке, здесь только размещение. */
+/* Рисунки — декоративные SVG, размеры заданы по месту. */
 .mx-profile-banner__art {
   display: block;
   pointer-events: none;
 }
 
-/* 1. «Потенциал» — 226 px, всё по центру, кролик справа снизу под кнопкой. */
+/* 1. «Потенциал» — 227 px, всё по центру, замок справа снизу под
+   текстом и кнопкой, обрезан нижним краем карточки. */
 .mx-profile-banner--potential {
   display: flex;
-  min-height: 226px;
+  height: 227px;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 24px 28px;
-  background: rgb(var(--mx-banner-bg));
   text-align: center;
 }
 
-/* Крупнее и левее: рука со звездой доходит до правого края кнопки,
-   между ними не остаётся пустого места. */
-.mx-profile-banner--potential .mx-profile-banner__art {
+.mx-profile-banner--potential .mx-profile-banner__art--lock {
   position: absolute;
-  right: -24px;
-  bottom: -30px;
+  right: 12px;
+  bottom: -26px;
   z-index: 0;
 }
 
-/* 393 и 440: balance держит одинаковый перенос строк на обеих ширинах
-   (без него вторая строка заголовка оставалась коротким «Mentalix»). */
+/* 393 и 440: balance держит одинаковый перенос строк на обеих ширинах —
+   заголовок в две строки, «потенциал» не отрывается от «весь». */
 .mx-profile-banner--potential .mx-profile-banner__title {
   position: relative;
   z-index: 1;
-  max-width: 280px;
+  max-width: 200px;
   margin: 0;
-  font-size: 19px;
+  font-size: 17px;
   font-weight: 700;
   line-height: 1.25;
   text-wrap: balance;
@@ -76,10 +70,12 @@ button.mx-profile-banner:active {
 .mx-profile-banner--potential .mx-profile-banner__text {
   position: relative;
   z-index: 1;
-  max-width: 300px;
-  margin: 8px 0 0;
-  color: rgb(var(--c-muted));
+  max-width: 280px;
+  margin: 10px 0 0;
+  color: rgb(var(--c-text));
+  opacity: 0.85;
   font-size: 15px;
+  font-weight: 400;
   line-height: 1.35;
   text-wrap: balance;
 }
@@ -88,11 +84,11 @@ button.mx-profile-banner:active {
   position: relative;
   z-index: 1;
   width: 162px;
-  height: 50px;
+  height: 49px;
   margin-top: 20px;
   border: 0;
   border-radius: 999px;
-  background: rgb(var(--c-pill-light));
+  background: #d0d0d0;
   color: rgb(var(--c-bg));
   font-size: 16px;
   font-weight: 700;
@@ -103,40 +99,21 @@ button.mx-profile-banner:active {
   transform: scale(0.97);
 }
 
-.mx-profile-mask-stage {
-  margin-top: 8px;
-  padding: 12px 16px;
-  border-radius: 16px;
-  background: rgb(var(--c-card2));
-}
-
-.mx-profile-mask-stage__name {
-  margin: 0;
-  color: rgb(var(--c-text));
-  font-size: 15px;
-  font-weight: 600;
-}
-
-.mx-profile-mask-stage__next {
-  margin: 2px 0 0;
-  color: rgb(var(--c-muted));
-  font-size: 13px;
-  line-height: 17px;
-}
-
-/* 2. «Поддержать» — 118 px, текст слева, панель 128 px справа на всю высоту. */
+/* 2. «Поддержать» — 117 px, темнее фон (--c-card), текст слева x = 16,
+   справа полоса-«коробка» 89 px на всю высоту (--c-card2) с лентой. */
 .mx-profile-banner--support {
   display: flex;
-  min-height: 118px;
+  height: 117px;
   align-items: center;
-  background: rgb(var(--mx-banner-bg));
+  background: rgb(var(--c-card));
 }
 
 .mx-profile-banner--support .mx-profile-banner__text {
   flex: 1;
   margin: 0;
-  padding: 16px 12px 16px 16px;
+  padding: 12px 12px 12px 16px;
   font-size: 17px;
+  font-weight: 400;
   line-height: 1.35;
   text-wrap: balance;
 }
@@ -149,81 +126,67 @@ button.mx-profile-banner:active {
   position: relative;
   display: flex;
   align-self: stretch;
-  width: 128px;
+  width: 89px;
   flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  background: rgb(var(--mx-banner-panel));
-  color: rgb(var(--c-white));
+  background: rgb(var(--c-card2));
 }
 
-/* Персонаж по центру панели по вертикали; исходный файл заметно темнее
-   первого баннера — выравниваем яркость и насыщенность фильтром.
-   Внутри WebP персонаж прижат к правому краю холста (слева 23 pt пусто),
-   поэтому картинка сдвинута влево на -12 px от края панели — визуальный
-   центр персонажа совпадает с центром панели шириной 128 px. */
-.mx-profile-banner--support .mx-profile-banner__art {
+.mx-profile-banner--support .mx-profile-banner__art--gift {
   position: absolute;
-  top: 50%;
-  left: -12px;
-  transform: translateY(-50%);
-  filter: brightness(1.18) saturate(1.25);
+  inset: 0;
+  width: 100%;
+  height: 100%;
 }
 
-/* 3. «Вход» — 190 px, заголовок сверху слева, текст сразу под ним,
-   персонаж справа в полный рост карточки указывает пальцем на
-   маленькую тусклую плашку браузера из иллюстрации владельца. */
+/* 3. «На сайте» — 176 px, заголовок 28 px сверху слева, перо справа
+   сверху обрезано верхним краем, текст и шеврон внизу. */
 .mx-profile-banner--web {
-  min-height: 190px;
-  background: rgb(var(--mx-banner-bg));
+  height: 176px;
 }
 
-/* Персонаж целиком в кадре, включая кончик поднятого пальца —
-   он самый левый пиксель исходника (x=48 от 208), поэтому кадр
-   обрезает файл ровно от него. Ноги — почти до низа карточки. */
-.mx-profile-banner__web-character {
+.mx-profile-banner--web .mx-profile-banner__art--feather {
   position: absolute;
-  top: 16px;
-  right: 12px;
-  width: 180px;
-  height: 162px;
-  overflow: hidden;
-}
-
-/* max-width: none обязателен: глобальный img{max-width:100%} сжимал
-   картинку до ширины кадра и персонаж получался намного меньше.
-   Без фильтра — тёмный красный, как на первом баннере. */
-.mx-profile-banner--web .mx-profile-banner__art {
-  max-width: none;
-  margin: 0 0 0 -52px;
+  top: -30px;
+  right: -45px;
+  z-index: 0;
 }
 
 /* Заголовок как в референсе Stoic: один размер шрифта, «Mentalix»
    выделен жирным, «на сайте» — обычным весом. */
 .mx-profile-banner--web .mx-profile-banner__title {
   position: absolute;
-  top: 18px;
+  top: 16px;
   left: 16px;
-  max-width: 220px;
-  font-size: 20px;
+  z-index: 1;
+  max-width: 55%;
+  font-size: 28px;
   font-weight: 400;
-  line-height: 1.15;
+  line-height: 1.1;
 }
 
 .mx-profile-banner--web .mx-profile-banner__title strong {
   font-weight: 700;
 }
 
-/* Текст сразу под заголовком, без пустого места; ширина — до
-   персонажа справа. */
 .mx-profile-banner--web .mx-profile-banner__text {
   position: absolute;
-  top: 48px;
+  bottom: 16px;
   left: 16px;
-  max-width: calc(100% - 214px);
-  color: rgb(var(--c-muted));
+  z-index: 1;
+  max-width: calc(100% - 76px);
+  color: rgb(var(--c-text));
   font-size: 15px;
+  font-weight: 400;
   line-height: 1.35;
+}
+
+.mx-profile-banner--web .mx-profile-banner__chevron {
+  position: absolute;
+  bottom: 14px;
+  right: 20px;
+  color: rgb(var(--c-muted));
+  font-size: 20px;
+  line-height: 1;
 }
 
 @media (prefers-reduced-motion: reduce) {

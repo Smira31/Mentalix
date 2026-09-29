@@ -37,6 +37,7 @@ import {
   isDemoGuestMode,
   DEMO_GUEST_USER,
   previewSeriesAction,
+  isProfileDemoRequested,
 } from './lib/demoMode'
 import { installDemoPressFeedback } from './lib/demoPressFeedback'
 import { shouldRenderDemoTelegramChrome } from './lib/demoChrome'
@@ -91,7 +92,6 @@ const loadSettings = () => import('./screens/Settings')
 const Settings = lazyWithRetry(loadSettings)
 const Library = lazyWithRetry(() => import('./screens/Library'))
 const History = lazyWithRetry(() => import('./screens/History'))
-
 
 // Код панели попадает в сеть только после проверки демо и отсутствия Telegram.
 const DemoPanel = lazyWithRetry(() => import('./components/DemoPanel'))
@@ -159,7 +159,11 @@ function DemoTelegramChrome({ onBack }) {
   return (
     <div className="mx-demo-telegram-chrome" aria-label="Telegram preview controls">
       {!hasBack && (
-        <button type="button" aria-label="Закрыть превью" className="mx-demo-telegram-chrome__close">
+        <button
+          type="button"
+          aria-label="Закрыть превью"
+          className="mx-demo-telegram-chrome__close"
+        >
           <X size={18} strokeWidth={2.2} aria-hidden="true" />
           <span>Закрыть</span>
         </button>
@@ -274,7 +278,8 @@ function App() {
     setUser(nextUser)
   }, [])
 
-  const [overlay, setOverlay] = useState(null)
+  // ?demo=1&action=profile — превью-ссылка прямо на «твой профиль.»
+  const [overlay, setOverlay] = useState(isProfileDemoRequested() ? 'settings' : null)
 
   const [fullscreen, setFullscreen] = useState(false)
 
@@ -1363,135 +1368,135 @@ function App() {
                   </p>
                 )}
 
-              {/* Settings */}
+                {/* Settings */}
 
-              {overlay === 'settings' && (
-                <Settings
-                  user={user}
-                  onBack={() => {
-                    setOverlay(null)
-                  }}
-                  onRegisterBack={registerSettingsBack}
-                  onScrollTop={scrollAppToTop}
-                  accent={accent}
-                  onAccentChange={setAccentRaw}
-                  theme={theme}
-                  onThemeChange={setThemeRaw}
-                  onGuestLogin={() => setShowGuestAuth(true)}
-                />
-              )}
+                {overlay === 'settings' && (
+                  <Settings
+                    user={user}
+                    onBack={() => {
+                      setOverlay(null)
+                    }}
+                    onRegisterBack={registerSettingsBack}
+                    onScrollTop={scrollAppToTop}
+                    accent={accent}
+                    onAccentChange={setAccentRaw}
+                    theme={theme}
+                    onThemeChange={setThemeRaw}
+                    onGuestLogin={() => setShowGuestAuth(true)}
+                  />
+                )}
 
-              {/* ======================================================
+                {/* ======================================================
             MAIN TABS
            ====================================================== */}
 
-              {!overlay && (
-                <>
-                  {user && tab === 'today' && (
-                    <Today
-                      user={user}
-                      recoveryAllowed={recoveryAllowedAtLaunch}
-                      onOpenPractice={openPractice}
-                      initialSub={initialTodaySub}
-                      returnFlowActive={initialReturnFlow}
-                      onReturnFlowEvent={reportReturnFlowEvent}
-                      onGoMentor={goMentor}
-                      onFlowChange={setTodayFlowOpen}
-                      onRegisterBack={registerTodayBack}
-                      onOpenSettings={openSettings}
-                      onOpenDemoPanel={demoPanelAllowed ? openDemoPanel : undefined}
-                      onOpenSeries={openTodaySeries}
-                      seriesOpen={todaySeriesOpen}
-                      onCloseSeries={closeTodaySeries}
-                    />
-                  )}
+                {!overlay && (
+                  <>
+                    {user && tab === 'today' && (
+                      <Today
+                        user={user}
+                        recoveryAllowed={recoveryAllowedAtLaunch}
+                        onOpenPractice={openPractice}
+                        initialSub={initialTodaySub}
+                        returnFlowActive={initialReturnFlow}
+                        onReturnFlowEvent={reportReturnFlowEvent}
+                        onGoMentor={goMentor}
+                        onFlowChange={setTodayFlowOpen}
+                        onRegisterBack={registerTodayBack}
+                        onOpenSettings={openSettings}
+                        onOpenDemoPanel={demoPanelAllowed ? openDemoPanel : undefined}
+                        onOpenSeries={openTodaySeries}
+                        seriesOpen={todaySeriesOpen}
+                        onCloseSeries={closeTodaySeries}
+                      />
+                    )}
 
-                  {user && tab === 'practices' && (
-                    <Practices
-                      user={user}
-                      initialSub={practicesSub}
-                      onGameChange={setPracticeGameOpen}
-                      onRegisterBack={registerPracticesBack}
-                      onReturnToToday={goToday}
-                    />
-                  )}
+                    {user && tab === 'practices' && (
+                      <Practices
+                        user={user}
+                        initialSub={practicesSub}
+                        onGameChange={setPracticeGameOpen}
+                        onRegisterBack={registerPracticesBack}
+                        onReturnToToday={goToday}
+                      />
+                    )}
 
-                  {user && tab === 'mentor' && (
-                    <MentalixChat
-                      user={user}
-                      onPersonaChange={setMentorPersonaOpen}
-                      onRegisterBack={registerMentorBack}
-                    />
-                  )}
+                    {user && tab === 'mentor' && (
+                      <MentalixChat
+                        user={user}
+                        onPersonaChange={setMentorPersonaOpen}
+                        onRegisterBack={registerMentorBack}
+                      />
+                    )}
 
-                  {user && tab === 'library' && (
-                    <Library user={user} onInputModeChange={setLibraryInputMode} />
-                  )}
+                    {user && tab === 'library' && (
+                      <Library user={user} onInputModeChange={setLibraryInputMode} />
+                    )}
 
-                  {user && tab === 'trends' && (
-                    <Analytics
-                      user={user}
-                      historyTrigger={progressHistoryTrigger}
-                      navCollapsed={navCollapsed}
-                      onOpenHistory={() => {
-                        platform.haptic('light')
-                        setProgressHistoryTrigger(n => n + 1)
-                        scrollAppToTop()
-                      }}
-                      onGoCheckin={() => {
-                        platform.haptic('light')
+                    {user && tab === 'trends' && (
+                      <Analytics
+                        user={user}
+                        historyTrigger={progressHistoryTrigger}
+                        navCollapsed={navCollapsed}
+                        onOpenHistory={() => {
+                          platform.haptic('light')
+                          setProgressHistoryTrigger(n => n + 1)
+                          scrollAppToTop()
+                        }}
+                        onGoCheckin={() => {
+                          platform.haptic('light')
 
-                        setMentorPersonaOpen(false)
+                          setMentorPersonaOpen(false)
 
-                        setTab('today')
+                          setTab('today')
 
-                        setPracticesSub(null)
+                          setPracticesSub(null)
 
-                        setNavCollapsed(false)
+                          setNavCollapsed(false)
 
-                        resetNavigationGesture()
+                          resetNavigationGesture()
 
-                        scrollAppToTop()
-                      }}
-                      onStartMood={() => {
-                        platform.haptic('light')
-                        setMentorPersonaOpen(false)
-                        setTab('practices')
-                        setPracticesSub('mood')
-                        setNavCollapsed(false)
-                        resetNavigationGesture()
-                        scrollAppToTop()
-                      }}
-                      onOpenNotifications={() => {
-                        platform.haptic('light')
-                        try {
-                          sessionStorage.setItem('mx-settings-initial-sub', 'notifications')
-                        } catch {
-                          /* */
-                        }
-                        setOverlay('settings')
-                      }}
-                      onRedo={() => {
-                        platform.haptic('light')
-                        setMentorPersonaOpen(false)
-                        setTab('today')
-                        setPracticesSub(null)
-                        setNavCollapsed(false)
-                        resetNavigationGesture()
-                        scrollAppToTop()
-                      }}
-                      onRedoReview={() => {
-                        platform.haptic('light')
-                        setMentorPersonaOpen(false)
-                        setTab('today')
-                        setPracticesSub(null)
-                        setNavCollapsed(false)
-                        resetNavigationGesture()
-                        scrollAppToTop()
-                      }}
-                    />
-                  )}
-                </>
+                          scrollAppToTop()
+                        }}
+                        onStartMood={() => {
+                          platform.haptic('light')
+                          setMentorPersonaOpen(false)
+                          setTab('practices')
+                          setPracticesSub('mood')
+                          setNavCollapsed(false)
+                          resetNavigationGesture()
+                          scrollAppToTop()
+                        }}
+                        onOpenNotifications={() => {
+                          platform.haptic('light')
+                          try {
+                            sessionStorage.setItem('mx-settings-initial-sub', 'notifications')
+                          } catch {
+                            /* */
+                          }
+                          setOverlay('settings')
+                        }}
+                        onRedo={() => {
+                          platform.haptic('light')
+                          setMentorPersonaOpen(false)
+                          setTab('today')
+                          setPracticesSub(null)
+                          setNavCollapsed(false)
+                          resetNavigationGesture()
+                          scrollAppToTop()
+                        }}
+                        onRedoReview={() => {
+                          platform.haptic('light')
+                          setMentorPersonaOpen(false)
+                          setTab('today')
+                          setPracticesSub(null)
+                          setNavCollapsed(false)
+                          resetNavigationGesture()
+                          scrollAppToTop()
+                        }}
+                      />
+                    )}
+                  </>
                 )}
               </Suspense>
             </ScreenErrorBoundary>

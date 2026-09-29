@@ -24,11 +24,7 @@ import { getAccentColors } from '../lib/accentColor'
 import { openSupportChat } from '../lib/support'
 import { THEMES } from '../lib/theme'
 import { isGuestUser } from '../lib/guestAuth'
-import { isPreviewDemoMode } from '../lib/demoMode'
 import { DEFAULT_REVIEW_HOUR } from '../lib/todayCardState'
-import { MASK_STAGES } from '../config/maskStages'
-import { getMaskStage } from '../lib/maskStage'
-import QuotesManager from './QuotesManager'
 import SubscriptionManager from './SubscriptionManager'
 import DonateScreen from './DonateScreen'
 import LinkWebAccount from './LinkWebAccount'
@@ -77,11 +73,12 @@ const SUB_TITLES = {
 // Под-экран, куда ведёт «Назад»: по умолчанию — корень профиля.
 const SUB_PARENT = { timezone: 'notifications' }
 
+// PR11: фиксированные плитки времени напоминания.
+// «Вечер» — 19:00, не синхронизирован с review_hour.
 const REMINDER_TIMES = [
   { label: 'Утро', hour: 8 },
   { label: 'День', hour: 14 },
-  // «Вечер» синхронизирован с review_hour — подставляется динамически
-  // в компоненте (reminderTimes ниже), не захардкожен.
+  { label: 'Вечер', hour: 19 },
   { label: 'Ночь', hour: 22 },
 ]
 
@@ -137,27 +134,9 @@ export default function Settings({
     setProfileReloadToken(token => token + 1)
   }
 
-  const demoStage = isPreviewDemoMode()
-    ? new URLSearchParams(window.location.search).get('mask_stage')
-    : null
-  const demoIndex = demoStage !== null && /^[0-3]$/.test(demoStage) ? Number(demoStage) : null
-  const maskProgress = getMaskStage(
-    demoIndex !== null ? MASK_STAGES[demoIndex].minDays : profileStats?.days_active
-  )
-  const maskStage = profileStats || demoIndex !== null ? maskProgress.stage : null
-  const maskNext = maskStage ? maskProgress.next : null
-  const maskDaysUntilNext = maskProgress.daysUntilNext
   const [reminderHour, setReminderHour] = useState(null)
   const [reminderOn, setReminderOn] = useState(false)
   const [reviewHour, setReviewHour] = useState(DEFAULT_REVIEW_HOUR)
-
-  // «Вечер» в напоминаниях = review_hour (единый источник времени разбора).
-  // Утро/День/Ночь — независимые слоты напоминания.
-  const reminderTimes = [
-    ...REMINDER_TIMES.slice(0, 2),
-    { label: 'Вечер', hour: reviewHour },
-    ...REMINDER_TIMES.slice(2),
-  ]
   const [reminderTimezone, setReminderTimezone] = useState('Europe/Moscow')
   const [quietHoursOn, setQuietHoursOn] = useState(false)
   const [quietStart, setQuietStart] = useState(22)
@@ -410,15 +389,9 @@ export default function Settings({
 
   async function saveReviewHour(hour) {
     const prev = reviewHour
-    // Если напоминание было синхронизировано с разбором (вечерний слот),
-    // меняем его вместе с review_hour — одно значение везде.
-    const wasInSync = reminderHour === reviewHour
     setReviewHour(hour)
-    if (wasInSync) setReminderHour(hour)
     try {
-      const payload = { review_hour: hour }
-      if (wasInSync) payload.reminder_hour = hour
-      await api.profile.saveSettings(user.id, payload)
+      await api.profile.saveSettings(user.id, { review_hour: hour })
     } catch (e) {
       console.error(e)
       setReviewHour(prev)
@@ -508,10 +481,6 @@ export default function Settings({
         setTier(current => current ?? 'base')
       })
   }, [user, screen])
-
-  if (screen === 'quotes') {
-    return <QuotesManager user={user} onBack={() => setScreen(null)} />
-  }
 
   if (screen === 'subscription') {
     return <SubscriptionManager user={user} tier={tier} onBack={() => setScreen(null)} />
@@ -831,7 +800,7 @@ export default function Settings({
                   label="Время напоминания"
                   value={reminderHour}
                   onChange={hour => saveReminder(hour, true)}
-                  options={reminderTimes.map(t => ({
+                  options={REMINDER_TIMES.map(t => ({
                     value: t.hour,
                     label: t.label,
                     hint: hh(t.hour),
@@ -913,11 +882,6 @@ export default function Settings({
             </ProfileCard>
           )}
           {reminderStatus && <ProfileNote role="status">{reminderStatus}</ProfileNote>}
-        </ProfileGroup>
-        <ProfileGroup label="Сообщения">
-          <ProfileCard>
-            <ProfileRow title="Мысль дня" value="Мои фразы" onClick={() => setScreen('quotes')} />
-          </ProfileCard>
         </ProfileGroup>
       </ProfileBody>
     )
@@ -1075,9 +1039,6 @@ export default function Settings({
           onOpenSubscription={() => setScreen('subscription')}
           onOpenDonate={() => setScreen('donate')}
           onOpenWeb={openWebBanner}
-          maskStage={maskStage}
-          maskNext={maskNext}
-          maskDaysUntilNext={maskDaysUntilNext}
         />
         <ProfileGroup label="Настрой">
           <ProfileCard testId="profile-card-setup">
