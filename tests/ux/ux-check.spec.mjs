@@ -1624,6 +1624,10 @@ test('WebKit iPhone 15 Pro: «Что на уме?» — один тап по к�
   })
 
   await page.goto('/?demo=1&action=mind_step')
+  // ?demo=1&action=mind_step задаёт начальный шаг внутри MorningCheckInFlow,
+  // но оверлей чек-ина нужно открыть явно — кликом по карточке утра.
+  await expect(page.getByTestId('today-card-morning')).toBeVisible({ timeout: 15_000 })
+  await page.getByTestId('today-card-morning').tap()
   await expect(page.getByRole('heading', { name: 'Что на уме?' })).toBeVisible({
     timeout: 15_000,
   })
