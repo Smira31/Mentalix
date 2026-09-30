@@ -282,7 +282,7 @@ export default function PinnedPractices({
   }
 
   return (
-    <section className="mx-pinned-practices mt-6" aria-labelledby="pinned-practices-title">
+    <section className="mx-pinned-practices" aria-labelledby="pinned-practices-title">
       <div className="mx-pinned-practices__heading">
         <h2 id="pinned-practices-title" className="mx-type-section text-cream">
           Твои практики

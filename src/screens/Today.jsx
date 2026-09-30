@@ -1455,7 +1455,7 @@ export default function Today({
             changeSub('dailyThought')
           }}
           data-testid="today-quote-card"
-          className="mx-today-affirmation-card w-full px-[var(--mx-screen-x)] py-6 mt-5 text-center animate-fade-in border-0 active:scale-[0.99] transition-transform"
+          className="mx-today-affirmation-card w-full px-[var(--mx-screen-x)] py-6 text-center animate-fade-in border-0 active:scale-[0.99] transition-transform"
         >
           <span className="block mx-type-meta text-muted mb-3">Мысль дня</span>
 
@@ -1615,7 +1615,7 @@ export default function Today({
             data-testid="today-theme-card"
             role="button"
             tabIndex={0}
-            aria-label={`${theme.title}. ${themeDayLabel}. ${themeQuestionText || ''}`}
+            aria-label={`${themeDayLabel}. ${theme.title}. ${themeQuestionText || ''}`}
             onClick={handleThemeCardTap}
             onKeyDown={e => {
               if (e.key === 'Enter' || e.key === ' ') {
@@ -1624,8 +1624,8 @@ export default function Today({
               }
             }}
           >
-            <span className="mx-today-weekly-theme__name">{theme.title}.</span>
             <span className="mx-today-weekly-theme__day">{themeDayLabel}</span>
+            <span className="mx-today-weekly-theme__name">{theme.title}.</span>
             <span className="mx-today-weekly-theme__question">{themeQuestionText}</span>
             <button
               type="button"
