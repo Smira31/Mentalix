@@ -35,13 +35,14 @@ test.describe('Сегодня — переходы в под-экраны', () =
   test('Тема недели открывается и возвращается назад', async ({ page }) => {
     await page.goto('/?demo=1')
 
-    const themeCard = page.getByTestId('today-theme-card')
-    await expect(themeCard).toBeVisible({ timeout: 15_000 })
-    await themeCard.click()
+    // «Все темы ›» открывает карусель темы недели
+    const allThemes = page.getByTestId('today-theme-all')
+    await expect(allThemes).toBeVisible({ timeout: 15_000 })
+    await allThemes.click()
 
     await expect(page.getByTestId('theme-carousel-cta')).toBeVisible({ timeout: 10_000 })
 
     await page.getByTestId('back-button').click()
-    await expect(themeCard).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByTestId('today-theme-card')).toBeVisible({ timeout: 10_000 })
   })
 })

@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { createPortal } from 'react-dom'
-import { ArrowRight } from 'lucide-react'
 
-import { api } from '../lib/api'
 import { peekThemeDetail, fetchThemeDetail, invalidateThemeDetail } from '../lib/themeDetailCache'
 import { peekThemesData, fetchThemesData, invalidateThemesData } from '../lib/themesDataCache'
 import { platform } from '../platform'
@@ -12,7 +10,6 @@ import {
   useFullscreenSurface,
   getFullscreenPortalTarget,
   FULLSCREEN_SHELL_CLASS,
-  FULLSCREEN_HEADER_SLOT_CLASS,
   FULLSCREEN_SCROLL_CLASS,
 } from '../lib/fullscreenSurface'
 
@@ -41,6 +38,10 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
   const [selectedDay, setSelectedDay] = useState(1)
   const { style } = useFullscreenSurface()
   const trackRef = useRef(null)
+  const rafRef = useRef(null)
+  const lastIndexRef = useRef(0)
+  const scrollRef = useRef(null)
+  const ctaRef = useRef(null)
 
   useBackButton(() => {
     platform.haptic('light')
@@ -80,10 +81,46 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
     }
   }, [user, activeId])
 
+  useEffect(() => {
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current)
+    }
+  }, [])
+
+  // Детект прилипания CTA к верху: когда пилюля доезжает до
+  // safe-area + 8, переключаем data-stuck → стекло + приглушённый текст.
+  useEffect(() => {
+    const scroll = scrollRef.current
+    const cta = ctaRef.current
+    if (!scroll || !cta) return
+    let raf = null
+    const onScroll = () => {
+      if (raf) return
+      raf = requestAnimationFrame(() => {
+        raf = null
+        const ctaRect = cta.getBoundingClientRect()
+        const scrollRect = scroll.getBoundingClientRect()
+        const stickyTop = parseFloat(getComputedStyle(cta).top) || 8
+        const stuck = ctaRect.top <= scrollRect.top + stickyTop + 4
+        cta.dataset.stuck = stuck ? 'true' : 'false'
+      })
+    }
+    scroll.addEventListener('scroll', onScroll, { passive: true })
+    onScroll()
+    return () => {
+      scroll.removeEventListener('scroll', onScroll)
+      if (raf) cancelAnimationFrame(raf)
+    }
+  }, [data])
+
   function refreshData() {
     if (!user || !activeId) return
     invalidateThemeDetail(user.id, activeId)
-    fetchThemeDetail(user.id, activeId, { force: true }).then(d => { if (d) setData(d) }).catch(console.error)
+    fetchThemeDetail(user.id, activeId, { force: true })
+      .then(d => {
+        if (d) setData(d)
+      })
+      .catch(console.error)
     invalidateThemesData(user.id)
     fetchThemesData(user.id, { force: true })
       .then(list => setThemes(Array.isArray(list) ? list : []))
@@ -100,6 +137,7 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
   const questions = useMemo(() => (Array.isArray(data?.days) ? data.days.slice(0, 7) : []), [data])
   const safeIndex = Math.min(questionIndex, Math.max(0, questions.length - 1))
   const currentQuestion = questions[safeIndex]
+  const isAnswered = !!currentQuestion?.reflection
 
   // При загрузке данных прокручиваем карусель к текущему дню —
   // чтобы человек продолжил с того места, где остановился, а не
@@ -108,8 +146,10 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
     if (!data || !trackRef.current) return
     const days = Array.isArray(data.days) ? data.days.slice(0, 7) : []
     if (!days.length) return
-    const currentIdx = days.findIndex(d => d.day === data.current_day)
-    if (currentIdx <= 0) return
+    const currentIdx = Math.max(
+      0,
+      days.findIndex(d => d.day === data.current_day)
+    )
     const track = trackRef.current
     const cards = [...track.querySelectorAll('.mx-theme-carousel-q')]
     const card = cards[currentIdx]
@@ -118,22 +158,35 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
         left: card.offsetLeft - track.clientWidth / 2 + card.offsetWidth / 2,
       })
     }
+    lastIndexRef.current = currentIdx
+    setQuestionIndex(currentIdx)
   }, [data])
 
+  // Плавный скролл-обработчик: rAF-throttled, setState только
+  // при смене активной карточки — без ре-рендера на каждый пиксель.
   function handleScroll() {
-    const track = trackRef.current
-    if (!track || !track.clientWidth) return
-    const cards = [...track.querySelectorAll('.mx-theme-carousel-q')]
-    if (!cards.length) return
-    const center = track.scrollLeft + track.clientWidth / 2
-    const next = cards.reduce((closest, card, i) => {
-      const dist = Math.abs(card.offsetLeft + card.offsetWidth / 2 - center)
-      const closestDist = Math.abs(
-        cards[closest].offsetLeft + cards[closest].offsetWidth / 2 - center
-      )
-      return dist < closestDist ? i : closest
-    }, 0)
-    setQuestionIndex(next)
+    if (rafRef.current) return
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = null
+      const track = trackRef.current
+      if (!track || !track.clientWidth) return
+      const cards = [...track.querySelectorAll('.mx-theme-carousel-q')]
+      if (!cards.length) return
+      const center = track.scrollLeft + track.clientWidth / 2
+      let next = 0
+      let minDist = Infinity
+      cards.forEach((card, i) => {
+        const dist = Math.abs(card.offsetLeft + card.offsetWidth / 2 - center)
+        if (dist < minDist) {
+          minDist = dist
+          next = i
+        }
+      })
+      if (next !== lastIndexRef.current) {
+        lastIndexRef.current = next
+        setQuestionIndex(next)
+      }
+    })
   }
 
   function handleWrite() {
@@ -160,7 +213,6 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
   if (!data) {
     return createPortal(
       <div className={FULLSCREEN_SHELL_CLASS} style={style}>
-        <div className={FULLSCREEN_HEADER_SLOT_CLASS} aria-hidden="true" />
         <div className={FULLSCREEN_SCROLL_CLASS}>
           <div className="w-full max-w-md mx-auto px-[var(--mx-screen-x)] pt-2 pb-6 flex flex-col min-h-full">
             <RoundBackButton onClick={onBack} />
@@ -172,19 +224,15 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
     )
   }
 
-  const isAnswered = Boolean(currentQuestion?.reflection)
-
   return createPortal(
-    <div className={FULLSCREEN_SHELL_CLASS} style={style}>
-      <div className={FULLSCREEN_HEADER_SLOT_CLASS} aria-hidden="true" />
-      <div className={FULLSCREEN_SCROLL_CLASS}>
-        <div className="w-full max-w-md mx-auto px-[var(--mx-screen-x)] pt-2 pb-6 flex flex-col min-h-full">
+    <div className={`${FULLSCREEN_SHELL_CLASS} mx-theme-carousel-surface`} style={style}>
+      <div className={FULLSCREEN_SCROLL_CLASS} ref={scrollRef}>
+        <div className="mx-theme-carousel-screen w-full max-w-md mx-auto px-[var(--mx-screen-x)] pt-2 pb-6 flex flex-col min-h-full">
           <RoundBackButton onClick={onBack} />
 
           <div className="mx-theme-carousel-header">
-            <span className="mx-theme-carousel-label">Тема недели</span>
-            <h2 className="mx-theme-carousel-title">{data.title}</h2>
-            {data.subtitle && <p className="mx-theme-carousel-subtitle">{data.subtitle}</p>}
+            <h1 className="mx-theme-carousel-heading">Тема недели:</h1>
+            <h2 className="mx-theme-carousel-title">{data.title}.</h2>
           </div>
 
           {questions.length > 0 ? (
@@ -200,9 +248,10 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
                   <article
                     className="mx-theme-carousel-q"
                     key={q.day ?? i}
+                    data-active={i === safeIndex ? 'true' : 'false'}
                     data-answered={q.reflection ? 'true' : undefined}
                   >
-                    <span className="mx-theme-carousel-q__num">{q.day ?? i + 1}</span>
+                    <span className="mx-theme-carousel-q__day">День {q.day ?? i + 1} из 7</span>
                     <strong className="mx-theme-carousel-q__text">{q.text}</strong>
                     {q.prompt && <span className="mx-theme-carousel-q__prompt">{q.prompt}</span>}
                     {q.reflection && <span className="mx-theme-carousel-q__badge">✓ Записано</span>}
@@ -228,9 +277,10 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
                 type="button"
                 className="mx-theme-carousel-cta"
                 data-testid="theme-carousel-cta"
+                ref={ctaRef}
                 onClick={handleWrite}
               >
-                {isAnswered ? 'Смотреть в пути' : 'Начать запись'} <ArrowRight size={15} />
+                {isAnswered ? 'Смотреть в пути' : 'Начать запись'}
               </button>
             </>
           ) : (
