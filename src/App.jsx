@@ -143,48 +143,73 @@ function Splash() {
   )
 }
 
-function DemoTelegramChrome({ onBack }) {
-  const hasBack = typeof onBack === 'function'
-  const requestedTab = new URLSearchParams(window.location.search).get('tab')
-  const chromeTab = requestedTab === 'trends' ? 'progress' : requestedTab
-  const tabTitle =
-    chromeTab === 'progress'
-      ? 'Прогресс'
-      : chromeTab === 'library'
-        ? 'Библиотека'
-        : chromeTab === 'practices'
-          ? 'Практики'
-          : 'MENTALIX'
-  const tabMeta = chromeTab === 'progress' ? '14 дней' : ''
+/* ============================================================
+   ДЕМО-ЭМУЛЯЦИЯ TELEGRAM (?demo=1)
+   iOS-статус-бар + пилюли Telegram + Home Indicator — как
+   в Telegram fullscreen на iPhone. Чисто визуальный слой:
+   pointer-events: none, z-index выше fullscreen-порталов,
+   всегда поверх любых экранов приложения.
+   ============================================================ */
+
+function DemoTelegramChrome() {
+  const now = new Date()
+  const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
 
   return (
-    <div className="mx-demo-telegram-chrome" aria-label="Telegram preview controls">
-      {!hasBack && (
-        <button
-          type="button"
-          aria-label="Закрыть превью"
-          className="mx-demo-telegram-chrome__close"
-        >
-          <X size={18} strokeWidth={2.2} aria-hidden="true" />
-          <span>Закрыть</span>
-        </button>
-      )}
-      {tabTitle && (
-        <div
-          className={`mx-demo-telegram-chrome__title${
-            tabTitle === 'MENTALIX' ? ' mx-demo-telegram-chrome__title--wordmark' : ''
-          }`}
-        >
-          {tabTitle}
+    <div className="mx-demo-telegram-chrome" aria-hidden="true">
+      <div className="mx-demo-telegram-chrome__status">
+        <div className="mx-demo-telegram-chrome__status-zone">
+          <span className="mx-demo-telegram-chrome__time">{time}</span>
         </div>
-      )}
-      <div className="mx-demo-telegram-chrome__right">
-        <div className="mx-demo-telegram-chrome__menu" aria-hidden="true">
-          <ChevronDown size={22} strokeWidth={2.2} />
-          <Ellipsis size={22} strokeWidth={2.2} />
+        <div className="mx-demo-telegram-chrome__status-zone">
+          <span className="mx-demo-telegram-chrome__status-icons">
+            <svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor" aria-hidden="true">
+              <rect x="0" y="7.5" width="3.4" height="4.5" rx="1" />
+              <rect x="4.8" y="5" width="3.4" height="7" rx="1" />
+              <rect x="9.6" y="2.5" width="3.4" height="9.5" rx="1" />
+              <rect x="14.4" y="0" width="3.4" height="12" rx="1" />
+            </svg>
+            <svg
+              width="17"
+              height="12"
+              viewBox="0 0 17 12"
+              fill="none"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path d="M1.5 4.2a10.5 10.5 0 0 1 14 0" strokeWidth="1.9" strokeLinecap="round" />
+              <path d="M4 7a7 7 0 0 1 9 0" strokeWidth="1.9" strokeLinecap="round" />
+              <path d="M6.6 9.7a3.4 3.4 0 0 1 3.8 0" strokeWidth="1.9" strokeLinecap="round" />
+            </svg>
+            <svg width="25" height="12" viewBox="0 0 25 12" aria-hidden="true">
+              <rect
+                x="0.5"
+                y="0.5"
+                width="21"
+                height="11"
+                rx="3.5"
+                fill="none"
+                stroke="currentColor"
+                strokeOpacity="0.4"
+              />
+              <rect x="2.5" y="2.5" width="17" height="7" rx="2" fill="currentColor" />
+              <path d="M23 4v4c1-.2 1.6-1 1.6-2S24 4.2 23 4z" fill="currentColor" fillOpacity="0.4" />
+            </svg>
+          </span>
         </div>
-        {tabMeta && <span className="mx-demo-telegram-chrome__meta">{tabMeta}</span>}
       </div>
+      <div className="mx-demo-telegram-chrome__controls">
+        <span className="mx-demo-telegram-chrome__pill">
+          <X size={14} strokeWidth={2.4} aria-hidden="true" />
+          <span>Закрыть</span>
+        </span>
+        <span className="mx-demo-telegram-chrome__pill mx-demo-telegram-chrome__pill--menu">
+          <ChevronDown size={16} strokeWidth={2.4} aria-hidden="true" />
+          <span className="mx-demo-telegram-chrome__pill-divider" />
+          <Ellipsis size={16} strokeWidth={2.4} aria-hidden="true" />
+        </span>
+      </div>
+      <span className="mx-demo-telegram-chrome__home" />
     </div>
   )
 }
@@ -479,17 +504,6 @@ function App() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setDemoMotionTick(tick => tick + 1)
   }, [overlay, tab, mentorPersonaOpen, todayFlowOpen, todaySeriesOpen, practiceGameOpen])
-
-  const demoBackAction =
-    overlay === 'settings'
-      ? demoBackRefs.current.settings || (() => setOverlay(null))
-      : tab === 'mentor'
-        ? demoBackRefs.current.mentor
-        : tab === 'today'
-          ? demoBackRefs.current.today
-          : tab === 'practices'
-            ? demoBackRefs.current.practices
-            : null
 
   // Только разрешённые contextual deep-links открывают вложенный экран «Сегодня».
   const [practicesSub, setPracticesSub] = useState(null)
@@ -1187,13 +1201,11 @@ function App() {
     : 'var(--app-content-bottom)'
 
   // Полноэкранные листы Истории остаются внутри shell, но не закрывают шапку Telegram.
+  // В demo-рамке с эмуляцией Telegram все экраны получают отступы как в
+  // Telegram fullscreen: верх = safe-top (статус-бар iOS) + 56 (пилюли Telegram).
   const shellTopPadding =
-    previewDemoMode &&
-    !realPhone &&
-    (!overlay || overlay === 'settings') &&
-    !todaySeriesOpen &&
-    !todayFlowOpen
-      ? '56px'
+    previewDemoMode && !realPhone && deviceFrameMode
+      ? 'calc(var(--app-safe-top) + 56px)'
       : topSafeArea
 
   /* ============================================================
@@ -1240,6 +1252,8 @@ function App() {
       <div
         data-mentalix-demo-frame={deviceFrameMode ? 'true' : undefined}
         data-mentalix-desktop-frame={desktopDeviceFrame ? 'true' : undefined}
+        data-demo-mode={deviceFrameMode && previewDemoMode ? 'true' : undefined}
+        data-demo-device={deviceFrameMode ? demoDevice : undefined}
         data-demo-tab={previewDemoMode ? (tab === 'trends' ? 'progress' : tab) : undefined}
         className={`
         h-screen
@@ -1274,13 +1288,9 @@ function App() {
           paddingLeft: 'var(--app-safe-left)',
         }}
       >
-        {shouldRenderDemoTelegramChrome({ previewDemoMode, platformName, realPhone }) &&
-          (!overlay || overlay === 'settings') &&
-          !todaySeriesOpen &&
-          !todayFlowOpen && (
-            // eslint-disable-next-line react-hooks/refs
-            <DemoTelegramChrome onBack={demoBackAction} />
-          )}
+        {shouldRenderDemoTelegramChrome({ previewDemoMode, platformName, realPhone }) && (
+          <DemoTelegramChrome />
+        )}
 
         {/* ========================================================
           MENTALIX WORDMARK

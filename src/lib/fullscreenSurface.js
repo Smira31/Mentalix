@@ -104,10 +104,24 @@ export function useFullscreenSurface() {
         })
       : stableViewportHeight || visualViewportHeight
     : visualViewportHeight
+
+  /*
+   * В demo-рамке shell обязан заполнять именно рамку телефона:
+   * высота visualViewport — это окно браузера, а не рамка, поэтому
+   * shell получался выше рамки и нижний край (вместе с футером)
+   * обрезался overflow: hidden. Координаты shell при этом живут
+   * в системе координат рамки (scale не применяется).
+   */
+  const portalIsDemoFrame = Boolean(
+    portalTarget?.getAttribute?.('data-mentalix-demo-frame') === 'true'
+  )
+  const demoFrameHeight =
+    portalIsDemoFrame && portalTarget?.offsetHeight ? portalTarget.offsetHeight : null
+
   // Convert the single viewport snapshot into the portal target's coordinate
   // space exactly once.
-  const surfaceTop = viewportOffsetTop / scale
-  const visibleHeight = shellHeight ? shellHeight / scale : null
+  const surfaceTop = demoFrameHeight !== null ? 0 : viewportOffsetTop / scale
+  const visibleHeight = demoFrameHeight ?? (shellHeight ? shellHeight / scale : null)
 
   /*
    * MXL-FULLSCREEN-SURFACE-RACE-001 — раньше каждый экран независимо
@@ -134,9 +148,10 @@ export function useFullscreenSurface() {
 
   const style = {
     top: `${surfaceTop}px`,
-    paddingTop: tgFullscreen
-      ? `calc(var(--app-safe-top) + ${TG_CONTROLS_HEIGHT}px)`
-      : 'var(--app-safe-top)',
+    paddingTop:
+      tgFullscreen || (demoMode && portalIsDemoFrame)
+        ? `calc(var(--app-safe-top) + ${TG_CONTROLS_HEIGHT}px)`
+        : 'var(--app-safe-top)',
 
     paddingBottom: 'var(--app-safe-bottom)',
 
