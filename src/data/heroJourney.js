@@ -1,3 +1,6 @@
+import uncertaintyEnter from '../assets/hero-journey/uncertainty-enter.svg'
+import uncertaintyDone from '../assets/hero-journey/uncertainty-done.svg'
+
 /**
  * Путь героя — авторский курс Mentalix.
  * Основа: общие идеи мономифа (Дж. Кэмпбелл) и аналитической психологии (К. Г. Юнг).
@@ -68,6 +71,7 @@ export const HERO_JOURNEY_TRIALS = [
     action: 'Назови одну вещь, которая зависит от тебя, несмотря на неопределённость.',
     shadowAction:
       'Уход в отказ: «меня это не касается», голова в песок. Или наркоз — алкоголь, зависимости, цифровое ничто.',
+    image: { enter: uncertaintyEnter, done: uncertaintyDone },
   },
   {
     id: 'temporality',

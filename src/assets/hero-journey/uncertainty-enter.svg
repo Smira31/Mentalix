@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 300" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Дорога уходит в туман">
+<defs>
+<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#050505"/><stop offset="1" stop-color="#141414"/></linearGradient>
+<linearGradient id="fog" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9d9d9" stop-opacity="0"/><stop offset=".5" stop-color="#d9d9d9" stop-opacity=".32"/><stop offset="1" stop-color="#d9d9d9" stop-opacity="0"/></linearGradient>
+<linearGradient id="road" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#2a2a2a"/><stop offset="1" stop-color="#2a2a2a" stop-opacity="0"/></linearGradient>
+<linearGradient id="fade" x1="0" y1="0" x2="0" y2="1"><stop offset=".55" stop-color="#050505" stop-opacity="0"/><stop offset="1" stop-color="#050505"/></linearGradient>
+<filter id="b" x="-20%" y="-50%" width="140%" height="200%"><feGaussianBlur stdDeviation="9"/></filter>
+</defs>
+<rect width="390" height="300" fill="url(#sky)"/>
+<path d="M0 150 Q60 120 120 138 T240 128 T390 140 V300 H0Z" fill="#161616"/>
+<path d="M0 175 Q80 150 170 168 T390 160 V300 H0Z" fill="#101010"/>
+<rect y="100" width="390" height="110" fill="url(#fog)"/>
+<ellipse cx="120" cy="150" rx="140" ry="22" fill="#cfcfcf" opacity=".16" filter="url(#b)"/>
+<ellipse cx="290" cy="165" rx="150" ry="20" fill="#cfcfcf" opacity=".14" filter="url(#b)"/>
+<path d="M150 300 L240 300 L199 150 L191 150 Z" fill="url(#road)"/>
+<path d="M195 300 V272 M195 258 V236 M195 224 V208 M195 199 V188 M195 181 V174" stroke="#e6e6e6" stroke-opacity=".5" stroke-width="2" stroke-linecap="round"/>
+<ellipse cx="195" cy="158" rx="120" ry="26" fill="#d9d9d9" opacity=".22" filter="url(#b)"/>
+<rect width="390" height="300" fill="url(#fade)"/>
+</svg>

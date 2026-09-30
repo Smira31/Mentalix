@@ -230,28 +230,46 @@ function StepIntro({ trial, onBack, onStart }) {
   const chapterTrials = trialsForChapter(chapter)
   const stepIndexInChapter = chapterTrials.findIndex(t => t.id === trial.id)
   const contents = stepContents(trial)
+  const enterImage = trial.image?.enter
+
+  const dots = chapterTrials.map((_, i) => (
+    <span
+      key={i}
+      className={`mx-hj-step-intro__dot ${i <= stepIndexInChapter ? 'is-active' : ''}`}
+    />
+  ))
 
   return (
     <Shell>
-      <RoundBackButton onClick={onBack} />
-
-      <div className="mx-hj-step-intro__chapter-label">Глава {chapter.roman} · {chapter.title}</div>
-
-      {/* TODO: иллюстрация шага (поле image) */}
-      <div className="mx-hj-step-intro__image">
-        <div className="mx-hj-step-intro__glyph">
-          <SemanticGlyph kind="pathfinder" animated={false} />
+      {enterImage ? (
+        <div className="mx-hj-hero-image">
+          <div className="mx-hj-hero-image__back">
+            <RoundBackButton onClick={onBack} />
+          </div>
+          <img src={enterImage} alt="" />
         </div>
-        <span className="mx-hj-step-intro__image-caption">шаг {trial.number}</span>
-        <div className="mx-hj-step-intro__dots">
-          {chapterTrials.map((_, i) => (
-            <span
-              key={i}
-              className={`mx-hj-step-intro__dot ${i <= stepIndexInChapter ? 'is-active' : ''}`}
-            />
-          ))}
-        </div>
-      </div>
+      ) : (
+        <>
+          <RoundBackButton onClick={onBack} />
+
+          <div className="mx-hj-step-intro__chapter-label">Глава {chapter.roman} · {chapter.title}</div>
+
+          <div className="mx-hj-step-intro__image">
+            <div className="mx-hj-step-intro__glyph">
+              <SemanticGlyph kind="pathfinder" animated={false} />
+            </div>
+            <span className="mx-hj-step-intro__image-caption">шаг {trial.number}</span>
+            <div className="mx-hj-step-intro__dots">{dots}</div>
+          </div>
+        </>
+      )}
+
+      {enterImage && (
+        <>
+          <div className="mx-hj-step-intro__dots mx-hj-step-intro__dots--centered">{dots}</div>
+          <div className="mx-hj-step-intro__chapter-label">Глава {chapter.roman} · {chapter.title}</div>
+        </>
+      )}
 
       <div className="mx-hj-step-intro__meta">
         Шаг {trial.number} из {HERO_JOURNEY_TOTAL_STEPS} · ≈ 6 минут
@@ -432,10 +450,10 @@ function StepComplete({ trial, progress, onBackToMap, onBack }) {
   )
 
   const reflection = progress.reflections[trial.id] || ''
+  const doneImage = trial.image?.done
 
   return (
     <Shell
-      bodyClassName="mx-hj-complete__body"
       footer={
         <div className="mx-hj-complete__footer">
           <button type="button" onClick={onBackToMap} className="cta-pill mx-hj-complete__cta">
@@ -444,47 +462,58 @@ function StepComplete({ trial, progress, onBackToMap, onBack }) {
         </div>
       }
     >
-      <RoundBackButton onClick={onBack} />
+      {doneImage ? (
+        <div className="mx-hj-hero-image">
+          <div className="mx-hj-hero-image__back">
+            <RoundBackButton onClick={onBack} />
+          </div>
+          <img src={doneImage} alt="" />
+        </div>
+      ) : (
+        <RoundBackButton onClick={onBack} />
+      )}
 
       <div className="mx-hj-complete">
-        <div className="mx-hj-complete__circle">
-          <Check size={40} strokeWidth={3} />
-        </div>
+        {!doneImage && (
+          <div className="mx-hj-complete__circle">
+            <Check size={40} strokeWidth={3} />
+          </div>
+        )}
         <span className="mx-hj-complete__step">Шаг {trial.number} из {HERO_JOURNEY_TOTAL_STEPS}</span>
         <h2 className="mx-hj-complete__title">{appHeading('Шаг пройден')}</h2>
         <p className="mx-hj-complete__phrase">{trial.doneText || 'Ты сделал ещё один шаг по пути.'}</p>
-      </div>
 
-      <div className="mx-hj-complete__chapter-card">
-        <div className="mx-hj-complete__chapter-segs">
-          {chapterTrials.map(t => (
-            <span
-              key={t.id}
-              className={`mx-hj-segment ${isStepCompleted(t.id, progress) ? 'is-done' : ''}`}
-            />
-          ))}
+        <div className="mx-hj-complete__chapter-card">
+          <div className="mx-hj-complete__chapter-segs">
+            {chapterTrials.map(t => (
+              <span
+                key={t.id}
+                className={`mx-hj-segment ${isStepCompleted(t.id, progress) ? 'is-done' : ''}`}
+              />
+            ))}
+          </div>
+          {chapterDone ? (
+            <p className="mx-hj-complete__chapter-done">
+              Глава {chapter.roman} · {chapter.title} пройдена
+            </p>
+          ) : (
+            <p className="mx-hj-complete__chapter-progress">
+              Глава {chapter.roman} · {completedInChapter.length} из {chapterTrials.length}
+            </p>
+          )}
+          {chapterDone && nextChapter && (
+            <p className="mx-hj-complete__next-chapter">
+              Открыта глава {nextChapter.roman} · {nextChapter.title}
+            </p>
+          )}
         </div>
-        {chapterDone ? (
-          <p className="mx-hj-complete__chapter-done">
-            Глава {chapter.roman} · {chapter.title} пройдена
-          </p>
-        ) : (
-          <p className="mx-hj-complete__chapter-progress">
-            Глава {chapter.roman} · {completedInChapter.length} из {chapterTrials.length}
-          </p>
-        )}
-        {chapterDone && nextChapter && (
-          <p className="mx-hj-complete__next-chapter">
-            Открыта глава {nextChapter.roman} · {nextChapter.title}
-          </p>
+
+        {reflection && (
+          <button type="button" className="mx-hj-complete__diary-link" onClick={onBackToMap}>
+            Твоя запись в дневнике →
+          </button>
         )}
       </div>
-
-      {reflection && (
-        <button type="button" className="mx-hj-complete__diary-link" onClick={onBackToMap}>
-          Твоя запись в дневнике →
-        </button>
-      )}
     </Shell>
   )
 }
