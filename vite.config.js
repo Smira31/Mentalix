@@ -1,1 +1,113 @@
-PLACEHOLDER
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import fs from 'node:fs'
+import path from 'node:path'
+
+const JOURNAL_PATH = path.resolve('docs/working/ui-lab/EXPERIMENT_JOURNAL.md')
+const DECISION_PATH = path.resolve('docs/working/ui-lab/DECISION_LOG.md')
+const DECISIONS = new Set(['accept', 'repeat', 'defer', 'reject'])
+const LABELS = { accept: 'принять', repeat: 'повторить', defer: 'отложить', reject: 'отклонить' }
+
+function fontPreloadPlugin() {
+  return {
+    name: 'font-preload',
+    writeBundle(options) {
+      const outDir = options.dir || 'dist'
+      const assetsDir = path.resolve(outDir, 'assets')
+      if (!fs.existsSync(assetsDir)) return
+
+      // Основной шрифт (Onest 400, кириллица) — preload для параллельной
+      // загрузки с CSS/JS, чтобы первый кадр не ждал разбора @font-face.
+      const fontFile = fs
+        .readdirSync(assetsDir)
+        .find(name => name.startsWith('onest-cyrillic-400-normal') && name.endsWith('.woff2'))
+      if (!fontFile) return
+
+      const htmlPath = path.resolve(outDir, 'index.html')
+      let html = fs.readFileSync(htmlPath, 'utf8')
+      if (html.includes('rel="preload"')) return
+
+      const preload = `<link rel="preload" href="/assets/${fontFile}" as="font" type="font/woff2" crossorigin />`
+      html = html.replace('<title>Mentalix</title>', `${preload}\n  <title>Mentalix</title>`)
+      fs.writeFileSync(htmlPath, html)
+    },
+  }
+}
+
+function uiLabDecisionWriter() {
+  return {
+    name: 'ui-lab-decision-writer',
+    configureServer(server) {
+      server.middlewares.use('/__ui_lab/decision', (request, response, next) => {
+        if (request.method !== 'POST') return next()
+        let body = ''
+        request.on('data', chunk => {
+          body += chunk
+        })
+        request.on('end', () => {
+          try {
+            const { experimentId, decision } = JSON.parse(body)
+            if (experimentId !== 'UI-EXP-003' || !DECISIONS.has(decision))
+              throw new Error('invalid decision')
+            const date = new Date().toISOString().slice(0, 10)
+            const label = LABELS[decision]
+            fs.appendFileSync(
+              JOURNAL_PATH,
+              `\n\n### ${experimentId} · результат focused-check (${date})\n\n- **Результат:** ${label}\n- **Источник:** режим сфокусированной проверки в UI Lab\n- **Evidence:** зафиксировано локальным tooling; ручной Telegram/iPhone gate остаётся отдельным evidence.\n- **Граница:** production не изменён.\n`
+            )
+            fs.appendFileSync(
+              DECISION_PATH,
+              `\n\n### ${experimentId} · ${label} (${date})\n\n- **Решение:** ${label}.\n- **Evidence:** запись сделана кнопкой focused-check в UI Lab.\n- **Не следует из решения:** production не изменён; перенос требует отдельного PR.\n`
+            )
+            response.setHeader('content-type', 'application/json')
+            response.end(JSON.stringify({ ok: true }))
+          } catch (error) {
+            response.statusCode = 400
+            response.end(JSON.stringify({ error: error.message }))
+          }
+        })
+      })
+    },
+  }
+}
+
+export default defineConfig({
+  base: globalThis.process?.env?.GITHUB_PAGES === 'true' ? '/Mentalix/' : '/',
+  plugins: [react(), fontPreloadPlugin(), uiLabDecisionWriter()],
+  define: {
+    'import.meta.env.VERCEL_ENV': JSON.stringify(globalThis.process?.env?.VERCEL_ENV || ''),
+  },
+  server: {
+    host: true,
+    allowedHosts: ['.manus.computer'],
+    port: 5173,
+    proxy: {
+      '/api': {
+        target: 'https://mentalix-bot.onrender.com',
+        changeOrigin: true,
+        secure: true,
+      },
+    },
+  },
+  // sourcemap + keepNames: в проде сохраняются имена компонентов в
+  // componentStack React-ошибок. Minify остаётся включённым.
+  build: {
+    sourcemap: true,
+    rollupOptions: {
+      output: {
+        // Крупные библиотеки — в стабильные именованные чанки, чтобы
+        // код приложения не перевыгружался при правке экранов.
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom'],
+          icons: ['lucide-react'],
+          charts: ['recharts'],
+          query: ['@tanstack/react-query'],
+          telegram: ['@twa-dev/sdk'],
+        },
+      },
+    },
+  },
+  esbuild: {
+    keepNames: true,
+  },
+})
