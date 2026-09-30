@@ -134,9 +134,13 @@ function LibraryV2HeroJourneyLanding({ onOpen }) {
         <div className="mx-library-v2__featured-copy">
           <span className="mx-hj-library__eyebrow">Курс · 16 шагов</span>
           <h3 className="mx-hj-library__title">путь героя.</h3>
-          <p>16 испытаний современного человека. Каждый шаг — 6 минут: понять, узнать себя, записать, сделать одно действие.</p>
+          <p>
+            16 испытаний современного человека. Каждый шаг — 6 минут: понять, узнать себя, записать,
+            сделать одно действие.
+          </p>
+          {hasProgress && <span className="mx-hj-library__progress">1 из 16</span>}
           <button type="button" className="mx-library-v2__pill" onClick={() => onOpen()}>
-            {hasProgress ? `Продолжить · ${completedTotal} из 16` : 'Начать'} <ArrowRight size={15} />
+            {hasProgress ? 'Продолжить' : 'Начать'} <ArrowRight size={15} />
           </button>
         </div>
       </article>
@@ -147,7 +151,11 @@ function LibraryV2HeroJourneyLanding({ onOpen }) {
 function LibraryV2ProgramDetail({ title, onBack }) {
   return (
     <div className="mx-library-v2__program-detail animate-fade-in">
-      <NestedScreenHeader title={title.toLowerCase() + '.'} onBack={onBack} registerSystemBack={false} />
+      <NestedScreenHeader
+        title={title.toLowerCase() + '.'}
+        onBack={onBack}
+        registerSystemBack={false}
+      />
       <div className="mx-library-v2__program-detail-art" aria-hidden="true">
         <SemanticGlyph kind="focus" animated={false} />
       </div>
@@ -499,7 +507,10 @@ export default function Library({ user, onInputModeChange }) {
   if (screen === 'library-v2-program' && LIBRARY_V2_ENABLED) {
     return (
       <div className="w-full max-w-md px-[var(--mx-screen-x)]">
-        <LibraryV2ProgramDetail title={libraryV2Program} onBack={() => setScreen('library-v2-programs')} />
+        <LibraryV2ProgramDetail
+          title={libraryV2Program}
+          onBack={() => setScreen('library-v2-programs')}
+        />
       </div>
     )
   }
@@ -542,7 +553,11 @@ export default function Library({ user, onInputModeChange }) {
   if (screen === 'journals') {
     return (
       <div className="w-full max-w-md px-[var(--mx-screen-x)]">
-        <GuidedJournals user={user} onExit={() => setScreen('home')} onInputModeChange={onInputModeChange} />
+        <GuidedJournals
+          user={user}
+          onExit={() => setScreen('home')}
+          onInputModeChange={onInputModeChange}
+        />
       </div>
     )
   }

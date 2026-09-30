@@ -8,14 +8,14 @@ const today = await readFile(new URL('../../src/screens/Today.jsx', import.meta.
 const practices = await readFile(new URL('../../src/screens/Practices.jsx', import.meta.url), 'utf8')
 
 test('Demo Telegram chrome — визуальная эмуляция без кликабельных кнопок', () => {
-  assert.match(app, /function DemoTelegramChrome\(\)/)
+  assert.match(app, /import DemoTelegramChrome from '\.\/components\/DemoTelegramChrome'/)
   // Chrome не кликабелен: без onBack и без активной кнопки «Закрыть».
   assert.doesNotMatch(app, /<DemoTelegramChrome onBack/)
   assert.doesNotMatch(app, /aria-label="Закрыть превью"/)
   // Рендерится всегда, когда нужна эмуляция (без условий overlay/series/flow).
   assert.match(
     app,
-    /shouldRenderDemoTelegramChrome\(\{ previewDemoMode, platformName, realPhone \}\) && \(\s*<DemoTelegramChrome \/>/
+    /shouldRenderDemoTelegramChrome\(\{\s*previewDemoMode,\s*platformName,\s*realPhone,\s*deviceFrameMode,\s*\}\) && \(\s*<DemoTelegramChrome \/>/
   )
 })
 
