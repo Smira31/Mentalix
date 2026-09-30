@@ -24,11 +24,17 @@ test('демо поддерживает ночное состояние', () => 
 
 test('Today keeps the main day card before secondary sections', () => {
   const cardsStart = today.indexOf('mx-today-day-card-slot')
-  const secondaryStart = today.indexOf('mx-today-weekly-theme')
+  const pulseStart = today.indexOf('mx-today-pulse')
+  const thoughtStart = today.indexOf('today-quote-card')
+  const practicesStart = today.indexOf('<PinnedPractices')
+  const themeStart = today.indexOf('mx-today-weekly-theme')
 
   assert.notEqual(cardsStart, -1)
-  assert.notEqual(secondaryStart, -1)
-  assert.ok(cardsStart < secondaryStart)
+  assert.notEqual(themeStart, -1)
+  assert.ok(cardsStart < pulseStart, 'чек-ины раньше пульса')
+  assert.ok(pulseStart < thoughtStart, 'пульс раньше Мысли дня')
+  assert.ok(thoughtStart < practicesStart, 'Мысль дня раньше Твоих практик')
+  assert.ok(practicesStart < themeStart, 'Твои практики раньше Темы недели')
 })
 
 console.log('Demo Stoic entry-point contract passed')

@@ -148,10 +148,10 @@ test('Today: подтверждённая активность обновляе�
   assert.match(todaySource, /if \(requestId !== streakRequest\.current\) return/)
 })
 
-test('Today: заморозка недели приходит с сервера и не выводится из истории', () => {
-  // Отдельная заметка о заморозке показывается только по серверному флагу.
-  assert.match(todaySource, /streakStats\?\.freezeUsedThisWeek/)
-  assert.match(todaySource, /data-testid="streak-freeze-note"/)
+test('Today: заморозка недели обрабатывается сервером, строка-уведомление убрана', () => {
+  // Строка «Заморозка: …» убрана из экрана; логика заморозки остаётся на сервере.
+  assert.doesNotMatch(todaySource, /Заморозка.*не рвёт серию/)
+  assert.doesNotMatch(todaySource, /data-testid="streak-freeze-note"/)
   // Календарная активность дня — тоже серверное решение (is_active_today).
   assert.match(todaySource, /isToday && streakStats\?\.isActiveToday === true/)
 })
