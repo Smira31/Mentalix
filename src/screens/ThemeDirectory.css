@@ -6,45 +6,47 @@
 .mx-theme-directory {
   display: flex;
   flex-direction: column;
-  margin-top: 70px; /* CTA pill → «Другие темы» */
+  margin-top: 74px; /* CTA → «Другие темы» */
   padding-bottom: var(--mx-space-5);
 }
 
 .mx-theme-directory section {
   display: flex;
   flex-direction: column;
-  gap: var(--mx-space-3);
+  gap: 12px;
 }
 
 .mx-theme-directory h3 {
   font-family: var(--font-serif);
-  font-size: var(--mx-type-section-size);
-  font-weight: 700;
+  font-size: 29px;
+  line-height: 1.08;
+  font-weight: 400;
   color: rgb(var(--c-text));
   text-align: center;
+  margin: 0;
 }
 
 /* --- Строки тем --- */
 .mx-theme-directory__rows {
   display: flex;
   flex-direction: column;
-  gap: var(--mx-space-2);
+  gap: 8px;
 }
 
 .mx-theme-directory__row {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 100%;
-  padding: var(--mx-screen-x);
-  padding-bottom: 28px;
+  width: 408px;
+  max-width: 100%;
+  min-height: 190px;
+  padding: 20px;
   border: 0;
-  border-radius: var(--mx-radius-card);
+  border-radius: 26px;
   background: rgb(var(--c-card2));
   color: rgb(var(--c-text));
   text-align: center;
   position: relative;
-  min-height: 120px;
 }
 
 .mx-theme-directory__info {
@@ -57,16 +59,17 @@
 
 .mx-theme-directory__info strong {
   font-family: 'Onest', system-ui, sans-serif;
-  font-size: 0.9375rem;
+  font-size: 29px;
   font-weight: 700;
-  color: #d6d6d6;
-  line-height: 1.3;
+  color: #d4d4d4;
+  line-height: 1.08;
 }
 
 .mx-theme-directory__info small {
   color: rgb(var(--c-muted));
-  font-size: 0.75rem;
-  line-height: 1.35;
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 1.3;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -84,8 +87,8 @@
 }
 
 .mx-theme-directory__progress {
-  width: 109px;
-  height: 2px;
+  width: 110px;
+  height: 3px;
   border-radius: 2px;
   background: rgb(var(--c-card3));
   overflow: hidden;
@@ -94,49 +97,63 @@
 .mx-theme-directory__progress span {
   display: block;
   height: 100%;
-  min-width: 6px;
+  min-width: 8px;
   background: rgb(var(--c-text));
   border-radius: 2px;
 }
 
 .mx-theme-directory__bottom svg {
   flex: none;
+  width: 16px;
+  height: 16px;
   color: rgb(var(--c-muted));
 }
 
-/* --- Sticky bar: «Удиви меня» + «Все темы» + фильтры --- */
-.mx-theme-directory__sticky-bar {
-  position: sticky;
-  top: var(--mx-sticky-cta-h, 64px);
-  z-index: 6;
-  display: flex;
-  flex-direction: column;
-  gap: 70px; /* «Удиви меня» → «Все темы» */
-  background: rgb(var(--c-bg));
-  margin-top: 26px; /* карточка → «Удиви меня» */
-}
-
-.mx-theme-directory__sticky-bar section {
-  gap: var(--mx-space-3);
-}
-
-/* --- Кнопка «Удиви меня» --- */
+/* --- Кнопка «Удиви меня» (sticky) --- */
 .mx-theme-directory__surprise {
+  position: sticky;
+  top: calc(env(safe-area-inset-top, 0px) + var(--mx-sticky-cta-h, 52px));
+  z-index: 5;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   align-self: center;
   width: 156px;
-  height: 42px;
+  height: 43px;
   justify-content: center;
   padding: 0;
   border: 1px solid rgb(var(--c-border));
   border-radius: var(--mx-radius-pill);
-  background: transparent;
+  background: rgb(var(--c-bg));
   color: rgb(var(--c-text));
-  font-size: var(--mx-type-control-size);
+  font-size: 17px;
   font-weight: 500;
   font-family: 'Onest', system-ui, sans-serif;
+  margin-top: 26px;
+}
+
+/* --- «Все темы» + фильтры (sticky) --- */
+.mx-theme-directory__all-themes {
+  position: sticky;
+  top: calc(env(safe-area-inset-top, 0px) + var(--mx-sticky-all-h, 95px));
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 33px;
+  background: rgb(var(--c-bg));
+  margin-top: 77px;
+  padding-bottom: 8px;
+}
+
+.mx-theme-directory__all-themes::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  right: 0;
+  height: 12px;
+  background: linear-gradient(to bottom, rgb(var(--c-bg)), transparent);
+  pointer-events: none;
 }
 
 /* --- Фильтры «Все темы» --- */
@@ -144,8 +161,7 @@
   display: flex;
   justify-content: center;
   gap: 6px;
-  overflow-x: auto;
-  scrollbar-width: none;
+  overflow: visible;
   flex-wrap: nowrap;
 }
 
@@ -156,7 +172,7 @@
 .mx-theme-directory__filters button {
   flex: none;
   height: 34px;
-  padding: 0 12px;
+  padding: 0 13px;
   border: 1px solid rgb(var(--c-border));
   border-radius: var(--mx-radius-pill);
   background: transparent;
@@ -178,73 +194,13 @@
 /* --- Отступ от фильтров до первой карточки --- */
 .mx-theme-directory > .mx-theme-directory__rows:last-child,
 .mx-theme-directory > p {
-  margin-top: 32px;
+  margin-top: 33px;
 }
 
-/* Карточки тем по контракту экрана «Тема недели». */
-.mx-theme-directory {
-  gap: 32px;
-  margin-top: 32px;
-}
-.mx-theme-directory section {
-  gap: 12px;
-}
-.mx-theme-directory h3 {
-  font-size: 29px;
-  line-height: 1.08;
-  font-weight: 400;
-  text-align: center;
-}
-.mx-theme-directory__rows {
-  gap: 8px;
-}
-.mx-theme-directory__row {
-  min-height: 192px;
-  padding: 20px;
-  border-radius: 28px;
-}
-.mx-theme-directory__info {
-  align-items: center;
-  gap: 8px;
-  text-align: center;
-}
-.mx-theme-directory__info strong {
-  font-size: 29px;
-  font-weight: 800;
-  line-height: 1.08;
-}
-.mx-theme-directory__info small {
-  display: -webkit-box;
-  max-width: 300px;
-  overflow: hidden;
-  font-size: 17px;
-  line-height: 1.3;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-}
-.mx-theme-directory__progress {
-  width: 109px;
-  height: 3px;
-  margin-top: auto;
-  align-self: flex-start;
-}
-.mx-theme-directory__row > svg {
-  align-self: flex-end;
-  color: rgb(var(--c-muted));
-}
-.mx-theme-directory__filters {
-  justify-content: center;
-  gap: 8px;
-  overflow: visible;
-}
-.mx-theme-directory__filters button,
-.mx-theme-directory__surprise {
-  height: 34px;
-  padding: 0 14px;
-  font-size: 17px;
-  font-weight: 500;
-}
-.mx-theme-directory__surprise {
-  align-self: center;
-  margin-top: 4px;
+/* --- На узких экранах (393px) фильтры сжимаются --- */
+@media (max-width: 393px) {
+  .mx-theme-directory__filters button {
+    font-size: 16px;
+    padding: 0 11px;
+  }
 }

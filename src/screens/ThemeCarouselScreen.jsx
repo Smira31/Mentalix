@@ -40,6 +40,8 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
   const trackRef = useRef(null)
   const rafRef = useRef(null)
   const lastIndexRef = useRef(0)
+  const scrollRef = useRef(null)
+  const ctaRef = useRef(null)
 
   useBackButton(() => {
     platform.haptic('light')
@@ -84,6 +86,31 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
       if (rafRef.current) cancelAnimationFrame(rafRef.current)
     }
   }, [])
+
+  // Детект прилипания CTA к верху: когда пилюля доезжает до
+  // safe-area + 8, переключаем data-stuck → стекло + приглушённый текст.
+  useEffect(() => {
+    const scroll = scrollRef.current
+    const cta = ctaRef.current
+    if (!scroll || !cta) return
+    let raf = null
+    const onScroll = () => {
+      if (raf) return
+      raf = requestAnimationFrame(() => {
+        raf = null
+        const ctaRect = cta.getBoundingClientRect()
+        const scrollRect = scroll.getBoundingClientRect()
+        const stuck = ctaRect.top <= scrollRect.top + 12
+        cta.dataset.stuck = stuck ? 'true' : 'false'
+      })
+    }
+    scroll.addEventListener('scroll', onScroll, { passive: true })
+    onScroll()
+    return () => {
+      scroll.removeEventListener('scroll', onScroll)
+      if (raf) cancelAnimationFrame(raf)
+    }
+  }, [data])
 
   function refreshData() {
     if (!user || !activeId) return
@@ -131,6 +158,7 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
       })
     }
     lastIndexRef.current = currentIdx
+    setQuestionIndex(currentIdx)
   }, [data])
 
   // Плавный скролл-обработчик: rAF-throttled, setState только
@@ -197,7 +225,7 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
 
   return createPortal(
     <div className={`${FULLSCREEN_SHELL_CLASS} mx-theme-carousel-surface`} style={style}>
-      <div className={FULLSCREEN_SCROLL_CLASS}>
+      <div className={FULLSCREEN_SCROLL_CLASS} ref={scrollRef}>
         <div className="mx-theme-carousel-screen w-full max-w-md mx-auto px-[var(--mx-screen-x)] pt-2 pb-6 flex flex-col min-h-full">
           <RoundBackButton onClick={onBack} />
 
@@ -244,16 +272,15 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
                 ))}
               </span>
 
-              <div className="mx-theme-carousel-sticky-pill mx-glass">
-                <button
-                  type="button"
-                  className="mx-theme-carousel-cta"
-                  data-testid="theme-carousel-cta"
-                  onClick={handleWrite}
-                >
-                  {isAnswered ? 'Смотреть в пути' : 'Начать запись'}
-                </button>
-              </div>
+              <button
+                type="button"
+                className="mx-theme-carousel-cta"
+                data-testid="theme-carousel-cta"
+                ref={ctaRef}
+                onClick={handleWrite}
+              >
+                {isAnswered ? 'Смотреть в пути' : 'Начать запись'}
+              </button>
             </>
           ) : (
             <p className="text-muted text-[13px] text-center mt-8">

@@ -19,7 +19,8 @@
 
 /* --- Корневой контейнер контента --- */
 .mx-theme-carousel-screen {
-  --mx-sticky-cta-h: 64px;
+  --mx-sticky-cta-h: 52px; /* CTA: 8px top + 44px height */
+  --mx-sticky-all-h: 95px; /* CTA + Удиви меня (52 + 43) */
 }
 
 /* --- Шапка экрана --- */
@@ -27,34 +28,28 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 0;
   margin-top: 20px;
   margin-bottom: 24px;
   text-align: center;
 }
 
-.mx-theme-carousel-label {
-  display: none;
-  font-size: var(--mx-type-meta-size);
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: rgb(var(--c-muted));
+.mx-theme-carousel-heading {
+  font-family: var(--font-serif);
+  font-size: 29px;
+  font-weight: 400;
+  line-height: 1.15;
+  color: rgb(var(--c-text));
+  margin: 0;
 }
 
 .mx-theme-carousel-title {
   font-family: 'Onest', system-ui, sans-serif;
-  font-size: var(--mx-type-section-size);
-  line-height: 1.25;
+  font-size: 29px;
   font-weight: 700;
+  line-height: 1.15;
   color: rgb(var(--c-text));
-}
-
-.mx-theme-carousel-subtitle {
-  display: none;
-  font-size: var(--mx-type-body-size);
-  line-height: 1.45;
-  color: rgb(var(--c-muted));
+  margin: 0;
 }
 
 /* --- Карусель --- */
@@ -70,8 +65,8 @@
   -webkit-overflow-scrolling: touch;
   touch-action: pan-x pan-y;
   margin: 0 calc(-1 * var(--mx-screen-x));
-  padding: 0 max(var(--mx-screen-x), calc(50% - 124px));
-  height: 240px;
+  padding: 0 max(var(--mx-screen-x), calc(50% - 149px));
+  height: 360px;
 }
 
 .mx-theme-carousel-track::-webkit-scrollbar {
@@ -81,16 +76,16 @@
 .mx-theme-carousel-q {
   scroll-snap-align: center;
   flex-shrink: 0;
-  width: 280px;
-  height: 200px;
+  width: 298px;
+  height: 360px;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: var(--mx-space-2);
-  border-radius: var(--mx-radius-card);
+  border-radius: 33px;
   background: rgb(var(--c-card2));
-  padding: var(--mx-space-5);
+  padding: 98px 29px 0;
+  overflow: hidden;
   transform: scale(1);
   transform-origin: center;
   transition: transform 220ms var(--mx-ease-out);
@@ -107,17 +102,20 @@
 
 .mx-theme-carousel-q__num {
   font-family: var(--font-serif);
-  font-size: 3rem;
+  font-size: 38px;
   line-height: 1;
   font-weight: 400;
   color: rgb(var(--c-text));
+  margin-bottom: 25px;
 }
 
 .mx-theme-carousel-q__text {
+  font-family: 'Onest', system-ui, sans-serif;
   font-size: 17px;
   line-height: 1.3;
   font-weight: 600;
   color: rgb(var(--c-text));
+  max-width: 240px;
 }
 
 .mx-theme-carousel-q__prompt {
@@ -126,6 +124,7 @@
   font-weight: 400;
   color: rgb(var(--c-muted));
   margin-top: 4px;
+  max-width: 240px;
 }
 
 .mx-theme-carousel-q__badge {
@@ -143,7 +142,7 @@
 .mx-theme-carousel-dots {
   display: flex;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   margin-top: 20px;
 }
 
@@ -159,38 +158,41 @@
   background: rgb(var(--c-text));
 }
 
-/* --- Sticky glass pill с кнопкой «Смотреть в пути» --- */
-.mx-theme-carousel-sticky-pill {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 10px 0;
-  margin-top: 20px;
-  border-radius: var(--mx-radius-pill);
-}
-
+/* --- Кнопка «Начать запись» / «Смотреть в пути» --- */
 .mx-theme-carousel-cta {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
   width: 173px;
   height: 44px;
   border-radius: var(--mx-radius-pill);
-  background: #d0d0d0;
+  background-color: #d0d0d0;
   color: #111111;
   font-size: 17px;
   font-weight: 600;
   font-family: 'Onest', system-ui, sans-serif;
   border: none;
-  transition: transform 140ms var(--mx-ease-out);
+  position: sticky;
+  top: calc(env(safe-area-inset-top, 0px) + 8px);
+  z-index: 10;
+  align-self: center;
+  flex-shrink: 0;
+  margin-top: 40px;
+  transition:
+    background 200ms ease,
+    color 200ms ease;
 }
 
 .mx-theme-carousel-cta:active {
   transform: scale(0.97);
+}
+
+.mx-theme-carousel-cta[data-stuck='true'] {
+  background: var(--mx-glass-bg);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+  color: rgb(var(--c-muted));
+  border: 1px solid rgb(var(--c-border));
 }
 
 @media (prefers-reduced-motion: reduce) {

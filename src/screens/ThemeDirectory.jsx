@@ -3,13 +3,13 @@ import { ChevronRight, Shuffle } from 'lucide-react'
 
 import './ThemeDirectory.css'
 
-const FILTERS = ['Все', 'Пройдены', 'В процессе', 'Не начаты']
+const FILTERS = ['Все', 'Пройдены', 'Начаты', 'Новые']
 
 function status(theme) {
   const done = theme.reflected_days || 0
   const total = theme.total_days || 0
   if (total > 0 && done >= total) return 'Пройдены'
-  return done > 0 ? 'В процессе' : 'Не начаты'
+  return done > 0 ? 'Начаты' : 'Новые'
 }
 
 function ThemeRows({ themes, onOpen }) {
@@ -33,7 +33,7 @@ function ThemeRows({ themes, onOpen }) {
               <span className="mx-theme-directory__progress" aria-label={`Пройдено ${progress}%`}>
                 <span style={{ width: `${progress}%` }} />
               </span>
-              <ChevronRight size={18} aria-hidden="true" />
+              <ChevronRight size={16} aria-hidden="true" />
             </span>
           </button>
         )
@@ -58,33 +58,31 @@ export default function ThemeDirectory({ themes, currentId, onOpen }) {
           <ThemeRows themes={others} onOpen={onOpen} />
         </section>
       )}
-      <div className="mx-theme-directory__sticky-bar">
-        {unfinished.length > 0 && (
-          <button
-            type="button"
-            className="mx-theme-directory__surprise"
-            onClick={() => onOpen(unfinished[Math.floor(Math.random() * unfinished.length)].id)}
-          >
-            <Shuffle size={15} aria-hidden="true" /> Удиви меня
-          </button>
-        )}
-        <section aria-labelledby="carousel-all-themes">
-          <h3 id="carousel-all-themes">Все темы</h3>
-          <div className="mx-theme-directory__filters" role="tablist" aria-label="Фильтр тем">
-            {FILTERS.map(item => (
-              <button
-                type="button"
-                role="tab"
-                aria-selected={filter === item}
-                key={item}
-                onClick={() => setFilter(item)}
-              >
-                {item}
-              </button>
-            ))}
-          </div>
-        </section>
-      </div>
+      {unfinished.length > 0 && (
+        <button
+          type="button"
+          className="mx-theme-directory__surprise"
+          onClick={() => onOpen(unfinished[Math.floor(Math.random() * unfinished.length)].id)}
+        >
+          <Shuffle size={15} aria-hidden="true" /> Удиви меня
+        </button>
+      )}
+      <section className="mx-theme-directory__all-themes" aria-labelledby="carousel-all-themes">
+        <h3 id="carousel-all-themes">Все темы</h3>
+        <div className="mx-theme-directory__filters" role="tablist" aria-label="Фильтр тем">
+          {FILTERS.map(item => (
+            <button
+              type="button"
+              role="tab"
+              aria-selected={filter === item}
+              key={item}
+              onClick={() => setFilter(item)}
+            >
+              {item}
+            </button>
+          ))}
+        </div>
+      </section>
       {filtered.length ? (
         <ThemeRows themes={filtered} onOpen={onOpen} />
       ) : (
