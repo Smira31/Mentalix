@@ -1,7 +1,14 @@
 /* Stoic-подобная геометрия «Твои практики» и листов.
    Перенесено из Today.css — классы используются только компонентом
    PinnedPractices (включая порталы sheet). CSS-импорт в Vite глобален,
-   поэтому стили доступны и в портальном контексте. */
+   поэтому стили доступны и в портальном контексте.
+
+   Эталон снят на iPhone 16 Pro Max (440pt), все размеры — pt (= CSS px).
+   От ширины экрана зависит только ширина карточки в сетке:
+   две колонки, поля 16, зазор 7. */
+
+/* Заголовок-эталон: светло-серый (muted cream), не чистый белый —
+   тот же оттенок, что у Stoic-экрана «Сегодня» (#d6d6d6). */
 .mx-pinned-practices__heading .mx-pinned-practices__filter {
   width: 44px;
   height: 44px;
@@ -63,53 +70,210 @@
 }
 .mx-pinned-sheet__header-top {
   position: absolute;
-  top: 18px;
-  right: 18px;
+  top: 20px;
+  right: 16px;
 }
-.mx-pinned-sheet__header > h2 {
-  font-size: 29px;
-  line-height: 1.08;
+/* Круглая кнопка ✕ / ✓ — существующий стеклянный стиль приложения
+   (--mx-glass-bg + backdrop-filter + тонкая светлая обводка). */
+.mx-pinned-sheet__circle {
+  display: grid;
+  width: 43px;
+  height: 43px;
+  padding: 0;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+  background: var(--mx-glass-bg);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+  color: rgb(var(--c-text));
+  transition: transform 140ms ease;
+}
+.mx-pinned-sheet__circle:active {
+  transform: scale(0.95);
+}
+/* «твои практики.» — 24pt/700, светло-серый, по центру. */
+.mx-pinned-sheet:not(.mx-pinned-sheet--library) .mx-pinned-sheet__header > h2 {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.15;
+  color: #d6d6d6;
   text-align: center;
 }
 .mx-pinned-sheet__subtitle {
-  max-width: 290px;
-  font-size: 17px;
-  line-height: 1.25;
+  max-width: 300px;
+  font-size: 15px;
+  line-height: 1.3;
+  text-align: center;
 }
+/* Карточки «твоих практик»: 2 колонки, поля 16, зазор 7, высота 284, радиус 27. */
 .mx-pinned-sheet__body {
-  padding: 8px 16px calc(24px + env(safe-area-inset-bottom, 0px));
+  padding: 8px 16px calc(43px + 120px + 16px + env(safe-area-inset-bottom, 0px));
 }
+.mx-pinned-practices__grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+  margin-top: 8px;
+}
+.mx-pinned-practices__grid .mx-pinned-practice-card {
+  width: 100%;
+  height: 284px;
+  min-height: 284px;
+  aspect-ratio: auto;
+  padding: 16px 14px;
+  border-radius: 27px;
+}
+.mx-pinned-practices__grid .mx-pinned-practice-card__main {
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.mx-pinned-practices__grid .mx-pinned-practice-card__main > .mx-pinned-practice-glyph {
+  width: 76px;
+  min-width: 76px;
+  height: 76px;
+  min-height: 76px;
+}
+.mx-pinned-practices__grid .mx-pinned-practice-card__main > .mx-pinned-practice-glyph svg {
+  width: 45px;
+  height: 45px;
+}
+.mx-pinned-practices__grid .mx-pinned-practice-card__title {
+  font-size: 17px;
+  font-weight: 600;
+}
+.mx-pinned-practice-card__desc {
+  display: -webkit-box;
+  overflow: hidden;
+  width: 100%;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 13px;
+  text-align: center;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+}
+/* Кружок «…» 25pt в правом верхнем углу карточки, отступ 12pt. */
+.mx-pinned-practice-card__more {
+  position: absolute;
+  z-index: 2;
+  top: 12px;
+  right: 12px;
+  display: grid;
+  width: 25px;
+  height: 25px;
+  padding: 0;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+  background: var(--mx-glass-bg);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+  color: rgb(var(--c-muted));
+  transition: transform 140ms ease;
+}
+.mx-pinned-practice-card__more:active {
+  transform: scale(0.94);
+}
+/* Меню карточки — тот же стеклянный стиль, что у меню вкладки «Прогресс». */
+.mx-pinned-card-menu-backdrop {
+  position: fixed;
+  z-index: 2;
+  inset: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.mx-pinned-card-menu {
+  position: absolute;
+  z-index: 3;
+  top: 43px;
+  right: 10px;
+  display: flex;
+  min-width: 172px;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  background: var(--mx-glass-bg);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+  box-shadow: 0 8px 32px rgb(0 0 0 / 0.4);
+}
+.mx-pinned-card-menu__item {
+  display: flex;
+  width: 100%;
+  min-height: 40px;
+  align-items: center;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: rgb(var(--c-text));
+  font: inherit;
+  font-size: 15px;
+  text-align: left;
+}
+.mx-pinned-card-menu__item:active {
+  background: rgb(var(--c-text) / 0.08);
+}
+/* Нижний блок: пилюли лежат поверх списка, карточки уходят под них
+   (затемнение-градиент, как у Stoic). */
 .mx-pinned-sheet__footer {
-  position: sticky;
+  position: absolute;
+  right: 0;
   bottom: 0;
+  left: 0;
   display: flex;
   justify-content: center;
   padding: 0 16px calc(43px + env(safe-area-inset-bottom, 0px));
   background: linear-gradient(to top, rgb(var(--c-bg)) 72%, transparent);
   border-top: 0;
+  pointer-events: none;
 }
 .mx-pinned-sheet__footer-actions {
-  width: min(279px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(280px, 100%);
+  pointer-events: auto;
 }
-.mx-pinned-sheet__footer .cta-pill {
-  height: 55px;
-  border: 1px solid rgb(var(--c-border));
-  background: rgb(var(--c-card2));
-  color: rgb(var(--c-text));
-  font-size: 17px;
-  font-weight: 500;
-}
-.mx-pinned-practices__grid {
-  grid-template-columns: repeat(3, 127px);
+/* Две стеклянные пилюли 280×55, текст 15pt/500 в одну строку. */
+.mx-pinned-sheet__pill {
+  display: flex;
+  align-items: center;
   justify-content: center;
   gap: 8px;
-  margin-top: 8px;
+  height: 55px;
+  white-space: nowrap;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--mx-glass-bg);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+  color: rgb(var(--c-text));
+  font-size: 15px;
+  font-weight: 500;
 }
-.mx-pinned-practices__grid .mx-pinned-practice-card {
-  width: 127px;
-  height: 153px;
-  min-height: 153px;
-  aspect-ratio: auto;
+.mx-pinned-sheet__pill:active {
+  background: var(--mx-glass-bg);
+  box-shadow: inset 0 0 0 2px rgb(var(--c-text) / 0.12);
+}
+.mx-pinned-soon-toast {
+  position: fixed;
+  z-index: 70;
+  bottom: calc(1.5rem + 5rem + env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.7rem 1rem;
+  border: 1px solid rgb(var(--c-text) / 0.12);
+  border-radius: 999px;
+  background: rgb(var(--c-card2));
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.28);
+  color: rgb(var(--c-muted));
+  font-size: 0.85rem;
+  animation: mx-undo-toast-in 200ms ease;
 }
 .mx-pinned-library {
   gap: 0;
@@ -144,12 +308,246 @@
   background: rgb(var(--c-text));
   border-radius: 50%;
 }
-@media (max-width: 390px) {
-  .mx-pinned-practices__grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-  .mx-pinned-practices__grid .mx-pinned-practice-card {
-    width: auto;
-    min-width: 0;
-  }
+.mx-pinned-manage-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 48px 24px 24px;
+  text-align: center;
+}
+.mx-pinned-manage-empty__glyph {
+  width: 96px;
+  height: 96px;
+  border: 2px dashed rgb(var(--c-text) / 0.15);
+  border-radius: 50%;
+}
+.mx-pinned-manage-empty__text {
+  max-width: 260px;
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+/* ============================================================
+   «Библиотека практик» — эталон Stoic
+   ============================================================ */
+
+.mx-pinned-sheet--library .mx-pinned-sheet__header {
+  padding: 24px 21px 12px;
+}
+
+/* Заголовок СЛЕВА, ~30pt, 700, не обрезается и не заезжает под кнопку */
+.mx-pinned-sheet--library .mx-pinned-sheet__header > h2.mx-pinned-sheet__title--left {
+  align-self: stretch;
+  padding-right: 52px;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.1;
+  text-align: left;
+}
+
+/* Ряд чипсов-фильтров с горизонтальной прокруткой: высота 46, зазор 8 */
+.mx-library-filters {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 4px 20px 12px;
+}
+.mx-library-filters::-webkit-scrollbar {
+  display: none;
+}
+
+.mx-library-chip {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+  height: 46px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid rgb(var(--c-border));
+  background: rgb(var(--c-card-raised));
+  color: rgb(var(--c-text));
+  font-size: 15px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease,
+    border-color 160ms ease;
+}
+
+.mx-library-chip.is-active {
+  background: rgb(var(--c-text));
+  color: rgb(var(--c-bg));
+  border-color: rgb(var(--c-text));
+}
+
+.mx-library-chip svg {
+  flex: 0 0 auto;
+}
+
+/* Список практик */
+.mx-library-list {
+  display: flex;
+  flex-direction: column;
+  padding: 0 20px;
+}
+
+.mx-library-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 70px;
+  padding: 8px 0;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Тап не должен рисовать рамку вокруг строки: outline — только для
+   :focus-visible (навигация с клавиатуры). */
+.mx-library-row:focus {
+  outline: none;
+}
+
+.mx-library-row:focus-visible {
+  outline: 2px solid rgb(var(--c-text) / 0.45);
+  outline-offset: -2px;
+}
+
+/* Разделитель — тонкая линия от начала текста до правого края */
+.mx-library-row::after {
+  content: '';
+  position: absolute;
+  left: calc(39px + 12px);
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: rgb(var(--c-text) / 0.08);
+}
+
+.mx-library-row:last-child::after {
+  display: none;
+}
+
+.mx-library-row:active {
+  opacity: 0.7;
+}
+
+/* Круг-иконка 39pt */
+.mx-library-row__icon {
+  flex: 0 0 auto;
+  width: 39px;
+  height: 39px;
+}
+.mx-library-row__icon .mx-pinned-practice-glyph {
+  width: 39px;
+  min-width: 39px;
+  height: 39px;
+  min-height: 39px;
+  border: 0;
+  background: rgb(var(--c-text) / 0.08);
+}
+.mx-library-row__icon .mx-pinned-practice-glyph svg {
+  width: 21px;
+  height: 21px;
+}
+
+/* Название 16pt 600, светло-серое */
+.mx-library-row__name {
+  flex: 1;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: #d6d6d6;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Справа тонкий «+» 16pt или светлый кружок 24pt с тёмной галочкой */
+.mx-library-row__toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1;
+  color: rgb(var(--c-muted));
+  border: 0;
+  border-radius: 50%;
+}
+
+.mx-library-row__toggle.is-pinned {
+  color: rgb(var(--c-bg));
+  background: rgb(var(--c-line));
+  font-size: 0;
+}
+
+.mx-library-error {
+  padding: 8px 20px 0;
+}
+
+/* Плавающая «стеклянная» строка поиска 383×49, прижата к низу экрана
+   (28pt + safe-area) — список прокручивается под ней. */
+.mx-pinned-sheet__overlay {
+  position: absolute;
+  z-index: 4;
+  right: 0;
+  bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+  left: 0;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.mx-library-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 383px;
+  max-width: calc(100% - 8px);
+  height: 49px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: var(--mx-glass-bg);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgb(var(--c-border));
+  color: rgb(var(--c-muted));
+  pointer-events: auto;
+}
+
+.mx-library-search svg {
+  flex: 0 0 auto;
+}
+
+.mx-library-search__input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: rgb(var(--c-text));
+  font-size: 15px;
+  font-weight: 400;
+  outline: none;
+}
+
+.mx-library-search__input::placeholder {
+  color: rgb(var(--c-muted));
+}
+
+/* Отступ снизу под плавающий поиск (+safe-area) */
+.mx-pinned-sheet--library .mx-pinned-sheet__body {
+  padding-bottom: calc(28px + 49px + 24px + env(safe-area-inset-bottom, 0px));
 }
