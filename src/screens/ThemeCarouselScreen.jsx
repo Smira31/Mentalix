@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { createPortal } from 'react-dom'
-import { ArrowRight } from 'lucide-react'
 
-import { api } from '../lib/api'
 import { peekThemeDetail, fetchThemeDetail, invalidateThemeDetail } from '../lib/themeDetailCache'
 import { peekThemesData, fetchThemesData, invalidateThemesData } from '../lib/themesDataCache'
 import { platform } from '../platform'
@@ -90,7 +88,11 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
   function refreshData() {
     if (!user || !activeId) return
     invalidateThemeDetail(user.id, activeId)
-    fetchThemeDetail(user.id, activeId, { force: true }).then(d => { if (d) setData(d) }).catch(console.error)
+    fetchThemeDetail(user.id, activeId, { force: true })
+      .then(d => {
+        if (d) setData(d)
+      })
+      .catch(console.error)
     invalidateThemesData(user.id)
     fetchThemesData(user.id, { force: true })
       .then(list => setThemes(Array.isArray(list) ? list : []))
@@ -189,8 +191,6 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
     )
   }
 
-  const isAnswered = Boolean(currentQuestion?.reflection)
-
   return createPortal(
     <div className={`${FULLSCREEN_SHELL_CLASS} mx-theme-carousel-surface`} style={style}>
       <div className={FULLSCREEN_SCROLL_CLASS}>
@@ -198,9 +198,8 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
           <RoundBackButton onClick={onBack} />
 
           <div className="mx-theme-carousel-header">
-            <span className="mx-theme-carousel-label">Тема недели</span>
-            <h2 className="mx-theme-carousel-title">{data.title}</h2>
-            {data.subtitle && <p className="mx-theme-carousel-subtitle">{data.subtitle}</p>}
+            <h1 className="mx-theme-carousel-heading">Тема недели:</h1>
+            <h2 className="mx-theme-carousel-title">{data.title}.</h2>
           </div>
 
           {questions.length > 0 ? (
@@ -216,6 +215,7 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
                   <article
                     className="mx-theme-carousel-q"
                     key={q.day ?? i}
+                    data-active={i === safeIndex ? 'true' : 'false'}
                     data-answered={q.reflection ? 'true' : undefined}
                     data-active={i === safeIndex ? 'true' : 'false'}
                   >
@@ -251,6 +251,14 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
                   {isAnswered ? 'Смотреть в пути' : 'Начать запись'} <ArrowRight size={15} />
                 </button>
               </div>
+              <button
+                type="button"
+                className="mx-theme-carousel-cta"
+                data-testid="theme-carousel-cta"
+                onClick={handleWrite}
+              >
+                Смотреть в пути
+              </button>
             </>
           ) : (
             <p className="text-muted text-[13px] text-center mt-8">
