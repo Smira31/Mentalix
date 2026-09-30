@@ -40,7 +40,7 @@
   width: 408px;
   max-width: 100%;
   min-height: 190px;
-  padding: 20px;
+  padding: 56px 24px 20px;
   border: 0;
   border-radius: 26px;
   background: rgb(var(--c-card2));
@@ -133,7 +133,7 @@
 }
 
 /* --- «Все темы» + фильтры (sticky) --- */
-.mx-theme-directory__all-themes {
+section.mx-theme-directory__all-themes {
   position: sticky;
   top: calc(env(safe-area-inset-top, 0px) + var(--mx-sticky-all-h, 95px));
   z-index: 5;
@@ -194,7 +194,7 @@
 /* --- Отступ от фильтров до первой карточки --- */
 .mx-theme-directory > .mx-theme-directory__rows:last-child,
 .mx-theme-directory > p {
-  margin-top: 33px;
+  margin-top: 25px;
 }
 
 /* --- На узких экранах (393px) фильтры сжимаются --- */

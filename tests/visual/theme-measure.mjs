@@ -78,6 +78,27 @@ const THEMES_FIXTURE = [
     total_days: 7,
     reflected_days: 0,
   },
+  {
+    id: 703,
+    title: 'Терпение и темп',
+    subtitle: 'Неделя про скорость, которая не сжигает.',
+    total_days: 7,
+    reflected_days: 3,
+  },
+  {
+    id: 704,
+    title: 'Радость в малом',
+    subtitle: 'Семь заметок о том, что делает день светлее.',
+    total_days: 7,
+    reflected_days: 0,
+  },
+  {
+    id: 705,
+    title: 'Внимание и присутствие',
+    subtitle: 'Неделя про то, чтобы быть там, где ты есть.',
+    total_days: 7,
+    reflected_days: 7,
+  },
 ]
 
 const THEME2_FIXTURE = {
@@ -316,6 +337,8 @@ async function run() {
     localStorage.setItem('mentalix_web_user', JSON.stringify(user))
     localStorage.setItem('mx-onboarded-v2', '1')
     localStorage.setItem('mx-app-lock-enabled', '0')
+    // Симулируем Telegram fullscreen offset: 20px safe-area + 56px контролы
+    document.documentElement.style.setProperty('--app-safe-top', '76px')
   }, TEST_USER)
 
   await context.route('**/api/**', route => route.fulfill(fixtureFor(route.request())))
@@ -374,6 +397,189 @@ async function run() {
   }
   await page.screenshot({ path: path.join(SHOT_DIR, '03-all-themes.png'), fullPage: false })
 
+  // === ПОЗИЦИИ ЭЛЕМЕНТОВ ===
+  const posData = {}
+
+  // Симулируем Telegram fullscreen offset (20px safe-area + 56px контролы)
+  await page.evaluate(() => {
+    document.documentElement.style.setProperty('--app-safe-top', '76px')
+  })
+  await page.waitForTimeout(300)
+
+  // --- Положение 1: верх (карусель) ---
+  await page.evaluate(() => {
+    const scroll = document.querySelector('.mx-fullscreen-scroll')
+    if (scroll) scroll.scrollTop = 0
+  })
+  await page.waitForTimeout(400)
+
+  posData.top = await page.evaluate(() => {
+    const R = {}
+    const activeCard = document.querySelector(".mx-theme-carousel-q[data-active='true']")
+    const cards = [...document.querySelectorAll('.mx-theme-carousel-q')]
+    const activeIdx = cards.findIndex(c => c.dataset.active === 'true')
+
+    if (activeCard) {
+      const r = activeCard.getBoundingClientRect()
+      R.activeX = Math.round(r.x)
+      R.activeY = Math.round(r.y)
+      R.activeCenterX = Math.round(r.x + r.width / 2)
+    }
+    if (activeIdx > 0) {
+      const lr = cards[activeIdx - 1].getBoundingClientRect()
+      R.leftVisible = lr.right > 0
+      R.neighborH = Math.round(lr.height)
+    }
+    if (activeIdx >= 0 && activeIdx < cards.length - 1) {
+      const rr = cards[activeIdx + 1].getBoundingClientRect()
+      R.rightVisible = rr.left < window.innerWidth
+    }
+    if (cards.length > 1) {
+      R.cardGap = Math.round(cards[1].offsetLeft - cards[0].offsetLeft - cards[0].offsetWidth)
+    }
+    const num = activeCard?.querySelector('.mx-theme-carousel-q__num')
+    if (num && activeCard) {
+      R.numCenter = Math.round(num.getBoundingClientRect().y + num.getBoundingClientRect().height / 2 - activeCard.getBoundingClientRect().y)
+    }
+    const text = activeCard?.querySelector('.mx-theme-carousel-q__text')
+    if (text && activeCard) {
+      R.textTop = Math.round(text.getBoundingClientRect().y - activeCard.getBoundingClientRect().y)
+    }
+    const prompt = activeCard?.querySelector('.mx-theme-carousel-q__prompt')
+    if (prompt && activeCard) {
+      const pr = prompt.getBoundingClientRect()
+      const cr = activeCard.getBoundingClientRect()
+      R.promptInside = pr.y >= cr.y && pr.bottom <= cr.bottom
+    }
+    const dots = document.querySelector('.mx-theme-carousel-dots')
+    if (dots && activeCard) {
+      R.dotsGap = Math.round(dots.getBoundingClientRect().y - activeCard.getBoundingClientRect().bottom)
+    }
+    const cta = document.querySelector('.mx-theme-carousel-cta')
+    if (cta && dots) {
+      R.ctaGap = Math.round(cta.getBoundingClientRect().y - dots.getBoundingClientRect().bottom)
+    }
+    const otherH = document.querySelector('#carousel-other-themes')
+    if (otherH && cta) {
+      R.otherGap = Math.round(otherH.getBoundingClientRect().y - cta.getBoundingClientRect().bottom)
+    }
+    return R
+  })
+
+  // --- Sticky check helper ---
+  async function checkSticky() {
+    return await page.evaluate(() => {
+      const scroll = document.querySelector('.mx-fullscreen-scroll')
+      const sRect = scroll?.getBoundingClientRect() || { top: 0 }
+      function check(sel, top) {
+        const el = document.querySelector(sel)
+        if (!el) return null
+        const r = el.getBoundingClientRect()
+        return { stuck: r.top <= sRect.top + top + 2 && r.top >= sRect.top - 2, y: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height) }
+      }
+      return { cta: check('.mx-theme-carousel-cta', 8), surprise: check('.mx-theme-directory__surprise', 52), allThemes: check('.mx-theme-directory__all-themes', 95) }
+    })
+  }
+
+  posData.stickyTop = await checkSticky()
+
+  // --- Положение 2: «Другие темы» ---
+  await page.evaluate(() => {
+    const el = document.querySelector('#carousel-other-themes')
+    const scroll = document.querySelector('.mx-fullscreen-scroll')
+    if (el && scroll) {
+      const eR = el.getBoundingClientRect()
+      const sR = scroll.getBoundingClientRect()
+      scroll.scrollTop += eR.top - sR.top - 100
+    }
+  })
+  await page.waitForTimeout(400)
+
+  posData.other = await page.evaluate(() => {
+    const R = {}
+    const card = document.querySelector('.mx-theme-directory__row')
+    if (card) {
+      const cr = card.getBoundingClientRect()
+      const title = card.querySelector('.mx-theme-directory__info strong')
+      if (title) R.titleTop = Math.round(title.getBoundingClientRect().y - cr.y)
+      const progress = card.querySelector('.mx-theme-directory__progress')
+      if (progress) {
+        const pr = progress.getBoundingClientRect()
+        R.progressX = Math.round(pr.x - cr.x)
+        R.progressCenterBottom = Math.round(cr.bottom - (pr.y + pr.height / 2))
+      }
+      const chevron = card.querySelector('.mx-theme-directory__bottom svg')
+      if (chevron) {
+        const chr = chevron.getBoundingClientRect()
+        R.chevronCenterBottom = Math.round(cr.bottom - (chr.y + chr.height / 2))
+      }
+    }
+    return R
+  })
+
+  posData.stickyOther = await checkSticky()
+
+  // --- Положение 3a: «Все темы» — gap-замеры (скролл к «Удиви меня», sticky не активны) ---
+  await page.evaluate(() => {
+    const el = document.querySelector('.mx-theme-directory__surprise')
+    const scroll = document.querySelector('.mx-fullscreen-scroll')
+    if (el && scroll) {
+      const eR = el.getBoundingClientRect()
+      const sR = scroll.getBoundingClientRect()
+      scroll.scrollTop += eR.top - sR.top - 200
+    }
+  })
+  await page.waitForTimeout(400)
+
+  posData.all = await page.evaluate(() => {
+    const R = {}
+    const firstSection = document.querySelector('.mx-theme-directory section')
+    const otherCards = firstSection ? [...firstSection.querySelectorAll('.mx-theme-directory__row')] : []
+    const lastOther = otherCards[otherCards.length - 1]
+    const surprise = document.querySelector('.mx-theme-directory__surprise')
+    if (lastOther && surprise) {
+      R.surpriseGap = Math.round(surprise.getBoundingClientRect().y - lastOther.getBoundingClientRect().bottom)
+    }
+    const allThemes = document.querySelector('.mx-theme-directory__all-themes')
+    if (allThemes && surprise) {
+      R.allThemesGap = Math.round(allThemes.getBoundingClientRect().y - surprise.getBoundingClientRect().bottom)
+    }
+    const filters = document.querySelector('.mx-theme-directory__filters')
+    const allHeading = document.querySelector('#carousel-all-themes')
+    if (allHeading && filters) {
+      R.filtersGap = Math.round(filters.getBoundingClientRect().y - allHeading.getBoundingClientRect().bottom)
+    }
+    const lastRows = document.querySelector('.mx-theme-directory > .mx-theme-directory__rows:last-child')
+    const firstCard = lastRows?.querySelector('.mx-theme-directory__row')
+    if (firstCard && filters) {
+      R.firstCardGap = Math.round(firstCard.getBoundingClientRect().y - filters.getBoundingClientRect().bottom)
+    }
+    if (lastRows) {
+      const cards = [...lastRows.querySelectorAll('.mx-theme-directory__row')]
+      if (cards.length > 1) {
+        R.cardGap = Math.round(cards[1].getBoundingClientRect().y - cards[0].getBoundingClientRect().bottom)
+      }
+    }
+    return R
+  })
+
+  // --- Положение 3b: глубокий скролл для sticky-детекции ---
+  await page.evaluate(() => {
+    const scroll = document.querySelector('.mx-fullscreen-scroll')
+    if (scroll) {
+      const cards = scroll.querySelectorAll('.mx-theme-directory > .mx-theme-directory__rows:last-child .mx-theme-directory__row')
+      const lastCard = cards[cards.length - 1]
+      if (lastCard) {
+        const eR = lastCard.getBoundingClientRect()
+        const sR = scroll.getBoundingClientRect()
+        scroll.scrollTop += eR.top - sR.top - 100
+      }
+    }
+  })
+  await page.waitForTimeout(400)
+
+  posData.stickyAll = await checkSticky()
+
   // === Отчёт ===
   console.log('\n\n══════════════════════════════════════════════════════════════')
   console.log('  ТАБЛИЦА ЗАМЕРОВ (viewport 440×956)')
@@ -417,6 +623,78 @@ async function run() {
     for (const c of checks) {
       if (c.includes('✗')) console.log(`  ${c}`)
     }
+  }
+
+  // === ТАБЛИЦА ПОЛОЖЕНИЙ ===
+  console.log('\n\n══════════════════════════════════════════════════════════════')
+  console.log('  ТАБЛИЦА ПОЛОЖЕНИЙ (viewport 440×956)')
+  console.log('══════════════════════════════════════════════════════════════\n')
+
+  function posRow(label, ref, actual, tol = 2) {
+    if (actual === undefined || actual === null) {
+      console.log(`${label.padEnd(38)} | ${String(ref).padEnd(8)} | ${'—'.padEnd(8)} | ✗ (не найдено)`)
+      return
+    }
+    if (typeof ref === 'boolean') {
+      const ok = ref === actual
+      console.log(`${label.padEnd(38)} | ${String(ref).padEnd(8)} | ${String(actual).padEnd(8)} | ${ok ? '✓' : '✗'}`)
+      return
+    }
+    const diff = actual - ref
+    const ok = Math.abs(diff) <= tol
+    console.log(`${label.padEnd(38)} | ${String(ref).padEnd(8)} | ${String(actual).padEnd(8)} | ${ok ? '✓' : `✗ (Δ${diff > 0 ? '+' : ''}${diff})`}`)
+  }
+
+  console.log('--- Положение 1: Верх (карусель) ---')
+  console.log(`${'ЭЛЕМЕНТ'.padEnd(38)} | ${'ЭТАЛОН'.padEnd(8)} | ${'У НАС'.padEnd(8)} | СТАТУС`)
+  console.log('-'.repeat(80))
+  posRow('Активная карточка: x', 71, posData.top?.activeX)
+  posRow('Активная карточка: центр x', 220, posData.top?.activeCenterX)
+  posRow('Активная карточка: верх y', 217, posData.top?.activeY, 5)
+  posRow('Соседняя слева: видна', true, posData.top?.leftVisible)
+  posRow('Соседняя справа: видна', true, posData.top?.rightVisible)
+  posRow('Зазор между карточками', 7, posData.top?.cardGap)
+  posRow('Соседняя: высота (75%)', 270, posData.top?.neighborH)
+  posRow('Номер: центр от верха карточки', 117, posData.top?.numCenter)
+  posRow('Вопрос: верх от верха карточки', 161, posData.top?.textTop, 5)
+  posRow('Подсказка: внутри карточки', true, posData.top?.promptInside)
+  posRow('Точки: зазор от карточки', 20, posData.top?.dotsGap)
+  posRow('Кнопка: зазор от точек', 40, posData.top?.ctaGap)
+  posRow('«Другие темы»: зазор от кнопки', 74, posData.top?.otherGap)
+
+  console.log('\n--- Положение 2: «Другие темы» ---')
+  console.log(`${'ЭЛЕМЕНТ'.padEnd(38)} | ${'ЭТАЛОН'.padEnd(8)} | ${'У НАС'.padEnd(8)} | СТАТУС`)
+  console.log('-'.repeat(80))
+  posRow('Название: верх от верха карточки', 56, posData.other?.titleTop)
+  posRow('Полоска: центр от низа карточки', 29, posData.other?.progressCenterBottom)
+  posRow('Шеврон: центр от низа карточки', 29, posData.other?.chevronCenterBottom)
+  posRow('Полоска: x от края карточки', 24, posData.other?.progressX)
+
+  console.log('\n--- Положение 3: «Все темы» ---')
+  console.log(`${'ЭЛЕМЕНТ'.padEnd(38)} | ${'ЭТАЛОН'.padEnd(8)} | ${'У НАС'.padEnd(8)} | СТАТУС`)
+  console.log('-'.repeat(80))
+  posRow('«Удиви меня»: зазор от карточки', 26, posData.all?.surpriseGap)
+  posRow('«Все темы»: зазор от «Удиви меня»', 77, posData.all?.allThemesGap)
+  posRow('Фильтры: зазор от заголовка', 33, posData.all?.filtersGap)
+  posRow('Первая карточка: зазор от фильтров', 33, posData.all?.firstCardGap)
+  posRow('Между карточками: зазор', 8, posData.all?.cardGap)
+
+  console.log('\n--- Sticky (прилипание при скролле) ---')
+  console.log(`${'ПОЛОЖЕНИЕ'.padEnd(20)} | ${'ПРИЛИПЛО'.padEnd(40)} |`)
+  console.log('-'.repeat(75))
+  const stickyPositions = [
+    { name: 'Верх', data: posData.stickyTop },
+    { name: '«Другие темы»', data: posData.stickyOther },
+    { name: '«Все темы»', data: posData.stickyAll },
+  ]
+  for (const sp of stickyPositions) {
+    const parts = []
+    for (const [key, label, top] of [['cta', 'кнопка', 8], ['surprise', 'Удиви', 52], ['allThemes', 'Все темы', 95]]) {
+      const d = sp.data?.[key]
+      if (!d) continue
+      parts.push(`${label}(y=${d.y}, ${d.w}×${d.h}${d.stuck ? ' ✓' : ''})`)
+    }
+    console.log(`${sp.name.padEnd(20)} | ${(parts.length ? parts.join('; ') : 'ничего').padEnd(60)} |`)
   }
 
   // === Ширина ряда фильтров на 393 ===
