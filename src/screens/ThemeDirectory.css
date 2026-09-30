@@ -17,10 +17,11 @@
 }
 
 .mx-theme-directory h3 {
-  font-family: 'Onest', system-ui, sans-serif;
+  font-family: var(--font-serif);
   font-size: var(--mx-type-section-size);
   font-weight: 700;
   color: rgb(var(--c-text));
+  text-align: center;
 }
 
 /* --- Строки тем --- */
@@ -35,13 +36,15 @@
   flex-direction: column;
   align-items: center;
   width: 100%;
-  padding: var(--mx-space-4);
+  padding: var(--mx-screen-x);
+  padding-bottom: 28px;
   border: 0;
   border-radius: var(--mx-radius-card);
   background: rgb(var(--c-card2));
   color: rgb(var(--c-text));
   text-align: center;
   position: relative;
+  min-height: 120px;
 }
 
 .mx-theme-directory__info {
@@ -77,11 +80,7 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  position: absolute;
-  bottom: 28px;
-  left: 0;
-  padding: 0 var(--mx-space-4);
-  box-sizing: border-box;
+  margin-top: auto;
 }
 
 .mx-theme-directory__progress {
@@ -109,13 +108,12 @@
 .mx-theme-directory__sticky-bar {
   position: sticky;
   top: var(--mx-sticky-cta-h, 64px);
-  z-index: 5;
+  z-index: 6;
   display: flex;
   flex-direction: column;
   gap: 70px; /* «Удиви меня» → «Все темы» */
   background: rgb(var(--c-bg));
-  padding-top: 26px; /* карточка → «Удиви меня» */
-  margin-top: 26px; /* карточка → «Удиви меня» (внешний отступ) */
+  margin-top: 26px; /* карточка → «Удиви меня» */
 }
 
 .mx-theme-directory__sticky-bar section {

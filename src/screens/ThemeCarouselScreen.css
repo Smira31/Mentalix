@@ -11,8 +11,8 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 80px;
-  background: linear-gradient(to bottom, rgb(var(--c-bg)), transparent);
+  height: 64px;
+  background: linear-gradient(to bottom, rgb(var(--c-bg) / 0.72), transparent);
   z-index: 5;
   pointer-events: none;
 }
@@ -66,7 +66,7 @@
   -webkit-overflow-scrolling: touch;
   touch-action: pan-x pan-y;
   margin: 0 calc(-1 * var(--mx-screen-x));
-  padding: 0 var(--mx-screen-x);
+  padding: 0 max(var(--mx-screen-x), calc(50% - 124px));
   height: 240px;
 }
 
