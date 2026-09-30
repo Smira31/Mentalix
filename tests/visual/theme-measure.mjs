@@ -173,8 +173,8 @@ function fixtureFor(request) {
 /* --- Эталон (pt = px при 440px viewport) --- */
 const SPECS = [
   // Шапка
-  { id: 'header-h1', label: 'Шапка «Тема недели:»', sel: '.mx-theme-carousel-heading', expect: { fontSize: 29, fontWeight: 400, fontFamily: 'serif' } },
-  { id: 'header-h2', label: 'Шапка «о меньшем усилии.»', sel: '.mx-theme-carousel-title', expect: { fontSize: 29, fontWeight: 700, fontFamily: 'Onest' } },
+  { id: 'header-h1', label: 'Шапка «Тема недели:»', sel: '.mx-theme-carousel-heading', expect: { fontSize: 26, fontWeight: 400, fontFamily: 'serif' } },
+  { id: 'header-h2', label: 'Шапка «о меньшем усилии.»', sel: '.mx-theme-carousel-title', expect: { fontSize: 26, fontWeight: 700, fontFamily: 'Onest' } },
   // Карусель
   { id: 'card-active', label: 'Активная карточка', sel: ".mx-theme-carousel-q[data-active='true']", expect: { width: 298, height: 360, radius: 33 } },
   { id: 'card-num', label: 'Номер карточки', sel: ".mx-theme-carousel-q[data-active='true'] .mx-theme-carousel-q__num", expect: { fontSize: 38, fontWeight: 400, fontFamily: 'serif' } },
@@ -185,16 +185,16 @@ const SPECS = [
   // Кнопка
   { id: 'cta', label: 'Кнопка «Начать запись»', sel: '.mx-theme-carousel-cta', expect: { width: 173, height: 44, fontSize: 17, fontWeight: 600, bg: '#d0d0d0', color: '#111' } },
   // Другие темы
-  { id: 'other-heading', label: '«Другие темы» заголовок', sel: '#carousel-other-themes', expect: { fontSize: 29, fontWeight: 400, fontFamily: 'serif' } },
+  { id: 'other-heading', label: '«Другие темы» заголовок', sel: '#carousel-other-themes', expect: { fontSize: 26, fontWeight: 400, fontFamily: 'serif' } },
   { id: 'other-card', label: 'Карточка темы', sel: '.mx-theme-directory__row', expect: { width: 408, height: 190, radius: 26 } },
-  { id: 'other-title', label: 'Название темы', sel: '.mx-theme-directory__info strong', expect: { fontSize: 29, fontWeight: 700, color: '#d4d4d4' } },
-  { id: 'other-desc', label: 'Описание темы', sel: '.mx-theme-directory__info small', expect: { fontSize: 17, fontWeight: 400 } },
+  { id: 'other-title', label: 'Название темы', sel: '.mx-theme-directory__info strong', expect: { fontSize: 24, fontWeight: 700, color: '#d4d4d4' } },
+  { id: 'other-desc', label: 'Описание темы', sel: '.mx-theme-directory__info small', expect: { fontSize: 15, fontWeight: 400 } },
   { id: 'other-progress', label: 'Полоска прогресса', sel: '.mx-theme-directory__progress', expect: { width: 110, height: 3 } },
   { id: 'other-chevron', label: 'Шеврон', sel: '.mx-theme-directory__bottom svg', expect: { size: 16 } },
   // Удиви меня
   { id: 'surprise', label: '«Удиви меня»', sel: '.mx-theme-directory__surprise', expect: { width: 156, height: 43, fontSize: 17, fontWeight: 500 } },
   // Все темы
-  { id: 'all-heading', label: '«Все темы» заголовок', sel: '#carousel-all-themes', expect: { fontSize: 29, fontWeight: 400, fontFamily: 'serif' } },
+  { id: 'all-heading', label: '«Все темы» заголовок', sel: '#carousel-all-themes', expect: { fontSize: 26, fontWeight: 400, fontFamily: 'serif' } },
   { id: 'filter-chip', label: 'Чип фильтра', sel: '.mx-theme-directory__filters button', expect: { height: 34, fontSize: 17, fontWeight: 500 } },
 ]
 
@@ -704,6 +704,43 @@ async function run() {
   if (!p3ok) {
     console.log(`  Все темы stuck=${p3?.allThemes?.stuck}, Удиви stuck=${p3?.surprise?.stuck}`)
   }
+
+  // === Проверка влезания названий тем в 1 строку (#952: шрифт) ===
+  async function checkTitleFit(width) {
+    await page.setViewportSize({ width, height: 956 })
+    await page.waitForTimeout(200)
+    // Скроллим к «Все темы» чтобы карточки были в DOM
+    await page.evaluate(() => {
+      const el = document.querySelector('#carousel-all-themes')
+      const scroll = document.querySelector('.mx-fullscreen-scroll')
+      if (el && scroll) {
+        const eR = el.getBoundingClientRect()
+        const sR = scroll.getBoundingClientRect()
+        scroll.scrollTop += eR.top - sR.top - 200
+      }
+    })
+    await page.waitForTimeout(200)
+    return await page.evaluate(() => {
+      const titles = [...document.querySelectorAll('.mx-theme-directory__info strong')]
+      const lineHeight = parseFloat(getComputedStyle(titles[0] || document.body).lineHeight) || 26
+      return titles.map(t => {
+        const h = t.offsetHeight
+        return { text: t.textContent, lines: Math.round(h / lineHeight), oneLine: h <= lineHeight + 2 }
+      })
+    })
+  }
+
+  const fit440 = await checkTitleFit(440)
+  const oneLine440 = fit440.filter(t => t.oneLine).length
+  console.log(`\n=== Названия тем в 1 строку (440px) ===`)
+  for (const t of fit440) console.log(`  ${t.oneLine ? '✓' : '✗'} ${t.text} (${t.lines} стр.)`)
+  console.log(`Итого: ${oneLine440}/${fit440.length} в 1 строку`)
+
+  const fit393 = await checkTitleFit(393)
+  const oneLine393 = fit393.filter(t => t.oneLine).length
+  console.log(`\n=== Названия тем в 1 строку (393px) ===`)
+  for (const t of fit393) console.log(`  ${t.oneLine ? '✓' : '✗'} ${t.text} (${t.lines} стр.)`)
+  console.log(`Итого: ${oneLine393}/${fit393.length} в 1 строку`)
 
   // === Ширина ряда фильтров на 393 ===
   console.log('\n\n=== Ширина ряда фильтров на 393px ===')
