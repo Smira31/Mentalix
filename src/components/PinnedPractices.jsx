@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Check, Settings2, X } from 'lucide-react'
 
+import './PinnedPractices.css'
+
 import CardSystemGlyph, { practiceGlyphKind } from './CardSystemGlyph'
 import { api } from '../lib/api'
 import { buildPracticeViewModels } from '../lib/practiceCatalogRegistry'

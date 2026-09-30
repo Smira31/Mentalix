@@ -26,12 +26,15 @@
 .mx-theme-carousel-header {
   display: flex;
   flex-direction: column;
-  gap: var(--mx-space-2);
-  margin-top: var(--mx-space-4);
-  margin-bottom: var(--mx-space-5);
+  align-items: center;
+  gap: 2px;
+  margin-top: 20px;
+  margin-bottom: 24px;
+  text-align: center;
 }
 
 .mx-theme-carousel-label {
+  display: none;
   font-size: var(--mx-type-meta-size);
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -48,6 +51,7 @@
 }
 
 .mx-theme-carousel-subtitle {
+  display: none;
   font-size: var(--mx-type-body-size);
   line-height: 1.45;
   color: rgb(var(--c-muted));
@@ -58,7 +62,7 @@
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  gap: var(--mx-space-3);
+  gap: 7px;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   scrollbar-width: none;
@@ -98,15 +102,15 @@
 }
 
 .mx-theme-carousel-q[data-answered='true'] {
-  border: 1px solid rgb(var(--c-gold) / 0.2);
+  border: 0;
 }
 
 .mx-theme-carousel-q__num {
   font-family: var(--font-serif);
   font-size: 3rem;
   line-height: 1;
-  font-weight: 700;
-  color: rgb(var(--c-gold));
+  font-weight: 400;
+  color: rgb(var(--c-text));
 }
 
 .mx-theme-carousel-q__text {
@@ -128,10 +132,11 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: var(--mx-type-meta-size);
+  font-size: 11px;
   font-weight: 600;
-  color: rgb(var(--c-gold));
+  color: rgb(var(--c-muted));
   margin-top: auto;
+  align-self: center;
 }
 
 /* --- Точки-пейджер --- */
@@ -143,8 +148,8 @@
 }
 
 .mx-theme-carousel-dots i {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: rgb(var(--c-border));
   transition: background-color 200ms ease;
@@ -195,100 +200,4 @@
   .mx-theme-carousel-q {
     transition: none;
   }
-}
-
-/* Финальный Stoic-контракт экрана «Тема недели». */
-.mx-theme-carousel-header {
-  align-items: center;
-  gap: 2px;
-  margin-top: 20px;
-  margin-bottom: 24px;
-  text-align: center;
-}
-.mx-theme-carousel-label,
-.mx-theme-carousel-subtitle {
-  display: none;
-}
-.mx-theme-carousel-heading {
-  font-family: var(--font-serif);
-  font-size: 29px;
-  line-height: 1.08;
-  font-weight: 400;
-  color: rgb(var(--c-text));
-}
-.mx-theme-carousel-title {
-  font-family: var(--font-display);
-  font-size: 29px;
-  line-height: 1.08;
-  font-weight: 800;
-  letter-spacing: -0.01em;
-}
-.mx-theme-carousel-track {
-  align-items: center;
-  gap: 7px;
-  margin: 0 calc(-1 * var(--mx-screen-x));
-  padding: 0 calc((100% - 299px) / 2) 2px;
-}
-.mx-theme-carousel-q {
-  width: 299px;
-  height: 273px;
-  min-height: 273px;
-  justify-content: center;
-  align-items: center;
-  gap: 12px;
-  padding: 24px;
-  border-radius: 33px;
-  border: 0;
-  text-align: center;
-  transition:
-    height 180ms ease,
-    min-height 180ms ease,
-    opacity 180ms ease;
-}
-.mx-theme-carousel-q[data-active='true'] {
-  height: 362px;
-  min-height: 362px;
-}
-.mx-theme-carousel-q[data-answered='true'] {
-  border: 0;
-}
-.mx-theme-carousel-q__num {
-  font-family: var(--font-serif);
-  font-size: 38px;
-  line-height: 1;
-  font-weight: 400;
-  color: rgb(var(--c-text));
-}
-.mx-theme-carousel-q__text {
-  font-size: 17px;
-  line-height: 1.3;
-  font-weight: 600;
-}
-.mx-theme-carousel-q__prompt {
-  font-size: 15px;
-  line-height: 1.4;
-  color: rgb(var(--c-muted));
-}
-.mx-theme-carousel-q__badge {
-  margin-top: auto;
-  align-self: center;
-  font-size: 11px;
-  color: rgb(var(--c-muted));
-}
-.mx-theme-carousel-dots {
-  gap: 8px;
-  margin-top: 21px;
-}
-.mx-theme-carousel-dots i {
-  width: 8px;
-  height: 8px;
-}
-.mx-theme-carousel-cta {
-  min-width: 173px;
-  height: 44px;
-  min-height: 44px;
-  margin-top: 18px;
-  padding: 0 20px;
-  font-size: 17px;
-  font-weight: 600;
 }
