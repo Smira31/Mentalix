@@ -28,11 +28,13 @@ function ThemeRows({ themes, onOpen }) {
             <span className="mx-theme-directory__info">
               <strong>{theme.title}.</strong>
               {theme.subtitle && <small>{theme.subtitle}</small>}
+            </span>
+            <span className="mx-theme-directory__bottom">
               <span className="mx-theme-directory__progress" aria-label={`Пройдено ${progress}%`}>
                 <span style={{ width: `${progress}%` }} />
               </span>
+              <ChevronRight size={18} aria-hidden="true" />
             </span>
-            <ChevronRight size={18} aria-hidden="true" />
           </button>
         )
       })}
@@ -54,38 +56,40 @@ export default function ThemeDirectory({ themes, currentId, onOpen }) {
         <section aria-labelledby="carousel-other-themes">
           <h3 id="carousel-other-themes">Другие темы</h3>
           <ThemeRows themes={others} onOpen={onOpen} />
-          {unfinished.length > 0 && (
-            <button
-              type="button"
-              className="mx-theme-directory__surprise"
-              onClick={() => onOpen(unfinished[Math.floor(Math.random() * unfinished.length)].id)}
-            >
-              <Shuffle size={15} aria-hidden="true" /> Удиви меня
-            </button>
-          )}
         </section>
       )}
-      <section aria-labelledby="carousel-all-themes">
-        <h3 id="carousel-all-themes">Все темы</h3>
-        <div className="mx-theme-directory__filters" role="tablist" aria-label="Фильтр тем">
-          {FILTERS.map(item => (
-            <button
-              type="button"
-              role="tab"
-              aria-selected={filter === item}
-              key={item}
-              onClick={() => setFilter(item)}
-            >
-              {item}
-            </button>
-          ))}
-        </div>
-        {filtered.length ? (
-          <ThemeRows themes={filtered} onOpen={onOpen} />
-        ) : (
-          <p className="text-muted text-[13px]">Здесь пока пусто</p>
+      <div className="mx-theme-directory__sticky-bar">
+        {unfinished.length > 0 && (
+          <button
+            type="button"
+            className="mx-theme-directory__surprise"
+            onClick={() => onOpen(unfinished[Math.floor(Math.random() * unfinished.length)].id)}
+          >
+            <Shuffle size={15} aria-hidden="true" /> Удиви меня
+          </button>
         )}
-      </section>
+        <section aria-labelledby="carousel-all-themes">
+          <h3 id="carousel-all-themes">Все темы</h3>
+          <div className="mx-theme-directory__filters" role="tablist" aria-label="Фильтр тем">
+            {FILTERS.map(item => (
+              <button
+                type="button"
+                role="tab"
+                aria-selected={filter === item}
+                key={item}
+                onClick={() => setFilter(item)}
+              >
+                {item}
+              </button>
+            ))}
+          </div>
+        </section>
+      </div>
+      {filtered.length ? (
+        <ThemeRows themes={filtered} onOpen={onOpen} />
+      ) : (
+        <p className="text-muted text-[13px]">Здесь пока пусто</p>
+      )}
     </div>
   )
 }

@@ -1,88 +1,184 @@
+/* ============================================================
+   THEME DIRECTORY — «Другие темы» + «Все темы» внутри карусели.
+   Scoped под .mx-theme-directory (только экран темы).
+   ============================================================ */
+
 .mx-theme-directory {
   display: flex;
   flex-direction: column;
-  gap: var(--mx-space-8);
-  margin-top: var(--mx-space-8);
+  margin-top: 70px; /* CTA pill → «Другие темы» */
   padding-bottom: var(--mx-space-5);
 }
+
 .mx-theme-directory section {
   display: flex;
   flex-direction: column;
   gap: var(--mx-space-3);
 }
+
 .mx-theme-directory h3 {
-  font-family: var(--font-serif);
+  font-family: 'Onest', system-ui, sans-serif;
   font-size: var(--mx-type-section-size);
+  font-weight: 700;
   color: rgb(var(--c-text));
 }
+
+/* --- Строки тем --- */
 .mx-theme-directory__rows {
   display: flex;
   flex-direction: column;
   gap: var(--mx-space-2);
 }
+
 .mx-theme-directory__row {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: var(--mx-space-3);
   width: 100%;
   padding: var(--mx-space-4);
   border: 0;
   border-radius: var(--mx-radius-card);
   background: rgb(var(--c-card2));
   color: rgb(var(--c-text));
-  text-align: left;
+  text-align: center;
+  position: relative;
 }
-.mx-theme-directory__row svg {
-  flex: none;
-  color: rgb(var(--c-muted));
-}
+
 .mx-theme-directory__info {
   display: flex;
-  flex: 1;
-  min-width: 0;
   flex-direction: column;
+  align-items: center;
   gap: 4px;
+  width: 100%;
 }
+
 .mx-theme-directory__info strong {
+  font-family: 'Onest', system-ui, sans-serif;
   font-size: 0.9375rem;
+  font-weight: 700;
+  color: #d6d6d6;
+  line-height: 1.3;
 }
+
 .mx-theme-directory__info small {
   color: rgb(var(--c-muted));
   font-size: 0.75rem;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+
+/* --- Нижняя линия: прогресс + шеврон --- */
+.mx-theme-directory__bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  position: absolute;
+  bottom: 28px;
+  left: 0;
+  padding: 0 var(--mx-space-4);
+  box-sizing: border-box;
+}
+
 .mx-theme-directory__progress {
+  width: 109px;
   height: 2px;
-  margin-top: 6px;
-  background: rgb(var(--c-border));
+  border-radius: 2px;
+  background: rgb(var(--c-card3));
+  overflow: hidden;
 }
+
 .mx-theme-directory__progress span {
   display: block;
   height: 100%;
-  background: rgb(var(--c-gold));
+  min-width: 6px;
+  background: #ffffff;
+  border-radius: 2px;
 }
-.mx-theme-directory__filters {
-  display: flex;
-  gap: var(--mx-space-2);
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-.mx-theme-directory__filters button,
-.mx-theme-directory__surprise {
+
+.mx-theme-directory__bottom svg {
   flex: none;
-  padding: 8px 16px;
-  border: 1px solid rgb(var(--c-border));
-  border-radius: var(--mx-radius-pill);
-  background: rgb(var(--c-card2));
-  color: rgb(var(--c-text));
-  font-size: 0.8125rem;
+  color: rgb(var(--c-muted));
 }
-.mx-theme-directory__filters button[aria-selected='true'] {
-  background: rgb(var(--c-text));
-  color: rgb(var(--c-bg));
+
+/* --- Sticky bar: «Удиви меня» + «Все темы» + фильтры --- */
+.mx-theme-directory__sticky-bar {
+  position: sticky;
+  top: var(--mx-sticky-cta-h, 64px);
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 70px; /* «Удиви меня» → «Все темы» */
+  background: rgb(var(--c-bg));
+  padding-top: 26px; /* карточка → «Удиви меня» */
+  margin-top: 26px; /* карточка → «Удиви меня» (внешний отступ) */
 }
+
+.mx-theme-directory__sticky-bar section {
+  gap: var(--mx-space-3);
+}
+
+/* --- Кнопка «Удиви меня» --- */
 .mx-theme-directory__surprise {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  align-self: flex-start;
+  align-self: center;
+  width: 156px;
+  height: 42px;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: var(--mx-radius-pill);
+  background: transparent;
+  color: rgb(var(--c-text));
+  font-size: var(--mx-type-control-size);
+  font-weight: 500;
+  font-family: 'Onest', system-ui, sans-serif;
+}
+
+/* --- Фильтры «Все темы» --- */
+.mx-theme-directory__filters {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex-wrap: nowrap;
+}
+
+.mx-theme-directory__filters::-webkit-scrollbar {
+  display: none;
+}
+
+.mx-theme-directory__filters button {
+  flex: none;
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: var(--mx-radius-pill);
+  background: transparent;
+  color: rgb(var(--c-text));
+  font-size: 17px;
+  font-weight: 500;
+  font-family: 'Onest', system-ui, sans-serif;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+}
+
+.mx-theme-directory__filters button[aria-selected='true'] {
+  background: #d0d0d0;
+  color: #111111;
+  border-color: #d0d0d0;
+}
+
+/* --- Отступ от фильтров до первой карточки --- */
+.mx-theme-directory > .mx-theme-directory__rows:last-child,
+.mx-theme-directory > p {
+  margin-top: 32px;
 }

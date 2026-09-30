@@ -12,7 +12,6 @@ import {
   useFullscreenSurface,
   getFullscreenPortalTarget,
   FULLSCREEN_SHELL_CLASS,
-  FULLSCREEN_HEADER_SLOT_CLASS,
   FULLSCREEN_SCROLL_CLASS,
 } from '../lib/fullscreenSurface'
 
@@ -41,6 +40,8 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
   const [selectedDay, setSelectedDay] = useState(1)
   const { style } = useFullscreenSurface()
   const trackRef = useRef(null)
+  const rafRef = useRef(null)
+  const lastIndexRef = useRef(0)
 
   useBackButton(() => {
     platform.haptic('light')
@@ -80,6 +81,12 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
     }
   }, [user, activeId])
 
+  useEffect(() => {
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current)
+    }
+  }, [])
+
   function refreshData() {
     if (!user || !activeId) return
     invalidateThemeDetail(user.id, activeId)
@@ -108,8 +115,7 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
     if (!data || !trackRef.current) return
     const days = Array.isArray(data.days) ? data.days.slice(0, 7) : []
     if (!days.length) return
-    const currentIdx = days.findIndex(d => d.day === data.current_day)
-    if (currentIdx <= 0) return
+    const currentIdx = Math.max(0, days.findIndex(d => d.day === data.current_day))
     const track = trackRef.current
     const cards = [...track.querySelectorAll('.mx-theme-carousel-q')]
     const card = cards[currentIdx]
@@ -118,22 +124,34 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
         left: card.offsetLeft - track.clientWidth / 2 + card.offsetWidth / 2,
       })
     }
+    lastIndexRef.current = currentIdx
   }, [data])
 
+  // Плавный скролл-обработчик: rAF-throttled, setState только
+  // при смене активной карточки — без ре-рендера на каждый пиксель.
   function handleScroll() {
-    const track = trackRef.current
-    if (!track || !track.clientWidth) return
-    const cards = [...track.querySelectorAll('.mx-theme-carousel-q')]
-    if (!cards.length) return
-    const center = track.scrollLeft + track.clientWidth / 2
-    const next = cards.reduce((closest, card, i) => {
-      const dist = Math.abs(card.offsetLeft + card.offsetWidth / 2 - center)
-      const closestDist = Math.abs(
-        cards[closest].offsetLeft + cards[closest].offsetWidth / 2 - center
-      )
-      return dist < closestDist ? i : closest
-    }, 0)
-    setQuestionIndex(next)
+    if (rafRef.current) return
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = null
+      const track = trackRef.current
+      if (!track || !track.clientWidth) return
+      const cards = [...track.querySelectorAll('.mx-theme-carousel-q')]
+      if (!cards.length) return
+      const center = track.scrollLeft + track.clientWidth / 2
+      let next = 0
+      let minDist = Infinity
+      cards.forEach((card, i) => {
+        const dist = Math.abs(card.offsetLeft + card.offsetWidth / 2 - center)
+        if (dist < minDist) {
+          minDist = dist
+          next = i
+        }
+      })
+      if (next !== lastIndexRef.current) {
+        lastIndexRef.current = next
+        setQuestionIndex(next)
+      }
+    })
   }
 
   function handleWrite() {
@@ -160,7 +178,6 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
   if (!data) {
     return createPortal(
       <div className={FULLSCREEN_SHELL_CLASS} style={style}>
-        <div className={FULLSCREEN_HEADER_SLOT_CLASS} aria-hidden="true" />
         <div className={FULLSCREEN_SCROLL_CLASS}>
           <div className="w-full max-w-md mx-auto px-[var(--mx-screen-x)] pt-2 pb-6 flex flex-col min-h-full">
             <RoundBackButton onClick={onBack} />
@@ -175,10 +192,9 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
   const isAnswered = Boolean(currentQuestion?.reflection)
 
   return createPortal(
-    <div className={FULLSCREEN_SHELL_CLASS} style={style}>
-      <div className={FULLSCREEN_HEADER_SLOT_CLASS} aria-hidden="true" />
+    <div className={`${FULLSCREEN_SHELL_CLASS} mx-theme-carousel-surface`} style={style}>
       <div className={FULLSCREEN_SCROLL_CLASS}>
-        <div className="w-full max-w-md mx-auto px-[var(--mx-screen-x)] pt-2 pb-6 flex flex-col min-h-full">
+        <div className="mx-theme-carousel-screen w-full max-w-md mx-auto px-[var(--mx-screen-x)] pt-2 pb-6 flex flex-col min-h-full">
           <RoundBackButton onClick={onBack} />
 
           <div className="mx-theme-carousel-header">
@@ -201,6 +217,7 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
                     className="mx-theme-carousel-q"
                     key={q.day ?? i}
                     data-answered={q.reflection ? 'true' : undefined}
+                    data-active={i === safeIndex ? 'true' : 'false'}
                   >
                     <span className="mx-theme-carousel-q__num">{q.day ?? i + 1}</span>
                     <strong className="mx-theme-carousel-q__text">{q.text}</strong>
@@ -224,14 +241,16 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
                 ))}
               </span>
 
-              <button
-                type="button"
-                className="mx-theme-carousel-cta"
-                data-testid="theme-carousel-cta"
-                onClick={handleWrite}
-              >
-                {isAnswered ? 'Смотреть в пути' : 'Начать запись'} <ArrowRight size={15} />
-              </button>
+              <div className="mx-theme-carousel-sticky-pill mx-glass">
+                <button
+                  type="button"
+                  className="mx-theme-carousel-cta"
+                  data-testid="theme-carousel-cta"
+                  onClick={handleWrite}
+                >
+                  {isAnswered ? 'Смотреть в пути' : 'Начать запись'} <ArrowRight size={15} />
+                </button>
+              </div>
             </>
           ) : (
             <p className="text-muted text-[13px] text-center mt-8">
