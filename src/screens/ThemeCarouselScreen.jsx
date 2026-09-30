@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { createPortal } from 'react-dom'
-import { ArrowRight } from 'lucide-react'
 
 import { peekThemeDetail, fetchThemeDetail, invalidateThemeDetail } from '../lib/themeDetailCache'
 import { peekThemesData, fetchThemesData, invalidateThemesData } from '../lib/themesDataCache'
@@ -252,7 +251,7 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
                   data-testid="theme-carousel-cta"
                   onClick={handleWrite}
                 >
-                  {isAnswered ? 'Смотреть в пути' : 'Начать запись'} <ArrowRight size={15} />
+                  {isAnswered ? 'Смотреть в пути' : 'Начать запись'}
                 </button>
               </div>
             </>
