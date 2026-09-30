@@ -1,4 +1,4 @@
-import { useEffect, useSyncExternalStore } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 
 import { getFullscreenSnapshot, subscribeFullscreen } from './tgFullscreen'
 import {
@@ -78,6 +78,78 @@ export function getFullscreenPortalTarget() {
   )
 }
 
+/*
+ * ВИДИМАЯ ЧАСТЬ ТЕЛЕФОНА В ДЕМО-ПРЕВЬЮ
+ *
+ * В демо-режиме поверхность рендерится внутрь демо-фрейма
+ * ([data-mentalix-demo-frame]) — «телефона» фиксированного размера
+ * (393×852 / 440×956), который часто выше окна браузера. Высота
+ * visualViewport там не равна экрану телефона: слой растягивался до
+ * высоты окна, уходил за его нижний край, и низ списка внутри
+ * поверхности становился недостижимым. Считаем видимую часть фрейма
+ * и ограничиваем поверхность ею — так весь экран виден и прокручивается
+ * до конца, а нижняя, невидимая часть телефона просто не участвует.
+ */
+export function readDemoFrameBox(frame, windowLike = window) {
+  if (!frame || typeof frame.getBoundingClientRect !== 'function') return null
+
+  const rect = frame.getBoundingClientRect()
+  if (!rect.height) return null
+
+  // Верх/высота padding-box: там же, где якорится position: fixed слой.
+  const borderTop = frame.clientTop || 0
+  const boxTop = rect.top + borderTop
+  const boxHeight = frame.clientHeight || Math.max(0, rect.height - borderTop * 2)
+  const windowBottom = windowLike?.innerHeight || boxTop + boxHeight
+
+  const visibleTop = Math.max(0, -boxTop)
+  const visibleBottom = Math.min(boxHeight, windowBottom - boxTop)
+
+  return { top: visibleTop, height: Math.max(0, visibleBottom - visibleTop) }
+}
+
+function useDemoFrameBox(enabled) {
+  const [box, setBox] = useState(() =>
+    enabled === true
+      ? readDemoFrameBox(document.querySelector('[data-mentalix-demo-frame]'))
+      : null
+  )
+
+  useEffect(() => {
+    const frame = enabled ? document.querySelector('[data-mentalix-demo-frame]') : null
+    if (!frame) {
+      setBox(null)
+      return undefined
+    }
+
+    const update = () => {
+      const next = readDemoFrameBox(frame)
+      setBox(previous =>
+        previous && next && previous.top === next.top && previous.height === next.height
+          ? previous
+          : next
+      )
+    }
+
+    update()
+    window.addEventListener('resize', update)
+    // Страницу превью тоже можно прокрутить — тогда видимая часть фрейма
+    // меняется, и поверхность должна пересчитаться.
+    window.addEventListener('scroll', update, true)
+    window.visualViewport?.addEventListener('resize', update)
+    window.visualViewport?.addEventListener('scroll', update)
+
+    return () => {
+      window.removeEventListener('resize', update)
+      window.removeEventListener('scroll', update, true)
+      window.visualViewport?.removeEventListener('resize', update)
+      window.visualViewport?.removeEventListener('scroll', update)
+    }
+  }, [enabled])
+
+  return box
+}
+
 export function useFullscreenSurface() {
   const viewportGeometry = useVisualViewportGeometry()
   const portalTarget = getFullscreenPortalTarget()
@@ -108,6 +180,10 @@ export function useFullscreenSurface() {
   // space exactly once.
   const surfaceTop = viewportOffsetTop / scale
   const visibleHeight = shellHeight ? shellHeight / scale : null
+  // В демо-превью экран — видимая часть «телефона», а не высота окна.
+  const demoFrameBox = useDemoFrameBox(demoMode)
+  const frameTop = demoFrameBox ? demoFrameBox.top / scale : null
+  const frameHeight = demoFrameBox ? demoFrameBox.height / scale : null
 
   /*
    * MXL-FULLSCREEN-SURFACE-RACE-001 — раньше каждый экран независимо
@@ -133,14 +209,19 @@ export function useFullscreenSurface() {
   }, [])
 
   const style = {
-    top: `${surfaceTop}px`,
+    top: frameTop === null ? `${surfaceTop}px` : `${frameTop}px`,
     paddingTop: tgFullscreen
       ? `calc(var(--app-safe-top) + ${TG_CONTROLS_HEIGHT}px)`
       : 'var(--app-safe-top)',
 
     paddingBottom: 'var(--app-safe-bottom)',
 
-    height: visibleHeight ? `${visibleHeight}px` : '100dvh',
+    height:
+      frameHeight !== null
+        ? `${frameHeight}px`
+        : visibleHeight
+          ? `${visibleHeight}px`
+          : '100dvh',
   }
 
   return {

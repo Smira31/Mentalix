@@ -23,7 +23,7 @@ test('canonical stats: current, longest and total active days are read together'
   assert.match(source, /\['Текущая серия', formatDays\(currentStreak\)\]/)
   assert.match(source, /\['Дней с активностью', activeDays\]/)
   assert.match(source, /\['Самая длинная серия', formatDays\(bestStreak\)\]/)
-  assert.match(source, /<strong>\{activeDays\}<\/strong>/)
+  assert.match(source, /value: activeDays, label: 'Дней с активностью'/)
 })
 
 test('canonical stats: zero is valid, including current streak', () => {
@@ -81,7 +81,7 @@ test('canonical network error and loading retain legacy stats without blocking b
   // Допускаем многострочные аргументы (палттер).
   assert.match(source, /const next = buildServerSeriesViewModel\(\{\s*stats,\s*checkins,\s*rituals,\s*ascezas,\s*registrationDays/)
   assert.match(source, /badges: serverBadges/)
-  // «Дней с чек-ином» берётся из канонической серии, а не из view-model без неё.
-  assert.match(source, /\['Дней с чек-ином', activeDays \?\? model\.activeDays\]/)
+  // «Дней с чек-ином» считается по уникальным датам завершённых чек-инов.
+  assert.match(source, /\['Дней с чек-ином', checkinDays\]/)
   assert.doesNotMatch(source, /rememberSeriesSnapshot\(user\.id, canonicalStats\)/)
 })
