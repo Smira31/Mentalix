@@ -5,7 +5,7 @@ import { platform } from '../platform'
 import { api } from '../lib/api'
 import { peekThemeDetail, fetchThemeDetail, invalidateThemeDetail } from '../lib/themeDetailCache'
 import { peekThemesData, fetchThemesData } from '../lib/themesDataCache'
-import { Lock, Check, Sparkles } from 'lucide-react'
+import { Lock, Check } from 'lucide-react'
 import { RoundBackButton } from '../components/NestedScreenHeader'
 import JournalTextarea from '../components/JournalTextarea'
 import MarkdownText from '../components/MarkdownText'
@@ -19,6 +19,11 @@ import {
   FULLSCREEN_HEADER_SLOT_CLASS,
   FULLSCREEN_SCROLL_CLASS,
 } from '../lib/fullscreenSurface'
+import {
+  useVisualViewportGeometry,
+  getKeyboardViewportHeight,
+  isTelegramRuntime,
+} from '../lib/visualViewport'
 
 /*
  * ТЕМА НЕДЕЛИ — семь дней размышлений, по дню за раз.
@@ -89,7 +94,8 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
       : null
   )
 
-  const { style } = useFullscreenSurface()
+  const { style, keyboardOpen } = useFullscreenSurface()
+  const viewportGeometry = useVisualViewportGeometry()
 
   useBackButton(() => {
     if (view === 'review' || view === 'list') {
@@ -268,6 +274,30 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
     }
   }, [finished])
   const canSave = Boolean(text.trim()) && !current?.locked
+  const hasText = Boolean(text.trim())
+
+  const visualHeight = viewportGeometry?.height
+  const offsetTop = viewportGeometry?.offsetTop ?? 0
+  const stableHeight = viewportGeometry?.stableHeight
+  const keyboardViewportHeight = getKeyboardViewportHeight({
+    isTelegram: isTelegramRuntime(),
+    stableHeight,
+    visualHeight,
+  })
+  const roundButtonStyle = keyboardOpen
+    ? {
+        position: 'fixed',
+        top: `${(keyboardViewportHeight ?? visualHeight) + offsetTop - 56}px`,
+        right: '16px',
+        bottom: 'auto',
+        zIndex: 71,
+      }
+    : {
+        position: 'fixed',
+        bottom: 'calc(var(--app-safe-bottom) + 16px)',
+        right: '16px',
+        zIndex: 71,
+      }
 
   const mainText =
     view === 'intro'
@@ -404,7 +434,7 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
 
               <MarkdownText
                 content={d.reflection}
-                className="space-y-2 text-[14px] text-cream leading-relaxed"
+                className="space-y-2 text-[16px] font-normal text-cream leading-relaxed"
               />
 
               <button
@@ -509,21 +539,11 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
 
   return createPortal(
     <Shell style={style} footer={<WebActionBar action={webAction} />}>
-      <div className="flex items-center justify-between gap-3 mb-5">
+      <div className="mb-2">
         <RoundBackButton onClick={onBack} />
-
-        <button
-          type="button"
-          onClick={deepenReflection}
-          disabled={!canSave || saving}
-          className="flex h-11 items-center gap-2 rounded-full border border-cream/10 bg-emerald px-4 text-[12px] font-semibold text-cream transition-transform active:scale-95 disabled:opacity-35"
-        >
-          <Sparkles size={15} className="text-gold" />
-          Наставник
-        </button>
       </div>
 
-      <div className="mb-5 flex items-center justify-between gap-4 [@media(max-height:650px)]:hidden">
+      <div className="mb-3 flex items-center justify-between gap-4 [@media(max-height:650px)]:hidden">
         <div className="flex items-center gap-4">
           {answered > 0 && (
             <button
@@ -531,7 +551,7 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
                 platform.haptic('light')
                 setView('review')
               }}
-              className="border-0 bg-transparent p-0 text-[12px] text-gold active:opacity-60"
+              className="border-0 bg-transparent p-0 text-[13px] font-medium text-cream active:opacity-60"
             >
               Мои ответы
             </button>
@@ -543,7 +563,7 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
                 platform.haptic('light')
                 setView('list')
               }}
-              className="border-0 bg-transparent p-0 text-[12px] text-muted active:opacity-60"
+              className="border-0 bg-transparent p-0 text-[13px] font-medium text-muted active:opacity-60"
             >
               Все темы
             </button>
@@ -555,36 +575,10 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
             platform.haptic('light')
             setView('intro')
           }}
-          className="border-0 bg-transparent p-0 text-[12px] text-faint active:opacity-60"
+          className="border-0 bg-transparent p-0 text-[13px] font-medium text-muted active:opacity-60"
         >
           {data.title}
         </button>
-      </div>
-
-      <div className="mb-6 flex gap-1.5" aria-label="Дни журнала">
-        {data.days.map(d => {
-          const active = d.day === day
-
-          return (
-            <button
-              key={d.day}
-              aria-label={`День ${d.day}`}
-              aria-current={active ? 'step' : undefined}
-              onClick={() => {
-                platform.haptic('light')
-                setDay(d.day)
-              }}
-              className={[
-                'h-1.5 flex-1 overflow-hidden rounded-full border-0 p-0 transition-colors',
-                active ? 'bg-gold' : d.reflection ? 'bg-gold/35' : 'bg-cream/10',
-              ].join(' ')}
-            >
-              <span className="sr-only">
-                {d.locked ? 'Закрыт' : d.reflection ? 'Заполнен' : 'Не заполнен'}
-              </span>
-            </button>
-          )
-        })}
       </div>
 
       <div className="shrink-0">
@@ -611,16 +605,16 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
           </div>
         ) : (
           <div className="text-left" data-testid="journal-day-content">
-            <div className="mb-3 font-label text-[11px] font-bold uppercase tracking-[0.14em] text-gold">
+            <div className="mb-2 font-label text-[11px] font-bold uppercase tracking-[0.14em] text-gold">
               День {day} из {data.days.length}
             </div>
 
-            <h3 className="font-display text-[24px] leading-[1.16] text-cream [@media(max-height:650px)]:text-[20px]">
+            <h3 className="font-display text-[20px] font-bold leading-[1.16] text-cream">
               {current?.text}
             </h3>
 
             {current?.prompt && (
-              <p className="mt-5 border-l border-gold pl-4 text-[14px] leading-relaxed text-muted">
+              <p className="mt-3 border-l border-gold pl-4 text-[16px] font-normal leading-relaxed text-muted">
                 {current.prompt}
               </p>
             )}
@@ -630,21 +624,34 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
 
       {!current?.locked && (
         <JournalTextarea
-          writingCanvas
           value={text}
           onChange={setText}
           placeholder="Записать мысль..."
           ariaLabel="Мысль по теме недели"
-          className="mt-6 min-h-[18rem] flex-1"
-          editorClassName="pb-24 md:pb-4"
-          floatingToolbar
-          desktopInline
+          className="mt-6 flex-1"
+          editorClassName="!text-[16px] font-normal pb-16"
+          formatting={false}
+          floatingToolbar={false}
+          writingCanvas={false}
+          autoFocus={!current?.reflection}
           onSubmit={save}
           submitLabel={current?.reflection ? 'Обновить мысль' : 'Сохранить мысль'}
           submitDisabled={!canSave}
           submitLoading={saving}
-          onDeepen={deepenReflection}
         />
+      )}
+
+      {!current?.locked && (
+        <button
+          type="button"
+          aria-label={hasText ? 'Сохранить мысль' : undefined}
+          onClick={hasText ? save : onBack}
+          disabled={saving}
+          className="flex h-11 w-11 items-center justify-center rounded-full bg-[#efefef] text-[22px] font-semibold text-[#111] transition-transform active:scale-95"
+          style={roundButtonStyle}
+        >
+          {hasText ? '›' : '✕'}
+        </button>
       )}
     </Shell>,
     getFullscreenPortalTarget()

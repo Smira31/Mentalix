@@ -101,8 +101,8 @@ This is an expected anonymous response, not evidence that a valid cookie was los
 
 A fresh browser navigation on 2026-09-19 produced the expected anonymous WebAuthScreen on both:
 
-- [Firebase Production — unauthenticated WebAuthScreen](../../audit-artifacts/issue-647-production-2026-09-19/live/firebase-unauth-web-auth.webp)
-- [Vercel — unauthenticated WebAuthScreen](../../audit-artifacts/issue-647-production-2026-09-19/live/vercel-unauth-web-auth.webp)
+- Firebase Production — unauthenticated WebAuthScreen _(audit-artifacts/issue-647-production-2026-09-19/live/firebase-unauth-web-auth.webp)_
+- Vercel — unauthenticated WebAuthScreen _(audit-artifacts/issue-647-production-2026-09-19/live/vercel-unauth-web-auth.webp)_
 
 Therefore the splash previously observed during the first browser capture cannot be classified as Issue #647 reproduced without auth. It was a transient/incomplete observation before the app transitioned to the anonymous auth screen. The current unauthenticated production path does **not** remain on the splash after the auth request completes.
 

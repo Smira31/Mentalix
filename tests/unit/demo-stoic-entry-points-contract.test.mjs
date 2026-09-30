@@ -24,7 +24,7 @@ test('демо поддерживает ночное состояние', () => 
 
 test('Today keeps the main day card before secondary sections', () => {
   const cardsStart = today.indexOf('mx-today-day-card-slot')
-  const secondaryStart = today.indexOf('mx-today-theme-card')
+  const secondaryStart = today.indexOf('mx-today-weekly-theme')
 
   assert.notEqual(cardsStart, -1)
   assert.notEqual(secondaryStart, -1)

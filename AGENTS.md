@@ -268,7 +268,6 @@ screens, and keep article cards unchanged unless the owner explicitly approves t
 - [`REFERENCE_WORKFLOW.md`](REFERENCE_WORKFLOW.md)
 - [`ROADMAP.md`](ROADMAP.md)
 - [`TASKS.md`](TASKS.md)
-- [`audit-artifacts/README.md`](audit-artifacts/README.md)
 - [`progress-fix-report.md`](progress-fix-report.md)
 - [`qa-evidence/mxl-010/automated-gate.md`](qa-evidence/mxl-010/automated-gate.md)
 - [`qa-evidence/mxl-010/preview-access.md`](qa-evidence/mxl-010/preview-access.md)

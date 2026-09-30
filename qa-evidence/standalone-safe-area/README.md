@@ -13,9 +13,9 @@
 
 ## Скриншоты
 
-- Сегодня, 390×844: [до](../../artifacts/standalone-safe-area/before-today-390x844-standalone.png) · [после Safari](../../artifacts/standalone-safe-area/after-today-390x844-safari.png) · [после standalone](../../artifacts/standalone-safe-area/after-today-390x844-standalone.png)
-- Шаги, 390×844: [до](../../artifacts/standalone-safe-area/before-practices-390x844-standalone.png) · [после Safari](../../artifacts/standalone-safe-area/after-practices-390x844-safari.png) · [после standalone](../../artifacts/standalone-safe-area/after-practices-390x844-standalone.png)
-- Сегодня, 430×932: [до](../../artifacts/standalone-safe-area/before-today-430x932-standalone.png) · [после Safari](../../artifacts/standalone-safe-area/after-today-430x932-safari.png) · [после standalone](../../artifacts/standalone-safe-area/after-today-430x932-standalone.png)
-- Шаги, 430×932: [до](../../artifacts/standalone-safe-area/before-practices-430x932-standalone.png) · [после Safari](../../artifacts/standalone-safe-area/after-practices-430x932-safari.png) · [после standalone](../../artifacts/standalone-safe-area/after-practices-430x932-standalone.png)
+- Сегодня, 390×844: до _(artifacts/standalone-safe-area/before-today-390x844-standalone.png)_ · после Safari _(artifacts/standalone-safe-area/after-today-390x844-safari.png)_ · после standalone _(artifacts/standalone-safe-area/after-today-390x844-standalone.png)_
+- Шаги, 390×844: до _(artifacts/standalone-safe-area/before-practices-390x844-standalone.png)_ · после Safari _(artifacts/standalone-safe-area/after-practices-390x844-safari.png)_ · после standalone _(artifacts/standalone-safe-area/after-practices-390x844-standalone.png)_
+- Сегодня, 430×932: до _(artifacts/standalone-safe-area/before-today-430x932-standalone.png)_ · после Safari _(artifacts/standalone-safe-area/after-today-430x932-safari.png)_ · после standalone _(artifacts/standalone-safe-area/after-today-430x932-standalone.png)_
+- Шаги, 430×932: до _(artifacts/standalone-safe-area/before-practices-430x932-standalone.png)_ · после Safari _(artifacts/standalone-safe-area/after-practices-430x932-safari.png)_ · после standalone _(artifacts/standalone-safe-area/after-practices-430x932-standalone.png)_
 
 Скриншоты «до» получены тем же сценарием с принудительным старым резервом 47px; скриншоты «после» — с текущим CSS-правилом standalone.
