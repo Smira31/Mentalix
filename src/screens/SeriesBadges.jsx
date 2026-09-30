@@ -27,93 +27,134 @@ function RewardIcon({ variant = 'locked', size = 72, className = '' }) {
   const isLocked = variant === 'locked'
   const isFirstStep = variant === 'first-step'
 
+  // Шар по Stoic: viewBox 0 0 100 104, width = размер шара, высота ×1.04.
+  // Низ SVG (плоский низ подставки) = линия горизонта в главной карточке.
   return (
     <svg
       className={`mx-reward-icon ${className}`}
       width={size}
-      height={size}
-      viewBox="0 0 160 160"
+      height={Math.round((size * 104) / 100)}
+      viewBox="0 0 100 104"
+      fill="none"
       role="img"
       aria-label={isLocked ? 'Награда пока закрыта' : 'Открытая награда'}
     >
-      <circle className={`mx-reward-icon__glass${isLocked ? ' mx-reward-icon__glass--locked' : ''}`} cx="80" cy="68" r="48" />
-      <path className="mx-reward-icon__shine" d="M48 42c7-12 17-19 29-23" />
+      <circle
+        className="mx-reward-icon__glass"
+        cx="50"
+        cy="50"
+        r="49"
+        stroke="#555"
+        strokeWidth="1.2"
+      />
+      <path className="mx-reward-icon__shine" d="M13.8 30.8 A41 41 0 0 1 42.9 9.6" />
       {isLocked ? (
-        <text className="mx-reward-icon__question" x="80" y="80" textAnchor="middle">
+        <text className="mx-reward-icon__question" x="50" y="55" textAnchor="middle">
           ?
         </text>
-      ) : isFirstStep ? (
-        <>
-          <path className="mx-reward-icon__steps" d="M42 103h76M50 94h60M58 85h44M66 76h28" />
-          <path className="mx-reward-icon__flag" d="M88 76V43m0 0h22l-7 8 7 8H88" />
-          <path className="mx-reward-icon__bird" d="M104 66c5-6 11-6 16 0-5-2-9-1-12 3" />
-        </>
-      ) : variant === 'first_checkin' ? (
-        <path className="mx-reward-icon__symbol" d="M58 68l14 13 29-30M55 44h49" />
-      ) : variant === 'first_journal' ? (
-        <path className="mx-reward-icon__symbol" d="M55 46h39v42H55zM64 56h20M64 66h20M64 76h13M94 46l10 7v42H65" />
-      ) : variant === 'streak_7' ? (
-        <path className="mx-reward-icon__symbol" d="M56 80l9-25 12 15 11-23 15 33zM54 86h52" />
-      ) : variant === 'streak_30' ? (
-        <path className="mx-reward-icon__symbol" d="M56 82a27 27 0 1 1 48 0M68 78l12-32 12 32M71 68h18" />
-      ) : variant === 'active_days_100' ? (
-        <path className="mx-reward-icon__symbol" d="M80 39l9 20 22 2-17 15 5 22-19-11-19 11 5-22-17-15 22-2z" />
-      ) : variant === 'month-on-path' ? (
-        <path className="mx-reward-icon__symbol" d="M91 42a26 26 0 1 0 18 43 28 28 0 0 1-18-43z" />
-      ) : variant === 'voice-heard' ? (
-        <>
-          <path
-            className="mx-reward-icon__symbol"
-            d="M60 68c5-12 10 12 15 0s10-12 15 0 10 12 15 0"
-          />
-          <circle className="mx-reward-icon__dot" cx="80" cy="68" r="4" />
-        </>
-      ) : variant === 'streak-two' ? (
-        [0, 1].map(index => (
-          <circle className="mx-reward-icon__dot" key={index} cx={76 + index * 8} cy={66} r="3.5" />
-        ))
-      ) : variant === 'streak-three' ? (
-        [0, 1, 2].map(index => (
-          <circle
-            className="mx-reward-icon__dot"
-            key={index}
-            cx={72 + index * 8}
-            cy={68 - Math.abs(1 - index) * 4}
-            r="3.5"
-          />
-        ))
-      ) : variant === 'streak-five' ? (
-        [0, 1, 2, 3, 4].map(index => (
-          <circle
-            className="mx-reward-icon__dot"
-            key={index}
-            cx={64 + index * 8}
-            cy={68 - Math.abs(2 - index) * 4}
-            r="3.5"
-          />
-        ))
-      ) : variant === 'week-on-path' ? (
-        [0, 1, 2, 3, 4, 5, 6].map(index => (
-          <circle
-            className="mx-reward-icon__dot"
-            key={index}
-            cx={56 + index * 8}
-            cy={68 - Math.abs(3 - index) * 4}
-            r="3.5"
-          />
-        ))
-      ) : variant === 'ritual-holds' ? (
-        <path className="mx-reward-icon__steps" d="M55 88h50M62 80h36M69 72h22M76 64h8" />
-      ) : variant === 'asceza-power' ? (
-        <path className="mx-reward-icon__symbol" d="M62 84l36-32M70 88l28-24" />
       ) : (
-        <>
-          <circle className="mx-reward-icon__dot" cx="80" cy="68" r="12" />
-          <path className="mx-reward-icon__symbol" d="M80 52v32M64 68h32" />
-        </>
+        // Открытый значок: иконка в квадрате ~40×40 по центру (50,50).
+        // Пер-вариантные пути живут в старой сетке 160 (центр 80,68) и
+        // вписаны в квадрат масштабом 40/96.
+        <g
+          className="mx-reward-icon__badge-art"
+          transform="translate(50 50) scale(0.4167) translate(-80 -68)"
+        >
+          {isFirstStep ? (
+            <>
+              <path className="mx-reward-icon__steps" d="M42 103h76M50 94h60M58 85h44M66 76h28" />
+              <path className="mx-reward-icon__flag" d="M88 76V43m0 0h22l-7 8 7 8H88" />
+              <path className="mx-reward-icon__bird" d="M104 66c5-6 11-6 16 0-5-2-9-1-12 3" />
+            </>
+          ) : variant === 'first_checkin' ? (
+            <path className="mx-reward-icon__symbol" d="M58 68l14 13 29-30M55 44h49" />
+          ) : variant === 'first_journal' ? (
+            <path
+              className="mx-reward-icon__symbol"
+              d="M55 46h39v42H55zM64 56h20M64 66h20M64 76h13M94 46l10 7v42H65"
+            />
+          ) : variant === 'streak_7' ? (
+            <path className="mx-reward-icon__symbol" d="M56 80l9-25 12 15 11-23 15 33zM54 86h52" />
+          ) : variant === 'streak_30' ? (
+            <path
+              className="mx-reward-icon__symbol"
+              d="M56 82a27 27 0 1 1 48 0M68 78l12-32 12 32M71 68h18"
+            />
+          ) : variant === 'active_days_100' ? (
+            <path
+              className="mx-reward-icon__symbol"
+              d="M80 39l9 20 22 2-17 15 5 22-19-11-19 11 5-22-17-15 22-2z"
+            />
+          ) : variant === 'month-on-path' ? (
+            <path
+              className="mx-reward-icon__symbol"
+              d="M91 42a26 26 0 1 0 18 43 28 28 0 0 1-18-43z"
+            />
+          ) : variant === 'voice-heard' ? (
+            <>
+              <path
+                className="mx-reward-icon__symbol"
+                d="M60 68c5-12 10 12 15 0s10-12 15 0 10 12 15 0"
+              />
+              <circle className="mx-reward-icon__dot" cx="80" cy="68" r="4" />
+            </>
+          ) : variant === 'streak-two' ? (
+            [0, 1].map(index => (
+              <circle
+                className="mx-reward-icon__dot"
+                key={index}
+                cx={76 + index * 8}
+                cy={66}
+                r="3.5"
+              />
+            ))
+          ) : variant === 'streak-three' ? (
+            [0, 1, 2].map(index => (
+              <circle
+                className="mx-reward-icon__dot"
+                key={index}
+                cx={72 + index * 8}
+                cy={68 - Math.abs(1 - index) * 4}
+                r="3.5"
+              />
+            ))
+          ) : variant === 'streak-five' ? (
+            [0, 1, 2, 3, 4].map(index => (
+              <circle
+                className="mx-reward-icon__dot"
+                key={index}
+                cx={64 + index * 8}
+                cy={68 - Math.abs(2 - index) * 4}
+                r="3.5"
+              />
+            ))
+          ) : variant === 'week-on-path' ? (
+            [0, 1, 2, 3, 4, 5, 6].map(index => (
+              <circle
+                className="mx-reward-icon__dot"
+                key={index}
+                cx={56 + index * 8}
+                cy={68 - Math.abs(3 - index) * 4}
+                r="3.5"
+              />
+            ))
+          ) : variant === 'ritual-holds' ? (
+            <path className="mx-reward-icon__steps" d="M55 88h50M62 80h36M69 72h22M76 64h8" />
+          ) : variant === 'asceza-power' ? (
+            <path className="mx-reward-icon__symbol" d="M62 84l36-32M70 88l28-24" />
+          ) : (
+            <>
+              <circle className="mx-reward-icon__dot" cx="80" cy="68" r="12" />
+              <path className="mx-reward-icon__symbol" d="M80 52v32M64 68h32" />
+            </>
+          )}
+        </g>
       )}
-      <path className="mx-reward-icon__base" d="M34 116h92l-9 16H43z" />
-      <path className="mx-reward-icon__base-line" d="M27 137h106" />
+      <rect className="mx-reward-icon__base" x="9" y="84" width="82" height="2.6" rx="1.3" />
+      <path
+        className="mx-reward-icon__base"
+        d="M6 104 C6 94 10 88.5 20 88.5 L80 88.5 C90 88.5 94 94 94 104 Z"
+      />
     </svg>
   )
 }
@@ -221,10 +262,16 @@ export function BadgeSheet({ badge, onClose, onOpenPractice }) {
         <div className="mx-badge-sheet__body">
           <span className="mx-badge-sheet__eyebrow">{badge.done ? 'ЗНАЧОК СЕРИИ' : 'ЗНАЧОК'}</span>
           <h2 id="mx-badge-sheet-title">{badge.title}</h2>
-          <p>{badge.done ? badge.desc : `Чтобы получить, ${badgeConditions[badge.id] || 'продолжай свой путь.'}`}</p>
+          <p>
+            {badge.done
+              ? badge.desc
+              : `Чтобы получить, ${badgeConditions[badge.id] || 'продолжай свой путь.'}`}
+          </p>
           <div className="mx-badge-sheet__progress">
             <strong>Твой прогресс</strong>
-            <span>{badge.progress}/{badge.goal}</span>
+            <span>
+              {badge.progress}/{badge.goal}
+            </span>
           </div>
           <ProgressBar progress={badge.progress} goal={badge.goal} />
           {practice && !badge.done && (
@@ -301,8 +348,14 @@ function FeaturedLandscape() {
       preserveAspectRatio="none"
       aria-hidden="true"
     >
-      <path d="M0 216v-38c14-10 34-16 52-10 16 5 28 15 38 24 10 9 24 16 38 18l6 6Z" fill="#3a3a3a" />
-      <path d="M408 216v-42c-16-11-38-17-57-10-15 5-27 15-36 24-10 9-23 16-36 18l-5 10Z" fill="#3a3a3a" />
+      <path
+        d="M0 216v-38c14-10 34-16 52-10 16 5 28 15 38 24 10 9 24 16 38 18l6 6Z"
+        fill="#3a3a3a"
+      />
+      <path
+        d="M408 216v-42c-16-11-38-17-57-10-15 5-27 15-36 24-10 9-23 16-36 18l-5 10Z"
+        fill="#3a3a3a"
+      />
       <rect x="0" y="215" width="408" height="1" fill="rgba(255, 255, 255, 0.4)" />
     </svg>
   )
@@ -345,11 +398,17 @@ function AwardsView({ badges, onOpenBadge, onShowAll }) {
   return (
     <div className="mx-path-content">
       <section className="mx-path-featured-award">
-        <strong className="mx-path-award-count">{badges.filter(badge => badge.done).length}.</strong>
+        <strong className="mx-path-award-count">
+          {badges.filter(badge => badge.done).length}.
+        </strong>
         <span className="mx-path-featured-award-label">ЗНАЧКОВ ПОЛУЧЕНО</span>
         <FeaturedLandscape />
         <div className="mx-path-featured-scene">
-          <RewardIcon variant={featured?.done ? featured.id : 'locked'} size={77} className="mx-path-featured-icon" />
+          <RewardIcon
+            variant={featured?.done ? featured.id : 'locked'}
+            size={77}
+            className="mx-path-featured-icon"
+          />
         </div>
         <div className="mx-path-featured-title">{featured?.title || 'Все значки получены'}</div>
         <div className="mx-path-featured-copy">{featuredBadgeCaption(featured)}</div>
@@ -379,10 +438,17 @@ function AllBadgesView({ badges, onOpenBadge }) {
           <h2>{group.title}</h2>
           <div className="mx-path-badge-grid">
             {group.badges.map(badge => (
-              <button type="button" key={badge.id} onClick={() => onOpenBadge(badge)} data-testid={`all-badge-${badge.id}`}>
+              <button
+                type="button"
+                key={badge.id}
+                onClick={() => onOpenBadge(badge)}
+                data-testid={`all-badge-${badge.id}`}
+              >
                 <RewardIcon variant={badge.done ? badge.id : 'locked'} size={64} />
                 <strong>{badge.title}</strong>
-                <span>{badge.progress}/{badge.goal}</span>
+                <span>
+                  {badge.progress}/{badge.goal}
+                </span>
               </button>
             ))}
           </div>
@@ -393,7 +459,11 @@ function AllBadgesView({ badges, onOpenBadge }) {
 }
 
 function StatsView({ model, canonicalStats, theme, journalEntries = [] }) {
-  const { currentStreak, bestStreak, activeDays } = canonicalStats ?? { currentStreak: 0, bestStreak: 0, activeDays: 0 }
+  const { currentStreak, bestStreak, activeDays } = canonicalStats ?? {
+    currentStreak: 0,
+    bestStreak: 0,
+    activeDays: 0,
+  }
   const rows = [
     ['Текущая серия', formatDays(currentStreak)],
     ['Дней с активностью', activeDays],
@@ -409,9 +479,7 @@ function StatsView({ model, canonicalStats, theme, journalEntries = [] }) {
       <div className="mx-path-summary-grid">
         <div className="mx-path-summary-card">
           <strong>{activeDays}</strong>
-          <span>
-            Дней с активностью
-          </span>
+          <span>Дней с активностью</span>
         </div>
         <div className="mx-path-summary-card">
           <strong>{model.totalCheckins}</strong>
@@ -424,7 +492,15 @@ function StatsView({ model, canonicalStats, theme, journalEntries = [] }) {
           <MilestoneBars milestones={milestones} />
         </section>
       )}
-      {canonicalStats && <StatSection title="Серия" rows={rows} note={canonicalStats.freezeUsedThisWeek ? 'Заморозка: 1 пропуск в неделю не рвёт серию' : null} />}
+      {canonicalStats && (
+        <StatSection
+          title="Серия"
+          rows={rows}
+          note={
+            canonicalStats.freezeUsedThisWeek ? 'Заморозка: 1 пропуск в неделю не рвёт серию' : null
+          }
+        />
+      )}
       <StatSection
         title="Чек-ины"
         rows={[
@@ -521,7 +597,13 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
     ])
       .then(([stats, checkins, rituals, ascezas]) => {
         if (!active) return
-        const next = buildServerSeriesViewModel({ stats, checkins, rituals, ascezas, registrationDays: daysSinceRegistration(stats?.created_at) })
+        const next = buildServerSeriesViewModel({
+          stats,
+          checkins,
+          rituals,
+          ascezas,
+          registrationDays: daysSinceRegistration(stats?.created_at),
+        })
         setCheckinHistory({ userId: user.id, items: checkins })
         setCheckinTotal({ userId: user.id, count: stats?.total_checkins })
         setProfileStats({ userId: user.id, value: stats })
@@ -559,19 +641,28 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
 
   const visibleModel = modelUserId === user.id ? model : null
   const serverStats = canonicalStats?.userId === user.id ? canonicalStats.value : null
-  const registrationDays = daysSinceRegistration(profileStats?.userId === user.id ? profileStats.value?.created_at : user?.created_at)
+  const registrationDays = daysSinceRegistration(
+    profileStats?.userId === user.id ? profileStats.value?.created_at : user?.created_at
+  )
   const serverBadges = serverSeriesBadges(visibleModel?.badges, serverStats, registrationDays)
   const journalEntries = useMemo(() => readJournalHistory(user.id), [user.id])
-  const catalogReady = Boolean(visibleModel && checkinHistory?.userId === user.id &&
-    checkinTotal?.userId === user.id && completedSessions?.userId === user.id &&
-    canonicalStats?.userId === user.id && profileStats?.userId === user.id)
-  const mvpBadges = catalogReady ? buildMvpBadges({
-    checkins: checkinHistory.items,
-    totalCheckins: checkinTotal.count,
-    journalEntries,
-    completedSessions: completedSessions.items,
-    canonicalStats: serverStats,
-  }) : []
+  const catalogReady = Boolean(
+    visibleModel &&
+    checkinHistory?.userId === user.id &&
+    checkinTotal?.userId === user.id &&
+    completedSessions?.userId === user.id &&
+    canonicalStats?.userId === user.id &&
+    profileStats?.userId === user.id
+  )
+  const mvpBadges = catalogReady
+    ? buildMvpBadges({
+        checkins: checkinHistory.items,
+        totalCheckins: checkinTotal.count,
+        journalEntries,
+        completedSessions: completedSessions.items,
+        canonicalStats: serverStats,
+      })
+    : []
   const badges = [...mvpBadges, ...serverBadges]
   const freezeSeen = useRef(false)
   useEffect(() => {
@@ -587,87 +678,100 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
   }, [activeTab, visibleModel, user])
 
   const content = (
-    <div className="mx-path-layer" style={{ top: surfaceStyle.top, height: surfaceStyle.height }} onClick={() => { if (!selectedBadge) onBack() }}>
-    <section
-      ref={screenRef}
-      className={`mx-path-surface ${demoMode ? 'mx-path-surface--demo' : ''}${showAll ? ' mx-path-surface--all' : ''}${tgFullscreen ? ' mx-path-surface--tg-fullscreen' : ''}`}
-      style={{ paddingTop: surfaceStyle.paddingTop }}
-      onClick={event => event.stopPropagation()}
-      role="dialog"
-      aria-modal="true"
-      aria-label={showAll ? 'Все значки' : 'Значки и статистика'}
+    <div
+      className="mx-path-layer"
+      style={{ top: surfaceStyle.top, height: surfaceStyle.height }}
+      onClick={() => {
+        if (!selectedBadge) onBack()
+      }}
     >
-      {showAll && (
-        <header className="mx-path-header">
-          <BackButton onClick={() => setShowAll(false)} />
-        </header>
-      )}
-      <main
-        className={`mx-path-scroll${showAll ? '' : ' mx-path-scroll--overlay'}`}
-        onScroll={event => setHeaderScrolled(event.currentTarget.scrollTop > 0)}
+      <section
+        ref={screenRef}
+        className={`mx-path-surface ${demoMode ? 'mx-path-surface--demo' : ''}${showAll ? ' mx-path-surface--all' : ''}${tgFullscreen ? ' mx-path-surface--tg-fullscreen' : ''}`}
+        style={{ paddingTop: surfaceStyle.paddingTop }}
+        onClick={event => event.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label={showAll ? 'Все значки' : 'Значки и статистика'}
       >
-        {/* Стеклянная шапка живёт внутри скролла: липнет к верху и лежит
-            поверх контента, который просвечивает сквозь blur. */}
-        {!showAll && (
-          <header className={`mx-path-header${headerScrolled ? ' mx-path-header--scrolled' : ''}`}>
-            <div className="mx-path-tabs" role="tablist" aria-label="Раздел серии и значков">
-              <button
-                type="button"
-                role="tab"
-                className="mx-tap-target"
-                data-testid="series-tab-badges"
-                aria-selected={activeTab === 'badges'}
-                onClick={() => setActiveTab('badges')}
-              >
-                Значки
-              </button>
-              <button
-                type="button"
-                role="tab"
-                className="mx-tap-target"
-                data-testid="series-tab-stats"
-                aria-selected={activeTab === 'stats'}
-                onClick={() => setActiveTab('stats')}
-              >
-                Статистика
-              </button>
-            </div>
-            <CloseButton onClose={onBack} />
-            <BackButton onClick={onBack} />
+        {showAll && (
+          <header className="mx-path-header">
+            <BackButton onClick={() => setShowAll(false)} />
           </header>
         )}
-        {error && errorUserId === user.id && (
-          <p className="mx-path-status">
-            Не удалось загрузить данные. Попробуй открыть экран ещё раз.
-          </p>
-        )}
-        {catalogReady ? (
-          showAll ? <AllBadgesView badges={badges} onOpenBadge={setSelectedBadge} /> :
-          activeTab === 'badges' ? (
-            <AwardsView badges={badges} onShowAll={() => setShowAll(true)} onOpenBadge={setSelectedBadge} />
+        <main
+          className={`mx-path-scroll${showAll ? '' : ' mx-path-scroll--overlay'}`}
+          onScroll={event => setHeaderScrolled(event.currentTarget.scrollTop > 0)}
+        >
+          {/* Стеклянная шапка живёт внутри скролла: липнет к верху и лежит
+            поверх контента, который просвечивает сквозь blur. */}
+          {!showAll && (
+            <header
+              className={`mx-path-header${headerScrolled ? ' mx-path-header--scrolled' : ''}`}
+            >
+              <div className="mx-path-tabs" role="tablist" aria-label="Раздел серии и значков">
+                <button
+                  type="button"
+                  role="tab"
+                  className="mx-tap-target"
+                  data-testid="series-tab-badges"
+                  aria-selected={activeTab === 'badges'}
+                  onClick={() => setActiveTab('badges')}
+                >
+                  Значки
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  className="mx-tap-target"
+                  data-testid="series-tab-stats"
+                  aria-selected={activeTab === 'stats'}
+                  onClick={() => setActiveTab('stats')}
+                >
+                  Статистика
+                </button>
+              </div>
+              <CloseButton onClose={onBack} />
+              <BackButton onClick={onBack} />
+            </header>
+          )}
+          {error && errorUserId === user.id && (
+            <p className="mx-path-status">
+              Не удалось загрузить данные. Попробуй открыть экран ещё раз.
+            </p>
+          )}
+          {catalogReady ? (
+            showAll ? (
+              <AllBadgesView badges={badges} onOpenBadge={setSelectedBadge} />
+            ) : activeTab === 'badges' ? (
+              <AwardsView
+                badges={badges}
+                onShowAll={() => setShowAll(true)}
+                onOpenBadge={setSelectedBadge}
+              />
+            ) : (
+              <StatsView
+                model={{ ...visibleModel, badges: serverBadges }}
+                canonicalStats={serverStats}
+                theme={theme}
+                journalEntries={journalEntries}
+              />
+            )
           ) : (
-            <StatsView
-              model={{ ...visibleModel, badges: serverBadges }}
-              canonicalStats={serverStats}
-              theme={theme}
-              journalEntries={journalEntries}
-            />
-          )
-        ) : (
-          <p className="mx-path-status">Загружаю последние данные…</p>
+            <p className="mx-path-status">Загружаю последние данные…</p>
+          )}
+        </main>
+        {selectedBadge && (
+          <BadgeSheet
+            badge={selectedBadge}
+            onClose={() => setSelectedBadge(null)}
+            onOpenPractice={practice => {
+              setSelectedBadge(null)
+              onOpenPractice?.(practice)
+            }}
+          />
         )}
-      </main>
-      {selectedBadge && (
-        <BadgeSheet
-          badge={selectedBadge}
-          onClose={() => setSelectedBadge(null)}
-          onOpenPractice={practice => {
-            setSelectedBadge(null)
-            onOpenPractice?.(practice)
-          }}
-        />
-      )}
-    </section>
+      </section>
     </div>
   )
 
