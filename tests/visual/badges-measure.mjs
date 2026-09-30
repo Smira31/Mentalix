@@ -353,7 +353,7 @@ async function runBrowser(name, launcher, opts) {
   await page.waitForTimeout(200)
   const scrollBadges = await scrollCheck(page, 'badges')
   await page.getByTestId('series-tab-stats').click()
-  await page.waitForSelector('.mx-path-summary-card', { state: 'visible', timeout: 5000 })
+  await page.waitForSelector('.mx-path-tile', { state: 'visible', timeout: 5000 })
   const scrollStats = await scrollCheck(page, 'stats')
   await page.getByTestId('series-tab-badges').click()
   await page.waitForTimeout(200)
@@ -401,12 +401,12 @@ async function runTelegram(name, width, height) {
   await page.waitForTimeout(200)
   const scrollBadges = await scrollCheck(page, 'badges')
   await page.getByTestId('series-tab-stats').click()
-  await page.waitForSelector('.mx-path-summary-card', { state: 'visible', timeout: 5000 })
+  await page.waitForSelector('.mx-path-tile', { state: 'visible', timeout: 5000 })
   const scrollStats = await scrollCheck(page, 'stats')
   const statsGap = await page.evaluate(() => {
     const round = v => Math.round(v * 10) / 10
     const tabs = document.querySelector('.mx-path-tabs').getBoundingClientRect()
-    const tile = document.querySelector('.mx-path-summary-card').getBoundingClientRect()
+    const tile = document.querySelector('.mx-path-tile').getBoundingClientRect()
     return round(tile.y - tabs.bottom)
   })
   await page.screenshot({ path: `${OUT}/${name}-stats.png` })

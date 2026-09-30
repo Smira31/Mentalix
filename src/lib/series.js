@@ -163,4 +163,18 @@ export function seriesDateKey(checkin, timezone = 'UTC') {
   return dateKey(checkin, timezone)
 }
 
+/**
+ * Число уникальных дат завершённых чек-инов (утро или разбор).
+ * Каждый завершённый чек-ин учитывается один раз по своей логической дате.
+ */
+export function countUniqueCheckinDates(checkins = [], timezone = 'UTC') {
+  const dates = new Set()
+  for (const checkin of checkins) {
+    if (!isCompleted(checkin)) continue
+    const key = dateKey(checkin, timezone)
+    if (key) dates.add(key)
+  }
+  return dates.size
+}
+
 export { isCompleted as isCompletedCheckin }
