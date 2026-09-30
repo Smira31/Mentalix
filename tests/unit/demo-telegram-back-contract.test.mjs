@@ -7,10 +7,11 @@ const mentalix = await readFile(new URL('../../src/screens/Mentalix.jsx', import
 const today = await readFile(new URL('../../src/screens/Today.jsx', import.meta.url), 'utf8')
 const practices = await readFile(new URL('../../src/screens/Practices.jsx', import.meta.url), 'utf8')
 
-test('Demo Telegram chrome — визуальная эмуляция без кликабельных кнопок', () => {
+test('Demo Telegram chrome — эмуляция без пропсов, левая пилюля живёт внутри компонента', () => {
   assert.match(app, /import DemoTelegramChrome from '\.\/components\/DemoTelegramChrome'/)
-  // Chrome не кликабелен: без onBack и без активной кнопки «Закрыть».
-  assert.doesNotMatch(app, /<DemoTelegramChrome onBack/)
+  // Навигационное состояние пилюли не прокидывается из App: компонент
+  // сам читает стек useBackButton (тот же источник, что BackButton).
+  assert.doesNotMatch(app, /<DemoTelegramChrome [^/]*onBack/)
   assert.doesNotMatch(app, /aria-label="Закрыть превью"/)
   // Рендерится всегда, когда нужна эмуляция (без условий overlay/series/flow).
   assert.match(
