@@ -81,12 +81,13 @@ function StepDot({ status, number }) {
   )
 }
 
-function ChapterSection({ chapter, progress, onOpenStep }) {
+function ChapterSection({ chapter, progress, onOpenStep, currentStepId }) {
   const trials = trialsForChapter(chapter)
   const completedCount = trials.filter(t => isStepCompleted(t.id, progress)).length
   const anyStarted = completedCount > 0
+  const hasCurrentStep = Boolean(currentStepId) && trials.some(t => t.id === currentStepId)
 
-  const [expanded, setExpanded] = useState(anyStarted)
+  const [expanded, setExpanded] = useState(anyStarted || hasCurrentStep)
 
   return (
     <section className="mx-hj-chapter">
@@ -196,6 +197,7 @@ function CourseMap({ progress, onOpenStep, onBack }) {
             chapter={chapter}
             progress={progress}
             onOpenStep={onOpenStep}
+            currentStepId={nextTrial?.id}
           />
         ))}
       </div>
@@ -353,7 +355,7 @@ function PathsScreen({ trial, onNext, onBack }) {
       {trial.quote && (
         <blockquote className="mx-hj-paths__quote">
           <p>{trial.quote}</p>
-          <cite>— из практикума «Путь героя»</cite>
+
         </blockquote>
       )}
 
@@ -428,7 +430,7 @@ function StepComplete({ trial, progress, onBackToMap, onBack }) {
         </div>
         <span className="mx-hj-complete__step">Шаг {trial.number} из {HERO_JOURNEY_TOTAL_STEPS}</span>
         <h2 className="mx-hj-complete__title">Шаг пройден</h2>
-        <p className="mx-hj-complete__phrase">{trial.subtitle}</p>
+        <p className="mx-hj-complete__phrase">{trial.doneText || 'Ты сделал ещё один шаг по пути.'}</p>
       </div>
 
       <div className="mx-hj-complete__chapter-card">
@@ -571,7 +573,7 @@ export default function HeroJourneyMap({ onBack }) {
       <WriteScreen
         label="ЗАПИШИ"
         prompt={trial.prompt}
-        hint={trial.prompt}
+        hint={trial.hint || 'Не оценивай — просто назови, как есть.'}
         placeholder="Записать мысль..."
         value={reflection}
         onChange={setReflection}
@@ -589,7 +591,7 @@ export default function HeroJourneyMap({ onBack }) {
         label="ОДНО ДЕЙСТВИЕ"
         prompt={trial.action}
         hint="Напиши, какое. Оно сохранится вместе с ответом в дневнике."
-        placeholder="Моё одно направление..."
+        placeholder={trial.actionPlaceholder || 'Моё действие…'}
         value={action}
         onChange={setAction}
         onSubmit={submitAction}

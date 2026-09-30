@@ -705,6 +705,8 @@
 .mx-hj-complete__chapter-card {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  text-align: center;
   gap: 10px;
   margin-top: 24px;
   padding: 18px 20px;
@@ -714,7 +716,9 @@
 
 .mx-hj-complete__chapter-segs {
   display: flex;
+  justify-content: center;
   gap: 3px;
+  width: 100%;
 }
 
 .mx-hj-complete__chapter-done {
