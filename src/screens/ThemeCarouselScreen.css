@@ -66,7 +66,7 @@
   touch-action: pan-x pan-y;
   margin: 0 calc(-1 * var(--mx-screen-x));
   padding: 0 max(var(--mx-screen-x), calc(50% - 149px));
-  height: 360px;
+  height: 340px;
 }
 
 .mx-theme-carousel-track::-webkit-scrollbar {
@@ -77,14 +77,16 @@
   scroll-snap-align: center;
   flex-shrink: 0;
   width: 298px;
-  height: 360px;
+  height: 340px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   text-align: center;
-  border-radius: 33px;
+  border-radius: 30px;
   background: rgb(var(--c-card2));
-  padding: 98px 29px 0;
+  padding: 44px 32px 32px;
+  gap: 22px;
   overflow: hidden;
   transform: scale(1);
   transform-origin: center;
@@ -102,17 +104,17 @@
 
 .mx-theme-carousel-q__num {
   font-family: var(--font-serif);
-  font-size: 38px;
+  font-size: 30px;
   line-height: 1;
   font-weight: 400;
   color: rgb(var(--c-text));
-  margin-bottom: 25px;
+  margin: 0;
 }
 
 .mx-theme-carousel-q__text {
   font-family: 'Onest', system-ui, sans-serif;
   font-size: 17px;
-  line-height: 1.3;
+  line-height: 1.4;
   font-weight: 600;
   color: rgb(var(--c-text));
   max-width: 240px;
@@ -123,18 +125,21 @@
   line-height: 1.4;
   font-weight: 400;
   color: rgb(var(--c-muted));
-  margin-top: 4px;
+  margin: 0;
   max-width: 240px;
 }
 
 .mx-theme-carousel-q__badge {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
   display: inline-flex;
   align-items: center;
   gap: 4px;
   font-size: 11px;
   font-weight: 600;
   color: rgb(var(--c-muted));
-  margin-top: auto;
   align-self: center;
 }
 

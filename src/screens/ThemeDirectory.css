@@ -37,12 +37,12 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 408px;
+  width: 100%;
   max-width: 100%;
-  min-height: 190px;
-  padding: 56px 24px 20px;
+  min-height: 104px;
+  padding: 18px 20px 14px;
   border: 0;
-  border-radius: 26px;
+  border-radius: 20px;
   background: rgb(var(--c-card2));
   color: rgb(var(--c-text));
   text-align: center;
@@ -53,25 +53,25 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   width: 100%;
 }
 
 .mx-theme-directory__info strong {
   font-family: 'Onest', system-ui, sans-serif;
-  font-size: 24px;
+  font-size: 17px;
   font-weight: 700;
   color: #d4d4d4;
-  line-height: 1.1;
+  line-height: 1.15;
 }
 
 .mx-theme-directory__info small {
   color: rgb(var(--c-muted));
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 400;
   line-height: 1.3;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -87,7 +87,7 @@
 }
 
 .mx-theme-directory__progress {
-  width: 110px;
+  width: 80px;
   height: 3px;
   border-radius: 2px;
   background: rgb(var(--c-card3));
