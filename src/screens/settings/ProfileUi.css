@@ -880,54 +880,6 @@ button.mx-profile-row:active {
   height: 16px;
 }
 
-/* 4. Карточка «Mentalix на сайте» — в разделе АККАУНТ: заголовок с засечками
-   (существующий serif-токен), фон чуть светлее --c-card2. */
-.mx-profile-web-card {
-  display: flex;
-  width: 100%;
-  align-items: center;
-  gap: 12px;
-  margin: 0;
-  padding: 14px 16px;
-  border: 0;
-  border-radius: 16px;
-  background: color-mix(in srgb, rgb(var(--c-card2)), rgb(var(--c-white)) 5%);
-  color: rgb(var(--c-text));
-  font: inherit;
-  text-align: left;
-  transition: transform 160ms ease;
-}
-
-.mx-profile-web-card:active {
-  transform: scale(0.98);
-}
-
-.mx-profile-web-card__body {
-  display: flex;
-  flex: 1 1 auto;
-  min-width: 0;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.mx-profile-web-card__title {
-  font-family: var(--font-serif);
-  font-size: 19px;
-  font-weight: 700;
-  line-height: 1.2;
-}
-
-.mx-profile-web-card__text {
-  color: rgb(var(--c-muted));
-  font-size: 13px;
-  line-height: 1.35;
-}
-
-.mx-profile-web-card__chevron {
-  flex-shrink: 0;
-  color: rgb(var(--c-text));
-}
-
 @media (prefers-reduced-motion: reduce) {
   .mx-profile-page__surface,
   .mx-profile-page__surface::after,

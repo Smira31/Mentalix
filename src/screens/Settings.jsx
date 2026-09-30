@@ -6,7 +6,7 @@
 // Каждый пункт открывает под-экран с существующими настройками.
 
 import { useCallback, useEffect, useState } from 'react'
-import { Check, ChevronRight } from 'lucide-react'
+import { Check } from 'lucide-react'
 import { version as appVersion } from '../../package.json'
 import { api } from '../lib/api'
 import { forget, useSynced } from '../lib/store'
@@ -119,14 +119,20 @@ export default function Settings({
     if (!user) return
     let active = true
     setProfileStats(null)
-    api.profile.get(user.id).then(data => {
-      if (active) setProfileStats(data)
-    }).catch(() => {
-      if (active) setProfileError(true)
-    }).finally(() => {
-      if (active) setProfileLoading(false)
-    })
-    return () => { active = false }
+    api.profile
+      .get(user.id)
+      .then(data => {
+        if (active) setProfileStats(data)
+      })
+      .catch(() => {
+        if (active) setProfileError(true)
+      })
+      .finally(() => {
+        if (active) setProfileLoading(false)
+      })
+    return () => {
+      active = false
+    }
   }, [user, profileReloadToken])
 
   function retryProfile() {
@@ -454,9 +460,15 @@ export default function Settings({
     try {
       const initial = sessionStorage.getItem('mx-settings-initial-sub')
       sessionStorage.removeItem('mx-settings-initial-sub')
-      return initial || { profile_checkins: 'checkins', profile_about: 'about' }[previewProfileAction()] || null
+      return (
+        initial ||
+        { profile_checkins: 'checkins', profile_about: 'about' }[previewProfileAction()] ||
+        null
+      )
     } catch {
-      return { profile_checkins: 'checkins', profile_about: 'about' }[previewProfileAction()] || null
+      return (
+        { profile_checkins: 'checkins', profile_about: 'about' }[previewProfileAction()] || null
+      )
     }
   }) // null | 'checkins' | 'about' | 'prefs' | 'appearance' | 'notifications' | 'data' | 'timezone'
 
@@ -966,7 +978,8 @@ export default function Settings({
                 />
                 <div className="mx-profile-inset text-[13px] leading-relaxed text-muted">
                   Экспорт и удаление аккаунта сейчас доступны через Telegram Mini App с проверенной
-                  подписью. Веб-вход доступен, но эти действия пока не предлагаются в веб-интерфейсе.
+                  подписью. Веб-вход доступен, но эти действия пока не предлагаются в
+                  веб-интерфейсе.
                 </div>
               </>
             )}
@@ -1007,7 +1020,15 @@ export default function Settings({
 
   const subContent = {
     checkins: renderCheckins,
-    about: () => <Profile user={user} stats={profileStats} loading={profileLoading} error={profileError} retryProfile={retryProfile} />,
+    about: () => (
+      <Profile
+        user={user}
+        stats={profileStats}
+        loading={profileLoading}
+        error={profileError}
+        retryProfile={retryProfile}
+      />
+    ),
     prefs: renderPrefs,
     appearance: renderAppearance,
     notifications: renderNotifications,
@@ -1032,8 +1053,10 @@ export default function Settings({
     <ProfilePage key="root" title="твой профиль." isRoot onBack={onBack} testId="profile-screen">
       <ProfileBody>
         <ProfileBanners
+          showWeb={showWebBanner}
           onOpenSubscription={() => setScreen('subscription')}
           onOpenDonate={() => setScreen('donate')}
+          onOpenWeb={openWebBanner}
         />
         <ProfileGroup label="Настрой">
           <ProfileCard testId="profile-card-setup">
@@ -1089,36 +1112,11 @@ export default function Settings({
               onClick={() => setScreen('subscription')}
             />
           </ProfileCard>
-
-          {showWebBanner && (
-            <button
-              type="button"
-              className="mx-profile-web-card"
-              data-testid="profile-card-web"
-              onClick={openWebBanner}
-            >
-              <span className="mx-profile-web-card__body">
-                <span className="mx-profile-web-card__title">Mentalix на сайте</span>
-                <span className="mx-profile-web-card__text">
-                  Свяжи аккаунт с сайтом, чтобы записи были и в браузере.
-                </span>
-              </span>
-              <ChevronRight
-                size={16}
-                strokeWidth={2.5}
-                aria-hidden="true"
-                className="mx-profile-web-card__chevron"
-              />
-            </button>
-          )}
         </ProfileGroup>
 
         <ProfileGroup label="Помощь">
           <ProfileCard>
-            <ProfileRow
-              title="Написать в поддержку"
-              onClick={() => openSupportChat()}
-            />
+            <ProfileRow title="Написать в поддержку" onClick={() => openSupportChat()} />
             <ProfileRow
               title="Что было бы полезно?"
               subtitle="Короткий опрос — без оплаты и подписки"
@@ -1129,7 +1127,10 @@ export default function Settings({
 
         <ProfileGroup label="Приложение">
           <ProfileCard>
-            <ProfileRow title="Политика конфиденциальности" onClick={() => setScreen('privacy-notice')} />
+            <ProfileRow
+              title="Политика конфиденциальности"
+              onClick={() => setScreen('privacy-notice')}
+            />
           </ProfileCard>
         </ProfileGroup>
 
