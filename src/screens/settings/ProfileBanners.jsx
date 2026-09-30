@@ -82,12 +82,11 @@ export function WebBanner({ onOpen }) {
   )
 }
 
-export function ProfileBanners({ showWeb, onOpenSubscription, onOpenDonate, onOpenWeb }) {
+export function ProfileBanners({ onOpenSubscription, onOpenDonate }) {
   return (
     <div className="mx-profile-banners" data-testid="profile-banners">
       <PotentialBanner onOpen={onOpenSubscription} />
       <SupportBanner onOpen={onOpenDonate} />
-      {showWeb && <WebBanner onOpen={onOpenWeb} />}
     </div>
   )
 }

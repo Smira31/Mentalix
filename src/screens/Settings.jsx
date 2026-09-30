@@ -6,7 +6,7 @@
 // Каждый пункт открывает под-экран с существующими настройками.
 
 import { useCallback, useEffect, useState } from 'react'
-import { Check } from 'lucide-react'
+import { Check, ChevronRight } from 'lucide-react'
 import { version as appVersion } from '../../package.json'
 import { api } from '../lib/api'
 import { forget, useSynced } from '../lib/store'
@@ -1032,10 +1032,8 @@ export default function Settings({
     <ProfilePage key="root" title="твой профиль." isRoot onBack={onBack} testId="profile-screen">
       <ProfileBody>
         <ProfileBanners
-          showWeb={showWebBanner}
           onOpenSubscription={() => setScreen('subscription')}
           onOpenDonate={() => setScreen('donate')}
-          onOpenWeb={openWebBanner}
         />
         <ProfileGroup label="Настрой">
           <ProfileCard testId="profile-card-setup">
@@ -1091,6 +1089,28 @@ export default function Settings({
               onClick={() => setScreen('subscription')}
             />
           </ProfileCard>
+
+          {showWebBanner && (
+            <button
+              type="button"
+              className="mx-profile-web-card"
+              data-testid="profile-card-web"
+              onClick={openWebBanner}
+            >
+              <span className="mx-profile-web-card__body">
+                <span className="mx-profile-web-card__title">Mentalix на сайте</span>
+                <span className="mx-profile-web-card__text">
+                  Свяжи аккаунт с сайтом, чтобы записи были и в браузере.
+                </span>
+              </span>
+              <ChevronRight
+                size={16}
+                strokeWidth={2.5}
+                aria-hidden="true"
+                className="mx-profile-web-card__chevron"
+              />
+            </button>
+          )}
         </ProfileGroup>
 
         <ProfileGroup label="Помощь">
