@@ -1,12 +1,22 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Check, Settings2, X } from 'lucide-react'
+import {
+  Brush,
+  Check,
+  LayoutGrid,
+  Lightbulb,
+  MoreHorizontal,
+  Plus,
+  Search,
+  Settings2,
+  X,
+} from 'lucide-react'
 
 import './PinnedPractices.css'
 
 import CardSystemGlyph, { practiceGlyphKind } from './CardSystemGlyph'
 import { api } from '../lib/api'
-import { buildPracticeViewModels } from '../lib/practiceCatalogRegistry'
+import { buildPracticeViewModels, PRACTICE_RAIL_KEYS } from '../lib/practiceCatalogRegistry'
 import { getFullscreenPortalTarget, useFullscreenSurface } from '../lib/fullscreenSurface'
 import { isTelegramRuntime } from '../lib/visualViewport'
 import { useBackButton } from '../platform/telegram.hooks'
@@ -22,22 +32,28 @@ function Sheet({
   onClose,
   children,
   footer = null,
+  overlay = null,
   undo = null,
   onUndo = null,
+  variant = 'default',
 }) {
   const { style: viewportStyle } = useFullscreenSurface()
   const telegram = isTelegramRuntime()
 
   useBackButton(onClose)
 
+  const isLibrary = variant === 'library'
+  const CloseIcon = isLibrary ? Check : X
+  const closeLabel = isLibrary ? 'Сохранить и закрыть' : 'Закрыть'
+
   const content = (
     <div
-      className="mx-pinned-sheet-backdrop"
+      className={`mx-pinned-sheet-backdrop${isLibrary ? ' mx-pinned-sheet-backdrop--library' : ''}`}
       role="presentation"
       onMouseDown={event => event.target === event.currentTarget && onClose()}
     >
       <section
-        className="mx-pinned-sheet"
+        className={`mx-pinned-sheet${isLibrary ? ' mx-pinned-sheet--library' : ''}`}
         role="dialog"
         aria-modal="true"
         aria-label={title}
@@ -48,19 +64,24 @@ function Sheet({
             {!telegram && (
               <button
                 type="button"
-                className="mx-icon-button"
-                aria-label="Закрыть"
+                className="mx-pinned-sheet__circle"
+                aria-label={closeLabel}
                 onClick={onClose}
               >
-                <X size={19} aria-hidden="true" />
+                <CloseIcon size={20} aria-hidden="true" />
               </button>
             )}
           </div>
-          <h2 className="font-display mx-type-page text-cream lowercase">{title}</h2>
+          <h2
+            className={`font-display mx-type-page text-cream lowercase${isLibrary ? ' mx-pinned-sheet__title--left' : ''}`}
+          >
+            {title}
+          </h2>
           {subtitle && <p className="mx-pinned-sheet__subtitle text-muted">{subtitle}</p>}
         </div>
         <div className="mx-pinned-sheet__body">{children}</div>
         {footer && <div className="mx-pinned-sheet__footer">{footer}</div>}
+        {overlay && <div className="mx-pinned-sheet__overlay">{overlay}</div>}
       </section>
       {undo && (
         <div className="mx-pinned-undo-toast" role="status">
@@ -121,6 +142,10 @@ export default function PinnedPractices({
   const [sheet, setSheet] = useState(initialSheet)
   const [busyKeys, setBusyKeys] = useState(() => new Set())
   const [undo, setUndo] = useState(null)
+  const [menuKey, setMenuKey] = useState(null)
+  const [soonToast, setSoonToast] = useState(false)
+  const [libraryFilter, setLibraryFilter] = useState('recommended')
+  const [librarySearch, setLibrarySearch] = useState('')
   const todayDone = useMemo(
     () => ({
       rituals: rituals.some(ritual => ritual.today_level),
@@ -129,11 +154,13 @@ export default function PinnedPractices({
     [rituals, ascezas]
   )
   const undoTimerRef = useRef(null)
+  const soonTimerRef = useRef(null)
   const railRef = useRef(null)
 
   useEffect(() => {
     return () => {
       if (undoTimerRef.current) clearTimeout(undoTimerRef.current)
+      if (soonTimerRef.current) clearTimeout(soonTimerRef.current)
     }
   }, [])
 
@@ -173,7 +200,7 @@ export default function PinnedPractices({
     return () => rail.removeEventListener('touchstart', stopEdgeSwipe)
   }, [loading, pinnedPractices.length])
 
-  async function togglePinned(practice) {
+  async function togglePinned(practice, { undoable = true } = {}) {
     const key = practice.key
 
     // Per-practice guard: ignore taps while this practice's request is in flight
@@ -195,12 +222,16 @@ export default function PinnedPractices({
       try {
         await api.pinnedPractices.remove(user.id, key)
         invalidatePinnedPractices(user.id)
-        // Show undo toast for 4s — API already succeeded, undo re-adds via API
-        setUndo({ item, index })
-        undoTimerRef.current = setTimeout(() => {
-          setUndo(null)
-          undoTimerRef.current = null
-        }, 4000)
+        // Тост «Удалено · Вернуть» показываем только там, где он нужен:
+        // в библиотеке галочка снимается сразу, вернуть практику можно
+        // повторным тапом по строке.
+        if (undoable) {
+          setUndo({ item, index })
+          undoTimerRef.current = setTimeout(() => {
+            setUndo(null)
+            undoTimerRef.current = null
+          }, 4000)
+        }
       } catch {
         // Rollback: re-add the item at its original position
         setPinned(items => {
@@ -281,6 +312,22 @@ export default function PinnedPractices({
     onOpenPractice?.(practice.sub || practice.key)
   }
 
+  // «Создать свою практику» — функция ещё не готова, показываем короткий тост.
+  function showSoonToast() {
+    setSoonToast(true)
+    if (soonTimerRef.current) clearTimeout(soonTimerRef.current)
+    soonTimerRef.current = setTimeout(() => {
+      setSoonToast(false)
+      soonTimerRef.current = null
+    }, 2000)
+  }
+
+  function runMenuAction(action, practice) {
+    setMenuKey(null)
+    if (action === 'open') openPractice(practice)
+    else togglePinned(practice)
+  }
+
   return (
     <section className="mx-pinned-practices" aria-labelledby="pinned-practices-title">
       <div className="mx-pinned-practices__heading">
@@ -329,7 +376,7 @@ export default function PinnedPractices({
       {sheet === 'manage' && (
         <Sheet
           title="твои практики."
-          subtitle="Твой дневной набор — нажимай, чтобы начать."
+          subtitle="Твой дневной набор — собери свою идеальную рутину."
           onClose={() => setSheet(null)}
           undo={undo}
           onUndo={undoRemove}
@@ -337,16 +384,31 @@ export default function PinnedPractices({
             <div className="mx-pinned-sheet__footer-actions">
               <button
                 type="button"
-                className="cta-pill mx-type-flow-action w-full"
+                className="cta-pill mx-pinned-sheet__pill"
+                data-testid="practice-create-soon"
+                onClick={showSoonToast}
+              >
+                <Brush size={18} aria-hidden="true" />
+                <span>Создать свою практику</span>
+              </button>
+              <button
+                type="button"
+                className="cta-pill mx-pinned-sheet__pill"
                 onClick={() => setSheet('library')}
               >
-                Добавить из библиотеки
+                <Plus size={18} aria-hidden="true" />
+                <span>Добавить из библиотеки</span>
               </button>
             </div>
           }
         >
           {pinnedPractices.length === 0 ? (
-            <p className="mx-type-list-body text-muted">Пока ничего не закреплено.</p>
+            <div className="mx-pinned-manage-empty">
+              <span className="mx-pinned-manage-empty__glyph" aria-hidden="true" />
+              <p className="mx-pinned-manage-empty__text text-muted">
+                Здесь будут твои практики. Добавь любимые из библиотеки.
+              </p>
+            </div>
           ) : (
             <div className="mx-pinned-practices__grid">
               {pinnedPractices.map(practice => (
@@ -364,17 +426,59 @@ export default function PinnedPractices({
                     <span className="mx-pinned-practice-card__title text-cream">
                       {practice.title}
                     </span>
+                    {practice.description && (
+                      <span className="mx-pinned-practice-card__desc text-muted">
+                        {practice.description}
+                      </span>
+                    )}
                   </button>
                   <button
                     type="button"
-                    className="mx-pinned-practice-card__remove"
-                    aria-label={`Открепить: ${practice.title}`}
-                    onClick={() => togglePinned(practice)}
+                    className="mx-pinned-practice-card__more"
+                    data-testid={`practice-card-more-${practice.key}`}
+                    aria-label={`Действия: ${practice.title}`}
+                    aria-expanded={menuKey === practice.key}
+                    onClick={() => setMenuKey(key => (key === practice.key ? null : practice.key))}
                   >
-                    <X size={15} aria-hidden="true" />
+                    <MoreHorizontal size={13} aria-hidden="true" />
                   </button>
+                  {menuKey === practice.key && (
+                    <>
+                      <button
+                        type="button"
+                        className="mx-pinned-card-menu-backdrop"
+                        aria-label="Закрыть меню"
+                        onClick={() => setMenuKey(null)}
+                      />
+                      <div className="mx-pinned-card-menu" role="menu">
+                        <button
+                          type="button"
+                          role="menuitem"
+                          className="mx-pinned-card-menu__item"
+                          data-testid="practice-card-menu-open"
+                          onClick={() => runMenuAction('open', practice)}
+                        >
+                          Открыть
+                        </button>
+                        <button
+                          type="button"
+                          role="menuitem"
+                          className="mx-pinned-card-menu__item"
+                          data-testid="practice-card-menu-remove"
+                          onClick={() => runMenuAction('remove', practice)}
+                        >
+                          Убрать из набора
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
               ))}
+            </div>
+          )}
+          {soonToast && (
+            <div className="mx-pinned-soon-toast" role="status" data-testid="practices-soon-toast">
+              Скоро: свои практики
             </div>
           )}
         </Sheet>
@@ -384,37 +488,82 @@ export default function PinnedPractices({
         <Sheet
           title="библиотека практик."
           onClose={() => setSheet('manage')}
-          undo={undo}
-          onUndo={undoRemove}
+          variant="library"
+          overlay={
+            <div className="mx-library-search">
+              <Search size={18} aria-hidden="true" />
+              <input
+                type="text"
+                className="mx-library-search__input"
+                placeholder="Поиск"
+                value={librarySearch}
+                onChange={event => setLibrarySearch(event.target.value)}
+                aria-label="Поиск практик"
+              />
+            </div>
+          }
         >
-          <div className="mx-pinned-library" role="list">
-            {catalog.map(practice => {
-              const isPinned = pinnedIds.has(practice.key)
-              return (
-                <button
-                  type="button"
-                  className="mx-pinned-library__row"
-                  key={practice.key}
-                  role="listitem"
-                  aria-pressed={isPinned}
-                  onClick={() => togglePinned(practice)}
-                >
-                  <PracticeGlyph practice={practice} />
-                  <span className="mx-pinned-library__name mx-type-list-title text-cream">
-                    {practice.title}
-                  </span>
-                  <span
-                    className={`mx-pinned-library__toggle ${isPinned ? 'is-pinned' : ''}`}
-                    aria-hidden="true"
-                  >
-                    {isPinned ? <Check size={16} /> : '+'}
-                  </span>
-                </button>
+          <div className="mx-library-filters" role="tablist" aria-label="Фильтр практик">
+            <button
+              type="button"
+              className={`mx-library-chip${libraryFilter === 'recommended' ? ' is-active' : ''}`}
+              role="tab"
+              aria-selected={libraryFilter === 'recommended'}
+              onClick={() => setLibraryFilter('recommended')}
+            >
+              <Lightbulb size={17} aria-hidden="true" />
+              <span>Рекомендуем</span>
+            </button>
+            <button
+              type="button"
+              className={`mx-library-chip${libraryFilter === 'all' ? ' is-active' : ''}`}
+              role="tab"
+              aria-selected={libraryFilter === 'all'}
+              onClick={() => setLibraryFilter('all')}
+            >
+              <LayoutGrid size={17} aria-hidden="true" />
+              <span>Все</span>
+            </button>
+          </div>
+          <div className="mx-library-list" role="list">
+            {catalog
+              .filter(practice =>
+                libraryFilter === 'recommended'
+                  ? PRACTICE_RAIL_KEYS.includes(practice.key)
+                  : true
               )
-            })}
+              .filter(practice =>
+                librarySearch
+                  ? practice.title.toLowerCase().includes(librarySearch.toLowerCase())
+                  : true
+              )
+              .map(practice => {
+                const isPinned = pinnedIds.has(practice.key)
+                return (
+                  <button
+                    type="button"
+                    className="mx-library-row"
+                    key={practice.key}
+                    role="listitem"
+                    aria-pressed={isPinned}
+                    onClick={() => togglePinned(practice, { undoable: false })}
+                  >
+                    <span className="mx-library-row__icon" aria-hidden="true">
+                      <PracticeGlyph practice={practice} />
+                    </span>
+                    <span className="mx-library-row__name">{practice.title}</span>
+                    <span
+                      className={`mx-library-row__toggle${isPinned ? ' is-pinned' : ''}`}
+                      aria-hidden="true"
+                    >
+                      {isPinned ? <Check size={14} aria-hidden="true" /> : '+'}
+                    </span>
+                  </button>
+                )
+              })}
           </div>
           {error && (
-            <p className="mx-type-meta text-muted mt-3">
+            <p className="mx-type-meta text-muted mt-3 mx-library-error">
               Не получилось сохранить выбор. Попробуй ещё раз.
             </p>
           )}
