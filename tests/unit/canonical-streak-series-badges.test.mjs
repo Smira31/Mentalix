@@ -51,7 +51,8 @@ test('canonical stats: invalid or partial payload falls back as a whole', () => 
     assert.equal(readCanonicalStreakStats(payload), null)
   }
   // Блок «Серия» показывается только по серверным данным.
-  assert.match(source, /\{canonicalStats && <StatSection title="Серия"/)
+  // Допускаем многострочную запись условия (палттер).
+  assert.match(source, /\{canonicalStats && \(?\s*<StatSection\s+title="Серия"/)
   // Значки серии пересчитываются серверной статистикой, не историей.
   assert.match(source, /serverSeriesBadges\(visibleModel\?\.badges, serverStats, registrationDays\)/)
 })
@@ -77,7 +78,8 @@ test('serverSeriesBadges: значки серии берут пороги из �
 test('canonical network error and loading retain legacy stats without blocking badges', () => {
   assert.match(source, /api\.streak\(user\.id\)[\s\S]*?\.catch\(\(\) => \{\s*if \(active\) setCanonicalStats\(\{ userId: user\.id, value: null \}\)/)
   assert.match(source, /canonicalStats\?\.userId === user\.id \? canonicalStats\.value : null/)
-  assert.match(source, /const next = buildServerSeriesViewModel\(\{ stats, checkins, rituals, ascezas, registrationDays/)
+  // Допускаем многострочные аргументы (палттер).
+  assert.match(source, /const next = buildServerSeriesViewModel\(\{\s*stats,\s*checkins,\s*rituals,\s*ascezas,\s*registrationDays/)
   assert.match(source, /badges: serverBadges/)
   // «Дней с чек-ином» берётся из канонической серии, а не из view-model без неё.
   assert.match(source, /\['Дней с чек-ином', activeDays \?\? model\.activeDays\]/)

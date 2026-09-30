@@ -26,7 +26,7 @@ const SHEET_EXIT = 'transform 200ms ease-in'
 // Высота верхней зоны (ручка + заголовок), за которую можно тянуть
 const DRAG_ZONE_HEIGHT = 120
 
-export function useSheetSwipeDown(ref, onClose, { enabled = true } = {}) {
+export function useSheetSwipeDown(ref, onClose, { enabled = true, zoneOnly = false } = {}) {
   const onCloseRef = useRef(onClose)
 
   useEffect(() => {
@@ -49,18 +49,29 @@ export function useSheetSwipeDown(ref, onClose, { enabled = true } = {}) {
     let active = false
     let locked = false
 
+    // Скроллимый элемент может быть самим el (шторка), его потомком
+    // (полноэкранный слой со скроллом внутри) или предком. Раньше искали
+    // только у el и предков — на полноэкранных слоях findScrollable всегда
+    // давал null, жест считал слой «прокрученным в самый верх» и глушил
+    // тач-скролл preventDefault'ом.
+    function isScrollableY(node) {
+      if (!node) return false
+      const style = getComputedStyle(node)
+      return (
+        (style.overflowY === 'auto' || style.overflowY === 'scroll') &&
+        node.scrollHeight > node.clientHeight
+      )
+    }
+
     function findScrollable() {
-      let node = el
-      while (node && node !== el.parentElement) {
-        const style = getComputedStyle(node)
-        if (
-          (style.overflowY === 'auto' || style.overflowY === 'scroll') &&
-          node.scrollHeight > node.clientHeight
-        ) {
-          return node
-        }
+      if (isScrollableY(el)) return el
+      for (const node of el.querySelectorAll('*')) {
+        if (isScrollableY(node)) return node
+      }
+      let node = el.parentElement
+      while (node && node !== document.body) {
+        if (isScrollableY(node)) return node
         node = node.parentElement
-        if (!node || node === el.parentElement) break
       }
       return null
     }
@@ -96,7 +107,10 @@ export function useSheetSwipeDown(ref, onClose, { enabled = true } = {}) {
       const yWithinSheet = touch.clientY - rect.top
 
       // Тянуть можно за верхнюю зону (ручка + заголовок) или
-      // за любое место, если контент прокручен в самый верх
+      // за любое место, если контент прокручен в самый верх.
+      // zoneOnly (полноэкранные слои): жест только за верхнюю зону,
+      // чтобы не глушить тач-скролл контента под пальцем.
+      if (zoneOnly && yWithinSheet > DRAG_ZONE_HEIGHT) return
       if (yWithinSheet > DRAG_ZONE_HEIGHT && !isAtScrollTop()) return
 
       startY = touch.clientY
@@ -183,5 +197,5 @@ export function useSheetSwipeDown(ref, onClose, { enabled = true } = {}) {
       el.removeEventListener('touchend', onTouchEnd)
       el.removeEventListener('touchcancel', onTouchEnd)
     }
-  }, [ref, enabled])
+  }, [ref, enabled, zoneOnly])
 }
