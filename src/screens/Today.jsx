@@ -226,15 +226,6 @@ function WeekStrip({ streakStats }) {
           )
         })}
       </div>
-      {streakStats?.freezeUsedThisWeek && (
-        <p
-          className="mx-today-week__freeze-note"
-          data-testid="streak-freeze-note"
-          data-frozen="true"
-        >
-          Заморозка: 1 пропуск в неделю не рвёт серию
-        </p>
-      )}
     </div>
   )
 }
@@ -1452,6 +1443,26 @@ export default function Today({
           </p>
         )}
 
+      {/* ======================================================
+          МЫСЛЬ ДНЯ
+          ====================================================== */}
+
+      {!hiddenCards.includes('quote') && thoughtOfDay && (
+        <button
+          onClick={() => {
+            platform.haptic('light')
+
+            changeSub('dailyThought')
+          }}
+          data-testid="today-quote-card"
+          className="mx-today-affirmation-card w-full px-[var(--mx-screen-x)] py-6 mt-5 text-center animate-fade-in border-0 active:scale-[0.99] transition-transform"
+        >
+          <span className="block mx-type-meta text-muted mb-3">Мысль дня</span>
+
+          <span className="block font-display mx-type-card text-cream">{thoughtOfDay.text}</span>
+        </button>
+      )}
+
       {/*
         mx-today-actions remains a documented maintenance contract. The legacy
         entry points Настроение, Записать мысль and Практика (onOpenPractice('journal'))
@@ -1618,7 +1629,7 @@ export default function Today({
             <span className="mx-today-weekly-theme__question">{themeQuestionText}</span>
             <button
               type="button"
-              className="mx-today-weekly-theme__cta"
+              className="mx-today-weekly-theme__cta mx-today-day-card__start"
               data-testid="today-theme-write"
               onClick={e => {
                 e.stopPropagation()
@@ -1637,26 +1648,6 @@ export default function Today({
         плавающая кнопка добавляла третий способ сделать
         то же самое. Компонент QuickAdd оставлен в коде.
       */}
-
-      {/* ======================================================
-          МЫСЛЬ ДНЯ
-          ====================================================== */}
-
-      {!hiddenCards.includes('quote') && thoughtOfDay && (
-        <button
-          onClick={() => {
-            platform.haptic('light')
-
-            changeSub('dailyThought')
-          }}
-          data-testid="today-quote-card"
-          className="mx-today-affirmation-card w-full px-[var(--mx-screen-x)] py-6 mt-5 text-center animate-fade-in border-0 active:scale-[0.99] transition-transform"
-        >
-          <span className="block mx-type-meta text-muted mb-3">Мысль дня</span>
-
-          <span className="block font-display mx-type-card text-cream">{thoughtOfDay.text}</span>
-        </button>
-      )}
 
       <GuestSaveReminder
         user={user}

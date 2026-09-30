@@ -1366,7 +1366,8 @@
 }
 
 .mx-today-day-card-slot + .mx-pinned-practices,
-.mx-today-pulse + .mx-pinned-practices {
+.mx-today-pulse + .mx-pinned-practices,
+.mx-today-affirmation-card + .mx-pinned-practices {
   margin-top: 32px;
 }
 
@@ -1774,15 +1775,15 @@
   animation: mx-today-card-enter 400ms var(--mx-ease-out) 160ms backwards;
 }
 
-.mx-pinned-practices {
+.mx-today-affirmation-card {
   animation: mx-today-card-enter 480ms var(--mx-ease-out) 220ms backwards;
 }
 
-.mx-today-theme-card {
+.mx-pinned-practices {
   animation: mx-today-card-enter 480ms var(--mx-ease-out) 280ms backwards;
 }
 
-.mx-today-affirmation-card {
+.mx-today-theme-card {
   animation: mx-today-card-enter 480ms var(--mx-ease-out) 340ms backwards;
 }
 
@@ -2125,7 +2126,7 @@
   border: 0;
   cursor: pointer;
   overflow: hidden;
-  animation: mx-today-card-enter 480ms var(--mx-ease-out) 280ms backwards;
+  animation: mx-today-card-enter 480ms var(--mx-ease-out) 340ms backwards;
 }
 
 .mx-today-weekly-theme__card:active {
@@ -2187,20 +2188,8 @@
   top: 116px;
   left: 50%;
   transform: translateX(-50%);
-  height: 38px;
   min-width: 88px;
   padding: 0 18px;
-  border: 1px solid rgb(var(--c-border));
-  border-radius: 999px;
-  background: transparent;
-  font-family: 'Onest', system-ui, sans-serif;
-  font-size: 15px;
-  font-weight: 600;
-  line-height: 1.2;
-  color: #d6d6d6;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   cursor: pointer;
   white-space: nowrap;
 }
