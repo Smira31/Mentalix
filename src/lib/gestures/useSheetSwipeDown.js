@@ -26,7 +26,7 @@ const SHEET_EXIT = 'transform 200ms ease-in'
 // Высота верхней зоны (ручка + заголовок), за которую можно тянуть
 const DRAG_ZONE_HEIGHT = 120
 
-export function useSheetSwipeDown(ref, onClose, { enabled = true } = {}) {
+export function useSheetSwipeDown(ref, onClose, { enabled = true, zoneOnly = false } = {}) {
   const onCloseRef = useRef(onClose)
 
   useEffect(() => {
@@ -49,24 +49,43 @@ export function useSheetSwipeDown(ref, onClose, { enabled = true } = {}) {
     let active = false
     let locked = false
 
-    function findScrollable() {
-      let node = el
-      while (node && node !== el.parentElement) {
-        const style = getComputedStyle(node)
-        if (
-          (style.overflowY === 'auto' || style.overflowY === 'scroll') &&
-          node.scrollHeight > node.clientHeight
-        ) {
-          return node
-        }
+    // Скроллимый элемент может быть самим el (шторка), его потомком
+    // (полноэкранный слой со скроллом внутри) или предком. Ищем от точки
+    // касания вверх до el — находим именно тот скролл-контейнер, который
+    // под пальцем, а не любой потомок.
+    function isScrollableY(node) {
+      if (!node) return false
+      const style = getComputedStyle(node)
+      return (
+        (style.overflowY === 'auto' || style.overflowY === 'scroll') &&
+        node.scrollHeight > node.clientHeight
+      )
+    }
+
+    function findScrollable(target) {
+      if (isScrollableY(el)) return el
+      // От точки касания вверх до el — точный контейнер под пальцем
+      let node = target
+      while (node && node !== el) {
+        if (isScrollableY(node)) return node
         node = node.parentElement
-        if (!node || node === el.parentElement) break
+        if (!node || node === el) break
+      }
+      // Fallback: любой скроллящийся потомок el
+      for (const descendant of el.querySelectorAll('*')) {
+        if (isScrollableY(descendant)) return descendant
+      }
+      // Предки el
+      node = el.parentElement
+      while (node && node !== document.body) {
+        if (isScrollableY(node)) return node
+        node = node.parentElement
       }
       return null
     }
 
-    function isAtScrollTop() {
-      const scrollable = findScrollable()
+    function isAtScrollTop(target) {
+      const scrollable = findScrollable(target)
       if (!scrollable) return true
       return scrollable.scrollTop <= 0
     }
@@ -96,8 +115,15 @@ export function useSheetSwipeDown(ref, onClose, { enabled = true } = {}) {
       const yWithinSheet = touch.clientY - rect.top
 
       // Тянуть можно за верхнюю зону (ручка + заголовок) или
-      // за любое место, если контент прокручен в самый верх
-      if (yWithinSheet > DRAG_ZONE_HEIGHT && !isAtScrollTop()) return
+      // за любое место, если контент прокручен в самый верх.
+      // zoneOnly (полноэкранные слои): жест только за верхнюю зону,
+      // чтобы не глушить тач-скролл контента под пальцем.
+      if (zoneOnly && yWithinSheet > DRAG_ZONE_HEIGHT) return
+      if (yWithinSheet > DRAG_ZONE_HEIGHT && !isAtScrollTop(e.target)) return
+      // В zoneOnly-режиме свайп вниз закрывает страницу только когда
+      // список в самом верху — иначе жест активируется в зоне шапки
+      // и блокирует нативный скролл при прокрученном контенте.
+      if (zoneOnly && !isAtScrollTop(e.target)) return
 
       startY = touch.clientY
       lastY = startY
@@ -183,5 +209,5 @@ export function useSheetSwipeDown(ref, onClose, { enabled = true } = {}) {
       el.removeEventListener('touchend', onTouchEnd)
       el.removeEventListener('touchcancel', onTouchEnd)
     }
-  }, [ref, enabled])
+  }, [ref, enabled, zoneOnly])
 }

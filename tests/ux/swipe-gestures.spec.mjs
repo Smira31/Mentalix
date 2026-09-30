@@ -186,6 +186,38 @@ async function swipeRightFromEdge(page, selector) {
   }, selector)
 }
 
+/*
+ * Свайп вверх с реальной нативной прокруткой через CDP touch-emulation.
+ * В отличие от синтетических TouchEvent, это вызывает настоящий
+ * браузерный touch-scroll (scrollTop контейнера растёт).
+ */
+async function swipeUpScroll(page, selector, distance = 200) {
+  const box = await page.locator(selector).first().boundingBox()
+  const cx = Math.round(box.x + box.width / 2)
+  const cy = Math.round(box.y + box.height / 2)
+
+  const client = await page.context().newCDPSession(page)
+  await client.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 1 })
+
+  const steps = 12
+  await client.send('Input.dispatchTouchEvent', {
+    type: 'touchStart',
+    touchPoints: [{ x: cx, y: cy, radiusX: 1, radiusY: 1, force: 1, id: 0 }],
+  })
+  for (let i = 1; i <= steps; i++) {
+    const y = Math.round(cy - (distance * i) / steps)
+    await new Promise(r => setTimeout(r, 16))
+    await client.send('Input.dispatchTouchEvent', {
+      type: 'touchMove',
+      touchPoints: [{ x: cx, y, radiusX: 1, radiusY: 1, force: 1, id: 0 }],
+    })
+  }
+  await client.send('Input.dispatchTouchEvent', {
+    type: 'touchEnd',
+    touchPoints: [],
+  })
+}
+
 test.describe('Свайп-жесты', () => {
   test.beforeEach(async ({ context }) => {
     await context.addInitScript(user => {
@@ -299,5 +331,113 @@ test.describe('Свайп-жесты', () => {
 
     // Возврат к списку истории — кнопка поиска записей видна снова
     await expect(page.getByText('Искать и фильтровать записи')).toBeVisible({ timeout: 5_000 })
+  })
+
+  test('прокрутка вкладки «Значки»: контент листается, шапка прозрачная, жест не перехватывает', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 600 })
+    await page.goto('/')
+
+    const streakChip = page.locator('[data-testid="today-streak-chip"]')
+    await expect(streakChip).toBeVisible()
+    await streakChip.click()
+
+    await expect(page.getByRole('tab', { name: 'Значки' })).toBeVisible()
+    await expect(page.getByText('Следующие значки')).toBeVisible({ timeout: 10_000 })
+
+    const scroll = page.locator('.mx-path-scroll')
+
+    const scrollable = await scroll.evaluate(el => el.scrollHeight > el.clientHeight)
+    expect(scrollable).toBe(true)
+
+    const before = await page.evaluate(() => {
+      const s = document.querySelector('.mx-path-surface')
+      const c = document.querySelector('.mx-path-scroll')
+      const h = c.querySelector('.mx-path-header')
+      return {
+        transform: s.style.transform,
+        top: s.style.top,
+        scrollTop: c.scrollTop,
+        headerBg: h ? getComputedStyle(h).backgroundColor : null,
+      }
+    })
+
+    // Шапка прозрачная до скролла
+    expect(before.headerBg).toBe('rgba(0, 0, 0, 0)')
+
+    await swipeUpScroll(page, '.mx-path-scroll', 200)
+
+    const after = await page.evaluate(() => {
+      const s = document.querySelector('.mx-path-surface')
+      const c = document.querySelector('.mx-path-scroll')
+      const h = c.querySelector('.mx-path-header')
+      return {
+        transform: s.style.transform,
+        top: s.style.top,
+        scrollTop: c.scrollTop,
+        headerBg: h ? getComputedStyle(h).backgroundColor : null,
+      }
+    })
+
+    // transform/top страницы НЕ меняется — жест не перехватил свайп
+    expect(after.transform).toBe(before.transform)
+    expect(after.top).toBe(before.top)
+
+    // scrollTop контейнера растёт — список прокрутился
+    expect(after.scrollTop).toBeGreaterThan(before.scrollTop)
+
+    // Шапка остаётся прозрачной после скролла (нет серой плашки)
+    expect(after.headerBg).toBe('rgba(0, 0, 0, 0)')
+  })
+
+  test('прокрутка вкладки «Статистика»: контент листается, шапка прозрачная', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 600 })
+    await page.goto('/')
+
+    const streakChip = page.locator('[data-testid="today-streak-chip"]')
+    await expect(streakChip).toBeVisible()
+    await streakChip.click()
+
+    await expect(page.getByRole('tab', { name: 'Значки' })).toBeVisible()
+    await page.getByTestId('series-tab-stats').click()
+    await expect(page.getByText('Дней с активностью')).toBeVisible({ timeout: 10_000 })
+
+    const scroll = page.locator('.mx-path-scroll')
+
+    const scrollable = await scroll.evaluate(el => el.scrollHeight > el.clientHeight)
+    expect(scrollable).toBe(true)
+
+    const before = await page.evaluate(() => {
+      const s = document.querySelector('.mx-path-surface')
+      const c = document.querySelector('.mx-path-scroll')
+      const h = c.querySelector('.mx-path-header')
+      return {
+        transform: s.style.transform,
+        top: s.style.top,
+        scrollTop: c.scrollTop,
+        headerBg: h ? getComputedStyle(h).backgroundColor : null,
+      }
+    })
+
+    expect(before.headerBg).toBe('rgba(0, 0, 0, 0)')
+
+    await swipeUpScroll(page, '.mx-path-scroll', 200)
+
+    const after = await page.evaluate(() => {
+      const s = document.querySelector('.mx-path-surface')
+      const c = document.querySelector('.mx-path-scroll')
+      const h = c.querySelector('.mx-path-header')
+      return {
+        transform: s.style.transform,
+        top: s.style.top,
+        scrollTop: c.scrollTop,
+        headerBg: h ? getComputedStyle(h).backgroundColor : null,
+      }
+    })
+
+    expect(after.transform).toBe(before.transform)
+    expect(after.top).toBe(before.top)
+    expect(after.scrollTop).toBeGreaterThan(before.scrollTop)
+    // Шапка остаётся прозрачной — серой плашки нет
+    expect(after.headerBg).toBe('rgba(0, 0, 0, 0)')
   })
 })

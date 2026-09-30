@@ -202,16 +202,18 @@ export function isRecoveryDemoRequested() {
  * Вне демо-режима возвращает false.
  */
 export function isProfileDemoRequested() {
-  return (
-    isPreviewDemoMode() && new URLSearchParams(window.location.search).get('action') === 'profile'
-  )
+  if (!isPreviewDemoMode()) return false
+  const params = new URLSearchParams(window.location.search)
+  return params.get('action') === 'profile' || params.get('tab') === 'profile'
 }
 
 /* Внутренние экраны профиля доступны владельцу по прямой демо-ссылке. */
 export function previewProfileAction() {
   if (!isPreviewDemoMode()) return null
   const action = new URLSearchParams(window.location.search).get('action')
-  return ['profile_checkins', 'profile_about', 'profile_wtp', 'privacy'].includes(action) ? action : null
+  return ['profile_checkins', 'profile_about', 'profile_wtp', 'privacy'].includes(action)
+    ? action
+    : null
 }
 
 /*
@@ -268,6 +270,7 @@ export function previewPracticeAction() {
  * Действует только в демо-режиме; вне демо возвращает null.
  */
 export const DEMO_PINNED_PRACTICES_ACTION = 'practices_manage'
+export const DEMO_PINNED_PRACTICES_LIBRARY_ACTION = 'practices_library'
 
 export function previewPinnedPracticesAction() {
   if (typeof window === 'undefined') return null
@@ -275,6 +278,7 @@ export function previewPinnedPracticesAction() {
 
   const requested = new URLSearchParams(window.location.search).get('action')
 
+  if (requested === DEMO_PINNED_PRACTICES_LIBRARY_ACTION) return 'library'
   return requested === DEMO_PINNED_PRACTICES_ACTION ? 'manage' : null
 }
 

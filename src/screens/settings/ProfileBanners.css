@@ -146,12 +146,16 @@ button.mx-profile-banner:active {
   height: 176px;
 }
 
+/* Перо уменьшено (96px вместо 123) и сдвинуто на 10px за правый край
+   (хвост обрезан краем карточки): заголовок «Mentalix на сайте» при 28px
+   занимает ~248pt и обязан оставаться одной строкой — прямоугольники
+   пера и текста не пересекаются на 393 и 440. */
 .mx-profile-banner--web .mx-profile-banner__art--feather {
   position: absolute;
   top: 0;
-  right: 0;
-  width: 123px;
-  height: 85px;
+  right: -10px;
+  width: 96px;
+  height: 66px;
   z-index: 0;
 }
 
@@ -162,7 +166,7 @@ button.mx-profile-banner:active {
   top: 16px;
   left: 16px;
   z-index: 1;
-  max-width: calc(100% - 134px);
+  max-width: calc(100% - 104px);
   font-size: 28px;
   font-weight: 400;
   line-height: 1.1;

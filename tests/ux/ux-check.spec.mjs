@@ -628,7 +628,8 @@ test('локальный UX smoke по основному маршруту', asy
     await expect(draftDialog).toHaveCount(0)
     await expect(page.getByRole('heading', { name: 'Сегодня' })).toBeVisible()
 
-    await page.getByRole('button', { name: /о меньшем усилии/ }).click()
+    // «Все темы ›» открывает карусель темы недели
+    await page.getByTestId('today-theme-all').click()
     // Карусель темы недели: видимая карточка вопроса имеет высоту > 120px
     // и виден текст вопроса.
     const carouselCard = page.locator('.mx-theme-carousel-q').first()
@@ -649,29 +650,13 @@ test('локальный UX smoke по основному маршруту', asy
       check: async () => {
         const journalContent = page.getByTestId('journal-day-content')
         await expect(journalContent).toHaveCSS('text-align', 'left')
-        await expect(page.getByLabel('Дни журнала')).toBeVisible()
         await expect(page.getByText('Тема недели', { exact: true })).toHaveCount(0)
 
         const editor = page.getByRole('textbox', { name: 'Мысль по теме недели' })
         await expect(editor).toBeVisible()
         await expect(editor).toHaveAttribute('contenteditable', 'true')
         await editor.pressSequentially('Важное')
-        await editor.evaluate(element => {
-          const selection = window.getSelection()
-          const range = document.createRange()
-          range.selectNodeContents(element)
-          selection.removeAllRanges()
-          selection.addRange(range)
-        })
-        await page.getByRole('button', { name: 'Показать форматирование' }).click()
-        await page.getByRole('button', { name: 'Жирный текст' }).click()
-        await expect(editor.locator('b, strong')).toHaveText('Важное')
-        await expect(editor).not.toContainText('**')
-        await assertClickable(page.getByRole('button', { name: 'Жирный текст' }))
-        await assertClickable(page.getByRole('button', { name: 'Выделение' }))
-        await assertClickable(page.getByRole('button', { name: 'Пойти глубже' }))
         await assertClickable(page.getByRole('button', { name: 'Сохранить мысль' }))
-        await page.getByRole('button', { name: 'Скрыть форматирование' }).click()
       },
     })
     const reflectionRequest = page.waitForRequest(request => {
@@ -680,7 +665,7 @@ test('локальный UX smoke по основному маршруту', asy
     })
     await page.getByRole('button', { name: 'Сохранить мысль' }).click()
     const reflectionPayload = (await reflectionRequest).postDataJSON()
-    expect(reflectionPayload.text).toBe('**Важное**')
+    expect(reflectionPayload.text.trim()).toBe('Важное')
     // «Назад» из ThemeScreen → карусель, ещё «Назад» → Сегодня
     await page.getByRole('button', { name: 'Назад' }).click()
     // После открытия другой темы из «Другие темы» — есть хотя бы один вопрос

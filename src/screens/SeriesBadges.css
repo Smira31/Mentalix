@@ -41,15 +41,59 @@
    чтобы зона нажатия не перекрывалась.
    mx-real-phone-demo — на <html> в мобильном демо-режиме;
    data-mentalix-demo-frame — в десктоп-демо-фрейме. */
-[data-mentalix-demo-frame='true'] .mx-path-surface:not(.mx-path-surface--tg-fullscreen) .mx-path-header,
+[data-mentalix-demo-frame='true']
+  .mx-path-surface:not(.mx-path-surface--tg-fullscreen)
+  .mx-path-header,
 .mx-real-phone-demo .mx-path-surface:not(.mx-path-surface--tg-fullscreen) .mx-path-header {
   padding-top: 44px;
 }
 
+/* Шапка-сегмент внутри скролла (Stoic): липнет к верху. В покое (скролл 0)
+   фон прозрачный; при скролле — стекло: контент просвечивает сквозь
+   blur(20px) saturate(160%). Отступ контента под сегментом — 43
+   (Stoic): padding-bottom 14 + margin-bottom 29. */
+.mx-path-scroll--overlay .mx-path-header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  margin: 0 calc(-1 * var(--mx-screen-x, 16px)) 29px;
+  padding: 14px var(--mx-screen-x, 16px) 14px;
+  background: transparent;
+}
+
+/* Telegram fullscreen: круги ✕/‹ не рендерятся (CloseButton/ScreenBack
+   прячут их сами), остаётся системная BackButton. Сегмент — на safe-top + 8:
+   paddingTop поверхности без 56px резерва (см. JSX), а padding-top скролла
+   8 — sticky-шапка не поднимается выше края скролла отрицательным margin.
+   Контент — 43 под сегментом (Stoic): padding-bottom 14 + margin-bottom 29. */
+.mx-path-surface--tg-fullscreen .mx-path-scroll--overlay {
+  padding-top: 8px;
+}
+.mx-path-surface--tg-fullscreen .mx-path-scroll--overlay .mx-path-header {
+  margin-top: 0;
+  margin-bottom: 29px;
+  /* Пилюля сегмента — на safe-top + 8: верхний padding стекла в Telegram
+     убран (при скролле стекло всё равно прилипает к 0). */
+  padding-top: 0;
+}
+
+/* «все значки.» в Telegram: заголовок сразу под зоной кнопок (safe-top + 8).
+   Пустая шапка (круг ‹ скрыт внутри Telegram) убирается, h1 компенсирует
+   padding скролла 20 − 12 = 8. */
+.mx-path-surface--tg-fullscreen .mx-path-header--tg-bare {
+  display: none;
+}
+.mx-path-surface--tg-fullscreen .mx-path-all-badges > h1 {
+  margin-top: -20px;
+}
+
+/* Шапка всегда прозрачная (Stoic): контент уходит под плавающий
+   переключатель, фон страницы не меняется при прокрутке и overscroll. */
+
 .mx-path-tabs {
   display: grid;
-  width: 177px;
-  height: 42px;
+  width: 200px;
+  height: 47px;
   grid-template-columns: 1fr 1fr;
   padding: 0;
   border: 1px solid rgb(var(--c-border, 41 41 41));
@@ -80,8 +124,8 @@
 
 .mx-path-close {
   display: grid;
-  width: 38px;
-  height: 38px;
+  width: 44px;
+  height: 44px;
   flex: 0 0 auto;
   place-items: center;
   border: 1px solid rgb(var(--c-border, 41 41 41));
@@ -99,41 +143,70 @@
   padding: 20px var(--mx-screen-x, 16px) calc(var(--app-safe-bottom, 0px) + 16px);
   scrollbar-width: none;
 }
-.mx-path-scroll::-webkit-scrollbar { display: none; }
-.mx-path-surface--all .mx-path-scroll { flex: 1; }
-.mx-path-header > .mx-nested-screen-back { display: none; }
+.mx-path-scroll::-webkit-scrollbar {
+  display: none;
+}
+.mx-path-surface--all .mx-path-scroll {
+  flex: 1;
+}
+.mx-path-header > .mx-nested-screen-back {
+  display: none;
+}
 /* «все значки.» вне Telegram: одна круглая «Назад» 43×43 слева. */
-.mx-path-surface--all .mx-path-header { justify-content: flex-start; }
-.mx-path-surface--all .mx-path-header > .mx-nested-screen-back { display: grid; }
+.mx-path-surface--all .mx-path-header {
+  justify-content: flex-start;
+}
+.mx-path-surface--all .mx-path-header > .mx-nested-screen-back {
+  display: grid;
+}
 .mx-path-all-badges > h1 {
   margin: 12px 0 28px;
   font-size: 34px;
   font-weight: 700;
   text-align: center;
 }
-.mx-path-all-group { margin-bottom: 32px; }
+.mx-path-all-group {
+  margin-bottom: 32px;
+}
 .mx-path-all-group h2 {
   margin-bottom: 16px;
   color: rgb(var(--c-muted, 133 133 133));
   font-size: 13px;
   text-align: center;
 }
-.mx-path-badge-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.mx-path-badge-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
 .mx-path-badge-grid button {
   display: flex;
   min-width: 0;
   align-items: center;
   flex-direction: column;
   gap: 6px;
-  padding: 12px 4px;
+  padding: 8px;
   border: 0;
   border-radius: 20px;
   background: rgb(var(--c-card2, 17 17 17));
   color: inherit;
   text-align: center;
 }
-.mx-path-badge-grid strong { font-size: 12px; font-weight: 500; line-height: 1.2; }
-.mx-path-badge-grid span { color: rgb(var(--c-muted, 133 133 133)); font-size: 12px; }
+.mx-path-badge-grid strong {
+  /* Подпись: по центру, максимум 2 строки, не касается краёв (padding 8). */
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  max-width: 100%;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+.mx-path-badge-grid span {
+  color: rgb(var(--c-muted, 133 133 133));
+  font-size: 12px;
+}
 
 .mx-path-content {
   width: 100%;
@@ -141,8 +214,12 @@
   margin: 0 auto;
 }
 
+/* Карточка featured-награды по Stoic: высота 339, линия горизонта
+   на y=216 от верха карточки, пейзаж — нижняя часть (123px);
+   под подписями — пустое место до низа карточки. */
 .mx-path-featured-award {
-  min-height: 300px;
+  position: relative;
+  height: 339px;
   overflow: hidden;
   border-radius: 24px;
   background: rgb(var(--c-card2, 17 17 17));
@@ -173,19 +250,39 @@
   margin-top: 8px;
 }
 .mx-path-featured-scene {
-  height: 134px;
+  height: 121px;
   display: grid;
   place-items: end center;
 }
-.mx-path-featured-scene .mx-reward-icon {
-  width: 118px;
-  height: 118px;
+/* Иконка 77pt стоит на линии горизонта: высота 77 × 1.04 = 80,
+   низ SVG (плоский низ подставки) на y=216 от верха карточки. */
+.mx-path-featured-icon {
+  position: absolute;
+  top: 136px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+/* Пейзаж (статичный, без анимаций): viewBox 408×80, низ SVG — линия
+   горизонта на y=216 от верха карточки (339 − 216 = 123). Холмы
+   слева/справа, середина пустая под шар. */
+.mx-path-featured-landscape {
+  position: absolute;
+  bottom: 123px;
+  left: 0;
+  display: block;
+  width: 100%;
+  height: 80px;
 }
 .mx-path-featured-title {
+  position: relative;
+  z-index: 1;
+  margin-top: 18px;
   font-size: 13px;
   font-weight: 600;
 }
 .mx-path-featured-copy {
+  position: relative;
+  z-index: 1;
   margin-top: 4px;
   color: rgb(var(--c-muted, 133 133 133));
   font-size: 12px;
@@ -197,19 +294,20 @@
   color: rgb(var(--c-text, 243 243 243));
 }
 .mx-reward-icon__glass {
-  fill: #111;
+  /* Цвет шара — токен карточки (Stoic-референс). */
+  fill: rgb(var(--c-card2, 17 17 17));
 }
-.mx-reward-icon__glass--locked { stroke: #707070; stroke-width: 1.5; }
 .mx-reward-icon__shine {
   fill: none;
-  stroke: #8d8d8d;
+  stroke: #6a6a6a;
   stroke-linecap: round;
-  stroke-width: 8;
+  stroke-width: 5;
 }
 .mx-reward-icon__question {
-  fill: #cfcfcf;
-  font-size: 38px;
-  font-weight: 500;
+  fill: #6c7385;
+  /* 20 в единицах viewBox 100 — заметный, как у Stoic. */
+  font-size: 20px;
+  font-weight: 700;
 }
 .mx-reward-icon__steps,
 .mx-reward-icon__flag,
@@ -219,7 +317,8 @@
   stroke: #f2f2f2;
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-width: 4;
+  /* Пути вписаны в шар масштабом 0.4167 — компенсируем толщину. */
+  stroke-width: 6;
 }
 .mx-reward-icon__dot {
   fill: #f2f2f2;
@@ -227,23 +326,21 @@
 .mx-reward-icon__base {
   fill: #f2f2f2;
 }
-.mx-reward-icon__base-line {
-  fill: none;
-  stroke: #f2f2f2;
-  stroke-linecap: round;
-  stroke-width: 4;
-}
 
 .mx-path-see-all {
   display: block;
   width: 100%;
-  padding: 16px 4px 36px;
+  padding: 23px 4px 50px;
   border: 0;
   background: transparent;
   color: rgb(var(--c-muted, 133 133 133));
   font-size: 15px;
   font-weight: 500;
   text-align: right;
+}
+/* «Все значки ›» в конце списка «Следующие значки» — справа, компактнее. */
+.mx-path-see-all--end {
+  padding: 16px 4px 8px;
 }
 .mx-path-see-all span {
   margin-left: 4px;
@@ -257,65 +354,70 @@
 .mx-path-award-list {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 7px;
+  gap: 8px;
 }
 .mx-path-award-row {
   display: flex;
-  min-height: 82px;
+  height: 82px;
   align-items: center;
-  gap: 10px;
+  gap: 0;
   width: 100%;
-  padding: 8px 12px;
+  padding: 0 14px 0 14px;
   border: 0;
-  border-radius: 24px;
+  border-radius: 15px;
   background: rgb(var(--c-card2, 17 17 17));
   color: inherit;
   text-align: left;
 }
-.mx-path-award-row:active {
-  transform: scale(0.97);
-  transition: transform 160ms ease;
+/* Шар ~50: отступ от левого края 14pt, центрирован по высоте строки. */
+.mx-path-award-row > .mx-reward-icon {
+  flex: 0 0 auto;
 }
 .mx-path-row-copy-wrap {
   min-width: 0;
   flex: 1;
+  padding-left: 16px;
 }
 .mx-path-row-title {
   display: block;
   overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   color: rgb(var(--c-text, 243 243 243));
   font-size: 15px;
   font-weight: 500;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.2;
 }
+/* Описание 11/400 muted — до 2 строк, без обрезки на полуслове. */
 .mx-path-row-copy {
-  display: block;
+  display: -webkit-box;
   overflow: hidden;
-  margin-top: 4px;
+  margin-top: 3px;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  white-space: normal;
   color: rgb(var(--c-muted, 133 133 133));
   font-size: 11px;
-  line-height: 1.2;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.mx-path-row-progress-copy {
-  white-space: normal;
+  font-weight: 400;
+  line-height: 1.3;
 }
 .mx-path-row-value {
   display: flex;
-  min-width: 52px;
+  min-width: 39px;
   flex-direction: column;
   align-items: flex-end;
-  gap: 7px;
+  gap: 6px;
   color: rgb(var(--c-muted, 133 133 133));
-  font-size: 15px;
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 600;
+}
+.mx-path-row-value strong {
+  font-weight: 600;
 }
 .mx-path-progress {
   display: block;
-  width: 40px;
-  height: 3px;
+  width: 39px;
+  height: 2px;
   overflow: hidden;
   border-radius: 99px;
   background: rgb(var(--c-border, 41 41 41));
@@ -324,7 +426,7 @@
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: rgb(var(--c-line, 230 230 230));
+  background: rgb(var(--c-text, 243 243 243));
 }
 
 .mx-path-preferences {
@@ -452,8 +554,12 @@
   background: rgb(var(--c-bg, 5 4 3));
   color: rgb(var(--c-text, 243 243 243));
 }
-.mx-badge-sheet::-webkit-scrollbar { display: none; }
-.mx-badge-sheet--new { min-height: 0; }
+.mx-badge-sheet::-webkit-scrollbar {
+  display: none;
+}
+.mx-badge-sheet--new {
+  min-height: 0;
+}
 .mx-badge-sheet > .mx-path-close {
   position: absolute;
   top: 14px;
@@ -526,7 +632,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .mx-path-row-value,
   .mx-path-toggle::after {
     transition: none;
   }

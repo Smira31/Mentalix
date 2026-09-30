@@ -1365,9 +1365,8 @@
   width: 100%;
 }
 
-.mx-today-day-card-slot + .mx-pinned-practices,
-.mx-today-pulse + .mx-pinned-practices {
-  margin-top: 32px;
+.mx-pinned-practices {
+  margin-top: 16px;
 }
 
 .mx-today-day-card {
@@ -1774,15 +1773,15 @@
   animation: mx-today-card-enter 400ms var(--mx-ease-out) 160ms backwards;
 }
 
-.mx-pinned-practices {
+.mx-today-affirmation-card {
   animation: mx-today-card-enter 480ms var(--mx-ease-out) 220ms backwards;
 }
 
-.mx-today-theme-card {
+.mx-pinned-practices {
   animation: mx-today-card-enter 480ms var(--mx-ease-out) 280ms backwards;
 }
 
-.mx-today-affirmation-card {
+.mx-today-theme-card {
   animation: mx-today-card-enter 480ms var(--mx-ease-out) 340ms backwards;
 }
 
@@ -1800,13 +1799,18 @@
 /* Соцдоказательство — постоянная строка как у Stoic */
 .mx-today-pulse {
   display: block;
-  margin-top: 14px;
+  margin-top: 16px;
   color: rgb(var(--c-muted));
   font-size: 12px;
   font-weight: 500;
   line-height: 1.3;
   text-align: center;
   letter-spacing: 0.01em;
+}
+
+/* Единый отступ между всеми секциями «Сегодня» — 16 px */
+.mx-today-affirmation-card {
+  margin-top: 16px;
 }
 
 /* ======================================================
@@ -2057,3 +2061,152 @@
     opacity: 0.7;
   }
 }
+
+/* Stoic-подобная геометрия «Твои практики» и листов —
+   перенесено в src/components/PinnedPractices.css (рядом с компонентом).
+   Классы .mx-pinned-* используются только PinnedPractices, включая порталы. */
+
+/* ============================================================
+   §5.1 — Карточка «Тема недели» на «Сегодня» (эталон Stoic)
+   Все размеры в pt = CSS px (ширина экрана 440).
+   Класс изолирован: mx-today-weekly-theme*, общие классы не меняются.
+   ============================================================ */
+
+.mx-today-weekly-theme {
+  width: 100%;
+  margin-top: 16px;
+}
+
+.mx-today-weekly-theme__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-left: 8px;
+  padding-right: 8px;
+  margin-bottom: 10px;
+}
+
+.mx-today-weekly-theme__heading {
+  font-family: 'Onest', system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: rgb(var(--c-text));
+}
+
+.mx-today-weekly-theme__all {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font-family: 'Onest', system-ui, sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: rgb(var(--c-muted));
+  cursor: pointer;
+}
+
+.mx-today-weekly-theme__all:active {
+  opacity: 0.6;
+}
+
+.mx-today-weekly-theme__chevron {
+  flex-shrink: 0;
+  color: rgb(var(--c-muted));
+}
+
+.mx-today-weekly-theme__card {
+  position: relative;
+  width: 100%;
+  height: 168px;
+  border-radius: 26px;
+  background: rgb(var(--c-card));
+  border: 0;
+  cursor: pointer;
+  overflow: hidden;
+  animation: mx-today-card-enter 480ms var(--mx-ease-out) 340ms backwards;
+}
+
+.mx-today-weekly-theme__card:active {
+  transform: scale(0.99);
+  transition: transform 150ms ease;
+}
+
+.mx-today-weekly-theme__day {
+  position: absolute;
+  top: 22px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: 'Onest', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: rgb(var(--c-muted));
+}
+
+.mx-today-weekly-theme__name {
+  position: absolute;
+  top: 42px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: 'Onest', system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: #d6d6d6;
+  text-transform: lowercase;
+}
+
+.mx-today-weekly-theme__question {
+  position: absolute;
+  top: 68px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 290px;
+  width: 100%;
+  text-align: center;
+  font-family: 'Onest', system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: #d6d6d6;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.mx-today-weekly-theme__cta {
+  position: absolute;
+  top: 116px;
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 88px;
+  padding: 0 18px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.mx-today-weekly-theme__cta:active {
+  opacity: 0.7;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-today-weekly-theme__card {
+    animation: none;
+    transition: none;
+  }
+}
+
+/* Light-preview: карточка остаётся тёмной (как --c-card), текст #d6d6d6
+   читается на тёмном фоне без корректировки. */
