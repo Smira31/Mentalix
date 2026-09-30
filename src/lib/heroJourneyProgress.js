@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
 import { useSynced } from './store'
-import { isPreviewDemoMode } from './demoMode'
 import { toLocalCalendarDate } from './dateTimezonePolicy'
 
 /*

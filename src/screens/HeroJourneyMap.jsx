@@ -151,8 +151,6 @@ function CourseMap({ progress, onOpenStep, onBack }) {
     return HERO_JOURNEY_TRIALS.find(t => !isStepCompleted(t.id, progress))
   }, [progress])
 
-  const nextChapter = nextTrial ? chapterForTrial(nextTrial.id) : null
-
   return (
     <Shell>
       <RoundBackButton onClick={onBack} />

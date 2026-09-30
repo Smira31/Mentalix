@@ -122,9 +122,9 @@ function LibraryV2HeroJourneyLanding({ onOpen }) {
         Путь героя
       </h2>
       <LibraryV2FeaturedBanner
-        title="Карта испытаний"
-        description="16 испытаний современного человека — короткий опрос и персональная карта. Не тест, а ориентир."
-        action="Пройти"
+        title="Курс · 16 шагов"
+        description="16 испытаний современного человека. Каждый шаг — 6 минут: понять, узнать себя, записать, сделать одно действие."
+        action="Начать"
         onOpen={onOpen}
         art={<SemanticGlyph kind="path-corridor" animated={false} />}
       />
