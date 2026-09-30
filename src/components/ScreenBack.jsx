@@ -17,24 +17,24 @@ export default function ScreenBack({
   }, registerSystemBack)
 
   /*
-   * В Telegram и при эмуляции Telegram в demo-рамке круглая «назад»
-   * не показывается: навигация идёт через системную кнопку / пилюлю.
-   * Вне Telegram и без эмуляции — обычный веб-контроль. Как и
-   * useFullscreenSurface, читаем атрибут demo-рамки во время рендера.
+   * В настоящем Telegram круглая «назад» не показывается: навигация идёт
+   * через системную кнопку. В demo-рамке с эмуляцией Telegram видимой
+   * остаётся только пилюля «‹ Назад»; сама кнопка остаётся в DOM
+   * (невидимая, вне потока) — тот же обработчик, тот же testid,
+   * доступна автотестам и вспомогательным технологиям.
    */
-  if (
-    isDemoEmulationActive() ||
-    isTelegramBackMode(typeof window === 'undefined' ? null : window.Telegram?.WebApp)
-  ) {
+  if (isTelegramBackMode(typeof window === 'undefined' ? null : window.Telegram?.WebApp)) {
     return null
   }
+
+  const demoHidden = isDemoEmulationActive()
 
   return (
     <button
       type="button"
       data-testid={testId}
       aria-label="Назад"
-      className={`mx-nested-screen-back ${className}`}
+      className={`mx-nested-screen-back ${demoHidden ? 'mx-nested-screen-back--demo-hidden' : ''} ${className}`}
       onClick={() => {
         platform.haptic('light')
         onBack?.()
