@@ -126,7 +126,7 @@ function LibraryV2HeroJourneyLanding({ onOpen }) {
         description="16 испытаний современного человека. Каждый шаг — 6 минут: понять, узнать себя, записать, сделать одно действие."
         action="Начать"
         onOpen={onOpen}
-        art={<SemanticGlyph kind="path-corridor" animated={false} />}
+        art={<SemanticGlyph kind="pathfinder" animated={false} />}
       />
     </section>
   )
