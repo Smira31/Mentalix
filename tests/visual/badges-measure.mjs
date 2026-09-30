@@ -94,8 +94,6 @@ const TG_INIT_SCRIPT = `
     contentSafeAreaInset: { top: 0, right: 0, bottom: 0, left: 0 },
   }
   window.Telegram = { WebApp: webApp }
-  // SDK (telegram-web-app.js) перезаписывает window.Telegram.WebApp —
-  // закрепляем мок геттером, как в tests/ux/telegram-p0-check.spec.mjs.
   Object.defineProperty(window.Telegram, 'WebApp', {
     configurable: true,
     get() {
@@ -197,8 +195,6 @@ async function measure(page) {
 
 // Синтетическая тач-последовательность: хук слушает touchstart/touchmove
 // через addEventListener, поэтому реагирует и на программные события.
-// Проверяем: жест НЕ перехватывает скролл (нет preventDefault) и контент
-// можно прокрутить до конца.
 async function touchSwipeProbe(page, selector) {
   return page.evaluate(sel => {
     const doc = document
@@ -210,7 +206,6 @@ async function touchSwipeProbe(page, selector) {
       try {
         return new w.Touch({ identifier: 1, target, clientX: r.x + r.width / 2, clientY: y })
       } catch {
-        // legacy WebKit
         return doc.createTouch(w, target, 1, r.x + r.width / 2, y, 0, 0)
       }
     }
@@ -228,7 +223,6 @@ async function touchSwipeProbe(page, selector) {
       try {
         ev = new w.TouchEvent(type, { touches, bubbles: true, cancelable: true, composed: true })
       } catch {
-        // legacy WebKit: нет конструктора TouchEvent
         ev = doc.createEvent('TouchEvent')
         const empty = doc.createTouchList()
         const list = type === 'touchend' ? empty : doc.createTouchList(touch)
