@@ -628,7 +628,8 @@ test('локальный UX smoke по основному маршруту', asy
     await expect(draftDialog).toHaveCount(0)
     await expect(page.getByRole('heading', { name: 'Сегодня' })).toBeVisible()
 
-    await page.getByRole('button', { name: /о меньшем усилии/ }).click()
+    // «Все темы ›» открывает карусель темы недели
+    await page.getByTestId('today-theme-all').click()
     // Карусель темы недели: видимая карточка вопроса имеет высоту > 120px
     // и виден текст вопроса.
     const carouselCard = page.locator('.mx-theme-carousel-q').first()

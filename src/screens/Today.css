@@ -2061,3 +2061,162 @@
 /* Stoic-подобная геометрия «Твои практики» и листов —
    перенесено в src/components/PinnedPractices.css (рядом с компонентом).
    Классы .mx-pinned-* используются только PinnedPractices, включая порталы. */
+
+/* ============================================================
+   §5.1 — Карточка «Тема недели» на «Сегодня» (эталон Stoic)
+   Все размеры в pt = CSS px (ширина экрана 440).
+   Класс изолирован: mx-today-weekly-theme*, общие классы не меняются.
+   ============================================================ */
+
+.mx-today-weekly-theme {
+  width: 100%;
+  margin-top: 20px;
+}
+
+.mx-today-weekly-theme__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  /* Заголовок на x=24, правый край шеврона в 24 от края экрана.
+     mx-screen-shell даёт 16px; добавляем 8px с каждой стороны. */
+  padding-left: 8px;
+  padding-right: 8px;
+  margin-bottom: 12px; /* карточка на 12 ниже заголовка секции */
+}
+
+.mx-today-weekly-theme__heading {
+  font-family: 'Onest', system-ui, sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: rgb(var(--c-text));
+}
+
+.mx-today-weekly-theme__all {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font-family: 'Onest', system-ui, sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: rgb(var(--c-muted));
+  cursor: pointer;
+}
+
+.mx-today-weekly-theme__all:active {
+  opacity: 0.6;
+}
+
+.mx-today-weekly-theme__chevron {
+  flex-shrink: 0;
+  color: rgb(var(--c-muted));
+}
+
+.mx-today-weekly-theme__card {
+  position: relative;
+  width: 100%;
+  height: 204px;
+  border-radius: 30px;
+  background: rgb(var(--c-card));
+  border: 0;
+  cursor: pointer;
+  overflow: hidden;
+  animation: mx-today-card-enter 480ms var(--mx-ease-out) 280ms backwards;
+}
+
+.mx-today-weekly-theme__card:active {
+  transform: scale(0.99);
+  transition: transform 150ms ease;
+}
+
+.mx-today-weekly-theme__name {
+  position: absolute;
+  top: 31px; /* центр строки в 43 от верха (20px × 1.2 = 24px строка) */
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: 'Onest', system-ui, sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: #d6d6d6;
+  text-transform: lowercase;
+}
+
+.mx-today-weekly-theme__day {
+  position: absolute;
+  top: 54.5px; /* центр в 61 от верха (13px × 1 = 13px строка) */
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: 'Onest', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1;
+  color: rgb(var(--c-muted));
+}
+
+.mx-today-weekly-theme__question {
+  position: absolute;
+  top: 86px; /* верх первой строки в 86 от верха карточки */
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 300px;
+  width: 100%;
+  text-align: center;
+  font-family: 'Onest', system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: #d6d6d6;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.mx-today-weekly-theme__cta {
+  position: absolute;
+  top: 138px; /* низ в 24 от низа карточки (138 + 42 = 180, 204 − 180 = 24) */
+  left: 50%;
+  transform: translateX(-50%);
+  height: 42px;
+  min-width: 94px;
+  padding: 0 20px;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 999px;
+  background: transparent;
+  font-family: 'Onest', system-ui, sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: #d6d6d6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.mx-today-weekly-theme__cta:active {
+  opacity: 0.7;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-today-weekly-theme__card {
+    animation: none;
+    transition: none;
+  }
+}
+
+/* Light-preview: карточка остаётся тёмной (как --c-card), текст #d6d6d6
+   читается на тёмном фоне без корректировки. */

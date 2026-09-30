@@ -24,6 +24,7 @@ import GuestSaveReminder from '../components/GuestSaveReminder'
 import { useSynced } from '../lib/store'
 import { getDailyThought } from '../data/dailyThoughts'
 import { TODAY_CARDS_HIDDEN_KEY, parseHiddenCards } from '../lib/todayCardVisibility'
+import { peekThemeDetail, fetchThemeDetail } from '../lib/themeDetailCache'
 import { TodayCompareControl } from '../components/TodayMotionExperiment'
 import { readCanonicalStreakStats } from '../lib/canonicalStreak'
 import { peekStreakSnapshot, saveStreakSnapshot } from '../lib/streakSnapshotCache'
@@ -398,6 +399,15 @@ export default function Today({
 
   const [theme, setTheme] = useState(() => pickCurrentTheme(initialTodaySnapshot?.themes))
 
+  // Детали темы (days[], current_day) для карточки «Тема недели» —
+  // список из todayDataCache не содержит days; нужен отдельный запрос.
+  const [themeDetail, setThemeDetail] = useState(() =>
+    theme ? peekThemeDetail(user?.id, theme.id) : null
+  )
+
+  // День, на который переходит прямой тап по карточке («Записать»).
+  const [themeWriteDay, setThemeWriteDay] = useState(1)
+
   const [activeToday, setActiveToday] = useState(null)
 
   const [sub, setSub] = useState(initialSub)
@@ -674,6 +684,17 @@ export default function Today({
         setLoadError(false)
         setTheme(pickCurrentTheme(themesData))
 
+        // Подгружаем детали текущей темы (days[], current_day) для
+        // карточки «Тема недели»: список тем не содержит days.
+        const currentTheme = pickCurrentTheme(themesData)
+        if (currentTheme?.id) {
+          fetchThemeDetail(user.id, currentTheme.id)
+            .then(d => {
+              if (active && d) setThemeDetail(d)
+            })
+            .catch(() => {})
+        }
+
         api.pulse
           .today()
           .then(pulse => setActiveToday(pulse.active_today))
@@ -929,6 +950,21 @@ export default function Today({
     return (
       <SubScreenBoundary resetKey="theme" onExit={() => changeSub(null)}>
         <ThemeCarouselScreen user={user} themeId={theme.id} onBack={() => changeSub(null)} />
+      </SubScreenBoundary>
+    )
+  }
+
+  // Прямой переход из карточки «Тема недели» на «Сегодня» → экран записи
+  // ответа на ждущий вопрос (ThemeScreen с initialDay).
+  if (sub === 'themeWrite' && theme) {
+    return (
+      <SubScreenBoundary resetKey="themeWrite" onExit={() => changeSub(null)}>
+        <ThemeScreen
+          user={user}
+          themeId={theme.id}
+          initialDay={themeWriteDay}
+          onBack={() => changeSub(null)}
+        />
       </SubScreenBoundary>
     )
   }
@@ -1244,6 +1280,33 @@ export default function Today({
     window.history.replaceState(null, '', url)
   }
 
+  // ── Тема недели: ждущий вопрос для карточки ──
+  // themeDetail (days[], current_day) может прийти из кеша или
+  // отдельного запроса; theme.days — из демо-данных todayDataCache.
+  const themeDays = themeDetail?.days || theme?.days || []
+  const themeCurrentDay = themeDetail?.current_day ?? theme?.current_day ?? 1
+  const themeWaitingDay = (() => {
+    if (!themeDays.length) return null
+    const today = themeDays.find(d => d.day === themeCurrentDay)
+    if (today && !today.reflection) return today
+    return themeDays.find(d => !d.reflection) || null
+  })()
+  const themeAllAnswered =
+    themeDays.length > 0 && themeDays.every(d => d.reflection)
+  const themeDayLabel = `День ${themeWaitingDay?.day || themeCurrentDay} из ${theme?.total_days || 7}`
+  const themeQuestionText = themeWaitingDay?.text || ''
+  const themeCtaLabel = themeAllAnswered ? 'Смотреть в пути' : 'Записать'
+
+  function handleThemeCardTap() {
+    platform.haptic('light')
+    if (themeAllAnswered || !themeWaitingDay) {
+      changeSub('theme')
+    } else {
+      setThemeWriteDay(themeWaitingDay.day)
+      changeSub('themeWrite')
+    }
+  }
+
   return (
     <div className={`mx-screen-shell${cardCompressing ? ' mx-screen-shell--compressing' : ''}`}>
       <h1 className="sr-only">Сегодня</h1>
@@ -1515,48 +1578,57 @@ export default function Today({
       />
 
       {/* ======================================================
-          ТЕМА НЕДЕЛИ
+          ТЕМА НЕДЕЛИ — карточка-эталон Stoic (§5.1)
           ====================================================== */}
 
       {theme && !hiddenCards.includes('theme') && (
-        <button
-          onClick={() => {
-            platform.haptic('light')
-
-            changeSub('theme')
-          }}
-          data-testid="today-theme-card"
-          className="mx-today-theme-card w-full px-[var(--mx-screen-x)] py-5 mt-4 text-center active:scale-[0.99] transition-transform duration-150 ease-[cubic-bezier(0.22,1,0.36,1)] animate-fade-in"
-        >
-          <span className="block font-label mx-type-meta text-muted uppercase tracking-wider mb-2">
-            Тема недели
-          </span>
-
-          <span className="block font-display mx-type-card text-cream lowercase">
-            {theme.title}
-          </span>
-
-          <span className="block mx-type-list-body text-muted mt-2">{theme.subtitle}</span>
-
-          <span className="flex items-center justify-center gap-1.5 mt-4" aria-hidden="true">
-            {Array.from({
-              length: theme.total_days,
-            }).map((_, index) => (
-              <span
-                key={index}
-                className={`w-1.5 h-1.5 rounded-full ${
-                  index < theme.reflected_days ? 'bg-gold' : 'bg-cream/15'
-                }`}
-              />
-            ))}
-          </span>
-
-          <span className="block mx-type-meta text-muted mt-3">
-            {theme.reflected_days > 0
-              ? `Пройдено дней: ${theme.reflected_days} из ${theme.total_days}`
-              : 'Начать неделю'}
-          </span>
-        </button>
+        <section className="mx-today-weekly-theme" data-testid="today-weekly-theme-section">
+          <div className="mx-today-weekly-theme__header">
+            <h2 className="mx-today-weekly-theme__heading">Тема недели</h2>
+            <button
+              type="button"
+              className="mx-today-weekly-theme__all"
+              data-testid="today-theme-all"
+              aria-label="Все темы"
+              onClick={() => {
+                platform.haptic('light')
+                changeSub('theme')
+              }}
+            >
+              Все темы
+              <ChevronRight size={16} className="mx-today-weekly-theme__chevron" aria-hidden="true" />
+            </button>
+          </div>
+          <div
+            className="mx-today-weekly-theme__card"
+            data-testid="today-theme-card"
+            role="button"
+            tabIndex={0}
+            aria-label={`${theme.title}. ${themeDayLabel}. ${themeQuestionText || ''}`}
+            onClick={handleThemeCardTap}
+            onKeyDown={e => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                handleThemeCardTap()
+              }
+            }}
+          >
+            <span className="mx-today-weekly-theme__name">{theme.title}.</span>
+            <span className="mx-today-weekly-theme__day">{themeDayLabel}</span>
+            <span className="mx-today-weekly-theme__question">{themeQuestionText}</span>
+            <button
+              type="button"
+              className="mx-today-weekly-theme__cta"
+              data-testid="today-theme-write"
+              onClick={e => {
+                e.stopPropagation()
+                handleThemeCardTap()
+              }}
+            >
+              {themeCtaLabel}
+            </button>
+          </div>
+        </section>
       )}
 
       {/*
