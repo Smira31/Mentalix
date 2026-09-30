@@ -697,6 +697,14 @@ async function run() {
     console.log(`${sp.name.padEnd(20)} | ${(parts.length ? parts.join('; ') : 'ничего').padEnd(60)} |`)
   }
 
+  // === Проверка #952: в положении 3 «Удиви меня» отлипает, когда «Все темы» прилипает ===
+  const p3 = posData.stickyAll
+  const p3ok = p3?.allThemes?.stuck && !p3?.surprise?.stuck
+  console.log(`\n#952: «Удиви меня» отлипает при прилипании «Все темы» (положение 3): ${p3ok ? '✅ PASS' : '❌ FAIL'}`)
+  if (!p3ok) {
+    console.log(`  Все темы stuck=${p3?.allThemes?.stuck}, Удиви stuck=${p3?.surprise?.stuck}`)
+  }
+
   // === Ширина ряда фильтров на 393 ===
   console.log('\n\n=== Ширина ряда фильтров на 393px ===')
   await page.setViewportSize({ width: 393, height: 956 })

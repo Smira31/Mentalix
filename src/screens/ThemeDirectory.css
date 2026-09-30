@@ -132,6 +132,13 @@
   margin-top: 26px;
 }
 
+/* #952: когда «Все темы» прилипает, «Удиви меня» отлипает */
+.mx-theme-directory__surprise[data-hidden='true'] {
+  position: relative;
+  top: auto;
+  z-index: auto;
+}
+
 /* --- «Все темы» + фильтры (sticky) --- */
 section.mx-theme-directory__all-themes {
   position: sticky;

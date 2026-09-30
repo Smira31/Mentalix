@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { ChevronRight, Shuffle } from 'lucide-react'
 
 import './ThemeDirectory.css'
@@ -44,6 +44,37 @@ function ThemeRows({ themes, onOpen }) {
 
 export default function ThemeDirectory({ themes, currentId, onOpen }) {
   const [filter, setFilter] = useState('Все')
+  const surpriseRef = useRef(null)
+  const allThemesRef = useRef(null)
+
+  // #952: когда «Все темы»+фильтры прилипают, «Удиви меня» отлипает
+  // (наверху только одно прилипшее из directory)
+  useEffect(() => {
+    const scroll = document.querySelector('.mx-fullscreen-scroll')
+    const allThemes = allThemesRef.current
+    const surprise = surpriseRef.current
+    if (!scroll || !allThemes || !surprise) return
+
+    let raf = null
+    const onScroll = () => {
+      if (raf) return
+      raf = requestAnimationFrame(() => {
+        raf = null
+        const scrollRect = scroll.getBoundingClientRect()
+        const allRect = allThemes.getBoundingClientRect()
+        const stickyTop = parseFloat(getComputedStyle(allThemes).top) || 95
+        const stuck = allRect.top <= scrollRect.top + stickyTop + 2
+        surprise.dataset.hidden = stuck ? 'true' : 'false'
+      })
+    }
+    scroll.addEventListener('scroll', onScroll, { passive: true })
+    onScroll()
+    return () => {
+      scroll.removeEventListener('scroll', onScroll)
+      if (raf) cancelAnimationFrame(raf)
+    }
+  }, [themes.length])
+
   const others = themes.filter(theme => theme.id !== currentId)
   const unfinished = others.filter(theme => status(theme) !== 'Пройдены')
   const filtered = filter === 'Все' ? themes : themes.filter(theme => status(theme) === filter)
@@ -62,12 +93,17 @@ export default function ThemeDirectory({ themes, currentId, onOpen }) {
         <button
           type="button"
           className="mx-theme-directory__surprise"
+          ref={surpriseRef}
           onClick={() => onOpen(unfinished[Math.floor(Math.random() * unfinished.length)].id)}
         >
           <Shuffle size={15} aria-hidden="true" /> Удиви меня
         </button>
       )}
-      <section className="mx-theme-directory__all-themes" aria-labelledby="carousel-all-themes">
+      <section
+        className="mx-theme-directory__all-themes"
+        ref={allThemesRef}
+        aria-labelledby="carousel-all-themes"
+      >
         <h3 id="carousel-all-themes">Все темы</h3>
         <div className="mx-theme-directory__filters" role="tablist" aria-label="Фильтр тем">
           {FILTERS.map(item => (
