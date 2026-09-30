@@ -1,15 +1,1 @@
-import { useEffect, useMemo, useState } from 'react'
-import { ArrowRight } from 'lucide-react'
-
-import SemanticGlyph, { semanticKindForArticle } from '../components/SemanticGlyph'
-import NestedScreenHeader from '../components/NestedScreenHeader'
-import ArticleCover from '../components/ArticleCover'
-import { ARTICLES } from '../data/articles'
-import { fetchArticles, peekArticles, peekArticlesSnapshot } from '../lib/libraryDataCache'
-import { platform } from '../platform'
-import { useBackButton } from '../platform/telegram.hooks'
-import Articles from './Articles'
-import GuidedJournals from './GuidedJournals'
-import HeroJourneyMap from './HeroJourneyMap'
-import './Library.css'
-import { previewHeroJourneyAction } from '../lib/demoMode'
+RESTORE_FROM_LOCAL_FILE_TOO_LARGE_FOR_INLINE
