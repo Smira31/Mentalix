@@ -1,6 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Brush, Check, LayoutGrid, Lightbulb, Plus, Search, Settings2, X } from 'lucide-react'
+import {
+  Brush,
+  Check,
+  LayoutGrid,
+  Lightbulb,
+  MoreHorizontal,
+  Plus,
+  Search,
+  Settings2,
+  X,
+} from 'lucide-react'
 
 import './PinnedPractices.css'
 
@@ -22,6 +32,7 @@ function Sheet({
   onClose,
   children,
   footer = null,
+  overlay = null,
   undo = null,
   onUndo = null,
   variant = 'default',
@@ -53,11 +64,11 @@ function Sheet({
             {!telegram && (
               <button
                 type="button"
-                className={`mx-icon-button${isLibrary ? ' mx-pinned-sheet__save' : ''}`}
+                className="mx-pinned-sheet__circle"
                 aria-label={closeLabel}
                 onClick={onClose}
               >
-                <CloseIcon size={isLibrary ? 20 : 19} aria-hidden="true" />
+                <CloseIcon size={20} aria-hidden="true" />
               </button>
             )}
           </div>
@@ -70,6 +81,7 @@ function Sheet({
         </div>
         <div className="mx-pinned-sheet__body">{children}</div>
         {footer && <div className="mx-pinned-sheet__footer">{footer}</div>}
+        {overlay && <div className="mx-pinned-sheet__overlay">{overlay}</div>}
       </section>
       {undo && (
         <div className="mx-pinned-undo-toast" role="status">
@@ -130,6 +142,8 @@ export default function PinnedPractices({
   const [sheet, setSheet] = useState(initialSheet)
   const [busyKeys, setBusyKeys] = useState(() => new Set())
   const [undo, setUndo] = useState(null)
+  const [menuKey, setMenuKey] = useState(null)
+  const [soonToast, setSoonToast] = useState(false)
   const [libraryFilter, setLibraryFilter] = useState('recommended')
   const [librarySearch, setLibrarySearch] = useState('')
   const todayDone = useMemo(
@@ -140,11 +154,13 @@ export default function PinnedPractices({
     [rituals, ascezas]
   )
   const undoTimerRef = useRef(null)
+  const soonTimerRef = useRef(null)
   const railRef = useRef(null)
 
   useEffect(() => {
     return () => {
       if (undoTimerRef.current) clearTimeout(undoTimerRef.current)
+      if (soonTimerRef.current) clearTimeout(soonTimerRef.current)
     }
   }, [])
 
@@ -292,6 +308,22 @@ export default function PinnedPractices({
     onOpenPractice?.(practice.sub || practice.key)
   }
 
+  // «Создать свою практику» — функция ещё не готова, показываем короткий тост.
+  function showSoonToast() {
+    setSoonToast(true)
+    if (soonTimerRef.current) clearTimeout(soonTimerRef.current)
+    soonTimerRef.current = setTimeout(() => {
+      setSoonToast(false)
+      soonTimerRef.current = null
+    }, 2000)
+  }
+
+  function runMenuAction(action, practice) {
+    setMenuKey(null)
+    if (action === 'open') openPractice(practice)
+    else togglePinned(practice)
+  }
+
   return (
     <section className="mx-pinned-practices" aria-labelledby="pinned-practices-title">
       <div className="mx-pinned-practices__heading">
@@ -340,7 +372,7 @@ export default function PinnedPractices({
       {sheet === 'manage' && (
         <Sheet
           title="твои практики."
-          subtitle="Твой дневной набор — нажимай, чтобы начать."
+          subtitle="Твой дневной набор — собери свою идеальную рутину."
           onClose={() => setSheet(null)}
           undo={undo}
           onUndo={undoRemove}
@@ -348,13 +380,12 @@ export default function PinnedPractices({
             <div className="mx-pinned-sheet__footer-actions">
               <button
                 type="button"
-                className="cta-pill mx-pinned-sheet__pill mx-pinned-sheet__pill--soon"
-                disabled
-                aria-label="Создать свою практику (скоро)"
+                className="cta-pill mx-pinned-sheet__pill"
+                data-testid="practice-create-soon"
+                onClick={showSoonToast}
               >
                 <Brush size={18} aria-hidden="true" />
                 <span>Создать свою практику</span>
-                <span className="mx-pinned-sheet__pill-badge">Скоро</span>
               </button>
               <button
                 type="button"
@@ -392,21 +423,58 @@ export default function PinnedPractices({
                       {practice.title}
                     </span>
                     {practice.description && (
-                      <span className="mx-pinned-practice-card__desc text-faint">
+                      <span className="mx-pinned-practice-card__desc text-muted">
                         {practice.description}
                       </span>
                     )}
                   </button>
                   <button
                     type="button"
-                    className="mx-pinned-practice-card__remove"
-                    aria-label={`Открепить: ${practice.title}`}
-                    onClick={() => togglePinned(practice)}
+                    className="mx-pinned-practice-card__more"
+                    data-testid={`practice-card-more-${practice.key}`}
+                    aria-label={`Действия: ${practice.title}`}
+                    aria-expanded={menuKey === practice.key}
+                    onClick={() => setMenuKey(key => (key === practice.key ? null : practice.key))}
                   >
-                    <X size={15} aria-hidden="true" />
+                    <MoreHorizontal size={13} aria-hidden="true" />
                   </button>
+                  {menuKey === practice.key && (
+                    <>
+                      <button
+                        type="button"
+                        className="mx-pinned-card-menu-backdrop"
+                        aria-label="Закрыть меню"
+                        onClick={() => setMenuKey(null)}
+                      />
+                      <div className="mx-pinned-card-menu" role="menu">
+                        <button
+                          type="button"
+                          role="menuitem"
+                          className="mx-pinned-card-menu__item"
+                          data-testid="practice-card-menu-open"
+                          onClick={() => runMenuAction('open', practice)}
+                        >
+                          Открыть
+                        </button>
+                        <button
+                          type="button"
+                          role="menuitem"
+                          className="mx-pinned-card-menu__item"
+                          data-testid="practice-card-menu-remove"
+                          onClick={() => runMenuAction('remove', practice)}
+                        >
+                          Убрать из набора
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
               ))}
+            </div>
+          )}
+          {soonToast && (
+            <div className="mx-pinned-soon-toast" role="status" data-testid="practices-soon-toast">
+              Скоро: свои практики
             </div>
           )}
         </Sheet>
@@ -419,6 +487,19 @@ export default function PinnedPractices({
           undo={undo}
           onUndo={undoRemove}
           variant="library"
+          overlay={
+            <div className="mx-library-search">
+              <Search size={18} aria-hidden="true" />
+              <input
+                type="text"
+                className="mx-library-search__input"
+                placeholder="Поиск"
+                value={librarySearch}
+                onChange={event => setLibrarySearch(event.target.value)}
+                aria-label="Поиск практик"
+              />
+            </div>
+          }
         >
           <div className="mx-library-filters" role="tablist" aria-label="Фильтр практик">
             <button
@@ -484,17 +565,6 @@ export default function PinnedPractices({
               Не получилось сохранить выбор. Попробуй ещё раз.
             </p>
           )}
-          <div className="mx-library-search">
-            <Search size={18} aria-hidden="true" />
-            <input
-              type="text"
-              className="mx-library-search__input"
-              placeholder="Поиск"
-              value={librarySearch}
-              onChange={event => setLibrarySearch(event.target.value)}
-              aria-label="Поиск практик"
-            />
-          </div>
         </Sheet>
       )}
     </section>

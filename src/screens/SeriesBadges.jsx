@@ -386,7 +386,7 @@ function BadgeRow({ badge, onOpen }) {
       aria-label={`Открыть значок: ${badge.title}`}
       data-testid={`series-badge-${badge.id}`}
     >
-      <RewardIcon variant={badge.done ? badge.id : 'locked'} size={58} />
+      <RewardIcon variant={badge.done ? badge.id : 'locked'} size={55} />
       <span className="mx-path-row-copy-wrap">
         <strong className="mx-path-row-title">{badge.title}</strong>
         <span className="mx-path-row-copy">{badge.desc}</span>

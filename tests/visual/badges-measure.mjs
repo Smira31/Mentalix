@@ -26,8 +26,22 @@ const TARGET = {
   horizonFromCardTop: 216,
   iconW: 77,
   iconBottomFromCardTop: 216,
-  rowH: 91,
-  rowGap: 7,
+  // «Следующие значки» — эталон 440pt: строка 92, зазор 9, поля 16, радиус 16,
+  // шар 55 (отступ слева 16), текст с 90, счётчик 14/600, полоса 43×2.
+  rowH: 92,
+  rowGap: 9,
+  rowPadding: 16,
+  rowRadius: 16,
+  rowBall: 55,
+  rowBallLeft: 16,
+  rowTextLeft: 90,
+  rowTitleSize: 16,
+  rowTitleWeight: 500,
+  rowCopySize: 11,
+  rowCopyLines: 2,
+  rowCounterSize: 14,
+  rowCounterWeight: 600,
+  rowProgress: { w: 43, h: 2 },
   seeAllPt: 23,
   seeAllPb: 50,
 }
@@ -117,6 +131,14 @@ async function measure(page) {
       rowRect && rowIconRect ? round(rowIconRect.x - rowRect.x) : null
     const ballLeftFromCardLeft =
       rowIconRect && card ? round(rowIconRect.x - card.x) : null
+    const rowStyle = rowFirst ? getComputedStyle(rowFirst) : null
+    const rowTextRect = rowFirst?.querySelector('.mx-path-row-copy-wrap')?.getBoundingClientRect()
+    const counterStyle = document.querySelector('.mx-path-row-value strong')
+      ? getComputedStyle(document.querySelector('.mx-path-row-value strong'))
+      : null
+    const rowProgressRect = document
+      .querySelector('.mx-path-award-row .mx-path-progress')
+      ?.getBoundingClientRect()
     const seeAll = document.querySelector('.mx-path-see-all')
     const saStyle = getComputedStyle(seeAll)
     const header = document.querySelector('.mx-path-scroll--overlay .mx-path-header')
@@ -131,6 +153,15 @@ async function measure(page) {
       icon: icon && card ? { w: icon.w, h: icon.h, bottomFromCardTop: round(icon.y + icon.h - card.y) } : null,
       rows,
       rowGap: getComputedStyle(document.querySelector('.mx-path-award-list')).rowGap,
+      rowPaddingLeft: rowStyle ? parseFloat(rowStyle.paddingLeft) : null,
+      rowRadius: rowStyle ? parseFloat(rowStyle.borderRadius) : null,
+      rowBallW: rowIconRect ? round(rowIconRect.width) : null,
+      rowTextLeft: rowRect && rowTextRect ? round(rowTextRect.x - rowRect.x) : null,
+      rowCounter: counterStyle
+        ? { fontSize: parseFloat(counterStyle.fontSize), fontWeight: counterStyle.fontWeight }
+        : null,
+      rowProgressW: rowProgressRect ? round(rowProgressRect.width) : null,
+      rowProgressH: rowProgressRect ? round(rowProgressRect.height) : null,
       ballLeftFromRowLeft,
       ballLeftFromCardLeft,
       landscapeW: landscape?.w ?? null,
@@ -149,7 +180,12 @@ async function measure(page) {
       rowTitleFontWeight: getComputedStyle(document.querySelector('.mx-path-row-title')).fontWeight,
       rowCopyStyle: (() => {
         const style = getComputedStyle(document.querySelector('.mx-path-row-copy'))
-        return { fontSize: style.fontSize, fontWeight: style.fontWeight, whiteSpace: style.whiteSpace, textOverflow: style.textOverflow }
+        return {
+          fontSize: style.fontSize,
+          fontWeight: style.fontWeight,
+          whiteSpace: style.whiteSpace,
+          lineClamp: style.webkitLineClamp || style.lineClamp,
+        }
       })(),
       landscapeAnimations:
         document.querySelector('.mx-path-featured-landscape')?.getAnimations().length ?? null,
@@ -359,21 +395,31 @@ line('3. горизонт от верха карточки', TARGET.horizonFromC
 line('4. иконка w', TARGET.iconW, r440.icon?.w)
 line('4. низ иконки от верха карточки', TARGET.iconBottomFromCardTop, r440.icon?.bottomFromCardTop)
 line('5. строка h', TARGET.rowH, r440.rows[0])
+line('5. строка h (2-я)', TARGET.rowH, r440.rows[1])
+line('5. строка h (3-я)', TARGET.rowH, r440.rows[2])
 line('5. зазор строк', TARGET.rowGap, parseFloat(r440.rowGap))
+line('5. поля строки (padding-left)', TARGET.rowPadding, r440.rowPaddingLeft)
+line('5. радиус строки', TARGET.rowRadius, r440.rowRadius)
+line('5. шар в строке (диаметр)', TARGET.rowBall, r440.rowBallW)
+line('5. текст строки: left от края строки', TARGET.rowTextLeft, r440.rowTextLeft)
+line('5. название строки font-size', TARGET.rowTitleSize, parseFloat(r440.rowTitleFontSize))
+line('5. название строки font-weight', TARGET.rowTitleWeight, Number(r440.rowTitleFontWeight))
+line('5. описание строки font-size', TARGET.rowCopySize, parseFloat(r440.rowCopyStyle.fontSize))
+line('5. описание строки font-weight', 400, Number(r440.rowCopyStyle.fontWeight))
+line('5. описание строки (строк, clamp)', TARGET.rowCopyLines, Number(r440.rowCopyStyle.lineClamp))
+line('5. счётчик font-size', TARGET.rowCounterSize, r440.rowCounter?.fontSize)
+line('5. счётчик font-weight', TARGET.rowCounterWeight, Number(r440.rowCounter?.fontWeight))
+line('5. полоса прогресса w', TARGET.rowProgress.w, r440.rowProgressW)
+line('5. полоса прогресса h', TARGET.rowProgress.h, r440.rowProgressH)
 line('6. «Все значки» padding-top', TARGET.seeAllPt, parseFloat(r440.seeAll.pt))
 line('6. «Все значки» padding-bottom', TARGET.seeAllPb, parseFloat(r440.seeAll.pb))
-line('7. шар в строке: left от края строки', 16, r440.ballLeftFromRowLeft)
-line('7. шар в строке: left от края карточки', 16, r440.ballLeftFromCardLeft)
+line('7. шар в строке: left от края строки', TARGET.rowBallLeft, r440.ballLeftFromRowLeft)
+line('7. шар в строке: left от края карточки', TARGET.rowBallLeft, r440.ballLeftFromCardLeft)
 line('8. пейзаж w', 408, r440.landscapeW)
 line('8. пейзаж h', 80, r440.landscapeH)
 line('8. пик холма над горизонтом', 38, r440.hillPeakAboveHorizon)
 line('9. сегмент → карточка (440)', 43, r440.segmentToCard)
 line('9. сегмент → карточка (393)', 43, results['chromium-393'].atTop.segmentToCard)
-line('9. название строки font-size', 18, parseFloat(r440.rowTitleFontSize))
-console.log(`9. название строки font-weight (эталон 400, факт ${r440.rowTitleFontWeight})`)
-line('9. описание строки font-size', 13, parseFloat(r440.rowCopyStyle.fontSize))
-console.log(`9. описание строки font-weight (эталон 400, факт ${r440.rowCopyStyle.fontWeight})`)
-console.log(`9. описание в одну строку (эталон nowrap/ellipsis, факт ${r440.rowCopyStyle.whiteSpace}/${r440.rowCopyStyle.textOverflow})`)
 line('10. анимации пейзажа (440)', 0, r440.landscapeAnimations)
 line('10. анимации шара, все экземпляры (440)', 0, r440.ballAnimations)
 console.log('\n=== Telegram (эмуляция), верх экрана ===')
