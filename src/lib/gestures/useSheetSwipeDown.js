@@ -120,6 +120,10 @@ export function useSheetSwipeDown(ref, onClose, { enabled = true, zoneOnly = fal
       // чтобы не глушить тач-скролл контента под пальцем.
       if (zoneOnly && yWithinSheet > DRAG_ZONE_HEIGHT) return
       if (yWithinSheet > DRAG_ZONE_HEIGHT && !isAtScrollTop(e.target)) return
+      // В zoneOnly-режиме свайп вниз закрывает страницу только когда
+      // список в самом верху — иначе жест активируется в зоне шапки
+      // и блокирует нативный скролл при прокрученном контенте.
+      if (zoneOnly && !isAtScrollTop(e.target)) return
 
       startY = touch.clientY
       lastY = startY

@@ -386,13 +386,10 @@ function BadgeRow({ badge, onOpen }) {
       aria-label={`Открыть значок: ${badge.title}`}
       data-testid={`series-badge-${badge.id}`}
     >
-      <RewardIcon variant={badge.done ? badge.id : 'locked'} size={58} />
+      <RewardIcon variant={badge.done ? badge.id : 'locked'} size={50} />
       <span className="mx-path-row-copy-wrap">
         <strong className="mx-path-row-title">{badge.title}</strong>
         <span className="mx-path-row-copy">{badge.desc}</span>
-        {badge.progressLabel && (
-          <span className="mx-path-row-copy mx-path-row-progress-copy">{badge.progressLabel}</span>
-        )}
       </span>
       <span className="mx-path-row-value">
         <strong>
@@ -435,11 +432,16 @@ function AwardsView({ badges, onOpenBadge, onShowAll }) {
       <section className="mx-path-awards-section">
         <h2>Следующие значки</h2>
         <div className="mx-path-award-list">
-          {upcoming.slice(0, 3).map(badge => (
+          {upcoming.slice(0, 6).map(badge => (
             <BadgeRow key={badge.id} badge={badge} onOpen={() => onOpenBadge(badge)} />
           ))}
           {!upcoming.length && <p className="mx-path-status">Новых значков пока нет</p>}
         </div>
+        {upcoming.length > 0 && (
+          <button type="button" className="mx-path-see-all mx-path-see-all--end" onClick={onShowAll}>
+            Все значки <span aria-hidden="true">›</span>
+          </button>
+        )}
       </section>
     </div>
   )
@@ -570,7 +572,6 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
   const [profileStats, setProfileStats] = useState(null)
   const [completedSessions, setCompletedSessions] = useState(null)
   const [activeTab, setActiveTab] = useState('badges')
-  const [headerScrolled, setHeaderScrolled] = useState(false)
   const [error, setError] = useState(false)
   const [errorUserId, setErrorUserId] = useState(null)
   const [selectedBadge, setSelectedBadge] = useState(null)
@@ -721,13 +722,12 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
         )}
         <main
           className={`mx-path-scroll${showAll ? '' : ' mx-path-scroll--overlay'}`}
-          onScroll={event => setHeaderScrolled(event.currentTarget.scrollTop > 0)}
         >
-          {/* Стеклянная шапка живёт внутри скролла: липнет к верху и лежит
-            поверх контента, который просвечивает сквозь blur. */}
+          {/* Шапка-сегмент внутри скролла (Stoic): липнет к верху, фон
+            прозрачный — контент уходит под плавающий переключатель. */}
           {!showAll && (
             <header
-              className={`mx-path-header${headerScrolled ? ' mx-path-header--scrolled' : ''}`}
+              className="mx-path-header"
             >
               <div className="mx-path-tabs" role="tablist" aria-label="Раздел серии и значков">
                 <button
