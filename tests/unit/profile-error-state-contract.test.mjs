@@ -14,7 +14,8 @@ test('Profile exposes error copy and retry action', () => {
 })
 
 test('Profile берёт серию с сервера, без восстановления из истории', () => {
-  assert.match(settings, /api\.profile\.get\(user\.id\)/)
+  // Регэксп допускает и однострочный, и отформатированный prettier вид вызова.
+  assert.match(settings, /api\.profile\s*\.\s*get\(user\.id\)/)
   assert.doesNotMatch(source, /api\.profile\.get\(user\.id\)/)
   assert.match(source, /api\.streak\(user\.id\)/)
   assert.match(source, /readCanonicalStreakStats\(payload\)/)
