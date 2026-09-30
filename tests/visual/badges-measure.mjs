@@ -240,9 +240,25 @@ async function touchSwipeProbe(page, selector) {
   }, selector)
 }
 
-// Проверка скролла для обеих вкладок
+// Проверка скролла для обеих вкладок.
+// Ждём стабилизации контента (scrollHeight > clientHeight) и подтверждаем,
+// что программный скролл действительно сработал — без фиксированных таймаутов.
 async function scrollCheck(page, tab) {
   const scrollEl = '.mx-path-scroll--overlay'
+  // Сбрасываем скролл в 0 — общий контейнер может остаться прокрученным
+  // от предыдущей вкладки, и before.scrollTop будет не 0.
+  await page.evaluate(sel => {
+    document.querySelector(sel).scrollTop = 0
+  }, scrollEl)
+  // Ждём, пока контент не переполнит скролл-контейнер (рендер завершён).
+  await page.waitForFunction(
+    sel => {
+      const el = document.querySelector(sel)
+      return el && el.scrollHeight > el.clientHeight
+    },
+    scrollEl,
+    { timeout: 5000 }
+  )
   const before = await page.evaluate(sel => {
     const el = document.querySelector(sel)
     return { scrollTop: el.scrollTop, scrollHeight: el.scrollHeight, clientHeight: el.clientHeight }
@@ -251,7 +267,15 @@ async function scrollCheck(page, tab) {
   await page.evaluate(sel => {
     document.querySelector(sel).scrollTop = document.querySelector(sel).scrollHeight
   }, scrollEl)
-  await page.waitForTimeout(200)
+  // Ждём, пока scrollTop действительно изменится (скролл не сброшен ререндером).
+  await page.waitForFunction(
+    sel => {
+      const el = document.querySelector(sel)
+      return el.scrollTop > 0
+    },
+    scrollEl,
+    { timeout: 2000 }
+  )
   const after = await page.evaluate(sel => {
     const el = document.querySelector(sel)
     const header = el.querySelector('.mx-path-header')
@@ -329,7 +353,7 @@ async function runBrowser(name, launcher, opts) {
   await page.waitForTimeout(200)
   const scrollBadges = await scrollCheck(page, 'badges')
   await page.getByTestId('series-tab-stats').click()
-  await page.waitForTimeout(300)
+  await page.waitForSelector('.mx-path-summary-card', { state: 'visible', timeout: 5000 })
   const scrollStats = await scrollCheck(page, 'stats')
   await page.getByTestId('series-tab-badges').click()
   await page.waitForTimeout(200)
@@ -377,7 +401,7 @@ async function runTelegram(name, width, height) {
   await page.waitForTimeout(200)
   const scrollBadges = await scrollCheck(page, 'badges')
   await page.getByTestId('series-tab-stats').click()
-  await page.waitForTimeout(300)
+  await page.waitForSelector('.mx-path-summary-card', { state: 'visible', timeout: 5000 })
   const scrollStats = await scrollCheck(page, 'stats')
   const statsGap = await page.evaluate(() => {
     const round = v => Math.round(v * 10) / 10

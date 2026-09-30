@@ -360,7 +360,7 @@
   display: flex;
   height: 82px;
   align-items: center;
-  gap: 10px;
+  gap: 0;
   width: 100%;
   padding: 0 14px 0 14px;
   border: 0;
@@ -409,6 +409,9 @@
   gap: 6px;
   color: rgb(var(--c-muted, 133 133 133));
   font-size: 13px;
+  font-weight: 600;
+}
+.mx-path-row-value strong {
   font-weight: 600;
 }
 .mx-path-progress {
