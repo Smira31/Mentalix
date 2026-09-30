@@ -173,7 +173,7 @@
   font-family: 'Onest', system-ui, sans-serif;
   border: none;
   position: sticky;
-  top: calc(env(safe-area-inset-top, 0px) + 8px);
+  top: calc(var(--app-safe-top) + 8px);
   z-index: 10;
   align-self: center;
   flex-shrink: 0;

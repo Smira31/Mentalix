@@ -471,13 +471,14 @@ async function run() {
     return await page.evaluate(() => {
       const scroll = document.querySelector('.mx-fullscreen-scroll')
       const sRect = scroll?.getBoundingClientRect() || { top: 0 }
-      function check(sel, top) {
+      function check(sel) {
         const el = document.querySelector(sel)
         if (!el) return null
         const r = el.getBoundingClientRect()
-        return { stuck: r.top <= sRect.top + top + 2 && r.top >= sRect.top - 2, y: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height) }
+        const stickyTop = parseFloat(getComputedStyle(el).top) || 0
+        return { stuck: r.top <= sRect.top + stickyTop + 2 && r.top >= sRect.top - 2, y: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height), stickyTop: Math.round(stickyTop) }
       }
-      return { cta: check('.mx-theme-carousel-cta', 8), surprise: check('.mx-theme-directory__surprise', 52), allThemes: check('.mx-theme-directory__all-themes', 95) }
+      return { cta: check('.mx-theme-carousel-cta'), surprise: check('.mx-theme-directory__surprise'), allThemes: check('.mx-theme-directory__all-themes') }
     })
   }
 
@@ -689,10 +690,10 @@ async function run() {
   ]
   for (const sp of stickyPositions) {
     const parts = []
-    for (const [key, label, top] of [['cta', 'кнопка', 8], ['surprise', 'Удиви', 52], ['allThemes', 'Все темы', 95]]) {
+    for (const [key, label] of [['cta', 'кнопка'], ['surprise', 'Удиви'], ['allThemes', 'Все темы']]) {
       const d = sp.data?.[key]
       if (!d) continue
-      parts.push(`${label}(y=${d.y}, ${d.w}×${d.h}${d.stuck ? ' ✓' : ''})`)
+      parts.push(`${label}(top=${d.stickyTop}, y=${d.y}, ${d.w}×${d.h}${d.stuck ? ' ✓' : ''})`)
     }
     console.log(`${sp.name.padEnd(20)} | ${(parts.length ? parts.join('; ') : 'ничего').padEnd(60)} |`)
   }

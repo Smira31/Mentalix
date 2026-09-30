@@ -112,7 +112,7 @@
 /* --- Кнопка «Удиви меня» (sticky) --- */
 .mx-theme-directory__surprise {
   position: sticky;
-  top: calc(env(safe-area-inset-top, 0px) + var(--mx-sticky-cta-h, 52px));
+  top: calc(var(--app-safe-top) + var(--mx-sticky-cta-h, 52px));
   z-index: 5;
   display: inline-flex;
   align-items: center;
@@ -142,7 +142,7 @@
 /* --- «Все темы» + фильтры (sticky) --- */
 section.mx-theme-directory__all-themes {
   position: sticky;
-  top: calc(env(safe-area-inset-top, 0px) + var(--mx-sticky-all-h, 95px));
+  top: calc(var(--app-safe-top) + var(--mx-sticky-all-h, 95px));
   z-index: 5;
   display: flex;
   flex-direction: column;

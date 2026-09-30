@@ -434,7 +434,7 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
 
               <MarkdownText
                 content={d.reflection}
-                className="space-y-2 text-[14px] text-cream leading-relaxed"
+                className="space-y-2 text-[16px] font-normal text-cream leading-relaxed"
               />
 
               <button

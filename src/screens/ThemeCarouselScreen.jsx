@@ -100,7 +100,8 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
         raf = null
         const ctaRect = cta.getBoundingClientRect()
         const scrollRect = scroll.getBoundingClientRect()
-        const stuck = ctaRect.top <= scrollRect.top + 12
+        const stickyTop = parseFloat(getComputedStyle(cta).top) || 8
+        const stuck = ctaRect.top <= scrollRect.top + stickyTop + 4
         cta.dataset.stuck = stuck ? 'true' : 'false'
       })
     }
