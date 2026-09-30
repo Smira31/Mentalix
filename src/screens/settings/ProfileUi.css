@@ -835,6 +835,51 @@ button.mx-profile-row:active {
   text-underline-offset: 2px;
 }
 
+/* ── Корень «твой профиль.» — геометрия по Stoic (сверка 29.09, раздел D).
+   Стили scoped к корню (:not --sub): вложенные экраны и общие классы не
+   затрагиваются. 1 pt эталона = 1 px; проверка на 440 и 393. ── */
+
+/* 1. Свёрнутый заголовок 17/700 по центру шапки; затухание вниз — мягкий
+   градиент, а не жёсткая сплошная полоса (контент уходит под него). */
+.mx-profile-page:not(.mx-profile-page--sub) .mx-profile-page__bar-title {
+  font-weight: 700;
+}
+
+.mx-profile-page:not(.mx-profile-page--sub) .mx-profile-page__surface::after {
+  background: linear-gradient(to bottom, rgb(var(--c-bg)), transparent);
+}
+
+/* 2. Подписи групп: Manrope 12/700, разрядка 0.3em, muted, x ≈ 32
+   (на уровне текста строк), ≈ 54 над группой, ≈ 9 под подписью. */
+.mx-profile-page:not(.mx-profile-page--sub) .mx-profile-group + .mx-profile-group {
+  margin-top: 54px;
+}
+
+.mx-profile-page:not(.mx-profile-page--sub) .mx-profile-group__label {
+  margin: 0 0 9px;
+  padding-inline: 16px;
+  font-family: 'Manrope', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+}
+
+/* 3. Строка ≈ 50: текст ~17/400 x ≈ 32 (карточка 16 + поле 16);
+   значение справа ~17/700; шеврон ≈ 16 белый (не серый). */
+.mx-profile-page:not(.mx-profile-page--sub) .mx-profile-row {
+  padding-inline: 16px;
+}
+
+.mx-profile-page:not(.mx-profile-page--sub) .mx-profile-row + .mx-profile-row::before {
+  left: 16px;
+}
+
+.mx-profile-page:not(.mx-profile-page--sub) .mx-profile-row__chevron {
+  color: rgb(var(--c-text));
+  width: 16px;
+  height: 16px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .mx-profile-page__surface,
   .mx-profile-page__surface::after,
