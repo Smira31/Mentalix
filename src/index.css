@@ -1472,13 +1472,25 @@ button {
   height: var(--demo-statusbar-h, 62px);
   display: flex;
   align-items: center;
+  /* Вертикальный центр строки — 32px от верха (как на iOS при 62pt). */
+  padding-top: 2px;
 }
 
 .mx-demo-telegram-chrome__status-zone {
-  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Время центрировано в левой «ушке» iOS (центр ~ x 82pt при 440). */
+.mx-demo-telegram-chrome__status-zone--time {
+  flex: 0 0 37.5%;
+}
+
+.mx-demo-telegram-chrome__status-zone--icons {
+  flex: 1;
+  justify-content: flex-end;
+  padding-right: 14px;
 }
 
 /*
@@ -1513,40 +1525,39 @@ button {
   padding: 0 16px;
 }
 
+/*
+ * Левая пилюля Telegram: 94×30, радиус 15 (как в Telegram на iPhone).
+ * Когда в стеке есть «назад» — кликабельна и вызывает тот же обработчик,
+ * что системная BackButton; «✕ Закрыть» — некликабельный span.
+ */
 .mx-demo-telegram-chrome__pill {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
+  width: 94px;
   height: 30px;
-  padding: 0 13px;
-  border-radius: 999px;
-  background: rgba(40, 40, 40, 0.9);
+  border-radius: 15px;
+  background: rgba(44, 44, 46, 0.92);
   color: rgb(255 255 255);
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
+button.mx-demo-telegram-chrome__pill {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+/* Правая пилюля Telegram: 72×30, «⌄» и «•••» равномерно, без разделителя,
+   не кликабельна. */
 .mx-demo-telegram-chrome__pill--menu {
-  gap: 0;
-  padding: 0 10px;
-}
-
-.mx-demo-telegram-chrome__pill-divider {
-  width: 1px;
-  height: 18px;
-  margin: 0 2px;
-  background: rgba(255, 255, 255, 0.25);
-}
-
-.mx-demo-telegram-chrome__home {
-  position: absolute;
-  bottom: 8px;
-  left: 50%;
-  width: 134px;
-  height: 5px;
-  border-radius: 3px;
-  background: rgb(255 255 255);
-  transform: translateX(-50%);
+  width: 72px;
+  justify-content: space-evenly;
 }
 
 /* In the Demo frame the Telegram-style chrome owns the page title. Keep the
@@ -1742,8 +1753,12 @@ button {
 
 /* Слой чек-ина: въезд снизу 170 ms (§6) */
 @keyframes mx-fullscreen-enter {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
 }
 
 .mx-fullscreen-surface {
@@ -1768,8 +1783,12 @@ button {
 
 /* Слой чек-ина: уезд вниз 170 ms ease-in (§6) */
 @keyframes mx-fullscreen-exit {
-  from { transform: translateY(0); }
-  to { transform: translateY(100%); }
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
 }
 
 [data-fullscreen-exit='true'] .mx-fullscreen-surface {
@@ -1778,8 +1797,12 @@ button {
 
 /* Страница «Серия и значки»: въезд снизу 270 ms + доводка (§6) */
 @keyframes mx-sheet-enter {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
 }
 
 .mx-path-surface {
@@ -1788,8 +1811,12 @@ button {
 
 /* Страница: уезд вниз 200 ms ease-in (§6) */
 @keyframes mx-sheet-exit {
-  from { transform: translateY(0); }
-  to { transform: translateY(100%); }
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
 }
 
 [data-sheet-exit='true'] .mx-path-surface {
@@ -1798,8 +1825,12 @@ button {
 
 /* Шторка значка: въезд снизу 250 ms (§6) */
 @keyframes mx-badge-sheet-enter {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
 }
 
 .mx-badge-sheet {
@@ -1808,8 +1839,12 @@ button {
 
 /* Шторка значка: уезд вниз 200 ms ease-in (§6) */
 @keyframes mx-badge-sheet-exit {
-  from { transform: translateY(0); }
-  to { transform: translateY(100%); }
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
 }
 
 .mx-badge-sheet--exit {
@@ -1818,8 +1853,12 @@ button {
 
 /* Затемнение фона под шторкой значка */
 @keyframes mx-badge-backdrop-enter {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .mx-badge-sheet-layer {
@@ -1832,8 +1871,12 @@ button {
 
 /* Оверлей профиля/настроек: въезд снизу 270 ms (§6, шторка) */
 @keyframes mx-overlay-enter {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
 }
 
 .mx-overlay-enter {
@@ -1842,8 +1885,12 @@ button {
 
 /* Оверлей профиля: уезд вниз 200 ms ease-in (§6) */
 @keyframes mx-overlay-exit {
-  from { transform: translateY(0); }
-  to { transform: translateY(100%); }
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
 }
 
 .mx-overlay-exit {
@@ -1852,13 +1899,21 @@ button {
 
 /* prefers-reduced-motion: opacity 150 ms, задержки сохраняются (§6) */
 @keyframes mx-reduced-enter {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes mx-reduced-exit {
-  from { opacity: 1; }
-  to { opacity: 0; }
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
