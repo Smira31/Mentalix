@@ -161,7 +161,7 @@
   align-items: center;
   flex-direction: column;
   gap: 6px;
-  padding: 12px 4px;
+  padding: 8px;
   border: 0;
   border-radius: 20px;
   background: rgb(var(--c-card2, 17 17 17));
@@ -169,6 +169,12 @@
   text-align: center;
 }
 .mx-path-badge-grid strong {
+  /* Подпись: по центру, максимум 2 строки, не касается краёв (padding 8). */
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  max-width: 100%;
   font-size: 12px;
   font-weight: 500;
   line-height: 1.2;
@@ -231,16 +237,15 @@
   left: 50%;
   transform: translateX(-50%);
 }
-/* Пейзаж: нижняя кромка SVG — линия горизонта на y=216 от верха карточки
-   (338 − 216 = 122). Холмы слева/справа сидят на горизонте, под линией —
-   чистый фон карточки с названием и статусом. */
+/* Пейзаж: viewBox 408×80, низ SVG — линия горизонта на y=216 от верха
+   карточки (338 − 216 = 122). Холмы слева/справа, середина пустая под шар. */
 .mx-path-featured-landscape {
   position: absolute;
   bottom: 122px;
   left: 0;
   display: block;
   width: 100%;
-  height: 122px;
+  height: 80px;
 }
 .mx-path-featured-title {
   position: relative;
@@ -274,7 +279,8 @@
 }
 .mx-reward-icon__question {
   fill: #6c7385;
-  font-size: 14px;
+  /* 20 в единицах viewBox 100 — заметный, как у Stoic. */
+  font-size: 20px;
   font-weight: 700;
 }
 .mx-reward-icon__steps,
@@ -326,12 +332,17 @@
   align-items: center;
   gap: 10px;
   width: 100%;
-  padding: 8px 12px;
+  padding: 8px 12px 8px 16px;
   border: 0;
   border-radius: 24px;
   background: rgb(var(--c-card2, 17 17 17));
   color: inherit;
   text-align: left;
+}
+/* Шар 58 стоит целиком: x 16 от левого края карточки, верх 16 от верха строки. */
+.mx-path-award-row > .mx-reward-icon {
+  align-self: flex-start;
+  margin-top: 8px;
 }
 .mx-path-award-row:active {
   transform: scale(0.97);

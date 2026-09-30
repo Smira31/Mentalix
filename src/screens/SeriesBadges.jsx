@@ -23,6 +23,26 @@ import BackButton from '../components/BackButton'
 import MilestoneBars from '../components/MilestoneBars'
 import './SeriesBadges.css'
 
+/* Вписывание пер-вариантных иконок в квадрат 40×40 по центру (50,50):
+   scale = 40 / max(ширина, высота) по фактическому bbox, кап 1.25. */
+const ART_FIT = {
+  'first-step': 'translate(50 50) scale(0.513) translate(-81 -73)',
+  first_checkin: 'translate(50 50) scale(0.816) translate(-79.5 -62.5)',
+  first_journal: 'translate(50 50) scale(0.816) translate(-79.5 -70.5)',
+  streak_7: 'translate(50 50) scale(0.769) translate(-80 -66.5)',
+  streak_30: 'translate(50 50) scale(0.741) translate(-80 -62.5)',
+  active_days_100: 'translate(50 50) scale(0.645) translate(-80 -68.5)',
+  'month-on-path': 'translate(50 50) scale(0.769) translate(-86 -68)',
+  'voice-heard': 'translate(50 50) scale(0.889) translate(-82.5 -68)',
+  'streak-two': 'translate(50 50) scale(1.25) translate(-80 -66)',
+  'streak-three': 'translate(50 50) scale(1.25) translate(-80 -66)',
+  'streak-five': 'translate(50 50) scale(1.026) translate(-80 -66)',
+  'week-on-path': 'translate(50 50) scale(0.635) translate(-84 -62)',
+  'ritual-holds': 'translate(50 50) scale(0.8) translate(-80 -76)',
+  'asceza-power': 'translate(50 50) scale(1.111) translate(-80 -70)',
+  default: 'translate(50 50) scale(1.25) translate(-80 -68)',
+}
+
 function RewardIcon({ variant = 'locked', size = 72, className = '' }) {
   const isLocked = variant === 'locked'
   const isFirstStep = variant === 'first-step'
@@ -53,13 +73,8 @@ function RewardIcon({ variant = 'locked', size = 72, className = '' }) {
           ?
         </text>
       ) : (
-        // Открытый значок: иконка в квадрате ~40×40 по центру (50,50).
-        // Пер-вариантные пути живут в старой сетке 160 (центр 80,68) и
-        // вписаны в квадрат масштабом 40/96.
-        <g
-          className="mx-reward-icon__badge-art"
-          transform="translate(50 50) scale(0.4167) translate(-80 -68)"
-        >
+        // Открытый значок: иконка в квадрате 40×40 по центру (50,50).
+        <g className="mx-reward-icon__badge-art" transform={ART_FIT[variant] || ART_FIT.default}>
           {isFirstStep ? (
             <>
               <path className="mx-reward-icon__steps" d="M42 103h76M50 94h60M58 85h44M66 76h28" />
@@ -339,24 +354,26 @@ export function NewBadgeSheet({ badge, onClose }) {
 }
 
 function FeaturedLandscape() {
-  // Простой пейзаж по мотивам Stoic: холмы слева и справа + линия горизонта
-  // через всю карточку. Свои формы, не копия Stoic.
+  // Готовый пейзаж по скрину Stoic: холмы слева и справа, середина
+  // x 175–319 пустая (под шар). Низ SVG (линия y=78.5) = линия горизонта.
   return (
     <svg
       className="mx-path-featured-landscape"
-      viewBox="0 0 408 216"
+      viewBox="0 0 408 80"
       preserveAspectRatio="none"
+      fill="none"
       aria-hidden="true"
     >
       <path
-        d="M0 216v-38c14-10 34-16 52-10 16 5 28 15 38 24 10 9 24 16 38 18l6 6Z"
-        fill="#3a3a3a"
+        d="M0 78 L0 66 C15 66 28 70 40 69 C58 67 72 40 91 40 C106 40 118 58 130 61 C136 62 139 56 143 57 C152 58 162 62 169 64 C172 66 174 72 175 78 Z"
+        fill="#454545"
       />
       <path
-        d="M408 216v-42c-16-11-38-17-57-10-15 5-27 15-36 24-10 9-23 16-36 18l-5 10Z"
-        fill="#3a3a3a"
+        d="M319 78 L319 68 C330 62 340 55 350 55 C362 55 368 61 377 61 C384 61 386 58 391 58 C398 58 404 60 408 61 L408 78 Z"
+        fill="#454545"
       />
-      <rect x="0" y="215" width="408" height="1" fill="rgba(255, 255, 255, 0.4)" />
+      <path d="M68 75 C80 70 95 70 110 72 C125 74 138 70 150 72" stroke="#2c2c2c" strokeWidth="1" />
+      <line x1="0" y1="78.5" x2="408" y2="78.5" stroke="#333" strokeWidth="1" />
     </svg>
   )
 }
