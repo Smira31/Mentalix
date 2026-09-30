@@ -46,10 +46,23 @@
   padding-top: 44px;
 }
 
+/* Шапка-сегмент внутри скролла (Stoic): липнет к верху, контент
+   просвечивает сквозь blur(20px) saturate(160%). */
+.mx-path-scroll--overlay .mx-path-header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  margin: -20px calc(-1 * var(--mx-screen-x, 16px)) 8px;
+  padding: 14px var(--mx-screen-x, 16px) 14px;
+  background: var(--mx-glass-bg, rgba(38, 38, 38, 0.92));
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+}
+
 .mx-path-tabs {
   display: grid;
-  width: 177px;
-  height: 42px;
+  width: 200px;
+  height: 47px;
   grid-template-columns: 1fr 1fr;
   padding: 0;
   border: 1px solid rgb(var(--c-border, 41 41 41));
@@ -80,8 +93,8 @@
 
 .mx-path-close {
   display: grid;
-  width: 38px;
-  height: 38px;
+  width: 44px;
+  height: 44px;
   flex: 0 0 auto;
   place-items: center;
   border: 1px solid rgb(var(--c-border, 41 41 41));
@@ -141,8 +154,11 @@
   margin: 0 auto;
 }
 
+/* Карточка featured-награды по Stoic: высота 338, линия горизонта
+   на y=216 от верха карточки, пейзаж — нижняя часть (122px). */
 .mx-path-featured-award {
-  min-height: 300px;
+  position: relative;
+  height: 338px;
   overflow: hidden;
   border-radius: 24px;
   background: rgb(var(--c-card2, 17 17 17));
@@ -173,19 +189,35 @@
   margin-top: 8px;
 }
 .mx-path-featured-scene {
-  height: 134px;
+  height: 121px;
+  position: relative;
+  z-index: 1;
   display: grid;
   place-items: end center;
 }
 .mx-path-featured-scene .mx-reward-icon {
-  width: 118px;
-  height: 118px;
+  width: 77px;
+  height: 77px;
+}
+/* Пейзаж занимает нижнюю часть карточки: 338 − 216 (до горизонтали). */
+.mx-path-featured-landscape {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  display: block;
+  width: 100%;
+  height: 122px;
 }
 .mx-path-featured-title {
+  position: relative;
+  z-index: 1;
+  margin-top: 18px;
   font-size: 13px;
   font-weight: 600;
 }
 .mx-path-featured-copy {
+  position: relative;
+  z-index: 1;
   margin-top: 4px;
   color: rgb(var(--c-muted, 133 133 133));
   font-size: 12px;
@@ -237,7 +269,7 @@
 .mx-path-see-all {
   display: block;
   width: 100%;
-  padding: 16px 4px 36px;
+  padding: 23px 4px 50px;
   border: 0;
   background: transparent;
   color: rgb(var(--c-muted, 133 133 133));
@@ -261,7 +293,7 @@
 }
 .mx-path-award-row {
   display: flex;
-  min-height: 82px;
+  min-height: 91px;
   align-items: center;
   gap: 10px;
   width: 100%;
