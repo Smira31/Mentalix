@@ -4,6 +4,7 @@ import { ArrowRight, Check, Lock, X } from 'lucide-react'
 
 import { RoundBackButton } from '../components/NestedScreenHeader'
 import JournalTextarea from '../components/JournalTextarea'
+import SemanticGlyph from '../components/SemanticGlyph'
 import { platform } from '../platform'
 import { useBackButton } from '../platform/telegram.hooks'
 import {
@@ -47,15 +48,26 @@ function nextView(currentView, trial) {
   return seq[idx + 1] || 'map'
 }
 
+/* заголовок в стиле приложения: строчные + точка (если нет знака в конце) */
+function appHeading(text) {
+  const t = String(text).toLowerCase()
+  return /[.?!:]$/.test(t) ? t : t + '.'
+}
+
+/* экраны шага с шапкой (без intro/complete) — для счётчика */
+function headerScreens(trial) {
+  return screenSequence(trial).filter(v => v !== 'step-intro' && v !== 'complete')
+}
+
 /* ── оболочка экрана ── */
 
-function Shell({ children, footer }) {
+function Shell({ children, footer, bodyClassName = '' }) {
   const { style } = useFullscreenSurface()
 
   return createPortal(
     <div className={FULLSCREEN_SHELL_CLASS} style={style}>
       <div className={`${FULLSCREEN_SCROLL_CLASS} mx-hero-journey`}>
-        <div className="mx-auto flex w-full max-w-md flex-col px-[var(--mx-screen-x)] pb-6">
+        <div className={`mx-auto flex w-full max-w-md flex-col px-[var(--mx-screen-x)] pb-6 ${bodyClassName}`}>
           {children}
         </div>
       </div>
@@ -158,7 +170,7 @@ function CourseMap({ progress, onOpenStep, onBack }) {
 
       <div className="mx-hj-map__head">
         <span className="mx-hj-eyebrow">Курс · 16 шагов · 4 главы</span>
-        <h1 className="mx-hj-map__title">Путь героя</h1>
+        <h1 className="mx-hj-map__title">{appHeading('Путь героя')}</h1>
         <p className="mx-hj-map__desc">{HERO_JOURNEY_COURSE.description}</p>
       </div>
 
@@ -181,7 +193,7 @@ function CourseMap({ progress, onOpenStep, onBack }) {
           className="mx-hj-next-card"
         >
           <span className="mx-hj-next-card__label">Следующий шаг · {nextTrial.number}</span>
-          <span className="mx-hj-next-card__title">{nextTrial.title}</span>
+          <span className="mx-hj-next-card__title">{appHeading(nextTrial.title)}</span>
           <span className="mx-hj-next-card__sub">{nextTrial.subtitle}</span>
           <span className="mx-hj-next-card__meta">≈ 6 мин</span>
           <span className="cta-pill mx-hj-next-card__cta">
@@ -227,9 +239,10 @@ function StepIntro({ trial, onBack, onStart }) {
 
       {/* TODO: иллюстрация шага (поле image) */}
       <div className="mx-hj-step-intro__image">
-        <span className="mx-hj-step-intro__image-num">
-          {String(trial.number).padStart(2, '0')}
-        </span>
+        <div className="mx-hj-step-intro__glyph">
+          <SemanticGlyph kind="pathfinder" animated={false} />
+        </div>
+        <span className="mx-hj-step-intro__image-caption">шаг {trial.number}</span>
         <div className="mx-hj-step-intro__dots">
           {chapterTrials.map((_, i) => (
             <span
@@ -243,7 +256,7 @@ function StepIntro({ trial, onBack, onStart }) {
       <div className="mx-hj-step-intro__meta">
         Шаг {trial.number} из {HERO_JOURNEY_TOTAL_STEPS} · ≈ 6 минут
       </div>
-      <h2 className="mx-hj-step-intro__title">{trial.title}</h2>
+      <h2 className="mx-hj-step-intro__title">{appHeading(trial.title)}</h2>
       <p className="mx-hj-step-intro__subtitle">{trial.subtitle}</p>
       <p className="mx-hj-step-intro__desc">{trial.description}</p>
 
@@ -262,17 +275,17 @@ function StepIntro({ trial, onBack, onStart }) {
 
 /* ── общая шапка для C–F ── */
 
-function StepHeader({ trial, onBack }) {
-  const chapter = chapterForTrial(trial.id)
-  const chapterTrials = trialsForChapter(chapter)
-  const stepIndexInChapter = chapterTrials.findIndex(t => t.id === trial.id)
+function StepHeader({ trial, onBack, view }) {
+  const screens = headerScreens(trial)
+  const idx = screens.indexOf(view)
+  const screenNum = idx >= 0 ? idx + 1 : 1
 
   return (
     <div className="mx-hj-step-header">
       <RoundBackButton onClick={onBack} />
       <div className="mx-hj-step-header__info">
         <span className="mx-hj-step-header__title">Шаг {trial.number} · {trial.title}</span>
-        <span className="mx-hj-step-header__progress">{stepIndexInChapter + 1} из 4</span>
+        <span className="mx-hj-step-header__progress">{screenNum} из {screens.length}</span>
       </div>
     </div>
   )
@@ -286,9 +299,9 @@ function SignsScreen({ trial, markedSigns, onToggleSign, onNext, onBack }) {
 
   return (
     <Shell>
-      <StepHeader trial={trial} onBack={onBack} />
+      <StepHeader trial={trial} onBack={onBack} view="signs" />
 
-      <h2 className="mx-hj-signs__title">Узнаёшь себя?</h2>
+      <h2 className="mx-hj-signs__title">{appHeading('Узнаёшь себя?')}</h2>
       <p className="mx-hj-signs__sub">Отметь то, что про тебя. Это видишь только ты.</p>
 
       <div className="mx-hj-signs__list">
@@ -313,7 +326,7 @@ function SignsScreen({ trial, markedSigns, onToggleSign, onNext, onBack }) {
 
       <div className="mx-hj-signs__footer">
         <span className="mx-hj-signs__count">Отмечено {markedCount} из {signs.length}</span>
-        <button type="button" onClick={onNext} className="cta-pill">
+        <button type="button" onClick={onNext} className="cta-pill mx-hj-signs__cta">
           Дальше
         </button>
       </div>
@@ -326,9 +339,9 @@ function SignsScreen({ trial, markedSigns, onToggleSign, onNext, onBack }) {
 function PathsScreen({ trial, onNext, onBack }) {
   return (
     <Shell>
-      <StepHeader trial={trial} onBack={onBack} />
+      <StepHeader trial={trial} onBack={onBack} view="paths" />
 
-      <h2 className="mx-hj-paths__title">Как пройти — и как не пройти</h2>
+      <h2 className="mx-hj-paths__title">{appHeading('Как пройти — и как не пройти')}</h2>
 
       <div className="mx-hj-path-card mx-hj-path-card--shadow">
         <span className="mx-hj-path-card__label">Путь тени</span>
@@ -368,7 +381,7 @@ function PathsScreen({ trial, onNext, onBack }) {
 
 /* ── E/F. Запиши / Одно действие ── */
 
-function WriteScreen({ label, prompt, hint, placeholder, value, onChange, onSubmit, allowEmpty, onBack, trial }) {
+function WriteScreen({ label, prompt, hint, placeholder, value, onChange, onSubmit, allowEmpty, onBack, trial, view }) {
   const hasText = Boolean(value.trim())
   const canSubmit = allowEmpty || hasText
 
@@ -380,7 +393,7 @@ function WriteScreen({ label, prompt, hint, placeholder, value, onChange, onSubm
 
   return (
     <Shell>
-      <StepHeader trial={trial} onBack={onBack} />
+      <StepHeader trial={trial} onBack={onBack} view={view} />
 
       <div className="mx-hj-write">
         <span className="mx-hj-write__label">{label}</span>
@@ -421,7 +434,16 @@ function StepComplete({ trial, progress, onBackToMap, onBack }) {
   const reflection = progress.reflections[trial.id] || ''
 
   return (
-    <Shell>
+    <Shell
+      bodyClassName="mx-hj-complete__body"
+      footer={
+        <div className="mx-hj-complete__footer">
+          <button type="button" onClick={onBackToMap} className="cta-pill mx-hj-complete__cta">
+            К карте пути
+          </button>
+        </div>
+      }
+    >
       <RoundBackButton onClick={onBack} />
 
       <div className="mx-hj-complete">
@@ -429,7 +451,7 @@ function StepComplete({ trial, progress, onBackToMap, onBack }) {
           <Check size={40} strokeWidth={3} />
         </div>
         <span className="mx-hj-complete__step">Шаг {trial.number} из {HERO_JOURNEY_TOTAL_STEPS}</span>
-        <h2 className="mx-hj-complete__title">Шаг пройден</h2>
+        <h2 className="mx-hj-complete__title">{appHeading('Шаг пройден')}</h2>
         <p className="mx-hj-complete__phrase">{trial.doneText || 'Ты сделал ещё один шаг по пути.'}</p>
       </div>
 
@@ -463,10 +485,6 @@ function StepComplete({ trial, progress, onBackToMap, onBack }) {
           Твоя запись в дневнике →
         </button>
       )}
-
-      <button type="button" onClick={onBackToMap} className="cta-pill mx-hj-complete__cta">
-        К карте пути
-      </button>
     </Shell>
   )
 }
@@ -581,6 +599,7 @@ export default function HeroJourneyMap({ onBack }) {
         allowEmpty={false}
         onBack={handleBack}
         trial={trial}
+        view="write"
       />
     )
   }
@@ -598,6 +617,7 @@ export default function HeroJourneyMap({ onBack }) {
         allowEmpty
         onBack={handleBack}
         trial={trial}
+        view="action"
       />
     )
   }

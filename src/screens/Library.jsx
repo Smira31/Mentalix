@@ -12,6 +12,8 @@ import Articles from './Articles'
 import GuidedJournals from './GuidedJournals'
 import HeroJourneyMap from './HeroJourneyMap'
 import { previewHeroJourneyAction } from '../lib/heroJourneyDemo'
+import { useHeroJourneyProgress, isStepCompleted } from '../lib/heroJourneyProgress'
+import { HERO_JOURNEY_TRIALS } from '../data/heroJourney'
 import './Library.css'
 
 // The demo composition is now the production Library composition as well.
@@ -113,6 +115,10 @@ function LibraryV2JournalLanding({ onOpen }) {
 }
 
 function LibraryV2HeroJourneyLanding({ onOpen }) {
+  const { progress } = useHeroJourneyProgress()
+  const completedTotal = HERO_JOURNEY_TRIALS.filter(t => isStepCompleted(t.id, progress)).length
+  const hasProgress = completedTotal > 0
+
   return (
     <section
       className="mx-library-v2__section-block"
@@ -121,13 +127,19 @@ function LibraryV2HeroJourneyLanding({ onOpen }) {
       <h2 className="mx-type-section" id="library-v2-hero-journey-title">
         Путь героя
       </h2>
-      <LibraryV2FeaturedBanner
-        title="Курс · 16 шагов"
-        description="16 испытаний современного человека. Каждый шаг — 6 минут: понять, узнать себя, записать, сделать одно действие."
-        action="Начать"
-        onOpen={onOpen}
-        art={<SemanticGlyph kind="pathfinder" animated={false} />}
-      />
+      <article className="mx-library-v2__featured-banner">
+        <div className="mx-library-v2__featured-art" aria-hidden="true">
+          <SemanticGlyph kind="pathfinder" animated={false} />
+        </div>
+        <div className="mx-library-v2__featured-copy">
+          <span className="mx-hj-library__eyebrow">Курс · 16 шагов</span>
+          <h3 className="mx-hj-library__title">путь героя.</h3>
+          <p>16 испытаний современного человека. Каждый шаг — 6 минут: понять, узнать себя, записать, сделать одно действие.</p>
+          <button type="button" className="mx-library-v2__pill" onClick={() => onOpen()}>
+            {hasProgress ? `Продолжить · ${completedTotal} из 16` : 'Начать'} <ArrowRight size={15} />
+          </button>
+        </div>
+      </article>
     </section>
   )
 }
