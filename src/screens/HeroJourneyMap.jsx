@@ -455,7 +455,7 @@ function StepComplete({ trial, progress, onBackToMap, onBack }) {
   return (
     <Shell
       footer={
-        <div className="mx-hj-complete__footer">
+        <div className="mx-hj-complete__footer mx-auto w-full max-w-md px-[var(--mx-screen-x)]">
           <button type="button" onClick={onBackToMap} className="cta-pill mx-hj-complete__cta">
             К карте пути
           </button>

@@ -758,6 +758,7 @@
 }
 
 .mx-hj-complete__chapter-card {
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -771,7 +772,6 @@
 
 .mx-hj-complete__chapter-segs {
   display: flex;
-  justify-content: center;
   gap: 3px;
   width: 100%;
 }
@@ -806,7 +806,8 @@
 
 .mx-hj-complete__footer {
   flex-shrink: 0;
-  padding: 0 var(--mx-screen-x) calc(env(safe-area-inset-bottom, 0px) + 16px);
+  padding-top: 16px;
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
 }
 
 .mx-hj-complete__cta {
