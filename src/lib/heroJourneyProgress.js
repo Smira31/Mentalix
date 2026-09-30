@@ -18,8 +18,9 @@ import { toLocalCalendarDate } from './dateTimezonePolicy'
  *     actions:     { [stepId]: string }
  *   }
  *
- * Следующий шаг открывается на следующий календарный день после
- * прохождения предыдущего. В ?demo=1 открыты все шаги.
+ * Следующий шаг открывается строго после прохождения предыдущего:
+ * в проде — не раньше следующего календарного дня,
+ * в ?demo=1 — сразу, без ожидания.
  */
 
 const PROGRESS_KEY = 'mx-hero-journey-progress'
@@ -100,18 +101,20 @@ export function useHeroJourneyProgress() {
 /*
  * Доступность шага.
  *
- * В demo-режиме (?demo=1) открыты все шаги.
  * Шаг 1 всегда доступен.
  * Шаг N доступен, если шаг N-1 пройден и прошёл хотя бы один
  * календарный день с момента его прохождения.
  */
 export function isStepAvailable(stepNumber, prevStepId, progress, demo = false) {
-  if (demo) return true
   if (stepNumber === 1) return true
 
   const prevCompletedAt = progress.completed[prevStepId]
   if (!prevCompletedAt) return false
 
+  // demo: следующий шаг открывается сразу после прохождения предыдущего
+  if (demo) return true
+
+  // прод: не раньше следующего календарного дня
   const prevDate = toLocalCalendarDate(new Date(prevCompletedAt))
   const today = toLocalCalendarDate()
   return prevDate < today
