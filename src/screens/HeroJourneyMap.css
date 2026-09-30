@@ -338,12 +338,26 @@
   z-index: 2;
 }
 
-/* ── B. Вход в шаг ── */
+/* ── B. Вход в шаг: колонка на всю высоту, без скролла ── */
 
-.mx-hj-step-intro__chapter-label {
-  font-size: 13px;
-  color: rgb(var(--c-muted));
-  margin-top: 8px;
+.mx-hj-step-intro {
+  flex: 1;
+  min-height: 0;
+}
+
+/* Картинка гибкая: 180–260, сжимается раньше текста */
+.mx-hj-step-intro .mx-hj-hero-image {
+  flex: 1 1 260px;
+  min-height: 180px;
+  max-height: 260px;
+  aspect-ratio: auto;
+}
+
+.mx-hj-step-intro .mx-hj-step-intro__image {
+  flex: 1 1 260px;
+  min-height: 180px;
+  max-height: 260px;
+  height: auto;
 }
 
 .mx-hj-step-intro__image {
@@ -378,34 +392,19 @@
   color: rgb(var(--c-faint));
 }
 
-.mx-hj-step-intro__dots {
-  position: absolute;
-  bottom: 16px;
-  display: flex;
-  gap: 6px;
+.mx-hj-step-intro__text {
+  flex-shrink: 0;
+  /* Свободная высота уходит в зазор между картинкой и текстом */
+  margin-top: auto;
 }
 
-.mx-hj-step-intro__dots--centered {
-  position: static;
-  justify-content: center;
-  margin-top: 12px;
-}
-
-.mx-hj-step-intro__dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 999px;
-  background: rgb(var(--c-border));
-}
-
-.mx-hj-step-intro__dot.is-active {
-  background: rgb(var(--c-gold));
-}
-
-.mx-hj-step-intro__meta {
-  font-size: 13px;
+.mx-hj-step-intro__label {
+  font-family: var(--font-label, 'Manrope', sans-serif);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
   color: rgb(var(--c-muted));
-  margin-top: 20px;
 }
 
 .mx-hj-step-intro__title {
@@ -431,39 +430,20 @@
   margin-top: 20px;
 }
 
-.mx-hj-step-intro__contents {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 24px;
-  padding: 0;
-  list-style: none;
-}
-
-.mx-hj-step-intro__contents li {
-  font-size: 14px;
+.mx-hj-step-intro__flow {
+  font-size: 15px;
+  font-weight: 400;
   color: rgb(var(--c-muted));
-  padding-left: 16px;
-  position: relative;
-}
-
-.mx-hj-step-intro__contents li::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 8px;
-  width: 6px;
-  height: 6px;
-  border-radius: 999px;
-  background: rgb(var(--c-gold) / 0.5);
+  margin-top: 16px;
 }
 
 .mx-hj-step-intro__cta {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
-  margin-top: 28px;
+  margin-top: 24px;
   font-size: 15px;
 }
 
@@ -725,6 +705,21 @@
   border-left: 2px solid rgb(var(--c-border));
 }
 
+/* Поле: 17/400, межстрочный 1.5, левый край по вопросу */
+.mx-hj-write-editor {
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+/* Пока поле пустое, «→» на «Запиши» неактивна: фон card2, стрелка muted */
+.mx-hj-write-input .mx-keyboard-submit:disabled {
+  border-color: rgb(var(--c-border)) !important;
+  background: rgb(var(--c-card2)) !important;
+  color: rgb(var(--c-muted)) !important;
+  opacity: 1;
+  box-shadow: none;
+}
+
 /* ── G. Шаг пройден ── */
 
 .mx-hj-complete {
@@ -746,11 +741,6 @@
   background: rgb(var(--c-gold));
   color: rgb(var(--c-bg));
   margin-bottom: 20px;
-}
-
-.mx-hj-complete__step {
-  font-size: 13px;
-  color: rgb(var(--c-muted));
 }
 
 .mx-hj-complete__title {
