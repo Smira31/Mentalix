@@ -14,7 +14,11 @@ import {
   FULLSCREEN_SCROLL_CLASS,
 } from '../lib/fullscreenSurface'
 import { isPreviewDemoMode } from '../lib/demoMode'
-import { useHeroJourneyProgress, isStepAvailable, isStepCompleted } from '../lib/heroJourneyProgress'
+import {
+  useHeroJourneyProgress,
+  isStepAvailable,
+  isStepCompleted,
+} from '../lib/heroJourneyProgress'
 import {
   HERO_JOURNEY_TRIALS,
   HERO_JOURNEY_CHAPTERS,
@@ -67,7 +71,9 @@ function Shell({ children, footer, bodyClassName = '' }) {
   return createPortal(
     <div className={FULLSCREEN_SHELL_CLASS} style={style}>
       <div className={`${FULLSCREEN_SCROLL_CLASS} mx-hero-journey`}>
-        <div className={`mx-auto flex w-full max-w-md flex-col px-[var(--mx-screen-x)] pb-6 ${bodyClassName}`}>
+        <div
+          className={`mx-auto flex w-full max-w-md flex-col px-[var(--mx-screen-x)] pb-6 ${bodyClassName}`}
+        >
           {children}
         </div>
       </div>
@@ -143,11 +149,7 @@ function ChapterSection({ chapter, progress, onOpenStep, currentStepId }) {
       )}
 
       {!expanded && (
-        <button
-          type="button"
-          onClick={() => setExpanded(true)}
-          className="mx-hj-chapter__expand"
-        >
+        <button type="button" onClick={() => setExpanded(true)} className="mx-hj-chapter__expand">
           4 шага
         </button>
       )}
@@ -156,9 +158,7 @@ function ChapterSection({ chapter, progress, onOpenStep, currentStepId }) {
 }
 
 function CourseMap({ progress, onOpenStep, onBack }) {
-  const completedTotal = HERO_JOURNEY_TRIALS.filter(t =>
-    isStepCompleted(t.id, progress)
-  ).length
+  const completedTotal = HERO_JOURNEY_TRIALS.filter(t => isStepCompleted(t.id, progress)).length
 
   const nextTrial = useMemo(() => {
     return HERO_JOURNEY_TRIALS.find(t => !isStepCompleted(t.id, progress))
@@ -187,11 +187,7 @@ function CourseMap({ progress, onOpenStep, onBack }) {
       </div>
 
       {nextTrial && (
-        <button
-          type="button"
-          onClick={() => onOpenStep(nextTrial.id)}
-          className="mx-hj-next-card"
-        >
+        <button type="button" onClick={() => onOpenStep(nextTrial.id)} className="mx-hj-next-card">
           <span className="mx-hj-next-card__label">Следующий шаг · {nextTrial.number}</span>
           <span className="mx-hj-next-card__title">{appHeading(nextTrial.title)}</span>
           <span className="mx-hj-next-card__sub">{nextTrial.subtitle}</span>
@@ -252,7 +248,9 @@ function StepIntro({ trial, onBack, onStart }) {
         <>
           <RoundBackButton onClick={onBack} />
 
-          <div className="mx-hj-step-intro__chapter-label">Глава {chapter.roman} · {chapter.title}</div>
+          <div className="mx-hj-step-intro__chapter-label">
+            Глава {chapter.roman} · {chapter.title}
+          </div>
 
           <div className="mx-hj-step-intro__image">
             <div className="mx-hj-step-intro__glyph">
@@ -267,7 +265,9 @@ function StepIntro({ trial, onBack, onStart }) {
       {enterImage && (
         <>
           <div className="mx-hj-step-intro__dots mx-hj-step-intro__dots--centered">{dots}</div>
-          <div className="mx-hj-step-intro__chapter-label">Глава {chapter.roman} · {chapter.title}</div>
+          <div className="mx-hj-step-intro__chapter-label">
+            Глава {chapter.roman} · {chapter.title}
+          </div>
         </>
       )}
 
@@ -293,17 +293,30 @@ function StepIntro({ trial, onBack, onStart }) {
 
 /* ── общая шапка для C–F ── */
 
+/* подписи действий экранов шага для метки в шапке */
+const HEADER_VIEW_LABELS = {
+  signs: 'Как проявляется',
+  paths: 'Два пути',
+  write: 'Запиши',
+  action: 'Одно действие',
+}
+
 function StepHeader({ trial, onBack, view }) {
   const screens = headerScreens(trial)
   const idx = screens.indexOf(view)
-  const screenNum = idx >= 0 ? idx + 1 : 1
 
   return (
     <div className="mx-hj-step-header">
       <RoundBackButton onClick={onBack} />
-      <div className="mx-hj-step-header__info">
-        <span className="mx-hj-step-header__title">Шаг {trial.number} · {trial.title}</span>
-        <span className="mx-hj-step-header__progress">{screenNum} из {screens.length}</span>
+      <div className="mx-hj-step-header__row">
+        <span className="mx-hj-step-header__label">
+          {trial.title} · {HEADER_VIEW_LABELS[view]}
+        </span>
+        <span className="mx-hj-step-header__dots" aria-hidden="true">
+          {screens.map((v, i) => (
+            <span key={v} className={`mx-hj-step-header__dot ${i === idx ? 'is-active' : ''}`} />
+          ))}
+        </span>
       </div>
     </div>
   )
@@ -343,7 +356,9 @@ function SignsScreen({ trial, markedSigns, onToggleSign, onNext, onBack }) {
       </div>
 
       <div className="mx-hj-signs__footer">
-        <span className="mx-hj-signs__count">Отмечено {markedCount} из {signs.length}</span>
+        <span className="mx-hj-signs__count">
+          Отмечено {markedCount} из {signs.length}
+        </span>
         <button type="button" onClick={onNext} className="cta-pill mx-hj-signs__cta">
           Дальше
         </button>
@@ -386,7 +401,6 @@ function PathsScreen({ trial, onNext, onBack }) {
       {trial.quote && (
         <blockquote className="mx-hj-paths__quote">
           <p>{trial.quote}</p>
-
         </blockquote>
       )}
 
@@ -399,7 +413,19 @@ function PathsScreen({ trial, onNext, onBack }) {
 
 /* ── E/F. Запиши / Одно действие ── */
 
-function WriteScreen({ label, prompt, hint, placeholder, value, onChange, onSubmit, allowEmpty, onBack, trial, view }) {
+function WriteScreen({
+  label,
+  prompt,
+  hint,
+  placeholder,
+  value,
+  onChange,
+  onSubmit,
+  allowEmpty,
+  onBack,
+  trial,
+  view,
+}) {
   const hasText = Boolean(value.trim())
   const canSubmit = allowEmpty || hasText
 
@@ -414,7 +440,6 @@ function WriteScreen({ label, prompt, hint, placeholder, value, onChange, onSubm
       <StepHeader trial={trial} onBack={onBack} view={view} />
 
       <div className="mx-hj-write">
-        <span className="mx-hj-write__label">{label}</span>
         <h2 className="mx-hj-write__prompt">{prompt}</h2>
         {hint && <p className="mx-hj-write__hint">{hint}</p>}
       </div>
@@ -479,9 +504,13 @@ function StepComplete({ trial, progress, onBackToMap, onBack }) {
             <Check size={40} strokeWidth={3} />
           </div>
         )}
-        <span className="mx-hj-complete__step">Шаг {trial.number} из {HERO_JOURNEY_TOTAL_STEPS}</span>
+        <span className="mx-hj-complete__step">
+          Шаг {trial.number} из {HERO_JOURNEY_TOTAL_STEPS}
+        </span>
         <h2 className="mx-hj-complete__title">{appHeading('Шаг пройден')}</h2>
-        <p className="mx-hj-complete__phrase">{trial.doneText || 'Ты сделал ещё один шаг по пути.'}</p>
+        <p className="mx-hj-complete__phrase">
+          {trial.doneText || 'Ты сделал ещё один шаг по пути.'}
+        </p>
 
         <div className="mx-hj-complete__chapter-card">
           <div className="mx-hj-complete__chapter-segs">

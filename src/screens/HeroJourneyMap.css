@@ -473,25 +473,42 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-top: 8px;
-  margin-bottom: 20px;
+  margin-top: 24px;
+  margin-bottom: 12px;
 }
 
-.mx-hj-step-header__info {
+.mx-hj-step-header__row {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
 }
 
-.mx-hj-step-header__title {
-  font-size: 14px;
-  font-weight: 500;
-  color: rgb(var(--c-text));
+.mx-hj-step-header__label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgb(var(--c-gold));
 }
 
-.mx-hj-step-header__progress {
-  font-size: 12px;
-  color: rgb(var(--c-muted));
+.mx-hj-step-header__dots {
+  display: flex;
+  gap: 6px;
+}
+
+.mx-hj-step-header__dot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgb(var(--c-border));
+}
+
+.mx-hj-step-header__dot.is-active {
+  background: rgb(var(--c-text));
 }
 
 /* ── C. Как это проявляется ── */
@@ -529,7 +546,10 @@
   border: 1px solid rgb(var(--c-border));
   text-align: left;
   cursor: pointer;
-  transition: transform 140ms ease, background 140ms ease, border-color 140ms ease;
+  transition:
+    transform 140ms ease,
+    background 140ms ease,
+    border-color 140ms ease;
 }
 
 .mx-hj-sign-card:active {
@@ -685,31 +705,22 @@
 /* ── E/F. Запиши / Одно действие ── */
 
 .mx-hj-write {
-  margin-top: 4px;
-}
-
-.mx-hj-write__label {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: rgb(var(--c-gold));
+  margin-top: 0;
 }
 
 .mx-hj-write__prompt {
   font-family: 'Onest', sans-serif;
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 700;
-  line-height: 1.25;
+  line-height: 1.2;
   color: rgb(var(--c-text));
-  margin-top: 10px;
 }
 
 .mx-hj-write__hint {
   font-size: 14px;
   line-height: 1.45;
   color: rgb(var(--c-muted));
-  margin-top: 12px;
+  margin-top: 14px;
   padding-left: 12px;
   border-left: 2px solid rgb(var(--c-border));
 }
