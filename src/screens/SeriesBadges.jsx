@@ -14,7 +14,7 @@ import { platform } from '../platform'
 import { logEngagementEvent } from '../lib/engagementEvents'
 import { formatCount } from '../lib/pluralize'
 import { platformName } from '../platform'
-import { buildServerSeriesViewModel } from '../lib/series'
+import { buildServerSeriesViewModel, countUniqueCheckinDates } from '../lib/series'
 import { useSheetSwipeDown } from '../lib/gestures/useSheetSwipeDown'
 import { getNearestMilestones } from '../lib/milestones'
 import { pickCurrentTheme } from '../lib/themeHelpers'
@@ -476,12 +476,13 @@ function AllBadgesView({ badges, onOpenBadge }) {
   )
 }
 
-function StatsView({ model, canonicalStats, theme, journalEntries = [] }) {
+function StatsView({ model, canonicalStats, theme, journalEntries = [], checkins = [] }) {
   const { currentStreak, bestStreak, activeDays } = canonicalStats ?? {
     currentStreak: 0,
     bestStreak: 0,
     activeDays: 0,
   }
+  const checkinDays = countUniqueCheckinDates(checkins)
   const rows = [
     ['Текущая серия', formatDays(currentStreak)],
     ['Дней с активностью', activeDays],
@@ -492,17 +493,21 @@ function StatsView({ model, canonicalStats, theme, journalEntries = [] }) {
     streak: canonicalStats ? currentStreak : null,
     theme,
   })
+  const tiles = [
+    { value: formatDays(currentStreak), label: 'Текущая серия' },
+    { value: activeDays, label: 'Дней с активностью' },
+    { value: model.totalCheckins, label: 'Чек-инов пройдено' },
+    { value: formatDays(bestStreak), label: 'Самая длинная серия' },
+  ]
   return (
     <div className="mx-path-content">
-      <div className="mx-path-summary-grid">
-        <div className="mx-path-summary-card">
-          <strong>{activeDays}</strong>
-          <span>Дней с активностью</span>
-        </div>
-        <div className="mx-path-summary-card">
-          <strong>{model.totalCheckins}</strong>
-          <span>Чек-инов пройдено</span>
-        </div>
+      <div className="mx-path-tiles" data-testid="stats-tiles">
+        {tiles.map(tile => (
+          <div className="mx-path-tile" key={tile.label}>
+            <strong>{tile.value}</strong>
+            <span>{tile.label}</span>
+          </div>
+        ))}
       </div>
       {milestones.length > 0 && (
         <section className="mx-path-stat-section" data-testid="milestone-section">
@@ -523,7 +528,7 @@ function StatsView({ model, canonicalStats, theme, journalEntries = [] }) {
         title="Чек-ины"
         rows={[
           ['Всего чек-инов', model.totalCheckins],
-          ['Дней с чек-ином', activeDays ?? model.activeDays],
+          ['Дней с чек-ином', checkinDays],
         ]}
       />
       <StatSection
@@ -775,6 +780,7 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
                 canonicalStats={serverStats}
                 theme={theme}
                 journalEntries={journalEntries}
+                checkins={checkinHistory?.userId === user.id ? checkinHistory.items : []}
               />
             )
           ) : (
