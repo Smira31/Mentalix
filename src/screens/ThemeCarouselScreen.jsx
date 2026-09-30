@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { createPortal } from 'react-dom'
+import { ArrowRight } from 'lucide-react'
 
 import { peekThemeDetail, fetchThemeDetail, invalidateThemeDetail } from '../lib/themeDetailCache'
 import { peekThemesData, fetchThemesData, invalidateThemesData } from '../lib/themesDataCache'
@@ -109,6 +110,7 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
   const questions = useMemo(() => (Array.isArray(data?.days) ? data.days.slice(0, 7) : []), [data])
   const safeIndex = Math.min(questionIndex, Math.max(0, questions.length - 1))
   const currentQuestion = questions[safeIndex]
+  const isAnswered = !!currentQuestion?.reflection
 
   // При загрузке данных прокручиваем карусель к текущему дню —
   // чтобы человек продолжил с того места, где остановился, а не
@@ -117,7 +119,10 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
     if (!data || !trackRef.current) return
     const days = Array.isArray(data.days) ? data.days.slice(0, 7) : []
     if (!days.length) return
-    const currentIdx = Math.max(0, days.findIndex(d => d.day === data.current_day))
+    const currentIdx = Math.max(
+      0,
+      days.findIndex(d => d.day === data.current_day)
+    )
     const track = trackRef.current
     const cards = [...track.querySelectorAll('.mx-theme-carousel-q')]
     const card = cards[currentIdx]
@@ -217,7 +222,6 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
                     key={q.day ?? i}
                     data-active={i === safeIndex ? 'true' : 'false'}
                     data-answered={q.reflection ? 'true' : undefined}
-                    data-active={i === safeIndex ? 'true' : 'false'}
                   >
                     <span className="mx-theme-carousel-q__num">{q.day ?? i + 1}</span>
                     <strong className="mx-theme-carousel-q__text">{q.text}</strong>
@@ -251,14 +255,6 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
                   {isAnswered ? 'Смотреть в пути' : 'Начать запись'} <ArrowRight size={15} />
                 </button>
               </div>
-              <button
-                type="button"
-                className="mx-theme-carousel-cta"
-                data-testid="theme-carousel-cta"
-                onClick={handleWrite}
-              >
-                Смотреть в пути
-              </button>
             </>
           ) : (
             <p className="text-muted text-[13px] text-center mt-8">
