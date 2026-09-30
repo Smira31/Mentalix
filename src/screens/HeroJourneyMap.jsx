@@ -28,7 +28,6 @@ import {
   findTrial,
   chapterForTrial,
   trialsForChapter,
-  stepContents,
 } from '../data/heroJourney'
 import './HeroJourneyMap.css'
 
@@ -65,14 +64,17 @@ function headerScreens(trial) {
 
 /* ── оболочка экрана ── */
 
-function Shell({ children, footer, bodyClassName = '' }) {
+/* Колонка на всю высоту без скролла — для вступления шага (контент обязан влезать) */
+const FULLSCREEN_FIT_CLASS = 'w-full flex-1 min-h-0 flex flex-col overflow-hidden'
+
+function Shell({ children, footer, bodyClassName = '', fit = false }) {
   const { style } = useFullscreenSurface()
 
   return createPortal(
     <div className={FULLSCREEN_SHELL_CLASS} style={style}>
-      <div className={`${FULLSCREEN_SCROLL_CLASS} mx-hero-journey`}>
+      <div className={`${fit ? FULLSCREEN_FIT_CLASS : FULLSCREEN_SCROLL_CLASS} mx-hero-journey`}>
         <div
-          className={`mx-auto flex w-full max-w-md flex-col px-[var(--mx-screen-x)] pb-6 ${bodyClassName}`}
+          className={`mx-auto flex w-full max-w-md flex-col px-[var(--mx-screen-x)] pb-6 ${fit ? 'flex-1 min-h-0' : ''} ${bodyClassName}`}
         >
           {children}
         </div>
@@ -223,20 +225,10 @@ function CourseMap({ progress, onOpenStep, onBack }) {
 
 function StepIntro({ trial, onBack, onStart }) {
   const chapter = chapterForTrial(trial.id)
-  const chapterTrials = trialsForChapter(chapter)
-  const stepIndexInChapter = chapterTrials.findIndex(t => t.id === trial.id)
-  const contents = stepContents(trial)
   const enterImage = trial.image?.enter
 
-  const dots = chapterTrials.map((_, i) => (
-    <span
-      key={i}
-      className={`mx-hj-step-intro__dot ${i <= stepIndexInChapter ? 'is-active' : ''}`}
-    />
-  ))
-
   return (
-    <Shell>
+    <Shell fit bodyClassName="mx-hj-step-intro">
       {enterImage ? (
         <div className="mx-hj-hero-image">
           <div className="mx-hj-hero-image__back">
@@ -248,41 +240,24 @@ function StepIntro({ trial, onBack, onStart }) {
         <>
           <RoundBackButton onClick={onBack} />
 
-          <div className="mx-hj-step-intro__chapter-label">
-            Глава {chapter.roman} · {chapter.title}
-          </div>
-
           <div className="mx-hj-step-intro__image">
             <div className="mx-hj-step-intro__glyph">
               <SemanticGlyph kind="pathfinder" animated={false} />
             </div>
             <span className="mx-hj-step-intro__image-caption">шаг {trial.number}</span>
-            <div className="mx-hj-step-intro__dots">{dots}</div>
           </div>
         </>
       )}
 
-      {enterImage && (
-        <>
-          <div className="mx-hj-step-intro__dots mx-hj-step-intro__dots--centered">{dots}</div>
-          <div className="mx-hj-step-intro__chapter-label">
-            Глава {chapter.roman} · {chapter.title}
-          </div>
-        </>
-      )}
-
-      <div className="mx-hj-step-intro__meta">
-        Шаг {trial.number} из {HERO_JOURNEY_TOTAL_STEPS} · ≈ 6 минут
+      <div className="mx-hj-step-intro__text">
+        <div className="mx-hj-step-intro__label">
+          Глава {chapter.roman} · {chapter.title} · Шаг {trial.number} из {HERO_JOURNEY_TOTAL_STEPS}
+        </div>
+        <h2 className="mx-hj-step-intro__title">{appHeading(trial.title)}</h2>
+        <p className="mx-hj-step-intro__subtitle">{trial.subtitle}</p>
+        <p className="mx-hj-step-intro__desc">{trial.description}</p>
+        <p className="mx-hj-step-intro__flow">2 шага: запись и одно действие</p>
       </div>
-      <h2 className="mx-hj-step-intro__title">{appHeading(trial.title)}</h2>
-      <p className="mx-hj-step-intro__subtitle">{trial.subtitle}</p>
-      <p className="mx-hj-step-intro__desc">{trial.description}</p>
-
-      <ul className="mx-hj-step-intro__contents">
-        {contents.map(item => (
-          <li key={item}>{item}</li>
-        ))}
-      </ul>
 
       <button type="button" onClick={onStart} className="cta-pill mx-hj-step-intro__cta">
         Начать шаг
@@ -304,6 +279,9 @@ const HEADER_VIEW_LABELS = {
 function StepHeader({ trial, onBack, view }) {
   const screens = headerScreens(trial)
   const idx = screens.indexOf(view)
+  /* На экранах записи/действия пейджер — текст «1 / 2», на остальных — точки */
+  const isWriteFlow = view === 'write' || view === 'action'
+  const writeStep = view === 'write' ? 1 : 2
 
   return (
     <div className="mx-hj-step-header">
@@ -312,11 +290,15 @@ function StepHeader({ trial, onBack, view }) {
         <span className="mx-hj-step-header__label">
           {trial.title} · {HEADER_VIEW_LABELS[view]}
         </span>
-        <span className="mx-hj-step-header__dots" aria-hidden="true">
-          {screens.map((v, i) => (
-            <span key={v} className={`mx-hj-step-header__dot ${i === idx ? 'is-active' : ''}`} />
-          ))}
-        </span>
+        {isWriteFlow ? (
+          <span className="mx-hj-step-header__label mx-hj-step-header__pager">{writeStep} / 2</span>
+        ) : (
+          <span className="mx-hj-step-header__dots" aria-hidden="true">
+            {screens.map((v, i) => (
+              <span key={v} className={`mx-hj-step-header__dot ${i === idx ? 'is-active' : ''}`} />
+            ))}
+          </span>
+        )}
       </div>
     </div>
   )
@@ -455,9 +437,10 @@ function WriteScreen({
         guidedFlow
         onSubmit={handleSubmit}
         submitDisabled={!canSubmit}
-        submitIcon={hasText ? 'arrow' : 'arrow'}
+        submitIcon="arrow"
         submitLabel={hasText ? 'Далее' : 'Пропустить'}
-        className="mt-4 flex-1"
+        className="mt-[28px] flex-1 mx-hj-write-input"
+        editorClassName="mx-hj-write-editor"
       />
     </Shell>
   )
@@ -504,9 +487,6 @@ function StepComplete({ trial, progress, onBackToMap, onBack }) {
             <Check size={40} strokeWidth={3} />
           </div>
         )}
-        <span className="mx-hj-complete__step">
-          Шаг {trial.number} из {HERO_JOURNEY_TOTAL_STEPS}
-        </span>
         <h2 className="mx-hj-complete__title">{appHeading('Шаг пройден')}</h2>
         <p className="mx-hj-complete__phrase">
           {trial.doneText || 'Ты сделал ещё один шаг по пути.'}
@@ -650,7 +630,7 @@ export default function HeroJourneyMap({ onBack }) {
         label="ЗАПИШИ"
         prompt={trial.prompt}
         hint={trial.hint || 'Не оценивай — просто назови, как есть.'}
-        placeholder="Записать мысль..."
+        placeholder="Начни писать…"
         value={reflection}
         onChange={setReflection}
         onSubmit={submitWrite}
