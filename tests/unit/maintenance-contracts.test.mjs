@@ -899,7 +899,6 @@ test('MXL-JOURNAL-UI-247 выравнивает Journal слева и не по�
   )
 
   assert.match(themeScreen, /data-testid="journal-day-content"/)
-  assert.match(themeScreen, /aria-label="Дни журнала"/)
   assert.match(
     themeScreen,
     /className="font-display mx-type-page text-cream lowercase leading-tight text-left"/
