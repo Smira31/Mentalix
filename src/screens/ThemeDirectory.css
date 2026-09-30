@@ -96,7 +96,7 @@
   display: block;
   height: 100%;
   min-width: 6px;
-  background: #ffffff;
+  background: rgb(var(--c-text));
   border-radius: 2px;
 }
 
