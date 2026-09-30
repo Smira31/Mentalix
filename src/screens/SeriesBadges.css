@@ -497,6 +497,7 @@
   display: grid;
   grid-auto-flow: column;
   grid-template-rows: 79px 79px;
+  grid-auto-columns: min(399px, calc(100vw - 32px));
   gap: 7px;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
@@ -510,7 +511,6 @@
   flex-direction: column;
   justify-content: center;
   gap: 4px;
-  width: min(399px, 100%);
   height: 79px;
   padding: 0 16px;
   border-radius: 16px;
