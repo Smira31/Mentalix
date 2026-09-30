@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Check, Settings2, X } from 'lucide-react'
+import { Brush, Check, Plus, Settings2, X } from 'lucide-react'
 
 import './PinnedPractices.css'
 
@@ -337,16 +337,32 @@ export default function PinnedPractices({
             <div className="mx-pinned-sheet__footer-actions">
               <button
                 type="button"
-                className="cta-pill mx-type-flow-action w-full"
+                className="cta-pill mx-pinned-sheet__pill mx-pinned-sheet__pill--soon"
+                disabled
+                aria-label="Создать свою практику (скоро)"
+              >
+                <Brush size={18} aria-hidden="true" />
+                <span>Создать свою практику</span>
+                <span className="mx-pinned-sheet__pill-badge">Скоро</span>
+              </button>
+              <button
+                type="button"
+                className="cta-pill mx-pinned-sheet__pill"
                 onClick={() => setSheet('library')}
               >
-                Добавить из библиотеки
+                <Plus size={18} aria-hidden="true" />
+                <span>Добавить из библиотеки</span>
               </button>
             </div>
           }
         >
           {pinnedPractices.length === 0 ? (
-            <p className="mx-type-list-body text-muted">Пока ничего не закреплено.</p>
+            <div className="mx-pinned-manage-empty">
+              <span className="mx-pinned-manage-empty__glyph" aria-hidden="true" />
+              <p className="mx-pinned-manage-empty__text text-muted">
+                Здесь будут твои практики. Добавь любимые из библиотеки.
+              </p>
+            </div>
           ) : (
             <div className="mx-pinned-practices__grid">
               {pinnedPractices.map(practice => (
@@ -364,6 +380,11 @@ export default function PinnedPractices({
                     <span className="mx-pinned-practice-card__title text-cream">
                       {practice.title}
                     </span>
+                    {practice.description && (
+                      <span className="mx-pinned-practice-card__desc text-faint">
+                        {practice.description}
+                      </span>
+                    )}
                   </button>
                   <button
                     type="button"
