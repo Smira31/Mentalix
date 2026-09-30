@@ -34,11 +34,63 @@ const TARGET = {
 
 const round = v => Math.round(v * 10) / 10
 
+/*
+ * Эмуляция Telegram (как в tests/ux/telegram-p0-check.spec.mjs): подписанные
+ * initData → platformName = 'telegram', isFullscreen: true → pessimistic
+ * snapshot. Инсеты 0 → --app-safe-top = 0, сегмент должен встать на top 8.
+ */
+const TG_INIT_SCRIPT = `
+  const handlers = new Set()
+  const button = {
+    isVisible: false,
+    show() { this.isVisible = true },
+    hide() { this.isVisible = false },
+    onClick(handler) { handlers.add(handler) },
+    offClick(handler) { handlers.delete(handler) },
+  }
+  window.__telegramBackClick = () => [...handlers].at(-1)?.()
+  window.__telegramBackState = button
+  const webApp = {
+    initData: 'query_id=measure&user=%7B%22id%22%3A900002%7D',
+    initDataUnsafe: { user: { id: 900002, first_name: 'M' } },
+    version: '8.0',
+    platform: 'ios',
+    colorScheme: 'dark',
+    isFullscreen: true,
+    isVersionAtLeast: ver => '8.0' >= ver,
+    BackButton: button,
+    MainButton: { setParams() {}, onClick() {}, offClick() {}, show() {}, hide() {}, enable() {}, disable() {}, showProgress() {}, hideProgress() {} },
+    SecondaryButton: { setParams() {}, onClick() {}, offClick() {}, show() {}, hide() {} },
+    onEvent() {},
+    offEvent() {},
+    ready() {},
+    expand() {},
+    requestFullscreen() {},
+    lockOrientation() {},
+    disableVerticalSwipes() {},
+    HapticFeedback: { impactOccurred() {}, notificationOccurred() {} },
+    safeAreaInset: { top: 0, right: 0, bottom: 0, left: 0 },
+    contentSafeAreaInset: { top: 0, right: 0, bottom: 0, left: 0 },
+  }
+  window.Telegram = { WebApp: webApp }
+  // SDK (telegram-web-app.js) перезаписывает window.Telegram.WebApp —
+  // закрепляем мок геттером, как в tests/ux/telegram-p0-check.spec.mjs.
+  Object.defineProperty(window.Telegram, 'WebApp', {
+    configurable: true,
+    get() {
+      return webApp
+    },
+    set() {},
+  })
+`
+
 async function openBadges(page) {
   await page.goto(`${BASE}/?demo=1`, { waitUntil: 'domcontentloaded' })
   await page.getByTestId('today-streak-chip').click()
   await page.getByTestId('series-tab-badges').waitFor({ state: 'visible', timeout: 10_000 })
-  await page.waitForTimeout(300)
+  // 2s — pessimistic окно tg-fullscreen (CONFIRMATION_TIMEOUT_MS): в web
+  // за это время подтверждается fallback, геометрия стабилизируется.
+  await page.waitForTimeout(2500)
 }
 
 async function measure(page) {
@@ -54,6 +106,16 @@ async function measure(page) {
     const landscape = rect('.mx-path-featured-landscape')
     const icon = rect('.mx-path-featured-icon')
     const rows = [...document.querySelectorAll('.mx-path-award-row')].map(el => round(el.getBoundingClientRect().height))
+    const rowFirst = document.querySelector('.mx-path-award-row')
+    const rowIcon = rowFirst?.querySelector('.mx-reward-icon')
+    const rowRect = rowFirst?.getBoundingClientRect()
+    const rowIconRect = rowIcon?.getBoundingClientRect()
+    // Левый пик левого холма: bbox первого path пейзажа (верх bbox = пик).
+    const hillBox = document.querySelector('.mx-path-featured-landscape path')?.getBBox()
+    const ballLeftFromRowLeft =
+      rowRect && rowIconRect ? round(rowIconRect.x - rowRect.x) : null
+    const ballLeftFromCardLeft =
+      rowIconRect && card ? round(rowIconRect.x - card.x) : null
     const seeAll = document.querySelector('.mx-path-see-all')
     const saStyle = getComputedStyle(seeAll)
     const header = document.querySelector('.mx-path-scroll--overlay .mx-path-header')
@@ -68,6 +130,12 @@ async function measure(page) {
       icon: icon && card ? { w: icon.w, h: icon.h, bottomFromCardTop: round(icon.y + icon.h - card.y) } : null,
       rows,
       rowGap: getComputedStyle(document.querySelector('.mx-path-award-list')).rowGap,
+      ballLeftFromRowLeft,
+      ballLeftFromCardLeft,
+      landscapeW: landscape?.w ?? null,
+      landscapeH: landscape?.h ?? null,
+      hillPeakAboveHorizon:
+        hillBox ? round(78.5 - hillBox.y) : null,
       seeAll: { pt: saStyle.paddingTop, pb: saStyle.paddingBottom },
       headerBg: hStyle.backgroundColor,
       headerBackdrop: hStyle.backdropFilter || hStyle.webkitBackdropFilter || 'none',
@@ -187,9 +255,71 @@ async function runBrowser(name, launcher, opts) {
   return { atTop, scrolled, atBottom, touchProbe }
 }
 
+/*
+ * Telegram-режим (эмуляция): сегмент на safe-top + 8, контент 16 под
+ * сегментом, круги ✕/‹ отсутствуют, «все значки.» — заголовок на +8.
+ */
+async function runTelegram(name, width, height) {
+  const browser = await chromium.launch()
+  // isMobile/hasTouch → pointer: coarse → isRealPhone() → демо-панель ПК
+  // выключена и не перекрывает сегмент, поднятый на safe-top + 8.
+  const context = await browser.newContext({
+    viewport: { width, height },
+    deviceScaleFactor: 2,
+    isMobile: true,
+    hasTouch: true,
+  })
+  await context.addInitScript(TG_INIT_SCRIPT)
+  const page = await context.newPage()
+  await openBadges(page)
+  const badges = await page.evaluate(() => {
+    const round = v => Math.round(v * 10) / 10
+    const surface = document.querySelector('.mx-path-surface').getBoundingClientRect()
+    const tabs = document.querySelector('.mx-path-tabs').getBoundingClientRect()
+    const card = document.querySelector('.mx-path-featured-award')?.getBoundingClientRect()
+    return {
+      segmentTopFromSurfaceTop: round(tabs.y - surface.y),
+      contentGapUnderTabs: card ? round(card.y - tabs.bottom) : null,
+      closeCircle: Boolean(document.querySelector('.mx-path-close')),
+      backCircle: Boolean(document.querySelector('.mx-nested-screen-back')),
+      surfacePaddingTop: getComputedStyle(document.querySelector('.mx-path-surface')).paddingTop,
+    }
+  })
+  await page.screenshot({ path: `${OUT}/${name}-badges.png` })
+  await page.getByTestId('series-tab-stats').click()
+  await page.waitForTimeout(300)
+  const statsGap = await page.evaluate(() => {
+    const round = v => Math.round(v * 10) / 10
+    const tabs = document.querySelector('.mx-path-tabs').getBoundingClientRect()
+    const tile = document.querySelector('.mx-path-summary-card').getBoundingClientRect()
+    return round(tile.y - tabs.bottom)
+  })
+  await page.screenshot({ path: `${OUT}/${name}-stats.png` })
+  await page.getByTestId('series-tab-badges').click()
+  await page.waitForTimeout(200)
+  await page.locator('.mx-path-see-all').click()
+  await page.getByTestId('all-badges-screen').waitFor({ state: 'visible', timeout: 5000 })
+  await page.waitForTimeout(200)
+  const all = await page.evaluate(() => {
+    const round = v => Math.round(v * 10) / 10
+    const surface = document.querySelector('.mx-path-surface').getBoundingClientRect()
+    const h1 = document.querySelector('.mx-path-all-badges > h1').getBoundingClientRect()
+    return {
+      titleTopFromSurfaceTop: round(h1.y - surface.y),
+      closeCircle: Boolean(document.querySelector('.mx-path-close')),
+      backCircle: Boolean(document.querySelector('.mx-nested-screen-back')),
+    }
+  })
+  await page.screenshot({ path: `${OUT}/${name}-all.png` })
+  await browser.close()
+  return { badges, statsGap, all }
+}
+
 const results = {}
 results['chromium-440'] = await runBrowser('chromium-440', chromium, { width: 440, height: 900 })
 results['chromium-393'] = await runBrowser('chromium-393', chromium, { width: 393, height: 852, mobile: true })
+results['tg-440'] = await runTelegram('tg-440', 440, 900)
+results['tg-393'] = await runTelegram('tg-393', 393, 852)
 results['webkit-iphone'] = await runBrowser('webkit-iphone', webkit, {
   width: 393,
   height: 852,
@@ -215,6 +345,25 @@ line('5. строка h', TARGET.rowH, r440.rows[0])
 line('5. зазор строк', TARGET.rowGap, parseFloat(r440.rowGap))
 line('6. «Все значки» padding-top', TARGET.seeAllPt, parseFloat(r440.seeAll.pt))
 line('6. «Все значки» padding-bottom', TARGET.seeAllPb, parseFloat(r440.seeAll.pb))
+line('7. шар в строке: left от края строки', 16, r440.ballLeftFromRowLeft)
+line('7. шар в строке: left от края карточки', 16, r440.ballLeftFromCardLeft)
+line('8. пейзаж w', 408, r440.landscapeW)
+line('8. пейзаж h', 80, r440.landscapeH)
+line('8. пик холма над горизонтом', 38, r440.hillPeakAboveHorizon)
+console.log('\n=== Telegram (эмуляция), верх экрана ===')
+for (const [name, result] of [
+  ['tg-440', results['tg-440']],
+  ['tg-393', results['tg-393']],
+]) {
+  console.log(`--- ${name} ---`)
+  console.log('1. сегмент от верха поверхности (ожидание 8):', result.badges.segmentTopFromSurfaceTop)
+  console.log('1. контент под сегментом, значки (ожидание 16):', result.badges.contentGapUnderTabs)
+  console.log('1. контент под сегментом, статистика (ожидание 16):', result.statsGap)
+  console.log('1. paddingTop поверхности (ожидание var(--app-safe-top)):', result.badges.surfacePaddingTop)
+  console.log('1. круг ✕ (ожидание false):', result.badges.closeCircle, '| круг ‹ (ожидание false):', result.badges.backCircle)
+  console.log('1. «все значки.» заголовок от верха (ожидание 8):', result.all.titleTopFromSurfaceTop)
+  console.log('1. круги на «все значки.» (ожидание false/false):', result.all.closeCircle, result.all.backCircle)
+}
 console.log('\nШапка при скролле 0 (ожидание rgba(0, 0, 0, 0)):', r440.headerBg)
 console.log('Шапка при скролле (ожидание стекло rgba(38,38,38,0.55)):', results['chromium-440'].scrolled.headerBg, '| backdrop:', results['chromium-440'].scrolled.headerBackdrop)
 console.log('\nСкролл до конца (chromium 393, колесо):', JSON.stringify(results['chromium-393'].atBottom))

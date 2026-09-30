@@ -60,6 +60,32 @@
   background: transparent;
 }
 
+/* Telegram fullscreen: круги ✕/‹ не рендерятся (CloseButton/ScreenBack
+   прячут их сами), остаётся системная BackButton. Сегмент — на safe-top + 8:
+   paddingTop поверхности без 56px резерва (см. JSX), а padding-top скролла
+   8 — sticky-шапка не поднимается выше края скролла отрицательным margin.
+   Контент — 16 под сегментом: padding-bottom 14 + margin-bottom 2. */
+.mx-path-surface--tg-fullscreen .mx-path-scroll--overlay {
+  padding-top: 8px;
+}
+.mx-path-surface--tg-fullscreen .mx-path-scroll--overlay .mx-path-header {
+  margin-top: 0;
+  margin-bottom: 2px;
+  /* Пилюля сегмента — на safe-top + 8: верхний padding стекла в Telegram
+     убран (при скролле стекло всё равно прилипает к 0). */
+  padding-top: 0;
+}
+
+/* «все значки.» в Telegram: заголовок сразу под зоной кнопок (safe-top + 8).
+   Пустая шапка (круг ‹ скрыт внутри Telegram) убирается, h1 компенсирует
+   padding скролла 20 − 12 = 8. */
+.mx-path-surface--tg-fullscreen .mx-path-header--tg-bare {
+  display: none;
+}
+.mx-path-surface--tg-fullscreen .mx-path-all-badges > h1 {
+  margin-top: -12px;
+}
+
 .mx-path-scroll--overlay .mx-path-header--scrolled {
   background: var(--mx-glass-bg, rgba(38, 38, 38, 0.92));
   -webkit-backdrop-filter: blur(20px) saturate(160%);

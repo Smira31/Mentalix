@@ -705,14 +705,18 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
       <section
         ref={screenRef}
         className={`mx-path-surface ${demoMode ? 'mx-path-surface--demo' : ''}${showAll ? ' mx-path-surface--all' : ''}${tgFullscreen ? ' mx-path-surface--tg-fullscreen' : ''}`}
-        style={{ paddingTop: surfaceStyle.paddingTop }}
+        style={{
+          // В Telegram сверху только safe-top (зона кнопок) — без 56px резерва
+          // под controls: сегмент становится на safe-top + 8 (см. CSS).
+          paddingTop: tgFullscreen ? 'var(--app-safe-top)' : surfaceStyle.paddingTop,
+        }}
         onClick={event => event.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-label={showAll ? 'Все значки' : 'Значки и статистика'}
       >
         {showAll && (
-          <header className="mx-path-header">
+          <header className={`mx-path-header${tgFullscreen ? ' mx-path-header--tg-bare' : ''}`}>
             <BackButton onClick={() => setShowAll(false)} />
           </header>
         )}
