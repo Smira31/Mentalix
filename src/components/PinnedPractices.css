@@ -206,3 +206,212 @@
   font-size: 15px;
   line-height: 1.35;
 }
+
+/* ============================================================
+   «Библиотека практик» — эталон Stoic
+   ============================================================ */
+
+.mx-pinned-sheet--library .mx-pinned-sheet__header {
+  padding: 24px 20px 12px;
+}
+
+/* Круглая кнопка ✓ ~39pt — закрыть и сохранить */
+.mx-pinned-sheet__save {
+  width: 39px;
+  height: 39px;
+  color: rgb(var(--c-bg));
+  background: rgb(var(--c-text));
+  border: 0;
+}
+
+/* Заголовок СЛЕВА, ~28pt, 700, не обрезается и не заезжает под кнопку */
+.mx-pinned-sheet--library .mx-pinned-sheet__header > h2.mx-pinned-sheet__title--left {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.1;
+  text-align: left;
+  padding-right: 52px;
+}
+
+/* Ряд чипсов-фильтров с горизонтальной прокруткой */
+.mx-library-filters {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 4px 20px 12px;
+}
+.mx-library-filters::-webkit-scrollbar {
+  display: none;
+}
+
+.mx-library-chip {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 7px;
+  height: 41px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid rgb(var(--c-border));
+  background: rgb(var(--c-card-raised));
+  color: rgb(var(--c-text));
+  font-size: 15px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease,
+    border-color 160ms ease;
+}
+
+.mx-library-chip.is-active {
+  background: rgb(var(--c-text));
+  color: rgb(var(--c-bg));
+  border-color: rgb(var(--c-text));
+}
+
+.mx-library-chip svg {
+  flex: 0 0 auto;
+}
+
+/* Список практик */
+.mx-library-list {
+  display: flex;
+  flex-direction: column;
+  padding: 0 20px;
+}
+
+.mx-library-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 63px;
+  padding: 8px 0;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 0;
+}
+
+/* Разделитель — тонкая линия от начала текста до правого края */
+.mx-library-row::after {
+  content: '';
+  position: absolute;
+  left: calc(35px + 12px);
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: rgb(var(--c-text) / 0.08);
+}
+
+.mx-library-row:last-child::after {
+  display: none;
+}
+
+.mx-library-row:active {
+  opacity: 0.7;
+}
+
+/* Круг-иконка 35pt */
+.mx-library-row__icon {
+  flex: 0 0 auto;
+  width: 35px;
+  height: 35px;
+}
+.mx-library-row__icon .mx-pinned-practice-glyph {
+  width: 35px;
+  min-width: 35px;
+  height: 35px;
+  min-height: 35px;
+  border: 0;
+  background: rgb(var(--c-text) / 0.08);
+}
+.mx-library-row__icon .mx-pinned-practice-glyph svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Название 16pt 600 */
+.mx-library-row__name {
+  flex: 1;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: rgb(var(--c-text));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Справа «+» или белый кружок 21pt с тёмной галочкой */
+.mx-library-row__toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 21px;
+  height: 21px;
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 1;
+  color: rgb(var(--c-muted));
+  border: 0;
+  border-radius: 50%;
+}
+
+.mx-library-row__toggle.is-pinned {
+  color: rgb(var(--c-bg));
+  background: rgb(var(--c-text));
+  font-size: 0;
+}
+
+.mx-library-error {
+  padding: 8px 20px 0;
+}
+
+/* Плавающая «стеклянная» строка поиска ~342×49pt */
+.mx-library-search {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: min(342px, 100%);
+  max-width: 342px;
+  height: 49px;
+  margin: 16px auto 0;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: var(--mx-glass-bg);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgb(var(--c-border));
+  color: rgb(var(--c-muted));
+}
+
+.mx-library-search svg {
+  flex: 0 0 auto;
+}
+
+.mx-library-search__input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: rgb(var(--c-text));
+  font-size: 15px;
+  font-weight: 400;
+  outline: none;
+}
+
+.mx-library-search__input::placeholder {
+  color: rgb(var(--c-muted));
+}
+
+/* Отступ снизу под safe-area для поиска */
+.mx-pinned-sheet--library .mx-pinned-sheet__body {
+  padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+}
