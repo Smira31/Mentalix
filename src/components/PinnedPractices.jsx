@@ -200,7 +200,7 @@ export default function PinnedPractices({
     return () => rail.removeEventListener('touchstart', stopEdgeSwipe)
   }, [loading, pinnedPractices.length])
 
-  async function togglePinned(practice) {
+  async function togglePinned(practice, { undoable = true } = {}) {
     const key = practice.key
 
     // Per-practice guard: ignore taps while this practice's request is in flight
@@ -222,12 +222,16 @@ export default function PinnedPractices({
       try {
         await api.pinnedPractices.remove(user.id, key)
         invalidatePinnedPractices(user.id)
-        // Show undo toast for 4s — API already succeeded, undo re-adds via API
-        setUndo({ item, index })
-        undoTimerRef.current = setTimeout(() => {
-          setUndo(null)
-          undoTimerRef.current = null
-        }, 4000)
+        // Тост «Удалено · Вернуть» показываем только там, где он нужен:
+        // в библиотеке галочка снимается сразу, вернуть практику можно
+        // повторным тапом по строке.
+        if (undoable) {
+          setUndo({ item, index })
+          undoTimerRef.current = setTimeout(() => {
+            setUndo(null)
+            undoTimerRef.current = null
+          }, 4000)
+        }
       } catch {
         // Rollback: re-add the item at its original position
         setPinned(items => {
@@ -484,8 +488,6 @@ export default function PinnedPractices({
         <Sheet
           title="библиотека практик."
           onClose={() => setSheet('manage')}
-          undo={undo}
-          onUndo={undoRemove}
           variant="library"
           overlay={
             <div className="mx-library-search">
@@ -544,7 +546,7 @@ export default function PinnedPractices({
                     key={practice.key}
                     role="listitem"
                     aria-pressed={isPinned}
-                    onClick={() => togglePinned(practice)}
+                    onClick={() => togglePinned(practice, { undoable: false })}
                   >
                     <span className="mx-library-row__icon" aria-hidden="true">
                       <PracticeGlyph practice={practice} />
