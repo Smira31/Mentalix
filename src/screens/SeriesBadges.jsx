@@ -347,8 +347,8 @@ function AwardsView({ badges, onOpenBadge, onShowAll }) {
       <section className="mx-path-featured-award">
         <strong className="mx-path-award-count">{badges.filter(badge => badge.done).length}.</strong>
         <span className="mx-path-featured-award-label">ЗНАЧКОВ ПОЛУЧЕНО</span>
+        <FeaturedLandscape />
         <div className="mx-path-featured-scene">
-          <FeaturedLandscape />
           <RewardIcon variant={featured?.done ? featured.id : 'locked'} size={77} className="mx-path-featured-icon" />
         </div>
         <div className="mx-path-featured-title">{featured?.title || 'Все значки получены'}</div>

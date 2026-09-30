@@ -190,14 +190,15 @@
 }
 .mx-path-featured-scene {
   height: 121px;
-  position: relative;
-  z-index: 1;
   display: grid;
   place-items: end center;
 }
-.mx-path-featured-scene .mx-reward-icon {
-  width: 77px;
-  height: 77px;
+/* Иконка 77px стоит на линии горизонта: низ на y=216 от верха карточки. */
+.mx-path-featured-icon {
+  position: absolute;
+  top: 139px;
+  left: 50%;
+  transform: translateX(-50%);
 }
 /* Пейзаж занимает нижнюю часть карточки: 338 − 216 (до горизонтали). */
 .mx-path-featured-landscape {
