@@ -372,7 +372,6 @@ function FeaturedLandscape() {
         d="M319 78 L319 68 C330 62 340 55 350 55 C362 55 368 61 377 61 C384 61 386 58 391 58 C398 58 404 60 408 61 L408 78 Z"
         fill="#454545"
       />
-      <path d="M68 75 C80 70 95 70 110 72 C125 74 138 70 150 72" stroke="#2c2c2c" strokeWidth="1" />
       <line x1="0" y1="78.5" x2="408" y2="78.5" stroke="#333" strokeWidth="1" />
     </svg>
   )

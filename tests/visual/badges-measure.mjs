@@ -22,7 +22,7 @@ mkdirSync(OUT, { recursive: true })
 const TARGET = {
   tabs: { w: 200, h: 47 },
   close: { w: 44, h: 44 },
-  cardH: 338,
+  cardH: 339,
   horizonFromCardTop: 216,
   iconW: 77,
   iconBottomFromCardTop: 216,
@@ -102,6 +102,7 @@ async function measure(page) {
       const r = el.getBoundingClientRect()
       return { x: round(r.x), y: round(r.y), w: round(r.width), h: round(r.height) }
     }
+    const tabs = rect('.mx-path-tabs')
     const card = rect('.mx-path-featured-award')
     const landscape = rect('.mx-path-featured-landscape')
     const icon = rect('.mx-path-featured-icon')
@@ -140,6 +141,22 @@ async function measure(page) {
       headerBg: hStyle.backgroundColor,
       headerBackdrop: hStyle.backdropFilter || hStyle.webkitBackdropFilter || 'none',
       scroll: { top: round(scrollEl.scrollTop), height: scrollEl.scrollHeight, client: scrollEl.clientHeight },
+      // Правки владельца 30.09: зазор сегмент → карточка 43, строки
+      // 18/400 + 13/400 muted в одну строку, пейзаж и шар статичны.
+      segmentToCard:
+        tabs && card ? round(card.y - (tabs.y + tabs.h)) : null,
+      rowTitleFontSize: getComputedStyle(document.querySelector('.mx-path-row-title')).fontSize,
+      rowTitleFontWeight: getComputedStyle(document.querySelector('.mx-path-row-title')).fontWeight,
+      rowCopyStyle: (() => {
+        const style = getComputedStyle(document.querySelector('.mx-path-row-copy'))
+        return { fontSize: style.fontSize, fontWeight: style.fontWeight, whiteSpace: style.whiteSpace, textOverflow: style.textOverflow }
+      })(),
+      landscapeAnimations:
+        document.querySelector('.mx-path-featured-landscape')?.getAnimations().length ?? null,
+      ballAnimations: [...document.querySelectorAll('.mx-reward-icon')].reduce(
+        (sum, el) => sum + el.getAnimations().length,
+        0
+      ),
     }
   })
 }
@@ -350,6 +367,15 @@ line('7. шар в строке: left от края карточки', 16, r440.
 line('8. пейзаж w', 408, r440.landscapeW)
 line('8. пейзаж h', 80, r440.landscapeH)
 line('8. пик холма над горизонтом', 38, r440.hillPeakAboveHorizon)
+line('9. сегмент → карточка (440)', 43, r440.segmentToCard)
+line('9. сегмент → карточка (393)', 43, results['chromium-393'].atTop.segmentToCard)
+line('9. название строки font-size', 18, parseFloat(r440.rowTitleFontSize))
+console.log(`9. название строки font-weight (эталон 400, факт ${r440.rowTitleFontWeight})`)
+line('9. описание строки font-size', 13, parseFloat(r440.rowCopyStyle.fontSize))
+console.log(`9. описание строки font-weight (эталон 400, факт ${r440.rowCopyStyle.fontWeight})`)
+console.log(`9. описание в одну строку (эталон nowrap/ellipsis, факт ${r440.rowCopyStyle.whiteSpace}/${r440.rowCopyStyle.textOverflow})`)
+line('10. анимации пейзажа (440)', 0, r440.landscapeAnimations)
+line('10. анимации шара, все экземпляры (440)', 0, r440.ballAnimations)
 console.log('\n=== Telegram (эмуляция), верх экрана ===')
 for (const [name, result] of [
   ['tg-440', results['tg-440']],
@@ -357,8 +383,8 @@ for (const [name, result] of [
 ]) {
   console.log(`--- ${name} ---`)
   console.log('1. сегмент от верха поверхности (ожидание 8):', result.badges.segmentTopFromSurfaceTop)
-  console.log('1. контент под сегментом, значки (ожидание 16):', result.badges.contentGapUnderTabs)
-  console.log('1. контент под сегментом, статистика (ожидание 16):', result.statsGap)
+  console.log('1. сегмент → карточка «Значки» (ожидание 43):', result.badges.contentGapUnderTabs)
+  console.log('1. сегмент → плитка «Статистика» (ожидание 43):', result.statsGap)
   console.log('1. paddingTop поверхности (ожидание var(--app-safe-top)):', result.badges.surfacePaddingTop)
   console.log('1. круг ✕ (ожидание false):', result.badges.closeCircle, '| круг ‹ (ожидание false):', result.badges.backCircle)
   console.log('1. «все значки.» заголовок от верха (ожидание 8):', result.all.titleTopFromSurfaceTop)
