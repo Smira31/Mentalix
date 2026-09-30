@@ -551,7 +551,7 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
                 platform.haptic('light')
                 setView('review')
               }}
-              className="border-0 bg-transparent p-0 text-[12px] text-gold active:opacity-60"
+              className="border-0 bg-transparent p-0 text-[13px] font-medium text-cream active:opacity-60"
             >
               Мои ответы
             </button>
@@ -563,7 +563,7 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
                 platform.haptic('light')
                 setView('list')
               }}
-              className="border-0 bg-transparent p-0 text-[12px] text-muted active:opacity-60"
+              className="border-0 bg-transparent p-0 text-[13px] font-medium text-muted active:opacity-60"
             >
               Все темы
             </button>
@@ -575,7 +575,7 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
             platform.haptic('light')
             setView('intro')
           }}
-          className="border-0 bg-transparent p-0 text-[12px] text-faint active:opacity-60"
+          className="border-0 bg-transparent p-0 text-[13px] font-medium text-muted active:opacity-60"
         >
           {data.title}
         </button>
@@ -629,10 +629,11 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
           placeholder="Записать мысль..."
           ariaLabel="Мысль по теме недели"
           className="mt-6 flex-1"
-          editorClassName="!text-[16px] pb-16"
+          editorClassName="!text-[16px] font-normal pb-16"
           formatting={false}
           floatingToolbar={false}
           writingCanvas={false}
+          autoFocus={!current?.reflection}
           onSubmit={save}
           submitLabel={current?.reflection ? 'Обновить мысль' : 'Сохранить мысль'}
           submitDisabled={!canSave}
