@@ -251,7 +251,7 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
                     data-active={i === safeIndex ? 'true' : 'false'}
                     data-answered={q.reflection ? 'true' : undefined}
                   >
-                    <span className="mx-theme-carousel-q__num">{q.day ?? i + 1}</span>
+                    <span className="mx-theme-carousel-q__day">День {q.day ?? i + 1} из 7</span>
                     <strong className="mx-theme-carousel-q__text">{q.text}</strong>
                     {q.prompt && <span className="mx-theme-carousel-q__prompt">{q.prompt}</span>}
                     {q.reflection && <span className="mx-theme-carousel-q__badge">✓ Записано</span>}

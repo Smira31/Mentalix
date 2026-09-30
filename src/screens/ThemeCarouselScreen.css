@@ -102,20 +102,21 @@
   border: 0;
 }
 
-.mx-theme-carousel-q__num {
-  font-family: var(--font-serif);
-  font-size: 30px;
+.mx-theme-carousel-q__day {
+  font-family: 'Onest', system-ui, sans-serif;
+  font-size: 13px;
   line-height: 1;
-  font-weight: 400;
-  color: rgb(var(--c-text));
+  font-weight: 500;
+  color: rgb(var(--c-muted));
   margin: 0;
+  letter-spacing: 0.01em;
 }
 
 .mx-theme-carousel-q__text {
   font-family: 'Onest', system-ui, sans-serif;
   font-size: 17px;
-  line-height: 1.4;
-  font-weight: 600;
+  line-height: 1.45;
+  font-weight: 500;
   color: rgb(var(--c-text));
   max-width: 240px;
 }
