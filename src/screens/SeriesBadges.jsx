@@ -291,6 +291,23 @@ export function NewBadgeSheet({ badge, onClose }) {
   )
 }
 
+function FeaturedLandscape() {
+  // Простой пейзаж по мотивам Stoic: холмы слева и справа + линия горизонта
+  // через всю карточку. Свои формы, не копия Stoic.
+  return (
+    <svg
+      className="mx-path-featured-landscape"
+      viewBox="0 0 408 216"
+      preserveAspectRatio="none"
+      aria-hidden="true"
+    >
+      <path d="M0 216v-38c14-10 34-16 52-10 16 5 28 15 38 24 10 9 24 16 38 18l6 6Z" fill="#3a3a3a" />
+      <path d="M408 216v-42c-16-11-38-17-57-10-15 5-27 15-36 24-10 9-23 16-36 18l-5 10Z" fill="#3a3a3a" />
+      <rect x="0" y="215" width="408" height="1" fill="rgba(255, 255, 255, 0.4)" />
+    </svg>
+  )
+}
+
 function BadgeRow({ badge, onOpen }) {
   return (
     <button
@@ -300,7 +317,7 @@ function BadgeRow({ badge, onOpen }) {
       aria-label={`Открыть значок: ${badge.title}`}
       data-testid={`series-badge-${badge.id}`}
     >
-      <RewardIcon variant={badge.done ? badge.id : 'locked'} size={54} />
+      <RewardIcon variant={badge.done ? badge.id : 'locked'} size={58} />
       <span className="mx-path-row-copy-wrap">
         <strong className="mx-path-row-title">{badge.title}</strong>
         <span className="mx-path-row-copy">{badge.desc}</span>
@@ -331,7 +348,8 @@ function AwardsView({ badges, onOpenBadge, onShowAll }) {
         <strong className="mx-path-award-count">{badges.filter(badge => badge.done).length}.</strong>
         <span className="mx-path-featured-award-label">ЗНАЧКОВ ПОЛУЧЕНО</span>
         <div className="mx-path-featured-scene">
-          <RewardIcon variant={featured?.done ? featured.id : 'locked'} size={118} />
+          <FeaturedLandscape />
+          <RewardIcon variant={featured?.done ? featured.id : 'locked'} size={77} className="mx-path-featured-icon" />
         </div>
         <div className="mx-path-featured-title">{featured?.title || 'Все значки получены'}</div>
         <div className="mx-path-featured-copy">{featuredBadgeCaption(featured)}</div>
@@ -576,33 +594,42 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
       aria-modal="true"
       aria-label={showAll ? 'Все значки' : 'Значки и статистика'}
     >
-      <header className="mx-path-header">
-        {!showAll && <div className="mx-path-tabs" role="tablist" aria-label="Раздел серии и значков">
-          <button
-            type="button"
-            role="tab"
-            className="mx-tap-target"
-            data-testid="series-tab-badges"
-            aria-selected={activeTab === 'badges'}
-            onClick={() => setActiveTab('badges')}
-          >
-            Значки
-          </button>
-          <button
-            type="button"
-            role="tab"
-            className="mx-tap-target"
-            data-testid="series-tab-stats"
-            aria-selected={activeTab === 'stats'}
-            onClick={() => setActiveTab('stats')}
-          >
-            Статистика
-          </button>
-        </div>}
-        {!showAll && <CloseButton onClose={onBack} />}
-        <BackButton onClick={showAll ? () => setShowAll(false) : onBack} />
-      </header>
-      <main className="mx-path-scroll">
+      {showAll && (
+        <header className="mx-path-header">
+          <BackButton onClick={() => setShowAll(false)} />
+        </header>
+      )}
+      <main className={`mx-path-scroll${showAll ? '' : ' mx-path-scroll--overlay'}`}>
+        {/* Стеклянная шапка живёт внутри скролла: липнет к верху и лежит
+            поверх контента, который просвечивает сквозь blur. */}
+        {!showAll && (
+          <header className="mx-path-header">
+            <div className="mx-path-tabs" role="tablist" aria-label="Раздел серии и значков">
+              <button
+                type="button"
+                role="tab"
+                className="mx-tap-target"
+                data-testid="series-tab-badges"
+                aria-selected={activeTab === 'badges'}
+                onClick={() => setActiveTab('badges')}
+              >
+                Значки
+              </button>
+              <button
+                type="button"
+                role="tab"
+                className="mx-tap-target"
+                data-testid="series-tab-stats"
+                aria-selected={activeTab === 'stats'}
+                onClick={() => setActiveTab('stats')}
+              >
+                Статистика
+              </button>
+            </div>
+            <CloseButton onClose={onBack} />
+            <BackButton onClick={onBack} />
+          </header>
+        )}
         {error && errorUserId === user.id && (
           <p className="mx-path-status">
             Не удалось загрузить данные. Попробуй открыть экран ещё раз.
