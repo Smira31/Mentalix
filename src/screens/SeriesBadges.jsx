@@ -478,6 +478,7 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
   const [profileStats, setProfileStats] = useState(null)
   const [completedSessions, setCompletedSessions] = useState(null)
   const [activeTab, setActiveTab] = useState('badges')
+  const [headerScrolled, setHeaderScrolled] = useState(false)
   const [error, setError] = useState(false)
   const [errorUserId, setErrorUserId] = useState(null)
   const [selectedBadge, setSelectedBadge] = useState(null)
@@ -487,7 +488,9 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
   const demoMode = isPreviewDemoMode()
 
   const screenRef = useRef(null)
-  useSheetSwipeDown(screenRef, onBack, { enabled: !showAll })
+  // zoneOnly: свайп-закрытие только за верхнюю зону, иначе жест глушит
+  // тач-скролл контента (контент скроллится внутри дочернего main).
+  useSheetSwipeDown(screenRef, onBack, { enabled: !showAll, zoneOnly: true })
 
   useEffect(() => {
     let active = true
@@ -599,11 +602,14 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
           <BackButton onClick={() => setShowAll(false)} />
         </header>
       )}
-      <main className={`mx-path-scroll${showAll ? '' : ' mx-path-scroll--overlay'}`}>
+      <main
+        className={`mx-path-scroll${showAll ? '' : ' mx-path-scroll--overlay'}`}
+        onScroll={event => setHeaderScrolled(event.currentTarget.scrollTop > 0)}
+      >
         {/* Стеклянная шапка живёт внутри скролла: липнет к верху и лежит
             поверх контента, который просвечивает сквозь blur. */}
         {!showAll && (
-          <header className="mx-path-header">
+          <header className={`mx-path-header${headerScrolled ? ' mx-path-header--scrolled' : ''}`}>
             <div className="mx-path-tabs" role="tablist" aria-label="Раздел серии и значков">
               <button
                 type="button"
