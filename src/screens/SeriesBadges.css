@@ -84,14 +84,11 @@
   display: none;
 }
 .mx-path-surface--tg-fullscreen .mx-path-all-badges > h1 {
-  margin-top: -12px;
+  margin-top: -20px;
 }
 
-.mx-path-scroll--overlay .mx-path-header--scrolled {
-  background: var(--mx-glass-bg, rgba(38, 38, 38, 0.92));
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  backdrop-filter: blur(20px) saturate(160%);
-}
+/* Шапка всегда прозрачная (Stoic): контент уходит под плавающий
+   переключатель, фон страницы не меняется при прокрутке и overscroll. */
 
 .mx-path-tabs {
   display: grid;
@@ -341,6 +338,10 @@
   font-weight: 500;
   text-align: right;
 }
+/* «Все значки ›» в конце списка «Следующие значки» — справа, компактнее. */
+.mx-path-see-all--end {
+  padding: 16px 4px 8px;
+}
 .mx-path-see-all span {
   margin-left: 4px;
   font-size: 20px;
@@ -353,67 +354,69 @@
 .mx-path-award-list {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 9px;
+  gap: 8px;
 }
 .mx-path-award-row {
   display: flex;
-  min-height: 92px;
+  height: 82px;
   align-items: center;
-  gap: 19px;
+  gap: 0;
   width: 100%;
-  padding: 16px;
+  padding: 0 14px 0 14px;
   border: 0;
-  border-radius: 16px;
+  border-radius: 15px;
   background: rgb(var(--c-card2, 17 17 17));
   color: inherit;
   text-align: left;
 }
-/* Шар 55 стоит по центру строки: отступ слева 16, текст начинается с 90pt. */
-/* Шар в строках статичный: никаких transition/анимаций у SVG. */
+/* Шар ~50: отступ от левого края 14pt, центрирован по высоте строки. */
 .mx-path-award-row > .mx-reward-icon {
-  align-self: center;
+  flex: 0 0 auto;
 }
 .mx-path-row-copy-wrap {
   min-width: 0;
   flex: 1;
+  padding-left: 16px;
 }
 .mx-path-row-title {
   display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   color: rgb(var(--c-text, 243 243 243));
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 500;
   line-height: 1.2;
 }
-/* Описание 11/400 muted — максимум две строки. */
+/* Описание 11/400 muted — до 2 строк, без обрезки на полуслове. */
 .mx-path-row-copy {
   display: -webkit-box;
   overflow: hidden;
-  margin-top: 4px;
+  margin-top: 3px;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   white-space: normal;
   color: rgb(var(--c-muted, 133 133 133));
   font-size: 11px;
   font-weight: 400;
-  line-height: 1.2;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  line-height: 1.3;
 }
 .mx-path-row-value {
   display: flex;
-  min-width: 52px;
+  min-width: 39px;
   flex-direction: column;
   align-items: flex-end;
-  gap: 7px;
+  gap: 6px;
   color: rgb(var(--c-muted, 133 133 133));
-  font-size: 14px;
+  font-size: 13px;
+  font-weight: 600;
 }
-/* Счётчик 14pt/600: у strong браузерный вес bolder (900), задаём явно. */
 .mx-path-row-value strong {
-  font-size: 14px;
   font-weight: 600;
 }
 .mx-path-progress {
   display: block;
-  width: 43px;
+  width: 39px;
   height: 2px;
   overflow: hidden;
   border-radius: 99px;
@@ -423,7 +426,7 @@
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: rgb(var(--c-line, 230 230 230));
+  background: rgb(var(--c-text, 243 243 243));
 }
 
 .mx-path-preferences {
