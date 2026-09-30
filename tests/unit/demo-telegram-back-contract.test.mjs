@@ -16,7 +16,7 @@ test('Demo Telegram chrome — эмуляция без пропсов, лева�
   // Рендерится всегда, когда нужна эмуляция (без условий overlay/series/flow).
   assert.match(
     app,
-    /shouldRenderDemoTelegramChrome\(\{\s*previewDemoMode,\s*platformName,\s*realPhone,\s*deviceFrameMode,\s*\}\) && \(\s*<DemoTelegramChrome \/>/
+    /shouldRenderDemoTelegramChrome\(\{\s*previewDemoMode,\s*platformName,\s*realPhone,\s*deviceFrameMode,\s*\}\) && <DemoTelegramChrome \/>/
   )
 })
 
