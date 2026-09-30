@@ -49,9 +49,11 @@ export function useSheetSwipeDown(ref, onClose, { enabled = true } = {}) {
     let active = false
     let locked = false
 
-    function findScrollable() {
-      let node = el
-      while (node && node !== el.parentElement) {
+    // Скролл-контейнер — потомок поверхности (например .mx-path-scroll),
+    // поэтому ищем его от точки касания ВВЕРХ до el, а не от el вверх.
+    function findScrollable(target) {
+      let node = target
+      while (node && node !== el) {
         const style = getComputedStyle(node)
         if (
           (style.overflowY === 'auto' || style.overflowY === 'scroll') &&
@@ -60,13 +62,13 @@ export function useSheetSwipeDown(ref, onClose, { enabled = true } = {}) {
           return node
         }
         node = node.parentElement
-        if (!node || node === el.parentElement) break
+        if (!node || node === el) break
       }
       return null
     }
 
-    function isAtScrollTop() {
-      const scrollable = findScrollable()
+    function isAtScrollTop(target) {
+      const scrollable = findScrollable(target)
       if (!scrollable) return true
       return scrollable.scrollTop <= 0
     }
@@ -97,7 +99,7 @@ export function useSheetSwipeDown(ref, onClose, { enabled = true } = {}) {
 
       // Тянуть можно за верхнюю зону (ручка + заголовок) или
       // за любое место, если контент прокручен в самый верх
-      if (yWithinSheet > DRAG_ZONE_HEIGHT && !isAtScrollTop()) return
+      if (yWithinSheet > DRAG_ZONE_HEIGHT && !isAtScrollTop(e.target)) return
 
       startY = touch.clientY
       lastY = startY
