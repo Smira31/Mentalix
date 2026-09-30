@@ -202,9 +202,9 @@ export function isRecoveryDemoRequested() {
  * Вне демо-режима возвращает false.
  */
 export function isProfileDemoRequested() {
-  return (
-    isPreviewDemoMode() && new URLSearchParams(window.location.search).get('action') === 'profile'
-  )
+  if (!isPreviewDemoMode()) return false
+  const params = new URLSearchParams(window.location.search)
+  return params.get('action') === 'profile' || params.get('tab') === 'profile'
 }
 
 /* Внутренние экраны профиля доступны владельцу по прямой демо-ссылке. */
