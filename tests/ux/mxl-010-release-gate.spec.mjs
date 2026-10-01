@@ -285,14 +285,14 @@ test.describe('MXL-010 automated technical gate', () => {
     }
 
     // Экран завершения вечернего разбора
-    await expect(page.getByRole('heading', { name: 'Ты завершил Разбор дня!' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Ты завершил разбор дня.' })).toBeVisible()
     expect(fixtures.savedCheckins).toHaveLength(2)
     expect(fixtures.savedCheckins[1].review_completed).toBe(true)
     await expect(page.getByTestId('checkin-streak')).toHaveText('4-дневная серия')
     expect(fixtures.streakRequests.slice(streakRequestsBeforeEvening)).toContain(
       String(TEST_USER.id)
     )
-    await expect(page.getByText('Было полезно сегодня?')).toBeVisible()
+    await expect(page.getByText('Был ли разбор полезен?')).toBeVisible()
     await expect(page.getByTestId('checkin-back-to-today')).toHaveText('Сохранить и выйти')
 
     // Ответ «Немного» уходит сразу: запись уже сохранена

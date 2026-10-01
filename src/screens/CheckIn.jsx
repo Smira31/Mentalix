@@ -684,11 +684,15 @@ const MORNING_FOCUS_STEP = {
 export const MORNING_OPTIONAL_SCALES = [SLEEP_QUALITY_STEP, MORNING_FOCUS_STEP]
 
 
-export function CheckInScaleQuestion({ scale, value, onPick, filled = false }) {
+export function CheckInScaleQuestion({ scale, value, onPick, filled = false, evening = false }) {
   return (
-    <CheckInQuestion title={scale.title} hint={scale.hint} className="mx-checkin-question--scale">
+    <CheckInQuestion
+      title={scale.title}
+      hint={scale.hint}
+      className={`mx-checkin-question--scale${evening ? ' mx-checkin-question--scale-evening' : ''}`}
+    >
       <div
-        className={`mx-checkin-scale${filled ? ' mx-checkin-scale--filled' : ''}`}
+        className={`mx-checkin-scale${filled ? ' mx-checkin-scale--filled' : ''}${evening ? ' mx-checkin-scale--evening' : ''}`}
         role="radiogroup"
         aria-label={scale.title}
         data-testid="checkin-scale-row"
@@ -720,7 +724,7 @@ export function CheckInScaleQuestion({ scale, value, onPick, filled = false }) {
                     style={
                       filled
                         ? { '--scale-fill': `${energyFillPercent(level)}%` }
-                        : scale.key === 'energy'
+                        : scale.key === 'energy' && !evening
                           ? {
                               background: `linear-gradient(to top, #e6e6e6 ${energyFillPercent(level)}%, #111 ${energyFillPercent(level)}%)`,
                             }
@@ -764,6 +768,74 @@ export const EMOTIONS = {
   3: ['ровно', 'спокойно', 'задумчиво', 'нейтрально', 'собранно', 'терпимо', 'буднично'],
   4: ['бодро', 'доволен', 'тепло', 'включён', 'благодарен', 'уверенно', 'легко', 'спокойная сила'],
   5: ['воодушевлён', 'счастлив', 'свободен', 'горжусь', 'вдохновлён', 'силён', 'радостно', 'ясно'],
+}
+
+/*
+ * Эмоции вечернего «Разбора дня» — Stoic Evening Reflection.
+ * 10 плиток в сетке 2 колонки, набор по ответу на «Как ты сейчас?»:
+ * 1–2 — тяжёлые, 3 — смешанные, 4–5 — светлые.
+ */
+export const EVENING_EMOTIONS = {
+  1: [
+    'подавлен',
+    'вымотан',
+    'тревожно',
+    'злюсь',
+    'пусто',
+    'одиноко',
+    'обидно',
+    'растерян',
+    'напряжён',
+    'грустно',
+  ],
+  2: [
+    'подавлен',
+    'вымотан',
+    'тревожно',
+    'злюсь',
+    'пусто',
+    'одиноко',
+    'обидно',
+    'растерян',
+    'напряжён',
+    'грустно',
+  ],
+  3: [
+    'ровно',
+    'спокойно',
+    'задумчиво',
+    'нейтрально',
+    'собранно',
+    'терпимо',
+    'буднично',
+    'обычно',
+    'сдержанно',
+    'уравновешенно',
+  ],
+  4: [
+    'спокойно',
+    'благодарен',
+    'доволен',
+    'гордость',
+    'вдохновлён',
+    'радость',
+    'уверен',
+    'любим',
+    'энергичен',
+    'легко',
+  ],
+  5: [
+    'спокойно',
+    'благодарен',
+    'доволен',
+    'гордость',
+    'вдохновлён',
+    'радость',
+    'уверен',
+    'любим',
+    'энергичен',
+    'легко',
+  ],
 }
 
 function existingLessons(value) {
@@ -1558,7 +1630,7 @@ function CheckInCore({
         <WebActionBar
           action={webAction}
           secondaryAction={webSecondaryAction}
-          className="mx-completion-action"
+          className={`mx-completion-action${isEvening ? ' mx-completion-action--evening' : ''}`}
         />
       </div>,
       getFullscreenPortalTarget()
@@ -1619,7 +1691,7 @@ function CheckInCore({
 
       <div className={FULLSCREEN_SCROLL_CLASS} style={interactiveStyle}>
         <StepSlide stepKey={step} onAnimatingChange={handleAnimatingChange}>
-          <div className={isCard ? CHECKIN_LONG_CLASS : CHECKIN_CENTER_CLASS}>
+          <div className={isCard || isEmotionStep ? CHECKIN_LONG_CLASS : CHECKIN_CENTER_CLASS}>
             {!isScaleStep && (
               <CheckInQuestion
                 title={questionTitle}
@@ -1633,7 +1705,7 @@ function CheckInCore({
                     : isEmotionStep
                       ? 'text-[22px] font-semibold leading-[1.3]'
                       : isEvening && isCard
-                        ? 'text-[22px] font-bold leading-[1.2]'
+                        ? 'text-[24px] font-bold leading-[1.2]'
                         : 'text-[26px] leading-tight',
                 ].join(' ')}
                 hintClassName={[
@@ -1641,7 +1713,7 @@ function CheckInCore({
                   isMorningNoteStep
                     ? 'mt-5 border-l border-gold pl-4 leading-relaxed'
                     : isEvening && isCard
-                      ? 'mt-[6px] text-[15px]'
+                      ? 'mt-[6px] text-[13px] leading-relaxed'
                       : 'mt-2',
                 ].join(' ')}
               />
@@ -1662,6 +1734,7 @@ function CheckInCore({
                     scale={scale}
                     value={values[scale.key]}
                     onPick={level => pick(scale.key, level)}
+                    evening={isEvening}
                   />
                 </div>
               )}
@@ -1676,6 +1749,8 @@ function CheckInCore({
                   onEmotionChange={setEmotion}
                   onHeavyEmotionClick={openListener}
                   testId="checkin-emotion-pill"
+                  variant={isEvening ? 'grid' : 'carousel'}
+                  emotions={isEvening ? EVENING_EMOTIONS : undefined}
                 />
               )}
 
@@ -1693,7 +1768,7 @@ function CheckInCore({
                         ariaLabel={eveningQuestion.label}
                         testId="checkin-text-input"
                         className="min-h-[18rem] flex-1"
-                        editorClassName="mx-checkin-evening-editor"
+                        editorClassName="mx-checkin-evening-editor leading-[1.5]"
                         floatingToolbar
                         guidedFlow
                         autoFocus
@@ -1706,10 +1781,9 @@ function CheckInCore({
                         onSubmit={() =>
                           cardIdx < cardCount - 1 ? goToStep(current => current + 1) : submit()
                         }
-                        onDeepen={() => {}}
-                        deepenLabel="Пойти глубже"
                         submitLoading={saving}
-                        formatting
+                        formatting={false}
+                        hideAddAction
                       />
                     </div>
                   ) : (
@@ -1766,7 +1840,7 @@ function CheckInCore({
                       ariaLabel={`Был ли ты сегодня ${alterEgoName}?`}
                       testId="alter-ego-evening-input"
                       className="min-h-[18rem] flex-1"
-                      editorClassName="mx-checkin-evening-editor"
+                      editorClassName="mx-checkin-evening-editor leading-[1.5]"
                       floatingToolbar
                       guidedFlow
                       autoFocus
@@ -1775,10 +1849,9 @@ function CheckInCore({
                       submitLabel="Закрыть день"
                       submitTestId="checkin-save"
                       onSubmit={() => submit()}
-                      onDeepen={() => {}}
-                      deepenLabel="Пойти глубже"
                       submitLoading={saving}
-                      formatting
+                      formatting={false}
+                      hideAddAction
                     />
                   </div>
                   {error && <p className="text-[13px] text-muted text-center mt-4">{error}</p>}

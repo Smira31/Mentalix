@@ -1179,3 +1179,116 @@
     height: 48px;
   }
 }
+
+/* ── Вечерний «Разбор дня» — шкалы (Stoic Evening Reflection) ── */
+
+.mx-fullscreen-surface .mx-checkin-question--scale-evening > h1 {
+  font-family: 'Onest', sans-serif;
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+  text-align: center;
+}
+
+.mx-fullscreen-surface .mx-checkin-question--scale-evening .mx-checkin-question__hint {
+  font-size: 15px;
+  color: rgb(var(--c-muted));
+  text-align: center;
+}
+
+/* Вопрос шкалы — ниже середины экрана */
+.mx-fullscreen-surface .mx-checkin-question--scale-evening {
+  transform: translateY(8vh);
+}
+
+.mx-checkin-scale--evening {
+  width: min(100%, 360px);
+  gap: 8px;
+  margin-top: 36px;
+  margin-inline: auto;
+}
+
+.mx-checkin-scale--evening .mx-checkin-scale__circle {
+  width: 64px;
+  height: 64px;
+  border: 0;
+  border-radius: 50%;
+  background: #141414;
+  box-shadow: none;
+  opacity: 1;
+}
+
+.mx-checkin-scale--evening .mx-checkin-scale__inner {
+  width: 35px;
+  height: 35px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.mx-checkin-scale--evening .mx-checkin-scale__inner--face .mx-face {
+  width: 35px;
+  height: 35px;
+}
+
+/* Выбранный кружок — светлое толстое кольцо вокруг подложки */
+.mx-checkin-scale--evening .mx-checkin-scale__option.is-selected .mx-checkin-scale__circle {
+  border: 0;
+  background: #141414;
+  box-shadow: 0 0 0 3px rgb(var(--c-text));
+}
+
+.mx-checkin-scale--evening .mx-checkin-scale__label {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgb(var(--c-muted));
+  white-space: nowrap;
+}
+
+@media (max-width: 359px) {
+  .mx-checkin-scale--evening {
+    gap: 2px;
+  }
+  .mx-checkin-scale--evening .mx-checkin-scale__circle {
+    width: 56px;
+    height: 56px;
+  }
+}
+
+/* ── Вечерний «Разбор дня» — эмоции: сетка 2 колонки ── */
+
+.mx-emotion-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  width: 100%;
+  max-width: 360px;
+  margin: 28px auto 0;
+}
+
+.mx-emotion-grid__tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 58px;
+  padding: 0 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  background: #111;
+  color: rgb(var(--c-text));
+  font-family: 'Onest', sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  transition:
+    background 140ms ease,
+    color 140ms ease;
+}
+
+.mx-emotion-grid__tile.is-selected {
+  background: rgb(var(--c-text));
+  color: rgb(var(--c-bg));
+  border-color: rgb(var(--c-text));
+}
