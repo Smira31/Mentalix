@@ -90,7 +90,7 @@ export default function MyThoughtsScreen({ user, onClose, onEditThought }) {
   return createPortal(
     <div className={FULLSCREEN_SHELL_CLASS} style={surfaceStyle}>
       <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`}>
-        <RoundBackButton onClick={onClose} testId="my-thoughts-back" />
+        <RoundBackButton onClick={onClose} testId="my-thoughts-back" registerSystemBack />
       </div>
 
       <div className={FULLSCREEN_SCROLL_CLASS}>
