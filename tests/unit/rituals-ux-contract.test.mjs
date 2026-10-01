@@ -64,7 +64,7 @@ test('Rituals own-create flow is a 2-step magazine with fullscreen and native Ba
   const ownSlice = flowSource.slice(start, end)
   assert.match(ownSlice, /ownSteps/)
   assert.match(ownSlice, /buildOwnDraft/)
-  assert.match(fieldFlowSource, /useFullscreenSurface\(\)/)
+  assert.match(fieldFlowSource, /import Screen from '\.\.\/Screen'/)
   assert.match(fieldFlowSource, /useBackButton\(/)
   assert.match(wordingSource, /как назовёшь ритуал/)
   assert.match(wordingSource, /какой минимум даже в плохой день/)
