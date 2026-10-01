@@ -58,7 +58,19 @@ for (const hour of [19, 2]) {
     await emotionStep(page, 'ровно')
     await page.locator('[data-testid="checkin-next"]').click()
     for (const value of ['Результат', 'Трудность', 'Вывод']) await textStep(page, value)
-    await page.locator('[data-testid="checkin-open-scout"]').click()
+    // Кнопка «Разобрать со Следопыты» убрана с вечернего завершения:
+    // проверяем её отсутствие и «Сохранить и выйти», затем входим в
+    // диалог напрямую с хендоффом разбора дня.
+    await expect(page.locator('[data-testid="checkin-open-scout"]')).toHaveCount(0)
+    await expect(page.locator('[data-testid="checkin-back-to-today"]')).toBeVisible()
+    await page.evaluate(date => {
+      sessionStorage.setItem('mx-mentor-persona', 'dnevnik')
+      sessionStorage.setItem(
+        'mx-mentor-handoff',
+        JSON.stringify({ type: 'evening_review', date })
+      )
+    }, day(hour < 5 ? -1 : 0))
+    await page.goto('/?tab=mentor')
     const input = page.locator('[data-testid="mentor-input"]')
     await expect(input).toBeVisible()
     await input.fill('Первый вопрос')

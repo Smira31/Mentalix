@@ -60,7 +60,7 @@ test('Evening: completion copy, feedback, Scout и surprise остаются п�
   assert.match(completion, /sendCheckinFeedback\(/)
   assert.match(completion, /data-testid="surprise-insight"/)
   assert.match(core, /maybeBuildSurprise\(user\)/)
-  assert.match(core, /'checkin-open-scout'/)
+  assert.doesNotMatch(core, /'checkin-open-scout'/, 'scout кнопка убрана с вечернего завершения')
   assert.match(core, /\{ text: 'Сохранить и выйти', run: exitCompletion \}/)
   assert.match(core, /testId: isEvening \? 'checkin-back-to-today' : 'checkin-complete'/)
 })
