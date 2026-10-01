@@ -1,6 +1,6 @@
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
 
-import { ChevronDown, ChevronLeft, Ellipsis, X } from 'lucide-react'
+import DemoTelegramChrome from './components/DemoTelegramChrome'
 
 import ErrorBoundary from './components/ErrorBoundary'
 import ScreenErrorBoundary from './components/ScreenErrorBoundary'
@@ -41,7 +41,6 @@ import {
   previewProfileAction,
 } from './lib/demoMode'
 import { installDemoPressFeedback } from './lib/demoPressFeedback'
-import { getCurrentBackAction } from './platform/telegram.hooks'
 import { shouldRenderDemoTelegramChrome } from './lib/demoChrome'
 import { switchUserDataScope } from './lib/userDataScope'
 import { clearTodayDataCache } from './lib/todayDataCache'
@@ -139,70 +138,6 @@ function Splash() {
         "
       >
         выход находится шагами
-      </div>
-    </div>
-  )
-}
-
-function DemoTelegramChrome({ onBack }) {
-  const hasBack = typeof onBack === 'function'
-  const requestedTab = new URLSearchParams(window.location.search).get('tab')
-  const chromeTab = requestedTab === 'trends' ? 'progress' : requestedTab
-  const tabTitle =
-    chromeTab === 'progress'
-      ? 'Прогресс'
-      : chromeTab === 'library'
-        ? 'Библиотека'
-        : chromeTab === 'practices'
-          ? 'Практики'
-          : 'MENTALIX'
-  const tabMeta = chromeTab === 'progress' ? '14 дней' : ''
-
-  return (
-    <div className="mx-demo-telegram-chrome" aria-label="Telegram preview controls">
-      {hasBack && (
-        <button
-          type="button"
-          aria-label="Назад"
-          data-testid="demo-chrome-back"
-          className="mx-demo-telegram-chrome__close"
-          onClick={() => {
-            // Внутренние экраны (веха, поле, практика) держат верх стека
-            // «назад» — демо-шапка нажимает тот же «назад», что и сам экран.
-            const top = getCurrentBackAction()
-            if (top) top()
-            else onBack()
-          }}
-        >
-          <ChevronLeft size={18} strokeWidth={2.2} aria-hidden="true" />
-          <span>Назад</span>
-        </button>
-      )}
-      {!hasBack && (
-        <button
-          type="button"
-          aria-label="Закрыть превью"
-          className="mx-demo-telegram-chrome__close"
-        >
-          <X size={18} strokeWidth={2.2} aria-hidden="true" />
-          <span>Закрыть</span>
-        </button>
-      )}
-      {tabTitle && (
-        <div
-          className={`mx-demo-telegram-chrome__title${
-            tabTitle === 'MENTALIX' ? ' mx-demo-telegram-chrome__title--wordmark' : ''
-          }`}
-        >
-          {tabTitle}
-        </div>
-      )}
-      <div className="mx-demo-telegram-chrome__right">
-        <div className="mx-demo-telegram-chrome__menu" aria-hidden="true">
-          <ChevronDown size={22} strokeWidth={2.2} />
-          <Ellipsis size={22} strokeWidth={2.2} />
-        </div>
-        {tabMeta && <span className="mx-demo-telegram-chrome__meta">{tabMeta}</span>}
       </div>
     </div>
   )
@@ -498,17 +433,6 @@ function App() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setDemoMotionTick(tick => tick + 1)
   }, [overlay, tab, mentorPersonaOpen, todayFlowOpen, todaySeriesOpen, practiceGameOpen])
-
-  const demoBackAction =
-    overlay === 'settings'
-      ? demoBackRefs.current.settings || (() => setOverlay(null))
-      : tab === 'mentor'
-        ? demoBackRefs.current.mentor
-        : tab === 'today'
-          ? demoBackRefs.current.today
-          : tab === 'practices'
-            ? demoBackRefs.current.practices
-            : null
 
   // Только разрешённые contextual deep-links открывают вложенный экран «Сегодня».
   const [practicesSub, setPracticesSub] = useState(null)
@@ -1206,13 +1130,11 @@ function App() {
     : 'var(--app-content-bottom)'
 
   // Полноэкранные листы Истории остаются внутри shell, но не закрывают шапку Telegram.
+  // В demo-рамке с эмуляцией Telegram все экраны получают отступы как в
+  // Telegram fullscreen: верх = safe-top (статус-бар iOS) + 56 (пилюли Telegram).
   const shellTopPadding =
-    previewDemoMode &&
-    !realPhone &&
-    (!overlay || overlay === 'settings') &&
-    !todaySeriesOpen &&
-    !todayFlowOpen
-      ? '56px'
+    previewDemoMode && !realPhone && deviceFrameMode
+      ? 'calc(var(--app-safe-top) + 56px)'
       : topSafeArea
 
   /* ============================================================
@@ -1259,6 +1181,8 @@ function App() {
       <div
         data-mentalix-demo-frame={deviceFrameMode ? 'true' : undefined}
         data-mentalix-desktop-frame={desktopDeviceFrame ? 'true' : undefined}
+        data-demo-mode={deviceFrameMode && previewDemoMode ? 'true' : undefined}
+        data-demo-device={deviceFrameMode ? demoDevice : undefined}
         data-demo-tab={previewDemoMode ? (tab === 'trends' ? 'progress' : tab) : undefined}
         className={`
         h-screen
@@ -1293,13 +1217,12 @@ function App() {
           paddingLeft: 'var(--app-safe-left)',
         }}
       >
-        {shouldRenderDemoTelegramChrome({ previewDemoMode, platformName, realPhone }) &&
-          (!overlay || overlay === 'settings') &&
-          !todaySeriesOpen &&
-          !todayFlowOpen && (
-            // eslint-disable-next-line react-hooks/refs
-            <DemoTelegramChrome onBack={demoBackAction} />
-          )}
+        {shouldRenderDemoTelegramChrome({
+          previewDemoMode,
+          platformName,
+          realPhone,
+          deviceFrameMode,
+        }) && <DemoTelegramChrome />}
 
         {/* ========================================================
           MENTALIX WORDMARK

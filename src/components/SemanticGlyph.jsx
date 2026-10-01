@@ -735,6 +735,7 @@ function Drawing({ kind, debugSource }) {
           <circle className="mx-semantic-glyph__point" cx="80" cy="56" r="4.5" />
         </>
       )
+    case 'template':
     case 'alter-ego':
       return (
         <>

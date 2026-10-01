@@ -398,7 +398,7 @@ async function assertLibrarySoonControl(page) {
   await expect(page.getByRole('heading', { name: 'библиотека.' })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Открыть поиск' })).toHaveCount(0)
   const sectionHeadings = page.locator('.mx-library-v2__section-block > h2')
-  await expect(sectionHeadings).toHaveText(['Программы', 'Статьи', 'Направленные записи'])
+  await expect(sectionHeadings).toHaveText(['Путь героя', 'Программы', 'Статьи', 'Направленные записи'])
   await expect(page.getByRole('button', { name: 'Смотреть' })).toBeVisible()
 }
 

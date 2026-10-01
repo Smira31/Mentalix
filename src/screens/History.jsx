@@ -7,6 +7,7 @@ import MarkdownText from '../components/MarkdownText'
 import { buildBadges } from '../lib/badges'
 import { daysSinceRegistration } from '../lib/badgeCatalog'
 import { readJournalHistory } from '../lib/journalHistory'
+import { THOUGHT_KIND, loadDailyItems, readCachedDailyItems } from '../lib/dailyThoughtStorage'
 import JourneySearch from './JourneySearch'
 import HistorySkeleton from '../components/HistorySkeleton'
 import { platform, platformName } from '../platform'
@@ -162,6 +163,15 @@ function JournalDayCard({ entry }) {
           </div>
         ))}
       </div>
+    </div>
+  )
+}
+
+function DailyThoughtDayCard({ thought }) {
+  return (
+    <div data-testid="daily-thought-history" className="mt-3 border-t border-cream/10 pt-3">
+      <span className="text-[12px] font-semibold text-muted">Мысль дня</span>
+      <p className="mt-1 text-[14px] leading-snug text-cream">{thought.text}</p>
     </div>
   )
 }
@@ -593,6 +603,34 @@ export default function History({
   }, [user, userId])
 
   /*
+   * Мысли дня читаются из localStorage-кэша (мгновенно) и обновляются
+   * с сервера — кэш не источник правды, а только первый рендер.
+   */
+  const [dailyThoughtItems, setDailyThoughtItems] = useState(() =>
+    userId ? readCachedDailyItems(user.id) : []
+  )
+
+  const dailyThoughts = useMemo(
+    () => dailyThoughtItems.filter(item => item.kind === THOUGHT_KIND),
+    [dailyThoughtItems]
+  )
+
+  useEffect(() => {
+    if (!userId) return
+
+    let alive = true
+    loadDailyItems(user.id)
+      .then(next => {
+        if (alive) setDailyThoughtItems(next)
+      })
+      .catch(() => {})
+
+    return () => {
+      alive = false
+    }
+  }, [user, userId])
+
+  /*
    * Единая датированная лента: days (checkin+activity, backend) слит с
    * journalEntries (local-only) по дате. Оба источника уже независимо
    * загружены/вычислены выше — здесь только компоновка, ни один из них не
@@ -607,8 +645,14 @@ export default function History({
     for (const entry of journalEntries) {
       byDate[entry.date] = { ...(byDate[entry.date] || { date: entry.date }), journal: entry }
     }
+    for (const thought of dailyThoughts) {
+      byDate[thought.date] = {
+        ...(byDate[thought.date] || { date: thought.date }),
+        dailyThought: thought,
+      }
+    }
     return Object.values(byDate).sort((a, b) => (a.date < b.date ? 1 : -1))
-  }, [days, journalEntries])
+  }, [days, journalEntries, dailyThoughts])
 
   useEffect(() => {
     if (!user) return
@@ -1022,6 +1066,7 @@ export default function History({
               )}
 
               {d.journal && <JournalDayCard entry={d.journal} />}
+              {d.dailyThought && <DailyThoughtDayCard thought={d.dailyThought} />}
             </button>
           </div>
         )
