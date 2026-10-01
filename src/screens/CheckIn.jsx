@@ -724,7 +724,7 @@ export function CheckInScaleQuestion({ scale, value, onPick, filled = false, eve
                     style={
                       filled
                         ? { '--scale-fill': `${energyFillPercent(level)}%` }
-                        : scale.key === 'energy' && !evening
+                        : scale.key === 'energy'
                           ? {
                               background: `linear-gradient(to top, #e6e6e6 ${energyFillPercent(level)}%, #111 ${energyFillPercent(level)}%)`,
                             }
@@ -1697,7 +1697,13 @@ function CheckInCore({
                 title={questionTitle}
                 hint={questionSubtitle}
                 headingAs="h2"
-                className={isCard ? 'w-full text-left' : CHECKIN_QUESTION_CLASS}
+                className={
+                  isEvening && isCard
+                    ? 'mx-checkin-question--evening-card'
+                    : isCard
+                      ? 'w-full text-left'
+                      : CHECKIN_QUESTION_CLASS
+                }
                 headingClassName={[
                   'font-display text-cream',
                   isMorningNoteStep
@@ -1722,7 +1728,7 @@ function CheckInCore({
             <div
               className={
                 isCard
-                  ? `${isMorningNoteStep ? 'w-full pt-6' : CHECKIN_INTERACTIVE_CLASS} flex flex-1 flex-col`
+                  ? `${isMorningNoteStep ? 'w-full pt-6' : isEvening ? 'w-full pt-3' : CHECKIN_INTERACTIVE_CLASS} flex flex-1 flex-col`
                   : CHECKIN_INTERACTIVE_CLASS
               }
             >
