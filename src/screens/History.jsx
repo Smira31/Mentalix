@@ -7,7 +7,6 @@ import MarkdownText from '../components/MarkdownText'
 import { buildBadges } from '../lib/badges'
 import { daysSinceRegistration } from '../lib/badgeCatalog'
 import { readJournalHistory } from '../lib/journalHistory'
-import { THOUGHT_KIND, loadDailyItems, readCachedDailyItems } from '../lib/dailyThoughtStorage'
 import JourneySearch from './JourneySearch'
 import HistorySkeleton from '../components/HistorySkeleton'
 import { platform, platformName } from '../platform'
@@ -167,15 +166,6 @@ function JournalDayCard({ entry }) {
   )
 }
 
-function DailyThoughtDayCard({ thought }) {
-  return (
-    <div data-testid="daily-thought-history" className="mt-3 border-t border-cream/10 pt-3">
-      <span className="text-[12px] font-semibold text-muted">Мысль дня</span>
-      <p className="mt-1 text-[14px] leading-snug text-cream">{thought.text}</p>
-    </div>
-  )
-}
-
 export function HistoryDetail({
   day,
   onBack,
@@ -277,9 +267,7 @@ export function HistoryDetail({
             // T11: все ответы утра в порядке шагов чек-ина.
             // Незаполненные (null/пусто) не показываются.
             checkin?.mood != null ? ['Как ты сейчас?', moodWord(checkin.mood)] : null,
-            checkin?.sleep_quality != null
-              ? ['Как ты спал?', `${checkin.sleep_quality}/5`]
-              : null,
+            checkin?.sleep_quality != null ? ['Как ты спал?', `${checkin.sleep_quality}/5`] : null,
             checkin?.energy != null ? ['Сколько в тебе энергии?', `${checkin.energy}/5`] : null,
             checkin?.focus != null ? ['Насколько ты собран?', `${checkin.focus}/5`] : null,
             checkin?.day_focus ? ['Главный фокус на сегодня?', checkin.day_focus] : null,
@@ -605,34 +593,6 @@ export default function History({
   }, [user, userId])
 
   /*
-   * Мысли дня читаются из localStorage-кэша (мгновенно) и обновляются
-   * с сервера — кэш не источник правды, а только первый рендер.
-   */
-  const [dailyThoughtItems, setDailyThoughtItems] = useState(() =>
-    userId ? readCachedDailyItems(user.id) : []
-  )
-
-  const dailyThoughts = useMemo(
-    () => dailyThoughtItems.filter(item => item.kind === THOUGHT_KIND),
-    [dailyThoughtItems]
-  )
-
-  useEffect(() => {
-    if (!userId) return
-
-    let alive = true
-    loadDailyItems(user.id)
-      .then(next => {
-        if (alive) setDailyThoughtItems(next)
-      })
-      .catch(() => {})
-
-    return () => {
-      alive = false
-    }
-  }, [user, userId])
-
-  /*
    * Единая датированная лента: days (checkin+activity, backend) слит с
    * journalEntries (local-only) по дате. Оба источника уже независимо
    * загружены/вычислены выше — здесь только компоновка, ни один из них не
@@ -647,14 +607,8 @@ export default function History({
     for (const entry of journalEntries) {
       byDate[entry.date] = { ...(byDate[entry.date] || { date: entry.date }), journal: entry }
     }
-    for (const thought of dailyThoughts) {
-      byDate[thought.date] = {
-        ...(byDate[thought.date] || { date: thought.date }),
-        dailyThought: thought,
-      }
-    }
     return Object.values(byDate).sort((a, b) => (a.date < b.date ? 1 : -1))
-  }, [days, journalEntries, dailyThoughts])
+  }, [days, journalEntries])
 
   useEffect(() => {
     if (!user) return
@@ -699,7 +653,14 @@ export default function History({
       api.rituals.list(user.id).catch(() => []),
       api.ascezas.list(user.id).catch(() => []),
     ]).then(([stats, rituals, ascezas]) => {
-      setBadges(buildBadges({ stats, rituals, ascezas, registrationDays: daysSinceRegistration(stats?.created_at) }).filter(b => b.done))
+      setBadges(
+        buildBadges({
+          stats,
+          rituals,
+          ascezas,
+          registrationDays: daysSinceRegistration(stats?.created_at),
+        }).filter(b => b.done)
+      )
     })
   }, [user])
 
@@ -1061,7 +1022,6 @@ export default function History({
               )}
 
               {d.journal && <JournalDayCard entry={d.journal} />}
-              {d.dailyThought && <DailyThoughtDayCard thought={d.dailyThought} />}
             </button>
           </div>
         )

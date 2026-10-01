@@ -110,9 +110,7 @@ export function readDemoFrameBox(frame, windowLike = window) {
 
 function useDemoFrameBox(enabled) {
   const [box, setBox] = useState(() =>
-    enabled === true
-      ? readDemoFrameBox(document.querySelector('[data-mentalix-demo-frame]'))
-      : null
+    enabled === true ? readDemoFrameBox(document.querySelector('[data-mentalix-demo-frame]')) : null
   )
 
   useEffect(() => {
@@ -176,24 +174,10 @@ export function useFullscreenSurface() {
         })
       : stableViewportHeight || visualViewportHeight
     : visualViewportHeight
-
-  /*
-   * В demo-рамке shell обязан заполнять именно рамку телефона:
-   * высота visualViewport — это окно браузера, а не рамка, поэтому
-   * shell получался выше рамки и нижний край (вместе с футером)
-   * обрезался overflow: hidden. Координаты shell при этом живут
-   * в системе координат рамки (scale не применяется).
-   */
-  const portalIsDemoFrame = Boolean(
-    portalTarget?.getAttribute?.('data-mentalix-demo-frame') === 'true'
-  )
-  const demoFrameHeight =
-    portalIsDemoFrame && portalTarget?.offsetHeight ? portalTarget.offsetHeight : null
-
   // Convert the single viewport snapshot into the portal target's coordinate
   // space exactly once.
   const surfaceTop = viewportOffsetTop / scale
-  const visibleHeight = demoFrameHeight ?? (shellHeight ? shellHeight / scale : null)
+  const visibleHeight = shellHeight ? shellHeight / scale : null
   // В демо-превью экран — видимая часть «телефона», а не высота окна.
   const demoFrameBox = useDemoFrameBox(demoMode)
   const frameTop = demoFrameBox ? demoFrameBox.top / scale : null
@@ -224,19 +208,14 @@ export function useFullscreenSurface() {
 
   const style = {
     top: frameTop === null ? `${surfaceTop}px` : `${frameTop}px`,
-    paddingTop:
-      tgFullscreen || (demoMode && portalIsDemoFrame)
-        ? `calc(var(--app-safe-top) + ${TG_CONTROLS_HEIGHT}px)`
-        : 'var(--app-safe-top)',
+    paddingTop: tgFullscreen
+      ? `calc(var(--app-safe-top) + ${TG_CONTROLS_HEIGHT}px)`
+      : 'var(--app-safe-top)',
 
     paddingBottom: 'var(--app-safe-bottom)',
 
     height:
-      frameHeight !== null
-        ? `${frameHeight}px`
-        : visibleHeight
-          ? `${visibleHeight}px`
-          : '100dvh',
+      frameHeight !== null ? `${frameHeight}px` : visibleHeight ? `${visibleHeight}px` : '100dvh',
   }
 
   return {

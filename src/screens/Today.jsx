@@ -982,7 +982,6 @@ export default function Today({
         <Suspense fallback={null}>
           <DailyThoughtScreen
             thought={thoughtOfDay}
-            user={user}
             onClose={() => changeSub(null)}
             onGoMentor={onGoMentor}
           />
@@ -1283,8 +1282,7 @@ export default function Today({
     if (today && !today.reflection) return today
     return themeDays.find(d => !d.reflection) || null
   })()
-  const themeAllAnswered =
-    themeDays.length > 0 && themeDays.every(d => d.reflection)
+  const themeAllAnswered = themeDays.length > 0 && themeDays.every(d => d.reflection)
   const themeDayLabel = `День ${themeWaitingDay?.day || themeCurrentDay} из ${theme?.total_days || 7}`
   const themeQuestionText = themeWaitingDay?.text || ''
   const themeCtaLabel = themeAllAnswered ? 'Смотреть в пути' : 'Записать'
@@ -1620,7 +1618,11 @@ export default function Today({
               }}
             >
               Все темы
-              <ChevronRight size={16} className="mx-today-weekly-theme__chevron" aria-hidden="true" />
+              <ChevronRight
+                size={16}
+                className="mx-today-weekly-theme__chevron"
+                aria-hidden="true"
+              />
             </button>
           </div>
           <div

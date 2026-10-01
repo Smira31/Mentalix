@@ -442,16 +442,6 @@
   letter-spacing: -0.02em;
 }
 
-.mx-hj-library__eyebrow {
-  display: block;
-  margin-bottom: 6px;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: rgb(var(--c-muted));
-}
-
 .mx-library-v2__featured-copy p {
   max-width: 300px;
   margin: 0;
@@ -496,20 +486,6 @@
   font-family: 'Manrope', sans-serif;
   font-size: 13px;
   font-weight: 700;
-  white-space: nowrap;
-}
-
-/* Прогресс курса отдельной мелкой строкой: кнопка-пилюля остаётся
-   в одну строку («Продолжить») и не переносится на две. */
-.mx-hj-library__progress {
-  display: block;
-  margin-top: 4px;
-  white-space: nowrap;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: rgb(var(--c-muted));
 }
 
 .mx-library-v2__program-detail {

@@ -69,19 +69,3 @@ export const DAILY_THOUGHTS = [
 export function getDailyThought() {
   return pickByDay(DAILY_THOUGHTS)
 }
-
-/**
- * Мысль дня для конкретной календарной даты (ISO YYYY-MM-DD).
- * Используется свайпом по прошлым дням на экране «Мысль дня».
- * Детерминированный выбор по дню года — та же ротация, что и pickByDay,
- * но для произвольной даты, а не только сегодня.
- */
-export function getDailyThoughtForDate(dateStr) {
-  if (!dateStr) return getDailyThought()
-  const d = new Date(dateStr + 'T00:00:00')
-  if (Number.isNaN(d.getTime())) return getDailyThought()
-  const startOfYear = Date.UTC(d.getFullYear(), 0, 1)
-  const current = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())
-  const dayOfYear = Math.round((current - startOfYear) / 86400000) + 1
-  return DAILY_THOUGHTS[(dayOfYear - 1) % DAILY_THOUGHTS.length]
-}

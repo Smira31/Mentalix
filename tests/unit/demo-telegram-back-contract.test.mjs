@@ -7,20 +7,11 @@ const mentalix = await readFile(new URL('../../src/screens/Mentalix.jsx', import
 const today = await readFile(new URL('../../src/screens/Today.jsx', import.meta.url), 'utf8')
 const practices = await readFile(new URL('../../src/screens/Practices.jsx', import.meta.url), 'utf8')
 
-test('Demo Telegram chrome — эмуляция без пропсов, левая пилюля живёт внутри компонента', () => {
-  assert.match(app, /import DemoTelegramChrome from '\.\/components\/DemoTelegramChrome'/)
-  // Навигационное состояние пилюли не прокидывается из App: компонент
-  // сам читает стек useBackButton (тот же источник, что BackButton).
-  assert.doesNotMatch(app, /<DemoTelegramChrome [^/]*onBack/)
-  assert.doesNotMatch(app, /aria-label="Закрыть превью"/)
-  // Рендерится всегда, когда нужна эмуляция (без условий overlay/series/flow).
-  assert.match(
-    app,
-    /shouldRenderDemoTelegramChrome\(\{\s*previewDemoMode,\s*platformName,\s*realPhone,\s*deviceFrameMode,\s*\}\) && <DemoTelegramChrome \/>/
-  )
-})
-
-test('вложенные экраны регистрируют системный back, chrome его не дублирует', () => {
+test('Demo Telegram chrome does not duplicate nested screen back control', () => {
+  assert.match(app, /function DemoTelegramChrome\(\{ onBack \}\)/)
+  assert.match(app, /\{!hasBack && \(/)
+  assert.doesNotMatch(app, /aria-label=\{hasBack \? 'Назад' : 'Закрыть превью'\}/)
+  assert.match(app, /<DemoTelegramChrome onBack=\{demoBackAction\} \/>/)
   assert.match(app, /onRegisterBack=\{register(Today|Practices|Mentor)Back\}/)
   assert.match(mentalix, /onRegisterBack\?\.\(persona \? exitConversation : null\)/)
   assert.match(today, /onRegisterBack\?\.\(handler\)/)

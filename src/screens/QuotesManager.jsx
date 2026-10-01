@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
-import { isThoughtQuote } from '../lib/quoteTags'
 import { Plus, Trash2 } from 'lucide-react'
 import BackButton from '../components/BackButton'
 import EmptyState from '../components/EmptyState'
@@ -18,8 +17,7 @@ export default function QuotesManager({ user, onBack }) {
 
     ;(async () => {
       try {
-        // Записи «Мысли дня» — свои: в списке обычных фраз их не показываем.
-        const list = (await api.quotes.list(user.id)).filter(q => !isThoughtQuote(q))
+        const list = await api.quotes.list(user.id)
         if (active) setQuotes(list)
       } catch (e) {
         console.error(e)

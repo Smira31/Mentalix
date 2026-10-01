@@ -75,8 +75,6 @@ function normalizeEntry(value, date) {
         text: item.text,
         status: item.status === 'final' ? 'final' : 'draft',
         updatedAt: typeof item.updatedAt === 'string' ? item.updatedAt : null,
-        kind: typeof item.kind === 'string' ? item.kind : null,
-        quoteKey: typeof item.quoteKey === 'string' ? item.quoteKey : null,
       }))
   }
   entry.updatedAt = typeof value.updatedAt === 'string' ? value.updatedAt : null
@@ -256,81 +254,17 @@ function clearJournalStore(userId) {
   return removeRaw(journalStorageKey(userId))
 }
 
-/**
- * Сохраняет свободную запись (freeWrite) в запись дня.
- * Используется «Мыслью дня» с kind='мысль' и quoteKey — ключ цитаты дня.
- * Если запись с таким id уже есть — обновляет её, иначе добавляет новую.
- */
-function saveJournalFreeWrite({ date = todayKey(), id, text, status = 'final', kind = null, quoteKey = null, userId }) {
-  const key = journalStorageKey(userId)
-  const store = readJournalStore(userId)
-  const entry = store.entries[date] || emptyEntry(date)
-  const updatedAt = new Date().toISOString()
-  const writeId = typeof id === 'string' && id ? id : `${date}-fw-${Date.now()}`
-  const existing = entry.freeWrites.find(w => w.id === writeId)
-  if (existing) {
-    existing.text = text
-    existing.status = status === 'final' ? 'final' : 'draft'
-    existing.updatedAt = updatedAt
-    existing.kind = kind
-    existing.quoteKey = quoteKey
-  } else {
-    entry.freeWrites.push({ id: writeId, text, status: status === 'final' ? 'final' : 'draft', updatedAt, kind, quoteKey })
-  }
-  entry.updatedAt = updatedAt
-  store.entries[date] = entry
-  persistOrThrow(key, store)
-  return entry
-}
-
-/**
- * Удаляет свободную запись по id из записи дня.
- */
-function deleteJournalFreeWrite({ date = todayKey(), id, userId }) {
-  const key = journalStorageKey(userId)
-  const store = readJournalStore(userId)
-  const entry = store.entries[date]
-  if (!entry) return false
-  const before = entry.freeWrites.length
-  entry.freeWrites = entry.freeWrites.filter(w => w.id !== id)
-  if (entry.freeWrites.length === before) return false
-  entry.updatedAt = new Date().toISOString()
-  store.entries[date] = entry
-  persistOrThrow(key, store)
-  return true
-}
-
-/**
- * Читает все свободные записи определённого kind по всем датам.
- * Возвращает массив { date, id, text, status, updatedAt, kind, quoteKey },
- * отсортированный по дате убыванию.
- */
-function readAllJournalFreeWrites(userId, kind) {
-  const store = readJournalStore(userId)
-  const result = []
-  for (const [date, entry] of Object.entries(store.entries)) {
-    for (const w of entry.freeWrites) {
-      if (kind && w.kind !== kind) continue
-      result.push({ date, ...w })
-    }
-  }
-  return result.sort((a, b) => (a.date < b.date ? 1 : -1))
-}
-
 export {
   PHASE_KEYS,
   PROTOTYPE_STORAGE_KEY,
   STORAGE_KEY,
   STORAGE_VERSION,
   clearJournalStore,
-  deleteJournalFreeWrite,
   hasLegacyJournalData,
   journalStorageKey,
   migrateLegacyJournalToUser,
-  readAllJournalFreeWrites,
   readJournalEntry,
   readJournalStore,
-  saveJournalFreeWrite,
   saveJournalPhase,
   todayKey,
 }

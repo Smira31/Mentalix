@@ -374,7 +374,7 @@ export default function LibraryExperiment() {
         <span>UI-EXP-005 · Issue #526 · Preview-only</span>
         <h2 id="mx-library-lab-title">Библиотека: Stoic-ритм, функции Mentalix</h2>
         <p>
-          Это визуальный прототип. Статьи, направленные записи и disabled-курсы сохраняют
+          Это визуальный прототип. Статьи, направленные записи и disabled-практикумы сохраняют
           действующие продуктовые границы; production не изменён.
         </p>
       </div>

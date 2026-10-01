@@ -208,36 +208,6 @@
   overflow: hidden;
 }
 
-/* Мысль дня: своя мысль — курсивом, цитата дня — мелко и приглушённо */
-.mx-progress-history__thought-text {
-  margin: 0;
-  font-size: 15px;
-  font-weight: 400;
-  font-style: italic;
-  line-height: 1.5;
-  letter-spacing: 0;
-  color: rgb(var(--c-muted, 133 133 133));
-}
-
-.mx-progress-history__thought-quote {
-  margin: 0;
-  margin-top: 4px;
-  font-size: 13px;
-  font-weight: 400;
-  line-height: 1.45;
-  letter-spacing: 0;
-  color: rgb(var(--c-faint, 100 100 100));
-}
-
-/* В строке истории длинные тексты обрезаются, как превью дневника */
-.mx-progress-history__row-preview-text .mx-progress-history__thought-text,
-.mx-progress-history__row-preview-text .mx-progress-history__thought-quote {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
 /* Legacy: пилюля настроения (старое имя класса) */
 .mx-progress-history__row-mood {
   flex-shrink: 0;

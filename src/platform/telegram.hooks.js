@@ -51,31 +51,6 @@ function safely(action, label) {
 
 const stack = []
 
-/*
- * Подписчики на изменения стека: в Telegram системная кнопка
- * обновляется сама (show/hide), а эмуляция Telegram в demo-режиме
- * рисует свою пилюлю и должна знать, показана ли «Назад».
- */
-const backStackListeners = new Set()
-
-function notifyBackStack() {
-  backStackListeners.forEach(listener => listener())
-}
-
-export function subscribeBackStack(listener) {
-  backStackListeners.add(listener)
-
-  return () => backStackListeners.delete(listener)
-}
-
-/*
- * Тот же обработчик, что у системной BackButton Telegram:
- * эмулированная пилюля в demo-режиме вызывает его по тапу.
- */
-export function invokeBackAction() {
-  handleBackClick()
-}
-
 let bound = false
 
 function syncBackButton() {
@@ -126,7 +101,6 @@ export function useBackButton(handler, active = true) {
     // Стек всегда поддерживается — даже в web-режиме, где нет системной
     // кнопки Telegram. Глобальный edge-swipe читает верхний элемент стека.
     stack.push(entry)
-    notifyBackStack()
 
     const backButton = api()?.BackButton
 
@@ -144,7 +118,6 @@ export function useBackButton(handler, active = true) {
         stack.splice(index, 1)
       }
 
-      notifyBackStack()
       syncBackButton()
       if (!stack.length && bound) {
         safely(() => backButton?.offClick(handleBackClick), 'BackButton.offClick')

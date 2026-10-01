@@ -69,29 +69,3 @@ test('на ПК в демо-режиме шапка Telegram имитирует�
     true
   )
 })
-
-test('в demo-рамке эмуляция рендерится даже когда iframe сообщает standalone', () => {
-  assert.equal(
-    shouldRenderDemoTelegramChrome({
-      previewDemoMode: true,
-      platformName: 'web',
-      realPhone: false,
-      deviceFrameMode: true,
-      windowLike: standaloneWindow,
-    }),
-    true
-  )
-})
-
-test('на настоящем телефоне standalone без рамки по-прежнему без эмуляции', () => {
-  assert.equal(
-    shouldRenderDemoTelegramChrome({
-      previewDemoMode: true,
-      platformName: 'web',
-      realPhone: false,
-      deviceFrameMode: false,
-      windowLike: standaloneWindow,
-    }),
-    false
-  )
-})

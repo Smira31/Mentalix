@@ -116,26 +116,6 @@ export const PERSONA_STARTER_PROMPTS = {
 
 // 4. CheckIn morning Journal modes: UI-only selector until backend supports journal_mode.
 // Questions stay in this file so Moscow-day rotation remains deterministic and stable.
-// 5. Hero Journey — starters for AI personas based on the 16 trials.
-export const HERO_JOURNEY_STARTER_PROMPTS = [
-  'Я не вижу будущего, всё в тумане',
-  'Чувствую, что всё временно и уходит',
-  'Слишком много вариантов, не могу выбрать',
-  'Мне одиноко, даже рядом с людьми',
-  'Потерял смысл, компас без стрелки',
-  'Боюсь посмотреть на себя честно',
-  'Постоянно сравниваю себя с другими',
-  'Не могу сфокусироваться, всё рассыпается',
-  'Информационный поток давит на меня',
-  'Вечно спешу, не могу остановиться',
-  'Не понимаю, как собрать себя',
-  'Живу чужими жизнями и новостями',
-  'Мои прежние опоры рушатся',
-  'Возрастной кризис, черновик кончился',
-  'Ищу родную душу и не нахожу',
-  'Мой цифровой образ — не я',
-]
-
 export const JOURNAL_MODES = {
   brief: {
     key: 'brief',
