@@ -103,6 +103,7 @@ export default function StreakRestoreSheet({ itemName, choices, onSave, onClose 
               return (
                 <button
                   key={daysAgo}
+                  data-testid={`practice-restore-day-${daysAgo}`}
                   onClick={() => {
                     platform.haptic('light')
                     setRestoreDaysAgo(daysAgo)
@@ -126,6 +127,7 @@ export default function StreakRestoreSheet({ itemName, choices, onSave, onClose 
               return (
                 <button
                   key={option.value}
+                  data-testid={`practice-restore-choice-${option.value}`}
                   onClick={() => {
                     platform.haptic('light')
                     setChoice(option.value)
@@ -156,6 +158,7 @@ export default function StreakRestoreSheet({ itemName, choices, onSave, onClose 
           )}
 
           <button
+            data-testid="practice-restore-submit"
             onClick={submit}
             disabled={!restoreDaysAgo || !choice || saving}
             className="cta-pill w-full py-4 text-[16px] mt-5 disabled:opacity-35"

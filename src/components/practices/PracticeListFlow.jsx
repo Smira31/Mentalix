@@ -29,9 +29,14 @@ function FlowToast({ message }) {
 }
 
 /* ── Стеклянная пилюля в потоке контента ── */
-function FlowPill({ children, onClick }) {
+function FlowPill({ children, onClick, testId }) {
   return (
-    <button type="button" className="mx-practice-flow-pill" onClick={onClick}>
+    <button
+      type="button"
+      className="mx-practice-flow-pill"
+      data-testid={testId}
+      onClick={onClick}
+    >
       {children}
     </button>
   )
@@ -54,7 +59,7 @@ function ListScreen({ wording, items, loading, isDone, onToggleTile, onOpenDetai
         <p className="text-muted text-[13px] text-center">Загрузка...</p>
       ) : (
         <>
-          <p className="mx-practice-flow-screen__today">
+          <p className="mx-practice-flow-screen__today" data-testid="practice-today-progress">
             сегодня {doneCount} из {total}
           </p>
 
@@ -114,6 +119,7 @@ function ListScreen({ wording, items, loading, isDone, onToggleTile, onOpenDetai
 
       {!loading && (
         <FlowPill
+          testId="practice-new-pill"
           onClick={() => {
             platform.haptic('light')
             onOpenReady()
@@ -171,6 +177,7 @@ function ReadyScreen({ wording, items, onAddPreset, onOpenOwn, onBack }) {
       </div>
 
       <FlowPill
+        testId="practice-own-pill"
         onClick={() => {
           platform.haptic('light')
           onOpenOwn()

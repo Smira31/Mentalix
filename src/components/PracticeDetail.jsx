@@ -141,6 +141,7 @@ export default function PracticeDetail({
                 type="button"
                 aria-label="Закрыть меню"
                 className="mx-practice-detail__menu-overlay"
+                data-testid="practice-detail-menu-overlay"
                 onClick={() => setMenuOpen(false)}
               />
               <ProgressGlassMenu
