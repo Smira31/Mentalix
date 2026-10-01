@@ -23,7 +23,21 @@ const FEATURES = [
 
 export default function SubscriptionManager({ tier: _tier, onBack }) {
   return (
-    <ProfilePage title="подписка." onBack={onBack} testId="profile-screen-subscription">
+    <ProfilePage
+      title="подписка."
+      onBack={onBack}
+      testId="profile-screen-subscription"
+      footer={
+        <button
+          type="button"
+          disabled
+          data-testid="subscription-pay-button"
+          className="mx-profile-disabled-cta"
+        >
+          <Lock size={14} aria-hidden="true" /> Оплата скоро появится
+        </button>
+      }
+    >
       <ProfileBody>
         <div className="mx-subscription-art" aria-hidden="true">
           <PotentialLockArt />
@@ -53,15 +67,6 @@ export default function SubscriptionManager({ tier: _tier, onBack }) {
         <p className="mx-subscription-free">
           Чек-ины, Мысль дня, журнал, ритуалы, аскезы, Следопыт и напоминания — бесплатно всегда.
         </p>
-
-        <button
-          type="button"
-          disabled
-          data-testid="subscription-pay-button"
-          className="mx-profile-disabled-cta"
-        >
-          <Lock size={14} aria-hidden="true" /> Оплата скоро появится
-        </button>
       </ProfileBody>
     </ProfilePage>
   )

@@ -86,7 +86,7 @@ function useTitleCollapsed(headerRef, titleRef) {
  * сохранить принятую геометрию (кнопка 20px от края, заголовок 34px).
  * Крестик ✕ на корне убран — в Telegram есть своя «Назад».
  */
-export function ProfilePage({ title, isRoot = false, onBack, testId, children }) {
+export function ProfilePage({ title, isRoot = false, onBack, testId, footer, children }) {
   const headerRef = useRef(null)
   const titleRef = useRef(null)
   const collapsed = useTitleCollapsed(headerRef, titleRef)
@@ -97,7 +97,13 @@ export function ProfilePage({ title, isRoot = false, onBack, testId, children })
   useBackButton(onBack, isRoot)
 
   return (
-    <Screen onBack={onBack} showHeader={false} registerSystemBack={false}>
+    <Screen
+      onBack={onBack}
+      showHeader={false}
+      registerSystemBack={false}
+      footer={footer}
+      footerClassName="mx-profile-page__footer"
+    >
       <div
         className={`mx-profile-page${isRoot ? '' : ' mx-profile-page--sub'}${showOwnButton ? ' mx-profile-page--own-button' : ''}`}
         data-testid={testId}
