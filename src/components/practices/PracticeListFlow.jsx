@@ -190,13 +190,18 @@ function ReadyScreen({ wording, items, onAddPreset, onOpenOwn, onBack }) {
 }
 
 /* ── Свой — 2 экрана в стиле журнала (общий PracticeFieldFlow) ── */
-function OwnScreen({ wording, onCreate, onCancel }) {
+function OwnScreen({ wording, onCreate, onCancel, onCreated }) {
   return (
     <PracticeFieldFlow
       label={wording.ownLabel}
       steps={wording.ownSteps}
       onCancel={onCancel}
-      onSubmit={values => onCreate(buildOwnDraft(wording.kind, values[0], values[1]))}
+      onSubmit={values =>
+        onCreate(buildOwnDraft(wording.kind, values[0], values[1])).then(result => {
+          if (result) onCreated()
+          return result
+        })
+      }
     />
   )
 }
@@ -349,6 +354,10 @@ export default function PracticeListFlow({
         wording={wording}
         onCreate={onCreate}
         onCancel={() => setView('ready')}
+        onCreated={() => {
+          showToast(wording.addedToast)
+          setView('list')
+        }}
       />
     )
   }

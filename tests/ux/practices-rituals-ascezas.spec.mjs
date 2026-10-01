@@ -34,6 +34,30 @@ test('список ритуалов: сетка, «сегодня N из M» и 
   await expect(page.getByTestId('practice-grid')).toBeVisible()
 })
 
+test('«Свой» — два шага: после создания флоу закрывается, «новый ритуал» при 0 дней', async ({
+  page,
+}) => {
+  await page.goto('/?demo=1&tab=practices&action=rituals_list')
+
+  await page.getByTestId('practice-new-pill').click()
+  await expect(page.getByTestId('practice-preset-card').first()).toBeVisible()
+  await page.getByTestId('practice-own-pill').click()
+
+  await expect(page.getByTestId('practice-own-input-0')).toBeVisible()
+  await page.getByTestId('practice-own-input-0').fill('Тихое утро')
+  await page.getByTestId('practice-own-go').click()
+
+  await expect(page.getByTestId('practice-own-input-1')).toBeVisible()
+  await page.getByTestId('practice-own-input-1').fill('одна страница')
+  await page.getByTestId('practice-own-go').click()
+
+  // Флоу закрылся: виден список, тост о добавлении, новая практика с 0 дней.
+  await expect(page.getByTestId('practice-grid')).toBeVisible()
+  await expect(page.getByText('Ритуал добавлен')).toBeVisible()
+  await expect(page.getByTestId('practice-tile')).toHaveCount(5)
+  await expect(page.getByTestId('practice-tile').last().getByText('новый ритуал')).toBeVisible()
+})
+
 test('список аскез: те же плитки, «держишься» вместо серии и отметка тапом', async ({ page }) => {
   await page.goto('/?demo=1&tab=practices&action=ascezas_list')
 
