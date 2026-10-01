@@ -2,13 +2,18 @@
 //
 // Каркас экрана профиля и его под-экранов по эталону Stoic.
 // Все размеры — DESIGN_SYSTEM.md §5.4 «Профиль и настройки».
+//
+// Переведён на <Screen> (PR #965): портал, демо-шапка, скролл-контейнер
+// и safe-area — через <Screen>. Липкая шапка с коллапс-заголовком и
+// круглая кнопка «Назад» остаются внутри тела <Screen>.
 
 import { useEffect, useRef, useState } from 'react'
 import { ChevronRight } from 'lucide-react'
+import Screen from '../../components/Screen'
 import ScreenBack from '../../components/ScreenBack'
 import { useBackButton } from '../../platform/telegram.hooks'
 import { isTelegramBackMode } from '../../lib/backButtonMode'
-import { isPreviewDemoMode } from '../../lib/demoMode'
+import { isDemoEmulationActive } from '../../lib/demoChrome'
 
 import './ProfileUi.css'
 
@@ -17,8 +22,8 @@ import './ProfileUi.css'
  * тогда в центре шапки появляется маленький на фоне экрана с затуханием
  * вниз (контент уходит под него, а не обрезается). Следим за самим заголовком:
  * IntersectionObserver ловит layout/viewport-изменения, а scroll-listener
- * на корне App — программный scrollTop (IntersectionObserver в headless Chrome
- * срабатывает по нему ненадёжно).
+ * на скролл-контейнере <Screen> — программный scrollTop (IntersectionObserver
+ * в headless Chrome срабатывает по нему ненадёжно).
  */
 function useTitleCollapsed(headerRef, titleRef) {
   const [collapsed, setCollapsed] = useState(false)
@@ -33,14 +38,16 @@ function useTitleCollapsed(headerRef, titleRef) {
     if (typeof IntersectionObserver !== 'undefined') {
       observer = new IntersectionObserver(
         ([entry]) =>
-          setCollapsed(!entry.isIntersecting && entry.boundingClientRect.top < headerBottom),
+          setCollapsed(!entry.isIntersecting && entry.boundingClientRect.bottom < headerBottom),
         { rootMargin: `-${headerBottom}px 0px 0px 0px`, threshold: 0 }
       )
       observer.observe(title)
     }
 
-    const check = () => setCollapsed(title.getBoundingClientRect().top < headerBottom)
-    const scrollRoot = title.closest('.mx-app-scroll-root')
+    const check = () => setCollapsed(title.getBoundingClientRect().bottom < headerBottom)
+    // Скролл-контейнер <Screen> — .mx-fullscreen-scroll; fallback на старый
+    // корень App на случай, если экран ещё не внутри <Screen>.
+    const scrollRoot = title.closest('.mx-fullscreen-scroll, .mx-app-scroll-root')
     if (scrollRoot) scrollRoot.addEventListener('scroll', check, { passive: true })
 
     return () => {
@@ -55,46 +62,53 @@ function useTitleCollapsed(headerRef, titleRef) {
 /*
  * В Telegram своих кнопок «закрыть»/«назад» нет — работает нативная
  * «Назад» (как в шторке серии). В Demo Preview её роль играет
- * демо-шапка Telegram. Круглая кнопка рисуется только в настоящем web
- * (не демо-режиме). Крестик ✕ на корне убран — в Telegram есть своя «Назад».
+ * демо-шапка Telegram. Круглая кнопка рисуется только в web (не демо-режиме).
+ *
+ * <Screen showHeader={false}> — портал, демо-шапка и скролл берутся из <Screen>,
+ * а шапка профиля (липкий коллапс + кнопка) рисуется внутри тела, чтобы
+ * сохранить принятую геометрию (кнопка 20px от края, заголовок 34px).
+ * Крестик ✕ на корне убран — в Telegram есть своя «Назад».
  */
 export function ProfilePage({ title, isRoot = false, onBack, testId, children }) {
   const headerRef = useRef(null)
   const titleRef = useRef(null)
   const collapsed = useTitleCollapsed(headerRef, titleRef)
   const showOwnButton =
-    !isTelegramBackMode(typeof window === 'undefined' ? null : window.Telegram?.WebApp) &&
-    !isPreviewDemoMode()
+    !isTelegramBackMode(
+      typeof window === 'undefined' ? null : window.Telegram?.WebApp
+    ) && !isDemoEmulationActive()
   useBackButton(onBack, isRoot)
 
   return (
-    <div
-      className={`mx-profile-page${isRoot ? '' : ' mx-profile-page--sub'}${showOwnButton ? ' mx-profile-page--own-button' : ''}`}
-      data-testid={testId}
-    >
-      <div className="mx-profile-page__bar">
-        {!isRoot && showOwnButton && (
-          <ScreenBack
-            onBack={onBack}
-            testId="profile-close-button"
-            className="mx-profile-page__button mx-profile-page__button--back"
-          />
-        )}
-        <div
-          ref={headerRef}
-          data-testid="profile-collapsed-bar"
-          className={`mx-profile-page__surface${collapsed ? ' mx-profile-page__surface--collapsed' : ''}`}
-        >
-          <span className="mx-profile-page__bar-title" aria-hidden={!collapsed}>
-            {title}
-          </span>
+    <Screen onBack={onBack} showHeader={false} registerSystemBack={false}>
+      <div
+        className={`mx-profile-page${isRoot ? '' : ' mx-profile-page--sub'}${showOwnButton ? ' mx-profile-page--own-button' : ''}`}
+        data-testid={testId}
+      >
+        <div className="mx-profile-page__bar">
+          {!isRoot && showOwnButton && (
+            <ScreenBack
+              onBack={onBack}
+              testId="profile-close-button"
+              className="mx-profile-page__button mx-profile-page__button--back"
+            />
+          )}
+          <div
+            ref={headerRef}
+            data-testid="profile-collapsed-bar"
+            className={`mx-profile-page__surface${collapsed ? ' mx-profile-page__surface--collapsed' : ''}`}
+          >
+            <span className="mx-profile-page__bar-title" aria-hidden={!collapsed}>
+              {title}
+            </span>
+          </div>
         </div>
+        <h1 ref={titleRef} className="mx-profile-page__title" data-testid="profile-page-title">
+          {title}
+        </h1>
+        {children}
       </div>
-      <h1 ref={titleRef} className="mx-profile-page__title" data-testid="profile-page-title">
-        {title}
-      </h1>
-      {children}
-    </div>
+    </Screen>
   )
 }
 

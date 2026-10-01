@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { moodPracticeStart } from './checkin-helpers.mjs'
+
 
 /*
  * Области нажатия ≥43×43 pt и отступ капсулы «← Назад» (WebKit, iPhone 15 Pro).
@@ -145,7 +145,7 @@ test.describe('Области нажатия и отступ «Назад»', ()
     await context.close()
   })
 
-  test('капсула «Назад» в чек-ине и «Настроении» стоит на 16 pt от левого края', async ({
+  test('капсула «Назад» в чек-ине стоит на 16 pt от левого края', async ({
     browser,
     baseURL,
   }) => {
@@ -159,15 +159,6 @@ test.describe('Области нажатия и отступ «Назад»', ()
     await expect(checkin.getByRole('heading', { name: 'Как ты сейчас?' })).toBeVisible()
     await expectBackPillOffset(checkin)
     await checkinContext.close()
-
-    const moodContext = await fixtureContext(browser, baseURL)
-    const mood = await moodContext.newPage()
-    await mood.clock.setFixedTime('2026-09-23T08:00:00+03:00')
-    await mood.goto('/?tab=practices')
-    await mood.getByRole('button', { name: 'Открыть Настроение' }).click()
-    await moodPracticeStart(mood)
-    await expectBackPillOffset(mood)
-    await moodContext.close()
   })
 })
 

@@ -566,8 +566,6 @@ function seedState(todayState = null) {
       { practice_id: 'lila-discover' },
       { practice_id: 'rituals' },
       { practice_id: 'ascezas' },
-      { practice_id: 'mood' },
-      { practice_id: 'alter-ego' },
     ],
     checkins: [...history, ...(checkin ? [checkin] : [])],
     profile: {
@@ -992,6 +990,12 @@ function respond(path, options = {}) {
       review_hour: eveningStates.has(previewTodayState()) ? 0 : (state.profile.review_hour ?? DEFAULT_REVIEW_HOUR),
       writing_goal_enabled: state.profile.writing_goal_enabled ?? false,
       writing_goal_weekly_count: state.profile.writing_goal_weekly_count ?? 3,
+      insights_enabled: state.profile.insights_enabled !== false,
+      reminder_enabled: state.profile.reminder_enabled ?? false,
+      reminder_hour: state.profile.reminder_hour ?? DEFAULT_REVIEW_HOUR,
+      reminder_timezone: state.profile.reminder_timezone ?? 'Europe/Moscow',
+      quiet_hours_start: state.profile.quiet_hours_start ?? null,
+      quiet_hours_end: state.profile.quiet_hours_end ?? null,
     })
   }
   if (pathname === '/profile/writing-goal/progress' && method === 'GET') {

@@ -25,6 +25,7 @@ import { openSupportChat } from '../lib/support'
 import { THEMES } from '../lib/theme'
 import { isGuestUser } from '../lib/guestAuth'
 import { DEFAULT_REVIEW_HOUR } from '../lib/todayCardState'
+import { pluralize } from '../lib/pluralize'
 import { previewProfileAction } from '../lib/demoMode'
 import SubscriptionManager from './SubscriptionManager'
 import DonateScreen from './DonateScreen'
@@ -61,6 +62,8 @@ function Toggle({ checked, label, onChange }) {
 
 const hh = hour => `${String(hour).padStart(2, '0')}:00`
 
+const RECORD_FORMS = ['запись', 'записи', 'записей']
+
 const SUB_TITLES = {
   checkins: 'чек-ины.',
   about: 'о тебе.',
@@ -74,14 +77,17 @@ const SUB_TITLES = {
 // Под-экран, куда ведёт «Назад»: по умолчанию — корень профиля.
 const SUB_PARENT = { timezone: 'notifications' }
 
-// PR11: фиксированные плитки времени напоминания.
-// «Вечер» — 19:00, не синхронизирован с review_hour.
-const REMINDER_TIMES = [
-  { label: 'Утро', hour: 8 },
-  { label: 'День', hour: 14 },
-  { label: 'Вечер', hour: 19 },
-  { label: 'Ночь', hour: 22 },
-]
+// PR11: плитки времени напоминания.
+// «Вечер» синхронизирован с review_hour — напоминание приходит
+// к началу разбора дня, а не в фиксированные 19:00.
+function reminderTimes(reviewHour) {
+  return [
+    { label: 'Утро', hour: 8 },
+    { label: 'День', hour: 14 },
+    { label: 'Вечер', hour: reviewHour },
+    { label: 'Ночь', hour: 22 },
+  ]
+}
 
 // Часы, с которых «Сегодня» переключается на разбор дня.
 // Это не рассылка: приложение ничего не присылает, просто меняет экран.
@@ -602,7 +608,7 @@ export default function Settings({
           <ProfileCard>
             <ProfileRow
               title="Записей в неделю"
-              subtitle="Сколько записей в неделю ты хочешь делать. Влияет только на подсказки, серия не рвётся."
+              subtitle="Влияет только на подсказки. Серия не рвётся."
               value={writingGoalOn ? String(writingGoalCount) : 'Выкл.'}
               onClick={() => saveWritingGoal(!writingGoalOn)}
               testId="profile-row-writing-goal"
@@ -632,7 +638,7 @@ export default function Settings({
                     <span className="shrink-0 text-[13px] font-semibold text-cream">
                       {writingGoalProgress.reached
                         ? 'Цель достигнута'
-                        : `Осталось ${writingGoalProgress.remaining}`}
+                        : `Осталось ${writingGoalProgress.remaining} ${pluralize(writingGoalProgress.remaining, RECORD_FORMS)}`}
                     </span>
                   </div>
                   <div
@@ -699,11 +705,6 @@ export default function Settings({
               }
             />
           </ProfileCard>
-          {insightsStatus && (
-            <ProfileNote role="status">
-              {insightsSaving ? 'Сохраняем настройку…' : insightsStatus}
-            </ProfileNote>
-          )}
         </ProfileGroup>
 
         <ProfileGroup label="Приложение">
@@ -790,15 +791,15 @@ export default function Settings({
   function renderNotifications() {
     return (
       <ProfileBody>
-        <ProfileGroup label="Бот">
+        <ProfileGroup label="Напоминания">
           <ProfileCard>
             <ProfileRow
-              title="Напоминание от бота"
+              title="Напоминания в Telegram"
               subtitle={reminderOn ? `Каждый день в ${hh(reminderHour)}` : 'Выключено'}
               right={
                 <Toggle
                   checked={reminderOn}
-                  label="Напоминание от бота"
+                  label="Напоминания в Telegram"
                   onChange={() => saveReminder(reminderHour ?? DEFAULT_REVIEW_HOUR, !reminderOn)}
                 />
               }
@@ -809,7 +810,7 @@ export default function Settings({
                   label="Время напоминания"
                   value={reminderHour}
                   onChange={hour => saveReminder(hour, true)}
-                  options={REMINDER_TIMES.map(t => ({
+                  options={reminderTimes(reviewHour).map(t => ({
                     value: t.hour,
                     label: t.label,
                     hint: hh(t.hour),
