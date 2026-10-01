@@ -17,8 +17,9 @@ function formatReviewDate() {
   }
 }
 
-export default function CheckInCompletion({ evening, onFeedback, children, title, art }) {
+export default function CheckInCompletion({ evening, onFeedback, children, title, art, body, feedbackQuestion }) {
   const [selected, setSelected] = useState(null)
+  const questionText = feedbackQuestion || (evening ? 'Был ли разбор полезен?' : 'Было полезно сегодня?')
 
   return (
     <section
@@ -44,12 +45,13 @@ export default function CheckInCompletion({ evening, onFeedback, children, title
       <div className="mx-completion__date-pill" aria-label="Дата">
         <span aria-hidden="true">✓</span> {formatReviewDate()}
       </div>
+      {body}
       <div className="mx-completion__feedback">
-        <p>{evening ? 'Был ли разбор полезен?' : 'Было полезно сегодня?'}</p>
+        <p>{questionText}</p>
         <div
           className="mx-completion__choices"
           role="group"
-          aria-label={evening ? 'Был ли разбор полезен?' : 'Было полезно сегодня?'}
+          aria-label={questionText}
         >
           {CHECKIN_FEEDBACK_OPTIONS.map(option => {
             const Icon = ICONS[option.value]
