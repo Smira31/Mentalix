@@ -69,7 +69,7 @@ export const PRACTICE_WORDING = {
     title: 'аскезы.',
     subtitle: 'от чего ты отказываешься',
     newLabel: 'Новая аскеза',
-    ownPill: 'Свая аскеза',
+    ownPill: 'Своя аскеза',
     readyTitle: 'новая аскеза.',
     readySubtitle: 'Выбери готовый — или придумай свой.',
     addedToast: 'Аскеза добавлена',
@@ -120,4 +120,14 @@ export function buildPresetDraft(kind, preset) {
     return { name: preset.name, category: 'psycho', min_version: preset.minimum }
   }
   return { name: preset.name, category: 'psycho', reason: preset.minimum }
+}
+
+/*
+ * Вехи серии — дни, которые отмечаются отдельно: 3 / 7 / 21 / 30.
+ * На отметке, доводящей серию до вехи, каркас показывает короткую награду.
+ */
+export const PRACTICE_STREAK_MILESTONES = [3, 7, 21, 30]
+
+export function isStreakMilestone(streak) {
+  return PRACTICE_STREAK_MILESTONES.includes(streak)
 }

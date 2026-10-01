@@ -264,9 +264,30 @@
   text-align: center;
 }
 
+/* Отметка оживляет герой: короткий импульс иконки. */
+@keyframes mx-practice-hero-pop {
+  0% {
+    transform: scale(0.86);
+  }
+  55% {
+    transform: scale(1.06);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.mx-practice-detail__hero.is-pulsing .mx-practice-detail__hero-icon {
+  animation: mx-practice-hero-pop 480ms cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .mx-practice-tile,
   .mx-practice-detail__mark {
     transition: none;
+  }
+
+  .mx-practice-detail__hero.is-pulsing .mx-practice-detail__hero-icon {
+    animation: none;
   }
 }

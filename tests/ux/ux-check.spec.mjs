@@ -825,8 +825,8 @@ test('локальный UX smoke по основному маршруту', asy
       runtimeErrors,
       results,
       check: async () => {
-        await expect(page.getByRole('heading', { name: 'ритуалы.' })).toBeVisible()
-        await assertClickable(page.getByRole('button', { name: 'Создать ритуал' }))
+        await expect(page.getByRole('heading', { name: 'новый ритуал.' })).toBeVisible()
+        await assertClickable(page.getByRole('button', { name: 'Свой ритуал' }))
       },
     })
     await page.getByRole('button', { name: 'Назад' }).click()
@@ -846,8 +846,8 @@ test('локальный UX smoke по основному маршруту', asy
       runtimeErrors,
       results,
       check: async () => {
-        await expect(page.getByRole('heading', { name: 'аскезы.' })).toBeVisible()
-        await assertClickable(page.getByRole('button', { name: 'Принять аскезу' }))
+        await expect(page.getByRole('heading', { name: 'новая аскеза.' })).toBeVisible()
+        await assertClickable(page.getByRole('button', { name: 'Своя аскеза' }))
       },
     })
     await page.getByRole('button', { name: 'Назад' }).click()

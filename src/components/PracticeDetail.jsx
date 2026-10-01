@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ChevronDown, Trash2 } from 'lucide-react'
 import { platform } from '../platform'
 import { useEdgeSwipeBack } from '../lib/gestures/useEdgeSwipeBack'
@@ -38,8 +38,12 @@ export default function PracticeDetail({ kind, practice, onBack, onLog, onBreak,
   const screenRef = useRef(null)
   const [confirming, setConfirming] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [pulse, setPulse] = useState(false)
+  const pulseTimer = useRef(null)
   useEdgeSwipeBack(screenRef, onBack)
   useBackButton(onBack)
+
+  useEffect(() => () => clearTimeout(pulseTimer.current), [])
   const isRitual = kind === 'ritual'
   const wording = PRACTICE_WORDING[kind]
   const done = isRitual ? isRitualDoneToday(practice.today_level) : practice.today_status === 'held'
@@ -77,6 +81,10 @@ export default function PracticeDetail({ kind, practice, onBack, onLog, onBreak,
           ? 'min'
           : 'optimal'
       : 'held'
+    // Отметка оживляет герой коротким импульсом иконки.
+    setPulse(true)
+    clearTimeout(pulseTimer.current)
+    pulseTimer.current = setTimeout(() => setPulse(false), 520)
     await onLog(practice.id, level)
   }
 
@@ -128,7 +136,9 @@ export default function PracticeDetail({ kind, practice, onBack, onLog, onBreak,
       </div>
 
       {/* Блок-герой 220: концентрические круги + иконка в круге 96 */}
-      <div className={`mx-practice-detail__hero${done ? ' is-done' : ''}`}>
+      <div
+        className={`mx-practice-detail__hero${done ? ' is-done' : ''}${pulse ? ' is-pulsing' : ''}`}
+      >
         <span className="mx-practice-detail__hero-ring" />
         <span className="mx-practice-detail__hero-ring" />
         <span className="mx-practice-detail__hero-ring" />

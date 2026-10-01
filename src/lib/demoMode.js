@@ -462,7 +462,8 @@ function seedState(todayState = null) {
             min_version: 'Один стакан',
             optimal_version: 'Два стакана и пауза',
             today_level: null,
-            streak: 1,
+            // Серия 2 — отметка доводит до вехи 3 (демо-проверка награды).
+            streak: 2,
           },
           {
             id: 900103,

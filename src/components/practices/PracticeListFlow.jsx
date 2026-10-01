@@ -20,7 +20,9 @@ import {
   PRACTICE_WORDING,
   buildOwnDraft,
   buildPresetDraft,
+  isStreakMilestone,
 } from '../../lib/practiceWording'
+import PracticeMilestone from './PracticeMilestone'
 import './PracticeListFlow.css'
 
 /* ── Тост ── */
@@ -326,7 +328,9 @@ export default function PracticeListFlow({
   const [view, setView] = useState('list')
   const [selected, setSelected] = useState(null)
   const [toast, setToast] = useState(null)
+  const [milestone, setMilestone] = useState(null)
   const toastTimer = useRef(null)
+  const milestoneTimer = useRef(null)
 
   function showToast(message) {
     setToast(message)
@@ -334,7 +338,13 @@ export default function PracticeListFlow({
     toastTimer.current = setTimeout(() => setToast(null), 2200)
   }
 
-  useEffect(() => () => clearTimeout(toastTimer.current), [])
+  useEffect(
+    () => () => {
+      clearTimeout(toastTimer.current)
+      clearTimeout(milestoneTimer.current)
+    },
+    []
+  )
 
   // Пустое состояние — сразу экран «готовые», не пустая сетка
   useEffect(() => {
@@ -345,6 +355,16 @@ export default function PracticeListFlow({
 
   // onLog(id, value) → возвращает обновлённый объект; синхронизируем selected
   async function handleLog(id, value) {
+    // Веха 3 / 7 / 21 / 30 — только на отметке, не на снятии.
+    const item = items.find(entry => entry.id === id)
+    if (item && value != null && !wording.isDone(item)) {
+      const nextStreak = (item.streak || 0) + 1
+      if (isStreakMilestone(nextStreak)) {
+        setMilestone({ title: wording.statusLabel(nextStreak), name: item.name })
+        clearTimeout(milestoneTimer.current)
+        milestoneTimer.current = setTimeout(() => setMilestone(null), 2600)
+      }
+    }
     const updated = await onLog(id, value)
     if (updated) {
       setSelected(prev => (prev?.id === id ? { ...prev, ...updated } : prev))
@@ -375,6 +395,10 @@ export default function PracticeListFlow({
     onBack()
   }
 
+  const milestoneNode = milestone ? (
+    <PracticeMilestone title={milestone.title} name={milestone.name} />
+  ) : null
+
   if (selected) {
     return (
       <>
@@ -386,6 +410,7 @@ export default function PracticeListFlow({
           onBreak={onBreak}
           onDelete={onDelete}
         />
+        {milestoneNode}
         {breakSheet}
       </>
     )
@@ -426,6 +451,7 @@ export default function PracticeListFlow({
         onOpenReady={() => setView('ready')}
       />
       <FlowToast message={toast} />
+      {milestoneNode}
       {writeError && (
         <p role="alert" className="text-[12px] text-amber-200 text-center mt-2 px-[var(--mx-screen-x)]">
           {writeError}
