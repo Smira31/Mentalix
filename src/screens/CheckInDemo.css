@@ -1013,6 +1013,13 @@
   transform: translateY(10vh);
 }
 
+/* Вечерние шкалы: та же высота, что у утренних (блок ниже середины).
+   Вечерний флоу живёт в mx-fullscreen-surface, не в mx-demo-checkin —
+   правило утра на него не действует, дублируем сдвиг. */
+.mx-fullscreen-surface .mx-checkin-question--scale {
+  transform: translateY(10vh);
+}
+
 /* Утренние шкалы: одна и та же степень заливки для всех вопросов. */
 .mx-demo-checkin .mx-checkin-scale--filled .mx-checkin-scale__inner,
 .mx-fullscreen-surface .mx-checkin-scale--filled .mx-checkin-scale__inner {
@@ -1221,6 +1228,16 @@
   font-size: 24px;
   font-weight: 700;
   line-height: 1.2;
+}
+
+/* Вечерний экран эмоций: заголовок 24/700 по центру, сразу под шапкой.
+   Базовое .mx-checkin-question > h2 с clamp(…36px) перебивает inline-класс
+   и множит заголовок в 3 строки — это правило выше по специфичности. */
+.mx-checkin-question--emotion > h2 {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
 }
 
 .mx-checkin-question--evening-card .mx-checkin-question__hint {

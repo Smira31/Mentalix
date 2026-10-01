@@ -1698,16 +1698,18 @@ function CheckInCore({
                 className={
                   isEvening && isCard
                     ? 'mx-checkin-question--evening-card'
-                    : isCard
-                      ? 'w-full text-left'
-                      : CHECKIN_QUESTION_CLASS
+                    : isEmotionStep
+                      ? 'mx-checkin-question--emotion w-full text-center'
+                      : isCard
+                        ? 'w-full text-left'
+                        : CHECKIN_QUESTION_CLASS
                 }
                 headingClassName={[
                   'font-display text-cream',
                   isMorningNoteStep
                     ? 'text-[30px] leading-[1.12]'
                     : isEmotionStep
-                      ? 'text-[22px] font-semibold leading-[1.3]'
+                      ? 'text-[24px] font-bold leading-[1.2]'
                       : isEvening && isCard
                         ? 'text-[24px] font-bold leading-[1.2]'
                         : 'text-[26px] leading-tight',
