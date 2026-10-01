@@ -165,8 +165,8 @@ function ThemeCarousel({
             <>
               <p className="mx-steps-empty-copy">
                 {themeError
-                  ? 'Не удалось загрузить тему. Проверь соединение и попробуй ещё раз.'
-                  : 'Опубликованная тема появится здесь, когда будет доступна для тебя.'}
+                  ? 'Вопросы не загрузились. Не удалось загрузить тему. Проверь соединение и попробуй ещё раз.'
+                  : 'Пока нет вопросов. Опубликованная тема появится здесь, когда будет доступна для тебя.'}
               </p>
               {themeError && (
                 <button type="button" className="mx-steps-pill" onClick={onRetry}>
@@ -259,7 +259,11 @@ function CollectionTile({ collection, onOpen }) {
 
 function CollectionGrid({ onOpen }) {
   return (
-    <section className="mx-steps-collections-section" aria-label="Коллекции">
+    <section
+      className="mx-steps-collections-section"
+      aria-label="Коллекции"
+      data-count={VISIBLE_COLLECTIONS.length}
+    >
       <h2 className="mx-steps-collections-heading">Коллекции</h2>
       <div className="mx-steps-collections">
         {VISIBLE_COLLECTIONS.map(collection => (
@@ -285,7 +289,7 @@ export default function PracticeCatalogV2({
   const visiblePractices = useMemo(() => practices || [], [practices])
 
   return (
-    <div className="mx-steps-explore-catalog">
+    <div className="mx-steps-explore-catalog mx-layered-catalog--mxl-547-preview">
       <JournalBanner onOpen={onOpenJournal} />
       <PracticeRail practices={visiblePractices} onOpen={onOpenPractice} />
       <ThemeCarousel

@@ -29,7 +29,7 @@ const PRACTICE_SEARCH_STYLES = `
   background: rgba(255,255,255,0.04);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  color: #fff;
+  color: #f3f3f3;
   cursor: pointer;
 }
 .mx-steps-search-overlay {
@@ -53,7 +53,7 @@ const PRACTICE_SEARCH_STYLES = `
   border: 1px solid #333;
   border-radius: 999px;
   background: #1a1a1a;
-  color: #fff;
+  color: #f3f3f3;
   font-size: 16px;
   outline: none;
 }
@@ -66,7 +66,7 @@ const PRACTICE_SEARCH_STYLES = `
   border: 0;
   border-radius: 50%;
   background: transparent;
-  color: #fff;
+  color: #f3f3f3;
   cursor: pointer;
 }
 .mx-steps-search-results {
@@ -82,7 +82,7 @@ const PRACTICE_SEARCH_STYLES = `
   padding: 14px 0;
   border-bottom: 1px solid #1a1a1a;
   background: transparent;
-  color: #fff;
+  color: #f3f3f3;
   text-align: left;
   cursor: pointer;
 }

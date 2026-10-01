@@ -50,7 +50,7 @@
 .mx-steps-journal__title {
   margin: 0;
   max-width: 220px;
-  color: #ffffff;
+  color: #f3f3f3;
   font-size: 20px;
   font-weight: 700;
   line-height: 1.15;
@@ -116,7 +116,7 @@
   border: 1px solid #1f1f1f;
   border-radius: 22px;
   background: #1a1a1a;
-  color: #ffffff;
+  color: #f3f3f3;
   text-align: center;
   cursor: pointer;
 }
@@ -151,7 +151,7 @@
   border: 0;
   border-radius: 999px;
   background: #000;
-  color: #fff;
+  color: #f3f3f3;
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -222,13 +222,13 @@
   font-size: 26px;
   font-weight: 500;
   line-height: 1.1;
-  color: #ffffff;
+  color: #f3f3f3;
 }
 .mx-steps-theme-heading__name {
   font-size: 26px;
   font-weight: 700;
   line-height: 1.1;
-  color: #ffffff;
+  color: #f3f3f3;
 }
 .mx-steps-theme-track {
   display: flex;
@@ -256,21 +256,21 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 24px;
   background: transparent;
-  color: #ffffff;
+  color: #f3f3f3;
   text-align: center;
 }
 .mx-steps-theme-card__num {
   font-family: var(--font-serif, Georgia, serif);
   font-size: 32px;
   font-weight: 400;
-  color: #ffffff;
+  color: #f3f3f3;
 }
 .mx-steps-theme-card__question {
   max-width: 220px;
   font-size: 17px;
   font-weight: 700;
   line-height: 1.3;
-  color: #ffffff;
+  color: #f3f3f3;
 }
 .mx-steps-theme-card__prompt {
   max-width: 220px;
@@ -293,7 +293,7 @@
   background: #333;
 }
 .mx-steps-dots i[data-active='true'] {
-  background: #ffffff;
+  background: #f3f3f3;
 }
 
 /* ── Pills ── */
@@ -313,14 +313,14 @@
 }
 .mx-steps-pill--solid {
   width: 220px;
-  background: #ffffff;
-  color: #000000;
+  background: #ededed;
+  color: #1a1a1a;
 }
 .mx-steps-pill--outline {
   width: 140px;
   border: 1px solid #ffffff;
   background: transparent;
-  color: #ffffff;
+  color: #f3f3f3;
 }
 
 /* ── Skeleton / empty ── */
@@ -358,7 +358,7 @@
   font-size: 22px;
   font-weight: 500;
   line-height: 1.15;
-  color: #ffffff;
+  color: #f3f3f3;
   text-align: center;
 }
 .mx-steps-collections {
@@ -379,7 +379,7 @@
   border: 1px solid #1f1f1f;
   border-radius: 24px;
   background: #1a1a1a;
-  color: #ffffff;
+  color: #f3f3f3;
   text-align: center;
   cursor: pointer;
 }
@@ -393,7 +393,7 @@
   font-size: 20px;
   font-weight: 700;
   line-height: 1.15;
-  color: #ffffff;
+  color: #f3f3f3;
 }
 .mx-steps-collection__desc {
   margin-inline: auto;
