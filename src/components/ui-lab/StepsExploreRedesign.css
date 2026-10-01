@@ -8,7 +8,7 @@
 .mx-steps-explore-catalog {
   display: grid;
   gap: 22px;
-  padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: var(--app-content-bottom);
 }
 
 /* ── 2. Большая карточка журнала ── */
@@ -218,9 +218,9 @@
   text-align: center;
 }
 .mx-steps-theme-heading__label {
-  font-family: 'Onest', sans-serif;
+  font-family: var(--font-serif);
   font-size: 26px;
-  font-weight: 300;
+  font-weight: 500;
   line-height: 1.1;
   color: #f3f3f3;
 }
@@ -262,9 +262,9 @@
   text-align: center;
 }
 .mx-steps-theme-card__num {
-  font-family: 'Onest', sans-serif;
+  font-family: var(--font-serif);
   font-size: 32px;
-  font-weight: 300;
+  font-weight: 400;
   color: #f3f3f3;
 }
 .mx-steps-theme-card__question {

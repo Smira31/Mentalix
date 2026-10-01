@@ -23,6 +23,14 @@
 @import '@fontsource/manrope/600.css';
 @import '@fontsource/manrope/700.css';
 
+/* Lora — шрифт с засечками для заголовков разделов экрана «Шаги»
+   («Тема недели: …», «Другие темы», «Все темы»), референс Stoic Explore.
+   Самостоятельный хостинг (npm-пакет @fontsource/lora, без Google Fonts CDN).
+   Кириллица включена по unicode-range вместе с латиницей. */
+@import '@fontsource/lora/500.css';
+@import '@fontsource/lora/600.css';
+@import '@fontsource/lora/700.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -248,6 +256,11 @@
 
   /* Верх экрана под шапкой Telegram: safe-top + контролы (56) + воздух (16). */
   --mx-screen-top: calc(var(--app-safe-top) + 56px + 16px);
+
+  /* Шрифт с засечками — только для заголовков разделов экрана «Шаги»
+     («Тема недели: …», «Другие темы», «Все темы»), референс Stoic Explore.
+     Lora с кириллицей, загружается через @fontsource/lora. */
+  --font-serif: 'Lora', 'PT Serif', Georgia, serif;
 
   --mx-motion-fast: 160ms;
   --mx-motion-base: 220ms;

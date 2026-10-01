@@ -1686,7 +1686,7 @@
 
 /* 4. Тема недели: заголовок с засечками */
 .mx-production-catalog .mx-layered-catalog__theme-heading-serif {
-  font-family: 'Onest', sans-serif;
+  font-family: var(--font-serif);
   font-weight: 600;
 }
 
