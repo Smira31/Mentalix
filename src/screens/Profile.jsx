@@ -165,6 +165,8 @@ export default function Profile({ user, stats, loading, error, retryProfile }) {
                     : null
                 : null
             }
+            value={birthdayFormatted || 'Не указана'}
+            testId="profile-about-birthday"
             right={
               <input
                 type="date"
@@ -179,6 +181,14 @@ export default function Profile({ user, stats, loading, error, retryProfile }) {
                     setViewYear(Number(val.split('-')[0]))
                   } else {
                     setBirthdayRaw('')
+                  }
+                }}
+                onClick={e => {
+                  // Тап по строке открывает системный выбор даты (Chromium/Safari).
+                  try {
+                    e.currentTarget.showPicker?.()
+                  } catch {
+                    /* showPicker недоступен — нативное поведение input */
                   }
                 }}
                 className="mx-profile-date-input"
