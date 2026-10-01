@@ -1,8 +1,10 @@
 import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
 import { createPortal } from 'react-dom'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
-import PracticeWritingCanvas from '../components/PracticeWritingCanvas'
+import JournalField from '../components/ui/JournalField'
+import RoundNextButton from '../components/ui/RoundNextButton'
+import TrackerArtStart from '../components/tracker-art/TrackerArtStart'
 import BackButton from '../components/BackButton'
 import { platform } from '../platform'
 import { findLilaCard, LILA_DISCOVER_CARDS } from '../data/lilaDiscoverCards'
@@ -58,6 +60,9 @@ function StageShell({ children, title, onBack }) {
 function Intro({ onStart }) {
   return (
       <div className="flex flex-1 flex-col">
+        <div className="mx-lila-intro-art" aria-hidden="true">
+          <TrackerArtStart className="mx-lila-intro-art-svg" />
+        </div>
         <h1 className="mx-type-flow-title mt-2 text-cream">Когда неясно, с чего начать</h1>
         <p className="mx-type-flow-body mt-3 max-w-[34ch] text-muted">
           Сначала опиши ситуацию своими словами. Затем выбери одну тему, чтобы начать разговор со
@@ -73,6 +78,46 @@ function Intro({ onStart }) {
           </button>
         </div>
       </div>
+  )
+}
+
+function QueryStage({ query, setQuery, onSubmit }) {
+  const fieldRef = useRef(null)
+
+  useEffect(() => {
+    const focusField = () => fieldRef.current?.focus({ preventScroll: true })
+    const frame = window.requestAnimationFrame(focusField)
+    const retry = window.setTimeout(focusField, 80)
+    return () => {
+      window.cancelAnimationFrame(frame)
+      window.clearTimeout(retry)
+    }
+  }, [])
+
+  return (
+    <div className="mx-lila-query-stage flex flex-1 flex-col">
+      <JournalField
+        question="Что сейчас хочешь разобрать?"
+        hint="Опиши ситуацию своими словами. Достаточно нескольких предложений — без правильной формулировки."
+      />
+      <textarea
+        ref={fieldRef}
+        className="mx-lila-query-field"
+        value={query}
+        onChange={e => setQuery(e.target.value)}
+        placeholder="Например: я откладываю разговор и не понимаю, как начать…"
+        aria-label="Опиши ситуацию для разговора со Следопытом"
+        data-testid="lila-query-input"
+      />
+      <div className="mx-lila-query-submit-zone mt-auto flex justify-end pt-4">
+        <RoundNextButton
+          onClick={onSubmit}
+          disabled={!query.trim()}
+          label="Выбрать тему"
+          testId="lila-query-submit"
+        />
+      </div>
+    </div>
   )
 }
 
@@ -195,19 +240,7 @@ export default function LilaDiscoverFlow({ userId, onBack, onOpenJournal }) {
         {stage === 'intro' ? <Intro onStart={startQuery} /> : stage === 'theme' ? (
           <ThemePicker query={query} selectedCardId={selectedCardId} onPick={selectTheme} />
         ) : (
-        <PracticeWritingCanvas
-          question="Что сейчас хочешь разобрать?"
-          description="Опиши ситуацию своими словами. Достаточно нескольких предложений — без правильной формулировки."
-          value={query}
-          onChange={setQuery}
-          placeholder="Например: я откладываю разговор и не понимаю, как начать…"
-          ariaLabel="Опиши ситуацию для разговора со Следопытом"
-          autoFocus
-          submitLabel="Выбрать тему"
-          submitDisabled={!query.trim()}
-          onSubmit={continueToTheme}
-          className="mx-lila-query-canvas min-h-0 flex-1"
-        />
+        <QueryStage query={query} setQuery={setQuery} onSubmit={continueToTheme} />
         )}
       </StageShell>
     )

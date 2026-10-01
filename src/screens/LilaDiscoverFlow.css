@@ -23,56 +23,57 @@
   background: rgb(var(--c-cream) / 0.04);
 }
 
-.mx-lila-query-canvas {
-  box-sizing: border-box;
+/* ── Иллюстрация старта Следопыта (Stoic-стиль, 100×120) ── */
+.mx-lila-intro-art {
+  display: flex;
+  min-height: clamp(140px, 25dvh, 200px);
+  align-items: center;
+  justify-content: center;
+  padding-top: var(--mx-space-2);
+}
+
+.mx-lila-intro-art-svg {
+  width: auto;
+  height: 180px;
+  max-height: 100%;
+  aspect-ratio: 100 / 120;
+  flex: none;
+}
+
+/* ── Экран вопроса (JournalField + textarea + RoundNextButton) ── */
+.mx-lila-query-stage .mx-journal-field__question {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.mx-lila-query-field {
+  flex: 1;
   min-height: 0;
-}
-
-.mx-lila-query-canvas .practice-writing-canvas {
-  height: 100%;
-  min-height: 0;
-  padding: 0 20px;
-}
-
-.mx-lila-query-canvas .practice-writing-canvas__question {
-  margin-top: 12px;
-  font-family: inherit;
-  font-size: var(--mx-type-hero-size);
-  font-weight: 600;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-}
-
-.mx-lila-query-canvas .practice-writing-canvas__description {
-  max-width: 34ch;
-  margin-top: 10px;
-  padding-left: 0;
-  border-left: 0;
-  font-family: inherit;
-  font-size: var(--mx-type-body-size);
-  line-height: 1.45;
-}
-
-.mx-lila-query-canvas .practice-writing-canvas__field {
-  min-height: 0;
-  margin-top: 12px;
-  padding-bottom: 76px;
-  font-family: inherit;
-  font-size: var(--mx-type-control-size);
-  line-height: 1.45;
-  caret-color: rgb(var(--c-gold) / 0.35);
-}
-
-.mx-lila-query-canvas .practice-writing-canvas__field:focus,
-.mx-lila-query-canvas .practice-writing-canvas__field:focus-visible {
+  width: 100%;
+  background: transparent;
+  border: 0;
   outline: 0;
+  resize: none;
+  -webkit-appearance: none;
+  appearance: none;
+  font-size: 16px;
+  line-height: 1.5;
+  color: rgb(var(--c-text));
+  padding: 0;
+}
+
+.mx-lila-query-field::placeholder {
+  color: rgb(var(--c-faint));
+}
+
+.mx-lila-query-field:focus,
+.mx-lila-query-field:focus-visible {
+  outline: none;
   box-shadow: none;
 }
 
-.mx-lila-query-canvas .practice-writing-canvas__dock {
-  right: 20px;
-  bottom: max(12px, var(--app-safe-bottom, env(safe-area-inset-bottom, 0px)));
-  left: 20px;
+.mx-lila-query-submit-zone {
+  padding-bottom: max(0px, var(--app-safe-bottom, env(safe-area-inset-bottom, 0px)));
 }
 
 .mx-lila-context {
@@ -109,11 +110,11 @@
 }
 
 @media (max-height: 650px) {
-  .mx-lila-query-canvas .practice-writing-canvas__question {
-    font-size: var(--mx-type-section-size);
+  .mx-lila-intro-art {
+    min-height: 120px;
   }
 
-  .mx-lila-query-canvas .practice-writing-canvas__description {
-    margin-top: 6px;
+  .mx-lila-intro-art-svg {
+    height: 140px;
   }
 }
