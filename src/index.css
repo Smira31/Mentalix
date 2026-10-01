@@ -1689,11 +1689,6 @@ button.mx-demo-telegram-chrome__pill {
     transform: scale(0.86);
     transform-origin: top center;
   }
-  /* Фиксированный тулбар демо перекрывает верх фрейма — шапка Telegram
-     живёт под ним, чтобы «‹ Назад» оставалась доступной. */
-  .mx-demo-telegram-chrome {
-    top: 70px;
-  }
   .mx-preview-demo-note {
     display: none;
   }
