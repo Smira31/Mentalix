@@ -1,0 +1,820 @@
+/* ── Путь героя: курс из 16 шагов ── */
+
+.mx-hero-journey {
+  box-sizing: border-box;
+  min-height: 0;
+}
+
+/* ── общие элементы ── */
+
+.mx-hj-eyebrow {
+  font-family: var(--font-label, 'Manrope', sans-serif);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgb(var(--c-muted));
+}
+
+/* ── A. Карта курса ── */
+
+.mx-hj-map__head {
+  padding-top: 8px;
+}
+
+.mx-hj-map__title {
+  font-family: 'Onest', sans-serif;
+  font-size: 36px;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: rgb(var(--c-text));
+  margin-top: 8px;
+}
+
+.mx-hj-map__desc {
+  font-size: 15px;
+  line-height: 1.45;
+  color: rgb(var(--c-muted));
+  margin-top: 12px;
+}
+
+.mx-hj-map__progress {
+  margin-top: 24px;
+}
+
+.mx-hj-map__progress-text {
+  font-size: 13px;
+  color: rgb(var(--c-muted));
+}
+
+.mx-hj-map__segments {
+  display: flex;
+  gap: 3px;
+  margin-top: 8px;
+}
+
+.mx-hj-segment {
+  height: 4px;
+  flex: 1;
+  border-radius: 999px;
+  background: rgb(var(--c-border));
+}
+
+.mx-hj-segment.is-done {
+  background: rgb(var(--c-gold));
+}
+
+/* ── карточка «Следующий шаг» ── */
+
+.mx-hj-next-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  margin-top: 20px;
+  padding: 20px;
+  border-radius: 24px;
+  background: rgb(var(--c-card-raised));
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 140ms ease;
+}
+
+.mx-hj-next-card:active {
+  transform: scale(0.98);
+}
+
+.mx-hj-next-card__label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgb(var(--c-muted));
+}
+
+.mx-hj-next-card__title {
+  font-family: 'Onest', sans-serif;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: rgb(var(--c-text));
+  margin-top: 4px;
+}
+
+.mx-hj-next-card__sub {
+  font-size: 13px;
+  color: rgb(var(--c-muted));
+}
+
+.mx-hj-next-card__meta {
+  font-size: 12px;
+  color: rgb(var(--c-faint));
+  margin-top: 2px;
+}
+
+.mx-hj-next-card__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+  align-self: flex-start;
+  font-size: 14px;
+}
+
+/* ── главы ── */
+
+.mx-hj-chapters {
+  margin-top: 24px;
+}
+
+.mx-hj-chapter {
+  padding: 16px 0;
+  border-top: 1px solid rgb(var(--c-border));
+}
+
+.mx-hj-chapter__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.mx-hj-chapter__title-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mx-hj-chapter__roman {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgb(var(--c-gold));
+}
+
+.mx-hj-chapter__name {
+  font-family: 'Onest', sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: rgb(var(--c-text));
+}
+
+.mx-hj-chapter__subtitle {
+  font-size: 13px;
+  color: rgb(var(--c-muted));
+}
+
+.mx-hj-chapter__count {
+  font-size: 13px;
+  color: rgb(var(--c-muted));
+  white-space: nowrap;
+  margin-top: 2px;
+}
+
+.mx-hj-chapter__expand {
+  margin-top: 12px;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 13px;
+  color: rgb(var(--c-muted));
+  cursor: pointer;
+}
+
+/* ── вертикальный путь шагов ── */
+
+.mx-hj-chapter__path {
+  display: flex;
+  flex-direction: column;
+  margin-top: 16px;
+}
+
+.mx-hj-step-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 8px 0;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.mx-hj-step-row:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.mx-hj-step-row__left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.mx-hj-step-row__line {
+  width: 2px;
+  height: 100%;
+  min-height: 16px;
+  flex: 1;
+  background: rgb(var(--c-border));
+}
+
+.mx-hj-step-row:first-child .mx-hj-step-row__line {
+  display: none;
+}
+
+.mx-hj-dot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.mx-hj-dot--completed {
+  background: rgb(var(--c-gold));
+  color: rgb(var(--c-bg));
+}
+
+.mx-hj-dot--current {
+  background: transparent;
+  border: 2px solid rgb(var(--c-gold));
+  box-shadow: 0 0 0 4px rgb(var(--c-gold) / 0.15);
+  color: rgb(var(--c-text));
+}
+
+.mx-hj-dot--locked {
+  background: transparent;
+  border: 1px solid rgb(var(--c-border));
+  color: rgb(var(--c-faint));
+}
+
+.mx-hj-dot__num {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.mx-hj-step-row__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.mx-hj-step-row__name {
+  font-size: 15px;
+  font-weight: 500;
+  color: rgb(var(--c-text));
+}
+
+.mx-hj-step-row__sub {
+  font-size: 13px;
+  color: rgb(var(--c-muted));
+}
+
+/* ── карточка финала ── */
+
+.mx-hj-finale-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: 20px;
+  padding: 24px 20px;
+  border-radius: 24px;
+  background: rgb(var(--c-card));
+  border: 1px solid rgb(var(--c-border));
+  text-align: center;
+}
+
+.mx-hj-finale-card__icon {
+  color: rgb(var(--c-faint));
+}
+
+.mx-hj-finale-card__title {
+  font-family: 'Onest', sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: rgb(var(--c-text));
+}
+
+.mx-hj-finale-card__hint {
+  font-size: 13px;
+  color: rgb(var(--c-muted));
+}
+
+/* ── общая картинка шага на всю ширину ── */
+
+.mx-hj-hero-image {
+  position: relative;
+  width: calc(100% + 2 * var(--mx-screen-x));
+  margin-left: calc(-1 * var(--mx-screen-x));
+  margin-right: calc(-1 * var(--mx-screen-x));
+  aspect-ratio: 390 / 300;
+  overflow: hidden;
+}
+
+.mx-hj-hero-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.mx-hj-hero-image__back {
+  position: absolute;
+  top: 10px;
+  left: var(--mx-screen-x);
+  z-index: 2;
+}
+
+/* ── B. Вход в шаг: колонка на всю высоту, без скролла ── */
+
+.mx-hj-step-intro {
+  flex: 1;
+  min-height: 0;
+}
+
+/* Картинка гибкая: 180–260, сжимается раньше текста */
+.mx-hj-step-intro .mx-hj-hero-image {
+  flex: 1 1 260px;
+  min-height: 180px;
+  max-height: 260px;
+  aspect-ratio: auto;
+}
+
+.mx-hj-step-intro .mx-hj-step-intro__image {
+  flex: 1 1 260px;
+  min-height: 180px;
+  max-height: 260px;
+  height: auto;
+}
+
+.mx-hj-step-intro__image {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 200px;
+  margin-top: 16px;
+  border-radius: 24px;
+  background: rgb(var(--c-card));
+  overflow: hidden;
+}
+
+.mx-hj-step-intro__glyph {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mx-hj-step-intro__glyph svg {
+  width: 56px;
+  height: 56px;
+}
+
+.mx-hj-step-intro__image-caption {
+  font-size: 12px;
+  color: rgb(var(--c-faint));
+}
+
+.mx-hj-step-intro__text {
+  flex-shrink: 0;
+  /* Свободная высота уходит в зазор между картинкой и текстом */
+  margin-top: auto;
+}
+
+.mx-hj-step-intro__label {
+  font-family: var(--font-label, 'Manrope', sans-serif);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgb(var(--c-muted));
+}
+
+.mx-hj-step-intro__title {
+  font-family: 'Onest', sans-serif;
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1.15;
+  color: rgb(var(--c-text));
+  margin-top: 8px;
+}
+
+.mx-hj-step-intro__subtitle {
+  font-size: 15px;
+  font-weight: 400;
+  color: rgb(var(--c-muted));
+  margin-top: 8px;
+}
+
+.mx-hj-step-intro__desc {
+  font-size: 16px;
+  line-height: 1.6;
+  color: rgb(var(--c-muted));
+  margin-top: 20px;
+}
+
+.mx-hj-step-intro__flow {
+  font-size: 15px;
+  font-weight: 400;
+  color: rgb(var(--c-muted));
+  margin-top: 16px;
+}
+
+.mx-hj-step-intro__cta {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-top: 24px;
+  font-size: 15px;
+}
+
+/* ── общая шапка C–F ── */
+
+.mx-hj-step-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
+  margin-bottom: 12px;
+}
+
+.mx-hj-step-header__row {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+
+.mx-hj-step-header__label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgb(var(--c-gold));
+}
+
+.mx-hj-step-header__dots {
+  display: flex;
+  gap: 6px;
+}
+
+.mx-hj-step-header__dot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgb(var(--c-border));
+}
+
+.mx-hj-step-header__dot.is-active {
+  background: rgb(var(--c-text));
+}
+
+/* ── C. Как это проявляется ── */
+
+.mx-hj-signs__title {
+  font-family: 'Onest', sans-serif;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.15;
+  color: rgb(var(--c-text));
+}
+
+.mx-hj-signs__sub {
+  font-size: 14px;
+  color: rgb(var(--c-muted));
+  margin-top: 8px;
+}
+
+.mx-hj-signs__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.mx-hj-sign-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 16px 18px;
+  border-radius: 20px;
+  background: rgb(var(--c-card));
+  border: 1px solid rgb(var(--c-border));
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 140ms ease,
+    background 140ms ease,
+    border-color 140ms ease;
+}
+
+.mx-hj-sign-card:active {
+  transform: scale(0.98);
+}
+
+.mx-hj-sign-card.is-checked {
+  background: rgb(var(--c-card-raised));
+  border-color: rgb(var(--c-gold));
+}
+
+.mx-hj-sign-card__text {
+  font-size: 15px;
+  line-height: 1.4;
+  color: rgb(var(--c-text));
+  flex: 1;
+}
+
+.mx-hj-sign-card__check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  background: transparent;
+  border: 1px solid rgb(var(--c-border));
+}
+
+.mx-hj-sign-card.is-checked .mx-hj-sign-card__check {
+  background: rgb(var(--c-gold));
+  border-color: rgb(var(--c-gold));
+  color: rgb(var(--c-bg));
+}
+
+.mx-hj-signs__footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.mx-hj-signs__count {
+  font-size: 13px;
+  color: rgb(var(--c-muted));
+  text-align: center;
+}
+
+.mx-hj-signs__cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  font-size: 15px;
+}
+
+/* ── D. Два пути ── */
+
+.mx-hj-paths__title {
+  font-family: 'Onest', sans-serif;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.15;
+  color: rgb(var(--c-text));
+  margin-bottom: 20px;
+}
+
+.mx-hj-path-card {
+  padding: 18px 20px;
+  border-radius: 24px;
+  margin-bottom: 12px;
+}
+
+.mx-hj-path-card--shadow {
+  background: rgb(var(--c-card));
+  border: 1px dashed rgb(var(--c-border));
+}
+
+.mx-hj-path-card--hero {
+  background: rgb(var(--c-card-raised));
+  border: 1px solid rgb(var(--c-gold));
+}
+
+.mx-hj-path-card__label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgb(var(--c-muted));
+  margin-bottom: 8px;
+}
+
+.mx-hj-path-card--hero .mx-hj-path-card__label {
+  color: rgb(var(--c-gold));
+}
+
+.mx-hj-path-card__action {
+  font-size: 15px;
+  line-height: 1.45;
+  color: rgb(var(--c-text));
+}
+
+.mx-hj-path-card--shadow .mx-hj-path-card__action {
+  color: rgb(var(--c-muted));
+}
+
+.mx-hj-path-card__divider {
+  height: 1px;
+  background: rgb(var(--c-border));
+  margin: 12px 0;
+}
+
+.mx-hj-path-card__outcome {
+  font-size: 13px;
+  line-height: 1.4;
+  color: rgb(var(--c-muted));
+}
+
+.mx-hj-paths__quote {
+  margin: 32px 0 0;
+  padding: 0;
+  border: none;
+}
+
+.mx-hj-paths__quote p {
+  font-size: 18px;
+  font-weight: 400;
+  font-style: italic;
+  line-height: 1.5;
+  color: rgb(var(--c-text));
+}
+
+.mx-hj-paths__quote cite {
+  display: block;
+  font-size: 12px;
+  font-style: normal;
+  color: rgb(var(--c-muted));
+  margin-top: 8px;
+}
+
+.mx-hj-paths__cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-top: 24px;
+  font-size: 15px;
+}
+
+/* ── E/F. Запиши / Одно действие ── */
+
+.mx-hj-write {
+  margin-top: 0;
+}
+
+.mx-hj-write__prompt {
+  font-family: 'Onest', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: rgb(var(--c-text));
+}
+
+.mx-hj-write__hint {
+  font-size: 14px;
+  line-height: 1.45;
+  color: rgb(var(--c-muted));
+  margin-top: 14px;
+  padding-left: 12px;
+  border-left: 2px solid rgb(var(--c-border));
+}
+
+/* Поле: 17/400, межстрочный 1.5, левый край по вопросу */
+.mx-hj-write-editor {
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+/* Пока поле пустое, «→» на «Запиши» неактивна: фон card2, стрелка muted */
+.mx-hj-write-input .mx-keyboard-submit:disabled {
+  border-color: rgb(var(--c-border)) !important;
+  background: rgb(var(--c-card2)) !important;
+  color: rgb(var(--c-muted)) !important;
+  opacity: 1;
+  box-shadow: none;
+}
+
+/* ── G. Шаг пройден ── */
+
+.mx-hj-complete {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.mx-hj-complete__circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 96px;
+  height: 96px;
+  border-radius: 999px;
+  background: rgb(var(--c-gold));
+  color: rgb(var(--c-bg));
+  margin-bottom: 20px;
+}
+
+.mx-hj-complete__title {
+  font-family: 'Onest', sans-serif;
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1.15;
+  color: rgb(var(--c-text));
+  margin-top: 4px;
+}
+
+.mx-hj-complete__phrase {
+  font-size: 15px;
+  color: rgb(var(--c-muted));
+  margin-top: 8px;
+}
+
+.mx-hj-complete__chapter-card {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+  margin-top: 24px;
+  padding: 18px 20px;
+  border-radius: 24px;
+  background: rgb(var(--c-card));
+}
+
+.mx-hj-complete__chapter-segs {
+  display: flex;
+  gap: 3px;
+  width: 100%;
+}
+
+.mx-hj-complete__chapter-done {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgb(var(--c-gold));
+}
+
+.mx-hj-complete__chapter-progress {
+  font-size: 14px;
+  color: rgb(var(--c-muted));
+}
+
+.mx-hj-complete__next-chapter {
+  font-size: 13px;
+  color: rgb(var(--c-text));
+}
+
+.mx-hj-complete__diary-link {
+  display: block;
+  margin-top: 16px;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 14px;
+  color: rgb(var(--c-gold));
+  cursor: pointer;
+  text-align: center;
+}
+
+.mx-hj-complete__footer {
+  flex-shrink: 0;
+  padding-top: 16px;
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
+}
+
+.mx-hj-complete__cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  font-size: 15px;
+}
