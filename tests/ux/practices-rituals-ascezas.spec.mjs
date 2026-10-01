@@ -83,10 +83,12 @@ test('экран ритуала: неделя, «Отметить вчера», 
   await expect(page.getByTestId('practice-accordion-how')).toBeVisible()
   // Пустая «Заметка» не рисуется вовсе: у демо-ритуала заметки нет.
   await expect(page.getByTestId('practice-accordion-note')).toHaveCount(0)
-  // Необязательная строка «+ Оптимум» живёт в карточке «Зачем».
+  // Необязательная строка «+ Оптимум» живёт в карточке «Как», рядом с минимумом.
+  await page.getByTestId('practice-accordion-how').click()
   await expect(page.getByTestId('practice-detail-field-optimal_version')).toContainText(
     '+ Оптимум'
   )
+  await page.getByTestId('practice-accordion-how').click()
 
   // Меню «…» даёт правку, знак и удаление.
   await page.getByTestId('practice-detail-menu').click()
