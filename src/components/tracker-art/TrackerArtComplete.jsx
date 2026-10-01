@@ -1,75 +1,61 @@
 /*
- * Иллюстрация финального экрана Следопыта:
- * тропа со следами, ведущая к флажку. Тонкие светлые линии, монохром, без заливок.
- * Тот же размер и место, что у завершения чек-ина (100×120).
+ * Иллюстрация финального экрана Следопыта / «Записи».
+ * Стиль Stoic: залитая «планета»-холм с воткнутым флажком
+ * и кольцом-орбитой из следов. Тот же размер (100×120), что у арт-завершения.
  */
 export default function TrackerArtComplete({ className = '' }) {
   return (
     <svg
       className={className}
       viewBox="0 0 100 120"
-      fill="none"
       aria-hidden="true"
       preserveAspectRatio="xMidYMid meet"
     >
-      {/* Земля */}
-      <path
-        d="M4 108 Q50 104 96 108"
-        stroke="rgb(var(--c-line-secondary))"
-        strokeWidth="0.8"
-        strokeLinecap="round"
-        opacity="0.25"
+      {/* ── Кольцо-орбита (тонкая залитая дорожка) ── */}
+      <ellipse
+        cx="50"
+        cy="72"
+        rx="42"
+        ry="14"
+        fill="none"
+        stroke="rgb(var(--c-text))"
+        strokeWidth="4"
+        opacity="0.35"
       />
 
-      {/* Извилистая тропа */}
+      {/* ── Следы-точки на орбите ── */}
+      <g fill="rgb(var(--c-text))">
+        <ellipse cx="14" cy="74" rx="2.5" ry="4" />
+        <ellipse cx="86" cy="74" rx="2.5" ry="4" />
+        <ellipse cx="30" cy="64" rx="2.5" ry="4" />
+        <ellipse cx="70" cy="64" rx="2.5" ry="4" />
+        <ellipse cx="42" cy="60" rx="2" ry="3" />
+        <ellipse cx="58" cy="60" rx="2" ry="3" />
+      </g>
+
+      {/* ── Планета-холм (залитый купол) ── */}
       <path
-        d="M16 102 C30 90 24 74 38 64 C52 54 44 40 58 30 C64 24 62 18 68 14"
-        stroke="rgb(var(--c-line))"
-        strokeWidth="1.2"
-        strokeLinecap="round"
+        d="M18 90 A32 32 0 0 1 82 90 L82 120 L18 120 Z"
+        fill="rgb(var(--c-text))"
       />
 
-      {/* Следы вдоль тропы */}
-      {/* Пара 1 */}
-      <ellipse cx="20" cy="94" rx="1.8" ry="2.8" stroke="rgb(var(--c-line))" strokeWidth="0.9" />
-      <ellipse cx="25" cy="90" rx="1.8" ry="2.8" stroke="rgb(var(--c-line))" strokeWidth="0.9" />
+      {/* ── Флажок на холме ── */}
+      <g fill="rgb(var(--c-text))">
+        {/* Древко */}
+        <rect x="48" y="32" width="3.5" height="40" rx="1" />
+        {/* Флажок-треугольник */}
+        <path d="M51.5 34 L68 38 L60 44 L51.5 44 Z" />
+      </g>
 
-      {/* Пара 2 */}
-      <ellipse cx="28" cy="74" rx="1.8" ry="2.8" stroke="rgb(var(--c-line))" strokeWidth="0.9" />
-      <ellipse cx="33" cy="70" rx="1.8" ry="2.8" stroke="rgb(var(--c-line))" strokeWidth="0.9" />
+      {/* Тёмные детали на планете ── */}
+      <g fill="rgb(var(--c-bg))">
+        {/* Кратер-прорезь */}
+        <ellipse cx="38" cy="100" rx="5" ry="2.5" />
+        <ellipse cx="62" cy="106" rx="4" ry="2" />
+      </g>
 
-      {/* Пара 3 */}
-      <ellipse cx="44" cy="54" rx="1.8" ry="2.8" stroke="rgb(var(--c-line))" strokeWidth="0.9" />
-      <ellipse cx="49" cy="50" rx="1.8" ry="2.8" stroke="rgb(var(--c-line))" strokeWidth="0.9" />
-
-      {/* Пара 4 */}
-      <ellipse cx="54" cy="34" rx="1.8" ry="2.8" stroke="rgb(var(--c-line))" strokeWidth="0.9" />
-      <ellipse cx="59" cy="30" rx="1.8" ry="2.8" stroke="rgb(var(--c-line))" strokeWidth="0.9" />
-
-      {/* Древко флажка */}
-      <path
-        d="M68 14 L68 50"
-        stroke="rgb(var(--c-line))"
-        strokeWidth="1.2"
-        strokeLinecap="round"
-      />
-
-      {/* Флажок */}
-      <path
-        d="M68 14 L86 18 L78 24 L86 30 L68 26 Z"
-        stroke="rgb(var(--c-line))"
-        strokeWidth="1.2"
-        strokeLinejoin="round"
-      />
-
-      {/* Основание древка — небольшой камень */}
-      <path
-        d="M64 50 L72 50"
-        stroke="rgb(var(--c-line-secondary))"
-        strokeWidth="0.8"
-        strokeLinecap="round"
-        opacity="0.4"
-      />
+      {/* Тёмная тень-прорезь под флажком */}
+      <rect x="46" y="68" width="8" height="3" rx="1.5" fill="rgb(var(--c-bg))" />
     </svg>
   )
 }
