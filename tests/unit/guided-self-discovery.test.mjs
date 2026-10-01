@@ -62,8 +62,9 @@ test('MXL-SELF-DISCOVERY-002 blurs active field and waits for viewport before co
   assert.match(flow, /disabled=\{!answered\(value\) \|\| pendingComplete\}/)
 })
 
-test('MXL-SELF-DISCOVERY-002 uses approved CTA «Вернуться в журнал»', () => {
-  assert.match(flow, /Вернуться в журнал/)
+test('MXL-SELF-DISCOVERY-002 uses approved CTA «Сохранить и выйти»', () => {
+  assert.match(flow, /Сохранить и выйти/)
+  assert.doesNotMatch(flow, /Вернуться в журнал/)
   assert.doesNotMatch(flow, /Вернуться в дневник/)
 })
 

@@ -200,7 +200,7 @@ test.describe('MXL-246 Journal responsive contract (tablet/desktop)', () => {
         }
       }
 
-      await expect(page.getByText('Хорошо. Следующий шаг готов.')).toBeVisible()
+      await expect(page.getByText('Готово! Следующий шаг готов.')).toBeVisible()
       await assertNoHorizontalOverflow(page)
       await screenshot(page, viewport, '03-journal-complete')
 

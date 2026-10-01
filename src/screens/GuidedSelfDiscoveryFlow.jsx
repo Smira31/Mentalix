@@ -292,7 +292,7 @@ export default function GuidedSelfDiscoveryFlow({ userId, onClose }) {
             className="cta-pill"
             data-testid="gsd-complete-close"
           >
-            Вернуться в журнал
+            Сохранить и выйти
           </button>
         </div>
       )
