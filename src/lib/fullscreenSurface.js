@@ -242,11 +242,13 @@ export function useFullscreenSurface({ fullFrame = false } = {}) {
     paddingBottom: 'var(--app-safe-bottom)',
 
     height:
-      frameHeight !== null
-        ? `${frameHeight}px`
-        : visibleHeight
-          ? `${visibleHeight}px`
-          : '100dvh',
+      frameFull
+        ? `${demoFrameHeight}px`
+        : frameHeight !== null
+          ? `${frameHeight}px`
+          : visibleHeight
+            ? `${visibleHeight}px`
+            : '100dvh',
   }
 
   return {

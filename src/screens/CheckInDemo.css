@@ -1256,6 +1256,19 @@
   }
 }
 
+/*
+ * Текстовые вопросы разбора — слева и сверху панели, не по центру
+ * (центрирование держится на margin auto у прямых детей панели).
+ */
+.mx-checkin-question--evening-card {
+  text-align: left;
+}
+
+.mx-demo-checkin__body:not(.is-editor) .mx-step-slide__panel > .mx-checkin-question--evening-card {
+  margin-top: 0;
+  margin-bottom: auto;
+}
+
 /* ── Вечерний «Разбор дня» — эмоции: сетка 2 колонки ── */
 
 .mx-emotion-grid {
@@ -1291,4 +1304,13 @@
   background: rgb(var(--c-text));
   color: rgb(var(--c-bg));
   border-color: rgb(var(--c-text));
+}
+
+/*
+ * Выбранная эмоция: без прямоугольной золотой рамки глобального
+ * focus-visible — только светлое кольцо по форме плитки.
+ */
+.mx-emotion-grid__tile:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25);
 }

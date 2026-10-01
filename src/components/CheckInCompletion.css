@@ -139,8 +139,22 @@
  * помещались в область контента без внутренней прокрутки.
  */
 .mx-completion--evening {
-  padding-top: clamp(16px, calc(37dvh - 180px), 64px);
+  padding-top: clamp(16px, calc(37dvh - 220px), 48px);
   padding-bottom: 8px;
+}
+
+/* Луна «Разбора дня» — крупнее утренней, по эталону Stoic. */
+.mx-completion--evening .mx-completion__art {
+  width: 150px;
+  height: 180px;
+}
+
+.mx-completion--evening .mx-completion__title {
+  margin-top: 16px;
+}
+
+.mx-completion--evening .mx-completion__date-pill {
+  margin-top: 12px;
 }
 
 .mx-completion--evening .mx-completion__title {
@@ -172,7 +186,14 @@
 }
 
 .mx-completion--evening .mx-completion__feedback {
-  margin-top: 32px;
+  margin-top: 24px;
+}
+
+/* Вечерний низ: меньше резерва под домашнюю полоску — финал и так высокий. */
+.mx-completion-action--evening,
+.mx-demo-checkin .mx-completion-action--evening,
+.mx-fullscreen-surface .mx-completion-action--evening {
+  padding: 0 28px calc(var(--app-safe-bottom) + 16px);
 }
 
 .mx-completion--evening .mx-completion__feedback p {
