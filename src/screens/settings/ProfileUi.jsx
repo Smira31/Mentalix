@@ -86,7 +86,7 @@ export function ProfilePage({ title, isRoot = false, onBack, testId, children })
         data-testid={testId}
       >
         <div className="mx-profile-page__bar">
-          {!isRoot && showOwnButton && (
+          {!isRoot && (
             <ScreenBack
               onBack={onBack}
               testId="profile-close-button"
