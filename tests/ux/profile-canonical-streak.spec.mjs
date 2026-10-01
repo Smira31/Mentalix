@@ -84,7 +84,7 @@ for (const { name, response, current, best, next } of [
       }
       await expect(about.getByText('Дней в системе', { exact: true }).locator('../..')).toContainText('77')
       await expect(about.locator('.mx-profile-row', { hasText: 'Всего чек-инов' })).toContainText('42')
-      await expect(page.getByTestId('profile-about-stats')).toContainText(`77 дней в системе · 42 ${checkinWord(42)}`)
+      // Подпись статистики под именем убрана — проверяем только строки в «Статистике».
       await expect(about.getByRole('progressbar', { name: next })).toBeVisible()
       // PR2: лестница званий серии больше не показывается среди ближайших вех.
       await expect(about.getByTestId('milestone-bar').filter({ hasText: /«(Держится|Неделя ровно)»/ })).toHaveCount(0)

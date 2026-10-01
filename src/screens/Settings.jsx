@@ -589,7 +589,7 @@ export default function Settings({
           <ProfileCard>
             <ProfileRow
               title="Когда показывать разбор"
-              subtitle="«Сегодня» сам предложит подвести итоги"
+              subtitle="«Сегодня» предложит итоги"
               value={hh(reviewHour)}
               testId="profile-row-review-hour"
             />

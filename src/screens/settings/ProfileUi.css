@@ -4,9 +4,9 @@
   /* Экраны профиля монохромны: акцент («Лазурный» и др.) их не красит.
      Выбор акцента в «оформлении» остаётся — образцы рисуются своим hex. */
   --c-gold: var(--c-text);
-  /* Крупный заголовок — 16 px под нижним краем шапки Telegram
-     (верх контента App). Одна переменная для всех экранов профиля. */
-  --mx-profile-title-gap: 16px;
+  /* Крупный заголовок — 8 px под нижним краем шапки Telegram
+     (замер Stoic, DESIGN_SYSTEM.md §5.4). Токен из <Screen>. */
+  --mx-profile-title-gap: var(--mx-screen-title-gap, 8px);
   /* Высота свёрнутой шапки и затухание под ней. */
   --mx-profile-bar-height: 44px;
   --mx-profile-bar-fade: 16px;
@@ -22,7 +22,7 @@
 /* Web: своя круглая кнопка занимает строку 56 px над заголовком. */
 .mx-profile-page--own-button {
   --mx-profile-bar-height: 56px;
-  --mx-profile-title-gap: 4px;
+  --mx-profile-title-gap: 2px;
 }
 
 /* Липкая шапка нулевой высоты: не сдвигает крупный заголовок.
@@ -55,14 +55,15 @@
   background: rgb(var(--c-bg));
   opacity: 0;
   pointer-events: none;
-  transition: opacity 200ms ease;
-  /* PR20: шапка не должна просвечивать — фон глухой, как у Stoic. */
+  transition: opacity 150ms ease;
+  /* Сплошной фон + лёгкий blur: контент уходит под шапку чисто,
+     без просвечивания даже во время перехода. */
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
   isolation: isolate;
 }
 
-/* Плавное затухание вниз: контент уходит под шапку, а не обрезается.
-   PR20: градиент продлевает непрозрачный фон, чтобы подписи секций
-   не перекрывались прилипающим заголовком. */
+/* Продление непрозрачного фона под шапкой — контент уходит под неё. */
 .mx-profile-page__surface::after {
   position: absolute;
   top: 100%;
@@ -74,13 +75,31 @@
   z-index: -1;
 }
 
+/* Тонкий разделитель снизу 0.5px — появляется вместе с заголовком. */
+.mx-profile-page__surface::before {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 0.5px;
+  background: rgb(var(--c-border));
+  content: '';
+  opacity: 0;
+  transition: opacity 150ms ease;
+  z-index: 1;
+}
+
+.mx-profile-page__surface--collapsed::before {
+  opacity: 1;
+}
+
 .mx-profile-page--own-button .mx-profile-page__surface {
   opacity: 1;
 }
 
 .mx-profile-page--own-button .mx-profile-page__surface::after {
   opacity: 0;
-  transition: opacity 200ms ease;
+  transition: opacity 150ms ease;
 }
 
 .mx-profile-page__surface--collapsed,
@@ -96,7 +115,7 @@
   white-space: nowrap;
   text-overflow: ellipsis;
   opacity: 0;
-  transition: opacity 200ms ease;
+  transition: opacity 150ms ease;
 }
 
 .mx-profile-page__surface--collapsed .mx-profile-page__bar-title {
@@ -267,6 +286,11 @@ button.mx-profile-row:active {
 
 /* Длинная подсказка цели не должна сжимать значение справа до многоточия. */
 .mx-profile-row[data-testid='profile-row-writing-goal'] .mx-profile-row__value {
+  flex-shrink: 0;
+}
+
+/* «Когда показывать разбор»: время (19:00) не обрезается. */
+.mx-profile-row[data-testid='profile-row-review-hour'] .mx-profile-row__value {
   flex-shrink: 0;
 }
 
@@ -460,12 +484,12 @@ button.mx-profile-row:active {
   transition: width 500ms ease;
 }
 
-/* Неактивная кнопка оплаты: пока оплата не подключена, не похожа на настоящую. */
+/* Неактивная кнопка оплаты: пока оплата не подключена, не похожа на настоящую.
+   Теперь в footer у <Screen> — без margin-top (отступ задаёт footer). */
 .mx-profile-disabled-cta {
   display: flex;
   width: 100%;
   min-height: 50px;
-  margin-top: 16px;
   align-items: center;
   justify-content: center;
   gap: 8px;
@@ -478,13 +502,18 @@ button.mx-profile-row:active {
   cursor: not-allowed;
 }
 
+/* Footer у ProfilePage — safe-area уже на шелле (useFullscreenSurface),
+   поэтому тут только 16 px как у кнопки завершения чек-ина. */
+.mx-profile-page__footer {
+  padding-bottom: 16px;
+}
+
 /* Главная кнопка экранов профиля — белая с тёмным текстом,
    как «Подробнее» в баннере. */
 .mx-profile-primary {
   display: flex;
   width: 100%;
   min-height: 50px;
-  margin-top: 24px;
   align-items: center;
   justify-content: center;
   border: 0;
@@ -618,7 +647,6 @@ button.mx-profile-row:active {
   display: flex;
   width: 100%;
   height: 50px;
-  margin-top: 24px;
   align-items: center;
   justify-content: center;
   border-radius: 999px;
@@ -630,24 +658,6 @@ button.mx-profile-row:active {
 
 .mx-wtp-save:disabled {
   opacity: 0.4;
-}
-
-/* Прогресс опроса: пройденные шаги белые, остальные серые. */
-.mx-profile-step-progress {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 24px;
-}
-
-.mx-profile-step-progress > span {
-  height: 6px;
-  flex: 1;
-  border-radius: 999px;
-  background: rgb(var(--c-card3));
-}
-
-.mx-profile-step-progress > span[data-done='true'] {
-  background: rgb(var(--c-text));
 }
 
 /* Раскрывающийся раздел («политика и данные.»): строка списка 50 px. */
@@ -716,30 +726,28 @@ button.mx-profile-row:active {
   text-align: center;
 }
 
-/* ── День рождения: один input[type=date] в строке профиля ── */
+/* ── День рождения: значение в стиле строки, невидимый input поверх всей строки ── */
 .mx-profile-date-input {
-  flex: 0 0 auto;
-  min-width: 0;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
   border: 0;
   background: transparent;
-  color: rgb(var(--c-text));
-  font: inherit;
-  font-size: 17px;
-  font-weight: 700;
-  text-align: right;
+  opacity: 0;
   cursor: pointer;
   color-scheme: dark;
 }
 
-.mx-profile-page--sub .mx-profile-date-input {
-  color: rgb(var(--c-muted));
-  font-weight: 400;
-}
-
 .mx-profile-date-input::-webkit-calendar-picker-indicator {
-  filter: invert(0.6);
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   cursor: pointer;
-  opacity: 0.5;
+  opacity: 0;
 }
 
 /* ── Воспоминания: вехи-карточки ── */
@@ -878,6 +886,7 @@ button.mx-profile-row:active {
 @media (prefers-reduced-motion: reduce) {
   .mx-profile-page__surface,
   .mx-profile-page__surface::after,
+  .mx-profile-page__surface::before,
   .mx-profile-page__bar-title,
   .mx-profile-switch,
   .mx-profile-switch::after {

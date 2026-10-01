@@ -1576,6 +1576,11 @@ button.mx-demo-telegram-chrome__pill {
   pointer-events: auto;
 }
 
+/* Фокус после возврата на корень — без обводки; клавиатурный :focus-visible остаётся. */
+button.mx-demo-telegram-chrome__pill:focus:not(:focus-visible) {
+  outline: none;
+}
+
 /* Правая пилюля Telegram: 72×30, «⌄» и «•••» равномерно, без разделителя,
    не кликабельна. */
 .mx-demo-telegram-chrome__pill--menu {

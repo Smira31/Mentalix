@@ -24,7 +24,7 @@ export const TODAY_CARD_LABELS = {
   },
   quote: {
     title: 'Мысль дня',
-    subtitle: 'Цитата в конце экрана',
+    subtitle: 'Карточка после чек-инов',
   },
 }
 

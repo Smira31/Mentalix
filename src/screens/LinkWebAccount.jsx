@@ -1,6 +1,7 @@
 import { platform } from '../platform'
 import { PRODUCTION_WEB_HOST } from '../lib/demoMode'
 import { ProfileBody, ProfilePage } from './settings/ProfileUi'
+import './LinkWebAccount.css'
 
 const BOT_LINK_DEEPLINK = 'https://t.me/Mentalix_club_bot?start=link_web'
 
@@ -42,6 +43,12 @@ export default function LinkWebAccount({ onBack }) {
         >
           Получить код у бота
         </button>
+
+        <div className="mx-profile-panel mx-link-web-soon">
+          <p>
+            Скоро Mentalix можно будет поставить иконкой на телефон и открывать без Telegram.
+          </p>
+        </div>
       </ProfileBody>
     </ProfilePage>
   )

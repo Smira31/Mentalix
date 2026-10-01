@@ -69,10 +69,9 @@ for (const viewport of VIEWPORTS) {
         await back.click()
         await expect(page.getByRole('heading', { name: 'твой профиль.' })).toBeVisible()
 
-        // Закрытие профиля — круглая кнопка web.
-        await page.getByTestId('profile-close-button').click()
-        await expect(page.getByTestId('profile-screen')).toHaveCount(0)
-        await expect(page.getByTestId('today-profile-button')).toBeVisible()
+        // Крестик ✕ на корне профиля убран — в Telegram есть своя «Назад».
+        // В web-режиме (не демо) кнопка «назад» остаётся на под-экранах.
+        // Закрытие корня профиля в демо-режиме не проверяется — нет кнопки.
       } finally {
         await context.close()
       }

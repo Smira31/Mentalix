@@ -8,7 +8,8 @@
 // PR2: строка «Держит форму — До „Находит путь" — N дня» убрана.
 
 import './ProfileBanners.css'
-import { PotentialLockArt, SupportGiftArt, ProfileFeatherArt } from './ProfileBannerArt'
+import { PotentialLockArt, SupportGiftArt } from './ProfileBannerArt'
+import { illustrations } from '../../assets/illustrations'
 
 export function PotentialBanner({ onOpen }) {
   return (
@@ -23,7 +24,7 @@ export function PotentialBanner({ onOpen }) {
       <h2 className="mx-profile-banner__title">Открой весь потенциал Mentalix</h2>
       {/* «Mentalix Pro» не разрывается переносом строки. */}
       <p className="mx-profile-banner__text">
-        {'Все собеседники, полная аналитика и курсы в Mentalix\u00A0Pro'}
+        {'Собеседники без ограничений, курсы и полная аналитика в Mentalix\u00A0Pro'}
       </p>
       <button
         type="button"
@@ -58,6 +59,7 @@ export function SupportBanner({ onOpen }) {
 }
 
 export function WebBanner({ onOpen }) {
+  const FeatherArt = illustrations.profileSiteFeather
   return (
     <button
       type="button"
@@ -65,8 +67,12 @@ export function WebBanner({ onOpen }) {
       data-testid="profile-banner-web"
       onClick={onOpen}
     >
-      {/* Перо справа сверху, обрезано верхним краем карточки. */}
-      <ProfileFeatherArt />
+      {/* Перо справа, видно целиком, по центру по вертикали, наклон по
+          диагонали (кончик вниз-влево). Тап по всей карточке открывает
+          «Связать с сайтом». Стрелка убрана. */}
+      <span className="mx-profile-banner__feather" aria-hidden="true">
+        {FeatherArt && <FeatherArt />}
+      </span>
       {/* Заголовок как в референсе Stoic: «Mentalix» выделен, «на сайте»
           обычным весом, одним размером шрифта, строка одна. */}
       <span className="mx-profile-banner__title">
@@ -74,9 +80,6 @@ export function WebBanner({ onOpen }) {
       </span>
       <span className="mx-profile-banner__text">
         Свяжи аккаунт с сайтом, чтобы записи были и в браузере.
-      </span>
-      <span className="mx-profile-banner__chevron" aria-hidden="true">
-        ›
       </span>
     </button>
   )
