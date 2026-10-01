@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Search, ArrowRight } from 'lucide-react'
 
 import { platform } from '../platform'
 import { fetchPracticesData, peekPracticesData } from '../lib/practicesDataCache'
@@ -7,8 +8,174 @@ import { buildPracticeViewModels } from '../lib/practiceCatalogRegistry'
 import { previewPracticeAction } from '../lib/demoMode'
 
 import PracticeCatalogV2 from '../components/PracticeCatalogV2'
+import SemanticGlyph from '../components/SemanticGlyph'
 
 import './PracticeFlow.css'
+
+const PRACTICE_SEARCH_STYLES = `
+.mx-steps-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+.mx-steps-search-btn {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 50%;
+  background: rgba(255,255,255,0.04);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #fff;
+  cursor: pointer;
+}
+.mx-steps-search-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  flex-direction: column;
+  background: #000;
+}
+.mx-steps-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: max(var(--app-safe-top, env(safe-area-inset-top, 0px)), 16px) 16px 12px;
+}
+.mx-steps-search-input {
+  flex: 1;
+  height: 44px;
+  padding: 0 16px;
+  border: 1px solid #333;
+  border-radius: 999px;
+  background: #1a1a1a;
+  color: #fff;
+  font-size: 16px;
+  outline: none;
+}
+.mx-steps-search-input::placeholder { color: #666; }
+.mx-steps-search-close {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+}
+.mx-steps-search-results {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 16px;
+}
+.mx-steps-search-result {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 0;
+  border-bottom: 1px solid #1a1a1a;
+  background: transparent;
+  color: #fff;
+  text-align: left;
+  cursor: pointer;
+}
+.mx-steps-search-result span {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border-radius: 50%;
+  background: #1a1a1a;
+  flex-shrink: 0;
+}
+.mx-steps-search-result span .mx-semantic-glyph { width: 80%; height: 80%; }
+.mx-steps-search-result strong { font-size: 16px; font-weight: 500; }
+.mx-steps-search-empty { padding: 40px 16px; text-align: center; color: #666; font-size: 14px; }
+`
+
+function PracticeSearchOverlay({ practices, themes, onOpenPractice, onOpenTheme, onClose }) {
+  const [query, setQuery] = useState('')
+  const q = query.trim().toLowerCase()
+
+  const matchedPractices = q
+    ? practices.filter(
+        p =>
+          !p.soon && (p.title?.toLowerCase().includes(q) || p.subtitle?.toLowerCase().includes(q))
+      )
+    : []
+  const matchedThemes = q
+    ? themes.filter(
+        t => t.title?.toLowerCase().includes(q) || t.subtitle?.toLowerCase().includes(q)
+      )
+    : []
+
+  return (
+    <div className="mx-steps-search-overlay">
+      <div className="mx-steps-search-bar">
+        <input
+          type="search"
+          placeholder="Поиск практик и тем"
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+          autoFocus
+          className="mx-steps-search-input"
+        />
+        <button
+          type="button"
+          className="mx-steps-search-close"
+          aria-label="Закрыть поиск"
+          onClick={onClose}
+        >
+          <ArrowRight size={20} />
+        </button>
+      </div>
+      <div className="mx-steps-search-results">
+        {q && matchedPractices.length === 0 && matchedThemes.length === 0 && (
+          <p className="mx-steps-search-empty">Ничего не найдено.</p>
+        )}
+        {matchedPractices.map(p => (
+          <button
+            type="button"
+            key={p.key}
+            className="mx-steps-search-result"
+            onClick={() => {
+              onOpenPractice(p)
+              onClose()
+            }}
+          >
+            <span aria-hidden="true">
+              <SemanticGlyph kind={p.kind || 'journal'} animated={false} />
+            </span>
+            <strong>{p.title}</strong>
+          </button>
+        ))}
+        {matchedThemes.map(t => (
+          <button
+            type="button"
+            key={t.id}
+            className="mx-steps-search-result"
+            onClick={() => {
+              onOpenTheme(t)
+              onClose()
+            }}
+          >
+            <span aria-hidden="true">
+              <SemanticGlyph kind="journal" animated={false} />
+            </span>
+            <strong>{t.title}</strong>
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 import Rituals from './Rituals'
 import Ascezas from './Ascezas'
@@ -24,7 +191,9 @@ function PracticesCatalogLoading() {
       role="status"
       aria-live="polite"
     >
-      <h1 className="font-display mx-type-page text-cream lowercase mb-[28px]">практики.</h1>
+      <div className="mx-steps-header-row">
+        <h1 className="font-display mx-type-page text-cream lowercase">практики.</h1>
+      </div>
       <div className="mx-practices-catalog-loading" aria-hidden="true">
         <span className="mx-practices-catalog-loading__hero" />
         <span className="mx-practices-catalog-loading__label" />
@@ -46,6 +215,19 @@ export default function Practices({
   onRegisterBack,
   onReturnToToday,
 }) {
+  const [searchOpen, setSearchOpen] = useState(false)
+
+  // Инъекция стилей шапки/поиска (один раз)
+  const styleInjected = useRef(false)
+  if (!styleInjected.current) {
+    styleInjected.current = true
+    if (typeof document !== 'undefined') {
+      const el = document.createElement('style')
+      el.textContent = PRACTICE_SEARCH_STYLES
+      document.head.appendChild(el)
+    }
+  }
+
   const [sub, setSub] = useState(() => {
     if (initialSub) return initialSub
     const action = previewPracticeAction()
@@ -215,7 +397,9 @@ export default function Practices({
   if (loadError) {
     return (
       <div className="w-full max-w-md px-[var(--mx-screen-x)]" role="alert">
-        <h1 className="font-display mx-type-page text-cream lowercase">практики.</h1>
+        <div className="mx-steps-header-row">
+          <h1 className="font-display mx-type-page text-cream lowercase">практики.</h1>
+        </div>
         <p className="mt-6 text-[13px] leading-relaxed text-muted">
           Не удалось загрузить практики. Попробуйте ещё раз.
         </p>
@@ -232,9 +416,39 @@ export default function Practices({
 
   const catalogPractices = buildPracticeViewModels({ rituals, ascezas })
 
+  if (searchOpen) {
+    return (
+      <div className="mx-practices-catalog-shell w-full max-w-md px-[var(--mx-screen-x)]">
+        <PracticeSearchOverlay
+          practices={catalogPractices}
+          themes={themes}
+          onOpenPractice={practice => {
+            platform.haptic('light')
+            setSub(practice.sub)
+          }}
+          onOpenTheme={theme => {
+            platform.haptic('light')
+            setSelectedThemeId(theme.id)
+          }}
+          onClose={() => setSearchOpen(false)}
+        />
+      </div>
+    )
+  }
+
   return (
     <div className="mx-practices-catalog-shell w-full max-w-md px-[var(--mx-screen-x)]">
-      <h1 className="font-display mx-type-page text-cream lowercase mb-[28px]">практики.</h1>
+      <div className="mx-steps-header-row">
+        <h1 className="font-display mx-type-page text-cream lowercase">практики.</h1>
+        <button
+          type="button"
+          className="mx-steps-search-btn"
+          aria-label="Открыть поиск"
+          onClick={() => setSearchOpen(true)}
+        >
+          <Search size={20} strokeWidth={1.5} />
+        </button>
+      </div>
       <PracticeCatalogV2
         practices={catalogPractices}
         themes={themes}
@@ -242,8 +456,6 @@ export default function Practices({
         themesError={themesError}
         onRetryThemes={() => loadThemes({ force: true })}
         onOpenCollection={collection => {
-          // Коллекция «Ритуалы»/«Аскезы» ведёт прямо в единый список практик:
-          // промежуточного экрана «Твои данные» больше нет.
           platform.haptic('light')
           if (collection.source) setSub(collection.source)
         }}
@@ -258,6 +470,10 @@ export default function Practices({
         onOpenTheme={theme => {
           platform.haptic('light')
           setSelectedThemeId(theme.id)
+        }}
+        onOpenAllThemes={() => {
+          platform.haptic('light')
+          if (themes[0]) setSelectedThemeId(themes[0].id)
         }}
       />
     </div>
