@@ -423,6 +423,12 @@ export default function Today({
 
   // §6 Motion — сжатие карточки при возврате из чек-ина (260→233, 130 ms)
   const [cardCompressing, setCardCompressing] = useState(false)
+  /*
+   * Какая карточка дня открыла recap: меню повтора на recap контекстно —
+   * у утренней карточки «Пройти утро заново», у вечерней «День закрыт» —
+   * только «Пройти разбор заново».
+   */
+  const [recapSource, setRecapSource] = useState('morning')
 
   const [seriesTooltipClosing, setSeriesTooltipClosing] = useState(false)
   const seriesTooltipRef = useRef(null)
@@ -925,8 +931,8 @@ export default function Today({
             initialSelectedDay={{ date: checkin.date, checkin }}
             onInitialBack={() => changeSub(null)}
             recapOnly
-            onRedo={handleRedoMorning}
-            onRedoReview={() => changeSub('redoReview')}
+            onRedo={recapSource === 'morning' ? handleRedoMorning : null}
+            onRedoReview={recapSource === 'evening' ? () => changeSub('redoReview') : null}
           />
         </SubScreenBoundary>
       </div>
@@ -1233,6 +1239,7 @@ export default function Today({
           {...props}
           onClick={() => {
             platform.haptic('medium')
+            setRecapSource(isMorning ? 'morning' : 'evening')
             changeSub(
               isMorning
                 ? state === 'done'
@@ -1283,8 +1290,7 @@ export default function Today({
     if (today && !today.reflection) return today
     return themeDays.find(d => !d.reflection) || null
   })()
-  const themeAllAnswered =
-    themeDays.length > 0 && themeDays.every(d => d.reflection)
+  const themeAllAnswered = themeDays.length > 0 && themeDays.every(d => d.reflection)
   const themeDayLabel = `День ${themeWaitingDay?.day || themeCurrentDay} из ${theme?.total_days || 7}`
   const themeQuestionText = themeWaitingDay?.text || ''
   const themeCtaLabel = themeAllAnswered ? 'Смотреть в пути' : 'Записать'
@@ -1620,7 +1626,11 @@ export default function Today({
               }}
             >
               Все темы
-              <ChevronRight size={16} className="mx-today-weekly-theme__chevron" aria-hidden="true" />
+              <ChevronRight
+                size={16}
+                className="mx-today-weekly-theme__chevron"
+                aria-hidden="true"
+              />
             </button>
           </div>
           <div

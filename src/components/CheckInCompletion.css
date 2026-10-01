@@ -1,3 +1,10 @@
+/*
+ * Единый финал чек-ина (утро и вечер) — Stoic-макет, один экран без прокрутки:
+ * арт 150×180 центрирован в верхней половине, под ним текст, плашка даты,
+ * вопрос «Было полезно сегодня?/Был ли разбор полезен?» и 3 плитки.
+ * Пилюля «Сохранить и выйти» живёт ниже в WebActionBar (отдельная полоса,
+ * поэтому плитки никогда не заходят под кнопку).
+ */
 .mx-completion {
   width: 100%;
   min-height: 100%;
@@ -5,20 +12,50 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: clamp(80px, calc(37dvh - 102px), 250px) 16px 28px;
+  /* 24 pt между плитками отзыва и пилюлей «Сохранить и выйти»:
+     плитки никогда не касаются кнопки в нижней полосе. */
+  padding: 0 16px 24px;
   background: rgb(var(--c-bg));
 }
 
+/* В fullscreen-шелле финал растягивается флексом на всю область контента. */
+.mx-fullscreen-completion > .mx-completion {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* Арт центрирован в верхней половине: занимает всё свободное место над текстом. */
+.mx-completion__art-wrap {
+  flex: 1 1 auto;
+  min-height: 96px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Картинка 150–170: при нехватке высоты сжимается арт (max-height: 100%),
+   а не плитки и не текст. */
 .mx-completion__art {
-  width: 100px;
-  height: 120px;
+  width: auto;
+  height: 180px;
+  max-height: 100%;
+  aspect-ratio: 100 / 120;
+  flex: none;
+}
+
+/* Текст, плашка и блок отзыва не сжимаются флексом: при нехватке
+   высоты ужинается только арт, иначе строки налезают друг на друга. */
+.mx-completion__title,
+.mx-completion__date-pill,
+.mx-completion__feedback {
   flex: none;
 }
 
 .mx-completion__title {
   display: flex;
   flex-direction: column;
-  margin: 24px 0 0;
+  margin: 0;
   color: rgb(var(--c-text) / 0.85);
   font-size: 28px;
   line-height: 32px;
@@ -26,39 +63,58 @@
   letter-spacing: -0.025em;
 }
 
-.mx-completion__title strong { font-weight: 700; }
-
-.mx-completion__feedback { margin-top: 64px; }
-.mx-completion__feedback p {
-  max-width: 260px;
-  margin: 0 auto 24px;
-  color: rgb(var(--c-muted));
-  font-size: 17px;
-  font-weight: 400;
-  line-height: 23px;
+.mx-completion__title strong {
+  font-weight: 700;
 }
 
+/* Плашка с датой «✓ 1 окт» — у утра и вечера одинаково */
+.mx-completion__date-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgb(var(--c-card2));
+  color: rgb(var(--c-text));
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.mx-completion__feedback {
+  margin-top: 24px;
+}
+.mx-completion__feedback p {
+  max-width: 260px;
+  margin: 0 auto 16px;
+  color: rgb(var(--c-muted));
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 21px;
+}
+
+/* Плитки отзывов: 96×120, радиус 20, фон #111, тонкая рамка */
 .mx-completion__choices {
   display: flex;
   justify-content: center;
-  gap: 7px;
+  gap: 8px;
 }
 
 .mx-completion__choices button {
   display: flex;
-  width: 72px;
-  height: 101px;
+  width: 96px;
+  height: 120px;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 12px;
   padding: 0;
-  border: 1px solid rgb(var(--c-border));
-  border-radius: 22px;
-  background: rgb(var(--c-card));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  background: #111;
   color: rgb(var(--c-text));
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .mx-completion__choices button.is-selected {
@@ -84,9 +140,10 @@
   font-weight: 700;
 }
 
+/* Финал — экран без прокрутки: контент ужинается отступами, не скроллом. */
 .mx-demo-checkin__body.is-complete {
   padding: 0;
-  overflow-y: auto;
+  overflow: hidden;
 }
 .mx-demo-checkin__body.is-complete .mx-step-slide__panel {
   min-height: 100%;
@@ -118,15 +175,74 @@
   font-weight: 400;
   line-height: 32px;
   letter-spacing: -0.025em;
-  margin: 24px auto 0;
+  margin: 0 auto;
 }
 .mx-demo-checkin__body.is-complete .mx-step-slide__panel > .mx-completion {
   margin: 0;
 }
 
+/* ── Вечерний «Разбор дня» — экран завершения (Stoic Evening Reflection) ── */
+
+.mx-completion--evening .mx-completion__title {
+  font-size: 30px;
+  line-height: 1.2;
+  /* Луна не налезает на заголовок: 20 pt от арта к тексту */
+  margin-top: 20px;
+}
+
+.mx-completion--evening .mx-completion__title strong {
+  font-weight: 700;
+}
+
+.mx-completion--evening .mx-completion__title span {
+  font-weight: 400;
+}
+
+/* Вечерний низ: меньше резерва под домашнюю полоску — финал и так высокий. */
+.mx-completion-action--evening,
+.mx-demo-checkin .mx-completion-action--evening,
+.mx-fullscreen-surface .mx-completion-action--evening {
+  padding: 0 28px calc(var(--app-safe-bottom) + 16px);
+}
+
+/* Пилюля «Сохранить и выйти» — высота 64, радиус 999 */
+.mx-completion-action--evening .cta-pill {
+  min-height: 64px;
+  border-radius: 999px;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+/* Тихая текстовая ссылка «Разобрать со Следопытом» — 15/500 muted,
+   тап-зона 44, отступ 8 под «Сохранить и выйти». Базовая пилюля
+   .mx-completion-action button задаёт фон/радиус/тень — снимаем их. */
+.mx-completion-action--evening > button:not(.cta-pill) {
+  width: auto;
+  min-height: 44px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  font-size: 15px;
+  font-weight: 500;
+  color: rgb(var(--c-muted));
+}
+
 @media (max-height: 740px) {
-  .mx-completion { padding-top: clamp(32px, calc(37dvh - 180px), 110px); }
-  .mx-completion__feedback { margin-top: 32px; }
-  .mx-completion__title,
-  .mx-demo-checkin .mx-completion__title { margin-top: 18px; }
+  .mx-completion__art {
+    height: 140px;
+  }
+  .mx-completion__art-wrap {
+    min-height: 72px;
+  }
+  .mx-completion__date-pill {
+    margin-top: 8px;
+  }
+  .mx-completion__feedback {
+    margin-top: 16px;
+  }
+  .mx-completion__feedback p {
+    margin-bottom: 12px;
+  }
 }

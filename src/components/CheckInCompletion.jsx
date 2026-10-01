@@ -7,19 +7,50 @@ import './CheckInCompletion.css'
 
 const ICONS = { no: ThumbsDown, some: Hand, yes: ThumbsUp }
 
+function formatReviewDate() {
+  try {
+    return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'short' })
+      .format(new Date())
+      .replace(/\./g, '')
+  } catch {
+    return ''
+  }
+}
+
 export default function CheckInCompletion({ evening, onFeedback, children }) {
   const [selected, setSelected] = useState(null)
 
   return (
-    <section className="mx-completion" data-testid="checkin-completion">
-      {evening ? <CompletionArtEvening /> : <CompletionArtMorning />}
+    <section
+      className={`mx-completion${evening ? ' mx-completion--evening' : ''}`}
+      data-testid="checkin-completion"
+    >
+      <div className="mx-completion__art-wrap">
+        {evening ? <CompletionArtEvening /> : <CompletionArtMorning />}
+      </div>
       <h1 className="mx-completion__title">
-        <span>{evening ? 'Ты завершил' : 'Ты прошёл'}</span>
-        <strong>{evening ? 'Разбор дня!' : 'Утренний чек-ин!'}</strong>
+        {evening ? (
+          <>
+            <strong>Ты завершил</strong>
+            <span>разбор дня.</span>
+          </>
+        ) : (
+          <>
+            <strong>Ты прошёл</strong>
+            <span>утренний чек-ин.</span>
+          </>
+        )}
       </h1>
+      <div className="mx-completion__date-pill" aria-label="Дата">
+        <span aria-hidden="true">✓</span> {formatReviewDate()}
+      </div>
       <div className="mx-completion__feedback">
-        <p>Было полезно сегодня?</p>
-        <div className="mx-completion__choices" role="group" aria-label="Было полезно сегодня?">
+        <p>{evening ? 'Был ли разбор полезен?' : 'Было полезно сегодня?'}</p>
+        <div
+          className="mx-completion__choices"
+          role="group"
+          aria-label={evening ? 'Был ли разбор полезен?' : 'Было полезно сегодня?'}
+        >
           {CHECKIN_FEEDBACK_OPTIONS.map(option => {
             const Icon = ICONS[option.value]
             return (
