@@ -1,0 +1,12 @@
+/* «связать с сайтом.» — блок «скоро» внизу. */
+
+.mx-link-web-soon {
+  margin-top: 24px;
+}
+
+.mx-link-web-soon p {
+  margin: 0;
+  color: rgb(var(--c-muted));
+  font-size: 13px;
+  line-height: 1.45;
+}

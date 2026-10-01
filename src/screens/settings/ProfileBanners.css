@@ -49,8 +49,8 @@ button.mx-profile-banner:active {
 
 .mx-profile-banner--potential .mx-profile-banner__art--lock {
   position: absolute;
-  right: 0;
-  bottom: 0;
+  right: -40px;
+  bottom: -36px;
   width: 128px;
   height: 172px;
   z-index: 0;
@@ -140,8 +140,10 @@ button.mx-profile-banner:active {
   height: 100%;
 }
 
-/* 3. «На сайте» — карточка как соседние: заголовок 17px, перо справа
-   сверху не заходит на текст, шеврон как в строках списков. */
+/* 3. «На сайте» — перо справа видно целиком (без обрезки), по центру
+   по вертикали, наклон по диагонали (кончик вниз-влево). Отступы от
+   краёв карточки — как у ленты с бантом (панель 89 px, flush с краем).
+   Текст слева ограничен, не заходит на перо. Стрелка «›» убрана. */
 .mx-profile-banner--web {
   display: flex;
   height: 117px;
@@ -150,20 +152,33 @@ button.mx-profile-banner:active {
   padding: 16px 20px;
 }
 
-.mx-profile-banner--web .mx-profile-banner__art--feather {
+/* Правая панель под перо — 89 px, flush с правым/верхним/нижним краем
+   карточки, как .mx-profile-banner__panel в «Поддержи Mentalix». */
+.mx-profile-banner__feather {
   position: absolute;
-  top: -4px;
-  right: -8px;
-  width: 72px;
-  height: 50px;
+  top: 0;
+  right: 0;
+  display: flex;
+  width: 89px;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
   z-index: 0;
-  opacity: 0.7;
+}
+
+.mx-profile-banner--web .mx-profile-banner__art--feather {
+  width: 68px;
+  height: 68px;
+  /* Наклон по диагонали: сначала зеркалим (кончик → вниз-влево),
+     затем поворот для выраженной диагонали. */
+  transform: rotate(-25deg) scaleX(-1);
+  opacity: 0.8;
 }
 
 .mx-profile-banner--web .mx-profile-banner__title {
   position: relative;
   z-index: 1;
-  max-width: calc(100% - 80px);
+  max-width: calc(100% - 100px);
   font-size: 17px;
   font-weight: 400;
   line-height: 1.25;
@@ -178,22 +193,11 @@ button.mx-profile-banner:active {
   position: relative;
   z-index: 1;
   margin-top: 4px;
-  max-width: calc(100% - 80px);
+  max-width: calc(100% - 100px);
   color: rgb(var(--c-muted));
   font-size: 13px;
   font-weight: 400;
   line-height: 1.35;
-}
-
-.mx-profile-banner--web .mx-profile-banner__chevron {
-  position: absolute;
-  top: 50%;
-  right: 20px;
-  z-index: 1;
-  color: rgb(var(--c-text));
-  font-size: 16px;
-  line-height: 1;
-  transform: translateY(-50%);
 }
 
 @media (prefers-reduced-motion: reduce) {

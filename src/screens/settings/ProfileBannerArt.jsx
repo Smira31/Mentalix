@@ -21,11 +21,25 @@ export function PotentialLockArt() {
       aria-hidden="true"
       focusable="false"
     >
-      <path d="M306 108 L312 86 C318 66 340 60 356 63 C373 67 385 80 384 100 L379 146" fill="none" stroke="#3a3a3a" strokeWidth="5" strokeLinecap="round" />
+      <path
+        d="M306 108 L312 86 C318 66 340 60 356 63 C373 67 385 80 384 100 L379 146"
+        fill="none"
+        stroke="#3a3a3a"
+        strokeWidth="5"
+        strokeLinecap="round"
+      />
       <g transform="translate(330 178) rotate(14) translate(-50 -45)">
         <path d="M0 0 H100 V45 A50 50 0 0 1 0 45 Z" fill="#444" />
         <circle cx="50" cy="42" r="8" fill="#161616" />
-        <line x1="50" y1="46" x2="50" y2="64" stroke="#161616" strokeWidth="5" strokeLinecap="round" />
+        <line
+          x1="50"
+          y1="46"
+          x2="50"
+          y2="64"
+          stroke="#161616"
+          strokeWidth="5"
+          strokeLinecap="round"
+        />
       </g>
     </svg>
   )
@@ -56,21 +70,39 @@ export function SupportGiftArt() {
 }
 
 export function ProfileFeatherArt() {
-  // Перо справа сверху, обрезано верхним краем карточки.
-  // viewBox в абсолютных координатах карточки (440 pt), 123×85 pt.
+  // Перо — автономный SVG (viewBox 0-based), видно целиком, без обрезки.
+  // Позиционирование и наклон задаются в CSS (.mx-profile-banner__feather).
+  // Координаты перенесены из абсолютных карточки (440 pt) в 0-based:
+  // x' = x − 293, y' = y + 4 (минимум y был −4).
   return (
     <svg
       className="mx-profile-banner__art mx-profile-banner__art--feather"
-      viewBox="285 0 123 85"
-      width="123"
-      height="85"
+      viewBox="0 0 118 84"
       aria-hidden="true"
       focusable="false"
     >
-      <path d="M293 42 C312 54 340 58 358 50 C372 44 378 30 372 24 C364 18 355 30 358 44 C362 62 385 75 410 78" fill="none" stroke="#D0D0D0" strokeWidth="2" strokeLinecap="round" />
-      <path d="M293 42 C300 20 322 4 350 -4 L374 -4 C376 8 367 20 351 28 C331 38 311 42 293 42 Z" fill="#D0D0D0" />
-      <path d="M297 40 C316 30 336 18 362 2" fill="none" stroke="#202020" strokeWidth="1.5" strokeLinecap="round" />
-      <path d="M319 29 L315 19 M334 21 L331 11 M349 12 L347 3" fill="none" stroke="#202020" strokeWidth="1.5" strokeLinecap="round" />
+      <path
+        d="M0 46 C19 58 47 62 65 54 C79 48 85 34 79 28 C71 22 62 34 65 48 C69 66 92 79 117 82"
+        fill="none"
+        stroke="#D0D0D0"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <path d="M0 46 C7 24 29 8 57 0 L81 0 C83 12 74 24 58 32 C38 42 18 46 0 46 Z" fill="#D0D0D0" />
+      <path
+        d="M4 44 C23 34 43 22 69 6"
+        fill="none"
+        stroke="#202020"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <path
+        d="M26 33 L22 23 M41 25 L38 15 M56 16 L54 7"
+        fill="none"
+        stroke="#202020"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
     </svg>
   )
 }

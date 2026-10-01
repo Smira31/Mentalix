@@ -1,0 +1,57 @@
+/* «поддержать проект.» — иллюстрация, тёплый текст, своя сумма. */
+
+/* Иллюстрация «лента с бантом» — компактнее для экрана без прокрутки. */
+.mx-donate-art {
+  display: flex;
+  justify-content: center;
+  margin: 0 auto var(--mx-space-3);
+  width: 80px;
+}
+
+.mx-donate-art svg {
+  width: 80px;
+  height: auto;
+}
+
+/* Тёплый текст — зачем поддержка. */
+.mx-donate-intro {
+  margin: 0 0 var(--mx-space-4);
+  padding-inline: 4px;
+  color: rgb(var(--c-text));
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+/* Поле «Своя сумма» — только цифры, цифровая клавиатура. */
+.mx-donate-custom {
+  margin-top: 12px;
+}
+
+.mx-donate-custom__input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 12px;
+  background: rgb(var(--c-card));
+  color: rgb(var(--c-text));
+  font-size: 16px;
+  font-weight: 600;
+  -moz-appearance: textfield;
+  color-scheme: dark;
+}
+
+.mx-donate-custom__input::-webkit-outer-spin-button,
+.mx-donate-custom__input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.mx-donate-custom__hint {
+  display: block;
+  margin-top: 6px;
+  padding-inline: 4px;
+  color: rgb(var(--c-muted));
+  font-size: 12px;
+  line-height: 1.4;
+}

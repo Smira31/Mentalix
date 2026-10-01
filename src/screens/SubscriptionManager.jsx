@@ -1,196 +1,73 @@
-import { useState } from 'react'
-import { Check, Cloud, Lightbulb, Lock, LockKeyhole, PenLine, Sparkles } from 'lucide-react'
-import { createPortal } from 'react-dom'
-import BackButton from '../components/BackButton'
-import { isPreviewDemoMode } from '../lib/demoMode'
+import { BookOpen, LineChart, Lightbulb, Lock, Users } from 'lucide-react'
 import { ProfileBody, ProfilePage } from './settings/ProfileUi'
-import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
+import { PotentialLockArt } from './settings/ProfileBannerArt'
 import './SubscriptionManager.css'
 
-const TIERS = [
-  {
-    key: 'base',
-    name: 'Базовый',
-    price: 'Бесплатно',
-    features: [
-      'Ритуалы и аскезы',
-      'Один собеседник (Компас)',
-      'Базовая аналитика',
-      '1 блок нейротренажёра в день',
-      'Мысль дня — один источник',
-    ],
-  },
-  {
-    key: 'pro',
-    name: 'Про',
-    price: 'скоро можно будет оформить',
-    features: [
-      'Все три собеседника',
-      'Полная аналитика с корреляциями',
-      'Весь нейротренажёр без ограничений',
-      'Чередование источников мысли дня',
-      'Напоминания в Telegram',
-      'Курсы без ограничений',
-    ],
-  },
+/*
+ * «подписка.» — единственный тариф Mentalix Pro, 690 ₽/мес.
+ * Оплата пока не подключена: кнопка неактивна («Оплата скоро появится»),
+ * ничего не списывает. Скидок и пробы нет.
+ *
+ * Функции — только то, что реально входит в Pro. Мысль дня, напоминания,
+ * Следопыт — бесплатные, перечислены отдельно под списком.
+ *
+ * Логика тарифов (включая Pro + ИИ) в api.js и бэкенде не тронута —
+ * убран только интерфейс переключателя.
+ */
+const FEATURES = [
+  [Users, 'Собеседники без ограничений', 'Наставник и другие собеседники отвечают глубже и без лимита'],
+  [BookOpen, 'Курсы', '«Путь героя» и новые курсы'],
+  [LineChart, 'Полная аналитика и история', 'Все записи и связи между ними'],
+  [Lightbulb, 'Персональные наблюдения', 'Что повторяется в твоих днях'],
 ]
 
-const DEMO_PLANS = {
-  premium: {
-    label: 'Premium',
-    discount: 'Скидка 58% на функции Premium.',
-    price: '690 ₽ в месяц · 8 280 ₽ в год',
-    detail: 'Выгоднее помесячной оплаты для участников Mentalix.',
-    features: [
-      [PenLine, 'Ежедневные подсказки и журналы', 'Новые вопросы и короткие практики каждый день'],
-      [Lightbulb, 'Разблокировать все упражнения', 'Медитации, дыхание, упражнения и больше'],
-      [
-        Cloud,
-        'Автоматическая синхронизация',
-        'Синхронизация между iPhone, Mac, iPad и Apple Watch',
-      ],
-      [Sparkles, 'Персональные отражения', 'Наблюдения, которые помогают замечать свой путь'],
-      [LockKeyhole, 'Защитить записи', 'Личные записи остаются только на твоём устройстве'],
-    ],
-  },
-  ai: {
-    label: 'Premium + AI',
-    discount: 'Скидка 40% на функции Premium + AI.',
-    price: '1 290 ₽ в месяц · 15 480 ₽ в год',
-    detail: 'Самый полный набор возможностей Mentalix.',
-    features: [
-      [Sparkles, 'Персональные отражения', 'Более точные подсказки на основе твоего пути'],
-      [Lightbulb, 'Рефлексия с AI', 'Замечай закономерности и новые направления'],
-      [Cloud, 'Умные уведомления', 'Напоминания, которые подстраиваются под тебя'],
-      [PenLine, 'Ежедневные подсказки и журналы', 'Новые вопросы и короткие практики каждый день'],
-      [LockKeyhole, 'Разблокировать все упражнения', 'Медитации, дыхание, упражнения и больше'],
-    ],
-  },
-}
-
-function DemoSubscriptionOffer({ onBack }) {
-  const [plan, setPlan] = useState('premium')
-  const selected = DEMO_PLANS[plan]
-
+export default function SubscriptionManager({ tier: _tier, onBack }) {
   return (
-    <div className="mx-demo-subscription-offer">
-      <div className="mx-demo-subscription-offer__topbar">
-        <BackButton showInDemo onClick={onBack} />
-        <div className="mx-demo-subscription-offer__switch" role="tablist" aria-label="Тариф">
-          {Object.entries(DEMO_PLANS).map(([key, value]) => (
-            <button
-              key={key}
-              type="button"
-              role="tab"
-              aria-selected={plan === key}
-              onClick={() => setPlan(key)}
-            >
-              {value.label}
-            </button>
-          ))}
-        </div>
-        <span aria-hidden="true" />
-      </div>
-
-      <div className="mx-demo-subscription-offer__intro">
-        <h1>
-          Готов открыть
-          <br />
-          свой потенциал?
-        </h1>
-        <p>{selected.discount}</p>
-      </div>
-
-      <div className="mx-demo-subscription-offer__features">
-        {selected.features.map(([Icon, title, description]) => (
-          <div className="mx-demo-subscription-offer__feature" key={title}>
-            <Icon size={20} strokeWidth={1.7} aria-hidden="true" />
-            <div>
-              <strong>{title}</strong>
-              <span>{description}</span>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="mx-demo-subscription-offer__price">
-        <strong>{selected.price}</strong>
-        <span>{selected.detail}</span>
-      </div>
-      <button type="button" className="mx-demo-subscription-offer__cta">
-        Начать бесплатную пробу
-      </button>
-      <p className="mx-demo-subscription-offer__fineprint">
-        Оплата пока не подключена.
-        <br />
-        Отменить можно в любой момент.
-      </p>
-    </div>
-  )
-}
-
-export default function SubscriptionManager({ user: _user, tier, onBack }) {
-  if (isPreviewDemoMode()) {
-    return createPortal(<DemoSubscriptionOffer onBack={onBack} />, getFullscreenPortalTarget())
-  }
-
-  return (
-    <ProfilePage title="подписка." onBack={onBack} testId="profile-screen-subscription">
+    <ProfilePage
+      title="подписка."
+      onBack={onBack}
+      testId="profile-screen-subscription"
+      footer={
+        <button
+          type="button"
+          disabled
+          data-testid="subscription-pay-button"
+          className="mx-profile-disabled-cta"
+        >
+          <Lock size={14} aria-hidden="true" /> Оплата скоро появится
+        </button>
+      }
+    >
       <ProfileBody>
-        {/* Тарифы — статичные данные, показываем сразу; с сервера приходит
-            только текущий тариф (tier), плашка «Текущий» появляется после ответа. */}
-        <SubscriptionTiers tier={tier} />
+        <div className="mx-subscription-art" aria-hidden="true">
+          <PotentialLockArt />
+        </div>
+
+        <h2 className="mx-subscription-promise">Готов открыть свой потенциал?</h2>
+        <p className="mx-subscription-pitch">
+          Собеседники без ограничений, курсы и полная аналитика — в одном тарифе.
+        </p>
+
+        <p className="mx-subscription-price">690 ₽<span>/мес</span></p>
+
+        <ul className="mx-subscription-features">
+          {FEATURES.map(([Icon, title, description]) => (
+            <li key={title} className="mx-subscription-feature">
+              <span className="mx-subscription-feature__icon" aria-hidden="true">
+                <Icon size={22} strokeWidth={1.6} />
+              </span>
+              <span className="mx-subscription-feature__text">
+                <strong>{title}</strong>
+                <span>{description}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+
+        <p className="mx-subscription-free">
+          Чек-ины, Мысль дня, журнал, ритуалы, аскезы, Следопыт и напоминания — бесплатно всегда.
+        </p>
       </ProfileBody>
     </ProfilePage>
-  )
-}
-
-function SubscriptionTiers({ tier }) {
-  return (
-    <>
-      {TIERS.map(t => {
-        const isCurrent = tier === t.key
-        return (
-          <div
-            key={t.key}
-            data-testid={`subscription-tier-${t.key}`}
-            className={`w-full rounded-2xl border p-5 mb-4 bg-[rgb(var(--c-card2))] ${
-              isCurrent ? 'border-muted' : 'border-transparent'
-            }`}
-          >
-            <div className="flex items-center justify-between mb-1">
-              <h2 className="font-display text-[16px] text-cream">{t.name}</h2>
-              {isCurrent && (
-                <span className="text-[10px] font-medium px-2.5 py-1 rounded-full bg-cream text-emerald-deep">
-                  Текущий
-                </span>
-              )}
-            </div>
-            <p className="text-[13px] text-muted mb-4">{t.price}</p>
-            <ul className="space-y-2 mb-4">
-              {t.features.map(f => (
-                <li key={f} className="flex items-start gap-2 text-[13px] text-cream">
-                  <Check size={15} className="text-muted shrink-0 mt-0.5" />
-                  {f}
-                </li>
-              ))}
-            </ul>
-            {t.key === 'pro' && !isCurrent && (
-              <button
-                disabled
-                className="w-full py-3 rounded-xl bg-cream/10 text-muted text-[13px] font-medium flex items-center justify-center gap-2 cursor-not-allowed"
-              >
-                <Lock size={14} /> Оплата скоро появится
-              </button>
-            )}
-          </div>
-        )
-      })}
-
-      <p className="text-[11px] text-muted text-center px-4">
-        Приём платежей за тариф Про пока не подключён — раздел появится здесь в следующем
-        обновлении.
-      </p>
-    </>
   )
 }
