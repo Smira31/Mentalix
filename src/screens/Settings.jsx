@@ -25,6 +25,7 @@ import { openSupportChat } from '../lib/support'
 import { THEMES } from '../lib/theme'
 import { isGuestUser } from '../lib/guestAuth'
 import { DEFAULT_REVIEW_HOUR } from '../lib/todayCardState'
+import { pluralize } from '../lib/pluralize'
 import { previewProfileAction } from '../lib/demoMode'
 import SubscriptionManager from './SubscriptionManager'
 import DonateScreen from './DonateScreen'
@@ -60,6 +61,8 @@ function Toggle({ checked, label, onChange }) {
 }
 
 const hh = hour => `${String(hour).padStart(2, '0')}:00`
+
+const RECORD_FORMS = ['запись', 'записи', 'записей']
 
 const SUB_TITLES = {
   checkins: 'чек-ины.',
@@ -602,7 +605,7 @@ export default function Settings({
           <ProfileCard>
             <ProfileRow
               title="Записей в неделю"
-              subtitle="Сколько записей в неделю ты хочешь делать. Влияет только на подсказки, серия не рвётся."
+              subtitle="Влияет только на подсказки. Серия не рвётся."
               value={writingGoalOn ? String(writingGoalCount) : 'Выкл.'}
               onClick={() => saveWritingGoal(!writingGoalOn)}
               testId="profile-row-writing-goal"
@@ -632,7 +635,7 @@ export default function Settings({
                     <span className="shrink-0 text-[13px] font-semibold text-cream">
                       {writingGoalProgress.reached
                         ? 'Цель достигнута'
-                        : `Осталось ${writingGoalProgress.remaining}`}
+                        : `Осталось ${writingGoalProgress.remaining} ${pluralize(writingGoalProgress.remaining, RECORD_FORMS)}`}
                     </span>
                   </div>
                   <div
