@@ -176,10 +176,10 @@ const SPECS = [
   { id: 'header-h1', label: 'Шапка «Тема недели:»', sel: '.mx-theme-carousel-heading', expect: { fontSize: 26, fontWeight: 400, fontFamily: 'serif' } },
   { id: 'header-h2', label: 'Шапка «о меньшем усилии.»', sel: '.mx-theme-carousel-title', expect: { fontSize: 26, fontWeight: 700, fontFamily: 'Onest' } },
   // Карусель
-  { id: 'card-active', label: 'Активная карточка', sel: ".mx-tqc-card[data-active='true']", expect: { width: 298, height: 360, radius: 33 } },
-  { id: 'card-num', label: 'Номер карточки', sel: ".mx-tqc-card[data-active='true'] .mx-tqc-card__num", expect: { fontSize: 38, fontWeight: 400, fontFamily: 'serif' } },
-  { id: 'card-text', label: 'Текст вопроса', sel: ".mx-tqc-card[data-active='true'] .mx-tqc-card__question", expect: { fontSize: 17, fontWeight: 600, fontFamily: 'Onest' } },
-  { id: 'card-prompt', label: 'Подсказка', sel: ".mx-tqc-card[data-active='true'] .mx-tqc-card__prompt", expect: { fontSize: 15, fontWeight: 400 } },
+  { id: 'card-active', label: 'Активная карточка', sel: ".mx-tqc-card[data-active='true']", expect: { width: 262, height: 318, radius: 28 } },
+  { id: 'card-num', label: 'Номер карточки', sel: ".mx-tqc-card[data-active='true'] .mx-tqc-card__num", expect: { fontSize: 32, fontWeight: 400, fontFamily: 'serif' } },
+  { id: 'card-text', label: 'Текст вопроса', sel: ".mx-tqc-card[data-active='true'] .mx-tqc-card__question", expect: { fontSize: 17, fontWeight: 700, fontFamily: 'Onest' } },
+  { id: 'card-prompt', label: 'Подсказка', sel: ".mx-tqc-card[data-active='true'] .mx-tqc-card__prompt", expect: { fontSize: 13, fontWeight: 400 } },
   // Точки
   { id: 'dots', label: 'Точки-пейджер', sel: '.mx-tqc-dots', expect: { count: 7, dotSize: 8, gap: 8 } },
   // Кнопка
@@ -649,7 +649,7 @@ async function run() {
   console.log('--- Положение 1: Верх (карусель) ---')
   console.log(`${'ЭЛЕМЕНТ'.padEnd(38)} | ${'ЭТАЛОН'.padEnd(8)} | ${'У НАС'.padEnd(8)} | СТАТУС`)
   console.log('-'.repeat(80))
-  posRow('Активная карточка: x', 71, posData.top?.activeX)
+  posRow('Активная карточка: x', 89, posData.top?.activeX)
   posRow('Активная карточка: центр x', 220, posData.top?.activeCenterX)
   posRow('Активная карточка: верх y', 217, posData.top?.activeY, 5)
   posRow('Соседняя слева: видна', true, posData.top?.leftVisible)

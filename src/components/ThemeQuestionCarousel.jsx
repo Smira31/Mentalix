@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from 'react'
+import { useState, useRef, useLayoutEffect, useEffect, useMemo } from 'react'
 import './ThemeQuestionCarousel.css'
 
 /**
@@ -39,6 +39,13 @@ export default function ThemeQuestionCarousel({
     [questions, maxCards]
   )
 
+  // First unanswered card — initial scroll target (fallback: first card)
+  const firstUnanswered = useMemo(() => {
+    if (!cards.length) return 0
+    const idx = cards.findIndex(q => !q.reflection)
+    return idx === -1 ? 0 : Math.min(idx, cards.length - 1)
+  }, [cards])
+
   function applyScale() {
     const track = trackRef.current
     if (!track || !track.clientWidth) return
@@ -49,7 +56,8 @@ export default function ThemeQuestionCarousel({
       const cardCenter = card.offsetLeft + card.offsetWidth / 2
       const distance = Math.abs(cardCenter - center)
       const t = Math.min(distance / card.offsetWidth, 1)
-      const scale = 1 - 0.25 * t
+      // Center card: scale 1, neighbors: ~0.85
+      const scale = 1 - 0.15 * t
       card.style.transform = `scale(${scale.toFixed(4)})`
     })
   }
@@ -79,15 +87,16 @@ export default function ThemeQuestionCarousel({
     })
   }
 
-  // Initial scroll to initialIndex (only on first mount, not on data refresh)
-  useEffect(() => {
+  // Initial scroll to first unanswered card + apply scale.
+  // useLayoutEffect runs before paint to avoid a flash of wrong position.
+  useLayoutEffect(() => {
     if (!trackRef.current || !cards.length) return
 
     if (!initialScrollDone.current) {
       initialScrollDone.current = true
       const track = trackRef.current
       const cardEls = [...track.querySelectorAll('.mx-tqc-card')]
-      const idx = Math.min(initialIndex, cardEls.length - 1)
+      const idx = Math.min(firstUnanswered, cardEls.length - 1)
       const card = cardEls[idx]
       if (card) {
         track.scrollTo({
@@ -98,8 +107,8 @@ export default function ThemeQuestionCarousel({
       setActiveIndex(idx)
     }
 
-    // Reapply scale whenever cards change (new reflections, theme switch)
-    requestAnimationFrame(applyScale)
+    // Apply scale immediately — layout is ready at this point
+    applyScale()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cards])
 

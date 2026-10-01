@@ -5,6 +5,7 @@
    ============================================================ */
 
 .mx-tqc-track {
+  position: relative; /* card.offsetLeft must be relative to the track */
   display: flex;
   align-items: center;
   gap: 8px;
@@ -14,10 +15,13 @@
   overscroll-behavior-x: contain;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-x;
-  height: 320px;
-  margin: 0 calc(-1 * var(--mx-screen-x, 20px));
-  /* Center first/last cards: half of 280px card width */
-  padding: 0 calc(50% - 140px);
+  min-width: 0; /* allow shrink inside grid/flex parents */
+  width: calc(100% + 2 * var(--mx-screen-x, 16px));
+  height: 318px;
+  margin: 0 calc(-1 * var(--mx-screen-x, 16px));
+  /* Center first/last cards: half of 262px card width */
+  padding-inline: calc(50% - 131px);
+  padding-block: 0;
 }
 
 .mx-tqc-track::-webkit-scrollbar {
@@ -28,8 +32,8 @@
 .mx-tqc-card {
   scroll-snap-align: center;
   flex-shrink: 0;
-  width: 280px;
-  height: 320px;
+  width: 262px;
+  height: 318px;
   display: flex;
   flex-direction: column;
   align-items: center;

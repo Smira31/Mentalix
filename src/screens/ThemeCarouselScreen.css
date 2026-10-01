@@ -22,6 +22,7 @@
 /* --- Корневой контейнер контента --- */
 .mx-theme-carousel-screen {
   --mx-sticky-cta-h: 52px; /* CTA: 8px top + 44px height */
+  min-width: 0;
 }
 
 /* --- Шапка экрана --- */
