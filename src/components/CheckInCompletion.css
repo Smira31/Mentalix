@@ -44,6 +44,14 @@
   flex: none;
 }
 
+/* Текст, плашка и блок отзыва не сжимаются флексом: при нехватке
+   высоты ужинается только арт, иначе строки налезают друг на друга. */
+.mx-completion__title,
+.mx-completion__date-pill,
+.mx-completion__feedback {
+  flex: none;
+}
+
 .mx-completion__title {
   display: flex;
   flex-direction: column;
