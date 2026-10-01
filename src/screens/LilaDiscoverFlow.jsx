@@ -13,9 +13,9 @@ import { FULLSCREEN_SHELL_CLASS, useFullscreenSurface } from '../lib/fullscreenS
 import { ConversationChat } from './Mentalix'
 import './LilaDiscoverFlow.css'
 
-export const LILA_TOPIC_PROFILE_KEY = 'mx-lila-topic-profile-v1'
+const LILA_TOPIC_PROFILE_KEY = 'mx-lila-topic-profile-v1'
 
-export const LILA_CONVERSATION_META = {
+const LILA_CONVERSATION_META = {
   key: 'lila',
   name: 'Следопыт',
   tagline: 'поможет увидеть следующий шаг',
