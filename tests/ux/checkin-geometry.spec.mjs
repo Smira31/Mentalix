@@ -161,7 +161,7 @@ test('ряды шкал центрированы по экрану на 393 и 4
     await editor.pressSequentially('Спокойное утро')
     await page.locator('[data-testid="checkin-complete"]').click()
 
-    await expect(page.getByRole('heading', { name: 'Ты прошёл Утренний чек-ин!' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Ты прошёл утренний чек-ин.' })).toBeVisible()
 
     await context.close()
   }

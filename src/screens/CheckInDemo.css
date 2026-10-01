@@ -1022,12 +1022,18 @@
   );
 }
 
-.mx-demo-checkin .mx-checkin-scale--filled .mx-checkin-scale__option:not(.is-selected) .mx-checkin-scale__circle {
+.mx-demo-checkin
+  .mx-checkin-scale--filled
+  .mx-checkin-scale__option:not(.is-selected)
+  .mx-checkin-scale__circle {
   border: 1.5px solid transparent;
   opacity: 0.65;
 }
 
-.mx-demo-checkin .mx-checkin-scale--filled .mx-checkin-scale__option.is-selected .mx-checkin-scale__circle {
+.mx-demo-checkin
+  .mx-checkin-scale--filled
+  .mx-checkin-scale__option.is-selected
+  .mx-checkin-scale__circle {
   border: 1.5px solid rgb(var(--c-line));
 }
 
@@ -1102,7 +1108,7 @@
   /* Фон ≈ #141414 */
   background: #141414;
   /* Иконка светло-серая ≈ #D0D0D0 */
-  color: #D0D0D0;
+  color: #d0d0d0;
   font-family: 'Onest', sans-serif;
   font-size: 17px;
   font-weight: 500;
@@ -1153,7 +1159,8 @@
 }
 
 .mx-demo-checkin__editor-scene:not(.mx-demo-checkin__editor-scene--focus) h1,
-.mx-demo-checkin__editor-scene:not(.mx-demo-checkin__editor-scene--focus) .mx-checkin-question__hint {
+.mx-demo-checkin__editor-scene:not(.mx-demo-checkin__editor-scene--focus)
+  .mx-checkin-question__hint {
   text-align: left;
 }
 
@@ -1268,6 +1275,26 @@
 .mx-demo-checkin__body:not(.is-editor) .mx-step-slide__panel > .mx-checkin-question--evening-card {
   margin-top: 0;
   margin-bottom: auto;
+}
+
+/* Текстовые вопросы разбора: заголовок 24/700, подсказка 13 muted
+   (правило h2 с clamp(…36px) выше перебивало inline-типографику). */
+.mx-checkin-question--evening-card > h2 {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.mx-checkin-question--evening-card .mx-checkin-question__hint {
+  font-size: 13px;
+  color: rgb(var(--c-muted));
+}
+
+/* Поле разбора — 17/1.5 */
+.mx-checkin-evening-editor,
+.mx-checkin-evening-editor [contenteditable] {
+  font-size: 17px;
+  line-height: 1.5;
 }
 
 /* ── Вечерний «Разбор дня» — эмоции: сетка 2 колонки ── */

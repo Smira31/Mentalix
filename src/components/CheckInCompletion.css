@@ -12,7 +12,9 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 0 16px 4px;
+  /* 24 pt между плитками отзыва и пилюлей «Сохранить и выйти»:
+     плитки никогда не касаются кнопки в нижней полосе. */
+  padding: 0 16px 24px;
   background: rgb(var(--c-bg));
 }
 
@@ -53,7 +55,9 @@
   letter-spacing: -0.025em;
 }
 
-.mx-completion__title strong { font-weight: 700; }
+.mx-completion__title strong {
+  font-weight: 700;
+}
 
 /* Плашка с датой «✓ 1 окт» — у утра и вечера одинаково */
 .mx-completion__date-pill {
@@ -69,7 +73,9 @@
   font-weight: 500;
 }
 
-.mx-completion__feedback { margin-top: 24px; }
+.mx-completion__feedback {
+  margin-top: 24px;
+}
 .mx-completion__feedback p {
   max-width: 260px;
   margin: 0 auto 16px;
@@ -172,6 +178,8 @@
 .mx-completion--evening .mx-completion__title {
   font-size: 30px;
   line-height: 1.2;
+  /* Луна не налезает на заголовок: 20 pt от арта к тексту */
+  margin-top: 20px;
 }
 
 .mx-completion--evening .mx-completion__title strong {
@@ -199,16 +207,31 @@
 
 /* Тихая текстовая ссылка «Разобрать со Следопытом» — 15 muted */
 .mx-completion-action--evening > button:not(.cta-pill) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
   font-size: 15px;
-  font-weight: 400;
+  font-weight: 500;
   color: rgb(var(--c-muted));
   padding-top: 6px;
   padding-bottom: 6px;
 }
 
 @media (max-height: 740px) {
-  .mx-completion__art { height: 144px; }
-  .mx-completion__date-pill { margin-top: 8px; }
-  .mx-completion__feedback { margin-top: 16px; }
-  .mx-completion__feedback p { margin-bottom: 12px; }
+  .mx-completion__art {
+    height: 140px;
+  }
+  .mx-completion__art-wrap {
+    min-height: 72px;
+  }
+  .mx-completion__date-pill {
+    margin-top: 8px;
+  }
+  .mx-completion__feedback {
+    margin-top: 16px;
+  }
+  .mx-completion__feedback p {
+    margin-bottom: 12px;
+  }
 }

@@ -241,7 +241,7 @@ test.describe('MXL-010 automated technical gate', () => {
     await textStep(page, 'Fixture morning note', 'checkin-complete')
 
     // Экран завершения
-    await expect(page.getByRole('heading', { name: 'Ты прошёл Утренний чек-ин!' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Ты прошёл утренний чек-ин.' })).toBeVisible()
     await page.setViewportSize({ width: 393, height: 667 })
     const tiles = await page.getByTestId('checkin-feedback-option').last().boundingBox()
     const exitButton = await page.getByTestId('checkin-back-to-today').boundingBox()

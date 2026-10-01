@@ -36,8 +36,8 @@ export default function CheckInCompletion({ evening, onFeedback, children }) {
           </>
         ) : (
           <>
-            <span>Ты прошёл</span>
-            <strong>Утренний чек-ин!</strong>
+            <strong>Ты прошёл</strong>
+            <span>утренний чек-ин.</span>
           </>
         )}
       </h1>
