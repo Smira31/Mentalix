@@ -753,7 +753,7 @@ test('локальный UX smoke по основному маршруту', asy
         const editor = page.getByRole('textbox', { name: 'Что сейчас происходит?' })
         await expect(editor).toBeVisible()
         await expect(page.getByRole('button', { name: 'Назад' })).toHaveCount(1)
-        await expect(page.getByRole('button', { name: 'Сохранить и продолжить' })).toBeVisible()
+        await expect(page.getByRole('button', { name: 'Далее' })).toBeVisible()
       },
     })
     const guidedSteps = [
@@ -772,7 +772,7 @@ test('локальный UX smoke по основному маршруту', asy
       await page
         .getByRole('button', {
           name:
-            index === guidedSteps.length - 1 ? 'Сохранить эксперимент' : 'Сохранить и продолжить',
+            index === guidedSteps.length - 1 ? 'Сохранить эксперимент' : 'Далее',
         })
         .click()
     }
