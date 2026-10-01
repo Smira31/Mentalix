@@ -261,15 +261,7 @@ function clearJournalStore(userId) {
  * Используется «Мыслью дня» с kind='мысль' и quoteKey — ключ цитаты дня.
  * Если запись с таким id уже есть — обновляет её, иначе добавляет новую.
  */
-function saveJournalFreeWrite({
-  date = todayKey(),
-  id,
-  text,
-  status = 'final',
-  kind = null,
-  quoteKey = null,
-  userId,
-}) {
+function saveJournalFreeWrite({ date = todayKey(), id, text, status = 'final', kind = null, quoteKey = null, userId }) {
   const key = journalStorageKey(userId)
   const store = readJournalStore(userId)
   const entry = store.entries[date] || emptyEntry(date)
@@ -283,14 +275,7 @@ function saveJournalFreeWrite({
     existing.kind = kind
     existing.quoteKey = quoteKey
   } else {
-    entry.freeWrites.push({
-      id: writeId,
-      text,
-      status: status === 'final' ? 'final' : 'draft',
-      updatedAt,
-      kind,
-      quoteKey,
-    })
+    entry.freeWrites.push({ id: writeId, text, status: status === 'final' ? 'final' : 'draft', updatedAt, kind, quoteKey })
   }
   entry.updatedAt = updatedAt
   store.entries[date] = entry

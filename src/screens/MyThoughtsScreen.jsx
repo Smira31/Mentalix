@@ -24,33 +24,10 @@ import { ProgressGlassMenu, ProgressGlassMenuItem } from '../components/Progress
 import './MyThoughtsScreen.css'
 
 const MONTHS_FULL = [
-  'ЯНВАРЬ',
-  'ФЕВРАЛЬ',
-  'МАРТ',
-  'АПРЕЛЬ',
-  'МАЙ',
-  'ИЮНЬ',
-  'ИЮЛЬ',
-  'АВГУСТ',
-  'СЕНТЯБРЬ',
-  'ОКТЯБРЬ',
-  'НОЯБРЬ',
-  'ДЕКАБРЬ',
+  'ЯНВАРЬ', 'ФЕВРАЛЬ', 'МАРТ', 'АПРЕЛЬ', 'МАЙ', 'ИЮНЬ',
+  'ИЮЛЬ', 'АВГУСТ', 'СЕНТЯБРЬ', 'ОКТЯБРЬ', 'НОЯБРЬ', 'ДЕКАБРЬ',
 ]
-const MONTHS_SHORT = [
-  'янв',
-  'фев',
-  'мар',
-  'апр',
-  'мая',
-  'июн',
-  'июл',
-  'авг',
-  'сен',
-  'окт',
-  'ноя',
-  'дек',
-]
+const MONTHS_SHORT = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек']
 
 function formatDateShort(dateStr) {
   const d = new Date(dateStr + 'T00:00:00')
@@ -129,9 +106,7 @@ export default function MyThoughtsScreen({ user, onClose, onEditThought }) {
 
       <div className={FULLSCREEN_SCROLL_CLASS}>
         <div className="w-full max-w-md mx-auto px-[var(--mx-screen-x)] pt-2 pb-6">
-          <h1 className="mx-my-thoughts__title font-display mx-type-page text-cream lowercase">
-            мои мысли.
-          </h1>
+          <h1 className="mx-my-thoughts__title font-display mx-type-page text-cream lowercase">мои мысли.</h1>
 
           {grouped.length === 0 && (
             <p className="mt-10 text-center text-[14px] text-muted">

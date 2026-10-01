@@ -30,7 +30,11 @@ import { useBackButton } from '../../platform/telegram.hooks'
 import { readJournalHistory } from '../../lib/journalHistory'
 import { moodPracticeDate } from '../../lib/moodPracticeLogic'
 import { getDailyThoughtForDate } from '../../data/dailyThoughts'
-import { THOUGHT_KIND, loadDailyItems, readCachedDailyItems } from '../../lib/dailyThoughtStorage'
+import {
+  THOUGHT_KIND,
+  loadDailyItems,
+  readCachedDailyItems,
+} from '../../lib/dailyThoughtStorage'
 import { MENTOR_DRAFT_KEY, MENTOR_PERSONA_KEY, MENTOR_SAFETY_KEY } from '../mentalix/personas'
 import MarkdownText from '../../components/MarkdownText'
 import {
@@ -512,10 +516,8 @@ function PeriodCard({ rangeLabel, title, onClick, testId }) {
 }
 
 function entryMoodChip(entry) {
-  if (entry.checkin?.mood != null)
-    return { text: moodWord(entry.checkin.mood), mood: entry.checkin.mood }
-  if (entry.moodPractice?.mood != null)
-    return { text: moodWord(entry.moodPractice.mood), mood: entry.moodPractice.mood }
+  if (entry.checkin?.mood != null) return { text: moodWord(entry.checkin.mood), mood: entry.checkin.mood }
+  if (entry.moodPractice?.mood != null) return { text: moodWord(entry.moodPractice.mood), mood: entry.moodPractice.mood }
   return null
 }
 
@@ -546,7 +548,9 @@ function entryPreview(entry) {
     return (
       <div className="mx-progress-history__row-preview-text">
         <span className="mx-progress-history__thought-text">{entry.thought?.text}</span>
-        {quote?.text && <span className="mx-progress-history__thought-quote">{quote.text}</span>}
+        {quote?.text && (
+          <span className="mx-progress-history__thought-quote">{quote.text}</span>
+        )}
       </div>
     )
   }
@@ -576,7 +580,9 @@ function DayList({ days, onSelectEntry }) {
               <span className="mx-progress-history__row-name">{entryListName(entry.type)}</span>
               {entry.time && <span className="mx-progress-history__row-time">{entry.time}</span>}
             </div>
-            {preview && <div className="mx-progress-history__row-preview">{preview}</div>}
+            {preview && (
+              <div className="mx-progress-history__row-preview">{preview}</div>
+            )}
           </button>
         )
       })}
@@ -1027,7 +1033,9 @@ export default function ProgressHistory({ user, onGoCheckin, onRedo, onRedoRevie
           <div className="mx-progress-history__empty">
             {days.length === 0 ? (
               <>
-                <div className="mx-progress-history__empty-title">Здесь появятся твои записи</div>
+                <div className="mx-progress-history__empty-title">
+                  Здесь появятся твои записи
+                </div>
                 <div className="mx-progress-history__empty-subtitle">
                   Пройди чек-ин или отметь настроение — и здесь появится первая запись.
                 </div>

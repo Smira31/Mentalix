@@ -81,9 +81,7 @@ export function useHeroJourneyProgress() {
         ...p,
         completed: { ...p.completed, [stepId]: new Date().toISOString() },
         ...(markedSigns ? { signs: { ...p.signs, [stepId]: markedSigns } } : {}),
-        ...(reflection !== undefined
-          ? { reflections: { ...p.reflections, [stepId]: reflection } }
-          : {}),
+        ...(reflection !== undefined ? { reflections: { ...p.reflections, [stepId]: reflection } } : {}),
         ...(action !== undefined ? { actions: { ...p.actions, [stepId]: action } } : {}),
       }))
     },

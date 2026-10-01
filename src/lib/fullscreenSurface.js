@@ -110,7 +110,9 @@ export function readDemoFrameBox(frame, windowLike = window) {
 
 function useDemoFrameBox(enabled) {
   const [box, setBox] = useState(() =>
-    enabled === true ? readDemoFrameBox(document.querySelector('[data-mentalix-demo-frame]')) : null
+    enabled === true
+      ? readDemoFrameBox(document.querySelector('[data-mentalix-demo-frame]'))
+      : null
   )
 
   useEffect(() => {
@@ -230,7 +232,11 @@ export function useFullscreenSurface() {
     paddingBottom: 'var(--app-safe-bottom)',
 
     height:
-      frameHeight !== null ? `${frameHeight}px` : visibleHeight ? `${visibleHeight}px` : '100dvh',
+      frameHeight !== null
+        ? `${frameHeight}px`
+        : visibleHeight
+          ? `${visibleHeight}px`
+          : '100dvh',
   }
 
   return {

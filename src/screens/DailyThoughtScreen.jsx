@@ -28,18 +28,8 @@ import MyThoughtsScreen from './MyThoughtsScreen'
 import './DailyThoughtScreen.css'
 
 const MONTHS_GEN = [
-  'ЯНВАРЯ',
-  'ФЕВРАЛЯ',
-  'МАРТА',
-  'АПРЕЛЯ',
-  'МАЯ',
-  'ИЮНЯ',
-  'ИЮЛЯ',
-  'АВГУСТА',
-  'СЕНТЯБРЯ',
-  'ОКТЯБРЯ',
-  'НОЯБРЯ',
-  'ДЕКАБРЯ',
+  'ЯНВАРЯ', 'ФЕВРАЛЯ', 'МАРТА', 'АПРЕЛЯ', 'МАЯ', 'ИЮНЯ',
+  'ИЮЛЯ', 'АВГУСТА', 'СЕНТЯБРЯ', 'ОКТЯБРЯ', 'НОЯБРЯ', 'ДЕКАБРЯ',
 ]
 const MAX_DAYS_BACK = 30
 const SWIPE_THRESHOLD = 50
@@ -80,7 +70,10 @@ export default function DailyThoughtScreen({ thought, onClose, onGoMentor, user 
   const wheelAt = useRef(0)
 
   const currentDate = useMemo(() => dateOffsetStr(offset), [offset])
-  const currentThought = useMemo(() => getDailyThoughtForDate(currentDate), [currentDate])
+  const currentThought = useMemo(
+    () => getDailyThoughtForDate(currentDate),
+    [currentDate]
+  )
   /*
    * localStorage — кэш: первый рендер показывает то, что уже есть.
    * Следом (и однократно) — перенос прежних локальных мыслей на сервер
@@ -309,9 +302,7 @@ export default function DailyThoughtScreen({ thought, onClose, onGoMentor, user 
           >
             {saved || quoteAlreadySaved ? 'Сохранено ✓' : 'Сохранить'}
           </button>
-          <span className="mx-daily-thought__dot" aria-hidden="true">
-            ·
-          </span>
+          <span className="mx-daily-thought__dot" aria-hidden="true">·</span>
           <button
             type="button"
             data-testid="daily-thought-copy"
@@ -320,9 +311,7 @@ export default function DailyThoughtScreen({ thought, onClose, onGoMentor, user 
           >
             {copied ? 'Скопировано' : 'Копировать'}
           </button>
-          <span className="mx-daily-thought__dot" aria-hidden="true">
-            ·
-          </span>
+          <span className="mx-daily-thought__dot" aria-hidden="true">·</span>
           <button
             type="button"
             data-testid="daily-thought-discuss"
