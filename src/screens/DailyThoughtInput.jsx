@@ -8,7 +8,6 @@ import {
   useFullscreenSurface,
   getFullscreenPortalTarget,
   FULLSCREEN_SHELL_CLASS,
-  FULLSCREEN_HEADER_SLOT_CLASS,
   FULLSCREEN_SCROLL_CLASS,
 } from '../lib/fullscreenSurface'
 import {
@@ -94,12 +93,12 @@ export default function DailyThoughtInput({ date, user, onClose, onSaved }) {
 
   return createPortal(
     <div className={FULLSCREEN_SHELL_CLASS} style={surfaceStyle}>
-      <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`}>
-        <RoundBackButton onClick={onClose} testId="daily-thought-input-back" />
-      </div>
-
       <div className={FULLSCREEN_SCROLL_CLASS}>
         <div className="w-full max-w-md mx-auto px-[var(--mx-screen-x)] pt-2 pb-6 flex flex-col min-h-full">
+          <div className="mb-2">
+            <RoundBackButton onClick={onClose} testId="daily-thought-input-back" />
+          </div>
+
           <div className="text-left" data-testid="daily-thought-input-content">
             <div className="mb-2 font-label text-[11px] font-bold uppercase tracking-[0.14em] text-gold">
               ТВОЯ МЫСЛЬ
