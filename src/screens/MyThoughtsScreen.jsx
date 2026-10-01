@@ -1,17 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
-import { createPortal } from 'react-dom'
 
 import { platform } from '../platform'
-import { isDemoEmulationActive } from '../lib/demoChrome'
 import { Pencil, Trash2 } from 'lucide-react'
-import { RoundBackButton } from '../components/NestedScreenHeader'
-import {
-  useFullscreenSurface,
-  getFullscreenPortalTarget,
-  FULLSCREEN_SHELL_CLASS,
-  FULLSCREEN_HEADER_SLOT_CLASS,
-  FULLSCREEN_SCROLL_CLASS,
-} from '../lib/fullscreenSurface'
+import Screen from '../components/Screen'
+import PageTitle from '../components/ui/PageTitle'
+import CapsLabel from '../components/ui/CapsLabel'
+import Card from '../components/ui/Card'
 import {
   THOUGHT_KIND,
   loadDailyItems,
@@ -40,9 +34,11 @@ function formatDateShort(dateStr) {
  * Своя мысль — карточка card2, радиус 16, текст 17/500,
  * под ним мелко дата и цитата дня, к которой она написана.
  * Тап по карточке — стеклянное меню «Изменить» / «Удалить».
+ *
+ * Переведён на <Screen> + детали (PageTitle, CapsLabel, Card).
+ * Вид и поведение не изменились.
  */
 export default function MyThoughtsScreen({ user, onClose, onEditThought }) {
-  const { style: surfaceStyle } = useFullscreenSurface()
   // Кэш показываем сразу, следом обновляем список с сервера.
   const [items, setItems] = useState(() => readCachedDailyItems(user?.id))
   const [menuFor, setMenuFor] = useState(null)
@@ -88,103 +84,81 @@ export default function MyThoughtsScreen({ user, onClose, onEditThought }) {
     onEditThought?.(thought)
   }
 
-  return createPortal(
-    <div className={FULLSCREEN_SHELL_CLASS} style={surfaceStyle}>
-      {/* В demo-режиме кнопку «назад» показывает пилюля Telegram, слот 52px
-          пуст — убираем его, чтобы заголовок стоял так же близко к шапке,
-          как «история.» на Прогрессе. Кнопка остаётся в DOM (невидимой):
-          стек «назад» и testid сохраняются. */}
-      <div
-        className={
-          isDemoEmulationActive()
-            ? 'contents'
-            : `${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`
-        }
-      >
-        <RoundBackButton onClick={onClose} testId="my-thoughts-back" registerSystemBack />
-      </div>
+  return (
+    <Screen onBack={onClose} backTestId="my-thoughts-back">
+      <h1 className="mx-my-thoughts__title font-display mx-type-page text-cream lowercase">мои мысли.</h1>
 
-      <div className={FULLSCREEN_SCROLL_CLASS}>
-        <div className="w-full max-w-md mx-auto px-[var(--mx-screen-x)] pt-2 pb-6">
-          <h1 className="mx-my-thoughts__title font-display mx-type-page text-cream lowercase">мои мысли.</h1>
+      {grouped.length === 0 && (
+        <p className="mt-10 text-center text-[14px] text-muted">
+          Здесь появятся твои мысли — записанные в «Мысли дня».
+        </p>
+      )}
 
-          {grouped.length === 0 && (
-            <p className="mt-10 text-center text-[14px] text-muted">
-              Здесь появятся твои мысли — записанные в «Мысли дня».
-            </p>
-          )}
-
-          {grouped.map(([key, group]) => (
-            <div key={key} className="mt-6 first:mt-2">
-              <div className="text-center text-[11px] font-bold uppercase tracking-[0.2em] text-muted mb-4">
-                {group.label}
-              </div>
-              <div className="space-y-3">
-                {group.items.map(thought => {
-                  const quote = getDailyThoughtForDate(thought.date)
-                  const isSaved = thought.kind !== THOUGHT_KIND
-                  return (
-                    <div key={thought.id} className="relative">
-                      <button
-                        type="button"
-                        data-testid="my-thought-card"
-                        className="mx-my-thoughts__card w-full rounded-2xl bg-[rgb(var(--c-card2))] p-4 text-left active:scale-[0.99] transition-transform"
-                        onClick={() => {
-                          platform.haptic('light')
-                          setMenuFor(menuFor === thought.id ? null : thought.id)
-                        }}
-                      >
-                        {isSaved && (
-                          <span className="mb-1 inline-block rounded-full bg-gold/10 px-2 py-0.5 text-[10px] font-bold text-gold">
-                            сохранено
-                          </span>
-                        )}
-                        <p
-                          className={`text-[17px] font-medium leading-relaxed text-cream ${
-                            isSaved ? 'italic' : ''
-                          }`}
-                        >
-                          {thought.text}
-                        </p>
-                        <p className="mt-2 text-[12px] text-muted">
-                          {formatDateShort(thought.date)}
-                          {!isSaved && quote?.text && (
-                            <>
-                              {' · '}
-                              <span className="italic">{quote.text}</span>
-                            </>
-                          )}
-                        </p>
-                      </button>
-
-                      {menuFor === thought.id && (
-                        <div className="absolute right-2 top-full z-50 mt-1">
-                          <ProgressGlassMenu>
-                            <ProgressGlassMenuItem
-                              icon={Pencil}
-                              label="Изменить"
-                              testId="my-thought-edit"
-                              onClick={() => handleEdit(thought)}
-                            />
-                            <ProgressGlassMenuItem
-                              icon={Trash2}
-                              label="Удалить"
-                              danger
-                              testId="my-thought-delete"
-                              onClick={() => handleDelete(thought)}
-                            />
-                          </ProgressGlassMenu>
-                        </div>
+      {grouped.map(([key, group]) => (
+        <div key={key} className="mt-6 first:mt-2">
+          <CapsLabel className="block text-center mb-4">{group.label}</CapsLabel>
+          <div className="space-y-3">
+            {group.items.map(thought => {
+              const quote = getDailyThoughtForDate(thought.date)
+              const isSaved = thought.kind !== THOUGHT_KIND
+              return (
+                <div key={thought.id} className="relative">
+                  <Card
+                    testId="my-thought-card"
+                    onClick={() => {
+                      platform.haptic('light')
+                      setMenuFor(menuFor === thought.id ? null : thought.id)
+                    }}
+                    className="w-full p-4 text-left active:scale-[0.99] transition-transform"
+                  >
+                    {isSaved && (
+                      <span className="mb-1 inline-block rounded-full bg-gold/10 px-2 py-0.5 text-[10px] font-bold text-gold">
+                        сохранено
+                      </span>
+                    )}
+                    <p
+                      className={`text-[17px] font-medium leading-relaxed text-cream ${
+                        isSaved ? 'italic' : ''
+                      }`}
+                    >
+                      {thought.text}
+                    </p>
+                    <p className="mt-2 text-[12px] text-muted">
+                      {formatDateShort(thought.date)}
+                      {!isSaved && quote?.text && (
+                        <>
+                          {' · '}
+                          <span className="italic">{quote.text}</span>
+                        </>
                       )}
+                    </p>
+                  </Card>
+
+                  {menuFor === thought.id && (
+                    <div className="absolute right-2 top-full z-50 mt-1">
+                      <ProgressGlassMenu>
+                        <ProgressGlassMenuItem
+                          icon={Pencil}
+                          label="Изменить"
+                          testId="my-thought-edit"
+                          onClick={() => handleEdit(thought)}
+                        />
+                        <ProgressGlassMenuItem
+                          icon={Trash2}
+                          label="Удалить"
+                          danger
+                          testId="my-thought-delete"
+                          onClick={() => handleDelete(thought)}
+                        />
+                      </ProgressGlassMenu>
                     </div>
-                  )
-                })}
-              </div>
-            </div>
-          ))}
+                  )}
+                </div>
+              )
+            })}
+          </div>
         </div>
-      </div>
-    </div>,
-    getFullscreenPortalTarget()
+      ))}
+    </Screen>
   )
 }
