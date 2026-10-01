@@ -155,7 +155,6 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
             <ThemeQuestionCarousel
               key={activeId}
               questions={questions}
-              maxCards={7}
               initialIndex={initialScrollIndex}
               onWrite={handleWrite}
               onViewAnswer={handleWrite}

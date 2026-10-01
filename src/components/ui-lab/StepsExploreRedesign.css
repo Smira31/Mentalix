@@ -214,6 +214,12 @@
   background: #141414;
   justify-items: center;
   text-align: center;
+  overflow: visible; /* let carousel track extend beyond panel to screen edges */
+}
+
+/* Track extends beyond panel by panel's side padding on each side */
+.mx-steps-theme-panel .mx-tqc-track {
+  --mx-tqc-extend: 40px;
 }
 .mx-steps-theme-heading {
   display: grid;

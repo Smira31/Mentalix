@@ -45,13 +45,13 @@ test('MXL-547: отдельная коллекция скрыта только �
   assert.doesNotMatch(catalog, /selectedCollectionKey/)
 })
 
-test('MXL-547: каталог показывает максимум четыре реальных дня текущей темы', () => {
+test('MXL-547: каталог показывает все реальные дни текущей темы', () => {
   // api.themes.get и merge перенесены из Practices.jsx в themesDataCache.js.
   assert.match(themesCache, /api\.themes\.get\(currentTheme\.id, userId\)/)
   assert.match(themesCache, /\.\.\.theme, \.\.\.detail/)
   // Карусель рендерится через общий компонент ThemeQuestionCarousel.
   assert.match(catalog, /ThemeQuestionCarousel/)
-  assert.match(catalog, /maxCards=\{4\}/)
+  assert.doesNotMatch(catalog, /maxCards=/)
   assert.match(carousel, /q\.day/)
   assert.match(carousel, /q\.text/)
   assert.match(carousel, /q\.prompt/)

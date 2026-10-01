@@ -13,8 +13,8 @@ export function isCardOpen(questions, index) {
 /**
  * Shared Stoic-style question carousel for weekly themes.
  *
- * Used by PracticeCatalogV2 (Steps screen, maxCards=4) and
- * ThemeCarouselScreen (fullscreen, maxCards=7). Sequential opening:
+ * Used by PracticeCatalogV2 (Steps) and ThemeCarouselScreen (fullscreen).
+ * Sequential opening:
  * card N is open only when card N-1 has a recorded reflection.
  *
  * Callbacks receive the question object (with .day, .text, .prompt,
@@ -56,9 +56,9 @@ export default function ThemeQuestionCarousel({
       const cardCenter = card.offsetLeft + card.offsetWidth / 2
       const distance = Math.abs(cardCenter - center)
       const t = Math.min(distance / card.offsetWidth, 1)
-      // Center card: scale 1, neighbors: ~0.85
-      const scale = 1 - 0.15 * t
-      card.style.transform = `scale(${scale.toFixed(4)})`
+      // Active card: 322px, neighbors: 243px (~75%)
+      const h = Math.round(322 - 79 * t)
+      card.style.height = `${h}px`
     })
   }
 
@@ -139,7 +139,8 @@ export default function ThemeQuestionCarousel({
   if (currentIsAnswered) {
     ctaLabel = 'Посмотреть запись'
   } else if (!currentIsOpen) {
-    ctaLabel = `Откроется после вопроса ${safeIndex}`
+    const prevDay = cards[safeIndex - 1]?.day ?? safeIndex
+    ctaLabel = `Откроется после вопроса ${prevDay}`
     ctaDisabled = true
   }
 
@@ -167,11 +168,6 @@ export default function ThemeQuestionCarousel({
               aria-label={`Вопрос ${q.day ?? i + 1}`}
             >
               <span className="mx-tqc-card__num">{q.day ?? i + 1}</span>
-              {answered && (
-                <span className="mx-tqc-card__check" aria-label="Записано">
-                  ✓
-                </span>
-              )}
               <strong className="mx-tqc-card__question">{q.text}</strong>
               {q.prompt && <span className="mx-tqc-card__prompt">{q.prompt}</span>}
             </article>

@@ -694,13 +694,13 @@ test('локальный UX smoke по основному маршруту', asy
         await assertClickable(page.getByRole('button', { name: 'Открыть Ритуалы' }))
         await assertClickable(page.getByRole('button', { name: 'Открыть Аскезы' }))
         const productionCardTypography = await page.evaluate(() => {
-          const catalog = document.querySelector('.mx-production-catalog')
-          const rail = catalog?.querySelector('.mx-layered-catalog__rail')
+          const catalog = document.querySelector('.mx-steps-explore-catalog')
+          const rail = catalog?.querySelector('.mx-steps-rail')
           const practiceTitle = [...(rail?.querySelectorAll('strong') || [])].find(title =>
             title.textContent?.includes('Разобраться со Следопытом')
           )
           const practiceCopy = rail?.querySelector('small')
-          const collectionCopy = catalog?.querySelector('.mx-layered-catalog__collection small')
+          const collectionCopy = catalog?.querySelector('.mx-steps-collection__desc')
           const catalogRect = catalog?.getBoundingClientRect()
           const railRect = rail?.getBoundingClientRect()
           const fontSize = element =>

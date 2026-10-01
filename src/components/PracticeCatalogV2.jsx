@@ -170,7 +170,6 @@ function ThemeCarousel({
         </h2>
         <ThemeQuestionCarousel
           questions={theme.days}
-          maxCards={4}
           onWrite={() => onOpen(theme)}
           onViewAnswer={() => onOpen(theme)}
         />

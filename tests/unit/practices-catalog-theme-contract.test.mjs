@@ -39,12 +39,12 @@ test('MXL-525 (G5): ошибка загрузки тем отделена от �
   assert.match(catalogSource, /Пока нет вопросов/)
 })
 
-test('MXL-547: каталог использует четыре реальных вопроса текущей темы', () => {
+test('MXL-547: каталог использует все реальные вопросы текущей темы', () => {
   // api.themes.get перенесён из Practices.jsx в themesDataCache.js.
   assert.match(cacheSource, /api\.themes\.get\(currentTheme\.id, userId\)/)
   // Карусель рендерится через общий компонент ThemeQuestionCarousel.
   assert.match(catalogSource, /ThemeQuestionCarousel/)
-  assert.match(catalogSource, /maxCards=\{4\}/)
+  assert.doesNotMatch(catalogSource, /maxCards=/)
   assert.match(carouselSource, /\{q\.day \?\? i \+ 1\}/)
   assert.doesNotMatch(catalogSource, /padStart/)
 })
