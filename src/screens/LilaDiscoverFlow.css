@@ -56,8 +56,9 @@
   resize: none;
   -webkit-appearance: none;
   appearance: none;
-  font-size: 16px;
+  font-size: var(--mx-type-control-size);
   line-height: 1.5;
+  caret-color: rgb(var(--c-gold) / 0.35);
   color: rgb(var(--c-text));
   padding: 0;
 }

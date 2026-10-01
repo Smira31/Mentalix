@@ -201,7 +201,7 @@ test('MXL-LILA-UX-006 keeps Telegram native BackButton and draws the web/PWA fal
 test('MXL-LILA-UX-007 keeps query input on Mentalix tokens and removes azure focus ring', () => {
   assert.match(lilaCss, /font-size: var\(--mx-type-control-size\)/)
   assert.match(lilaCss, /caret-color: rgb\(var\(--c-gold\) \/ 0\.35\)/)
-  assert.match(lilaCss, /practice-writing-canvas__field:focus-visible[\s\S]*outline: 0/)
+  assert.match(lilaCss, /\.mx-lila-query-field:focus-visible[\s\S]*outline: none/)
   assert.doesNotMatch(lilaCss, /font-size: 1rem/)
 })
 
