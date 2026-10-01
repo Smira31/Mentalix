@@ -842,7 +842,9 @@ function CheckInCore({
 }) {
   const isEvening = mode === 'evening' || Boolean(recovery)
   const previewDemoMode = isPreviewDemoMode()
-  const skipScales = isEvening && (!!existing || Boolean(recovery))
+  // Повтор разбора (redo) стартует с первого шага «Как ты сейчас?» —
+  // шкалы не пропускаются, даже если запись дня уже есть.
+  const skipScales = isEvening && !redo && (!!existing || Boolean(recovery))
   const fieldSource = redo ? null : existing
 
   /*
@@ -1662,18 +1664,32 @@ function CheckInCore({
       className={`${FULLSCREEN_SHELL_CLASS} ${previewDemoMode ? 'mx-checkin-demo' : ''}`}
       style={viewportStyle}
     >
-      <div className={CHECKIN_HEADER_CLASS}>
-        <BackButton onClick={handleBack} />
-        {recovery && (
-          <span className="text-[13px] text-muted" data-testid="streak-recovery-date">
-            {yesterdayLabel(recovery.date)}
-          </span>
-        )}
-      </div>
+      {!(isEvening && isCard) && (
+        <div className={CHECKIN_HEADER_CLASS}>
+          <BackButton onClick={handleBack} />
+          {recovery && (
+            <span className="text-[13px] text-muted" data-testid="streak-recovery-date">
+              {yesterdayLabel(recovery.date)}
+            </span>
+          )}
+        </div>
+      )}
 
       <div className={FULLSCREEN_SCROLL_CLASS} style={interactiveStyle}>
         <StepSlide stepKey={step} onAnimatingChange={handleAnimatingChange}>
           <div className={isCard || isEmotionStep ? CHECKIN_LONG_CLASS : CHECKIN_CENTER_CLASS}>
+            {/* Текстовые вопросы вечера — BackButton внутри контента (как
+               «Твоя мысль»): вопрос начинается сразу под шапкой, отступ 16. */}
+            {isEvening && isCard && (
+              <div className="w-full flex items-center justify-between pb-2">
+                <BackButton onClick={handleBack} />
+                {recovery && (
+                  <span className="text-[13px] text-muted" data-testid="streak-recovery-date">
+                    {yesterdayLabel(recovery.date)}
+                  </span>
+                )}
+              </div>
+            )}
             {!isScaleStep && (
               <CheckInQuestion
                 title={questionTitle}

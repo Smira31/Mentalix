@@ -213,17 +213,20 @@
   font-weight: 700;
 }
 
-/* Тихая текстовая ссылка «Разобрать со Следопытом» — 15 muted */
+/* Тихая текстовая ссылка «Разобрать со Следопытом» — 15/500 muted,
+   тап-зона 44, отступ 8 под «Сохранить и выйти». Базовая пилюля
+   .mx-completion-action button задаёт фон/радиус/тень — снимаем их. */
 .mx-completion-action--evening > button:not(.cta-pill) {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  width: auto;
   min-height: 44px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
   font-size: 15px;
   font-weight: 500;
   color: rgb(var(--c-muted));
-  padding-top: 6px;
-  padding-bottom: 6px;
 }
 
 @media (max-height: 740px) {
