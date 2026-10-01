@@ -72,21 +72,6 @@ function OptionButton({ selected, onClick, children }) {
   )
 }
 
-function Progress({ step }) {
-  const index = TEST_STEPS.indexOf(step)
-  return (
-    <div
-      className="mx-profile-step-progress"
-      data-testid="wtp-progress"
-      aria-label={`Шаг ${index + 1} из ${TEST_STEPS.length}`}
-    >
-      {TEST_STEPS.map((item, itemIndex) => (
-        <span key={item} data-done={itemIndex <= index} />
-      ))}
-    </div>
-  )
-}
-
 export default function WillingnessToPayTest({ user, onBack }) {
   const saved = useMemo(() => readDraft(user?.id), [user?.id])
   const [step, setStep] = useState(
@@ -215,7 +200,6 @@ export default function WillingnessToPayTest({ user, onBack }) {
   return (
     <ProfilePage title={WTP_TITLE} onBack={onBack} testId="profile-screen-wtp" footer={footerButton}>
       <ProfileBody>
-        <Progress step={step} />
 
         {step === 'concept' && (
           <section>
@@ -223,7 +207,7 @@ export default function WillingnessToPayTest({ user, onBack }) {
               <div className="mb-2 flex items-center gap-2 text-muted">
                 <Heart size={15} />
                 <span className="text-[11px] font-label uppercase tracking-wider">
-                  короткий опрос
+                  короткий опрос · шаг 1 из 4
                 </span>
               </div>
               <h2 className="font-display text-[22px] leading-tight text-cream">
@@ -263,7 +247,7 @@ export default function WillingnessToPayTest({ user, onBack }) {
           <section>
             <div className="mb-6">
               <span className="text-[11px] font-label uppercase tracking-wider text-muted">
-                о выбранном результате
+                о выбранном результате · шаг 2 из 4
               </span>
               <h2 className="mt-2 font-display text-[22px] leading-tight text-cream">
                 Хотелось бы попробовать?
@@ -293,7 +277,7 @@ export default function WillingnessToPayTest({ user, onBack }) {
               <div className="mb-2 flex items-center gap-2 text-muted">
                 <ShieldCheck size={15} />
                 <span className="text-[11px] font-label uppercase tracking-wider">
-                  доверие и границы
+                  доверие и границы · шаг 3 из 4
                 </span>
               </div>
               <h2 className="font-display text-[22px] leading-tight text-cream">

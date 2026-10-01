@@ -502,9 +502,10 @@ button.mx-profile-row:active {
   cursor: not-allowed;
 }
 
-/* Footer у ProfilePage — отступ как у кнопки на экранах завершения чек-ина. */
+/* Footer у ProfilePage — safe-area уже на шелле (useFullscreenSurface),
+   поэтому тут только 16 px как у кнопки завершения чек-ина. */
 .mx-profile-page__footer {
-  padding-bottom: calc(var(--app-safe-bottom) + 16px);
+  padding-bottom: 16px;
 }
 
 /* Главная кнопка экранов профиля — белая с тёмным текстом,
@@ -657,24 +658,6 @@ button.mx-profile-row:active {
 
 .mx-wtp-save:disabled {
   opacity: 0.4;
-}
-
-/* Прогресс опроса: пройденные шаги белые, остальные серые. */
-.mx-profile-step-progress {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 24px;
-}
-
-.mx-profile-step-progress > span {
-  height: 6px;
-  flex: 1;
-  border-radius: 999px;
-  background: rgb(var(--c-card3));
-}
-
-.mx-profile-step-progress > span[data-done='true'] {
-  background: rgb(var(--c-text));
 }
 
 /* Раскрывающийся раздел («политика и данные.»): строка списка 50 px. */
