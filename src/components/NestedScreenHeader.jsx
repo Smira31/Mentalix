@@ -29,6 +29,18 @@ export default function NestedScreenHeader({
  * где заголовок уже есть (например, заголовок шага сессии),
  * а нужна только круглая кнопка вместо текстовой «‹ Назад».
  */
-export function RoundBackButton({ onClick, testId = 'back-button', registerSystemBack = false }) {
-  return <ScreenBack onBack={onClick} testId={testId} registerSystemBack={registerSystemBack} />
+export function RoundBackButton({
+  onClick,
+  testId = 'back-button',
+  registerSystemBack = false,
+  className = '',
+}) {
+  return (
+    <ScreenBack
+      onBack={onClick}
+      testId={testId}
+      registerSystemBack={registerSystemBack}
+      className={className}
+    />
+  )
 }

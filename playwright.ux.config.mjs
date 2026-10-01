@@ -4,6 +4,7 @@ export default defineConfig({
   testDir: './tests/ux',
   testMatch: [
     'ux-check.spec.mjs',
+    'practices-rituals-ascezas.spec.mjs',
     'onboarding-age-gate.spec.mjs',
     'issue-648-independent-loading.spec.mjs',
     'mood-practice-smoke.spec.mjs',

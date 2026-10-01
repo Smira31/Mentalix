@@ -12,6 +12,10 @@ export function semanticKindForRitual(title) {
   if (includesAny(title, ['душ', 'холодн', 'облив'])) return 'shower'
   if (includesAny(title, ['зачем', 'проснул', 'смысл', 'намерен'])) return 'purpose'
   if (includesAny(title, ['вод', 'стакан'])) return 'water'
+  if (includesAny(title, ['дых', 'вдох'])) return 'breath'
+  if (includesAny(title, ['медит', 'осознан'])) return 'meditation'
+  if (includesAny(title, ['дневник', 'чтен', 'книг', 'журнал'])) return 'journal'
+  if (includesAny(title, ['фокус', 'концентрац', 'вниман'])) return 'focus'
   return 'ritual'
 }
 
