@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import { api } from '../lib/api'
+import { isThoughtQuote } from '../lib/quoteTags'
 import { MotifArt } from '../components/Motif'
 import BackButton from '../components/BackButton'
 import {
@@ -43,7 +44,11 @@ export default function QuoteView({ user, todayQuote, onClose }) {
     api.quotes
       .list(user.id)
       .then(list => {
-        const rest = (list || []).filter(q => q.text !== todayEntry?.text)
+        /*
+         * Записи «Мысли дня» (tag thought:YYYY-MM-DD / saved:YYYY-MM-DD)
+         * здесь не показываем: это не обычные фразы пользователя.
+         */
+        const rest = (list || []).filter(q => !isThoughtQuote(q) && q.text !== todayEntry?.text)
         setQuotes(todayEntry ? [todayEntry, ...rest] : rest)
       })
       .catch(console.error)

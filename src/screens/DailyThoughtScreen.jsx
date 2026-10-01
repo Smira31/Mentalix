@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import { platform } from '../platform'
@@ -10,38 +10,120 @@ import {
   FULLSCREEN_HEADER_SLOT_CLASS,
   FULLSCREEN_SCROLL_CLASS,
 } from '../lib/fullscreenSurface'
+import { EDGE_WIDTH } from '../lib/gestures/swipeThresholds'
 import { MENTOR_PERSONA_KEY, MENTOR_DRAFT_KEY } from './mentalix/personas'
+import { getDailyThoughtForDate } from '../data/dailyThoughts'
+import { toLocalCalendarDate } from '../lib/dateTimezonePolicy'
+import {
+  THOUGHT_KIND,
+  SAVED_KIND,
+  loadDailyItems,
+  migrateLocalDailyItems,
+  readCachedDailyItems,
+  saveSavedQuote,
+} from '../lib/dailyThoughtStorage'
+import DailyThoughtInput from './DailyThoughtInput'
+import MyThoughtsScreen from './MyThoughtsScreen'
 
 import './DailyThoughtScreen.css'
+
+const MONTHS_GEN = [
+  'ЯНВАРЯ', 'ФЕВРАЛЯ', 'МАРТА', 'АПРЕЛЯ', 'МАЯ', 'ИЮНЯ',
+  'ИЮЛЯ', 'АВГУСТА', 'СЕНТЯБРЯ', 'ОКТЯБРЯ', 'НОЯБРЯ', 'ДЕКАБРЯ',
+]
+const MAX_DAYS_BACK = 30
+const SWIPE_THRESHOLD = 50
+/* Порог и пауза колеса: один жест — один день, без «прокрутки» на двадцать. */
+const WHEEL_STEP = 12
+const WHEEL_COOLDOWN = 450
+
+function dateLabel(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00')
+  return `${d.getDate()} ${MONTHS_GEN[d.getMonth()]}`
+}
+
+function dateOffsetStr(offset) {
+  const d = new Date()
+  d.setDate(d.getDate() - offset)
+  return toLocalCalendarDate(d)
+}
 
 /*
  * Экран «Мысль дня» — Stoic-формат.
  *
- * Текст мысли уже есть в карточке на «Сегодня» — экран
- * показывает его мгновенно, без загрузки. Три действия:
- * «Записать мысль» (→ diary-персона Следопыт), «Обсудить с
- * Наставником» (→ kompas), «Копировать» (в буфер).
- *
- * Полноэкранный контракт — портал в body, высота из
- * visualViewport, блокировка скролла (useFullscreenSurface).
+ * Свайп влево — прошлые дни (до 30), вправо — обратно к сегодня.
+ * Жест слушается и на тач-экране, и мышью/колесом: в превью это
+ * обычный браузер, где touch-событий нет вовсе.
+ * Под цитатой — своя мысль за этот день, если записана.
+ * «Обсудить» — третья текстовая кнопка рядом с «Сохранить» и «Копировать»;
+ * собственное «…» в шапке убрано как дублирующее «•••» Telegram.
  */
-export default function DailyThoughtScreen({ thought, onClose, onGoMentor }) {
+export default function DailyThoughtScreen({ thought, onClose, onGoMentor, user }) {
   const { style: surfaceStyle } = useFullscreenSurface()
+  const [offset, setOffset] = useState(0)
+  const [view, setView] = useState('main')
   const [copied, setCopied] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const [items, setItems] = useState(() => readCachedDailyItems(user?.id))
+  const touchStart = useRef(null)
+  const mouseStart = useRef(null)
+  const wheelAt = useRef(0)
+
+  const currentDate = useMemo(() => dateOffsetStr(offset), [offset])
+  const currentThought = useMemo(
+    () => getDailyThoughtForDate(currentDate),
+    [currentDate]
+  )
+  /*
+   * localStorage — кэш: первый рендер показывает то, что уже есть.
+   * Следом (и однократно) — перенос прежних локальных мыслей на сервер
+   * и обновление списка с сервера.
+   */
+  useEffect(() => {
+    if (!user?.id) return
+
+    let alive = true
+
+    migrateLocalDailyItems(user.id)
+      .then(() => loadDailyItems(user.id))
+      .then(next => {
+        if (alive) setItems(next)
+      })
+      .catch(console.error)
+
+    return () => {
+      alive = false
+    }
+  }, [user?.id])
+
+  const myThought = useMemo(
+    () => items.find(item => item.kind === THOUGHT_KIND && item.date === currentDate) || null,
+    [items, currentDate]
+  )
+  const allThoughtsCount = useMemo(
+    () => items.filter(item => item.kind === THOUGHT_KIND).length,
+    [items]
+  )
+
+  // Проверяем, сохранена ли цитата при открытии дня
+  const quoteAlreadySaved = useMemo(
+    () => items.some(item => item.kind === SAVED_KIND && item.date === currentDate),
+    [items, currentDate]
+  )
 
   function navigateToMentor(persona) {
     try {
       sessionStorage.setItem(MENTOR_PERSONA_KEY, persona)
-      sessionStorage.setItem(MENTOR_DRAFT_KEY, thought?.text || '')
+      sessionStorage.setItem(MENTOR_DRAFT_KEY, currentThought?.text || '')
     } catch {
-      /* sessionStorage unavailable — chat opens without draft */
+      /* sessionStorage unavailable */
     }
     onGoMentor?.()
   }
 
   function handleWrite() {
     platform.haptic('light')
-    navigateToMentor('dnevnik')
+    setView('input')
   }
 
   function handleDiscuss() {
@@ -51,7 +133,7 @@ export default function DailyThoughtScreen({ thought, onClose, onGoMentor }) {
 
   function handleCopy() {
     platform.haptic('light')
-    const text = thought?.text || ''
+    const text = currentThought?.text || ''
     if (navigator.clipboard?.writeText) {
       navigator.clipboard.writeText(text).catch(() => {})
     }
@@ -59,15 +141,145 @@ export default function DailyThoughtScreen({ thought, onClose, onGoMentor }) {
     setTimeout(() => setCopied(false), 2000)
   }
 
+  async function handleSaveQuote() {
+    platform.haptic('light')
+    try {
+      const next = await saveSavedQuote({
+        date: currentDate,
+        text: currentThought?.text || '',
+        userId: user?.id,
+      })
+      setItems(next)
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2000)
+    } catch (error) {
+      platform.haptic('error')
+      console.error(error)
+    }
+  }
+
+  function handleMyThoughts() {
+    platform.haptic('light')
+    setView('myThoughts')
+  }
+
+  function handleInputSaved() {
+    setView('main')
+    if (!user?.id) return
+    loadDailyItems(user.id).then(setItems).catch(console.error)
+  }
+
+  // ── Свайп между днями: тач, мышь, колесо ──
+  function shiftDays(step) {
+    const next = Math.min(Math.max(offset + step, 0), MAX_DAYS_BACK)
+    if (next === offset) return
+    platform.haptic('light')
+    setOffset(next)
+  }
+
+  function handleSwipe(dx, dy, startX = Number.POSITIVE_INFINITY) {
+    // Не ломаем edge-swipe-back от левого края
+    if (startX <= EDGE_WIDTH) return
+    if (Math.abs(dx) < Math.abs(dy)) return // вертикальный жест — не наш
+    if (Math.abs(dx) < SWIPE_THRESHOLD) return
+    // Влево — прошлый день, вправо — обратно к сегодня.
+    shiftDays(dx < 0 ? 1 : -1)
+  }
+
+  function onTouchStart(e) {
+    const t = e.touches[0]
+    touchStart.current = { x: t.clientX, y: t.clientY }
+  }
+
+  function onTouchEnd(e) {
+    const start = touchStart.current
+    if (!start) return
+    touchStart.current = null
+    const t = e.changedTouches[0]
+    handleSwipe(t.clientX - start.x, t.clientY - start.y, start.x)
+  }
+
+  function onMouseDown(e) {
+    if (e.button !== 0) return
+    mouseStart.current = { x: e.clientX, y: e.clientY }
+  }
+
+  function onMouseUp(e) {
+    const start = mouseStart.current
+    if (!start) return
+    mouseStart.current = null
+    handleSwipe(e.clientX - start.x, e.clientY - start.y, start.x)
+  }
+
+  function onWheel(e) {
+    const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY
+    if (Math.abs(delta) < WHEEL_STEP) return
+
+    const now = Date.now()
+    if (now - wheelAt.current < WHEEL_COOLDOWN) return
+    wheelAt.current = now
+
+    shiftDays(delta > 0 ? 1 : -1)
+  }
+
+  // ── Подэкраны ──
+  if (view === 'input') {
+    return (
+      <DailyThoughtInput
+        date={currentDate}
+        user={user}
+        onClose={() => setView('main')}
+        onSaved={handleInputSaved}
+      />
+    )
+  }
+
+  if (view === 'myThoughts') {
+    return (
+      <MyThoughtsScreen
+        user={user}
+        onClose={() => setView('main')}
+        onEditThought={() => setView('main')}
+      />
+    )
+  }
+
   return createPortal(
-    <div className={`${FULLSCREEN_SHELL_CLASS} mx-daily-thought`} style={surfaceStyle}>
+    <div
+      className={`${FULLSCREEN_SHELL_CLASS} mx-daily-thought`}
+      style={surfaceStyle}
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
+      onMouseDown={onMouseDown}
+      onMouseUp={onMouseUp}
+      onMouseLeave={() => {
+        mouseStart.current = null
+      }}
+      onWheel={onWheel}
+    >
       <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`}>
         <ScreenBack onBack={onClose} testId="daily-thought-back" />
       </div>
 
-      <div className={`${FULLSCREEN_SCROLL_CLASS} items-center justify-center px-5`}>
-        <span className="mx-daily-thought__label">МЫСЛЬ ДНЯ</span>
-        <p className="mx-daily-thought__text">{thought?.text}</p>
+      <div
+        className={`${FULLSCREEN_SCROLL_CLASS} items-center px-5 ${
+          myThought ? 'justify-end pb-8' : 'justify-center'
+        }`}
+        key={offset}
+      >
+        <span className="mx-daily-thought__label" data-testid="daily-thought-date-label">
+          {dateLabel(currentDate)} · МЫСЛЬ ДНЯ
+        </span>
+        <p className="mx-daily-thought__text" data-testid="daily-thought-quote">
+          {currentThought?.text}
+        </p>
+
+        {myThought && (
+          <div className="mx-daily-thought__my-thought" data-testid="daily-thought-my-thought">
+            <p>«{myThought.text}»</p>
+            <span className="mx-daily-thought__my-thought-author">— ты</span>
+          </div>
+        )}
       </div>
 
       <div className="mx-daily-thought__actions shrink-0 px-5 pb-7">
@@ -77,24 +289,84 @@ export default function DailyThoughtScreen({ thought, onClose, onGoMentor }) {
           className="mx-daily-thought__pill"
           onClick={handleWrite}
         >
-          Записать мысль
+          {myThought ? 'Изменить мысль' : 'Записать мысль'}
+          {offset > 0 && ` за ${dateLabel(currentDate).toLowerCase()}`}
         </button>
-        <button
-          type="button"
-          data-testid="daily-thought-discuss"
-          className="mx-daily-thought__secondary"
-          onClick={handleDiscuss}
-        >
-          Обсудить с Наставником
-        </button>
-        <button
-          type="button"
-          data-testid="daily-thought-copy"
-          className="mx-daily-thought__secondary"
-          onClick={handleCopy}
-        >
-          {copied ? 'Скопировано' : 'Копировать'}
-        </button>
+
+        <div className="mx-daily-thought__row">
+          <button
+            type="button"
+            data-testid="daily-thought-save"
+            className="mx-daily-thought__text-btn"
+            onClick={handleSaveQuote}
+          >
+            {saved || quoteAlreadySaved ? 'Сохранено ✓' : 'Сохранить'}
+          </button>
+          <span className="mx-daily-thought__dot" aria-hidden="true">·</span>
+          <button
+            type="button"
+            data-testid="daily-thought-copy"
+            className="mx-daily-thought__text-btn"
+            onClick={handleCopy}
+          >
+            {copied ? 'Скопировано' : 'Копировать'}
+          </button>
+          <span className="mx-daily-thought__dot" aria-hidden="true">·</span>
+          <button
+            type="button"
+            data-testid="daily-thought-discuss"
+            className="mx-daily-thought__text-btn"
+            onClick={handleDiscuss}
+          >
+            Обсудить
+          </button>
+        </div>
+
+        {allThoughtsCount > 0 && (
+          <button
+            type="button"
+            data-testid="daily-thought-my-thoughts-link"
+            className="mx-daily-thought__my-link"
+            onClick={handleMyThoughts}
+          >
+            Мои мысли · {allThoughtsCount} ›
+          </button>
+        )}
+
+        <div className="mx-daily-thought__day-nav" data-testid="daily-thought-day-nav">
+          {offset === 0 ? (
+            <button
+              type="button"
+              data-testid="daily-thought-day-prev"
+              className="mx-daily-thought__day-nav-btn"
+              onClick={() => shiftDays(1)}
+            >
+              ‹ вчера
+            </button>
+          ) : (
+            <>
+              {offset < MAX_DAYS_BACK && (
+                <button
+                  type="button"
+                  data-testid="daily-thought-day-prev"
+                  className="mx-daily-thought__day-nav-btn"
+                  onClick={() => shiftDays(1)}
+                >
+                  ‹ раньше
+                </button>
+              )}
+              <span className="mx-daily-thought__day-nav-spacer" aria-hidden="true" />
+              <button
+                type="button"
+                data-testid="daily-thought-day-today"
+                className="mx-daily-thought__day-nav-btn"
+                onClick={() => shiftDays(-offset)}
+              >
+                сегодня ›
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </div>,
     getFullscreenPortalTarget()
