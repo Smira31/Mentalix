@@ -1089,6 +1089,8 @@ function respond(path, options = {}) {
       user_id: body.user_id,
       text: body.text,
       tag: typeof body.tag === 'string' ? body.tag : null,
+      // Время записи — как на сервере: лента «История» показывает его в карточке.
+      created_at: now().toISOString(),
     }
     writeState({ ...state, quotes: [quote, ...(state.quotes || [])] })
     return json(quote)

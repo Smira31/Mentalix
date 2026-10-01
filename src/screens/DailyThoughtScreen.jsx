@@ -3,7 +3,6 @@ import { createPortal } from 'react-dom'
 
 import { platform } from '../platform'
 import ScreenBack from '../components/ScreenBack'
-import { MoreHorizontal, MessageCircle } from 'lucide-react'
 import {
   useFullscreenSurface,
   getFullscreenPortalTarget,
@@ -25,7 +24,6 @@ import {
 } from '../lib/dailyThoughtStorage'
 import DailyThoughtInput from './DailyThoughtInput'
 import MyThoughtsScreen from './MyThoughtsScreen'
-import { ProgressGlassMenu, ProgressGlassMenuItem } from '../components/ProgressGlassMenu'
 
 import './DailyThoughtScreen.css'
 
@@ -35,6 +33,10 @@ const MONTHS_GEN = [
 ]
 const MAX_DAYS_BACK = 30
 const SWIPE_THRESHOLD = 50
+/* Порог и пауза колеса: один жест — один день, без «прокрутки» на двадцать. */
+const WHEEL_STEP = 12
+const WHEEL_COOLDOWN = 450
+const HINT_DAYS = 5
 
 function dateLabel(dateStr) {
   const d = new Date(dateStr + 'T00:00:00')
@@ -51,8 +53,11 @@ function dateOffsetStr(offset) {
  * Экран «Мысль дня» — Stoic-формат.
  *
  * Свайп влево — прошлые дни (до 30), вправо — обратно к сегодня.
+ * Жест слушается и на тач-экране, и мышью/колесом: в превью это
+ * обычный браузер, где touch-событий нет вовсе.
  * Под цитатой — своя мысль за этот день, если записана.
- * «Обсудить с Наставником» — в стеклянном меню «…» справа сверху.
+ * «Обсудить» — третья текстовая кнопка рядом с «Сохранить» и «Копировать»;
+ * собственное «…» в шапке убрано как дублирующее «•••» Telegram.
  */
 export default function DailyThoughtScreen({ thought, onClose, onGoMentor, user }) {
   const { style: surfaceStyle } = useFullscreenSurface()
@@ -60,9 +65,11 @@ export default function DailyThoughtScreen({ thought, onClose, onGoMentor, user 
   const [view, setView] = useState('main')
   const [copied, setCopied] = useState(false)
   const [saved, setSaved] = useState(false)
-  const [menuOpen, setMenuOpen] = useState(false)
+  const [hintHidden, setHintHidden] = useState(false)
   const [items, setItems] = useState(() => readCachedDailyItems(user?.id))
   const touchStart = useRef(null)
+  const mouseStart = useRef(null)
+  const wheelAt = useRef(0)
 
   const currentDate = useMemo(() => dateOffsetStr(offset), [offset])
   const currentThought = useMemo(
@@ -123,7 +130,6 @@ export default function DailyThoughtScreen({ thought, onClose, onGoMentor, user 
 
   function handleDiscuss() {
     platform.haptic('light')
-    setMenuOpen(false)
     navigateToMentor('kompas')
   }
 
@@ -165,7 +171,24 @@ export default function DailyThoughtScreen({ thought, onClose, onGoMentor, user 
     loadDailyItems(user.id).then(setItems).catch(console.error)
   }
 
-  // ── Свайп между днями ──
+  // ── Свайп между днями: тач, мышь, колесо ──
+  function shiftDays(step) {
+    const next = Math.min(Math.max(offset + step, 0), MAX_DAYS_BACK)
+    if (next === offset) return
+    platform.haptic('light')
+    setHintHidden(true)
+    setOffset(next)
+  }
+
+  function handleSwipe(dx, dy, startX = Number.POSITIVE_INFINITY) {
+    // Не ломаем edge-swipe-back от левого края
+    if (startX <= EDGE_WIDTH) return
+    if (Math.abs(dx) < Math.abs(dy)) return // вертикальный жест — не наш
+    if (Math.abs(dx) < SWIPE_THRESHOLD) return
+    // Влево — прошлый день, вправо — обратно к сегодня.
+    shiftDays(dx < 0 ? 1 : -1)
+  }
+
   function onTouchStart(e) {
     const t = e.touches[0]
     touchStart.current = { x: t.clientX, y: t.clientY }
@@ -174,25 +197,32 @@ export default function DailyThoughtScreen({ thought, onClose, onGoMentor, user 
   function onTouchEnd(e) {
     const start = touchStart.current
     if (!start) return
-    const t = e.changedTouches[0]
-    const dx = t.clientX - start.x
-    const dy = t.clientY - start.y
     touchStart.current = null
+    const t = e.changedTouches[0]
+    handleSwipe(t.clientX - start.x, t.clientY - start.y, start.x)
+  }
 
-    // Не ломаем edge-swipe-back от левого края
-    if (start.x <= EDGE_WIDTH) return
+  function onMouseDown(e) {
+    if (e.button !== 0) return
+    mouseStart.current = { x: e.clientX, y: e.clientY }
+  }
 
-    if (Math.abs(dx) < Math.abs(dy)) return // вертикальный свайп — не наш
-    if (Math.abs(dx) < SWIPE_THRESHOLD) return
+  function onMouseUp(e) {
+    const start = mouseStart.current
+    if (!start) return
+    mouseStart.current = null
+    handleSwipe(e.clientX - start.x, e.clientY - start.y, start.x)
+  }
 
-    if (dx < 0) {
-      // свайп влево — прошлый день
-      setOffset(o => Math.min(o + 1, MAX_DAYS_BACK))
-    } else {
-      // свайп вправо — к сегодня
-      setOffset(o => Math.max(o - 1, 0))
-    }
-    platform.haptic('light')
+  function onWheel(e) {
+    const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY
+    if (Math.abs(delta) < WHEEL_STEP) return
+
+    const now = Date.now()
+    if (now - wheelAt.current < WHEEL_COOLDOWN) return
+    wheelAt.current = now
+
+    shiftDays(delta > 0 ? 1 : -1)
   }
 
   // ── Подэкраны ──
@@ -217,40 +247,21 @@ export default function DailyThoughtScreen({ thought, onClose, onGoMentor, user 
     )
   }
 
-  const isToday = offset === 0
-
   return createPortal(
     <div
       className={`${FULLSCREEN_SHELL_CLASS} mx-daily-thought`}
       style={surfaceStyle}
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
+      onMouseDown={onMouseDown}
+      onMouseUp={onMouseUp}
+      onMouseLeave={() => {
+        mouseStart.current = null
+      }}
+      onWheel={onWheel}
     >
       <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`}>
         <ScreenBack onBack={onClose} testId="daily-thought-back" />
-        <div className="relative ml-auto">
-          <button
-            type="button"
-            aria-label="Действия"
-            data-testid="daily-thought-menu-button"
-            className="mx-daily-thought__menu-btn"
-            onClick={() => setMenuOpen(o => !o)}
-          >
-            <MoreHorizontal size={22} aria-hidden="true" />
-          </button>
-          {menuOpen && (
-            <div className="absolute right-0 top-full z-50 mt-1">
-              <ProgressGlassMenu>
-                <ProgressGlassMenuItem
-                  icon={MessageCircle}
-                  label="Обсудить с Наставником"
-                  testId="daily-thought-discuss"
-                  onClick={handleDiscuss}
-                />
-              </ProgressGlassMenu>
-            </div>
-          )}
-        </div>
       </div>
 
       <div
@@ -299,7 +310,32 @@ export default function DailyThoughtScreen({ thought, onClose, onGoMentor, user 
           >
             {copied ? 'Скопировано' : 'Копировать'}
           </button>
+          <span className="mx-daily-thought__dot" aria-hidden="true">·</span>
+          <button
+            type="button"
+            data-testid="daily-thought-discuss"
+            className="mx-daily-thought__text-btn"
+            onClick={handleDiscuss}
+          >
+            Обсудить
+          </button>
         </div>
+
+        {!hintHidden && offset < HINT_DAYS && (
+          <div className="mx-daily-thought__swipe-hint" data-testid="daily-thought-swipe-hint">
+            {offset === 0 && <span className="mx-daily-thought__hint-text">‹ вчера</span>}
+            <span className="mx-daily-thought__hint-dots" aria-hidden="true">
+              {Array.from({ length: HINT_DAYS }).map((_, index) => (
+                <span
+                  key={index}
+                  className={`mx-daily-thought__hint-dot${
+                    index === offset ? ' mx-daily-thought__hint-dot--active' : ''
+                  }`}
+                />
+              ))}
+            </span>
+          </div>
+        )}
 
         {allThoughtsCount > 0 && (
           <button

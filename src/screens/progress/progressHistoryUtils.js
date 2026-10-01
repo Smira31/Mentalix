@@ -94,13 +94,14 @@ export function extractTime(isoString) {
 
 /**
  * Тип записи и название для строки списка (§5.5).
- * «Утренний чек-ин», «Вечерний разбор», «Настроение», «Дневник».
+ * «Утренний чек-ин», «Вечерний разбор», «Настроение», «Дневник», «Мысль дня».
  */
 export const ENTRY_TYPES = {
   MORNING: 'morning',
   EVENING: 'evening',
   MOOD: 'mood',
   JOURNAL: 'journal',
+  THOUGHT: 'thought',
 }
 
 export function entryListName(type) {
@@ -113,6 +114,8 @@ export function entryListName(type) {
       return 'Настроение'
     case ENTRY_TYPES.JOURNAL:
       return 'Дневник'
+    case ENTRY_TYPES.THOUGHT:
+      return 'Мысль дня'
     default:
       return 'Запись'
   }
@@ -131,6 +134,8 @@ export function entryScreenTitle(type) {
       return 'настроение.'
     case ENTRY_TYPES.JOURNAL:
       return 'дневник.'
+    case ENTRY_TYPES.THOUGHT:
+      return 'мысль дня.'
     default:
       return 'запись.'
   }
@@ -143,9 +148,10 @@ export function entryScreenTitle(type) {
  * @param {Array} moodPractices — записи практики «Настроение» (recorded_at, mood, emotion, ...)
  * @param {Array} journalEntries — локальные журнальные записи (date, phases, ...)
  * @param {Array} activity — ежедневная активность ритуалов/аскез (date, count, breaks)
+ * @param {Array} thoughts — свои мысли дня (/quotes с tag thought:YYYY-MM-DD)
  * @returns {Array<{date: string, entries: Array}>} — дни, отсортированные от новых к старым
  */
-export function buildEntriesByDay(checkins, moodPractices, journalEntries, activity) {
+export function buildEntriesByDay(checkins, moodPractices, journalEntries, activity, thoughts) {
   const byDate = {}
 
   function ensureDay(date) {
@@ -200,6 +206,18 @@ export function buildEntriesByDay(checkins, moodPractices, journalEntries, activ
       date: entry.date,
       time: '',
       journal: entry,
+    })
+  }
+
+  // Своя мысль дня — запись /quotes (tag thought:YYYY-MM-DD)
+  for (const t of thoughts || []) {
+    if (!t?.date) continue
+    const day = ensureDay(t.date)
+    day.entries.push({
+      type: ENTRY_TYPES.THOUGHT,
+      date: t.date,
+      time: extractTime(t.createdAt),
+      thought: t,
     })
   }
 
@@ -442,6 +460,7 @@ export const FILTER_GROUPS = Object.freeze([
     types: [
       { id: ENTRY_TYPES.MOOD, label: 'Настроение' },
       { id: ENTRY_TYPES.JOURNAL, label: 'Дневник' },
+      { id: ENTRY_TYPES.THOUGHT, label: 'Мысль дня' },
     ],
   },
 ])
@@ -506,6 +525,7 @@ export function getEntrySearchableText(entry) {
       if (phase.label) parts.push(phase.label)
     }
   }
+  if (entry.thought?.text) parts.push(entry.thought.text)
   return parts.join(' ').toLowerCase()
 }
 

@@ -29,6 +29,12 @@ import ScreenBack from '../../components/ScreenBack'
 import { useBackButton } from '../../platform/telegram.hooks'
 import { readJournalHistory } from '../../lib/journalHistory'
 import { moodPracticeDate } from '../../lib/moodPracticeLogic'
+import { getDailyThoughtForDate } from '../../data/dailyThoughts'
+import {
+  THOUGHT_KIND,
+  loadDailyItems,
+  readCachedDailyItems,
+} from '../../lib/dailyThoughtStorage'
 import { MENTOR_DRAFT_KEY, MENTOR_PERSONA_KEY, MENTOR_SAFETY_KEY } from '../mentalix/personas'
 import MarkdownText from '../../components/MarkdownText'
 import {
@@ -373,7 +379,28 @@ function EntryBody({ entry }) {
   if (entry.type === ENTRY_TYPES.EVENING) return <EveningBody checkin={entry.checkin} />
   if (entry.type === ENTRY_TYPES.MOOD) return <MoodBody mp={entry.moodPractice} />
   if (entry.type === ENTRY_TYPES.JOURNAL) return <JournalBody entry={entry.journal} />
+  if (entry.type === ENTRY_TYPES.THOUGHT) return <ThoughtBody entry={entry} />
   return null
+}
+
+/* Своя мысль дня: текст курсивом и цитата дня мелко. */
+function ThoughtBody({ entry }) {
+  const quote = getDailyThoughtForDate(entry.date)
+  if (!entry.thought?.text && !quote?.text) return null
+  return (
+    <>
+      <div className="mx-progress-entry__field">
+        <div className="mx-progress-entry__field-label">Моя мысль</div>
+        <p className="mx-progress-history__thought-text">{entry.thought?.text}</p>
+      </div>
+      {quote?.text && (
+        <div className="mx-progress-entry__field">
+          <div className="mx-progress-entry__field-label">Цитата дня</div>
+          <p className="mx-progress-history__thought-quote">{quote.text}</p>
+        </div>
+      )}
+    </>
+  )
 }
 
 function MorningBody({ checkin }) {
@@ -516,6 +543,17 @@ function entryPreview(entry) {
       </div>
     )
   }
+  if (entry.type === ENTRY_TYPES.THOUGHT) {
+    const quote = getDailyThoughtForDate(entry.date)
+    return (
+      <div className="mx-progress-history__row-preview-text">
+        <span className="mx-progress-history__thought-text">{entry.thought?.text}</span>
+        {quote?.text && (
+          <span className="mx-progress-history__thought-quote">{quote.text}</span>
+        )}
+      </div>
+    )
+  }
   return null
 }
 
@@ -613,6 +651,34 @@ export default function ProgressHistory({ user, onGoCheckin, onRedo, onRedoRevie
     }
   }, [user, userId])
 
+  /*
+   * Свои мысли дня («Мысль дня» → записи /quotes с tag thought:YYYY-MM-DD).
+   * Сначала кэш, следом сервер — как на самом экране «Мысль дня».
+   */
+  const [thoughtItems, setThoughtItems] = useState(() =>
+    userId ? readCachedDailyItems(user.id) : []
+  )
+
+  const thoughts = useMemo(
+    () => thoughtItems.filter(item => item.kind === THOUGHT_KIND),
+    [thoughtItems]
+  )
+
+  useEffect(() => {
+    if (!userId) return
+
+    let alive = true
+    loadDailyItems(user.id)
+      .then(next => {
+        if (alive) setThoughtItems(next)
+      })
+      .catch(() => {})
+
+    return () => {
+      alive = false
+    }
+  }, [user, userId])
+
   // ── Портал кнопок в сегмент-бар ──
   useEffect(() => {
     const el = document.querySelector('.mx-progress-actions-row')
@@ -657,10 +723,16 @@ export default function ProgressHistory({ user, onGoCheckin, onRedo, onRedoRevie
         .catch(() => []),
     ]).then(([checkins, analytics, moodPractices]) => {
       setDays(
-        buildEntriesByDay(checkins, moodPractices, journalEntries, analytics?.daily_activity || [])
+        buildEntriesByDay(
+          checkins,
+          moodPractices,
+          journalEntries,
+          analytics?.daily_activity || [],
+          thoughts
+        )
       )
     })
-  }, [user, journalEntries])
+  }, [user, journalEntries, thoughts])
 
   async function deleteSelectedCheckin() {
     const checkin = selectedEntry?.checkin

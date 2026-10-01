@@ -6,6 +6,7 @@ import JournalTextarea from '../components/JournalTextarea'
 import { RoundBackButton } from '../components/NestedScreenHeader'
 import {
   useFullscreenSurface,
+  getFullscreenPortalTarget,
   FULLSCREEN_SHELL_CLASS,
   FULLSCREEN_HEADER_SLOT_CLASS,
   FULLSCREEN_SCROLL_CLASS,
@@ -15,25 +16,31 @@ import {
   getKeyboardViewportHeight,
   isTelegramRuntime,
 } from '../lib/visualViewport'
+import { useBackButton } from '../platform/telegram.hooks'
 import { readCachedDailyThought, saveDailyThought } from '../lib/dailyThoughtStorage'
 import { todayKey } from '../lib/journalStorage'
-
-import './DailyThoughtInput.css'
 
 /*
  * ЭКРАН ВВОДА «ТВОЯ МЫСЛЬ» — как день темы в «Теме недели»:
  * поле без рамки, клавиатура сразу, круглая кнопка отправки.
+ *
+ * Живёт по общему fullscreen-контракту (см. src/lib/fullscreenSurface.js):
+ * портал в demo-рамку/body, высота из visualViewport, отступ под контролы
+ * Telegram, системная «Назад». Без портала в рамку демо-превью экран
+ * оказывался вне телефона.
  *
  * Сохраняется на сервере записью /quotes с tag='thought:YYYY-MM-DD'
  * (см. dailyThoughtStorage.js); из localStorage только подставляется
  * уже записанная мысль, пока список не обновлён с сервера.
  */
 export default function DailyThoughtInput({ date, user, onClose, onSaved }) {
-  const { style: surfaceStyle } = useFullscreenSurface()
+  const { style: surfaceStyle, keyboardOpen } = useFullscreenSurface()
   const viewportGeometry = useVisualViewportGeometry()
   const [text, setText] = useState('')
   const [saving, setSaving] = useState(false)
   const loadedRef = useRef(false)
+
+  useBackButton(onClose)
 
   useEffect(() => {
     if (loadedRef.current) return
@@ -62,12 +69,6 @@ export default function DailyThoughtInput({ date, user, onClose, onSaved }) {
     }
   }
 
-  const keyboardOpen =
-    typeof window !== 'undefined' &&
-    viewportGeometry?.height !== null &&
-    viewportGeometry?.height !== undefined &&
-    window.innerHeight - viewportGeometry.height > 80
-
   const keyboardViewportHeight = getKeyboardViewportHeight({
     isTelegram: isTelegramRuntime(),
     stableHeight: viewportGeometry?.stableHeight,
@@ -75,8 +76,19 @@ export default function DailyThoughtInput({ date, user, onClose, onSaved }) {
   })
 
   const roundButtonStyle = keyboardOpen
-    ? { top: `${keyboardViewportHeight + (viewportGeometry?.offsetTop || 0) - 76}px`, bottom: 'auto' }
-    : undefined
+    ? {
+        position: 'fixed',
+        top: `${(keyboardViewportHeight ?? viewportGeometry?.height) + (viewportGeometry?.offsetTop || 0) - 56}px`,
+        right: '16px',
+        bottom: 'auto',
+        zIndex: 71,
+      }
+    : {
+        position: 'fixed',
+        bottom: 'calc(var(--app-safe-bottom) + 16px)',
+        right: '16px',
+        zIndex: 71,
+      }
 
   return createPortal(
     <div className={FULLSCREEN_SHELL_CLASS} style={surfaceStyle}>
@@ -90,7 +102,7 @@ export default function DailyThoughtInput({ date, user, onClose, onSaved }) {
             <div className="mb-2 font-label text-[11px] font-bold uppercase tracking-[0.14em] text-gold">
               ТВОЯ МЫСЛЬ
             </div>
-            <h3 className="font-display text-[20px] font-bold leading-[1.16] text-cream">
+            <h3 className="font-display text-[24px] font-bold leading-[1.15] text-cream">
               Что ты об этом думаешь?
             </h3>
             <p className="mt-3 border-l border-gold pl-4 text-[16px] font-normal leading-relaxed text-muted">
@@ -101,12 +113,12 @@ export default function DailyThoughtInput({ date, user, onClose, onSaved }) {
           <JournalTextarea
             value={text}
             onChange={setText}
-            placeholder="Записать мысль..."
+            placeholder="Начни писать…"
             ariaLabel="Мысль дня"
             testId="daily-thought-input-field"
             submitTestId="daily-thought-input-submit"
-            className="mt-6 flex-1"
-            editorClassName="!text-[16px] font-normal pb-16"
+            className="mt-7 flex-1"
+            editorClassName="!leading-[1.5] font-normal pb-16"
             formatting={false}
             floatingToolbar={false}
             writingCanvas={false}
@@ -125,12 +137,12 @@ export default function DailyThoughtInput({ date, user, onClose, onSaved }) {
         data-testid="daily-thought-input-round"
         onClick={hasText ? handleSave : onClose}
         disabled={saving}
-        className="mx-daily-thought-input__round flex h-11 w-11 items-center justify-center rounded-full bg-[#efefef] text-[22px] font-semibold text-[#111] transition-transform active:scale-95"
+        className="flex h-11 w-11 items-center justify-center rounded-full bg-[#efefef] text-[22px] font-semibold text-[#111] transition-transform active:scale-95"
         style={roundButtonStyle}
       >
-        {hasText ? '›' : '✕'}
+        {hasText ? '✓' : '✕'}
       </button>
     </div>,
-    document.body
+    getFullscreenPortalTarget()
   )
 }

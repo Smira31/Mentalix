@@ -71,7 +71,14 @@ function toQuoteItem(quote) {
   const parsed = parseQuoteTag(quote?.tag)
   const text = typeof quote?.text === 'string' ? quote.text.trim() : ''
   if (!parsed || !text) return null
-  return { id: quote.id, text, kind: parsed.kind, date: parsed.date }
+  return {
+    id: quote.id,
+    text,
+    kind: parsed.kind,
+    date: parsed.date,
+    // Время записи: нужно ленте «История», чтобы показать, когда мысль записана.
+    createdAt: quote.created_at || quote.createdAt || null,
+  }
 }
 
 function toQuoteItems(list) {
