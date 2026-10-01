@@ -14,6 +14,10 @@ const catalogSource = await readFile(
   new URL('../../src/components/PracticeCatalogV2.jsx', import.meta.url),
   'utf8'
 )
+const carouselSource = await readFile(
+  new URL('../../src/components/ThemeQuestionCarousel.jsx', import.meta.url),
+  'utf8'
+)
 const layeredStyles = await readFile(
   new URL('../../src/components/ui-lab/LayeredPracticeCatalogExperiment.css', import.meta.url),
   'utf8'
@@ -38,8 +42,10 @@ test('MXL-525 (G5): ошибка загрузки тем отделена от �
 test('MXL-547: каталог использует четыре реальных вопроса текущей темы', () => {
   // api.themes.get перенесён из Practices.jsx в themesDataCache.js.
   assert.match(cacheSource, /api\.themes\.get\(currentTheme\.id, userId\)/)
-  assert.match(catalogSource, /theme\.days\.slice\(0, 4\)/)
-  assert.match(catalogSource, /\{question\.day \?\? index \+ 1\}/)
+  // Карусель рендерится через общий компонент ThemeQuestionCarousel.
+  assert.match(catalogSource, /ThemeQuestionCarousel/)
+  assert.match(catalogSource, /maxCards=\{4\}/)
+  assert.match(carouselSource, /\{q\.day \?\? i \+ 1\}/)
   assert.doesNotMatch(catalogSource, /padStart/)
 })
 

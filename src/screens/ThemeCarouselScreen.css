@@ -1,6 +1,8 @@
 /* ============================================================
-   THEME CAROUSEL SCREEN — карусель карточек-вопросов темы недели
-   Stoic-style fullscreen-карусель. Открывается из «Сегодня» и «Шаги».
+   THEME CAROUSEL SCREEN — обёртка fullscreen-карусели темы недели
+   Карусель (track/cards/dots/CTA) рендерится через общий компонент
+   ThemeQuestionCarousel. Здесь только шапка, surface-стили и
+   позиционирование CTA внутри fullscreen-скролла.
    Все стили scoped под корень экрана темы (.mx-theme-carousel-surface).
    ============================================================ */
 
@@ -20,7 +22,6 @@
 /* --- Корневой контейнер контента --- */
 .mx-theme-carousel-screen {
   --mx-sticky-cta-h: 52px; /* CTA: 8px top + 44px height */
-  --mx-sticky-all-h: 95px; /* CTA + Удиви меня (52 + 43) */
 }
 
 /* --- Шапка экрана --- */
@@ -30,7 +31,7 @@
   align-items: center;
   gap: 0;
   margin-top: 20px;
-  margin-bottom: 31px; /* 24 + 7: компенсация шрифта 26 вместо 29 */
+  margin-bottom: 31px;
   text-align: center;
 }
 
@@ -52,160 +53,10 @@
   margin: 0;
 }
 
-/* --- Карусель --- */
-.mx-theme-carousel-track {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-  gap: 7px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: none;
-  overscroll-behavior-x: contain;
-  -webkit-overflow-scrolling: touch;
-  touch-action: pan-x pan-y;
-  margin: 0 calc(-1 * var(--mx-screen-x));
-  padding: 0 max(var(--mx-screen-x), calc(50% - 149px));
-  height: 340px;
-}
-
-.mx-theme-carousel-track::-webkit-scrollbar {
-  display: none;
-}
-
-.mx-theme-carousel-q {
-  scroll-snap-align: center;
-  flex-shrink: 0;
-  width: 298px;
-  height: 340px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  border-radius: 30px;
-  background: rgb(var(--c-card2));
-  padding: 44px 32px 32px;
-  gap: 22px;
-  overflow: hidden;
-  transform: scale(1);
-  transform-origin: center;
-  transition: transform 220ms var(--mx-ease-out);
-  will-change: transform;
-}
-
-.mx-theme-carousel-q[data-active='false'] {
-  transform: scale(0.75);
-}
-
-.mx-theme-carousel-q[data-answered='true'] {
-  border: 0;
-}
-
-.mx-theme-carousel-q__day {
-  font-family: 'Onest', system-ui, sans-serif;
-  font-size: 13px;
-  line-height: 1;
-  font-weight: 500;
-  color: rgb(var(--c-muted));
-  margin: 0;
-  letter-spacing: 0.01em;
-}
-
-.mx-theme-carousel-q__text {
-  font-family: 'Onest', system-ui, sans-serif;
-  font-size: 17px;
-  line-height: 1.45;
-  font-weight: 500;
-  color: rgb(var(--c-text));
-  max-width: 240px;
-}
-
-.mx-theme-carousel-q__prompt {
-  font-size: 15px;
-  line-height: 1.4;
-  font-weight: 400;
-  color: rgb(var(--c-muted));
-  margin: 0;
-  max-width: 240px;
-}
-
-.mx-theme-carousel-q__badge {
-  position: absolute;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 11px;
-  font-weight: 600;
-  color: rgb(var(--c-muted));
-  align-self: center;
-}
-
-/* --- Точки-пейджер --- */
-.mx-theme-carousel-dots {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 20px;
-}
-
-.mx-theme-carousel-dots i {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: rgb(var(--c-border));
-  transition: background-color 200ms ease;
-}
-
-.mx-theme-carousel-dots i[data-active='true'] {
-  background: rgb(var(--c-text));
-}
-
-/* --- Кнопка «Начать запись» / «Смотреть в пути» --- */
-.mx-theme-carousel-cta {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 173px;
-  height: 44px;
-  border-radius: var(--mx-radius-pill);
-  background-color: #d0d0d0;
-  color: #111111;
-  font-size: 17px;
-  font-weight: 600;
-  font-family: 'Onest', system-ui, sans-serif;
-  border: none;
+/* --- CTA: sticky внутри fullscreen-скролла --- */
+.mx-theme-carousel-surface .mx-tqc-cta {
   position: sticky;
-  top: calc(var(--app-safe-top) + 8px);
+  top: calc(var(--app-safe-top, 0px) + 8px);
   z-index: 10;
-  align-self: center;
-  flex-shrink: 0;
   margin-top: 40px;
-  transition:
-    background 200ms ease,
-    color 200ms ease;
-}
-
-.mx-theme-carousel-cta:active {
-  transform: scale(0.97);
-}
-
-.mx-theme-carousel-cta[data-stuck='true'] {
-  background: var(--mx-glass-bg);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  backdrop-filter: blur(20px) saturate(160%);
-  color: rgb(var(--c-muted));
-  border: 1px solid rgb(var(--c-border));
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .mx-theme-carousel-cta {
-    transition: none;
-  }
-  .mx-theme-carousel-q {
-    transition: none;
-  }
 }

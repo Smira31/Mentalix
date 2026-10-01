@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 
 import { peekThemeDetail, fetchThemeDetail, invalidateThemeDetail } from '../lib/themeDetailCache'
@@ -6,6 +6,7 @@ import { peekThemesData, fetchThemesData, invalidateThemesData } from '../lib/th
 import { platform } from '../platform'
 import { useBackButton } from '../platform/telegram.hooks'
 import { RoundBackButton } from '../components/NestedScreenHeader'
+import ThemeQuestionCarousel from '../components/ThemeQuestionCarousel'
 import {
   useFullscreenSurface,
   getFullscreenPortalTarget,
@@ -21,9 +22,9 @@ import './ThemeCarouselScreen.css'
  * КАРУСЕЛЬ ТЕМЫ НЕДЕЛИ — Stoic-style экран-карусель карточек-вопросов.
  *
  * Открывается из карточки «Тема недели» на «Сегодня» (и из «Шагов»).
- * Показывает карусель карточек с крупной цифрой и текстом вопроса,
- * точки-пейджер и пилюлю «Начать запись» → поток записи (ThemeScreen).
- * Для пройденных вопросов — «Смотреть в пути».
+ * Карусель карточек с крупной цифрой и текстом вопроса, точки-пейджер
+ * и пилюля CTA → поток записи (ThemeScreen). Карусель рендерится через
+ * общий компонент ThemeQuestionCarousel (тот же, что на экране «Шаги»).
  *
  * Экран живёт по общему fullscreen-контракту (см.
  * src/lib/fullscreenSurface.js): портал в body, высота из
@@ -33,15 +34,9 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
   const [data, setData] = useState(() => peekThemeDetail(user?.id, themeId))
   const [themes, setThemes] = useState(() => (user ? peekThemesData(user.id) || [] : []))
   const [activeId, setActiveId] = useState(themeId)
-  const [questionIndex, setQuestionIndex] = useState(0)
   const [writing, setWriting] = useState(false)
   const [selectedDay, setSelectedDay] = useState(1)
   const { style } = useFullscreenSurface()
-  const trackRef = useRef(null)
-  const rafRef = useRef(null)
-  const lastIndexRef = useRef(0)
-  const scrollRef = useRef(null)
-  const ctaRef = useRef(null)
 
   useBackButton(() => {
     platform.haptic('light')
@@ -81,38 +76,6 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
     }
   }, [user, activeId])
 
-  useEffect(() => {
-    return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current)
-    }
-  }, [])
-
-  // Детект прилипания CTA к верху: когда пилюля доезжает до
-  // safe-area + 8, переключаем data-stuck → стекло + приглушённый текст.
-  useEffect(() => {
-    const scroll = scrollRef.current
-    const cta = ctaRef.current
-    if (!scroll || !cta) return
-    let raf = null
-    const onScroll = () => {
-      if (raf) return
-      raf = requestAnimationFrame(() => {
-        raf = null
-        const ctaRect = cta.getBoundingClientRect()
-        const scrollRect = scroll.getBoundingClientRect()
-        const stickyTop = parseFloat(getComputedStyle(cta).top) || 8
-        const stuck = ctaRect.top <= scrollRect.top + stickyTop + 4
-        cta.dataset.stuck = stuck ? 'true' : 'false'
-      })
-    }
-    scroll.addEventListener('scroll', onScroll, { passive: true })
-    onScroll()
-    return () => {
-      scroll.removeEventListener('scroll', onScroll)
-      if (raf) cancelAnimationFrame(raf)
-    }
-  }, [data])
-
   function refreshData() {
     if (!user || !activeId) return
     invalidateThemeDetail(user.id, activeId)
@@ -130,69 +93,22 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
   function openTheme(id) {
     platform.haptic('light')
     setData(peekThemeDetail(user?.id, id))
-    setQuestionIndex(0)
     setActiveId(id)
   }
 
   const questions = useMemo(() => (Array.isArray(data?.days) ? data.days.slice(0, 7) : []), [data])
-  const safeIndex = Math.min(questionIndex, Math.max(0, questions.length - 1))
-  const currentQuestion = questions[safeIndex]
-  const isAnswered = !!currentQuestion?.reflection
 
-  // При загрузке данных прокручиваем карусель к текущему дню —
-  // чтобы человек продолжил с того места, где остановился, а не
-  // с первого (возможно уже отвеченного) вопроса.
-  useEffect(() => {
-    if (!data || !trackRef.current) return
-    const days = Array.isArray(data.days) ? data.days.slice(0, 7) : []
-    if (!days.length) return
-    const currentIdx = Math.max(
-      0,
-      days.findIndex(d => d.day === data.current_day)
-    )
-    const track = trackRef.current
-    const cards = [...track.querySelectorAll('.mx-theme-carousel-q')]
-    const card = cards[currentIdx]
-    if (card) {
-      track.scrollTo({
-        left: card.offsetLeft - track.clientWidth / 2 + card.offsetWidth / 2,
-      })
-    }
-    lastIndexRef.current = currentIdx
-    setQuestionIndex(currentIdx)
+  // Индекс текущего дня для начальной прокрутки карусели.
+  const initialScrollIndex = useMemo(() => {
+    if (!data?.days) return 0
+    const days = data.days.slice(0, 7)
+    const idx = days.findIndex(d => d.day === data.current_day)
+    return Math.max(0, idx)
   }, [data])
 
-  // Плавный скролл-обработчик: rAF-throttled, setState только
-  // при смене активной карточки — без ре-рендера на каждый пиксель.
-  function handleScroll() {
-    if (rafRef.current) return
-    rafRef.current = requestAnimationFrame(() => {
-      rafRef.current = null
-      const track = trackRef.current
-      if (!track || !track.clientWidth) return
-      const cards = [...track.querySelectorAll('.mx-theme-carousel-q')]
-      if (!cards.length) return
-      const center = track.scrollLeft + track.clientWidth / 2
-      let next = 0
-      let minDist = Infinity
-      cards.forEach((card, i) => {
-        const dist = Math.abs(card.offsetLeft + card.offsetWidth / 2 - center)
-        if (dist < minDist) {
-          minDist = dist
-          next = i
-        }
-      })
-      if (next !== lastIndexRef.current) {
-        lastIndexRef.current = next
-        setQuestionIndex(next)
-      }
-    })
-  }
-
-  function handleWrite() {
-    if (!currentQuestion) return
+  function handleWrite(question) {
     platform.haptic('light')
-    setSelectedDay(currentQuestion.day)
+    setSelectedDay(question.day)
     setWriting(true)
   }
 
@@ -226,7 +142,7 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
 
   return createPortal(
     <div className={`${FULLSCREEN_SHELL_CLASS} mx-theme-carousel-surface`} style={style}>
-      <div className={FULLSCREEN_SCROLL_CLASS} ref={scrollRef}>
+      <div className={FULLSCREEN_SCROLL_CLASS}>
         <div className="mx-theme-carousel-screen w-full max-w-md mx-auto px-[var(--mx-screen-x)] pt-2 pb-6 flex flex-col min-h-full">
           <RoundBackButton onClick={onBack} />
 
@@ -236,53 +152,14 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
           </div>
 
           {questions.length > 0 ? (
-            <>
-              <div
-                className="mx-theme-carousel-track"
-                ref={trackRef}
-                onScroll={handleScroll}
-                role="region"
-                aria-label="Вопросы темы"
-              >
-                {questions.map((q, i) => (
-                  <article
-                    className="mx-theme-carousel-q"
-                    key={q.day ?? i}
-                    data-active={i === safeIndex ? 'true' : 'false'}
-                    data-answered={q.reflection ? 'true' : undefined}
-                  >
-                    <span className="mx-theme-carousel-q__day">День {q.day ?? i + 1} из 7</span>
-                    <strong className="mx-theme-carousel-q__text">{q.text}</strong>
-                    {q.prompt && <span className="mx-theme-carousel-q__prompt">{q.prompt}</span>}
-                    {q.reflection && <span className="mx-theme-carousel-q__badge">✓ Записано</span>}
-                  </article>
-                ))}
-              </div>
-
-              <span
-                className="mx-theme-carousel-dots"
-                role="img"
-                aria-label={`Вопрос ${safeIndex + 1} из ${questions.length}`}
-              >
-                {questions.map((q, i) => (
-                  <i
-                    key={q.day ?? i}
-                    data-active={i === safeIndex ? 'true' : undefined}
-                    aria-hidden="true"
-                  />
-                ))}
-              </span>
-
-              <button
-                type="button"
-                className="mx-theme-carousel-cta"
-                data-testid="theme-carousel-cta"
-                ref={ctaRef}
-                onClick={handleWrite}
-              >
-                {isAnswered ? 'Смотреть в пути' : 'Начать запись'}
-              </button>
-            </>
+            <ThemeQuestionCarousel
+              key={activeId}
+              questions={questions}
+              maxCards={7}
+              initialIndex={initialScrollIndex}
+              onWrite={handleWrite}
+              onViewAnswer={handleWrite}
+            />
           ) : (
             <p className="text-muted text-[13px] text-center mt-8">
               В этой теме пока нет вопросов.

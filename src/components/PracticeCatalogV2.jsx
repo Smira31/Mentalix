@@ -1,7 +1,8 @@
-import { useMemo, useRef, useState } from 'react'
+import { useMemo } from 'react'
 import { ChevronRight } from 'lucide-react'
 
 import SemanticGlyph from './SemanticGlyph'
+import ThemeQuestionCarousel from './ThemeQuestionCarousel'
 import { getPracticeByKey, PRACTICE_COLLECTIONS } from '../lib/practiceCatalogRegistry'
 import { illustrations } from '../assets/illustrations'
 import './ui-lab/StepsExploreRedesign.css'
@@ -121,33 +122,7 @@ function ThemeCarousel({
   onRetry,
   onOpenAllThemes,
 }) {
-  const [questionIndex, setQuestionIndex] = useState(0)
-  const trackRef = useRef(null)
-  const questions = useMemo(
-    () => (Array.isArray(theme?.days) ? theme.days.slice(0, 4) : []),
-    [theme]
-  )
-  const safeQuestionIndex = Math.min(questionIndex, Math.max(0, questions.length - 1))
-
-  function handleScroll() {
-    const track = trackRef.current
-    if (!track || !track.clientWidth) return
-    const cards = [...track.querySelectorAll('.mx-steps-theme-card')]
-    if (!cards.length) return
-
-    const center = track.scrollLeft + track.clientWidth / 2
-    const nextIndex = cards.reduce((closest, card, index) => {
-      const distance = Math.abs(card.offsetLeft + card.offsetWidth / 2 - center)
-      const closestDistance = Math.abs(
-        cards[closest].offsetLeft + cards[closest].offsetWidth / 2 - center
-      )
-      return distance < closestDistance ? index : closest
-    }, 0)
-
-    setQuestionIndex(nextIndex)
-  }
-
-  if (themeLoading || themeError || !theme || questions.length === 0) {
+  if (themeLoading || themeError || !theme || !Array.isArray(theme.days) || theme.days.length === 0) {
     return (
       <section className="mx-steps-theme-section" aria-label="Тема недели" aria-live="polite">
         <div className="mx-steps-theme-panel">
@@ -193,41 +168,12 @@ function ThemeCarousel({
               : 'Один вопрос.'}
           </span>
         </h2>
-        <div className="mx-steps-theme-track" ref={trackRef} onScroll={handleScroll}>
-          {questions.map((question, index) => (
-            <article
-              className="mx-steps-theme-card"
-              key={question.day ?? index}
-              aria-label={`Вопрос ${question.day ?? index + 1}: ${question.text}`}
-            >
-              <span className="mx-steps-theme-card__num">{question.day ?? index + 1}</span>
-              <strong className="mx-steps-theme-card__question">{question.text}</strong>
-              {question.prompt && (
-                <span className="mx-steps-theme-card__prompt">{question.prompt}</span>
-              )}
-            </article>
-          ))}
-        </div>
-        <span
-          className="mx-steps-dots"
-          role="img"
-          aria-label={`Вопрос ${safeQuestionIndex + 1} из ${questions.length}`}
-        >
-          {questions.map((question, index) => (
-            <i
-              key={question.day ?? index}
-              data-active={index === safeQuestionIndex ? 'true' : undefined}
-              aria-hidden="true"
-            />
-          ))}
-        </span>
-        <button
-          type="button"
-          className="mx-steps-pill mx-steps-pill--solid"
-          onClick={() => onOpen(theme)}
-        >
-          Начать запись
-        </button>
+        <ThemeQuestionCarousel
+          questions={theme.days}
+          maxCards={4}
+          onWrite={() => onOpen(theme)}
+          onViewAnswer={() => onOpen(theme)}
+        />
       </div>
       <button
         type="button"

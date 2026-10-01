@@ -631,11 +631,11 @@ test('локальный UX smoke по основному маршруту', asy
     await page.getByTestId('today-theme-all').click()
     // Карусель темы недели: видимая карточка вопроса имеет высоту > 120px
     // и виден текст вопроса.
-    const carouselCard = page.locator('.mx-theme-carousel-q').first()
+    const carouselCard = page.locator('.mx-tqc-card').first()
     await expect(carouselCard).toBeVisible()
     const carouselCardBox = await carouselCard.boundingBox()
     expect(carouselCardBox?.height || 0).toBeGreaterThan(120)
-    await expect(carouselCard.locator('.mx-theme-carousel-q__text')).toBeVisible()
+    await expect(carouselCard.locator('.mx-tqc-card__question')).toBeVisible()
 
     // Карусель темы недели: CTA «Начать запись» открывает ThemeScreen
     await page.getByTestId('theme-carousel-cta').click()
@@ -669,8 +669,8 @@ test('локальный UX smoke по основному маршруту', asy
     await page.getByRole('button', { name: 'Назад' }).click()
     // После открытия другой темы из «Другие темы» — есть хотя бы один вопрос
     await page.getByRole('button', { name: /Границы и забота о себе/ }).first().click()
-    await expect(page.locator('.mx-theme-carousel-q').first()).toBeVisible()
-    await expect(page.locator('.mx-theme-carousel-q__text').first()).toBeVisible()
+    await expect(page.locator('.mx-tqc-card').first()).toBeVisible()
+    await expect(page.locator('.mx-tqc-card__question').first()).toBeVisible()
     await page.getByRole('button', { name: 'Назад' }).click()
 
     await page.getByRole('button', { name: 'Шаги' }).click()

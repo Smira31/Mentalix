@@ -176,14 +176,14 @@ const SPECS = [
   { id: 'header-h1', label: 'Шапка «Тема недели:»', sel: '.mx-theme-carousel-heading', expect: { fontSize: 26, fontWeight: 400, fontFamily: 'serif' } },
   { id: 'header-h2', label: 'Шапка «о меньшем усилии.»', sel: '.mx-theme-carousel-title', expect: { fontSize: 26, fontWeight: 700, fontFamily: 'Onest' } },
   // Карусель
-  { id: 'card-active', label: 'Активная карточка', sel: ".mx-theme-carousel-q[data-active='true']", expect: { width: 298, height: 360, radius: 33 } },
-  { id: 'card-num', label: 'Номер карточки', sel: ".mx-theme-carousel-q[data-active='true'] .mx-theme-carousel-q__num", expect: { fontSize: 38, fontWeight: 400, fontFamily: 'serif' } },
-  { id: 'card-text', label: 'Текст вопроса', sel: ".mx-theme-carousel-q[data-active='true'] .mx-theme-carousel-q__text", expect: { fontSize: 17, fontWeight: 600, fontFamily: 'Onest' } },
-  { id: 'card-prompt', label: 'Подсказка', sel: ".mx-theme-carousel-q[data-active='true'] .mx-theme-carousel-q__prompt", expect: { fontSize: 15, fontWeight: 400 } },
+  { id: 'card-active', label: 'Активная карточка', sel: ".mx-tqc-card[data-active='true']", expect: { width: 298, height: 360, radius: 33 } },
+  { id: 'card-num', label: 'Номер карточки', sel: ".mx-tqc-card[data-active='true'] .mx-tqc-card__num", expect: { fontSize: 38, fontWeight: 400, fontFamily: 'serif' } },
+  { id: 'card-text', label: 'Текст вопроса', sel: ".mx-tqc-card[data-active='true'] .mx-tqc-card__question", expect: { fontSize: 17, fontWeight: 600, fontFamily: 'Onest' } },
+  { id: 'card-prompt', label: 'Подсказка', sel: ".mx-tqc-card[data-active='true'] .mx-tqc-card__prompt", expect: { fontSize: 15, fontWeight: 400 } },
   // Точки
-  { id: 'dots', label: 'Точки-пейджер', sel: '.mx-theme-carousel-dots', expect: { count: 7, dotSize: 8, gap: 8 } },
+  { id: 'dots', label: 'Точки-пейджер', sel: '.mx-tqc-dots', expect: { count: 7, dotSize: 8, gap: 8 } },
   // Кнопка
-  { id: 'cta', label: 'Кнопка «Начать запись»', sel: '.mx-theme-carousel-cta', expect: { width: 173, height: 44, fontSize: 17, fontWeight: 600, bg: '#d0d0d0', color: '#111' } },
+  { id: 'cta', label: 'Кнопка «Начать запись»', sel: '.mx-tqc-cta', expect: { width: 173, height: 44, fontSize: 17, fontWeight: 600, bg: '#d0d0d0', color: '#111' } },
   // Другие темы
   { id: 'other-heading', label: '«Другие темы» заголовок', sel: '#carousel-other-themes', expect: { fontSize: 26, fontWeight: 400, fontFamily: 'serif' } },
   { id: 'other-card', label: 'Карточка темы', sel: '.mx-theme-directory__row', expect: { width: 408, height: 190, radius: 26 } },
@@ -355,7 +355,7 @@ async function run() {
   await themeCard.waitFor({ state: 'visible', timeout: 15000 })
   await themeCard.click()
 
-  await page.waitForSelector('.mx-theme-carousel-q', { timeout: 15000 })
+  await page.waitForSelector('.mx-tqc-card', { timeout: 15000 })
   await page.waitForTimeout(500)
 
   const results = []
@@ -415,8 +415,8 @@ async function run() {
 
   posData.top = await page.evaluate(() => {
     const R = {}
-    const activeCard = document.querySelector(".mx-theme-carousel-q[data-active='true']")
-    const cards = [...document.querySelectorAll('.mx-theme-carousel-q')]
+    const activeCard = document.querySelector(".mx-tqc-card[data-active='true']")
+    const cards = [...document.querySelectorAll('.mx-tqc-card')]
     const activeIdx = cards.findIndex(c => c.dataset.active === 'true')
 
     if (activeCard) {
@@ -437,25 +437,25 @@ async function run() {
     if (cards.length > 1) {
       R.cardGap = Math.round(cards[1].offsetLeft - cards[0].offsetLeft - cards[0].offsetWidth)
     }
-    const num = activeCard?.querySelector('.mx-theme-carousel-q__num')
+    const num = activeCard?.querySelector('.mx-tqc-card__num')
     if (num && activeCard) {
       R.numCenter = Math.round(num.getBoundingClientRect().y + num.getBoundingClientRect().height / 2 - activeCard.getBoundingClientRect().y)
     }
-    const text = activeCard?.querySelector('.mx-theme-carousel-q__text')
+    const text = activeCard?.querySelector('.mx-tqc-card__question')
     if (text && activeCard) {
       R.textTop = Math.round(text.getBoundingClientRect().y - activeCard.getBoundingClientRect().y)
     }
-    const prompt = activeCard?.querySelector('.mx-theme-carousel-q__prompt')
+    const prompt = activeCard?.querySelector('.mx-tqc-card__prompt')
     if (prompt && activeCard) {
       const pr = prompt.getBoundingClientRect()
       const cr = activeCard.getBoundingClientRect()
       R.promptInside = pr.y >= cr.y && pr.bottom <= cr.bottom
     }
-    const dots = document.querySelector('.mx-theme-carousel-dots')
+    const dots = document.querySelector('.mx-tqc-dots')
     if (dots && activeCard) {
       R.dotsGap = Math.round(dots.getBoundingClientRect().y - activeCard.getBoundingClientRect().bottom)
     }
-    const cta = document.querySelector('.mx-theme-carousel-cta')
+    const cta = document.querySelector('.mx-tqc-cta')
     if (cta && dots) {
       R.ctaGap = Math.round(cta.getBoundingClientRect().y - dots.getBoundingClientRect().bottom)
     }
@@ -478,7 +478,7 @@ async function run() {
         const stickyTop = parseFloat(getComputedStyle(el).top) || 0
         return { stuck: r.top <= sRect.top + stickyTop + 2 && r.top >= sRect.top - 2, y: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height), stickyTop: Math.round(stickyTop) }
       }
-      return { cta: check('.mx-theme-carousel-cta'), surprise: check('.mx-theme-directory__surprise'), allThemes: check('.mx-theme-directory__all-themes') }
+      return { cta: check('.mx-tqc-cta'), surprise: check('.mx-theme-directory__surprise'), allThemes: check('.mx-theme-directory__all-themes') }
     })
   }
 

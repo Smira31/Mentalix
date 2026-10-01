@@ -6,6 +6,10 @@ const catalog = await readFile(
   new URL('../../src/components/PracticeCatalogV2.jsx', import.meta.url),
   'utf8'
 )
+const carousel = await readFile(
+  new URL('../../src/components/ThemeQuestionCarousel.jsx', import.meta.url),
+  'utf8'
+)
 const practices = await readFile(
   new URL('../../src/screens/Practices.jsx', import.meta.url),
   'utf8'
@@ -45,11 +49,13 @@ test('MXL-547: каталог показывает максимум четыре
   // api.themes.get и merge перенесены из Practices.jsx в themesDataCache.js.
   assert.match(themesCache, /api\.themes\.get\(currentTheme\.id, userId\)/)
   assert.match(themesCache, /\.\.\.theme, \.\.\.detail/)
-  assert.match(catalog, /theme\.days\.slice\(0, 4\)/)
-  assert.match(catalog, /question\.day/)
-  assert.match(catalog, /question\.text/)
-  assert.match(catalog, /question\.prompt/)
-  assert.match(catalog, /Начать запись/)
+  // Карусель рендерится через общий компонент ThemeQuestionCarousel.
+  assert.match(catalog, /ThemeQuestionCarousel/)
+  assert.match(catalog, /maxCards=\{4\}/)
+  assert.match(carousel, /q\.day/)
+  assert.match(carousel, /q\.text/)
+  assert.match(carousel, /q\.prompt/)
+  assert.match(carousel, /Начать запись/)
   assert.doesNotMatch(catalog, /padStart/)
   assert.doesNotMatch(catalog, /layeredPracticeCatalogDemoData/)
 })
