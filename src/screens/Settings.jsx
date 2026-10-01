@@ -160,7 +160,6 @@ export default function Settings({
   const [writingGoalProgressError, setWritingGoalProgressError] = useState('')
   const [insightsEnabled, setInsightsEnabled] = useState(true)
   const [insightsSaving, setInsightsSaving] = useState(false)
-  const [insightsStatus, setInsightsStatus] = useState('')
   const [reminderStatus, setReminderStatus] = useState('')
   const [exportStatus, setExportStatus] = useState('')
   const [exporting, setExporting] = useState(false)
