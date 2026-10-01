@@ -2,10 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Check } from 'lucide-react'
 import { platform } from '../../platform'
 import { RoundBackButton } from '../NestedScreenHeader'
-import SemanticGlyph, {
-  semanticKindForRitual,
-  semanticKindForAsceza,
-} from '../SemanticGlyph'
+import SemanticGlyph, { semanticKindForRitual, semanticKindForAsceza } from '../SemanticGlyph'
 import PracticeDetail from '../PracticeDetail'
 import StreakRestoreSheet from '../StreakRestoreSheet'
 import { previewPracticeAction } from '../../lib/demoMode'
@@ -25,25 +22,33 @@ import './PracticeListFlow.css'
 /* ── Тост ── */
 function FlowToast({ message }) {
   if (!message) return null
-  return <div className="mx-practice-flow-toast" role="status">{message}</div>
+  return (
+    <div className="mx-practice-flow-toast" role="status">
+      {message}
+    </div>
+  )
 }
 
 /* ── Стеклянная пилюля в потоке контента ── */
 function FlowPill({ children, onClick, testId }) {
   return (
-    <button
-      type="button"
-      className="mx-practice-flow-pill"
-      data-testid={testId}
-      onClick={onClick}
-    >
+    <button type="button" className="mx-practice-flow-pill" data-testid={testId} onClick={onClick}>
       {children}
     </button>
   )
 }
 
 /* ── Экран списка ── */
-function ListScreen({ wording, items, loading, isDone, onToggleTile, onOpenDetail, onBack, onOpenReady }) {
+function ListScreen({
+  wording,
+  items,
+  loading,
+  isDone,
+  onToggleTile,
+  onOpenDetail,
+  onBack,
+  onOpenReady,
+}) {
   const doneCount = items.filter(isDone).length
   const total = items.length
 
@@ -104,9 +109,7 @@ function ListScreen({ wording, items, loading, isDone, onToggleTile, onOpenDetai
                     <SemanticGlyph kind={glyph} className="w-full h-full" />
                   </span>
                   <span className="mx-practice-flow-tile__name">{item.name}</span>
-                  <span className="mx-practice-flow-tile__minimum">
-                    {minimum || wording.cardMinimumLabel}
-                  </span>
+                  {minimum && <span className="mx-practice-flow-tile__minimum">{minimum}</span>}
                   <span className="mx-practice-flow-tile__status">
                     {wording.statusLabel(item.streak || 0)}
                   </span>
@@ -389,7 +392,10 @@ export default function PracticeListFlow({
       <FlowToast message={toast} />
       {milestoneNode}
       {writeError && (
-        <p role="alert" className="text-[12px] text-amber-200 text-center mt-2 px-[var(--mx-screen-x)]">
+        <p
+          role="alert"
+          className="text-[12px] text-amber-200 text-center mt-2 px-[var(--mx-screen-x)]"
+        >
           {writeError}
         </p>
       )}

@@ -42,6 +42,26 @@ function AccordionRow({ testId, label, children }) {
   )
 }
 
+/*
+ * Необязательная строка «+ …»: тап открывает экран-поле журнала
+ * (PracticeFieldFlow) и сохраняет значение в практику.
+ */
+function OptionalFieldRow({ field, value, onOpen }) {
+  return (
+    <button
+      type="button"
+      className={`mx-practice-detail__field${value ? ' is-set' : ''}`}
+      data-testid={`practice-detail-field-${field.key}`}
+      onClick={onOpen}
+    >
+      <span className="mx-practice-detail__field-label">
+        {value ? field.label : `+ ${field.label}`}
+      </span>
+      {value && <span className="mx-practice-detail__field-value">{value}</span>}
+    </button>
+  )
+}
+
 export default function PracticeDetail({
   kind,
   practice,
@@ -76,11 +96,11 @@ export default function PracticeDetail({
   // «Как» — только обязательная часть: минимум у ритуала и описание у аскезы.
   // Оптимум и триггер с заменой живут необязательными строками «+ …».
   const how = isRitual
-    ? [practice.min_version && `Минимум: ${practice.min_version}`]
-        .filter(Boolean)
-        .join('\n')
+    ? [practice.min_version && `Минимум: ${practice.min_version}`].filter(Boolean).join('\n')
     : practice.description || ''
   const optionalFields = wording.optionalFields || []
+  // «Оптимум» — часть карточки «Как» (рядом с минимумом), а не строка «Зачем».
+  const optimalField = optionalFields.find(field => field.key === 'optimal_version')
   const canRestore = canRestoreYesterday(practice, kind)
   const note = practice.note || practice.notes || practice.today_note
 
@@ -208,29 +228,32 @@ export default function PracticeDetail({
           {why && <p>{why}</p>}
         </AccordionRow>
 
-        {optionalFields.map(field => {
-          const value = practice[field.key]
-          return (
-            <button
-              type="button"
+        {optionalFields
+          .filter(field => field !== optimalField)
+          .map(field => (
+            <OptionalFieldRow
               key={field.key}
-              className={`mx-practice-detail__field${value ? ' is-set' : ''}`}
-              data-testid={`practice-detail-field-${field.key}`}
-              onClick={() => {
+              field={field}
+              value={practice[field.key]}
+              onOpen={() => {
                 platform.haptic('light')
                 setSub({ type: 'field', field })
               }}
-            >
-              <span className="mx-practice-detail__field-label">
-                {value ? field.label : `+ ${field.label}`}
-              </span>
-              {value && <span className="mx-practice-detail__field-value">{value}</span>}
-            </button>
-          )
-        })}
+            />
+          ))}
 
         <AccordionRow testId="practice-accordion-how" label="Как">
           {how && <p className="whitespace-pre-line">{how}</p>}
+          {optimalField && (
+            <OptionalFieldRow
+              field={optimalField}
+              value={practice[optimalField.key]}
+              onOpen={() => {
+                platform.haptic('light')
+                setSub({ type: 'field', field: optimalField })
+              }}
+            />
+          )}
         </AccordionRow>
         <AccordionRow testId="practice-accordion-note" label="Заметка">
           {note && <p>{note}</p>}
