@@ -21,4 +21,9 @@ export const illustrations = {
   recordIntro: null,
   recordComplete: CompletionArtEvening,
   profileSiteFeather: ProfileFeatherArt,
+  // Ключи для главного экрана «Шаги» (Stoic Explore-редизайн).
+  // Пока null — экран рендерится без картинки, контент поднимается вверх.
+  stepsHero: null,
+  stepsCollectionsRituals: null,
+  stepsCollectionsAscezas: null,
 }
