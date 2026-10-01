@@ -289,6 +289,11 @@ button.mx-profile-row:active {
   flex-shrink: 0;
 }
 
+/* «Когда показывать разбор»: время (19:00) не обрезается. */
+.mx-profile-row[data-testid='profile-row-review-hour'] .mx-profile-row__value {
+  flex-shrink: 0;
+}
+
 /* «О тебе» → имя: значение имени приоритетнее подписи. */
 .mx-profile-row[data-testid='profile-about-name'] .mx-profile-row__value {
   flex-shrink: 0;
@@ -895,22 +900,6 @@ button.mx-profile-row:active {
   color: rgb(var(--c-text));
   width: 16px;
   height: 16px;
-}
-
-/* Строка «Чек-ины»: оба времени «08:00 · 19:00».
-   На узких экранах — «Утро и вечер», чтобы не обрезалось. */
-.mx-checkins-time__short {
-  display: none;
-}
-
-@media (max-width: 359px) {
-  .mx-checkins-time__full {
-    display: none;
-  }
-
-  .mx-checkins-time__short {
-    display: inline;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

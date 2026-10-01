@@ -589,7 +589,7 @@ export default function Settings({
           <ProfileCard>
             <ProfileRow
               title="Когда показывать разбор"
-              subtitle="«Сегодня» сам предложит подвести итоги"
+              subtitle="«Сегодня» предложит итоги"
               value={hh(reviewHour)}
               testId="profile-row-review-hour"
             />
@@ -1063,12 +1063,7 @@ export default function Settings({
           <ProfileCard testId="profile-card-setup">
             <ProfileRow
               title="Чек-ины"
-              value={
-                <>
-                  <span className="mx-checkins-time__full">{hh(8)} · {hh(reviewHour)}</span>
-                  <span className="mx-checkins-time__short">Утро и вечер</span>
-                </>
-              }
+              value={hh(reviewHour)}
               onClick={() => openSub('checkins')}
               testId="profile-row-checkins"
             />
