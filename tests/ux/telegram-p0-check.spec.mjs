@@ -138,7 +138,11 @@ for (const viewport of P0_VIEWPORTS) {
       await editor.fill('P0 keyboard draft')
       await editor.focus()
       await page.setViewportSize({ width: viewport.width, height: Math.round(viewport.height * 0.58) })
-      await page.waitForTimeout(120)
+      // Ждём состояние после ресайза, а не фиксированный таймаут — на медленном CI re-render не успевает за 120 мс.
+      await expect.poll(() => page.evaluate(() => {
+        const shell = document.querySelector('.mx-practice-flow')
+        return (shell?.getBoundingClientRect().bottom ?? Infinity) - window.innerHeight
+      }), { timeout: 5000 }).toBeLessThanOrEqual(1)
 
       const geometry = await page.evaluate(() => {
         const shell = document.querySelector('.mx-practice-flow')

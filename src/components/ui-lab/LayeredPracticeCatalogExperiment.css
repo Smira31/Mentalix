@@ -1210,21 +1210,7 @@
   height: 92px;
   background: rgb(var(--c-artbed));
 }
-.mx-layered-catalog__rail-menu {
-  position: absolute;
-  top: 16px;
-  right: 15px;
-  display: grid;
-  width: 36px;
-  height: 36px;
-  place-items: center;
-  border-radius: 50%;
-  background: rgb(var(--c-card));
-  color: rgb(var(--c-muted));
-  font-size: 15px;
-  letter-spacing: 1px;
-  line-height: 1;
-}
+
 .mx-layered-catalog__rail-badge {
   min-height: 25px;
   padding: 4px 13px;
@@ -1432,8 +1418,10 @@
 .mx-production-catalog .mx-layered-catalog__collection-chevron {
   z-index: 2;
 }
-.w-full.flex-1.min-h-0.overflow-y-auto.overscroll-contain:has(> .mx-production-catalog) {
-  padding-bottom: calc(104px + env(safe-area-inset-bottom, 0px));
+/* Fix: selector never matched — scroll root lacks .overscroll-contain.
+   Add padding directly to the production catalog container instead. */
+.mx-production-catalog {
+  padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px));
 }
 @media (max-width: 360px) {
   .mx-production-catalog--category .mx-layered-category__art {
@@ -1668,4 +1656,45 @@
 [data-theme='light'] .mx-layered-category__art-base,
 [data-theme='light-preview'] .mx-layered-category__art-base {
   background: rgb(var(--c-gold) / 0.32);
+}
+
+/* ============================================================
+   Stoic Explore-редизайн — модификаторы production-каталога
+   ============================================================ */
+
+/* 2. Герой-карточка: светлая компактная пилюля с «›» */
+.mx-production-catalog .mx-layered-catalog__pill--light-compact {
+  min-height: 34px;
+  margin-top: 10px;
+  padding: 0 14px;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: var(--mx-radius-pill);
+  background: var(--btn-bg);
+  color: var(--btn-text);
+  font-size: 13px;
+  font-weight: 600;
+}
+@media (max-width: 520px) {
+  .mx-production-catalog .mx-layered-catalog__pill--light-compact {
+    min-height: 30px;
+    padding: 0 12px;
+    font-size: 12px;
+  }
+}
+
+/* 3. Rail: карточки без меню — клик по всей карточке */
+
+/* 4. Тема недели: заголовок с засечками */
+.mx-production-catalog .mx-layered-catalog__theme-heading-serif {
+  font-family: var(--font-serif);
+  font-weight: 600;
+}
+
+/* 5. Коллекции: убрать счётчик — заголовок слева */
+.mx-production-catalog .mx-layered-catalog__section .mx-layered-catalog__section-head {
+  grid-template-columns: 1fr;
+}
+.mx-production-catalog .mx-layered-catalog__section .mx-layered-catalog__section-head > div {
+  grid-column: 1;
+  text-align: left;
 }
