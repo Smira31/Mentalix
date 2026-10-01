@@ -982,6 +982,7 @@ export default function Today({
         <Suspense fallback={null}>
           <DailyThoughtScreen
             thought={thoughtOfDay}
+            user={user}
             onClose={() => changeSub(null)}
             onGoMentor={onGoMentor}
           />
