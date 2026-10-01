@@ -1,6 +1,5 @@
-/* ── Следопыт: визуал в стиле Mentalix / Stoic ── */
+/* ── Следопыт / Запись: визуал в стиле Mentalix / Stoic ── */
 
-/* ── Отступы для контента ── */
 .mx-practice-flow--self-discovery {
   --gsd-inset: var(--mx-screen-x);
 }
@@ -9,21 +8,22 @@
 .guided-self-discovery__intro-art {
   display: flex;
   min-height: clamp(180px, 30dvh, 260px);
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
   padding-top: var(--mx-space-2);
 }
 
 .guided-self-discovery__intro-art-svg {
-  width: min(190px, 52vw);
-  height: auto;
-  aspect-ratio: 160 / 112;
-  opacity: 0.92;
+  width: auto;
+  height: 180px;
+  max-height: 100%;
+  aspect-ratio: 100 / 120;
+  flex: none;
 }
 
 .guided-self-discovery__intro-eyebrow {
   display: block;
-  margin-top: clamp(24px, 5dvh, 48px);
+  margin-top: clamp(20px, 4dvh, 40px);
 }
 
 .guided-self-discovery__intro-title {
@@ -55,24 +55,6 @@
 .guided-self-discovery__step-label {
   display: block;
   margin-bottom: var(--mx-space-2);
-}
-
-.guided-self-discovery__progress {
-  display: flex;
-  gap: 6px;
-  margin-bottom: var(--mx-space-6);
-}
-
-.guided-self-discovery__progress-bar {
-  flex: 1;
-  height: 3px;
-  border-radius: 9999px;
-  background: rgb(var(--c-line) / 0.12);
-  transition: background-color 300ms ease;
-}
-
-.guided-self-discovery__progress-bar.is-active {
-  background: rgb(var(--c-text));
 }
 
 /* Question 24px / weight 700, left-aligned (через JournalField) */
@@ -113,144 +95,16 @@
   background: transparent;
 }
 
-/* ── Completion (non-scrollable, like CheckInCompletion) ── */
-.guided-self-discovery__body--complete {
+/* ── Completion: CheckInCompletion заполняет тело без прокрутки ── */
+.guided-self-discovery__body--complete .mx-screen__content {
+  max-width: none;
   padding: 0;
 }
 
-.guided-self-discovery__completion {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  height: 100%;
-  text-align: center;
-  padding: 0 var(--mx-screen-x) var(--mx-space-6);
-}
-
-.guided-self-discovery__completion-art-wrap {
+.guided-self-discovery__body--complete .mx-completion {
   flex: 1 1 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 96px;
+  min-height: 0;
   width: 100%;
-}
-
-.guided-self-discovery__completion-art {
-  width: auto;
-  height: 180px;
-  max-height: 100%;
-  aspect-ratio: 100 / 120;
-  flex: none;
-}
-
-.guided-self-discovery__completion-eyebrow,
-.guided-self-discovery__completion-title,
-.guided-self-discovery__completion-description,
-.guided-self-discovery__completion-feedback,
-.guided-self-discovery__completion-result {
-  flex: none;
-}
-
-.guided-self-discovery__completion-eyebrow {
-  display: block;
-}
-
-.guided-self-discovery__completion-title {
-  max-width: 24rem;
-  margin: var(--mx-space-2) auto 0;
-  font-size: clamp(1.375rem, 5.6vw, 1.75rem);
-  font-weight: 600;
-  letter-spacing: -0.05em;
-  line-height: 1.12;
-}
-
-.guided-self-discovery__completion-description {
-  max-width: 24rem;
-  margin: 12px auto 0;
-  color: rgb(var(--c-muted));
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-.guided-self-discovery__completion-feedback {
-  margin-top: 24px;
-}
-
-.guided-self-discovery__completion-feedback > p {
-  margin: 0;
-  color: rgb(var(--c-muted));
-  font-size: 13px;
-}
-
-.guided-self-discovery__feedback-options {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.guided-self-discovery__feedback-options button {
-  display: flex;
-  min-height: 88px;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  border: 1px solid rgb(var(--c-border) / 0.8);
-  border-radius: 18px;
-  padding: 12px 8px;
-  background: transparent;
-  color: rgb(var(--c-muted));
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.guided-self-discovery__feedback-options button[aria-pressed='true'] {
-  border-color: rgb(var(--c-gold) / 0.72);
-  background: rgb(var(--c-gold) / 0.12);
-  color: rgb(var(--c-gold));
-}
-
-.guided-self-discovery__feedback-icon {
-  display: grid;
-  width: 28px;
-  height: 28px;
-  place-items: center;
-  border: 1px solid rgb(var(--c-border) / 0.8);
-  border-radius: 999px;
-  color: rgb(var(--c-faint));
-  font-size: 16px;
-  line-height: 1;
-}
-
-.guided-self-discovery__feedback-options button[aria-pressed='true']
-  .guided-self-discovery__feedback-icon {
-  border-color: rgb(var(--c-gold) / 0.72);
-  background: rgb(var(--c-gold) / 0.12);
-  color: rgb(var(--c-gold));
-}
-
-.guided-self-discovery__completion-result {
-  margin-top: 16px;
-  text-align: center;
-}
-
-.guided-self-discovery__completion-result span {
-  color: rgb(var(--c-faint));
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.guided-self-discovery__completion-result p {
-  max-width: 30rem;
-  margin: 6px auto 0;
-  color: rgb(var(--c-text) / 0.86);
-  font-size: 14px;
-  line-height: 1.45;
-  white-space: pre-wrap;
 }
 
 /* ── Footer ── */
@@ -260,79 +114,28 @@
   padding: var(--mx-space-2) 0;
 }
 
-.guided-self-discovery__complete-actions {
-  display: flex;
-  gap: 16px;
-  align-items: center;
-  justify-content: center;
+/* Финал: кнопка на всю ширину, как у завершения вечернего разбора */
+.guided-self-discovery__footer--complete {
+  padding: 0;
 }
 
-.guided-self-discovery__restart-btn {
-  min-height: 44px;
-  padding: 0 12px;
-  background: transparent;
-  border: 0;
-  color: rgb(var(--c-muted));
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.guided-self-discovery__close-btn {
-  min-height: 44px;
-  padding: 0 20px;
-  border: 1px solid rgb(var(--c-border) / 0.8);
-  border-radius: 9999px;
-  background: transparent;
-  color: rgb(var(--c-text));
-  font-size: 13px;
-  font-weight: 600;
+.guided-self-discovery__footer--complete > div {
+  max-width: none;
 }
 
 /* ── Responsive ── */
 @media (max-height: 650px) {
   .guided-self-discovery__intro-art {
-    min-height: 160px;
+    min-height: 140px;
   }
 
   .guided-self-discovery__intro-eyebrow {
-    margin-top: 20px;
-  }
-
-  .guided-self-discovery__completion-art {
-    height: 140px;
-  }
-
-  .guided-self-discovery__completion-art-wrap {
-    min-height: 72px;
-  }
-
-  .guided-self-discovery__completion-feedback {
-    margin-top: 18px;
-  }
-
-  .guided-self-discovery__feedback-options button {
-    min-height: 72px;
-  }
-
-  .guided-self-discovery__completion-result {
-    margin-top: 14px;
-  }
-}
-
-@media (max-height: 740px) {
-  .guided-self-discovery__completion-art {
-    height: 140px;
-  }
-  .guided-self-discovery__completion-art-wrap {
-    min-height: 72px;
-  }
-  .guided-self-discovery__completion-feedback {
     margin-top: 16px;
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .guided-self-discovery__progress-bar {
-    transition: none;
+@media (max-height: 740px) {
+  .guided-self-discovery__intro-art-svg {
+    height: 140px;
   }
 }
