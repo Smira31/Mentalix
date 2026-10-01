@@ -34,6 +34,18 @@ export default function DonateScreen({ onBack }) {
     setCustomAmount(digits)
   }
 
+  // При выборе чипса снимаем «Свою» и очищаем введённую сумму.
+  function selectChip(value) {
+    setSelected(value)
+    if (value !== CUSTOM) setCustomAmount('')
+  }
+
+  // Фокус на поле «Своя» — прокручиваем к нему, чтобы клавиатура
+  // не перекрывала поле и кнопку.
+  function onCustomFocus(e) {
+    requestAnimationFrame(() => e.target.scrollIntoView({ block: 'center', behavior: 'smooth' }))
+  }
+
   const options = [
     ...AMOUNTS.map(amount => ({ value: amount, label: `${amount} ₽` })),
     { value: CUSTOM, label: 'Своя' },
@@ -55,7 +67,7 @@ export default function DonateScreen({ onBack }) {
           <ProfileChips
             label="Сумма поддержки"
             value={selected}
-            onChange={setSelected}
+            onChange={selectChip}
             options={options}
           />
 
@@ -67,6 +79,7 @@ export default function DonateScreen({ onBack }) {
                 pattern="[0-9]*"
                 value={customAmount}
                 onChange={onCustomChange}
+                onFocus={onCustomFocus}
                 placeholder={`от ${MIN_AMOUNT} ₽`}
                 min={MIN_AMOUNT}
                 aria-label="Своя сумма поддержки"

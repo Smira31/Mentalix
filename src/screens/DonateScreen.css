@@ -1,25 +1,25 @@
 /* «поддержать проект.» — иллюстрация, тёплый текст, своя сумма. */
 
-/* Иллюстрация «лента с бантом» — та же, что на карточке, крупнее. */
+/* Иллюстрация «лента с бантом» — компактнее для экрана без прокрутки. */
 .mx-donate-art {
   display: flex;
   justify-content: center;
-  margin: 0 auto 20px;
-  width: 120px;
+  margin: 0 auto var(--mx-space-3);
+  width: 80px;
 }
 
 .mx-donate-art svg {
-  width: 120px;
+  width: 80px;
   height: auto;
 }
 
 /* Тёплый текст — зачем поддержка. */
 .mx-donate-intro {
-  margin: 0 0 24px;
+  margin: 0 0 var(--mx-space-4);
   padding-inline: 4px;
   color: rgb(var(--c-text));
-  font-size: 15px;
-  line-height: 1.5;
+  font-size: 14px;
+  line-height: 1.45;
 }
 
 /* Поле «Своя сумма» — только цифры, цифровая клавиатура. */

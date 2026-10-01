@@ -1063,7 +1063,7 @@ export default function Settings({
           <ProfileCard testId="profile-card-setup">
             <ProfileRow
               title="Чек-ины"
-              value={hh(reviewHour)}
+              value={`${hh(8)} · ${hh(reviewHour)}`}
               onClick={() => openSub('checkins')}
               testId="profile-row-checkins"
             />

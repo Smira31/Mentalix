@@ -1,43 +1,43 @@
 /* «подписка.» — единственный тариф Mentalix Pro с иллюстрацией. */
 
-/* Иллюстрация «замок» — та же, что на карточке «Открой весь потенциал». */
+/* Иллюстрация «замок» — меньше, чтобы экран помещался без прокрутки. */
 .mx-subscription-art {
   display: flex;
   justify-content: center;
-  margin: 0 auto 16px;
-  width: 96px;
+  margin: 0 auto var(--mx-space-2);
+  width: 64px;
 }
 
 .mx-subscription-art svg {
-  width: 96px;
+  width: 64px;
   height: auto;
 }
 
 /* Заголовок-обещание и пояснение. */
 .mx-subscription-promise {
-  margin: 0 0 8px;
+  margin: 0 0 var(--mx-space-2);
   padding-inline: 4px;
   color: rgb(var(--c-text));
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
   line-height: 1.2;
   letter-spacing: -0.01em;
 }
 
 .mx-subscription-pitch {
-  margin: 0 0 20px;
+  margin: 0 0 var(--mx-space-3);
   padding-inline: 4px;
   color: rgb(var(--c-muted));
   font-size: 14px;
-  line-height: 1.45;
+  line-height: 1.4;
 }
 
 /* Цена — крупно, только месяц. */
 .mx-subscription-price {
-  margin: 0 0 20px;
+  margin: 0 0 var(--mx-space-3);
   padding-inline: 4px;
   color: rgb(var(--c-text));
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 700;
   line-height: 1.2;
   letter-spacing: -0.02em;
@@ -45,16 +45,16 @@
 
 .mx-subscription-price span {
   color: rgb(var(--c-muted));
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
 }
 
-/* Список функций — с воздухом, без пустых провалов. */
+/* Список функций — компактнее, без пустых провалов. */
 .mx-subscription-features {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  margin: 0 0 20px;
+  gap: var(--mx-space-2);
+  margin: 0 0 var(--mx-space-3);
   padding: 0;
   list-style: none;
 }
@@ -62,7 +62,7 @@
 .mx-subscription-feature {
   display: flex;
   align-items: flex-start;
-  gap: 14px;
+  gap: 12px;
 }
 
 .mx-subscription-feature__icon {
@@ -70,37 +70,37 @@
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   color: rgb(var(--c-muted));
 }
 
 .mx-subscription-feature__text {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
   min-width: 0;
-  padding-top: 4px;
+  padding-top: 2px;
 }
 
 .mx-subscription-feature__text strong {
   color: rgb(var(--c-text));
   font-size: 15px;
   font-weight: 600;
-  line-height: 1.3;
+  line-height: 1.25;
 }
 
 .mx-subscription-feature__text span {
   color: rgb(var(--c-muted));
   font-size: 13px;
-  line-height: 1.35;
+  line-height: 1.3;
 }
 
 /* Бесплатные функции — одна строка под списком. */
 .mx-subscription-free {
-  margin: 0 0 8px;
+  margin: 0 0 var(--mx-space-2);
   padding-inline: 4px;
   color: rgb(var(--c-faint));
   font-size: 13px;
-  line-height: 1.4;
+  line-height: 1.35;
 }

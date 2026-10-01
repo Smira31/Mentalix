@@ -1,5 +1,5 @@
 import { BookOpen, LineChart, Lightbulb, Lock, Users } from 'lucide-react'
-import { ProfileBody, ProfileNote, ProfilePage } from './settings/ProfileUi'
+import { ProfileBody, ProfilePage } from './settings/ProfileUi'
 import { PotentialLockArt } from './settings/ProfileBannerArt'
 import './SubscriptionManager.css'
 
@@ -62,7 +62,6 @@ export default function SubscriptionManager({ tier: _tier, onBack }) {
         >
           <Lock size={14} aria-hidden="true" /> Оплата скоро появится
         </button>
-        <ProfileNote>Оплата пока не подключена.</ProfileNote>
       </ProfileBody>
     </ProfilePage>
   )
