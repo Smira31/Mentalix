@@ -620,6 +620,16 @@ svg .animate-celebrate-pop {
     top: 1.4rem;
   }
 }
+/*
+ * Базовый отступ сверху для заголовка «практики.» — тот же, что у
+ * заголовков других вкладок (Библиотека: 4px, Прогресс: 8px). Без него
+ * line-height: 1 у mx-type-page обрезает верхний выносной шрифта.
+ * В Telegram-режиме safe-top уже добавлен через shellTopPadding в App.jsx,
+ * здесь — только экранной отступ, как у других вкладок.
+ */
+.mx-practices-catalog-shell {
+  padding-top: var(--mx-space-1);
+}
 .mx-practices-catalog-shell:has(.mx-production-catalog > .mx-layered-category)
   .mx-practices-catalog-title {
   display: none;
