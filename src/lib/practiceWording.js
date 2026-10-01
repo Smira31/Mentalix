@@ -100,11 +100,15 @@ export const PRACTICE_WORDING = {
       {
         question: 'как назовёшь ритуал?',
         hint: 'Коротко — так, как скажешь себе утром.',
+        placeholder: 'Название',
+        maxLength: 22,
         chips: ['Стакан воды', 'Прогулка', 'Чтение', 'Дыхание'],
       },
       {
         question: 'какой минимум даже в плохой день?',
         hint: 'Такой маленький, что не сделать — смешно.',
+        placeholder: 'Мой минимум…',
+        maxLength: 500,
         chips: ['пара глотков', 'одна страница', '5 вдохов', '10 минут'],
       },
     ],
@@ -140,11 +144,15 @@ export const PRACTICE_WORDING = {
       {
         question: 'от чего отказываешься?',
         hint: 'Одна вещь — не список.',
+        placeholder: 'Например: сахар',
+        maxLength: 22,
         chips: ['Без сахара', 'Без алкоголя', 'Без жалоб', 'Без Reels'],
       },
       {
         question: 'где твоя граница даже в плохой день?',
         hint: 'Черта, которую не переходишь никогда.',
+        placeholder: 'Моя граница…',
+        maxLength: 500,
         chips: ['до обеда', 'в будни', 'по списку', 'после 14:00'],
       },
     ],
@@ -181,7 +189,8 @@ export function restoreChoicesFor(kind, item) {
     return [{ value: 'held', label: 'Держусь', description: 'Восстановить день без срыва.' }]
   }
   const choices = []
-  if (item.min_version) choices.push({ value: 'min', label: 'Минимум', description: item.min_version })
+  if (item.min_version)
+    choices.push({ value: 'min', label: 'Минимум', description: item.min_version })
   if (item.optimal_version)
     choices.push({ value: 'optimal', label: 'Оптимум', description: item.optimal_version })
   if (choices.length === 0)

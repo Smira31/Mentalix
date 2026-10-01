@@ -74,7 +74,10 @@
   border: 1px solid rgb(var(--c-line) / 0.08);
   border-radius: 24px;
   cursor: pointer;
-  transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease,
+  transition:
+    background-color 200ms ease,
+    color 200ms ease,
+    border-color 200ms ease,
     transform 150ms ease;
 }
 
@@ -180,7 +183,9 @@
   height: 26px;
   border-radius: 50%;
   border: 1.5px solid rgb(var(--c-faint) / 0.5);
-  transition: background-color 200ms ease, border-color 200ms ease;
+  transition:
+    background-color 200ms ease,
+    border-color 200ms ease;
 }
 
 .mx-practice-flow-tile.is-done .mx-practice-flow-tile__check-circle {
@@ -220,7 +225,9 @@
   border: 1px solid rgb(var(--c-line) / 0.12);
   border-radius: 9999px;
   cursor: pointer;
-  transition: transform 150ms ease, background-color 200ms ease;
+  transition:
+    transform 150ms ease,
+    background-color 200ms ease;
 }
 
 .mx-practice-flow-pill:active {
@@ -266,7 +273,9 @@
   border: 1px solid rgb(var(--c-line) / 0.08);
   border-radius: 20px;
   cursor: pointer;
-  transition: transform 150ms ease, background-color 200ms ease;
+  transition:
+    transform 150ms ease,
+    background-color 200ms ease;
   text-align: left;
 }
 
@@ -423,6 +432,9 @@
   flex: 1;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  /* Затухание справа, к круглой кнопке: обрезанный чипс тает в фон. */
+  mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
 }
 
 .mx-practice-own-chips::-webkit-scrollbar {
@@ -461,7 +473,9 @@
   background: rgb(var(--c-text));
   border: 0;
   cursor: pointer;
-  transition: opacity 200ms ease, transform 150ms ease;
+  transition:
+    opacity 200ms ease,
+    transform 150ms ease;
 }
 
 .mx-practice-own-go:disabled {

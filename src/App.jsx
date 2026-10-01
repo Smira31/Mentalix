@@ -1,6 +1,6 @@
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
 
-import { ChevronDown, Ellipsis, X } from 'lucide-react'
+import { ChevronDown, ChevronLeft, Ellipsis, X } from 'lucide-react'
 
 import ErrorBoundary from './components/ErrorBoundary'
 import ScreenErrorBoundary from './components/ScreenErrorBoundary'
@@ -41,6 +41,7 @@ import {
   previewProfileAction,
 } from './lib/demoMode'
 import { installDemoPressFeedback } from './lib/demoPressFeedback'
+import { getCurrentBackAction } from './platform/telegram.hooks'
 import { shouldRenderDemoTelegramChrome } from './lib/demoChrome'
 import { switchUserDataScope } from './lib/userDataScope'
 import { clearTodayDataCache } from './lib/todayDataCache'
@@ -159,6 +160,24 @@ function DemoTelegramChrome({ onBack }) {
 
   return (
     <div className="mx-demo-telegram-chrome" aria-label="Telegram preview controls">
+      {hasBack && (
+        <button
+          type="button"
+          aria-label="Назад"
+          data-testid="demo-chrome-back"
+          className="mx-demo-telegram-chrome__close"
+          onClick={() => {
+            // Внутренние экраны (веха, поле, практика) держат верх стека
+            // «назад» — демо-шапка нажимает тот же «назад», что и сам экран.
+            const top = getCurrentBackAction()
+            if (top) top()
+            else onBack()
+          }}
+        >
+          <ChevronLeft size={18} strokeWidth={2.2} aria-hidden="true" />
+          <span>Назад</span>
+        </button>
+      )}
       {!hasBack && (
         <button
           type="button"
