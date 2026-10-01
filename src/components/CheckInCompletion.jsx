@@ -17,7 +17,7 @@ function formatReviewDate() {
   }
 }
 
-export default function CheckInCompletion({ evening, onFeedback, children }) {
+export default function CheckInCompletion({ evening, onFeedback, children, title, art }) {
   const [selected, setSelected] = useState(null)
 
   return (
@@ -26,10 +26,10 @@ export default function CheckInCompletion({ evening, onFeedback, children }) {
       data-testid="checkin-completion"
     >
       <div className="mx-completion__art-wrap">
-        {evening ? <CompletionArtEvening /> : <CompletionArtMorning />}
+        {art || (evening ? <CompletionArtEvening /> : <CompletionArtMorning />)}
       </div>
       <h1 className="mx-completion__title">
-        {evening ? (
+        {title || (evening ? (
           <>
             <strong>Ты завершил</strong>
             <span>разбор дня.</span>
@@ -39,7 +39,7 @@ export default function CheckInCompletion({ evening, onFeedback, children }) {
             <strong>Ты прошёл</strong>
             <span>утренний чек-ин.</span>
           </>
-        )}
+        ))}
       </h1>
       <div className="mx-completion__date-pill" aria-label="Дата">
         <span aria-hidden="true">✓</span> {formatReviewDate()}
