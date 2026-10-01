@@ -1014,7 +1014,8 @@
 }
 
 /* Утренние шкалы: одна и та же степень заливки для всех вопросов. */
-.mx-demo-checkin .mx-checkin-scale--filled .mx-checkin-scale__inner {
+.mx-demo-checkin .mx-checkin-scale--filled .mx-checkin-scale__inner,
+.mx-fullscreen-surface .mx-checkin-scale--filled .mx-checkin-scale__inner {
   background: linear-gradient(
     to top,
     rgb(var(--c-line)) var(--scale-fill),
@@ -1025,6 +1026,10 @@
 .mx-demo-checkin
   .mx-checkin-scale--filled
   .mx-checkin-scale__option:not(.is-selected)
+  .mx-checkin-scale__circle,
+.mx-fullscreen-surface
+  .mx-checkin-scale--filled
+  .mx-checkin-scale__option:not(.is-selected)
   .mx-checkin-scale__circle {
   border: 1.5px solid transparent;
   opacity: 0.65;
@@ -1033,11 +1038,16 @@
 .mx-demo-checkin
   .mx-checkin-scale--filled
   .mx-checkin-scale__option.is-selected
+  .mx-checkin-scale__circle,
+.mx-fullscreen-surface
+  .mx-checkin-scale--filled
+  .mx-checkin-scale__option.is-selected
   .mx-checkin-scale__circle {
   border: 1.5px solid rgb(var(--c-line));
 }
 
-.mx-demo-checkin .mx-checkin-question > h1 {
+.mx-demo-checkin .mx-checkin-question > h1,
+.mx-fullscreen-surface .mx-checkin-question > h1 {
   font-family: 'Onest', sans-serif;
   font-size: 28px;
   font-weight: 600;
@@ -1045,13 +1055,15 @@
   line-height: 1.15;
 }
 
-.mx-demo-checkin .mx-checkin-question__hint {
+.mx-demo-checkin .mx-checkin-question__hint,
+.mx-fullscreen-surface .mx-checkin-question__hint {
   margin-top: 8px;
   color: rgb(var(--c-muted));
   font-size: 15px;
 }
 
-.mx-demo-checkin .mx-checkin-scale__label {
+.mx-demo-checkin .mx-checkin-scale__label,
+.mx-fullscreen-surface .mx-checkin-scale__label {
   font-size: 12px;
   font-weight: 500;
 }
@@ -1179,88 +1191,14 @@
 }
 
 @media (max-width: 359px) {
-  .mx-demo-checkin .mx-checkin-scale--filled {
+  .mx-demo-checkin .mx-checkin-scale--filled,
+  .mx-fullscreen-surface .mx-checkin-scale--filled {
     gap: 2px;
   }
-  .mx-demo-checkin .mx-checkin-scale--filled .mx-checkin-scale__circle {
+  .mx-demo-checkin .mx-checkin-scale--filled .mx-checkin-scale__circle,
+  .mx-fullscreen-surface .mx-checkin-scale--filled .mx-checkin-scale__circle {
     width: 48px;
     height: 48px;
-  }
-}
-
-/* ── Вечерний «Разбор дня» — шкалы (Stoic Evening Reflection) ── */
-
-.mx-fullscreen-surface .mx-checkin-question--scale-evening > h1 {
-  font-family: 'Onest', sans-serif;
-  font-size: 30px;
-  font-weight: 600;
-  letter-spacing: -0.025em;
-  line-height: 1.15;
-  text-align: center;
-}
-
-.mx-fullscreen-surface .mx-checkin-question--scale-evening .mx-checkin-question__hint {
-  font-size: 15px;
-  color: rgb(var(--c-muted));
-  text-align: center;
-}
-
-/* Вопрос шкалы — ниже середины экрана */
-.mx-fullscreen-surface .mx-checkin-question--scale-evening {
-  transform: translateY(8vh);
-}
-
-.mx-checkin-scale--evening {
-  width: min(100%, 360px);
-  gap: 8px;
-  margin-top: 36px;
-  margin-inline: auto;
-}
-
-.mx-checkin-scale--evening .mx-checkin-scale__circle {
-  width: 64px;
-  height: 64px;
-  border: 0;
-  border-radius: 50%;
-  background: #141414;
-  box-shadow: none;
-  opacity: 1;
-}
-
-.mx-checkin-scale--evening .mx-checkin-scale__inner {
-  width: 35px;
-  height: 35px;
-  border: 0;
-  border-radius: 50%;
-  background: transparent;
-}
-
-.mx-checkin-scale--evening .mx-checkin-scale__inner--face .mx-face {
-  width: 35px;
-  height: 35px;
-}
-
-/* Выбранный кружок — светлое толстое кольцо вокруг подложки */
-.mx-checkin-scale--evening .mx-checkin-scale__option.is-selected .mx-checkin-scale__circle {
-  border: 0;
-  background: #141414;
-  box-shadow: 0 0 0 3px rgb(var(--c-text));
-}
-
-.mx-checkin-scale--evening .mx-checkin-scale__label {
-  font-size: 13px;
-  font-weight: 500;
-  color: rgb(var(--c-muted));
-  white-space: nowrap;
-}
-
-@media (max-width: 359px) {
-  .mx-checkin-scale--evening {
-    gap: 2px;
-  }
-  .mx-checkin-scale--evening .mx-checkin-scale__circle {
-    width: 56px;
-    height: 56px;
   }
 }
 

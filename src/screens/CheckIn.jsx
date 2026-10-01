@@ -660,15 +660,15 @@ const MORNING_FOCUS_STEP = {
 
 export const MORNING_OPTIONAL_SCALES = [SLEEP_QUALITY_STEP, MORNING_FOCUS_STEP]
 
-export function CheckInScaleQuestion({ scale, value, onPick, filled = false, evening = false }) {
+export function CheckInScaleQuestion({ scale, value, onPick, filled = false }) {
   return (
     <CheckInQuestion
       title={scale.title}
       hint={scale.hint}
-      className={`mx-checkin-question--scale${evening ? ' mx-checkin-question--scale-evening' : ''}`}
+      className="mx-checkin-question--scale"
     >
       <div
-        className={`mx-checkin-scale${filled ? ' mx-checkin-scale--filled' : ''}${evening ? ' mx-checkin-scale--evening' : ''}`}
+        className={`mx-checkin-scale${filled ? ' mx-checkin-scale--filled' : ''}`}
         role="radiogroup"
         aria-label={scale.title}
         data-testid="checkin-scale-row"
@@ -1738,7 +1738,7 @@ function CheckInCore({
                     scale={scale}
                     value={values[scale.key]}
                     onPick={level => pick(scale.key, level)}
-                    evening={isEvening}
+                    filled
                   />
                 </div>
               )}
