@@ -23,13 +23,16 @@ export default function PracticeFieldFlow({
   onSubmit,
   onCancel,
 }) {
-  useBackButton(onCancel)
-
   const [step, setStep] = useState(0)
   const [values, setValues] = useState(() => steps.map((_, index) => initialValues[index] || ''))
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
   const inputRef = useRef(null)
+
+  // Системный «назад» совпадает с круглой кнопкой: шаг 1 → назад к списку,
+  // шаг 2 → назад к первому шагу. Регистрируется здесь, а не в <Screen>
+  // (registerSystemBack={false}), чтобы обработчик зависел от step.
+  useBackButton(step === 0 ? onCancel : () => setStep(0))
 
   const current = steps[step]
   const value = values[step]
@@ -68,6 +71,7 @@ export default function PracticeFieldFlow({
     <Screen
       onBack={step === 0 ? onCancel : () => setStep(0)}
       backTestId="back-button"
+      registerSystemBack={false}
       scroll={false}
       fullFrame
       footer={
@@ -117,7 +121,8 @@ export default function PracticeFieldFlow({
         className="mx-practice-own-field"
         value={value}
         onChange={e => setValue(e.target.value)}
-        placeholder="…"
+        placeholder={current.placeholder || '…'}
+        maxLength={current.maxLength ?? undefined}
         aria-label={current.question}
         data-testid={`practice-own-input-${step}`}
       />

@@ -34,6 +34,34 @@ test('список ритуалов: сетка, «сегодня N из M» и 
   await expect(page.getByTestId('practice-grid')).toBeVisible()
 })
 
+test('«Назад» возвращает туда, откуда пришёл: из «Сегодня» и из «Шагов»', async ({ page }) => {
+  // Путь из «Сегодня»: раздел «Твои практики» → список ритуалов → назад = «Сегодня».
+  await page.goto('/?demo=1&tab=today')
+  const ritualsPin = page
+    .getByTestId('practice-tile')
+    .filter({ hasText: 'Ритуалы' })
+    .first()
+  await expect(ritualsPin).toBeVisible()
+  await ritualsPin.click()
+
+  await expect(page.getByTestId('practice-grid')).toBeVisible()
+  await expect(page.locator('[data-demo-tab="practices"]')).toBeVisible()
+
+  // Демо-шапка Telegram: «‹ Назад» ведёт обратно на «Сегодня».
+  await page.getByTestId('demo-chrome-back').click()
+  await expect(page.locator('[data-demo-tab="today"]')).toBeVisible()
+
+  // Путь из «Шагов»: каталог → коллекция «Ритуалы» → назад = каталог «Шагов».
+  await page.goto('/?demo=1&tab=practices')
+  await expect(page.locator('[data-collection-key="rituals"]')).toBeVisible()
+  await page.locator('[data-collection-key="rituals"]').click()
+
+  await expect(page.getByTestId('practice-grid')).toBeVisible()
+
+  await page.getByTestId('demo-chrome-back').click()
+  await expect(page.locator('[data-collection-key="rituals"]')).toBeVisible()
+})
+
 test('«Свой» — два шага: после создания флоу закрывается, «новый ритуал» при 0 дней', async ({
   page,
 }) => {
