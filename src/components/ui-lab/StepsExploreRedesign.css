@@ -217,10 +217,7 @@
   overflow: visible; /* let carousel track extend beyond panel to screen edges */
 }
 
-/* Track extends beyond panel by panel's side padding on each side */
-.mx-steps-theme-panel .mx-tqc-track {
-  --mx-tqc-extend: 40px;
-}
+/* Track extends beyond panel via its own default --mx-tqc-extend: 40px */
 .mx-steps-theme-heading {
   display: grid;
   gap: 2px;

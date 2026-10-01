@@ -61,3 +61,11 @@
   z-index: 10;
   margin-top: 40px;
 }
+
+/* --- Carousel track: bleed to screen edges inside fullscreen scroll --- */
+/* Fullscreen scroll has overflow-y:auto → overflow-x computes to auto, */
+/* so the track must not extend beyond the scroll container.  Match the */
+/* screen-x padding so the track is exactly the viewport width. */
+.mx-theme-carousel-screen .mx-tqc-track {
+  --mx-tqc-extend: var(--mx-screen-x, 16px);
+}

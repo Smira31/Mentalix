@@ -5,7 +5,7 @@
    ============================================================ */
 
 .mx-tqc-track {
-  --mx-tqc-extend: var(--mx-screen-x, 16px);
+  --mx-tqc-extend: 40px; /* default edge bleed; override per-container if needed */
   position: relative; /* card.offsetLeft must be relative to the track */
   display: flex;
   align-items: center;
@@ -17,6 +17,7 @@
   -webkit-overflow-scrolling: touch;
   touch-action: pan-x;
   min-width: 0; /* allow shrink inside grid/flex parents */
+  flex-shrink: 0; /* prevent height collapse in flex-column parents */
   width: calc(100% + 2 * var(--mx-tqc-extend));
   height: 322px;
   margin: 0 calc(-1 * var(--mx-tqc-extend));
