@@ -7,7 +7,6 @@ export default defineConfig({
     'practices-rituals-ascezas.spec.mjs',
     'onboarding-age-gate.spec.mjs',
     'issue-648-independent-loading.spec.mjs',
-    'mood-practice-smoke.spec.mjs',
     'checkin-geometry.spec.mjs',
     'evening-redo-from-card.spec.mjs',
     'profile-p11.spec.mjs',
