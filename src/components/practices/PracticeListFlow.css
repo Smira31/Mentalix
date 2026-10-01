@@ -74,7 +74,10 @@
   border: 1px solid rgb(var(--c-line) / 0.08);
   border-radius: 24px;
   cursor: pointer;
-  transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease,
+  transition:
+    background-color 200ms ease,
+    color 200ms ease,
+    border-color 200ms ease,
     transform 150ms ease;
 }
 
@@ -82,11 +85,9 @@
   transform: scale(0.98);
 }
 
-/* Отмеченная сегодня — светлая, тёмный текст */
+/* Отмеченная сегодня — фон на ступень светлее карточки, текст как у неотмеченной */
 .mx-practice-flow-tile.is-done {
-  background: #ece8e1;
-  color: #1a1a1a;
-  border-color: #ece8e1;
+  background: #262626;
 }
 
 /* Иконка в круге 64 */
@@ -103,7 +104,8 @@
 }
 
 .mx-practice-flow-tile.is-done .mx-practice-flow-tile__icon {
-  background: rgba(0, 0, 0, 0.06);
+  background: #ece8e1;
+  color: #1a1a1a;
 }
 
 .mx-practice-flow-tile__icon svg {
@@ -138,7 +140,7 @@
 }
 
 .mx-practice-flow-tile.is-done .mx-practice-flow-tile__minimum {
-  color: rgba(0, 0, 0, 0.55);
+  color: rgb(var(--c-muted));
 }
 
 /* Статус внизу капсом 10 */
@@ -153,7 +155,7 @@
 }
 
 .mx-practice-flow-tile.is-done .mx-practice-flow-tile__status {
-  color: rgba(0, 0, 0, 0.5);
+  color: rgb(var(--c-text) / 0.6);
 }
 
 /* Кружок-отметка 26 в правом верхнем углу, зона 44 */
@@ -180,13 +182,15 @@
   height: 26px;
   border-radius: 50%;
   border: 1.5px solid rgb(var(--c-faint) / 0.5);
-  transition: background-color 200ms ease, border-color 200ms ease;
+  transition:
+    background-color 200ms ease,
+    border-color 200ms ease;
 }
 
 .mx-practice-flow-tile.is-done .mx-practice-flow-tile__check-circle {
-  background: #1a1a1a;
-  border-color: #1a1a1a;
-  color: #ece8e1;
+  background: #ece8e1;
+  border-color: #ece8e1;
+  color: #1a1a1a;
 }
 
 .mx-practice-flow-tile__check-circle svg {
@@ -220,7 +224,9 @@
   border: 1px solid rgb(var(--c-line) / 0.12);
   border-radius: 9999px;
   cursor: pointer;
-  transition: transform 150ms ease, background-color 200ms ease;
+  transition:
+    transform 150ms ease,
+    background-color 200ms ease;
 }
 
 .mx-practice-flow-pill:active {
@@ -266,7 +272,9 @@
   border: 1px solid rgb(var(--c-line) / 0.08);
   border-radius: 20px;
   cursor: pointer;
-  transition: transform 150ms ease, background-color 200ms ease;
+  transition:
+    transform 150ms ease,
+    background-color 200ms ease;
   text-align: left;
 }
 
@@ -397,6 +405,8 @@
   background: transparent;
   border: 0;
   outline: 0;
+  -webkit-appearance: none;
+  appearance: none;
   font-size: 22px;
   font-weight: 500;
   line-height: 1.3;
@@ -406,6 +416,22 @@
 
 .mx-practice-own-field::placeholder {
   color: rgb(var(--c-faint));
+}
+
+/* Никакой белой рамки/подсветки при фокусе — поле без прямоугольника. */
+.mx-practice-own-field:focus,
+.mx-practice-own-field:focus-visible {
+  outline: none;
+  box-shadow: none;
+  border: 0;
+  background: transparent;
+}
+
+/* Экран «Свой»: в демо-эмуляции Telegram метка «НОВЫЙ РИТУАЛ · 1 / 2» идёт
+   сразу под демо-шапкой (safe-top + 56 + 16): слот с невидимой круглой
+   «назад» не занимает строку и не оставляет пустоты над меткой. */
+[data-mentalix-demo-frame='true'][data-demo-mode='true'] .mx-practice-flow__header {
+  display: none;
 }
 
 /* Над клавиатурой: чипсы + круглая кнопка */
@@ -423,6 +449,9 @@
   flex: 1;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  /* Затухание справа, к круглой кнопке: обрезанный чипс тает в фон. */
+  mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
 }
 
 .mx-practice-own-chips::-webkit-scrollbar {
@@ -461,7 +490,9 @@
   background: rgb(var(--c-text));
   border: 0;
   cursor: pointer;
-  transition: opacity 200ms ease, transform 150ms ease;
+  transition:
+    opacity 200ms ease,
+    transform 150ms ease;
 }
 
 .mx-practice-own-go:disabled {
