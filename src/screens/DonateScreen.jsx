@@ -36,7 +36,7 @@ export default function DonateScreen({ onBack }) {
 
   const options = [
     ...AMOUNTS.map(amount => ({ value: amount, label: `${amount} ₽` })),
-    { value: CUSTOM, label: 'Своя сумма' },
+    { value: CUSTOM, label: 'Своя' },
   ]
 
   return (

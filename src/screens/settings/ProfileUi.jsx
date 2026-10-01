@@ -4,10 +4,11 @@
 // Все размеры — DESIGN_SYSTEM.md §5.4 «Профиль и настройки».
 
 import { useEffect, useRef, useState } from 'react'
-import { ChevronRight, X } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 import ScreenBack from '../../components/ScreenBack'
 import { useBackButton } from '../../platform/telegram.hooks'
 import { isTelegramBackMode } from '../../lib/backButtonMode'
+import { isPreviewDemoMode } from '../../lib/demoMode'
 
 import './ProfileUi.css'
 
@@ -54,38 +55,25 @@ function useTitleCollapsed(headerRef, titleRef) {
 /*
  * В Telegram своих кнопок «закрыть»/«назад» нет — работает нативная
  * «Назад» (как в шторке серии). В Demo Preview её роль играет
- * демо-шапка Telegram. Круглая кнопка рисуется только в web.
+ * демо-шапка Telegram. Круглая кнопка рисуется только в настоящем web
+ * (не демо-режиме). Крестик ✕ на корне убран — в Telegram есть своя «Назад».
  */
 export function ProfilePage({ title, isRoot = false, onBack, testId, children }) {
   const headerRef = useRef(null)
   const titleRef = useRef(null)
   const collapsed = useTitleCollapsed(headerRef, titleRef)
-  const showOwnButton = !isTelegramBackMode(
-    typeof window === 'undefined' ? null : window.Telegram?.WebApp
-  )
+  const showOwnButton =
+    !isTelegramBackMode(typeof window === 'undefined' ? null : window.Telegram?.WebApp) &&
+    !isPreviewDemoMode()
   useBackButton(onBack, isRoot)
-  const screenRef = useRef(null)
 
   return (
     <div
-      ref={screenRef}
       className={`mx-profile-page${isRoot ? '' : ' mx-profile-page--sub'}${showOwnButton ? ' mx-profile-page--own-button' : ''}`}
       data-testid={testId}
     >
       <div className="mx-profile-page__bar">
-        {isRoot ? (
-          showOwnButton && (
-            <button
-              type="button"
-              data-testid="profile-close-button"
-              className="mx-profile-page__button mx-profile-page__button--close"
-              aria-label="Закрыть профиль"
-              onClick={onBack}
-            >
-              <X size={22} aria-hidden="true" />
-            </button>
-          )
-        ) : (
+        {!isRoot && showOwnButton && (
           <ScreenBack
             onBack={onBack}
             testId="profile-close-button"

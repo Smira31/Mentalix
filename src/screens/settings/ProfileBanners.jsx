@@ -23,7 +23,7 @@ export function PotentialBanner({ onOpen }) {
       <h2 className="mx-profile-banner__title">Открой весь потенциал Mentalix</h2>
       {/* «Mentalix Pro» не разрывается переносом строки. */}
       <p className="mx-profile-banner__text">
-        {'Все собеседники, полная аналитика и курсы в Mentalix\u00A0Pro'}
+        {'Собеседники без ограничений, курсы и полная аналитика в Mentalix\u00A0Pro'}
       </p>
       <button
         type="button"

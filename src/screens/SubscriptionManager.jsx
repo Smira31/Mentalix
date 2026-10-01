@@ -1,83 +1,43 @@
-import { useState } from 'react'
-import {
-  Bell,
-  BookOpen,
-  Lightbulb,
-  LineChart,
-  Lock,
-  MessageCircle,
-  Mountain,
-  RefreshCw,
-  Sparkles,
-  Users,
-} from 'lucide-react'
+import { BookOpen, LineChart, Lightbulb, Lock, Users } from 'lucide-react'
 import { ProfileBody, ProfileNote, ProfilePage } from './settings/ProfileUi'
+import { PotentialLockArt } from './settings/ProfileBannerArt'
 import './SubscriptionManager.css'
 
 /*
- * «подписка.» — экран тарифов Mentalix Pro и Mentalix Pro + ИИ.
+ * «подписка.» — единственный тариф Mentalix Pro, 690 ₽/мес.
  * Оплата пока не подключена: кнопка неактивна («Оплата скоро появится»),
- * ничего не списывает. Скидок нет — цены показываем как есть, без процентов.
+ * ничего не списывает. Скидок и пробы нет.
  *
- * Функции — только то, что реально есть в Mentalix (собеседники, аналитика,
- * курсы, «Мысль дня», напоминания, ИИ-собеседники, наблюдения Следопыта).
- * Stoic-функций, которых у нас нет (синхронизация с Apple-устройствами,
- * медитации, дыхание), здесь нет.
+ * Функции — только то, что реально входит в Pro. Мысль дня, напоминания,
+ * Следопыт — бесплатные, перечислены отдельно под списком.
+ *
+ * Логика тарифов (включая Pro + ИИ) в api.js и бэкенде не тронута —
+ * убран только интерфейс переключателя.
  */
-const TIERS = [
-  {
-    key: 'pro',
-    name: 'Mentalix Pro',
-    price: '690 ₽/мес · 8 280 ₽/год',
-    features: [
-      [Users, 'Все три собеседника', 'Собеседник, Наставник и Следопыт'],
-      [LineChart, 'Полная аналитика и история', 'Корреляции и вся лента записей'],
-      [BookOpen, 'Курсы без ограничений', '«Путь героя» и новые курсы'],
-      [RefreshCw, 'Чередование «Мысли дня»', 'Разные источники каждый день'],
-      [Bell, 'Напоминания в Telegram', 'Поддержка ритма практики'],
-    ],
-  },
-  {
-    key: 'pro-ai',
-    name: 'Mentalix Pro + ИИ',
-    price: '1 290 ₽/мес · 15 480 ₽/год',
-    features: [
-      [Sparkles, 'Всё из Mentalix Pro', 'Собеседники, аналитика и курсы'],
-      [MessageCircle, 'Собеседники с ИИ', 'Глубокие ответы Наставника и Следопыта'],
-      [Lightbulb, 'Персональные наблюдения', 'Дайджест и инсайты от Следопыта'],
-      [Mountain, 'Направления от Наставника', 'Следующий шаг к твоему намерению'],
-    ],
-  },
+const FEATURES = [
+  [Users, 'Собеседники без ограничений', 'Наставник и другие собеседники отвечают глубже и без лимита'],
+  [BookOpen, 'Курсы', '«Путь героя» и новые курсы'],
+  [LineChart, 'Полная аналитика и история', 'Все записи и связи между ними'],
+  [Lightbulb, 'Персональные наблюдения', 'Что повторяется в твоих днях'],
 ]
 
 export default function SubscriptionManager({ tier: _tier, onBack }) {
-  const [plan, setPlan] = useState('pro')
-  const selected = TIERS.find(t => t.key === plan)
-
   return (
     <ProfilePage title="подписка." onBack={onBack} testId="profile-screen-subscription">
       <ProfileBody>
-        {/* Переключатель тарифов — под заголовком, не наезжает на него. */}
-        <div className="mx-subscription-switch" role="tablist" aria-label="Тариф">
-          {TIERS.map(t => (
-            <button
-              key={t.key}
-              type="button"
-              role="tab"
-              aria-selected={plan === t.key}
-              onClick={() => setPlan(t.key)}
-              data-testid={`subscription-tab-${t.key}`}
-            >
-              {t.name}
-            </button>
-          ))}
+        <div className="mx-subscription-art" aria-hidden="true">
+          <PotentialLockArt />
         </div>
 
-        <p className="mx-subscription-price">{selected.price}</p>
+        <h2 className="mx-subscription-promise">Готов открыть свой потенциал?</h2>
+        <p className="mx-subscription-pitch">
+          Собеседники без ограничений, курсы и полная аналитика — в одном тарифе.
+        </p>
 
-        {/* Список функций — обычный список на странице, без внутренней прокрутки. */}
+        <p className="mx-subscription-price">690 ₽<span>/мес</span></p>
+
         <ul className="mx-subscription-features">
-          {selected.features.map(([Icon, title, description]) => (
+          {FEATURES.map(([Icon, title, description]) => (
             <li key={title} className="mx-subscription-feature">
               <span className="mx-subscription-feature__icon" aria-hidden="true">
                 <Icon size={22} strokeWidth={1.6} />
@@ -89,6 +49,10 @@ export default function SubscriptionManager({ tier: _tier, onBack }) {
             </li>
           ))}
         </ul>
+
+        <p className="mx-subscription-free">
+          Чек-ины, Мысль дня, журнал, ритуалы, аскезы, Следопыт и напоминания — бесплатно всегда.
+        </p>
 
         <button
           type="button"
