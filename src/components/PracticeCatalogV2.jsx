@@ -1,9 +1,10 @@
 import { useMemo, useRef, useState } from 'react'
-import { ArrowRight, ChevronRight } from 'lucide-react'
+import { ArrowRight, ChevronRight, Ellipsis } from 'lucide-react'
 
 import JournalArtNew from './practice-art/JournalArtNew'
 import SemanticGlyph from './SemanticGlyph'
 import { getPracticeByKey, PRACTICE_COLLECTIONS } from '../lib/practiceCatalogRegistry'
+import { illustrations } from '../assets/illustrations'
 import './ui-lab/LayeredPracticeCatalogExperiment.css'
 import './ui-lab/practices-a11y-fixes.css'
 
@@ -14,20 +15,79 @@ function PracticeGlyph({ kind, highlighted = false }) {
 }
 
 function JournalBanner({ onOpen }) {
+  const HeroArt = illustrations.stepsHero
   return (
     <article className="mx-layered-catalog__journal-hero">
       <div className="mx-layered-catalog__journal-hero-art" aria-hidden="true">
-        <JournalArtNew />
+        {HeroArt ? <HeroArt /> : <JournalArtNew />}
       </div>
       <div className="mx-layered-catalog__journal-hero-copy">
         <span>ЖУРНАЛ · СЕГОДНЯ</span>
         <h2 className="mx-type-section">Разбери день на части</h2>
         <p>Семь простых вопросов, чтобы увидеть главное</p>
-        <button type="button" className="mx-layered-catalog__pill" onClick={onOpen}>
-          Открыть журнал <ArrowRight size={15} />
+        <button
+          type="button"
+          className="mx-layered-catalog__pill mx-layered-catalog__pill--light-compact"
+          onClick={onOpen}
+        >
+          Открыть журнал <ChevronRight size={15} />
         </button>
       </div>
     </article>
+  )
+}
+
+function RailCard({ card, onOpen }) {
+  const [menuOpen, setMenuOpen] = useState(false)
+  return (
+    <div className="mx-layered-catalog__rail-card-wrapper">
+      <button
+        className="mx-layered-catalog__rail-card"
+        type="button"
+        disabled={!card.active}
+        aria-label={card.active ? `Открыть ${card.title}` : `${card.title}, скоро`}
+        onClick={() => card.active && onOpen(card.practice)}
+      >
+        <span className="mx-layered-catalog__avatar" aria-hidden="true">
+          <PracticeGlyph kind={card.kind} highlighted={card.active} />
+        </span>
+        <span className="mx-layered-catalog__rail-badge">{card.status}</span>
+        <span className="mx-layered-catalog__rail-category">{card.category}</span>
+        <strong>{card.title}</strong>
+        <small>{card.description}</small>
+      </button>
+      {card.active && (
+        <div className="mx-layered-catalog__rail-menu">
+          <button
+            type="button"
+            className="mx-layered-catalog__rail-menu-btn"
+            aria-label="Меню практики"
+            aria-expanded={menuOpen}
+            onClick={e => {
+              e.stopPropagation()
+              setMenuOpen(v => !v)
+            }}
+          >
+            <Ellipsis size={18} />
+          </button>
+          {menuOpen && (
+            <div className="mx-layered-catalog__rail-menu-dropdown" role="menu">
+              <button
+                type="button"
+                role="menuitem"
+                onClick={e => {
+                  e.stopPropagation()
+                  setMenuOpen(false)
+                  onOpen(card.practice)
+                }}
+              >
+                Открыть
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -78,22 +138,7 @@ function PracticeRail({ practices, onOpen }) {
       <div className="mx-layered-catalog__rail-label">Новое и рекомендованное</div>
       <div className="mx-layered-catalog__rail" data-accent="gold">
         {railCards.map(card => (
-          <button
-            className="mx-layered-catalog__rail-card"
-            type="button"
-            key={card.key}
-            disabled={!card.active}
-            aria-label={card.active ? `Открыть ${card.title}` : `${card.title}, скоро`}
-            onClick={() => card.active && onOpen(card.practice)}
-          >
-            <span className="mx-layered-catalog__avatar" aria-hidden="true">
-              <PracticeGlyph kind={card.kind} highlighted={card.active} />
-            </span>
-            <span className="mx-layered-catalog__rail-badge">{card.status}</span>
-            <span className="mx-layered-catalog__rail-category">{card.category}</span>
-            <strong>{card.title}</strong>
-            <small>{card.description}</small>
-          </button>
+          <RailCard key={card.key} card={card} onOpen={onOpen} />
         ))}
       </div>
     </section>
@@ -132,8 +177,8 @@ function ThemeCarousel({ theme, themeLoading = false, themeError = false, onOpen
       <section className="mx-layered-catalog__section mx-layered-catalog__theme-section" aria-label="Тема недели" aria-live="polite">
         <div className="mx-layered-catalog__section-head">
           <div>
-            <span>Тема недели:</span>
-            <h2 className="mx-type-section">{themeLoading ? 'Один вопрос.' : themeError ? 'Вопросы не загрузились' : 'Пока нет вопросов'}</h2>
+            <span>ТЕМА НЕДЕЛИ</span>
+            <h2 className="mx-type-section mx-layered-catalog__theme-heading-serif">{themeLoading ? 'Загрузка…' : themeError ? 'Вопросы не загрузились' : 'Пока нет вопросов'}</h2>
           </div>
         </div>
         {themeLoading ? (
@@ -161,9 +206,9 @@ function ThemeCarousel({ theme, themeLoading = false, themeError = false, onOpen
     >
       <div className="mx-layered-catalog__section-head">
         <div>
-          <span>Тема недели:</span>
-          <h2 className="mx-type-section" id="production-theme-title">
-            Один вопрос.
+          <span>ТЕМА НЕДЕЛИ</span>
+          <h2 className="mx-type-section mx-layered-catalog__theme-heading-serif" id="production-theme-title">
+            {theme.title || 'Один вопрос.'}
           </h2>
         </div>
       </div>
@@ -208,6 +253,12 @@ function ThemeCarousel({ theme, themeLoading = false, themeError = false, onOpen
 
 function CollectionTile({ collection, onOpen }) {
   const isSoon = collection.active === false || collection.soon
+  const CollectionArt =
+    collection.key === 'rituals'
+      ? illustrations.stepsCollectionsRituals
+      : collection.key === 'ascezas'
+        ? illustrations.stepsCollectionsAscezas
+        : null
   return (
     <button
       className="mx-layered-catalog__collection"
@@ -220,7 +271,7 @@ function CollectionTile({ collection, onOpen }) {
       }}
     >
       <span className="mx-layered-catalog__collection-art" aria-hidden="true">
-        <PracticeGlyph kind={collection.kind} />
+        {CollectionArt ? <CollectionArt /> : <PracticeGlyph kind={collection.kind} />}
       </span>
       <strong>{collection.title}</strong>
       <small>{isSoon ? 'Скоро' : collection.description}</small>
@@ -234,14 +285,14 @@ function CollectionTile({ collection, onOpen }) {
 }
 
 function CollectionGrid({ onOpen }) {
+  const collectionCount = VISIBLE_COLLECTIONS.length
   return (
-    <section className="mx-layered-catalog__section" aria-label="Коллекции">
+    <section className="mx-layered-catalog__section" aria-label={`Коллекции, ${collectionCount}`}>
       <div className="mx-layered-catalog__section-head">
         <div>
           <span>Собрано для тебя</span>
           <h2 className="mx-type-section">Коллекции</h2>
         </div>
-        <small>{VISIBLE_COLLECTIONS.length}</small>
       </div>
       <div className="mx-layered-catalog__collections">
         {VISIBLE_COLLECTIONS.map(collection => (
