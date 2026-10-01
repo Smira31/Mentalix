@@ -1,21 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
 
 import { platform } from '../platform'
 import JournalTextarea from '../components/JournalTextarea'
-import { RoundBackButton } from '../components/NestedScreenHeader'
-import {
-  useFullscreenSurface,
-  getFullscreenPortalTarget,
-  FULLSCREEN_SHELL_CLASS,
-  FULLSCREEN_SCROLL_CLASS,
-} from '../lib/fullscreenSurface'
+import Screen from '../components/Screen'
+import CapsLabel from '../components/ui/CapsLabel'
 import {
   useVisualViewportGeometry,
   getKeyboardViewportHeight,
   isTelegramRuntime,
 } from '../lib/visualViewport'
-import { useBackButton } from '../platform/telegram.hooks'
 import { readCachedDailyThought, saveDailyThought } from '../lib/dailyThoughtStorage'
 import { todayKey } from '../lib/journalStorage'
 import { getDailyThoughtForDate } from '../data/dailyThoughts'
@@ -24,23 +17,23 @@ import { getDailyThoughtForDate } from '../data/dailyThoughts'
  * ЭКРАН ВВОДА «ТВОЯ МЫСЛЬ» — как день темы в «Теме недели»:
  * поле без рамки, клавиатура сразу, круглая кнопка отправки.
  *
- * Живёт по общему fullscreen-контракту (см. src/lib/fullscreenSurface.js):
- * портал в demo-рамку/body, высота из visualViewport, отступ под контролы
- * Telegram, системная «Назад». Без портала в рамку демо-превью экран
- * оказывался вне телефона.
+ * Переведён на <Screen> + детали (CapsLabel).
+ * Вид и поведение не изменились.
  *
  * Сохраняется на сервере записью /quotes с tag='thought:YYYY-MM-DD'
  * (см. dailyThoughtStorage.js); из localStorage только подставляется
  * уже записанная мысль, пока список не обновлён с сервера.
  */
 export default function DailyThoughtInput({ date, user, onClose, onSaved }) {
-  const { style: surfaceStyle, keyboardOpen } = useFullscreenSurface()
-  const viewportGeometry = useVisualViewportGeometry()
   const [text, setText] = useState('')
   const [saving, setSaving] = useState(false)
   const loadedRef = useRef(false)
 
-  useBackButton(onClose)
+  const viewportGeometry = useVisualViewportGeometry()
+  const keyboardOpen =
+    viewportGeometry?.height != null &&
+    typeof window !== 'undefined' &&
+    window.innerHeight - viewportGeometry.height > 80
 
   useEffect(() => {
     if (loadedRef.current) return
@@ -91,54 +84,48 @@ export default function DailyThoughtInput({ date, user, onClose, onSaved }) {
         zIndex: 71,
       }
 
-  return createPortal(
-    <div className={FULLSCREEN_SHELL_CLASS} style={surfaceStyle}>
-      <div className={FULLSCREEN_SCROLL_CLASS}>
-        <div className="w-full max-w-md mx-auto px-[var(--mx-screen-x)] pt-2 pb-6 flex flex-col min-h-full">
-          <div className="mb-2">
-            <RoundBackButton onClick={onClose} testId="daily-thought-input-back" />
-          </div>
-
-          <div className="text-left" data-testid="daily-thought-input-content">
-            <div className="mb-2 font-label text-[11px] font-bold uppercase tracking-[0.14em] text-gold">
-              ТВОЯ МЫСЛЬ
-            </div>
-            {quoteOfDay?.text && (
-              <p
-                className="mb-3 text-[13px] italic leading-snug text-muted line-clamp-2"
-                data-testid="daily-thought-input-quote"
-              >
-                {quoteOfDay.text}
-              </p>
-            )}
-            <h3 className="font-display text-[24px] font-bold leading-[1.15] text-cream">
-              Что ты об этом думаешь?
-            </h3>
-            <p className="mt-3 border-l border-gold pl-4 text-[16px] font-normal leading-relaxed text-muted">
-              Можно своими словами — или свою фразу на день.
-            </p>
-          </div>
-
-          <JournalTextarea
-            value={text}
-            onChange={setText}
-            placeholder="Начни писать…"
-            ariaLabel="Мысль дня"
-            testId="daily-thought-input-field"
-            submitTestId="daily-thought-input-submit"
-            className="mt-7 flex-1"
-            editorClassName="!leading-[1.5] font-normal pb-16"
-            formatting={false}
-            floatingToolbar={false}
-            writingCanvas={false}
-            autoFocus
-            onSubmit={handleSave}
-            submitLabel="Сохранить мысль"
-            submitDisabled={!hasText}
-            submitLoading={saving}
-          />
-        </div>
+  return (
+    <Screen
+      onBack={onClose}
+      backTestId="daily-thought-input-back"
+      fullFrame
+    >
+      <div className="text-left" data-testid="daily-thought-input-content">
+        <CapsLabel className="mb-2 text-gold">ТВОЯ МЫСЛЬ</CapsLabel>
+        {quoteOfDay?.text && (
+          <p
+            className="mb-3 text-[13px] italic leading-snug text-muted line-clamp-2"
+            data-testid="daily-thought-input-quote"
+          >
+            {quoteOfDay.text}
+          </p>
+        )}
+        <h3 className="font-display text-[24px] font-bold leading-[1.15] text-cream">
+          Что ты об этом думаешь?
+        </h3>
+        <p className="mt-3 border-l border-gold pl-4 text-[16px] font-normal leading-relaxed text-muted">
+          Можно своими словами — или свою фразу на день.
+        </p>
       </div>
+
+      <JournalTextarea
+        value={text}
+        onChange={setText}
+        placeholder="Начни писать…"
+        ariaLabel="Мысль дня"
+        testId="daily-thought-input-field"
+        submitTestId="daily-thought-input-submit"
+        className="mt-7 flex-1"
+        editorClassName="!leading-[1.5] font-normal pb-16"
+        formatting={false}
+        floatingToolbar={false}
+        writingCanvas={false}
+        autoFocus
+        onSubmit={handleSave}
+        submitLabel="Сохранить мысль"
+        submitDisabled={!hasText}
+        submitLoading={saving}
+      />
 
       <button
         type="button"
@@ -151,7 +138,6 @@ export default function DailyThoughtInput({ date, user, onClose, onSaved }) {
       >
         {hasText ? '✓' : '✕'}
       </button>
-    </div>,
-    getFullscreenPortalTarget()
+    </Screen>
   )
 }

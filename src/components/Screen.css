@@ -1,0 +1,32 @@
+/*
+ * <Screen> — стили полноэкранной поверхности.
+ *
+ * Верхний отступ по токену --mx-screen-top (safe-top + 56 + 16),
+ * низ — safe-area. В demo-режиме шапка Telegram уже даёт отступ,
+ * поэтому header-слот не добавляет свой.
+ */
+
+.mx-screen__header {
+  padding-top: var(--mx-space-2);
+}
+
+.mx-screen__body {
+  padding-bottom: var(--app-safe-bottom);
+}
+
+.mx-screen__body--noscroll {
+  overflow: hidden;
+}
+
+.mx-screen__content {
+  padding-top: var(--mx-space-2);
+  padding-bottom: var(--mx-space-6);
+}
+
+.mx-screen--full-frame .mx-screen__content {
+  height: 100%;
+  padding-top: 0;
+  padding-bottom: 0;
+  display: flex;
+  flex-direction: column;
+}

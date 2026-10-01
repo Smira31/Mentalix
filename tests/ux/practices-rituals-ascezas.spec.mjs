@@ -62,6 +62,29 @@ test('«Назад» возвращает туда, откуда пришёл: �
   await expect(page.locator('[data-collection-key="rituals"]')).toBeVisible()
 })
 
+test('«Шаги» → Ритуалы → «+ Новый ритуал» → «‹ Назад» → список → «‹ Назад» → «Шаги»', async ({
+  page,
+}) => {
+  // Путь из «Шагов»: каталог → коллекция «Ритуалы» → список.
+  await page.goto('/?demo=1&tab=practices')
+  await expect(page.locator('[data-collection-key="rituals"]')).toBeVisible()
+  await page.locator('[data-collection-key="rituals"]').click()
+
+  await expect(page.getByTestId('practice-grid')).toBeVisible()
+
+  // «+ Новый ритуал» → экран «готовые».
+  await page.getByTestId('practice-new-pill').click()
+  await expect(page.getByTestId('practice-preset-card').first()).toBeVisible()
+
+  // «‹ Назад» → список ритуалов.
+  await page.getByTestId('demo-chrome-back').click()
+  await expect(page.getByTestId('practice-grid')).toBeVisible()
+
+  // «‹ Назад» → каталог «Шагов».
+  await page.getByTestId('demo-chrome-back').click()
+  await expect(page.locator('[data-collection-key="rituals"]')).toBeVisible()
+})
+
 test('«Свой» — два шага: после создания флоу закрывается, «новый ритуал» при 0 дней', async ({
   page,
 }) => {

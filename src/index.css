@@ -238,11 +238,24 @@
   --mx-space-7: 28px;
   --mx-space-8: 32px;
   --mx-space-10: 40px;
+  --mx-space-12: 48px;
 
+  /* Радиусы поверхностей и контролов. */
+  --mx-radius-xs: 14px;
   --mx-radius-control: 16px;
+  --mx-radius-md: 20px;
   --mx-radius-card: 24px;
+  --mx-radius-lg: 28px;
   --mx-radius-hero: 32px;
   --mx-radius-pill: 999px;
+
+  /* Высоты кнопок — единый контракт для всех экранов. */
+  --mx-btn-pill-h: 54px;
+  --mx-btn-round-h: 45px;
+  --mx-btn-glass-h: 49px;
+
+  /* Верх экрана под шапкой Telegram: safe-top + контролы (56) + воздух (16). */
+  --mx-screen-top: calc(var(--app-safe-top) + 56px + 16px);
 
   /* Шрифт с засечками — только для заголовков разделов экрана «Шаги»
      («Тема недели: …», «Другие темы», «Все темы»), референс Stoic Explore.
@@ -619,6 +632,16 @@ svg .animate-celebrate-pop {
   .mx-scale-rail__progress {
     top: 1.4rem;
   }
+}
+/*
+ * Базовый отступ сверху для заголовка «практики.» — тот же, что у
+ * заголовков других вкладок (Библиотека: 4px, Прогресс: 8px). Без него
+ * line-height: 1 у mx-type-page обрезает верхний выносной шрифта.
+ * В Telegram-режиме safe-top уже добавлен через shellTopPadding в App.jsx,
+ * здесь — только экранной отступ, как у других вкладок.
+ */
+.mx-practices-catalog-shell {
+  padding-top: var(--mx-space-1);
 }
 .mx-practices-catalog-shell:has(.mx-production-catalog > .mx-layered-category)
   .mx-practices-catalog-title {

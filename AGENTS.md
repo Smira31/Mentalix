@@ -229,6 +229,12 @@ screens, and keep article cards unchanged unless the owner explicitly approves t
 - src/main.jsx и src/tgShell.js нельзя менять без метки allow-entry-change. Ошибка сборки в контейнере агента — не причина.
   Правило принудительно проверяется в CI (job «Frontend quality», входит в «Функциональная проверка проекта»).
 
+## UI-фундамент: <Screen> и токены отступов
+
+- Новые вложенные экраны создаются только через `<Screen>` (`src/components/Screen.jsx`) и детали из `src/components/ui/`. Не использовать ручной `createPortal` + `FULLSCREEN_SHELL_CLASS` в новых экранах.
+- Отступы в новых и изменяемых экранах — только токенами (`--mx-space-*`, `--mx-radius-*`, `--mx-btn-*-h`, `--mx-screen-top`). Локальные пиксельные значения запрещены. Токены описаны в `docs/DESIGN_TOKENS.md`.
+- Пилотные экраны (MyThoughtsScreen, DailyThoughtInput, PracticeFieldFlow) уже переведены на `<Screen>` — использовать их как референс.
+
 ## Context economy
 
 - Читай только файлы из порядка чтения (AGENTS.md → PROJECT_STATE.md → PRODUCT.md →
