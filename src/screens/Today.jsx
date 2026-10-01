@@ -1587,7 +1587,7 @@ export default function Today({
         </button>
       )}
 
-      {!isEmpty && (
+      {!isEmpty && !hiddenCards.includes('dayProgress') && (
         <div className="mx-today-progress" role="status" data-testid="today-progress">
           <span className="mx-today-progress__label">Сегодня</span>
           <div className="mx-today-progress__track" aria-hidden="true">
