@@ -56,6 +56,14 @@
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
+
+/* Длинные названия («Разобраться со Следопытом») — две строки целиком,
+   без «…»: 14px гарантирует перенос в две строки, anywhere — без обрезки. */
+.mx-pinned-practices__rail > .mx-pinned-practice-card .mx-pinned-practice-card__title {
+  font-size: 14px;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
 .mx-pinned-sheet {
   width: 100%;
   max-width: 440px;
