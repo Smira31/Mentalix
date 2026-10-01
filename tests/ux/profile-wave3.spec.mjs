@@ -40,14 +40,10 @@ for (const viewport of [VIEWPORT_430, VIEWPORT_390]) {
           { timeout: 10_000, intervals: [500, 1000, 2000] }
         ).toBeLessThanOrEqual(1)
 
-        // Кнопка в видимой области.
-        const scroll = page.locator('.mx-fullscreen-scroll')
-        const scrollBox = await scroll.boundingBox()
+        // Кнопка в footer — вне скролл-контейнера, проверяем по viewport.
         const button = page.getByTestId('subscription-pay-button')
         const btnBox = await button.boundingBox()
-        expect(Math.round(btnBox.y + btnBox.height)).toBeLessThanOrEqual(
-          Math.round(scrollBox.y + scrollBox.height)
-        )
+        expect(Math.round(btnBox.y + btnBox.height)).toBeLessThanOrEqual(viewport.height)
       } finally {
         await context.close()
       }

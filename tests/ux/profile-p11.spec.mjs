@@ -115,10 +115,10 @@ test('«о тебе.»: статистика «дней в системе · ч�
     await page.getByTestId('profile-row-about').click()
     await expect(page.getByRole('heading', { name: 'о тебе.' })).toBeVisible()
 
-    await expect(page.getByTestId('profile-about-stats')).toHaveCount(1)
-    await expect(page.getByTestId('profile-about-stats')).toContainText('дней в системе')
-    await expect(page.getByTestId('profile-about-stats')).toContainText('чек-инов')
-    await expect(page.getByText(/дней в системе/)).toHaveCount(1)
+    // Подпись «N дней в системе · N чек-инов» под именем убрана —
+    // статистика только в группе «Статистика» (не дублируется).
+    await expect(page.getByTestId('profile-about-stats')).toHaveCount(0)
+    await expect(page.getByText('Дней в системе', { exact: true })).toHaveCount(1)
   } finally {
     await context.close()
   }
