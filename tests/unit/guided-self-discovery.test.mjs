@@ -84,8 +84,9 @@ test('MXL-SELF-DISCOVERY-001 uses the shared typography scale and round CTA', ()
   // CTA is a RoundNextButton with lucide icon, not a text chevron
   assert.match(flow, /RoundNextButton/)
   // Completion uses CheckInCompletion (same as evening review #967)
+  // Art подключается через реестр illustrations, не напрямую
   assert.match(flow, /CheckInCompletion/)
-  assert.match(flow, /TrackerArtComplete/)
+  assert.match(flow, /illustrations\.recordComplete/)
   assert.match(checkInCompletionCss, /mx-completion__title[\s\S]*font-size: 28px/)
   assert.match(canvasCss, /practice-writing-canvas__submit svg[\s\S]*width: 20px[\s\S]*stroke-width: 2\.4/)
   assert.match(canvasCss, /practice-writing-canvas__submit:disabled[\s\S]*opacity: 0\.42/)

@@ -4,8 +4,7 @@ import Screen from '../components/Screen'
 import CapsLabel from '../components/ui/CapsLabel'
 import JournalField from '../components/ui/JournalField'
 import RoundNextButton from '../components/ui/RoundNextButton'
-import TrackerArtIntro from '../components/tracker-art/TrackerArtIntro'
-import TrackerArtComplete from '../components/tracker-art/TrackerArtComplete'
+import { illustrations } from '../assets/illustrations'
 import CheckInCompletion from '../components/CheckInCompletion'
 import { useBackButton } from '../platform/telegram.hooks'
 import { platform } from '../platform'
@@ -80,11 +79,14 @@ function emptyAnswers() {
 }
 
 function IntroContent({ hasDraft }) {
+  const IntroArt = illustrations.recordIntro
   return (
     <>
-      <div className="guided-self-discovery__intro-art" aria-hidden="true">
-        <TrackerArtIntro className="guided-self-discovery__intro-art-svg" />
-      </div>
+      {IntroArt && (
+        <div className="guided-self-discovery__intro-art" aria-hidden="true">
+          <IntroArt className="guided-self-discovery__intro-art-svg" />
+        </div>
+      )}
       <CapsLabel className="guided-self-discovery__intro-eyebrow">Запись</CapsLabel>
       <h1 className="guided-self-discovery__intro-title font-display text-cream">
         {hasDraft ? 'Продолжи разбирать ситуацию' : 'Когда непонятно, что делать'}
@@ -103,7 +105,11 @@ function WritingContent({ step, stepIndex, totalSteps, value, onChange, fieldRef
       <CapsLabel className="guided-self-discovery__step-label">
         Запись · {stepIndex + 1} / {totalSteps}
       </CapsLabel>
-      <JournalField question={step.title} hint={step.hint} className="guided-self-discovery__field-group" />
+      <JournalField
+        question={step.title}
+        hint={step.hint}
+        className="guided-self-discovery__field-group"
+      />
       <textarea
         ref={fieldRef}
         className="guided-self-discovery__field"
@@ -307,7 +313,11 @@ export default function GuidedSelfDiscoveryFlow({ userId, onClose }) {
       scroll={stage === 'intro'}
       fullFrame={stage !== 'intro'}
       footer={footerContent}
-      footerClassName={stage === 'complete' ? 'guided-self-discovery__footer--complete' : 'guided-self-discovery__footer'}
+      footerClassName={
+        stage === 'complete'
+          ? 'guided-self-discovery__footer--complete'
+          : 'guided-self-discovery__footer'
+      }
       bodyClassName={stage === 'complete' ? 'guided-self-discovery__body--complete' : ''}
     >
       {stage === 'intro' && <IntroContent hasDraft={Boolean(initial)} />}
@@ -326,7 +336,10 @@ export default function GuidedSelfDiscoveryFlow({ userId, onClose }) {
       {stage === 'complete' && (
         <CheckInCompletion
           evening
-          art={<TrackerArtComplete className="mx-completion__art" />}
+          art={(() => {
+            const Art = illustrations.recordComplete
+            return Art ? <Art /> : undefined
+          })()}
           title={
             <>
               <strong>Готово!</strong>
@@ -340,7 +353,10 @@ export default function GuidedSelfDiscoveryFlow({ userId, onClose }) {
           }}
           body={
             answered(answers.experiment) ? (
-              <p className="mx-type-body text-muted mt-6 max-w-sm mx-auto" data-testid="gsd-experiment-text">
+              <p
+                className="mx-type-body text-muted mt-6 max-w-sm mx-auto"
+                data-testid="gsd-experiment-text"
+              >
                 {answers.experiment}
               </p>
             ) : null
