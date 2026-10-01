@@ -1,112 +1,266 @@
 /**
- * Хранилище «Мысли дня» — обёртка над freeWrites в journalStorage.
+ * Хранилище «Мысли дня» — серверный API /quotes + локальный кэш.
  *
- * Новых серверных таблиц нет: мысль дня сохраняется как свободная запись
- * (freeWrite) с kind='мысль' и quoteKey — ключ цитаты дня, к которой
- * она написана. Источник данных — тот же localStorage, что у дневника.
+ * Новых серверных таблиц нет: и своя мысль, и сохранённая цитата — обычные
+ * записи /quotes (api.quotes.create/list/remove) с размеченным tag:
+ *   thought:YYYY-MM-DD — своя мысль за этот день;
+ *   saved:YYYY-MM-DD   — сохранённая цитата дня.
+ *
+ * localStorage — только кэш: экран показывает данные сразу из него, затем
+ * обновляется с сервера. Источник правды — сервер.
+ *
+ * Ранее мысль жила в journalStorage (freeWrites, kind='мысль'/'сохранено');
+ * эти записи один раз переносятся на сервер через migrateLocalDailyItems().
  */
 
+import { api } from './api.js'
+import { deleteJournalFreeWrite, readJournalStore, todayKey } from './journalStorage.js'
 import {
-  saveJournalFreeWrite,
-  deleteJournalFreeWrite,
-  readAllJournalFreeWrites,
-  readJournalEntry,
-  todayKey,
-} from './journalStorage.js'
+  THOUGHT_KIND,
+  SAVED_KIND,
+  isThoughtQuote,
+  savedTag,
+  sortByDateDesc,
+  tagForKind,
+  thoughtTag,
+  toQuoteItems,
+} from './quoteTags.js'
 
-const THOUGHT_KIND = 'мысль'
-const SAVED_KIND = 'сохранено'
+const CACHE_KEY = 'mx-daily-thoughts-cache-v1'
+const MIGRATION_KEY = 'mx-daily-thoughts-migrated-v1'
+/* Локальная заглушка id: сервер не вернул запись (демо-режим) — удалять нечего. */
+const LOCAL_ID_PREFIX = 'local:'
+
+function normalizeUserId(userId) {
+  if (typeof userId === 'string' && userId.trim()) return userId.trim()
+  if (typeof userId === 'number' && Number.isFinite(userId)) return String(userId)
+  return null
+}
+
+function scopedKey(key, userId) {
+  const normalized = normalizeUserId(userId)
+  return normalized ? `${key}:user:${encodeURIComponent(normalized)}` : key
+}
+
+function isLocalId(id) {
+  return typeof id === 'string' && id.startsWith(LOCAL_ID_PREFIX)
+}
+
+function readCache(userId) {
+  try {
+    const raw = JSON.parse(localStorage.getItem(scopedKey(CACHE_KEY, userId)) || 'null')
+    return Array.isArray(raw?.items) ? raw.items : []
+  } catch {
+    return []
+  }
+}
+
+function writeCache(userId, items) {
+  try {
+    localStorage.setItem(scopedKey(CACHE_KEY, userId), JSON.stringify({ items }))
+  } catch {
+    /* кэш недоступен — экран просто перечитает данные с сервера */
+  }
+}
+
+function readMigrationFlag(userId) {
+  try {
+    return localStorage.getItem(scopedKey(MIGRATION_KEY, userId)) === '1'
+  } catch {
+    return false
+  }
+}
+
+function writeMigrationFlag(userId) {
+  try {
+    localStorage.setItem(scopedKey(MIGRATION_KEY, userId), '1')
+  } catch {
+    /* флаг не сохранился — миграция просто повторится (дублей не будет) */
+  }
+}
+
+// ── Кэш (синхронное чтение, мгновенный показ) ──
+
+function readCachedDailyItems(userId) {
+  return sortByDateDesc(readCache(userId))
+}
+
+function readCachedDailyThoughts(userId) {
+  return readCachedDailyItems(userId).filter(item => item.kind === THOUGHT_KIND)
+}
+
+function readCachedSavedQuotes(userId) {
+  return readCachedDailyItems(userId).filter(item => item.kind === SAVED_KIND)
+}
+
+function readCachedDailyThought(date = todayKey(), userId) {
+  const items = readCachedDailyItems(userId)
+  return items.find(item => item.kind === THOUGHT_KIND && item.date === date) || null
+}
+
+function isQuoteSaved(date = todayKey(), userId) {
+  const items = readCachedDailyItems(userId)
+  return items.some(item => item.kind === SAVED_KIND && item.date === date)
+}
+
+// ── Сервер ──
 
 /**
- * Сохраняет мысль дня для указанной даты.
- * Если мысль за этот день уже есть — обновляет её.
+ * Читает все записи «Мысли дня» с сервера и обновляет кэш.
+ * Возвращает отсортированный по дате убыванию список
+ * { id, text, kind, date }.
  */
-function saveDailyThought({ date = todayKey(), text, quoteKey, userId }) {
-  const existing = readDailyThought(date, userId)
-  return saveJournalFreeWrite({
-    date,
-    id: existing?.id,
+async function loadDailyItems(userId) {
+  if (!normalizeUserId(userId)) return []
+  const list = await api.quotes.list(userId)
+  const items = sortByDateDesc(toQuoteItems(list))
+  writeCache(userId, items)
+  return items
+}
+
+function withItem(items, item) {
+  return sortByDateDesc([
+    ...items.filter(existing => !(existing.kind === item.kind && existing.date === item.date)),
+    item,
+  ])
+}
+
+/**
+ * Сохраняет мысль дня. Изменение уже записанной мысли — это remove + create:
+ * у /quotes нет update, а дата (и значит tag) остаётся той же.
+ */
+async function saveDailyThought({ date = todayKey(), text, userId }) {
+  const items = readCachedDailyItems(userId)
+  const existing = items.find(item => item.kind === THOUGHT_KIND && item.date === date)
+
+  if (existing && !isLocalId(existing.id)) await api.quotes.remove(existing.id)
+
+  const created = await api.quotes.create(userId, text, thoughtTag(date))
+  const next = withItem(items, {
+    id: created?.id ?? `${LOCAL_ID_PREFIX}${date}`,
     text,
-    status: 'final',
     kind: THOUGHT_KIND,
-    quoteKey,
-    userId,
-  })
-}
-
-/**
- * Читает мысль дня для указанной даты (или null, если её нет).
- */
-function readDailyThought(date = todayKey(), userId) {
-  const entry = readJournalEntry(date, userId)
-  return entry.freeWrites.find(w => w.kind === THOUGHT_KIND) || null
-}
-
-/**
- * Читает все мысли дня пользователя, отсортированные по дате убыванию.
- */
-function readAllDailyThoughts(userId) {
-  return readAllJournalFreeWrites(userId, THOUGHT_KIND)
-}
-
-/**
- * Удаляет мысль дня по id и дате.
- */
-function removeDailyThought({ date, id, userId }) {
-  return deleteJournalFreeWrite({ date, id, userId })
-}
-
-/**
- * Сохраняет цитату дня как закладку (kind='сохранено').
- */
-function saveSavedQuote({ date = todayKey(), text, quoteKey, userId }) {
-  const entry = readJournalEntry(date, userId)
-  const existing = entry.freeWrites.find(w => w.kind === SAVED_KIND && w.quoteKey === quoteKey)
-  if (existing) return entry // уже сохранено — не дублируем
-  return saveJournalFreeWrite({
     date,
-    text,
-    status: 'final',
-    kind: SAVED_KIND,
-    quoteKey,
-    userId,
   })
+  writeCache(userId, next)
+  return next
 }
 
 /**
- * Читает все сохранённые цитаты пользователя.
+ * Сохраняет цитату дня (один раз на дату) как запись kind='сохранено'.
  */
-function readAllSavedQuotes(userId) {
-  return readAllJournalFreeWrites(userId, SAVED_KIND)
+async function saveSavedQuote({ date = todayKey(), text, userId }) {
+  const items = readCachedDailyItems(userId)
+  if (items.some(item => item.kind === SAVED_KIND && item.date === date)) return items
+
+  const created = await api.quotes.create(userId, text, savedTag(date))
+  const next = withItem(items, {
+    id: created?.id ?? `${LOCAL_ID_PREFIX}${date}`,
+    text,
+    kind: SAVED_KIND,
+    date,
+  })
+  writeCache(userId, next)
+  return next
 }
 
 /**
- * Читает все элементы «Мысли дня» — и свои мысли, и сохранённые цитаты.
- * Отсортировано по дате убыванию.
+ * Удаляет запись «Мысли дня» (мысль или сохранённую цитату) по id.
  */
-function readAllDailyItems(userId) {
-  const thoughts = readAllDailyThoughts(userId)
-  const saved = readAllSavedQuotes(userId)
-  return [...thoughts, ...saved].sort((a, b) => (a.date < b.date ? 1 : -1))
+async function removeDailyThought({ id, userId }) {
+  const items = readCachedDailyItems(userId)
+  if (!isLocalId(id)) await api.quotes.remove(id)
+  const next = items.filter(item => item.id !== id)
+  writeCache(userId, next)
+  return next
+}
+
+// ── Одноразовая миграция локальных мыслей на сервер ──
+
+const migrationInFlight = new Map()
+
+/**
+ * Записи прежнего локального хранилища (journalStorage freeWrites
+ * с kind='мысль'/'сохранено').
+ */
+function readLegacyLocalItems(userId) {
+  const store = readJournalStore(userId)
+  const items = []
+  for (const [date, entry] of Object.entries(store.entries)) {
+    for (const write of entry.freeWrites) {
+      if (write.kind !== THOUGHT_KIND && write.kind !== SAVED_KIND) continue
+      const text = typeof write.text === 'string' ? write.text.trim() : ''
+      if (!text) continue
+      items.push({ date, id: write.id, kind: write.kind, text })
+    }
+  }
+  return items
+}
+
+async function runMigration(userId) {
+  const legacy = readLegacyLocalItems(userId)
+  if (legacy.length === 0) {
+    writeMigrationFlag(userId)
+    return false
+  }
+
+  const existing = await loadDailyItems(userId)
+  const known = new Set(existing.map(item => `${item.kind}:${item.date}`))
+
+  for (const item of legacy) {
+    const key = `${item.kind}:${item.date}`
+    // Уже на сервере (частичная миграция, повторный запуск) — не дублируем.
+    if (!known.has(key)) {
+      await api.quotes.create(userId, item.text, tagForKind(item.kind, item.date))
+      known.add(key)
+    }
+    deleteJournalFreeWrite({ date: item.date, id: item.id, userId })
+  }
+
+  await loadDailyItems(userId)
+  writeMigrationFlag(userId)
+  return true
 }
 
 /**
- * Проверяет, сохранена ли цитата за указанную дату.
+ * Первая и единственная миграция: переносит уже записанные локальные мысли
+ * на сервер, затем удаляет их из локального хранилища. При ошибке сети
+ * локальные данные не теряются, флаг не ставится — попробуем при следующем
+ * открытии. Повторный запуск не создаёт дублей (сверка с сервером по дате).
  */
-function isQuoteSaved(date = todayKey(), quoteKey, userId) {
-  const entry = readJournalEntry(date, userId)
-  return entry.freeWrites.some(w => w.kind === SAVED_KIND && w.quoteKey === quoteKey)
+async function migrateLocalDailyItems(userId) {
+  if (!normalizeUserId(userId) || readMigrationFlag(userId)) return false
+  if (migrationInFlight.has(userId)) return migrationInFlight.get(userId)
+
+  const task = (async () => {
+    try {
+      return await runMigration(userId)
+    } catch (error) {
+      console.error('Не удалось перенести локальные мысли на сервер', error)
+      return false
+    }
+  })()
+
+  migrationInFlight.set(userId, task)
+  try {
+    return await task
+  } finally {
+    migrationInFlight.delete(userId)
+  }
 }
 
 export {
   THOUGHT_KIND,
   SAVED_KIND,
-  saveDailyThought,
-  readDailyThought,
-  readAllDailyThoughts,
-  removeDailyThought,
-  saveSavedQuote,
-  readAllSavedQuotes,
-  readAllDailyItems,
+  isThoughtQuote,
+  readCachedDailyItems,
+  readCachedDailyThoughts,
+  readCachedSavedQuotes,
+  readCachedDailyThought,
   isQuoteSaved,
+  loadDailyItems,
+  saveDailyThought,
+  saveSavedQuote,
+  removeDailyThought,
+  migrateLocalDailyItems,
 }

@@ -7,7 +7,7 @@ import MarkdownText from '../components/MarkdownText'
 import { buildBadges } from '../lib/badges'
 import { daysSinceRegistration } from '../lib/badgeCatalog'
 import { readJournalHistory } from '../lib/journalHistory'
-import { readAllDailyThoughts, THOUGHT_KIND } from '../lib/dailyThoughtStorage'
+import { THOUGHT_KIND, loadDailyItems, readCachedDailyItems } from '../lib/dailyThoughtStorage'
 import JourneySearch from './JourneySearch'
 import HistorySkeleton from '../components/HistorySkeleton'
 import { platform, platformName } from '../platform'
@@ -604,12 +604,31 @@ export default function History({
     }
   }, [user, userId])
 
-  const dailyThoughts = useMemo(() => {
-    if (!userId) return []
-    try {
-      return readAllDailyThoughts(user.id)
-    } catch {
-      return []
+  /*
+   * Мысли дня читаются из localStorage-кэша (мгновенно) и обновляются
+   * с сервера — кэш не источник правды, а только первый рендер.
+   */
+  const [dailyThoughtItems, setDailyThoughtItems] = useState(() =>
+    userId ? readCachedDailyItems(user.id) : []
+  )
+
+  const dailyThoughts = useMemo(
+    () => dailyThoughtItems.filter(item => item.kind === THOUGHT_KIND),
+    [dailyThoughtItems]
+  )
+
+  useEffect(() => {
+    if (!userId) return
+
+    let alive = true
+    loadDailyItems(user.id)
+      .then(next => {
+        if (alive) setDailyThoughtItems(next)
+      })
+      .catch(() => {})
+
+    return () => {
+      alive = false
     }
   }, [user, userId])
 
@@ -1042,6 +1061,7 @@ export default function History({
               )}
 
               {d.journal && <JournalDayCard entry={d.journal} />}
+              {d.dailyThought && <DailyThoughtDayCard thought={d.dailyThought} />}
             </button>
           </div>
         )

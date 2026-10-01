@@ -15,7 +15,7 @@ import {
   getKeyboardViewportHeight,
   isTelegramRuntime,
 } from '../lib/visualViewport'
-import { saveDailyThought, readDailyThought } from '../lib/dailyThoughtStorage'
+import { readCachedDailyThought, saveDailyThought } from '../lib/dailyThoughtStorage'
 import { todayKey } from '../lib/journalStorage'
 
 import './DailyThoughtInput.css'
@@ -24,10 +24,11 @@ import './DailyThoughtInput.css'
  * ЭКРАН ВВОДА «ТВОЯ МЫСЛЬ» — как день темы в «Теме недели»:
  * поле без рамки, клавиатура сразу, круглая кнопка отправки.
  *
- * Сохраняется с пометкой kind='мысль' и quoteKey — ключ цитаты дня,
- * к которой написана мысль. Живёт в localStorage через journalStorage.
+ * Сохраняется на сервере записью /quotes с tag='thought:YYYY-MM-DD'
+ * (см. dailyThoughtStorage.js); из localStorage только подставляется
+ * уже записанная мысль, пока список не обновлён с сервера.
  */
-export default function DailyThoughtInput({ date, quoteKey, user, onClose, onSaved }) {
+export default function DailyThoughtInput({ date, user, onClose, onSaved }) {
   const { style: surfaceStyle } = useFullscreenSurface()
   const viewportGeometry = useVisualViewportGeometry()
   const [text, setText] = useState('')
@@ -37,7 +38,7 @@ export default function DailyThoughtInput({ date, quoteKey, user, onClose, onSav
   useEffect(() => {
     if (loadedRef.current) return
     loadedRef.current = true
-    const existing = readDailyThought(date || todayKey(), user?.id)
+    const existing = readCachedDailyThought(date || todayKey(), user?.id)
     if (existing?.text) setText(existing.text)
   }, [date, user?.id])
 
@@ -47,10 +48,9 @@ export default function DailyThoughtInput({ date, quoteKey, user, onClose, onSav
     if (!hasText || saving) return
     setSaving(true)
     try {
-      saveDailyThought({
+      await saveDailyThought({
         date: date || todayKey(),
         text: text.trim(),
-        quoteKey,
         userId: user?.id,
       })
       platform.haptic('success')

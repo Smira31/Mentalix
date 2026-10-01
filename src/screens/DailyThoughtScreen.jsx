@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import { platform } from '../platform'
@@ -16,10 +16,12 @@ import { MENTOR_PERSONA_KEY, MENTOR_DRAFT_KEY } from './mentalix/personas'
 import { getDailyThoughtForDate } from '../data/dailyThoughts'
 import { toLocalCalendarDate } from '../lib/dateTimezonePolicy'
 import {
-  readDailyThought,
-  readAllDailyThoughts,
+  THOUGHT_KIND,
+  SAVED_KIND,
+  loadDailyItems,
+  migrateLocalDailyItems,
+  readCachedDailyItems,
   saveSavedQuote,
-  isQuoteSaved,
 } from '../lib/dailyThoughtStorage'
 import DailyThoughtInput from './DailyThoughtInput'
 import MyThoughtsScreen from './MyThoughtsScreen'
@@ -59,7 +61,7 @@ export default function DailyThoughtScreen({ thought, onClose, onGoMentor, user 
   const [copied, setCopied] = useState(false)
   const [saved, setSaved] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
-  const [thoughtTick, setThoughtTick] = useState(0)
+  const [items, setItems] = useState(() => readCachedDailyItems(user?.id))
   const touchStart = useRef(null)
 
   const currentDate = useMemo(() => dateOffsetStr(offset), [offset])
@@ -67,19 +69,41 @@ export default function DailyThoughtScreen({ thought, onClose, onGoMentor, user 
     () => getDailyThoughtForDate(currentDate),
     [currentDate]
   )
+  /*
+   * localStorage — кэш: первый рендер показывает то, что уже есть.
+   * Следом (и однократно) — перенос прежних локальных мыслей на сервер
+   * и обновление списка с сервера.
+   */
+  useEffect(() => {
+    if (!user?.id) return
+
+    let alive = true
+
+    migrateLocalDailyItems(user.id)
+      .then(() => loadDailyItems(user.id))
+      .then(next => {
+        if (alive) setItems(next)
+      })
+      .catch(console.error)
+
+    return () => {
+      alive = false
+    }
+  }, [user?.id])
+
   const myThought = useMemo(
-    () => readDailyThought(currentDate, user?.id),
-    [currentDate, user?.id, thoughtTick, view]
+    () => items.find(item => item.kind === THOUGHT_KIND && item.date === currentDate) || null,
+    [items, currentDate]
   )
   const allThoughtsCount = useMemo(
-    () => readAllDailyThoughts(user?.id).length,
-    [user?.id, thoughtTick, view]
+    () => items.filter(item => item.kind === THOUGHT_KIND).length,
+    [items]
   )
 
   // Проверяем, сохранена ли цитата при открытии дня
   const quoteAlreadySaved = useMemo(
-    () => isQuoteSaved(currentDate, currentThought?.key, user?.id),
-    [currentDate, currentThought?.key, user?.id, view]
+    () => items.some(item => item.kind === SAVED_KIND && item.date === currentDate),
+    [items, currentDate]
   )
 
   function navigateToMentor(persona) {
@@ -113,16 +137,21 @@ export default function DailyThoughtScreen({ thought, onClose, onGoMentor, user 
     setTimeout(() => setCopied(false), 2000)
   }
 
-  function handleSaveQuote() {
+  async function handleSaveQuote() {
     platform.haptic('light')
-    saveSavedQuote({
-      date: currentDate,
-      text: currentThought?.text || '',
-      quoteKey: currentThought?.key,
-      userId: user?.id,
-    })
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
+    try {
+      const next = await saveSavedQuote({
+        date: currentDate,
+        text: currentThought?.text || '',
+        userId: user?.id,
+      })
+      setItems(next)
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2000)
+    } catch (error) {
+      platform.haptic('error')
+      console.error(error)
+    }
   }
 
   function handleMyThoughts() {
@@ -131,8 +160,9 @@ export default function DailyThoughtScreen({ thought, onClose, onGoMentor, user 
   }
 
   function handleInputSaved() {
-    setThoughtTick(t => t + 1)
     setView('main')
+    if (!user?.id) return
+    loadDailyItems(user.id).then(setItems).catch(console.error)
   }
 
   // ── Свайп между днями ──
@@ -170,7 +200,6 @@ export default function DailyThoughtScreen({ thought, onClose, onGoMentor, user 
     return (
       <DailyThoughtInput
         date={currentDate}
-        quoteKey={currentThought?.key}
         user={user}
         onClose={() => setView('main')}
         onSaved={handleInputSaved}

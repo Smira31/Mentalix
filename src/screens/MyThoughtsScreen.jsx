@@ -1,15 +1,20 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import { platform } from '../platform'
 import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react'
-import { NestedScreenHeader } from '../components/NestedScreenHeader'
+import NestedScreenHeader from '../components/NestedScreenHeader'
 import {
   useFullscreenSurface,
   FULLSCREEN_SHELL_CLASS,
   FULLSCREEN_SCROLL_CLASS,
 } from '../lib/fullscreenSurface'
-import { readAllDailyItems, removeDailyThought, THOUGHT_KIND } from '../lib/dailyThoughtStorage'
+import {
+  THOUGHT_KIND,
+  loadDailyItems,
+  readCachedDailyItems,
+  removeDailyThought,
+} from '../lib/dailyThoughtStorage'
 import { getDailyThoughtForDate } from '../data/dailyThoughts'
 import { ProgressGlassMenu, ProgressGlassMenuItem } from '../components/ProgressGlassMenu'
 
@@ -35,8 +40,24 @@ function formatDateShort(dateStr) {
  */
 export default function MyThoughtsScreen({ user, onClose, onEditThought }) {
   const { style: surfaceStyle } = useFullscreenSurface()
-  const [items, setItems] = useState(() => readAllDailyItems(user?.id))
+  // Кэш показываем сразу, следом обновляем список с сервера.
+  const [items, setItems] = useState(() => readCachedDailyItems(user?.id))
   const [menuFor, setMenuFor] = useState(null)
+
+  useEffect(() => {
+    if (!user?.id) return
+
+    let alive = true
+    loadDailyItems(user.id)
+      .then(next => {
+        if (alive) setItems(next)
+      })
+      .catch(console.error)
+
+    return () => {
+      alive = false
+    }
+  }, [user?.id])
 
   const grouped = useMemo(() => {
     const map = {}
@@ -47,13 +68,16 @@ export default function MyThoughtsScreen({ user, onClose, onEditThought }) {
       map[key].items.push(t)
     }
     return Object.entries(map).sort(([a], [b]) => (a < b ? 1 : -1))
-  }, [thoughts])
+  }, [items])
 
-  function handleDelete(thought) {
-    removeDailyThought({ date: thought.date, id: thought.id, userId: user?.id })
-    setItems(readAllDailyItems(user?.id))
-    platform.haptic('light')
+  async function handleDelete(thought) {
     setMenuFor(null)
+    platform.haptic('light')
+    try {
+      setItems(await removeDailyThought({ id: thought.id, userId: user?.id }))
+    } catch (error) {
+      console.error(error)
+    }
   }
 
   function handleEdit(thought) {

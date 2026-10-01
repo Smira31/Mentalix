@@ -1077,7 +1077,27 @@ function respond(path, options = {}) {
     const id = numericId(pathname)
     return json((state.themes || []).find(t => t.id === id) || null)
   }
-  if (pathname === '/quotes' && method === 'GET') return json([])
+  /*
+   * /quotes — записи пользователя: обычные фразы и разметка «Мысли дня»
+   * (tag thought:YYYY-MM-DD / saved:YYYY-MM-DD). Держим их в демо-состоянии,
+   * чтобы фича была проверяема в превью (?demo=1).
+   */
+  if (pathname === '/quotes' && method === 'GET') return json(state.quotes || [])
+  if (pathname === '/quotes' && method === 'POST') {
+    const quote = {
+      id: Date.now(),
+      user_id: body.user_id,
+      text: body.text,
+      tag: typeof body.tag === 'string' ? body.tag : null,
+    }
+    writeState({ ...state, quotes: [quote, ...(state.quotes || [])] })
+    return json(quote)
+  }
+  if (pathname.match(/^\/quotes\/\d+$/) && method === 'DELETE') {
+    const id = numericId(pathname)
+    writeState({ ...state, quotes: (state.quotes || []).filter(q => q.id !== id) })
+    return json({ ok: true })
+  }
   if (pathname === '/analytics/pulse' && method === 'GET') return json({})
 
   if (pathname === '/pinned-practices' && method === 'GET') {
