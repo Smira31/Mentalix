@@ -124,7 +124,10 @@ test('экран практики показывает «ЭТА НЕДЕЛЯ» �
 
 test('practice logging keeps user scope and invalidates Today and practices caches', () => {
   assert.match(rituals, /api\.rituals\.log\(ritualId, user\.id, level, restoreDaysAgo\)/)
-  assert.match(ascezas, /api\.ascezas\.log\(ascezaId, user\.id, status, breakTrigger, breakNote\)/)
+  assert.match(
+    ascezas,
+    /api\.ascezas\.log\(\s*ascezaId,\s*user\.id,\s*status,\s*breakTrigger,\s*breakNote,\s*restoreDaysAgo\s*\)/
+  )
   for (const source of [rituals, ascezas]) {
     assert.match(source, /invalidateTodayData\(user\.id\)/)
     assert.match(source, /invalidatePracticesData\(user\.id\)/)
