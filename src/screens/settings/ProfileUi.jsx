@@ -13,6 +13,7 @@ import Screen from '../../components/Screen'
 import ScreenBack from '../../components/ScreenBack'
 import { useBackButton } from '../../platform/telegram.hooks'
 import { isTelegramBackMode } from '../../lib/backButtonMode'
+import { isDemoEmulationActive } from '../../lib/demoChrome'
 
 import './ProfileUi.css'
 
@@ -37,13 +38,13 @@ function useTitleCollapsed(headerRef, titleRef) {
     if (typeof IntersectionObserver !== 'undefined') {
       observer = new IntersectionObserver(
         ([entry]) =>
-          setCollapsed(!entry.isIntersecting && entry.boundingClientRect.top < headerBottom),
+          setCollapsed(!entry.isIntersecting && entry.boundingClientRect.bottom < headerBottom),
         { rootMargin: `-${headerBottom}px 0px 0px 0px`, threshold: 0 }
       )
       observer.observe(title)
     }
 
-    const check = () => setCollapsed(title.getBoundingClientRect().top < headerBottom)
+    const check = () => setCollapsed(title.getBoundingClientRect().bottom < headerBottom)
     // Скролл-контейнер <Screen> — .mx-fullscreen-scroll; fallback на старый
     // корень App на случай, если экран ещё не внутри <Screen>.
     const scrollRoot = title.closest('.mx-fullscreen-scroll, .mx-app-scroll-root')
@@ -71,9 +72,10 @@ export function ProfilePage({ title, isRoot = false, onBack, testId, children })
   const headerRef = useRef(null)
   const titleRef = useRef(null)
   const collapsed = useTitleCollapsed(headerRef, titleRef)
-  const showOwnButton = !isTelegramBackMode(
-    typeof window === 'undefined' ? null : window.Telegram?.WebApp
-  )
+  const showOwnButton =
+    !isTelegramBackMode(
+      typeof window === 'undefined' ? null : window.Telegram?.WebApp
+    ) && !isDemoEmulationActive()
   useBackButton(onBack, isRoot)
 
   return (
