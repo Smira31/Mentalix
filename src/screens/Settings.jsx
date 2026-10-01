@@ -77,14 +77,17 @@ const SUB_TITLES = {
 // Под-экран, куда ведёт «Назад»: по умолчанию — корень профиля.
 const SUB_PARENT = { timezone: 'notifications' }
 
-// PR11: фиксированные плитки времени напоминания.
-// «Вечер» — 19:00, не синхронизирован с review_hour.
-const REMINDER_TIMES = [
-  { label: 'Утро', hour: 8 },
-  { label: 'День', hour: 14 },
-  { label: 'Вечер', hour: 19 },
-  { label: 'Ночь', hour: 22 },
-]
+// PR11: плитки времени напоминания.
+// «Вечер» синхронизирован с review_hour — напоминание приходит
+// к началу разбора дня, а не в фиксированные 19:00.
+function reminderTimes(reviewHour) {
+  return [
+    { label: 'Утро', hour: 8 },
+    { label: 'День', hour: 14 },
+    { label: 'Вечер', hour: reviewHour },
+    { label: 'Ночь', hour: 22 },
+  ]
+}
 
 // Часы, с которых «Сегодня» переключается на разбор дня.
 // Это не рассылка: приложение ничего не присылает, просто меняет экран.
@@ -812,7 +815,7 @@ export default function Settings({
                   label="Время напоминания"
                   value={reminderHour}
                   onChange={hour => saveReminder(hour, true)}
-                  options={REMINDER_TIMES.map(t => ({
+                  options={reminderTimes(reviewHour).map(t => ({
                     value: t.hour,
                     label: t.label,
                     hint: hh(t.hour),

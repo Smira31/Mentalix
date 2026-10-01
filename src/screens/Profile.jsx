@@ -182,13 +182,14 @@ export default function Profile({ user, stats, loading, error, retryProfile }) {
                   aria-label="Год для навигации"
                   data-testid="profile-birthday-year"
                 >
-                  {Array.from({ length: 2010 - 1940 + 1 }, (_, i) => 1940 + i).map(y => (
+                  {Array.from({ length: new Date().getFullYear() - 1940 + 1 }, (_, i) => 1940 + i).map(y => (
                     <option key={y} value={y}>{y}</option>
                   ))}
                 </select>
                 <input
                   type="date"
                   value={`${viewYear}-${birthdayRaw || '01-01'}`}
+                  max={new Date().toISOString().slice(0, 10)}
                   onChange={e => {
                     const val = e.target.value
                     // Храним только месяц-день, год не важен.

@@ -759,7 +759,7 @@ export const api = {
   },
 
   privacy: {
-    downloadExport: (userId, { format = 'json', dateFrom, dateTo } = {}) => {
+    downloadExport: async (userId, { format = 'json', dateFrom, dateTo } = {}) => {
       const extension = format === 'markdown' ? 'md' : format
       const prefix =
         format === 'csv'
@@ -767,6 +767,46 @@ export const api = {
           : format === 'markdown'
             ? 'mentalix-journal'
             : 'mentalix-export'
+      const filename = `${prefix}-${new Date().toISOString().slice(0, 10)}.${extension}`
+
+      if (isPreviewDemoMode()) {
+        const [profile, checkins] = await Promise.all([
+          demoRequest(withQuery('/profile', { user_id: userId })),
+          demoRequest(withQuery('/checkin/history', { user_id: userId, days: 90 })),
+        ])
+        let content
+        if (format === 'json') {
+          content = JSON.stringify(
+            { profile, checkins: checkins || [], exported_at: new Date().toISOString() },
+            null,
+            2
+          )
+        } else if (format === 'csv') {
+          const rows = ['date,mood,energy,note']
+          for (const c of checkins || []) {
+            const note = (c.note || '').replace(/"/g, '""')
+            rows.push(`${c.date ?? ''},${c.mood ?? ''},${c.energy ?? ''},"${note}"`)
+          }
+          content = rows.join('\n')
+        } else {
+          const lines = ['# Mentalix Journal Export']
+          for (const c of checkins || []) {
+            lines.push(`\n## ${c.date ?? ''}`, `Mood: ${c.mood ?? '—'}, Energy: ${c.energy ?? '—'}`, c.note || '')
+          }
+          content = lines.join('\n')
+        }
+        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' })
+        const href = URL.createObjectURL(blob)
+        const anchor = document.createElement('a')
+        anchor.href = href
+        anchor.download = filename
+        document.body.appendChild(anchor)
+        anchor.click()
+        anchor.remove()
+        URL.revokeObjectURL(href)
+        return
+      }
+
       return download(
         withQuery('/privacy/export', {
           user_id: userId,
@@ -774,7 +814,7 @@ export const api = {
           date_from: dateFrom,
           date_to: dateTo,
         }),
-        `${prefix}-${new Date().toISOString().slice(0, 10)}.${extension}`
+        filename
       )
     },
 
