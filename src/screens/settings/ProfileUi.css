@@ -12,8 +12,10 @@
   --mx-profile-bar-fade: 16px;
 
   width: 100%;
-  max-width: 28rem;
-  padding-bottom: 40px;
+  /* <Screen> даёт max-w-md и px-[--mx-screen-x]; компенсируем padding-top
+     контента <Screen>, чтобы липкая шапка и заголовок остались на месте. */
+  margin-top: calc(-1 * var(--mx-space-2));
+  padding-bottom: 16px;
   color: rgb(var(--c-text));
 }
 
@@ -30,6 +32,10 @@
   top: 0;
   z-index: 3;
   height: 0;
+  /* <Screen> даёт px-[--mx-screen-x] контенту; bar расширяется до краёв,
+     чтобы кнопка (left/right: 20px) и фон шапки были на тех же позициях. */
+  margin: 0 calc(-1 * var(--mx-screen-x));
+  padding: 0 var(--mx-screen-x);
 }
 
 .mx-profile-page--own-button .mx-profile-page__bar {
@@ -132,7 +138,7 @@
 
 .mx-profile-page__title {
   margin: var(--mx-profile-title-gap) 0 20px;
-  padding-inline: 20px;
+  padding-inline: 4px;
   font-size: 34px;
   font-weight: 700;
   line-height: 1.15;
@@ -143,22 +149,23 @@
 .mx-profile-body {
   display: flex;
   flex-direction: column;
-  padding-inline: 16px;
 }
 
-/* Группа: 28 px от низа прошлой карточки до верха следующей, с подписью. */
+/* Группа: сверху от предыдущей карточки больше, снизу до своей — меньше.
+   Одинаково на всех экранах (токены). */
 .mx-profile-group + .mx-profile-group {
-  margin-top: 7px;
+  margin-top: 28px;
 }
 
 .mx-profile-group__label {
   margin: 0 0 8px;
   padding-inline: 4px;
   color: rgb(var(--c-muted));
-  font-size: 11px;
-  font-weight: 600;
+  font-family: 'Manrope', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
   line-height: 13px;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
 }
 
@@ -232,6 +239,13 @@ button.mx-profile-row:active {
   color: rgb(var(--c-muted));
   font-size: 13px;
   line-height: 17px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: keep-all;
+  hyphens: manual;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .mx-profile-row--danger .mx-profile-row__title {
@@ -254,6 +268,12 @@ button.mx-profile-row:active {
 /* Длинная подсказка цели не должна сжимать значение справа до многоточия. */
 .mx-profile-row[data-testid='profile-row-writing-goal'] .mx-profile-row__value {
   flex-shrink: 0;
+}
+
+/* «О тебе» → имя: значение имени приоритетнее подписи. */
+.mx-profile-row[data-testid='profile-about-name'] .mx-profile-row__value {
+  flex-shrink: 0;
+  max-width: 60%;
 }
 
 /* Внутренние экраны: значение справа — серое, обычным начертанием. */
@@ -517,21 +537,19 @@ button.mx-profile-row:active {
   font-weight: 700;
 }
 
-/* Вариант опроса — как карточка профиля; выбранный — светлый. */
+/* Вариант опроса — как у Stoic: plain-строка без плашки; выбранный — светлый текст. */
 .mx-profile-option {
   width: 100%;
-  padding: 14px 16px;
+  padding: 14px 0;
   border: 0;
-  border-radius: 16px;
-  background: rgb(var(--c-card2));
-  color: rgb(var(--c-text));
+  background: transparent;
+  color: rgb(var(--c-muted));
   text-align: left;
-  transition: background-color 160ms ease;
+  transition: color 160ms ease;
 }
 
 .mx-profile-option[aria-pressed='true'] {
-  background: rgb(var(--c-pill-light));
-  color: rgb(var(--c-bg));
+  color: rgb(var(--c-text));
 }
 
 .mx-profile-option[aria-pressed='true'] * {
@@ -552,13 +570,21 @@ button.mx-profile-row:active {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 0 16px 0 17px;
-  border-radius: 16px;
-  background: rgb(var(--c-card2));
+  padding: 0;
+  border: 0;
+  background: transparent;
   color: rgb(var(--c-text));
   font-size: 16px;
   font-weight: 400;
   text-align: left;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mx-wtp-option:focus-visible {
+  outline: 2px solid rgb(var(--c-text) / 0.4);
+  outline-offset: 4px;
+  border-radius: 8px;
 }
 
 .mx-wtp-option__check {
@@ -579,9 +605,13 @@ button.mx-profile-row:active {
 
 .mx-wtp-description {
   margin-top: 12px;
-  padding-inline: 17px;
+  padding-inline: 0;
   font-size: 13px;
   line-height: 1.4;
+}
+
+.mx-wtp-description > p:first-child {
+  font-weight: 400;
 }
 
 .mx-wtp-save {
@@ -686,51 +716,30 @@ button.mx-profile-row:active {
   text-align: center;
 }
 
-/* ── День рождения: input[type=date] в строке профиля ── */
+/* ── День рождения: один input[type=date] в строке профиля ── */
 .mx-profile-date-input {
-  flex: 0 1 auto;
+  flex: 0 0 auto;
   min-width: 0;
   border: 0;
   background: transparent;
   color: rgb(var(--c-text));
   font: inherit;
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 17px;
+  font-weight: 700;
   text-align: right;
-  width: 120px;
   cursor: pointer;
   color-scheme: dark;
 }
 
 .mx-profile-page--sub .mx-profile-date-input {
   color: rgb(var(--c-muted));
-  font-size: 17px;
   font-weight: 400;
 }
 
 .mx-profile-date-input::-webkit-calendar-picker-indicator {
   filter: invert(0.6);
   cursor: pointer;
-}
-
-/* ── День рождения: выбор года + календарь ── */
-.mx-profile-birthday-controls {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  gap: 8px;
-}
-
-.mx-profile-year-select {
-  min-height: 32px;
-  padding: 0 6px;
-  border: 1px solid rgb(var(--c-border));
-  border-radius: 8px;
-  background: rgb(var(--c-card));
-  color: rgb(var(--c-muted));
-  font-size: 16px;
-  cursor: pointer;
-  color-scheme: dark;
+  opacity: 0.5;
 }
 
 /* ── Воспоминания: вехи-карточки ── */
@@ -839,29 +848,15 @@ button.mx-profile-row:active {
    Стили scoped к корню (:not --sub): вложенные экраны и общие классы не
    затрагиваются. 1 pt эталона = 1 px; проверка на 440 и 393. ── */
 
-/* 1. Свёрнутый заголовок 17/700 по центру шапки; затухание вниз — мягкий
-   градиент, а не жёсткая сплошная полоса (контент уходит под него). */
+/* 1. Свёрнутый заголовок 17/700 по центру шапки; фон под шапкой глухой,
+   чтобы подпись «НАСТРОЙ» не просвечивала сквозь полупрозрачный градиент. */
 .mx-profile-page:not(.mx-profile-page--sub) .mx-profile-page__bar-title {
   font-weight: 700;
 }
 
-.mx-profile-page:not(.mx-profile-page--sub) .mx-profile-page__surface::after {
-  background: linear-gradient(to bottom, rgb(var(--c-bg)), transparent);
-}
-
-/* 2. Подписи групп: Manrope 12/700, разрядка 0.3em, muted, x ≈ 32
-   (на уровне текста строк), ≈ 54 над группой, ≈ 9 под подписью. */
-.mx-profile-page:not(.mx-profile-page--sub) .mx-profile-group + .mx-profile-group {
-  margin-top: 54px;
-}
-
+/* 2. Подписи групп на корневом экране: отступ полей 16px (как у строк). */
 .mx-profile-page:not(.mx-profile-page--sub) .mx-profile-group__label {
-  margin: 0 0 9px;
   padding-inline: 16px;
-  font-family: 'Manrope', system-ui, sans-serif;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.3em;
 }
 
 /* 3. Строка ≈ 50: текст ~17/400 x ≈ 32 (карточка 16 + поле 16);
