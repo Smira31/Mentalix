@@ -1063,7 +1063,12 @@ export default function Settings({
           <ProfileCard testId="profile-card-setup">
             <ProfileRow
               title="Чек-ины"
-              value={`${hh(8)} · ${hh(reviewHour)}`}
+              value={
+                <>
+                  <span className="mx-checkins-time__full">{hh(8)} · {hh(reviewHour)}</span>
+                  <span className="mx-checkins-time__short">Утро и вечер</span>
+                </>
+              }
               onClick={() => openSub('checkins')}
               testId="profile-row-checkins"
             />

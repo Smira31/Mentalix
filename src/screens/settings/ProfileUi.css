@@ -894,6 +894,22 @@ button.mx-profile-row:active {
   height: 16px;
 }
 
+/* Строка «Чек-ины»: оба времени «08:00 · 19:00».
+   На узких экранах — «Утро и вечер», чтобы не обрезалось. */
+.mx-checkins-time__short {
+  display: none;
+}
+
+@media (max-width: 359px) {
+  .mx-checkins-time__full {
+    display: none;
+  }
+
+  .mx-checkins-time__short {
+    display: inline;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .mx-profile-page__surface,
   .mx-profile-page__surface::after,
