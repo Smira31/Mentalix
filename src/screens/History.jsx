@@ -236,6 +236,7 @@ export function HistoryDetail({
                   <button
                     type="button"
                     role="menuitem"
+                    data-testid="history-redo-item-morning"
                     className="w-full rounded-xl px-4 py-3 text-left text-[14px] font-medium text-cream hover:bg-cream/5"
                     onClick={() => {
                       setRedoMenuOpen(false)
@@ -249,6 +250,7 @@ export function HistoryDetail({
                   <button
                     type="button"
                     role="menuitem"
+                    data-testid="history-redo-item-evening"
                     className="w-full rounded-xl px-4 py-3 text-left text-[14px] font-medium text-cream hover:bg-cream/5"
                     onClick={() => {
                       setRedoMenuOpen(false)
@@ -277,9 +279,7 @@ export function HistoryDetail({
             // T11: все ответы утра в порядке шагов чек-ина.
             // Незаполненные (null/пусто) не показываются.
             checkin?.mood != null ? ['Как ты сейчас?', moodWord(checkin.mood)] : null,
-            checkin?.sleep_quality != null
-              ? ['Как ты спал?', `${checkin.sleep_quality}/5`]
-              : null,
+            checkin?.sleep_quality != null ? ['Как ты спал?', `${checkin.sleep_quality}/5`] : null,
             checkin?.energy != null ? ['Сколько в тебе энергии?', `${checkin.energy}/5`] : null,
             checkin?.focus != null ? ['Насколько ты собран?', `${checkin.focus}/5`] : null,
             checkin?.day_focus ? ['Главный фокус на сегодня?', checkin.day_focus] : null,
@@ -563,6 +563,7 @@ export function HistoryDetail({
                   setRedoConfirm(null)
                   fn?.()
                 }}
+                data-testid="history-redo-confirm"
                 className="min-h-12 rounded-full bg-cream px-4 text-[14px] font-bold text-emerald-deep"
               >
                 Пройти заново
@@ -699,7 +700,14 @@ export default function History({
       api.rituals.list(user.id).catch(() => []),
       api.ascezas.list(user.id).catch(() => []),
     ]).then(([stats, rituals, ascezas]) => {
-      setBadges(buildBadges({ stats, rituals, ascezas, registrationDays: daysSinceRegistration(stats?.created_at) }).filter(b => b.done))
+      setBadges(
+        buildBadges({
+          stats,
+          rituals,
+          ascezas,
+          registrationDays: daysSinceRegistration(stats?.created_at),
+        }).filter(b => b.done)
+      )
     })
   }, [user])
 

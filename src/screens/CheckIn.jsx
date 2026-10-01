@@ -9,26 +9,21 @@ import {
   BookOpen,
   BriefcaseBusiness,
   Check,
-  ClipboardList,
-  ChevronDown,
-  ChevronUp,
   Hand,
   Heart,
-  HeartHandshake,
   HeartPulse,
   Home,
   House,
-  Leaf,
   Lightbulb,
   MoonStar,
-  PartyPopper,
   Palette,
+  PersonStanding,
   Sofa,
-  Stethoscope,
   Sun,
   ThumbsDown,
   ThumbsUp,
   Users,
+  Wallet,
 } from 'lucide-react'
 import BackButton from '../components/BackButton'
 import JournalTextarea from '../components/JournalTextarea'
@@ -52,11 +47,7 @@ import {
   readCheckinDraft,
   saveCheckinDraft,
 } from '../lib/checkinDraft'
-import {
-  isPreviewDemoMode,
-  previewDemoAction,
-  previewStreakCelebrationDays,
-} from '../lib/demoMode'
+import { isPreviewDemoMode, previewDemoAction, previewStreakCelebrationDays } from '../lib/demoMode'
 import { readCanonicalCurrentStreak, readCanonicalStreakStats } from '../lib/canonicalStreak'
 import { buildStreakDays, shouldCelebrateStreak } from '../lib/streakCelebration'
 import { useStreakBaseline } from '../lib/useStreakBaseline'
@@ -104,20 +95,18 @@ const HEAVY_EMOTIONS = ['тревожно', 'подавлен', 'страшно'
 const MORNING_NOTE_PLACEHOLDER = pickByDay(MORNING_NOTE_PROMPTS)
 
 // day_focus остаётся строкой API: выбор плитки и собственный ввод — отдельные способы задать один фокус.
-// 12 категорий (иконки по смыслу, эталон Stoic «What's your main focus for today?»).
+// Ровно 9 категорий в сетке 3×3, без «Показать все» (эталон Stoic
+// «What's your main focus for today?»): экран без прокрутки на 393×852.
 const DAY_FOCUS_OPTIONS = [
   { label: 'Работа', Icon: BriefcaseBusiness },
+  { label: 'Близкие', Icon: Users },
   { label: 'Забота о себе', Icon: Sun },
-  { label: 'Люди', Icon: Users },
-  { label: 'Хобби', Icon: Palette },
-  { label: 'Дом', Icon: Home },
+  { label: 'Тело', Icon: PersonStanding },
   { label: 'Учёба', Icon: BookOpen },
-  { label: 'Веселье', Icon: PartyPopper },
+  { label: 'Деньги', Icon: Wallet },
+  { label: 'Дом', Icon: Home },
   { label: 'Отдых', Icon: MoonStar },
-  { label: 'Природа', Icon: Leaf },
-  { label: 'Здоровье', Icon: Stethoscope },
-  { label: 'Семья', Icon: HeartHandshake },
-  { label: 'Продуктивность', Icon: ClipboardList },
+  { label: 'Творчество', Icon: Palette },
 ]
 
 /*
@@ -138,18 +127,22 @@ const CHECKIN_INTERACTIVE_CLASS = 'w-full pt-7'
 
 const CHECKIN_HEADER_CLASS = `${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center justify-between px-[var(--mx-screen-x)]`
 
+/*
+ * Финал чек-ина (утро и вечер) — один экран без прокрутки: контент
+ * помещается в область над системной кнопкой, поэтому прокручиваемая
+ * FULLSCREEN_SCROLL_CLASS здесь не нужна. Всё, что не влезает, ужинается
+ * отступами внутри .mx-completion, а не прокруткой и не плитками.
+ */
+const FULLSCREEN_COMPLETION_CLASS =
+  'mx-fullscreen-completion w-full flex-1 min-h-0 flex flex-col overflow-hidden'
+
 // Одна круглая «→» справа внизу — та же кнопка, что в редакторе «Что на уме?».
 export function CheckInNextControls({ onNext, disabled = false, variant = 'scale' }) {
   return (
     <div
       className={`mx-checkin-next-controls${variant === 'emotion' ? ' mx-checkin-next-controls--emotion' : ''}`}
     >
-      <RoundSubmitButton
-        label="Далее"
-        testId="checkin-next"
-        onClick={onNext}
-        disabled={disabled}
-      />
+      <RoundSubmitButton label="Далее" testId="checkin-next" onClick={onNext} disabled={disabled} />
     </div>
   )
 }
@@ -238,9 +231,6 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
       ? existing.day_focus
       : null
   )
-  const [showAllFocus, setShowAllFocus] = useState(
-    () => !redo && DAY_FOCUS_OPTIONS.slice(9).some(option => option.label === existing?.day_focus)
-  )
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [streak, setStreak] = useState(0)
@@ -249,20 +239,27 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
   const [streakStats, setStreakStats] = useState(null)
   const [celebrating, setCelebrating] = useState(false)
   const streakBaseline = useStreakBaseline(user.id)
-  const { style: viewportStyle } = useFullscreenSurface()
-  const demoSurfaceStyle = {
-    ...viewportStyle,
-    paddingBottom: 0,
-  }
   /*
    * Порядок утренних шкал: настроение → сон → энергия → концентрация.
    * На каждой шкале «→» активна только после выбора кружка.
+   * dayFocusStep/noteStep/doneStep объявлены ДО useFullscreenSurface:
+   * хук читает doneStep для fullFrame, и объявление после хука
+   * ловит ReferenceError «Cannot access before initialization».
    */
   const allScales = [SCALE_STEPS[0], SLEEP_QUALITY_STEP, SCALE_STEPS[1], MORNING_FOCUS_STEP]
   const scale = step < allScales.length ? allScales[step] : null
   const dayFocusStep = allScales.length
   const noteStep = dayFocusStep + 1
   const doneStep = noteStep + 1
+  /*
+   * Финал утра — тот же одноэкранный Stoic-финал, что и у вечера:
+   * поверхность на всю высоту «телефона» (демо-рамки), без прокрутки.
+   */
+  const { style: viewportStyle } = useFullscreenSurface({ fullFrame: step === doneStep })
+  const demoSurfaceStyle = {
+    ...viewportStyle,
+    paddingBottom: 0,
+  }
   const teaserLogged = useRef(false)
   useEffect(() => {
     if (teaserLogged.current || step !== doneStep) return
@@ -494,44 +491,24 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
                   role="group"
                   aria-label="Выбери главный фокус"
                 >
-                  {DAY_FOCUS_OPTIONS.slice(0, showAllFocus ? undefined : 9).map(
-                    ({ label, Icon }) => (
-                      <button
-                        key={label}
-                        type="button"
-                        data-testid="checkin-day-focus-option"
-                        data-value={label}
-                        aria-pressed={selectedFocus === label}
-                        className={selectedFocus === label ? 'is-selected' : ''}
-                        onClick={() => {
-                          platform.haptic('light')
-                          setSelectedFocus(prev => (prev === label ? null : label))
-                        }}
-                      >
-                        <Icon size={23} strokeWidth={0} fill="currentColor" aria-hidden="true" />
-                        <span>{label}</span>
-                      </button>
-                    )
-                  )}
+                  {DAY_FOCUS_OPTIONS.map(({ label, Icon }) => (
+                    <button
+                      key={label}
+                      type="button"
+                      data-testid="checkin-day-focus-option"
+                      data-value={label}
+                      aria-pressed={selectedFocus === label}
+                      className={selectedFocus === label ? 'is-selected' : ''}
+                      onClick={() => {
+                        platform.haptic('light')
+                        setSelectedFocus(prev => (prev === label ? null : label))
+                      }}
+                    >
+                      <Icon size={22} strokeWidth={1.7} aria-hidden="true" />
+                      <span>{label}</span>
+                    </button>
+                  ))}
                 </div>
-                <button
-                  type="button"
-                  className="mx-demo-checkin__show-all"
-                  data-testid="checkin-day-focus-show-all"
-                  onClick={() => setShowAllFocus(prev => !prev)}
-                >
-                  {showAllFocus ? (
-                    <>
-                      Свернуть
-                      <ChevronUp size={18} strokeWidth={2.5} aria-hidden="true" />
-                    </>
-                  ) : (
-                    <>
-                      Показать все
-                      <ChevronDown size={18} strokeWidth={2.5} aria-hidden="true" />
-                    </>
-                  )}
-                </button>
               </div>
             </CheckInQuestion>
           )}
@@ -683,10 +660,13 @@ const MORNING_FOCUS_STEP = {
 
 export const MORNING_OPTIONAL_SCALES = [SLEEP_QUALITY_STEP, MORNING_FOCUS_STEP]
 
-
 export function CheckInScaleQuestion({ scale, value, onPick, filled = false }) {
   return (
-    <CheckInQuestion title={scale.title} hint={scale.hint} className="mx-checkin-question--scale">
+    <CheckInQuestion
+      title={scale.title}
+      hint={scale.hint}
+      className="mx-checkin-question--scale"
+    >
       <div
         className={`mx-checkin-scale${filled ? ' mx-checkin-scale--filled' : ''}`}
         role="radiogroup"
@@ -766,6 +746,74 @@ export const EMOTIONS = {
   5: ['воодушевлён', 'счастлив', 'свободен', 'горжусь', 'вдохновлён', 'силён', 'радостно', 'ясно'],
 }
 
+/*
+ * Эмоции вечернего «Разбора дня» — Stoic Evening Reflection.
+ * 10 плиток в сетке 2 колонки, набор по ответу на «Как ты сейчас?»:
+ * 1–2 — тяжёлые, 3 — смешанные, 4–5 — светлые.
+ */
+export const EVENING_EMOTIONS = {
+  1: [
+    'подавлен',
+    'вымотан',
+    'тревожно',
+    'злюсь',
+    'пусто',
+    'одиноко',
+    'обидно',
+    'растерян',
+    'напряжён',
+    'грустно',
+  ],
+  2: [
+    'подавлен',
+    'вымотан',
+    'тревожно',
+    'злюсь',
+    'пусто',
+    'одиноко',
+    'обидно',
+    'растерян',
+    'напряжён',
+    'грустно',
+  ],
+  3: [
+    'ровно',
+    'спокойно',
+    'задумчиво',
+    'нейтрально',
+    'собранно',
+    'терпимо',
+    'буднично',
+    'обычно',
+    'сдержанно',
+    'уравновешенно',
+  ],
+  4: [
+    'спокойно',
+    'благодарен',
+    'доволен',
+    'гордость',
+    'вдохновлён',
+    'радость',
+    'уверен',
+    'любим',
+    'энергичен',
+    'легко',
+  ],
+  5: [
+    'спокойно',
+    'благодарен',
+    'доволен',
+    'гордость',
+    'вдохновлён',
+    'радость',
+    'уверен',
+    'любим',
+    'энергичен',
+    'легко',
+  ],
+}
+
 function existingLessons(value) {
   if (typeof value !== 'string') {
     return {}
@@ -794,7 +842,9 @@ function CheckInCore({
 }) {
   const isEvening = mode === 'evening' || Boolean(recovery)
   const previewDemoMode = isPreviewDemoMode()
-  const skipScales = isEvening && (!!existing || Boolean(recovery))
+  // Повтор разбора (redo) стартует с первого шага «Как ты сейчас?» —
+  // шкалы не пропускаются, даже если запись дня уже есть.
+  const skipScales = isEvening && !redo && (!!existing || Boolean(recovery))
   const fieldSource = redo ? null : existing
 
   /*
@@ -906,7 +956,14 @@ function CheckInCore({
     isEvening && !redo && existing?.review_completed_at ? 1 : 0
   )
 
-  const { style: viewportStyle } = useFullscreenSurface()
+  const isCompletion = step === doneStep
+
+  const { style: viewportStyle } = useFullscreenSurface({
+    // Вечерний финал рассчитан на всю высоту «телефона»: в демо-рамке
+    // поверхность на видимую часть окна сжимала область контента до
+    // полоски, и текст с плитками отзыва обрезались.
+    fullFrame: isEvening && isCompletion,
+  })
 
   /*
    * §6: во время горизонтального перехода (300 мс) повторная навигация
@@ -1300,7 +1357,6 @@ function CheckInCore({
       }
     : undefined
 
-  const isCompletion = step === doneStep
   const teaserLogged = useRef(false)
   useEffect(() => {
     if (!isCompletion || teaserLogged.current) return
@@ -1487,7 +1543,7 @@ function CheckInCore({
           <BackButton onClick={handleBack} />
         </div>
 
-        <div className={FULLSCREEN_SCROLL_CLASS}>
+        <div className={FULLSCREEN_COMPLETION_CLASS}>
           <CheckInCompletion
             evening={isEvening}
             onFeedback={label => {
@@ -1558,7 +1614,7 @@ function CheckInCore({
         <WebActionBar
           action={webAction}
           secondaryAction={webSecondaryAction}
-          className="mx-completion-action"
+          className={`mx-completion-action${isEvening ? ' mx-completion-action--evening' : ''}`}
         />
       </div>,
       getFullscreenPortalTarget()
@@ -1608,32 +1664,54 @@ function CheckInCore({
       className={`${FULLSCREEN_SHELL_CLASS} ${previewDemoMode ? 'mx-checkin-demo' : ''}`}
       style={viewportStyle}
     >
-      <div className={CHECKIN_HEADER_CLASS}>
-        <BackButton onClick={handleBack} />
-        {recovery && (
-          <span className="text-[13px] text-muted" data-testid="streak-recovery-date">
-            {yesterdayLabel(recovery.date)}
-          </span>
-        )}
-      </div>
+      {!(isEvening && isCard) && (
+        <div className={CHECKIN_HEADER_CLASS}>
+          <BackButton onClick={handleBack} />
+          {recovery && (
+            <span className="text-[13px] text-muted" data-testid="streak-recovery-date">
+              {yesterdayLabel(recovery.date)}
+            </span>
+          )}
+        </div>
+      )}
 
       <div className={FULLSCREEN_SCROLL_CLASS} style={interactiveStyle}>
         <StepSlide stepKey={step} onAnimatingChange={handleAnimatingChange}>
-          <div className={isCard ? CHECKIN_LONG_CLASS : CHECKIN_CENTER_CLASS}>
+          <div className={isCard || isEmotionStep ? CHECKIN_LONG_CLASS : CHECKIN_CENTER_CLASS}>
+            {/* Текстовые вопросы вечера — BackButton внутри контента (как
+               «Твоя мысль»): вопрос начинается сразу под шапкой, отступ 16. */}
+            {isEvening && isCard && (
+              <div className="w-full flex items-center justify-between pb-2">
+                <BackButton onClick={handleBack} />
+                {recovery && (
+                  <span className="text-[13px] text-muted" data-testid="streak-recovery-date">
+                    {yesterdayLabel(recovery.date)}
+                  </span>
+                )}
+              </div>
+            )}
             {!isScaleStep && (
               <CheckInQuestion
                 title={questionTitle}
                 hint={questionSubtitle}
                 headingAs="h2"
-                className={isCard ? 'w-full text-left' : CHECKIN_QUESTION_CLASS}
+                className={
+                  isEvening && isCard
+                    ? 'mx-checkin-question--evening-card'
+                    : isEmotionStep
+                      ? 'mx-checkin-question--emotion w-full text-center'
+                      : isCard
+                        ? 'w-full text-left'
+                        : CHECKIN_QUESTION_CLASS
+                }
                 headingClassName={[
                   'font-display text-cream',
                   isMorningNoteStep
                     ? 'text-[30px] leading-[1.12]'
                     : isEmotionStep
-                      ? 'text-[22px] font-semibold leading-[1.3]'
+                      ? 'text-[24px] font-bold leading-[1.2]'
                       : isEvening && isCard
-                        ? 'text-[22px] font-bold leading-[1.2]'
+                        ? 'text-[24px] font-bold leading-[1.2]'
                         : 'text-[26px] leading-tight',
                 ].join(' ')}
                 hintClassName={[
@@ -1641,7 +1719,7 @@ function CheckInCore({
                   isMorningNoteStep
                     ? 'mt-5 border-l border-gold pl-4 leading-relaxed'
                     : isEvening && isCard
-                      ? 'mt-[6px] text-[15px]'
+                      ? 'mt-[6px] text-[13px] leading-relaxed'
                       : 'mt-2',
                 ].join(' ')}
               />
@@ -1650,7 +1728,7 @@ function CheckInCore({
             <div
               className={
                 isCard
-                  ? `${isMorningNoteStep ? 'w-full pt-6' : CHECKIN_INTERACTIVE_CLASS} flex flex-1 flex-col`
+                  ? `${isMorningNoteStep ? 'w-full pt-6' : isEvening ? 'w-full pt-3' : CHECKIN_INTERACTIVE_CLASS} flex flex-1 flex-col`
                   : CHECKIN_INTERACTIVE_CLASS
               }
             >
@@ -1662,6 +1740,7 @@ function CheckInCore({
                     scale={scale}
                     value={values[scale.key]}
                     onPick={level => pick(scale.key, level)}
+                    filled
                   />
                 </div>
               )}
@@ -1676,6 +1755,8 @@ function CheckInCore({
                   onEmotionChange={setEmotion}
                   onHeavyEmotionClick={openListener}
                   testId="checkin-emotion-pill"
+                  variant={isEvening ? 'grid' : 'carousel'}
+                  emotions={isEvening ? EVENING_EMOTIONS : undefined}
                 />
               )}
 
@@ -1693,7 +1774,7 @@ function CheckInCore({
                         ariaLabel={eveningQuestion.label}
                         testId="checkin-text-input"
                         className="min-h-[18rem] flex-1"
-                        editorClassName="mx-checkin-evening-editor"
+                        editorClassName="mx-checkin-evening-editor leading-[1.5]"
                         floatingToolbar
                         guidedFlow
                         autoFocus
@@ -1706,10 +1787,9 @@ function CheckInCore({
                         onSubmit={() =>
                           cardIdx < cardCount - 1 ? goToStep(current => current + 1) : submit()
                         }
-                        onDeepen={() => {}}
-                        deepenLabel="Пойти глубже"
                         submitLoading={saving}
-                        formatting
+                        formatting={false}
+                        hideAddAction
                       />
                     </div>
                   ) : (
@@ -1766,7 +1846,7 @@ function CheckInCore({
                       ariaLabel={`Был ли ты сегодня ${alterEgoName}?`}
                       testId="alter-ego-evening-input"
                       className="min-h-[18rem] flex-1"
-                      editorClassName="mx-checkin-evening-editor"
+                      editorClassName="mx-checkin-evening-editor leading-[1.5]"
                       floatingToolbar
                       guidedFlow
                       autoFocus
@@ -1775,10 +1855,9 @@ function CheckInCore({
                       submitLabel="Закрыть день"
                       submitTestId="checkin-save"
                       onSubmit={() => submit()}
-                      onDeepen={() => {}}
-                      deepenLabel="Пойти глубже"
                       submitLoading={saving}
-                      formatting
+                      formatting={false}
+                      hideAddAction
                     />
                   </div>
                   {error && <p className="text-[13px] text-muted text-center mt-4">{error}</p>}
@@ -1843,9 +1922,11 @@ function CheckInCore({
 }
 
 function DemoCompletionScreen({ evening, onDone }) {
-  const { style: viewportStyle } = useFullscreenSurface()
+  // Финал высокий: в демо-рамке он занимает весь «телефон».
+  const { style: viewportStyle } = useFullscreenSurface({ fullFrame: true })
+  // Та же пилюля, что и в реальном финале: демо-экран повторяет Stoic-макет.
   const action = {
-    text: 'Вернуться в Сегодня',
+    text: 'Сохранить и выйти',
     testId: 'checkin-back-to-today',
     onClick: onDone,
   }
@@ -1858,7 +1939,7 @@ function DemoCompletionScreen({ evening, onDone }) {
       <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`}>
         <BackButton onClick={onDone} />
       </div>
-      <div className={FULLSCREEN_SCROLL_CLASS}>
+      <div className={FULLSCREEN_COMPLETION_CLASS}>
         <CheckInCompletion
           evening={evening}
           onFeedback={() => {

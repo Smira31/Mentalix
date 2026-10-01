@@ -79,18 +79,13 @@ export async function skipStep(page) {
 }
 
 /**
- * Шаг «Главный фокус дня»: выбрать плитку, раскрыв остальные при необходимости.
- * Проверяем выбранное значение, а не только наличие кнопки.
+ * Шаг «Главный фокус дня»: выбрать плитку из сетки 3×3 (ровно 9 плиток,
+ * без «Показать все»). Проверяем выбранное значение, а не только наличие кнопки.
  */
 export async function dayFocusOptionStep(page, label) {
   const tiles = page.locator('[data-testid="checkin-day-focus-option"]')
   await expect(tiles).toHaveCount(9)
-  const showAll = page.locator('[data-testid="checkin-day-focus-show-all"]')
-  await expect(showAll).toBeVisible()
-  if (label === 'Продуктивность') {
-    await showAll.click()
-    await expect(tiles).toHaveCount(12)
-  }
+  await expect(page.locator('[data-testid="checkin-day-focus-show-all"]')).toHaveCount(0)
   const tile = page.locator(`[data-testid="checkin-day-focus-option"][data-value="${label}"]`)
   await expect(tile).toBeVisible()
   await tile.click()

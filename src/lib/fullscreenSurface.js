@@ -150,7 +150,7 @@ function useDemoFrameBox(enabled) {
   return box
 }
 
-export function useFullscreenSurface() {
+export function useFullscreenSurface({ fullFrame = false } = {}) {
   const viewportGeometry = useVisualViewportGeometry()
   const portalTarget = getFullscreenPortalTarget()
   const demoMode = isPreviewDemoMode()
@@ -192,11 +192,21 @@ export function useFullscreenSurface() {
 
   // Convert the single viewport snapshot into the portal target's coordinate
   // space exactly once.
+  /*
+   * fullFrame — поверхность высотой во всю рамку телефона, а не только
+   * в её видимую часть. Нужно высоким экранам (финал чек-ина), чей
+   * контент рассчитан на весь «телефон»: нижняя часть рамки выходит
+   * за край окна, и её показывают скроллом самой страницы превью.
+   */
+  const frameFull = Boolean(fullFrame && demoFrameHeight)
+
   const surfaceTop = viewportOffsetTop / scale
-  const visibleHeight = demoFrameHeight ?? (shellHeight ? shellHeight / scale : null)
+  const visibleHeight = frameFull
+    ? demoFrameHeight
+    : demoFrameHeight ?? (shellHeight ? shellHeight / scale : null)
   // В демо-превью экран — видимая часть «телефона», а не высота окна.
   const demoFrameBox = useDemoFrameBox(demoMode)
-  const frameTop = demoFrameBox ? demoFrameBox.top / scale : null
+  const frameTop = frameFull ? 0 : demoFrameBox ? demoFrameBox.top / scale : null
   const frameHeight = demoFrameBox ? demoFrameBox.height / scale : null
 
   /*
@@ -232,11 +242,13 @@ export function useFullscreenSurface() {
     paddingBottom: 'var(--app-safe-bottom)',
 
     height:
-      frameHeight !== null
-        ? `${frameHeight}px`
-        : visibleHeight
-          ? `${visibleHeight}px`
-          : '100dvh',
+      frameFull
+        ? `${demoFrameHeight}px`
+        : frameHeight !== null
+          ? `${frameHeight}px`
+          : visibleHeight
+            ? `${visibleHeight}px`
+            : '100dvh',
   }
 
   return {
