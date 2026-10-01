@@ -978,7 +978,14 @@ function CheckInCore({
     isEvening && !redo && existing?.review_completed_at ? 1 : 0
   )
 
-  const { style: viewportStyle } = useFullscreenSurface()
+  const isCompletion = step === doneStep
+
+  const { style: viewportStyle } = useFullscreenSurface({
+    // Вечерний финал рассчитан на всю высоту «телефона»: в демо-рамке
+    // поверхность на видимую часть окна сжимала область контента до
+    // полоски, и текст с плитками отзыва обрезались.
+    fullFrame: isEvening && isCompletion,
+  })
 
   /*
    * §6: во время горизонтального перехода (300 мс) повторная навигация
@@ -1372,7 +1379,6 @@ function CheckInCore({
       }
     : undefined
 
-  const isCompletion = step === doneStep
   const teaserLogged = useRef(false)
   useEffect(() => {
     if (!isCompletion || teaserLogged.current) return
@@ -1922,7 +1928,8 @@ function CheckInCore({
 }
 
 function DemoCompletionScreen({ evening, onDone }) {
-  const { style: viewportStyle } = useFullscreenSurface()
+  // Финал высокий: в демо-рамке он занимает весь «телефон».
+  const { style: viewportStyle } = useFullscreenSurface({ fullFrame: true })
   const action = {
     text: 'Вернуться в Сегодня',
     testId: 'checkin-back-to-today',

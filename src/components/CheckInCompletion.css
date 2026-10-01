@@ -133,6 +133,16 @@
 
 /* ── Вечерний «Разбор дня» — экран завершения (Stoic Evening Reflection) ── */
 
+/*
+ * Финал высокий и рассчитан на весь «телефон»: ужимаем вертикальные
+ * отступы, чтобы искусство, текст, плашка даты и плитки отзыва
+ * помещались в область контента без внутренней прокрутки.
+ */
+.mx-completion--evening {
+  padding-top: clamp(16px, calc(37dvh - 180px), 64px);
+  padding-bottom: 8px;
+}
+
 .mx-completion--evening .mx-completion__title {
   font-size: 30px;
   font-weight: 400;
@@ -162,7 +172,7 @@
 }
 
 .mx-completion--evening .mx-completion__feedback {
-  margin-top: 48px;
+  margin-top: 32px;
 }
 
 .mx-completion--evening .mx-completion__feedback p {
