@@ -74,9 +74,8 @@ export default function Profile({ user, stats, loading, error, retryProfile }) {
   const [birthdayRaw, setBirthdayRaw] = useSynced(BIRTHDAY_KEY, '')
   const [canonicalStats, setCanonicalStats] = useState(null)
   const [seriesModel, setSeriesModel] = useState(null)
-  // PR17: год для навигации календаря. По умолчанию 2000 (как в задаче).
-  // Не сохраняется — хранится только месяц-день.
-  const [viewYear, setViewYear] = useState(2000)
+  // Год для навигации календаря. Не сохраняется — храним только месяц-день.
+  const [viewYear, setViewYear] = useState(new Date().getFullYear())
 
   useEffect(() => {
     if (!user) return
@@ -174,37 +173,25 @@ export default function Profile({ user, stats, loading, error, retryProfile }) {
                 : null
             }
             right={
-              <div className="mx-profile-birthday-controls">
-                <select
-                  value={viewYear}
-                  onChange={e => setViewYear(Number(e.target.value))}
-                  className="mx-profile-year-select"
-                  aria-label="Год для навигации"
-                  data-testid="profile-birthday-year"
-                >
-                  {Array.from({ length: new Date().getFullYear() - 1940 + 1 }, (_, i) => 1940 + i).map(y => (
-                    <option key={y} value={y}>{y}</option>
-                  ))}
-                </select>
-                <input
-                  type="date"
-                  value={`${viewYear}-${birthdayRaw || '01-01'}`}
-                  max={new Date().toISOString().slice(0, 10)}
-                  onChange={e => {
-                    const val = e.target.value
-                    // Храним только месяц-день, год не важен.
-                    if (val) {
-                      const [, m, d] = val.split('-')
-                      setBirthdayRaw(`${m}-${d}`)
-                    } else {
-                      setBirthdayRaw('')
-                    }
-                  }}
-                  className="mx-profile-date-input"
-                  aria-label="Дата рождения"
-                  data-testid="profile-birthday-input"
-                />
-              </div>
+              <input
+                type="date"
+                value={birthdayRaw ? `${viewYear}-${birthdayRaw}` : ''}
+                max={new Date().toISOString().slice(0, 10)}
+                onChange={e => {
+                  const val = e.target.value
+                  // Храним только месяц-день, год не важен.
+                  if (val) {
+                    const [, m, d] = val.split('-')
+                    setBirthdayRaw(`${m}-${d}`)
+                    setViewYear(Number(val.split('-')[0]))
+                  } else {
+                    setBirthdayRaw('')
+                  }
+                }}
+                className="mx-profile-date-input"
+                aria-label="Дата рождения"
+                data-testid="profile-birthday-input"
+              />
             }
           />
         </ProfileCard>

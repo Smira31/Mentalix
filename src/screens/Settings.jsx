@@ -705,11 +705,6 @@ export default function Settings({
               }
             />
           </ProfileCard>
-          {insightsStatus && (
-            <ProfileNote role="status">
-              {insightsSaving ? 'Сохраняем настройку…' : insightsStatus}
-            </ProfileNote>
-          )}
         </ProfileGroup>
 
         <ProfileGroup label="Приложение">
@@ -796,15 +791,15 @@ export default function Settings({
   function renderNotifications() {
     return (
       <ProfileBody>
-        <ProfileGroup label="Бот">
+        <ProfileGroup label="Напоминания">
           <ProfileCard>
             <ProfileRow
-              title="Напоминание от бота"
+              title="Напоминания в Telegram"
               subtitle={reminderOn ? `Каждый день в ${hh(reminderHour)}` : 'Выключено'}
               right={
                 <Toggle
                   checked={reminderOn}
-                  label="Напоминание от бота"
+                  label="Напоминания в Telegram"
                   onChange={() => saveReminder(reminderHour ?? DEFAULT_REVIEW_HOUR, !reminderOn)}
                 />
               }
