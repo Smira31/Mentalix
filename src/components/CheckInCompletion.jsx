@@ -25,7 +25,9 @@ export default function CheckInCompletion({ evening, onFeedback, children }) {
       className={`mx-completion${evening ? ' mx-completion--evening' : ''}`}
       data-testid="checkin-completion"
     >
-      {evening ? <CompletionArtEvening /> : <CompletionArtMorning />}
+      <div className="mx-completion__art-wrap">
+        {evening ? <CompletionArtEvening /> : <CompletionArtMorning />}
+      </div>
       <h1 className="mx-completion__title">
         {evening ? (
           <>
@@ -39,11 +41,9 @@ export default function CheckInCompletion({ evening, onFeedback, children }) {
           </>
         )}
       </h1>
-      {evening && (
-        <div className="mx-completion__date-pill" aria-label="Дата разбора">
-          <span aria-hidden="true">✓</span> {formatReviewDate()}
-        </div>
-      )}
+      <div className="mx-completion__date-pill" aria-label="Дата">
+        <span aria-hidden="true">✓</span> {formatReviewDate()}
+      </div>
       <div className="mx-completion__feedback">
         <p>{evening ? 'Был ли разбор полезен?' : 'Было полезно сегодня?'}</p>
         <div

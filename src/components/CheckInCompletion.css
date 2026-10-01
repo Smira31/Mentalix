@@ -1,3 +1,10 @@
+/*
+ * Единый финал чек-ина (утро и вечер) — Stoic-макет, один экран без прокрутки:
+ * арт 150×180 центрирован в верхней половине, под ним текст, плашка даты,
+ * вопрос «Было полезно сегодня?/Был ли разбор полезен?» и 3 плитки.
+ * Пилюля «Сохранить и выйти» живёт ниже в WebActionBar (отдельная полоса,
+ * поэтому плитки никогда не заходят под кнопку).
+ */
 .mx-completion {
   width: 100%;
   min-height: 100%;
@@ -5,20 +12,40 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: clamp(80px, calc(37dvh - 102px), 250px) 16px 28px;
+  padding: 0 16px 4px;
   background: rgb(var(--c-bg));
 }
 
+/* В fullscreen-шелле финал растягивается флексом на всю область контента. */
+.mx-fullscreen-completion > .mx-completion {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* Арт центрирован в верхней половине: занимает всё свободное место над текстом. */
+.mx-completion__art-wrap {
+  flex: 1 1 auto;
+  min-height: 96px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Картинка 150–170: при нехватке высоты сжимается арт (max-height: 100%),
+   а не плитки и не текст. */
 .mx-completion__art {
-  width: 100px;
-  height: 120px;
+  width: auto;
+  height: 180px;
+  max-height: 100%;
+  aspect-ratio: 100 / 120;
   flex: none;
 }
 
 .mx-completion__title {
   display: flex;
   flex-direction: column;
-  margin: 24px 0 0;
+  margin: 0;
   color: rgb(var(--c-text) / 0.85);
   font-size: 28px;
   line-height: 32px;
@@ -28,37 +55,52 @@
 
 .mx-completion__title strong { font-weight: 700; }
 
-.mx-completion__feedback { margin-top: 64px; }
-.mx-completion__feedback p {
-  max-width: 260px;
-  margin: 0 auto 24px;
-  color: rgb(var(--c-muted));
-  font-size: 17px;
-  font-weight: 400;
-  line-height: 23px;
+/* Плашка с датой «✓ 1 окт» — у утра и вечера одинаково */
+.mx-completion__date-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgb(var(--c-card2));
+  color: rgb(var(--c-text));
+  font-size: 15px;
+  font-weight: 500;
 }
 
+.mx-completion__feedback { margin-top: 24px; }
+.mx-completion__feedback p {
+  max-width: 260px;
+  margin: 0 auto 16px;
+  color: rgb(var(--c-muted));
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 21px;
+}
+
+/* Плитки отзывов: 96×120, радиус 20, фон #111, тонкая рамка */
 .mx-completion__choices {
   display: flex;
   justify-content: center;
-  gap: 7px;
+  gap: 8px;
 }
 
 .mx-completion__choices button {
   display: flex;
-  width: 72px;
-  height: 101px;
+  width: 96px;
+  height: 120px;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 12px;
   padding: 0;
-  border: 1px solid rgb(var(--c-border));
-  border-radius: 22px;
-  background: rgb(var(--c-card));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  background: #111;
   color: rgb(var(--c-text));
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .mx-completion__choices button.is-selected {
@@ -84,9 +126,10 @@
   font-weight: 700;
 }
 
+/* Финал — экран без прокрутки: контент ужинается отступами, не скроллом. */
 .mx-demo-checkin__body.is-complete {
   padding: 0;
-  overflow-y: auto;
+  overflow: hidden;
 }
 .mx-demo-checkin__body.is-complete .mx-step-slide__panel {
   min-height: 100%;
@@ -118,48 +161,16 @@
   font-weight: 400;
   line-height: 32px;
   letter-spacing: -0.025em;
-  margin: 24px auto 0;
+  margin: 0 auto;
 }
 .mx-demo-checkin__body.is-complete .mx-step-slide__panel > .mx-completion {
   margin: 0;
 }
 
-@media (max-height: 740px) {
-  .mx-completion { padding-top: clamp(32px, calc(37dvh - 180px), 110px); }
-  .mx-completion__feedback { margin-top: 32px; }
-  .mx-completion__title,
-  .mx-demo-checkin .mx-completion__title { margin-top: 18px; }
-}
-
 /* ── Вечерний «Разбор дня» — экран завершения (Stoic Evening Reflection) ── */
-
-/*
- * Финал высокий и рассчитан на весь «телефон»: ужимаем вертикальные
- * отступы, чтобы искусство, текст, плашка даты и плитки отзыва
- * помещались в область контента без внутренней прокрутки.
- */
-.mx-completion--evening {
-  padding-top: clamp(16px, calc(37dvh - 220px), 48px);
-  padding-bottom: 8px;
-}
-
-/* Луна «Разбора дня» — крупнее утренней, по эталону Stoic. */
-.mx-completion--evening .mx-completion__art {
-  width: 150px;
-  height: 180px;
-}
-
-.mx-completion--evening .mx-completion__title {
-  margin-top: 16px;
-}
-
-.mx-completion--evening .mx-completion__date-pill {
-  margin-top: 12px;
-}
 
 .mx-completion--evening .mx-completion__title {
   font-size: 30px;
-  font-weight: 400;
   line-height: 1.2;
 }
 
@@ -171,56 +182,11 @@
   font-weight: 400;
 }
 
-/* Плашка с датой «✓ 1 окт» */
-.mx-completion__date-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 16px;
-  padding: 8px 16px;
-  border-radius: 999px;
-  background: rgb(var(--c-card2));
-  color: rgb(var(--c-text));
-  font-size: 15px;
-  font-weight: 500;
-}
-
-.mx-completion--evening .mx-completion__feedback {
-  margin-top: 24px;
-}
-
 /* Вечерний низ: меньше резерва под домашнюю полоску — финал и так высокий. */
 .mx-completion-action--evening,
 .mx-demo-checkin .mx-completion-action--evening,
 .mx-fullscreen-surface .mx-completion-action--evening {
   padding: 0 28px calc(var(--app-safe-bottom) + 16px);
-}
-
-.mx-completion--evening .mx-completion__feedback p {
-  font-size: 15px;
-  color: rgb(var(--c-muted));
-}
-
-/* Плитки отзывов: 96×120, радиус 20, фон #111, тонкая рамка */
-.mx-completion--evening .mx-completion__choices {
-  gap: 8px;
-}
-
-.mx-completion--evening .mx-completion__choices button {
-  width: 96px;
-  height: 120px;
-  border-radius: 20px;
-  background: #111;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: rgb(var(--c-text));
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.mx-completion--evening .mx-completion__choices button.is-selected {
-  background: rgb(var(--c-text));
-  color: rgb(var(--c-bg));
-  border-color: rgb(var(--c-text));
 }
 
 /* Пилюля «Сохранить и выйти» — высота 64, радиус 999 */
@@ -238,4 +204,11 @@
   color: rgb(var(--c-muted));
   padding-top: 6px;
   padding-bottom: 6px;
+}
+
+@media (max-height: 740px) {
+  .mx-completion__art { height: 144px; }
+  .mx-completion__date-pill { margin-top: 8px; }
+  .mx-completion__feedback { margin-top: 16px; }
+  .mx-completion__feedback p { margin-bottom: 12px; }
 }

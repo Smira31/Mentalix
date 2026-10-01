@@ -9,26 +9,21 @@ import {
   BookOpen,
   BriefcaseBusiness,
   Check,
-  ClipboardList,
-  ChevronDown,
-  ChevronUp,
   Hand,
   Heart,
-  HeartHandshake,
   HeartPulse,
   Home,
   House,
-  Leaf,
   Lightbulb,
   MoonStar,
-  PartyPopper,
   Palette,
+  PersonStanding,
   Sofa,
-  Stethoscope,
   Sun,
   ThumbsDown,
   ThumbsUp,
   Users,
+  Wallet,
 } from 'lucide-react'
 import BackButton from '../components/BackButton'
 import JournalTextarea from '../components/JournalTextarea'
@@ -104,20 +99,18 @@ const HEAVY_EMOTIONS = ['тревожно', 'подавлен', 'страшно'
 const MORNING_NOTE_PLACEHOLDER = pickByDay(MORNING_NOTE_PROMPTS)
 
 // day_focus остаётся строкой API: выбор плитки и собственный ввод — отдельные способы задать один фокус.
-// 12 категорий (иконки по смыслу, эталон Stoic «What's your main focus for today?»).
+// Ровно 9 категорий в сетке 3×3, без «Показать все» (эталон Stoic
+// «What's your main focus for today?»): экран без прокрутки на 393×852.
 const DAY_FOCUS_OPTIONS = [
   { label: 'Работа', Icon: BriefcaseBusiness },
+  { label: 'Близкие', Icon: Users },
   { label: 'Забота о себе', Icon: Sun },
-  { label: 'Люди', Icon: Users },
-  { label: 'Хобби', Icon: Palette },
-  { label: 'Дом', Icon: Home },
+  { label: 'Тело', Icon: PersonStanding },
   { label: 'Учёба', Icon: BookOpen },
-  { label: 'Веселье', Icon: PartyPopper },
+  { label: 'Деньги', Icon: Wallet },
+  { label: 'Дом', Icon: Home },
   { label: 'Отдых', Icon: MoonStar },
-  { label: 'Природа', Icon: Leaf },
-  { label: 'Здоровье', Icon: Stethoscope },
-  { label: 'Семья', Icon: HeartHandshake },
-  { label: 'Продуктивность', Icon: ClipboardList },
+  { label: 'Творчество', Icon: Palette },
 ]
 
 /*
@@ -137,6 +130,15 @@ const CHECKIN_QUESTION_CLASS = 'w-full text-center'
 const CHECKIN_INTERACTIVE_CLASS = 'w-full pt-7'
 
 const CHECKIN_HEADER_CLASS = `${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center justify-between px-[var(--mx-screen-x)]`
+
+/*
+ * Финал чек-ина (утро и вечер) — один экран без прокрутки: контент
+ * помещается в область над системной кнопкой, поэтому прокручиваемая
+ * FULLSCREEN_SCROLL_CLASS здесь не нужна. Всё, что не влезает, ужинается
+ * отступами внутри .mx-completion, а не прокруткой и не плитками.
+ */
+const FULLSCREEN_COMPLETION_CLASS =
+  'mx-fullscreen-completion w-full flex-1 min-h-0 flex flex-col overflow-hidden'
 
 // Одна круглая «→» справа внизу — та же кнопка, что в редакторе «Что на уме?».
 export function CheckInNextControls({ onNext, disabled = false, variant = 'scale' }) {
@@ -238,9 +240,6 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
       ? existing.day_focus
       : null
   )
-  const [showAllFocus, setShowAllFocus] = useState(
-    () => !redo && DAY_FOCUS_OPTIONS.slice(9).some(option => option.label === existing?.day_focus)
-  )
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [streak, setStreak] = useState(0)
@@ -249,7 +248,6 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
   const [streakStats, setStreakStats] = useState(null)
   const [celebrating, setCelebrating] = useState(false)
   const streakBaseline = useStreakBaseline(user.id)
-  const { style: viewportStyle } = useFullscreenSurface()
   const demoSurfaceStyle = {
     ...viewportStyle,
     paddingBottom: 0,
@@ -263,6 +261,11 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
   const dayFocusStep = allScales.length
   const noteStep = dayFocusStep + 1
   const doneStep = noteStep + 1
+  /*
+   * Финал утра — тот же одноэкранный Stoic-финал, что и у вечера:
+   * поверхность на всю высоту «телефона» (демо-рамки), без прокрутки.
+   */
+  const { style: viewportStyle } = useFullscreenSurface({ fullFrame: step === doneStep })
   const teaserLogged = useRef(false)
   useEffect(() => {
     if (teaserLogged.current || step !== doneStep) return
@@ -494,44 +497,24 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
                   role="group"
                   aria-label="Выбери главный фокус"
                 >
-                  {DAY_FOCUS_OPTIONS.slice(0, showAllFocus ? undefined : 9).map(
-                    ({ label, Icon }) => (
-                      <button
-                        key={label}
-                        type="button"
-                        data-testid="checkin-day-focus-option"
-                        data-value={label}
-                        aria-pressed={selectedFocus === label}
-                        className={selectedFocus === label ? 'is-selected' : ''}
-                        onClick={() => {
-                          platform.haptic('light')
-                          setSelectedFocus(prev => (prev === label ? null : label))
-                        }}
-                      >
-                        <Icon size={23} strokeWidth={0} fill="currentColor" aria-hidden="true" />
-                        <span>{label}</span>
-                      </button>
-                    )
-                  )}
+                  {DAY_FOCUS_OPTIONS.map(({ label, Icon }) => (
+                    <button
+                      key={label}
+                      type="button"
+                      data-testid="checkin-day-focus-option"
+                      data-value={label}
+                      aria-pressed={selectedFocus === label}
+                      className={selectedFocus === label ? 'is-selected' : ''}
+                      onClick={() => {
+                        platform.haptic('light')
+                        setSelectedFocus(prev => (prev === label ? null : label))
+                      }}
+                    >
+                      <Icon size={22} strokeWidth={1.7} aria-hidden="true" />
+                      <span>{label}</span>
+                    </button>
+                  ))}
                 </div>
-                <button
-                  type="button"
-                  className="mx-demo-checkin__show-all"
-                  data-testid="checkin-day-focus-show-all"
-                  onClick={() => setShowAllFocus(prev => !prev)}
-                >
-                  {showAllFocus ? (
-                    <>
-                      Свернуть
-                      <ChevronUp size={18} strokeWidth={2.5} aria-hidden="true" />
-                    </>
-                  ) : (
-                    <>
-                      Показать все
-                      <ChevronDown size={18} strokeWidth={2.5} aria-hidden="true" />
-                    </>
-                  )}
-                </button>
               </div>
             </CheckInQuestion>
           )}
@@ -1565,7 +1548,7 @@ function CheckInCore({
           <BackButton onClick={handleBack} />
         </div>
 
-        <div className={FULLSCREEN_SCROLL_CLASS}>
+        <div className={FULLSCREEN_COMPLETION_CLASS}>
           <CheckInCompletion
             evening={isEvening}
             onFeedback={label => {
@@ -1930,8 +1913,9 @@ function CheckInCore({
 function DemoCompletionScreen({ evening, onDone }) {
   // Финал высокий: в демо-рамке он занимает весь «телефон».
   const { style: viewportStyle } = useFullscreenSurface({ fullFrame: true })
+  // Та же пилюля, что и в реальном финале: демо-экран повторяет Stoic-макет.
   const action = {
-    text: 'Вернуться в Сегодня',
+    text: 'Сохранить и выйти',
     testId: 'checkin-back-to-today',
     onClick: onDone,
   }
@@ -1944,7 +1928,7 @@ function DemoCompletionScreen({ evening, onDone }) {
       <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`}>
         <BackButton onClick={onDone} />
       </div>
-      <div className={FULLSCREEN_SCROLL_CLASS}>
+      <div className={FULLSCREEN_COMPLETION_CLASS}>
         <CheckInCompletion
           evening={evening}
           onFeedback={() => {
