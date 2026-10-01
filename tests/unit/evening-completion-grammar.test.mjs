@@ -8,7 +8,7 @@
  * 4. streak fetch failure не блокирует completion (streak остаётся 0 — не показывается)
  * 5. morning completion не изменился (заголовок «Чек-ин завершён» в MorningCheckInFlow)
  * 6. evening feedback «Было полезно?» продолжает работать
- * 7. Scout/surprise flow не сломан (testId checkin-open-scout, surprise-insight)
+ * 7. surprise flow не сломан (surprise-insight); scout-кнопка убрана с вечернего завершения
  */
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
@@ -103,7 +103,7 @@ test('7. Scout/surprise flow не сломан', async () => {
   const core = getCore(src)
   assert.match(core, /data-testid="surprise-insight"/, 'surprise insight блок сохранён')
   assert.match(core, /data-testid="surprise-insight-open"/, 'surprise open кнопка сохранена')
-  assert.match(core, /'checkin-open-scout'/, 'scout кнопка (skipAction) сохранена')
+  assert.doesNotMatch(core, /'checkin-open-scout'/, 'scout кнопка убрана с вечернего завершения')
   assert.match(core, /maybeBuildSurprise/, 'maybeBuildSurprise вызов сохранён')
   assert.match(core, /openScout/, 'openScout функция сохранена')
 })

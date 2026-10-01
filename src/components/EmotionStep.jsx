@@ -6,6 +6,31 @@ const HEAVY_EMOTIONS = ['тревожно', 'подавлен', 'страшно'
 
 const LEVELS = [1, 2, 3, 4, 5]
 
+/*
+ * Эмоция хранится строкой. Одиночный выбор — одно слово («тревожно»),
+ * множественный — выбранные через запятую («тревожно, вымотан»).
+ * Хелперы ниже работают с обоими форматами; одиночный выбор даёт ту же
+ * строку, что и раньше.
+ */
+function parseEmotionList(emotion) {
+  if (!emotion || typeof emotion !== 'string') return []
+  return emotion
+    .split(',')
+    .map(item => item.trim())
+    .filter(Boolean)
+}
+
+function toggleEmotion(emotion, item) {
+  const list = parseEmotionList(emotion)
+  const index = list.indexOf(item)
+  if (index >= 0) {
+    list.splice(index, 1)
+  } else {
+    list.push(item)
+  }
+  return list.length ? list.join(', ') : null
+}
+
 /**
  * Шаг «Эмоции» — §5.2 блок 4.
  * Вертикальный столбец pill по уровням mood, горизонтальный свайп со snap.
@@ -26,26 +51,34 @@ export default function EmotionStep({
   const emotionSet = emotions || EMOTIONS
 
   // ── Grid-вариант (вечерний разбор) ──
+  // Множественный выбор (как Stoic): тап по плитке добавляет/снимает её;
+  // выбранные эмоции хранятся в строке через запятую («тревожно, вымотан»).
   if (variant === 'grid') {
     const items = emotionSet[initialLevel] || emotionSet[3] || []
+    const selectedList = parseEmotionList(emotion)
 
     return (
       <div className="mx-emotion-grid" role="group" aria-label="Что ближе всего к тому, что ты чувствуешь?">
-        {items.map(item => (
-          <button
-            key={item}
-            type="button"
-            data-testid={testId}
-            data-emotion={item}
-            onClick={() => {
-              platform.haptic('light')
-              onEmotionChange(emotion === item ? null : item)
-            }}
-            className={`mx-emotion-grid__tile ${emotion === item ? 'is-selected' : ''}`}
-          >
-            {item.charAt(0).toUpperCase() + item.slice(1)}
-          </button>
-        ))}
+        {items.map(item => {
+          const selected = selectedList.includes(item)
+
+          return (
+            <button
+              key={item}
+              type="button"
+              data-testid={testId}
+              data-emotion={item}
+              aria-pressed={selected}
+              onClick={() => {
+                platform.haptic('light')
+                onEmotionChange(toggleEmotion(emotion, item))
+              }}
+              className={`mx-emotion-grid__tile ${selected ? 'is-selected' : ''}`}
+            >
+              {item.charAt(0).toUpperCase() + item.slice(1)}
+            </button>
+          )
+        })}
       </div>
     )
   }
