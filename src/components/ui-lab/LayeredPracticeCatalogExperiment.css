@@ -1210,21 +1210,7 @@
   height: 92px;
   background: rgb(var(--c-artbed));
 }
-.mx-layered-catalog__rail-menu {
-  position: absolute;
-  top: 16px;
-  right: 15px;
-  display: grid;
-  width: 36px;
-  height: 36px;
-  place-items: center;
-  border-radius: 50%;
-  background: rgb(var(--c-card));
-  color: rgb(var(--c-muted));
-  font-size: 15px;
-  letter-spacing: 1px;
-  line-height: 1;
-}
+
 .mx-layered-catalog__rail-badge {
   min-height: 25px;
   padding: 4px 13px;
@@ -1696,80 +1682,7 @@
   }
 }
 
-/* 3. Rail: wrapper + меню «…» */
-.mx-production-catalog .mx-layered-catalog__rail-card-wrapper {
-  position: relative;
-  flex: 0 0 43%;
-  width: 43%;
-  min-width: 43%;
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
-}
-.mx-production-catalog .mx-layered-catalog__rail-card-wrapper .mx-layered-catalog__rail-card {
-  flex: none;
-  width: 100%;
-  min-width: 0;
-}
-.mx-production-catalog .mx-layered-catalog__rail-menu {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 10;
-  display: grid;
-  width: 32px;
-  height: 32px;
-  place-items: center;
-  border-radius: 50%;
-  background: rgb(var(--c-card));
-  color: rgb(var(--c-muted));
-}
-.mx-production-catalog .mx-layered-catalog__rail-menu-btn {
-  display: grid;
-  width: 32px;
-  height: 32px;
-  place-items: center;
-  border: none;
-  border-radius: 50%;
-  background: transparent;
-  color: rgb(var(--c-muted));
-  transition: background-color 160ms ease;
-}
-.mx-production-catalog .mx-layered-catalog__rail-menu-btn:hover {
-  background: rgb(var(--c-card3));
-}
-.mx-production-catalog .mx-layered-catalog__rail-menu-dropdown {
-  position: absolute;
-  top: 36px;
-  right: 0;
-  z-index: 20;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 140px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: var(--mx-radius-control);
-  background: var(--mx-glass-bg);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  backdrop-filter: blur(20px) saturate(160%);
-  padding: 6px;
-  box-shadow: var(--shadow-float);
-}
-.mx-production-catalog .mx-layered-catalog__rail-menu-dropdown button {
-  display: block;
-  width: 100%;
-  padding: 10px 12px;
-  border: none;
-  border-radius: 10px;
-  background: transparent;
-  color: rgb(var(--c-text));
-  font-size: 0.8125rem;
-  font-weight: 500;
-  text-align: left;
-  transition: background-color 120ms ease;
-}
-.mx-production-catalog .mx-layered-catalog__rail-menu-dropdown button:hover {
-  background: rgb(var(--c-card3));
-}
+/* 3. Rail: карточки без меню — клик по всей карточке */
 
 /* 4. Тема недели: заголовок с засечками */
 .mx-production-catalog .mx-layered-catalog__theme-heading-serif {

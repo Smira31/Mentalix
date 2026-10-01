@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react'
-import { ArrowRight, ChevronRight, Ellipsis } from 'lucide-react'
+import { ArrowRight, ChevronRight } from 'lucide-react'
 
 import JournalArtNew from './practice-art/JournalArtNew'
 import SemanticGlyph from './SemanticGlyph'
@@ -38,56 +38,22 @@ function JournalBanner({ onOpen }) {
 }
 
 function RailCard({ card, onOpen }) {
-  const [menuOpen, setMenuOpen] = useState(false)
   return (
-    <div className="mx-layered-catalog__rail-card-wrapper">
-      <button
-        className="mx-layered-catalog__rail-card"
-        type="button"
-        disabled={!card.active}
-        aria-label={card.active ? `Открыть ${card.title}` : `${card.title}, скоро`}
-        onClick={() => card.active && onOpen(card.practice)}
-      >
-        <span className="mx-layered-catalog__avatar" aria-hidden="true">
-          <PracticeGlyph kind={card.kind} highlighted={card.active} />
-        </span>
-        <span className="mx-layered-catalog__rail-badge">{card.status}</span>
-        <span className="mx-layered-catalog__rail-category">{card.category}</span>
-        <strong>{card.title}</strong>
-        <small>{card.description}</small>
-      </button>
-      {card.active && (
-        <div className="mx-layered-catalog__rail-menu">
-          <button
-            type="button"
-            className="mx-layered-catalog__rail-menu-btn"
-            aria-label="Меню практики"
-            aria-expanded={menuOpen}
-            onClick={e => {
-              e.stopPropagation()
-              setMenuOpen(v => !v)
-            }}
-          >
-            <Ellipsis size={18} />
-          </button>
-          {menuOpen && (
-            <div className="mx-layered-catalog__rail-menu-dropdown" role="menu">
-              <button
-                type="button"
-                role="menuitem"
-                onClick={e => {
-                  e.stopPropagation()
-                  setMenuOpen(false)
-                  onOpen(card.practice)
-                }}
-              >
-                Открыть
-              </button>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
+    <button
+      className="mx-layered-catalog__rail-card"
+      type="button"
+      disabled={!card.active}
+      aria-label={card.active ? `Открыть ${card.title}` : `${card.title}, скоро`}
+      onClick={() => card.active && onOpen(card.practice)}
+    >
+      <span className="mx-layered-catalog__avatar" aria-hidden="true">
+        <PracticeGlyph kind={card.kind} highlighted={card.active} />
+      </span>
+      <span className="mx-layered-catalog__rail-badge">{card.status}</span>
+      <span className="mx-layered-catalog__rail-category">{card.category}</span>
+      <strong>{card.title}</strong>
+      <small>{card.description}</small>
+    </button>
   )
 }
 
