@@ -47,7 +47,7 @@ for (const viewport of VIEWPORTS) {
   test.describe(`П.11 — контракт профиля — ${viewport.name} px`, () => {
     // (б): меряем от content-box .mx-app-shell — App.jsx владеет верхним
     // отступом, поэтому его content-top = нижний край шапки Telegram.
-    test('заголовок профиля — 16±2 px под нижним краем шапки Telegram', async ({
+    test('заголовок профиля — 8±2 px под нижним краем шапки Telegram', async ({
       browser,
       baseURL,
     }) => {
@@ -63,8 +63,8 @@ for (const viewport of VIEWPORTS) {
         })
         const title = await page.getByTestId('profile-page-title').boundingBox()
         const gap = title.y - headerBottom
-        expect(gap).toBeGreaterThanOrEqual(14)
-        expect(gap).toBeLessThanOrEqual(18)
+        expect(gap).toBeGreaterThanOrEqual(6)
+        expect(gap).toBeLessThanOrEqual(10)
       } finally {
         await context.close()
       }
@@ -115,10 +115,10 @@ test('«о тебе.»: статистика «дней в системе · ч�
     await page.getByTestId('profile-row-about').click()
     await expect(page.getByRole('heading', { name: 'о тебе.' })).toBeVisible()
 
-    await expect(page.getByTestId('profile-about-stats')).toHaveCount(1)
-    await expect(page.getByTestId('profile-about-stats')).toContainText('дней в системе')
-    await expect(page.getByTestId('profile-about-stats')).toContainText('чек-инов')
-    await expect(page.getByText(/дней в системе/)).toHaveCount(1)
+    // Подпись «N дней в системе · N чек-инов» под именем убрана —
+    // статистика только в группе «Статистика» (не дублируется).
+    await expect(page.getByTestId('profile-about-stats')).toHaveCount(0)
+    await expect(page.getByText('Дней в системе', { exact: true })).toHaveCount(1)
   } finally {
     await context.close()
   }

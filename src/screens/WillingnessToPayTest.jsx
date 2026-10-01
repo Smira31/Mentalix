@@ -72,21 +72,6 @@ function OptionButton({ selected, onClick, children }) {
   )
 }
 
-function Progress({ step }) {
-  const index = TEST_STEPS.indexOf(step)
-  return (
-    <div
-      className="mx-profile-step-progress"
-      data-testid="wtp-progress"
-      aria-label={`Шаг ${index + 1} из ${TEST_STEPS.length}`}
-    >
-      {TEST_STEPS.map((item, itemIndex) => (
-        <span key={item} data-done={itemIndex <= index} />
-      ))}
-    </div>
-  )
-}
-
 export default function WillingnessToPayTest({ user, onBack }) {
   const saved = useMemo(() => readDraft(user?.id), [user?.id])
   const [step, setStep] = useState(
@@ -133,7 +118,16 @@ export default function WillingnessToPayTest({ user, onBack }) {
 
   if (step === 'complete') {
     return (
-      <ProfilePage title={WTP_TITLE} onBack={onBack} testId="profile-screen-wtp">
+      <ProfilePage
+        title={WTP_TITLE}
+        onBack={onBack}
+        testId="profile-screen-wtp"
+        footer={
+          <button type="button" onClick={onBack} className="mx-profile-primary">
+            Вернуться в настройки
+          </button>
+        }
+      >
         <ProfileBody>
           <div className="rounded-2xl bg-[rgb(var(--c-card2))] p-6 text-center">
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[rgb(var(--c-card3))] text-cream">
@@ -147,19 +141,65 @@ export default function WillingnessToPayTest({ user, onBack }) {
               этом устройстве и помогает понять, какой результат Mentalix действительно стоит
               развивать.
             </p>
-            <button type="button" onClick={onBack} className="mx-profile-primary">
-              Вернуться в настройки
-            </button>
           </div>
         </ProfileBody>
       </ProfilePage>
     )
   }
 
+  const footerButton = (() => {
+    if (step === 'concept') {
+      return (
+        <button
+          type="button"
+          disabled={!conceptChanged}
+          onClick={() => {
+            setStep('intent')
+            persist({ step: 'intent', concept })
+          }}
+          className="mx-wtp-save"
+        >
+          Сохранить
+        </button>
+      )
+    }
+    if (step === 'intent') {
+      return (
+        <button
+          type="button"
+          disabled={!intent}
+          onClick={() => {
+            setStep('trust')
+            persist({ step: 'trust' })
+          }}
+          className="mx-profile-primary"
+        >
+          Продолжить
+        </button>
+      )
+    }
+    if (step === 'trust') {
+      return (
+        <div className="flex flex-col items-center gap-3">
+          <button type="button" onClick={complete} className="mx-profile-primary">
+            Завершить без оплаты
+          </button>
+          <button
+            type="button"
+            onClick={complete}
+            className="min-h-11 w-full text-[12px] font-semibold text-muted"
+          >
+            Пропустить этот вопрос
+          </button>
+        </div>
+      )
+    }
+    return null
+  })()
+
   return (
-    <ProfilePage title={WTP_TITLE} onBack={onBack} testId="profile-screen-wtp">
+    <ProfilePage title={WTP_TITLE} onBack={onBack} testId="profile-screen-wtp" footer={footerButton}>
       <ProfileBody>
-        <Progress step={step} />
 
         {step === 'concept' && (
           <section>
@@ -167,7 +207,7 @@ export default function WillingnessToPayTest({ user, onBack }) {
               <div className="mb-2 flex items-center gap-2 text-muted">
                 <Heart size={15} />
                 <span className="text-[11px] font-label uppercase tracking-wider">
-                  короткий опрос
+                  короткий опрос · шаг 1 из 4
                 </span>
               </div>
               <h2 className="font-display text-[22px] leading-tight text-cream">
@@ -200,17 +240,6 @@ export default function WillingnessToPayTest({ user, onBack }) {
                 <p className="mt-1 text-muted">{item.description}</p>
               </div>
             ))}
-            <button
-              type="button"
-              disabled={!conceptChanged}
-              onClick={() => {
-                setStep('intent')
-                persist({ step: 'intent', concept })
-              }}
-              className="mx-wtp-save"
-            >
-              Сохранить
-            </button>
           </section>
         )}
 
@@ -218,7 +247,7 @@ export default function WillingnessToPayTest({ user, onBack }) {
           <section>
             <div className="mb-6">
               <span className="text-[11px] font-label uppercase tracking-wider text-muted">
-                о выбранном результате
+                о выбранном результате · шаг 2 из 4
               </span>
               <h2 className="mt-2 font-display text-[22px] leading-tight text-cream">
                 Хотелось бы попробовать?
@@ -239,17 +268,6 @@ export default function WillingnessToPayTest({ user, onBack }) {
                 </OptionButton>
               ))}
             </div>
-            <button
-              type="button"
-              disabled={!intent}
-              onClick={() => {
-                setStep('trust')
-                persist({ step: 'trust' })
-              }}
-              className="mx-profile-primary"
-            >
-              Продолжить
-            </button>
           </section>
         )}
 
@@ -259,7 +277,7 @@ export default function WillingnessToPayTest({ user, onBack }) {
               <div className="mb-2 flex items-center gap-2 text-muted">
                 <ShieldCheck size={15} />
                 <span className="text-[11px] font-label uppercase tracking-wider">
-                  доверие и границы
+                  доверие и границы · шаг 3 из 4
                 </span>
               </div>
               <h2 className="font-display text-[22px] leading-tight text-cream">
@@ -277,16 +295,6 @@ export default function WillingnessToPayTest({ user, onBack }) {
               placeholder="Например: хочу понимать, что происходит с моими записями…"
               className="min-h-[148px] w-full resize-none rounded-2xl border border-transparent bg-[rgb(var(--c-card2))] px-4 py-3 text-[16px] leading-relaxed text-cream outline-none placeholder:text-faint focus:border-muted"
             />
-            <button type="button" onClick={complete} className="mx-profile-primary">
-              Завершить без оплаты
-            </button>
-            <button
-              type="button"
-              onClick={complete}
-              className="mt-3 min-h-11 w-full text-[12px] font-semibold text-muted"
-            >
-              Пропустить этот вопрос
-            </button>
           </section>
         )}
       </ProfileBody>
