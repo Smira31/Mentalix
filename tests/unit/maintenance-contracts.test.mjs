@@ -583,11 +583,11 @@ test('MXL-016 публикует семь авторских мыслей без
   assert.match(quoteView, /current\.nextStep/)
 })
 
-test('MXL-015 публикует семь curated Stoic-inspired тем без backend предположений', () => {
+test('MXL-015 публикует 14 curated Stoic-inspired тем без backend предположений', () => {
   const source = readFileSync(new URL('../../src/data/weeklyThemes.js', import.meta.url), 'utf8')
 
   assert.match(source, /export const WEEKLY_THEME_CATALOG = \[/)
-  assert.equal((source.match(/key: '/g) || []).length, 7)
+  assert.equal((source.match(/key: '/g) || []).length, 14)
   assert.match(source, /control-and-influence/)
   assert.match(source, /attention/)
   assert.match(source, /friction/)
@@ -595,10 +595,10 @@ test('MXL-015 публикует семь curated Stoic-inspired тем без b
   assert.match(source, /temperance/)
   assert.match(source, /perspective/)
   assert.match(source, /renewal/)
-  assert.equal((source.match(/stoicQuestion:/g) || []).length, 7)
-  assert.equal((source.match(/actionPrompt:/g) || []).length, 7)
-  assert.equal((source.match(/analysisPrompt:/g) || []).length, 7)
-  assert.equal((source.match(/nextStepPrompt:/g) || []).length, 7)
+  assert.equal((source.match(/stoicQuestion:/g) || []).length, 14)
+  assert.equal((source.match(/actionPrompt:/g) || []).length, 14)
+  assert.equal((source.match(/analysisPrompt:/g) || []).length, 14)
+  assert.equal((source.match(/nextStepPrompt:/g) || []).length, 14)
   assert.match(source, /Backend theme IDs, publication, and reflection persistence remain/)
 })
 

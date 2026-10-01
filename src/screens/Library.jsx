@@ -10,6 +10,10 @@ import { platform } from '../platform'
 import { useBackButton } from '../platform/telegram.hooks'
 import Articles from './Articles'
 import GuidedJournals from './GuidedJournals'
+import HeroJourneyMap from './HeroJourneyMap'
+import { previewHeroJourneyAction } from '../lib/heroJourneyDemo'
+import { useHeroJourneyProgress, isStepCompleted } from '../lib/heroJourneyProgress'
+import { HERO_JOURNEY_TRIALS } from '../data/heroJourney'
 import './Library.css'
 
 // The demo composition is now the production Library composition as well.
@@ -110,10 +114,48 @@ function LibraryV2JournalLanding({ onOpen }) {
   )
 }
 
+function LibraryV2HeroJourneyLanding({ onOpen }) {
+  const { progress } = useHeroJourneyProgress()
+  const completedTotal = HERO_JOURNEY_TRIALS.filter(t => isStepCompleted(t.id, progress)).length
+  const hasProgress = completedTotal > 0
+
+  return (
+    <section
+      className="mx-library-v2__section-block"
+      aria-labelledby="library-v2-hero-journey-title"
+    >
+      <h2 className="mx-type-section" id="library-v2-hero-journey-title">
+        Путь героя
+      </h2>
+      <article className="mx-library-v2__featured-banner">
+        <div className="mx-library-v2__featured-art" aria-hidden="true">
+          <SemanticGlyph kind="pathfinder" animated={false} />
+        </div>
+        <div className="mx-library-v2__featured-copy">
+          <span className="mx-hj-library__eyebrow">Курс · 16 шагов</span>
+          <h3 className="mx-hj-library__title">путь героя.</h3>
+          <p>
+            16 испытаний современного человека. Каждый шаг — 6 минут: понять, узнать себя, записать,
+            сделать одно действие.
+          </p>
+          {hasProgress && <span className="mx-hj-library__progress">1 из 16</span>}
+          <button type="button" className="mx-library-v2__pill" onClick={() => onOpen()}>
+            {hasProgress ? 'Продолжить' : 'Начать'} <ArrowRight size={15} />
+          </button>
+        </div>
+      </article>
+    </section>
+  )
+}
+
 function LibraryV2ProgramDetail({ title, onBack }) {
   return (
     <div className="mx-library-v2__program-detail animate-fade-in">
-      <NestedScreenHeader title={title.toLowerCase() + '.'} onBack={onBack} registerSystemBack={false} />
+      <NestedScreenHeader
+        title={title.toLowerCase() + '.'}
+        onBack={onBack}
+        registerSystemBack={false}
+      />
       <div className="mx-library-v2__program-detail-art" aria-hidden="true">
         <SemanticGlyph kind="focus" animated={false} />
       </div>
@@ -245,6 +287,7 @@ function LibraryHome({
   onOpenArticle,
   onOpenV2Programs,
   onOpenV2Articles,
+  onOpenHeroJourney,
 }) {
   const [initialArticlesState] = useState(() => {
     const memoryArticles = peekArticles()
@@ -298,6 +341,7 @@ function LibraryHome({
 
       {LIBRARY_V2_ENABLED && (
         <section className="mx-library-v2__section" aria-label="Библиотека v2">
+          <LibraryV2HeroJourneyLanding onOpen={onOpenHeroJourney} />
           <LibraryV2ProgramLanding onOpen={onOpenV2Programs} />
           <LibraryV2ArticleLanding onOpen={onOpenV2Articles} />
           <LibraryV2JournalLanding onOpen={onOpenJournals} />
@@ -409,7 +453,7 @@ function LibraryHome({
 }
 
 export default function Library({ user, onInputModeChange }) {
-  const [screen, setScreen] = useState('home')
+  const [screen, setScreen] = useState(() => (previewHeroJourneyAction() ? 'hero-journey' : 'home'))
   const [initialArticle, setInitialArticle] = useState(null)
   const [libraryV2Article, setLibraryV2Article] = useState(null)
   const [libraryV2Program, setLibraryV2Program] = useState('Самодисциплина')
@@ -463,7 +507,10 @@ export default function Library({ user, onInputModeChange }) {
   if (screen === 'library-v2-program' && LIBRARY_V2_ENABLED) {
     return (
       <div className="w-full max-w-md px-[var(--mx-screen-x)]">
-        <LibraryV2ProgramDetail title={libraryV2Program} onBack={() => setScreen('library-v2-programs')} />
+        <LibraryV2ProgramDetail
+          title={libraryV2Program}
+          onBack={() => setScreen('library-v2-programs')}
+        />
       </div>
     )
   }
@@ -485,6 +532,10 @@ export default function Library({ user, onInputModeChange }) {
     )
   }
 
+  if (screen === 'hero-journey') {
+    return <HeroJourneyMap onBack={() => setScreen('home')} />
+  }
+
   if (screen === 'articles') {
     return (
       <div className="w-full max-w-md px-[var(--mx-screen-x)]">
@@ -502,7 +553,11 @@ export default function Library({ user, onInputModeChange }) {
   if (screen === 'journals') {
     return (
       <div className="w-full max-w-md px-[var(--mx-screen-x)]">
-        <GuidedJournals user={user} onExit={() => setScreen('home')} onInputModeChange={onInputModeChange} />
+        <GuidedJournals
+          user={user}
+          onExit={() => setScreen('home')}
+          onInputModeChange={onInputModeChange}
+        />
       </div>
     )
   }
@@ -521,6 +576,7 @@ export default function Library({ user, onInputModeChange }) {
           setLibraryV2Article(articleId ? ARTICLES.find(article => article.id === articleId) : null)
           setScreen('library-v2-articles')
         }}
+        onOpenHeroJourney={() => setScreen('hero-journey')}
       />
     </div>
   )
