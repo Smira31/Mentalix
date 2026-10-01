@@ -234,14 +234,14 @@ test.describe('MXL-010 automated technical gate', () => {
     await scaleStep(page, 3)
     await scaleStep(page, 3)
 
-    // Главный фокус дня: 12 плиток за «Показать все».
-    await dayFocusOptionStep(page, 'Продуктивность')
+    // Главный фокус дня: ровно 9 плиток в сетке 3×3, без «Показать все».
+    await dayFocusOptionStep(page, 'Работа')
 
     // Текстовый шаг → завершение (submitTestId=checkin-complete вызывает finish)
     await textStep(page, 'Fixture morning note', 'checkin-complete')
 
     // Экран завершения
-    await expect(page.getByRole('heading', { name: 'Ты прошёл Утренний чек-ин!' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Ты прошёл утренний чек-ин.' })).toBeVisible()
     await page.setViewportSize({ width: 393, height: 667 })
     const tiles = await page.getByTestId('checkin-feedback-option').last().boundingBox()
     const exitButton = await page.getByTestId('checkin-back-to-today').boundingBox()
@@ -250,7 +250,7 @@ test.describe('MXL-010 automated technical gate', () => {
     expect(fixtures.savedCheckins).toHaveLength(1)
     expect(fixtures.savedCheckins[0].note).toContain('Fixture morning note')
     expect(fixtures.savedCheckins[0].sleep_quality).toBe(3)
-    expect(fixtures.savedCheckins[0].day_focus).toBe('Продуктивность')
+    expect(fixtures.savedCheckins[0].day_focus).toBe('Работа')
     expect(fixtures.sentFeedback).toEqual([])
     await feedbackStep(page, 'no')
     await expect(page.locator('[data-testid="checkin-feedback-option"][aria-pressed="true"]')).toHaveCount(1)
@@ -285,14 +285,14 @@ test.describe('MXL-010 automated technical gate', () => {
     }
 
     // Экран завершения вечернего разбора
-    await expect(page.getByRole('heading', { name: 'Ты завершил Разбор дня!' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Ты завершил разбор дня.' })).toBeVisible()
     expect(fixtures.savedCheckins).toHaveLength(2)
     expect(fixtures.savedCheckins[1].review_completed).toBe(true)
     await expect(page.getByTestId('checkin-streak')).toHaveText('4-дневная серия')
     expect(fixtures.streakRequests.slice(streakRequestsBeforeEvening)).toContain(
       String(TEST_USER.id)
     )
-    await expect(page.getByText('Было полезно сегодня?')).toBeVisible()
+    await expect(page.getByText('Был ли разбор полезен?')).toBeVisible()
     await expect(page.getByTestId('checkin-back-to-today')).toHaveText('Сохранить и выйти')
 
     // Ответ «Немного» уходит сразу: запись уже сохранена

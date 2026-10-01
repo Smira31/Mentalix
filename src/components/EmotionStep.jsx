@@ -10,6 +10,9 @@ const LEVELS = [1, 2, 3, 4, 5]
  * Шаг «Эмоции» — §5.2 блок 4.
  * Вертикальный столбец pill по уровням mood, горизонтальный свайп со snap.
  * Общий компонент для чек-ина (CheckIn.jsx) и практики «Настроение» (MoodPractice.jsx).
+ *
+ * variant="grid" — вечерний «Разбор дня»: сетка 2 колонки, 10 плиток,
+ * без смайлика над вопросом. Набор эмоций определяется initialLevel.
  */
 export default function EmotionStep({
   initialLevel = 3,
@@ -17,7 +20,37 @@ export default function EmotionStep({
   onEmotionChange,
   onHeavyEmotionClick,
   testId = 'checkin-emotion-pill',
+  variant = 'carousel',
+  emotions,
 }) {
+  const emotionSet = emotions || EMOTIONS
+
+  // ── Grid-вариант (вечерний разбор) ──
+  if (variant === 'grid') {
+    const items = emotionSet[initialLevel] || emotionSet[3] || []
+
+    return (
+      <div className="mx-emotion-grid" role="group" aria-label="Что ближе всего к тому, что ты чувствуешь?">
+        {items.map(item => (
+          <button
+            key={item}
+            type="button"
+            data-testid={testId}
+            data-emotion={item}
+            onClick={() => {
+              platform.haptic('light')
+              onEmotionChange(emotion === item ? null : item)
+            }}
+            className={`mx-emotion-grid__tile ${emotion === item ? 'is-selected' : ''}`}
+          >
+            {item.charAt(0).toUpperCase() + item.slice(1)}
+          </button>
+        ))}
+      </div>
+    )
+  }
+
+  // ── Carousel-вариант (утро, практика «Настроение») ──
   const [activeLevel, setActiveLevel] = useState(initialLevel)
   const scrollRef = useRef(null)
   const rafRef = useRef(null)
@@ -73,7 +106,7 @@ export default function EmotionStep({
             className={`mx-emotion-column ${activeLevel === level ? 'is-active' : 'is-adjacent'}`}
             data-level={level}
           >
-            {(EMOTIONS[level] || []).map(item => (
+            {(emotionSet[level] || []).map(item => (
               <button
                 key={item}
                 type="button"

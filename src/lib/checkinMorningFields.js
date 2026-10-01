@@ -34,8 +34,10 @@ export function eveningMorningFields(existing, values) {
   }
 
   return {
-    mood: existing.mood ?? values.mood,
-    energy: existing.energy ?? values.energy,
+    // Настроение и энергия: выбор пользователя важнее существующего —
+    // при «Пройти разбор заново» шкалы спрашиваются заново.
+    mood: values.mood ?? existing.mood,
+    energy: values.energy ?? existing.energy,
     anxiety: existing.anxiety ?? values.anxiety,
     focus: existing.focus ?? values.focus,
     sleep_quality: existing.sleep_quality ?? values.sleep_quality,

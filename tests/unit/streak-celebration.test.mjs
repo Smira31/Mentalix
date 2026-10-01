@@ -94,7 +94,8 @@ test('экран показывается только если завершен
 })
 
 test('переход: «Сохранить и выйти» → экран серии или «Сегодня»; «Отлично!» → «Сегодня»', () => {
-  assert.equal((checkinSource.match(/text: 'Сохранить и выйти'/g) || []).length, 2)
+  // 2 в реальном потоке (утро/вечер через exitCompletion) + 1 в DemoCompletionScreen.
+  assert.equal((checkinSource.match(/text: 'Сохранить и выйти'/g) || []).length, 3)
   assert.match(checkinSource, /onClick: exitCompletion/)
   assert.match(checkinSource, /run: exitCompletion/)
   assert.match(componentSource, /text: 'Отлично!'/)
