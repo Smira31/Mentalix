@@ -36,7 +36,6 @@ const SWIPE_THRESHOLD = 50
 /* Порог и пауза колеса: один жест — один день, без «прокрутки» на двадцать. */
 const WHEEL_STEP = 12
 const WHEEL_COOLDOWN = 450
-const HINT_DAYS = 5
 
 function dateLabel(dateStr) {
   const d = new Date(dateStr + 'T00:00:00')
@@ -65,7 +64,6 @@ export default function DailyThoughtScreen({ thought, onClose, onGoMentor, user 
   const [view, setView] = useState('main')
   const [copied, setCopied] = useState(false)
   const [saved, setSaved] = useState(false)
-  const [hintHidden, setHintHidden] = useState(false)
   const [items, setItems] = useState(() => readCachedDailyItems(user?.id))
   const touchStart = useRef(null)
   const mouseStart = useRef(null)
@@ -176,7 +174,6 @@ export default function DailyThoughtScreen({ thought, onClose, onGoMentor, user 
     const next = Math.min(Math.max(offset + step, 0), MAX_DAYS_BACK)
     if (next === offset) return
     platform.haptic('light')
-    setHintHidden(true)
     setOffset(next)
   }
 
@@ -265,7 +262,9 @@ export default function DailyThoughtScreen({ thought, onClose, onGoMentor, user 
       </div>
 
       <div
-        className={`${FULLSCREEN_SCROLL_CLASS} items-center justify-center px-5`}
+        className={`${FULLSCREEN_SCROLL_CLASS} items-center px-5 ${
+          myThought ? 'justify-end pb-8' : 'justify-center'
+        }`}
         key={offset}
       >
         <span className="mx-daily-thought__label" data-testid="daily-thought-date-label">
@@ -277,7 +276,8 @@ export default function DailyThoughtScreen({ thought, onClose, onGoMentor, user 
 
         {myThought && (
           <div className="mx-daily-thought__my-thought" data-testid="daily-thought-my-thought">
-            <p>{myThought.text}</p>
+            <p>«{myThought.text}»</p>
+            <span className="mx-daily-thought__my-thought-author">— ты</span>
           </div>
         )}
       </div>
@@ -290,6 +290,7 @@ export default function DailyThoughtScreen({ thought, onClose, onGoMentor, user 
           onClick={handleWrite}
         >
           {myThought ? 'Изменить мысль' : 'Записать мысль'}
+          {offset > 0 && ` за ${dateLabel(currentDate).toLowerCase()}`}
         </button>
 
         <div className="mx-daily-thought__row">
@@ -321,22 +322,6 @@ export default function DailyThoughtScreen({ thought, onClose, onGoMentor, user 
           </button>
         </div>
 
-        {!hintHidden && offset < HINT_DAYS && (
-          <div className="mx-daily-thought__swipe-hint" data-testid="daily-thought-swipe-hint">
-            {offset === 0 && <span className="mx-daily-thought__hint-text">‹ вчера</span>}
-            <span className="mx-daily-thought__hint-dots" aria-hidden="true">
-              {Array.from({ length: HINT_DAYS }).map((_, index) => (
-                <span
-                  key={index}
-                  className={`mx-daily-thought__hint-dot${
-                    index === offset ? ' mx-daily-thought__hint-dot--active' : ''
-                  }`}
-                />
-              ))}
-            </span>
-          </div>
-        )}
-
         {allThoughtsCount > 0 && (
           <button
             type="button"
@@ -347,6 +332,41 @@ export default function DailyThoughtScreen({ thought, onClose, onGoMentor, user 
             Мои мысли · {allThoughtsCount} ›
           </button>
         )}
+
+        <div className="mx-daily-thought__day-nav" data-testid="daily-thought-day-nav">
+          {offset === 0 ? (
+            <button
+              type="button"
+              data-testid="daily-thought-day-prev"
+              className="mx-daily-thought__day-nav-btn"
+              onClick={() => shiftDays(1)}
+            >
+              ‹ вчера
+            </button>
+          ) : (
+            <>
+              {offset < MAX_DAYS_BACK && (
+                <button
+                  type="button"
+                  data-testid="daily-thought-day-prev"
+                  className="mx-daily-thought__day-nav-btn"
+                  onClick={() => shiftDays(1)}
+                >
+                  ‹ раньше
+                </button>
+              )}
+              <span className="mx-daily-thought__day-nav-spacer" aria-hidden="true" />
+              <button
+                type="button"
+                data-testid="daily-thought-day-today"
+                className="mx-daily-thought__day-nav-btn"
+                onClick={() => shiftDays(-offset)}
+              >
+                сегодня ›
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </div>,
     getFullscreenPortalTarget()

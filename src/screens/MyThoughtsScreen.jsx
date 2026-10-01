@@ -2,11 +2,13 @@ import { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import { platform } from '../platform'
-import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react'
-import NestedScreenHeader from '../components/NestedScreenHeader'
+import { Pencil, Trash2 } from 'lucide-react'
+import { RoundBackButton } from '../components/NestedScreenHeader'
 import {
   useFullscreenSurface,
+  getFullscreenPortalTarget,
   FULLSCREEN_SHELL_CLASS,
+  FULLSCREEN_HEADER_SLOT_CLASS,
   FULLSCREEN_SCROLL_CLASS,
 } from '../lib/fullscreenSurface'
 import {
@@ -87,12 +89,14 @@ export default function MyThoughtsScreen({ user, onClose, onEditThought }) {
 
   return createPortal(
     <div className={FULLSCREEN_SHELL_CLASS} style={surfaceStyle}>
-      <div className="mx-my-thoughts__header px-[var(--mx-screen-x)]">
-        <NestedScreenHeader title="мои мысли." onBack={onClose} testId="my-thoughts-back" />
+      <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`}>
+        <RoundBackButton onClick={onClose} testId="my-thoughts-back" />
       </div>
 
       <div className={FULLSCREEN_SCROLL_CLASS}>
         <div className="w-full max-w-md mx-auto px-[var(--mx-screen-x)] pb-6">
+          <h1 className="mx-my-thoughts__title">мои мысли.</h1>
+
           {grouped.length === 0 && (
             <p className="mt-10 text-center text-[14px] text-muted">
               Здесь появятся твои мысли — записанные в «Мысли дня».
@@ -143,7 +147,7 @@ export default function MyThoughtsScreen({ user, onClose, onEditThought }) {
                       </button>
 
                       {menuFor === thought.id && (
-                        <div className="absolute right-2 top-2 z-50">
+                        <div className="absolute right-2 top-full z-50 mt-1">
                           <ProgressGlassMenu>
                             <ProgressGlassMenuItem
                               icon={Pencil}
@@ -170,6 +174,6 @@ export default function MyThoughtsScreen({ user, onClose, onEditThought }) {
         </div>
       </div>
     </div>,
-    document.body
+    getFullscreenPortalTarget()
   )
 }

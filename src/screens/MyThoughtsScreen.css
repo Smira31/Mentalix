@@ -1,9 +1,15 @@
 /*
- * Экран «Мои мысли» — список карточек по месяцам.
+ * Экран «Мои мысли» — полноэкранная поверхность, список карточек по месяцам.
  */
 
-.mx-my-thoughts__header {
-  padding-top: 8px;
+.mx-my-thoughts__title {
+  margin: 4px 0 20px;
+  font-family: 'Manrope', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: rgb(var(--c-text));
+  text-transform: lowercase;
 }
 
 .mx-my-thoughts__card {
