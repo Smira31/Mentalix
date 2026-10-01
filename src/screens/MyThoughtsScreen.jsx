@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import { platform } from '../platform'
+import { isDemoEmulationActive } from '../lib/demoChrome'
 import { Pencil, Trash2 } from 'lucide-react'
 import { RoundBackButton } from '../components/NestedScreenHeader'
 import {
@@ -89,13 +90,23 @@ export default function MyThoughtsScreen({ user, onClose, onEditThought }) {
 
   return createPortal(
     <div className={FULLSCREEN_SHELL_CLASS} style={surfaceStyle}>
-      <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`}>
+      {/* В demo-режиме кнопку «назад» показывает пилюля Telegram, слот 52px
+          пуст — убираем его, чтобы заголовок стоял так же близко к шапке,
+          как «история.» на Прогрессе. Кнопка остаётся в DOM (невидимой):
+          стек «назад» и testid сохраняются. */}
+      <div
+        className={
+          isDemoEmulationActive()
+            ? 'contents'
+            : `${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`
+        }
+      >
         <RoundBackButton onClick={onClose} testId="my-thoughts-back" registerSystemBack />
       </div>
 
       <div className={FULLSCREEN_SCROLL_CLASS}>
-        <div className="w-full max-w-md mx-auto px-[var(--mx-screen-x)] pb-6">
-          <h1 className="mx-my-thoughts__title">мои мысли.</h1>
+        <div className="w-full max-w-md mx-auto px-[var(--mx-screen-x)] pt-2 pb-6">
+          <h1 className="mx-my-thoughts__title font-display mx-type-page text-cream lowercase">мои мысли.</h1>
 
           {grouped.length === 0 && (
             <p className="mt-10 text-center text-[14px] text-muted">
