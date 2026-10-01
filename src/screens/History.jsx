@@ -7,6 +7,7 @@ import MarkdownText from '../components/MarkdownText'
 import { buildBadges } from '../lib/badges'
 import { daysSinceRegistration } from '../lib/badgeCatalog'
 import { readJournalHistory } from '../lib/journalHistory'
+import { readAllDailyThoughts, THOUGHT_KIND } from '../lib/dailyThoughtStorage'
 import JourneySearch from './JourneySearch'
 import HistorySkeleton from '../components/HistorySkeleton'
 import { platform, platformName } from '../platform'
@@ -162,6 +163,15 @@ function JournalDayCard({ entry }) {
           </div>
         ))}
       </div>
+    </div>
+  )
+}
+
+function DailyThoughtDayCard({ thought }) {
+  return (
+    <div data-testid="daily-thought-history" className="mt-3 border-t border-cream/10 pt-3">
+      <span className="text-[12px] font-semibold text-muted">Мысль дня</span>
+      <p className="mt-1 text-[14px] leading-snug text-cream">{thought.text}</p>
     </div>
   )
 }
@@ -594,6 +604,15 @@ export default function History({
     }
   }, [user, userId])
 
+  const dailyThoughts = useMemo(() => {
+    if (!userId) return []
+    try {
+      return readAllDailyThoughts(user.id)
+    } catch {
+      return []
+    }
+  }, [user, userId])
+
   /*
    * Единая датированная лента: days (checkin+activity, backend) слит с
    * journalEntries (local-only) по дате. Оба источника уже независимо
@@ -609,8 +628,14 @@ export default function History({
     for (const entry of journalEntries) {
       byDate[entry.date] = { ...(byDate[entry.date] || { date: entry.date }), journal: entry }
     }
+    for (const thought of dailyThoughts) {
+      byDate[thought.date] = {
+        ...(byDate[thought.date] || { date: thought.date }),
+        dailyThought: thought,
+      }
+    }
     return Object.values(byDate).sort((a, b) => (a.date < b.date ? 1 : -1))
-  }, [days, journalEntries])
+  }, [days, journalEntries, dailyThoughts])
 
   useEffect(() => {
     if (!user) return

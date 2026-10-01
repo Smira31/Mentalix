@@ -7,9 +7,27 @@
   background: rgb(var(--c-bg));
 }
 
+.mx-daily-thought__menu-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  background: transparent;
+  color: rgb(var(--c-muted));
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.mx-daily-thought__menu-btn:active {
+  color: rgb(var(--c-text));
+}
+
 .mx-daily-thought__label {
+  font-family: 'Manrope', sans-serif;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.2em;
   color: rgb(var(--c-muted));
@@ -24,6 +42,23 @@
   text-align: center;
   max-width: 420px;
   padding: 0 20px;
+}
+
+/* Своя мысль под цитатой */
+.mx-daily-thought__my-thought {
+  margin-top: 28px;
+  padding-left: 16px;
+  border-left: 1px solid rgba(237, 189, 96, 0.3);
+  max-width: 380px;
+}
+
+.mx-daily-thought__my-thought p {
+  font-size: 15px;
+  font-weight: 400;
+  font-style: italic;
+  line-height: 1.5;
+  color: rgb(var(--c-muted));
+  text-align: left;
 }
 
 .mx-daily-thought__actions {
@@ -51,10 +86,16 @@
   transform: scale(0.98);
 }
 
-.mx-daily-thought__secondary {
-  height: 44px;
-  width: 100%;
-  max-width: 340px;
+/* Ряд: «Сохранить» · «Копировать» */
+.mx-daily-thought__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.mx-daily-thought__text-btn {
+  height: 40px;
   border: 0;
   background: transparent;
   color: rgb(var(--c-muted));
@@ -64,6 +105,27 @@
   transition: color 0.15s ease;
 }
 
-.mx-daily-thought__secondary:active {
+.mx-daily-thought__text-btn:active {
   color: rgb(var(--c-text));
+}
+
+.mx-daily-thought__dot {
+  color: rgb(var(--c-faint));
+  font-size: 14px;
+}
+
+/* «Мои мысли · N ›» */
+.mx-daily-thought__my-link {
+  margin-top: 12px;
+  border: 0;
+  background: transparent;
+  color: rgb(var(--c-faint));
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.mx-daily-thought__my-link:active {
+  color: rgb(var(--c-muted));
 }

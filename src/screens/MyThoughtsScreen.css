@@ -1,0 +1,12 @@
+/*
+ * Экран «Мои мысли» — список карточек по месяцам.
+ */
+
+.mx-my-thoughts__header {
+  padding-top: 8px;
+}
+
+.mx-my-thoughts__card {
+  border: 0;
+  cursor: pointer;
+}
