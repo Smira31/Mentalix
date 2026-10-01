@@ -55,26 +55,29 @@ test('профиль: цель письма, липкая шапка и сист
     await goal.click()
     await expect(goal).toContainText('3')
     await expect(page.getByRole('group', { name: 'Записей в неделю' })).toBeVisible()
+    await page.evaluate(() => document.fonts.ready)
     await page.setViewportSize({ width: 393, height: 320 })
-    // Ждём, пока layout пересчитается под новый viewport: scrollHeight должен
-    // стать больше clientHeight (появится прокручиваемая область). Без этой
-    // проверки scrollTop = scrollHeight может не дать реального скролла.
-    await expect.poll(
-      async () => {
-        const scroll = page.locator('.mx-fullscreen-scroll')
-        return await scroll.evaluate(el => el.scrollHeight - el.clientHeight)
-      },
-      { timeout: 5000, intervals: [100, 500, 1000] }
-    ).toBeGreaterThan(0)
-    // Программный scrollTop не всегда firing scroll event в headless Chrome —
-    // диспетчируем вручную (как в profile-wave3), чтобы useTitleCollapsed
-    // запустил check() и переключил --collapsed.
-    await page.locator('.mx-fullscreen-scroll').evaluate(el => {
+    const screen = page.getByTestId('profile-sub-checkins')
+    const scroll = page.locator('.mx-fullscreen-scroll').filter({ has: screen })
+    const collapsedBar = screen.getByTestId('profile-collapsed-bar')
+    // Само наличие overflow ещё не доказывает, что поверхность уже приняла
+    // новую высоту: visualViewport обновляет её отдельно от окна браузера.
+    await expect.poll(() => scroll.evaluate(el => {
+      const surface = el.closest('.mx-fullscreen-surface')
+      return Math.round(surface.getBoundingClientRect().height)
+    })).toBe(320)
+    await expect.poll(() => scroll.evaluate(el => el.scrollHeight - el.clientHeight))
+      .toBeGreaterThan(0)
+    // Повторяем реальную прокрутку при пересчёте layout и ждём именно ухода
+    // большого заголовка выше шапки. Синтетическое событие не подменяет скролл.
+    await expect.poll(() => scroll.evaluate(el => {
       el.scrollTop = el.scrollHeight
-      el.dispatchEvent(new Event('scroll', { bubbles: false }))
-    })
-    await expect(page.getByTestId('profile-collapsed-bar')).toHaveClass(/--collapsed/)
-    await expect(page.getByTestId('profile-collapsed-bar')).toHaveCSS('background-color', 'rgb(5, 4, 3)')
+      const title = el.querySelector('[data-testid="profile-page-title"]')
+      const bar = el.querySelector('[data-testid="profile-collapsed-bar"]')
+      return title.getBoundingClientRect().bottom < Math.max(0, Math.round(bar.getBoundingClientRect().top))
+    })).toBe(true)
+    await expect(collapsedBar).toHaveClass(/--collapsed/)
+    await expect(collapsedBar).toHaveCSS('background-color', 'rgb(5, 4, 3)')
     await page.evaluate(() => window.__telegramBackClick())
     await expect(page.getByTestId('profile-screen')).toBeVisible()
     await expect(page.getByTestId('profile-close-button')).toHaveCount(0)
