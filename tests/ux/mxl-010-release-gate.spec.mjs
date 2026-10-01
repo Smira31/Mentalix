@@ -234,8 +234,8 @@ test.describe('MXL-010 automated technical gate', () => {
     await scaleStep(page, 3)
     await scaleStep(page, 3)
 
-    // Главный фокус дня: 12 плиток за «Показать все».
-    await dayFocusOptionStep(page, 'Продуктивность')
+    // Главный фокус дня: ровно 9 плиток в сетке 3×3, без «Показать все».
+    await dayFocusOptionStep(page, 'Работа')
 
     // Текстовый шаг → завершение (submitTestId=checkin-complete вызывает finish)
     await textStep(page, 'Fixture morning note', 'checkin-complete')
@@ -250,7 +250,7 @@ test.describe('MXL-010 automated technical gate', () => {
     expect(fixtures.savedCheckins).toHaveLength(1)
     expect(fixtures.savedCheckins[0].note).toContain('Fixture morning note')
     expect(fixtures.savedCheckins[0].sleep_quality).toBe(3)
-    expect(fixtures.savedCheckins[0].day_focus).toBe('Продуктивность')
+    expect(fixtures.savedCheckins[0].day_focus).toBe('Работа')
     expect(fixtures.sentFeedback).toEqual([])
     await feedbackStep(page, 'no')
     await expect(page.locator('[data-testid="checkin-feedback-option"][aria-pressed="true"]')).toHaveCount(1)

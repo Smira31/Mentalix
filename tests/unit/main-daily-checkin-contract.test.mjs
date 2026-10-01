@@ -88,7 +88,8 @@ test('morning flow keeps the visual viewport height when the keyboard opens', ()
     checkinSource.indexOf('function MorningCheckInFlow'),
     checkinSource.indexOf('// ── Чек-ин и вечерний')
   )
-  assert.match(morningFlow, /const \{ style: viewportStyle \} = useFullscreenSurface\(\)/)
+  // fullFrame включается только на финальном шаге — обычные шаги держат visual viewport.
+  assert.match(morningFlow, /const \{ style: viewportStyle \} = useFullscreenSurface\(\{ fullFrame: step === doneStep \}\)/)
   assert.match(morningFlow, /const demoSurfaceStyle = \{[\s\S]*\.\.\.viewportStyle[\s\S]*paddingBottom: 0/)
   assert.match(checkinSource, /className="mx-demo-checkin__editor-scene"/)
 })

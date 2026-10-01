@@ -47,11 +47,7 @@ import {
   readCheckinDraft,
   saveCheckinDraft,
 } from '../lib/checkinDraft'
-import {
-  isPreviewDemoMode,
-  previewDemoAction,
-  previewStreakCelebrationDays,
-} from '../lib/demoMode'
+import { isPreviewDemoMode, previewDemoAction, previewStreakCelebrationDays } from '../lib/demoMode'
 import { readCanonicalCurrentStreak, readCanonicalStreakStats } from '../lib/canonicalStreak'
 import { buildStreakDays, shouldCelebrateStreak } from '../lib/streakCelebration'
 import { useStreakBaseline } from '../lib/useStreakBaseline'
@@ -146,12 +142,7 @@ export function CheckInNextControls({ onNext, disabled = false, variant = 'scale
     <div
       className={`mx-checkin-next-controls${variant === 'emotion' ? ' mx-checkin-next-controls--emotion' : ''}`}
     >
-      <RoundSubmitButton
-        label="Далее"
-        testId="checkin-next"
-        onClick={onNext}
-        disabled={disabled}
-      />
+      <RoundSubmitButton label="Далее" testId="checkin-next" onClick={onNext} disabled={disabled} />
     </div>
   )
 }
@@ -248,13 +239,12 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
   const [streakStats, setStreakStats] = useState(null)
   const [celebrating, setCelebrating] = useState(false)
   const streakBaseline = useStreakBaseline(user.id)
-  const demoSurfaceStyle = {
-    ...viewportStyle,
-    paddingBottom: 0,
-  }
   /*
    * Порядок утренних шкал: настроение → сон → энергия → концентрация.
    * На каждой шкале «→» активна только после выбора кружка.
+   * dayFocusStep/noteStep/doneStep объявлены ДО useFullscreenSurface:
+   * хук читает doneStep для fullFrame, и объявление после хука
+   * ловит ReferenceError «Cannot access before initialization».
    */
   const allScales = [SCALE_STEPS[0], SLEEP_QUALITY_STEP, SCALE_STEPS[1], MORNING_FOCUS_STEP]
   const scale = step < allScales.length ? allScales[step] : null
@@ -266,6 +256,10 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
    * поверхность на всю высоту «телефона» (демо-рамки), без прокрутки.
    */
   const { style: viewportStyle } = useFullscreenSurface({ fullFrame: step === doneStep })
+  const demoSurfaceStyle = {
+    ...viewportStyle,
+    paddingBottom: 0,
+  }
   const teaserLogged = useRef(false)
   useEffect(() => {
     if (teaserLogged.current || step !== doneStep) return
@@ -665,7 +659,6 @@ const MORNING_FOCUS_STEP = {
 }
 
 export const MORNING_OPTIONAL_SCALES = [SLEEP_QUALITY_STEP, MORNING_FOCUS_STEP]
-
 
 export function CheckInScaleQuestion({ scale, value, onPick, filled = false, evening = false }) {
   return (
