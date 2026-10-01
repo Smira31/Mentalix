@@ -36,12 +36,13 @@ test('вечерняя карточка «День закрыт» ведёт к 
   await expect(menu.getByTestId('history-redo-item-evening')).toBeVisible()
   await expect(menu.getByTestId('history-redo-item-morning')).toHaveCount(0)
 
-  // Подтверждение → вечерний разбор с первого шага (эмоции).
+  // Подтверждение → вечерний разбор с первого шага (шкала настроения).
+  // После унификации опросов повтор не пропускает шкалы — старт с «Как ты сейчас?».
   await menu.getByTestId('history-redo-item-evening').click()
   await expect(page.getByTestId('history-redo-confirm')).toBeVisible()
   await page.getByTestId('history-redo-confirm').click()
   await expect(
-    page.getByRole('heading', { name: 'Что ближе всего к тому, что ты чувствуешь?' })
+    page.getByRole('heading', { name: 'Как ты сейчас?' })
   ).toBeVisible()
 
   // Утренняя карточка: меню показывает только «Пройти утро заново».
