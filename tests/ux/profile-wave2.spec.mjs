@@ -56,7 +56,23 @@ test('профиль: цель письма, липкая шапка и сист
     await expect(goal).toContainText('3')
     await expect(page.getByRole('group', { name: 'Записей в неделю' })).toBeVisible()
     await page.setViewportSize({ width: 393, height: 320 })
-    await page.locator('.mx-fullscreen-scroll').evaluate(el => { el.scrollTop = el.scrollHeight })
+    // Ждём, пока layout пересчитается под новый viewport: scrollHeight должен
+    // стать больше clientHeight (появится прокручиваемая область). Без этой
+    // проверки scrollTop = scrollHeight может не дать реального скролла.
+    await expect.poll(
+      async () => {
+        const scroll = page.locator('.mx-fullscreen-scroll')
+        return await scroll.evaluate(el => el.scrollHeight - el.clientHeight)
+      },
+      { timeout: 5000, intervals: [100, 500, 1000] }
+    ).toBeGreaterThan(0)
+    // Программный scrollTop не всегда firing scroll event в headless Chrome —
+    // диспетчируем вручную (как в profile-wave3), чтобы useTitleCollapsed
+    // запустил check() и переключил --collapsed.
+    await page.locator('.mx-fullscreen-scroll').evaluate(el => {
+      el.scrollTop = el.scrollHeight
+      el.dispatchEvent(new Event('scroll', { bubbles: false }))
+    })
     await expect(page.getByTestId('profile-collapsed-bar')).toHaveClass(/--collapsed/)
     await expect(page.getByTestId('profile-collapsed-bar')).toHaveCSS('background-color', 'rgb(5, 4, 3)')
     await page.evaluate(() => window.__telegramBackClick())
