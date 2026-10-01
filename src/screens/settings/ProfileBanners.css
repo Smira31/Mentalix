@@ -49,8 +49,8 @@ button.mx-profile-banner:active {
 
 .mx-profile-banner--potential .mx-profile-banner__art--lock {
   position: absolute;
-  right: 0;
-  bottom: 0;
+  right: -40px;
+  bottom: -36px;
   width: 128px;
   height: 172px;
   z-index: 0;
