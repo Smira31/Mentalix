@@ -329,7 +329,7 @@ export default function GuidedSelfDiscoveryFlow({ userId, onClose }) {
             onClick={continueFlow}
             icon={isLastStep ? 'check' : 'arrow'}
             label={isLastStep ? 'Сохранить эксперимент' : 'Далее'}
-            disabled={!answered(value)}
+            disabled={!answered(value) || pendingComplete}
             testId="gsd-next"
           />
         </div>
@@ -337,13 +337,22 @@ export default function GuidedSelfDiscoveryFlow({ userId, onClose }) {
     }
     if (stage === 'complete') {
       return (
-        <button
-          type="button"
-          onClick={restart}
-          className="guided-self-discovery__restart-btn"
-        >
-          Начать заново
-        </button>
+        <div className="guided-self-discovery__complete-actions">
+          <button
+            type="button"
+            onClick={restart}
+            className="guided-self-discovery__restart-btn"
+          >
+            Начать заново
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="guided-self-discovery__close-btn"
+          >
+            Вернуться в журнал
+          </button>
+        </div>
       )
     }
     return null
