@@ -185,7 +185,13 @@ function ThemeCarousel({
       <div className="mx-steps-theme-panel">
         <h2 className="mx-steps-theme-heading" id="steps-theme-title">
           <span className="mx-steps-theme-heading__label">Тема недели:</span>
-          <span className="mx-steps-theme-heading__name">{theme.title || 'Один вопрос.'}</span>
+          <span className="mx-steps-theme-heading__name">
+            {theme.title
+              ? theme.title.endsWith('.')
+                ? theme.title
+                : `${theme.title}.`
+              : 'Один вопрос.'}
+          </span>
         </h2>
         <div className="mx-steps-theme-track" ref={trackRef} onScroll={handleScroll}>
           {questions.map((question, index) => (

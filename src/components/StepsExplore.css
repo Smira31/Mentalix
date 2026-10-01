@@ -329,7 +329,7 @@
 
 /* --- 5. Тема недели --- */
 .mx-steps-serif-title {
-  font-family: var(--font-serif);
+  font-family: 'Onest', sans-serif;
   font-size: var(--mx-type-section-size);
   line-height: 1.25;
   font-weight: 600;

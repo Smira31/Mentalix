@@ -173,11 +173,11 @@ function fixtureFor(request) {
 /* --- Эталон (pt = px при 440px viewport) --- */
 const SPECS = [
   // Шапка
-  { id: 'header-h1', label: 'Шапка «Тема недели:»', sel: '.mx-theme-carousel-heading', expect: { fontSize: 26, fontWeight: 400, fontFamily: 'serif' } },
+  { id: 'header-h1', label: 'Шапка «Тема недели:»', sel: '.mx-theme-carousel-heading', expect: { fontSize: 26, fontWeight: 300, fontFamily: 'Onest' } },
   { id: 'header-h2', label: 'Шапка «о меньшем усилии.»', sel: '.mx-theme-carousel-title', expect: { fontSize: 26, fontWeight: 700, fontFamily: 'Onest' } },
   // Карусель
   { id: 'card-active', label: 'Активная карточка', sel: ".mx-theme-carousel-q[data-active='true']", expect: { width: 298, height: 360, radius: 33 } },
-  { id: 'card-num', label: 'Номер карточки', sel: ".mx-theme-carousel-q[data-active='true'] .mx-theme-carousel-q__num", expect: { fontSize: 38, fontWeight: 400, fontFamily: 'serif' } },
+  { id: 'card-num', label: 'Номер карточки', sel: ".mx-theme-carousel-q[data-active='true'] .mx-theme-carousel-q__num", expect: { fontSize: 38, fontWeight: 400, fontFamily: 'Onest' } },
   { id: 'card-text', label: 'Текст вопроса', sel: ".mx-theme-carousel-q[data-active='true'] .mx-theme-carousel-q__text", expect: { fontSize: 17, fontWeight: 600, fontFamily: 'Onest' } },
   { id: 'card-prompt', label: 'Подсказка', sel: ".mx-theme-carousel-q[data-active='true'] .mx-theme-carousel-q__prompt", expect: { fontSize: 15, fontWeight: 400 } },
   // Точки
@@ -185,7 +185,7 @@ const SPECS = [
   // Кнопка
   { id: 'cta', label: 'Кнопка «Начать запись»', sel: '.mx-theme-carousel-cta', expect: { width: 173, height: 44, fontSize: 17, fontWeight: 600, bg: '#d0d0d0', color: '#111' } },
   // Другие темы
-  { id: 'other-heading', label: '«Другие темы» заголовок', sel: '#carousel-other-themes', expect: { fontSize: 26, fontWeight: 400, fontFamily: 'serif' } },
+  { id: 'other-heading', label: '«Другие темы» заголовок', sel: '#carousel-other-themes', expect: { fontSize: 26, fontWeight: 300, fontFamily: 'Onest' } },
   { id: 'other-card', label: 'Карточка темы', sel: '.mx-theme-directory__row', expect: { width: 408, height: 190, radius: 26 } },
   { id: 'other-title', label: 'Название темы', sel: '.mx-theme-directory__info strong', expect: { fontSize: 24, fontWeight: 700, color: '#d4d4d4' } },
   { id: 'other-desc', label: 'Описание темы', sel: '.mx-theme-directory__info small', expect: { fontSize: 15, fontWeight: 400 } },
@@ -194,7 +194,7 @@ const SPECS = [
   // Удиви меня
   { id: 'surprise', label: '«Удиви меня»', sel: '.mx-theme-directory__surprise', expect: { width: 156, height: 43, fontSize: 17, fontWeight: 500 } },
   // Все темы
-  { id: 'all-heading', label: '«Все темы» заголовок', sel: '#carousel-all-themes', expect: { fontSize: 26, fontWeight: 400, fontFamily: 'serif' } },
+  { id: 'all-heading', label: '«Все темы» заголовок', sel: '#carousel-all-themes', expect: { fontSize: 26, fontWeight: 300, fontFamily: 'Onest' } },
   { id: 'filter-chip', label: 'Чип фильтра', sel: '.mx-theme-directory__filters button', expect: { height: 34, fontSize: 17, fontWeight: 500 } },
 ]
 

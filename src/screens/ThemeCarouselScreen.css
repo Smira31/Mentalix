@@ -35,9 +35,9 @@
 }
 
 .mx-theme-carousel-heading {
-  font-family: var(--font-serif);
+  font-family: 'Onest', sans-serif;
   font-size: 26px;
-  font-weight: 400;
+  font-weight: 300;
   line-height: 1.15;
   color: rgb(var(--c-text));
   margin: 0;

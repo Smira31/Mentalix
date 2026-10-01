@@ -17,10 +17,10 @@
 }
 
 .mx-theme-directory h3 {
-  font-family: var(--font-serif);
+  font-family: 'Onest', sans-serif;
   font-size: 26px;
   line-height: 1.08;
-  font-weight: 400;
+  font-weight: 300;
   color: rgb(var(--c-text));
   text-align: center;
   margin: 0;
