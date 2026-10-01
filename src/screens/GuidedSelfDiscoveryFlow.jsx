@@ -6,6 +6,7 @@ import JournalField from '../components/ui/JournalField'
 import RoundNextButton from '../components/ui/RoundNextButton'
 import TrackerArtIntro from '../components/tracker-art/TrackerArtIntro'
 import TrackerArtComplete from '../components/tracker-art/TrackerArtComplete'
+import CheckInCompletion from '../components/CheckInCompletion'
 import { useBackButton } from '../platform/telegram.hooks'
 import { platform } from '../platform'
 import {
@@ -102,14 +103,6 @@ function WritingContent({ step, stepIndex, totalSteps, value, onChange, fieldRef
       <CapsLabel className="guided-self-discovery__step-label">
         Запись · {stepIndex + 1} / {totalSteps}
       </CapsLabel>
-      <div className="guided-self-discovery__progress" aria-hidden="true">
-        {Array.from({ length: totalSteps }).map((_, i) => (
-          <span
-            key={i}
-            className={`guided-self-discovery__progress-bar${i <= stepIndex ? ' is-active' : ''}`}
-          />
-        ))}
-      </div>
       <JournalField question={step.title} hint={step.hint} className="guided-self-discovery__field-group" />
       <textarea
         ref={fieldRef}
@@ -124,54 +117,9 @@ function WritingContent({ step, stepIndex, totalSteps, value, onChange, fieldRef
   )
 }
 
-function CompleteContent({ experiment, feedback, onFeedback }) {
-  return (
-    <div className="guided-self-discovery__completion">
-      <div className="guided-self-discovery__completion-art-wrap" aria-hidden="true">
-        <TrackerArtComplete className="guided-self-discovery__completion-art" />
-      </div>
-      <CapsLabel className="guided-self-discovery__completion-eyebrow">Эксперимент готов</CapsLabel>
-      <h1 className="guided-self-discovery__completion-title font-display text-cream">
-        Хорошо. Следующий шаг готов.
-      </h1>
-      <p className="guided-self-discovery__completion-description">
-        Проверь его в реальности, а не пытайся заранее получить идеальную ясность.
-      </p>
-      <div
-        className="guided-self-discovery__completion-feedback"
-        role="group"
-        aria-label="Помогло ли это?"
-      >
-        <p>Помогло ли это?</p>
-        <div className="guided-self-discovery__feedback-options">
-          {[
-            ['no', 'Нет', '−'],
-            ['a-little', 'Немного', '≈'],
-            ['yes', 'Да', '✓'],
-          ].map(([value, label, icon]) => (
-            <button
-              key={value}
-              type="button"
-              aria-pressed={feedback === value}
-              onClick={() => onFeedback(value)}
-            >
-              <span className="guided-self-discovery__feedback-icon" aria-hidden="true">
-                {icon}
-              </span>
-              <span>{label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-      {answered(experiment) && (
-        <div className="guided-self-discovery__completion-result">
-          <span>твой эксперимент</span>
-          <p>{experiment}</p>
-        </div>
-      )}
-    </div>
-  )
-}
+/* Финал «Записи» использует CheckInCompletion — тот же компонент, что у
+   завершения вечернего разбора (#967): размеры картинки, шрифты, отступы,
+   плитки отзыва с lucide-иконками, плашка даты, кнопка внизу. */
 
 export default function GuidedSelfDiscoveryFlow({ userId, onClose }) {
   const [initial] = useState(() => readGuidedSelfDiscoveryDraft(userId))
@@ -337,18 +285,12 @@ export default function GuidedSelfDiscoveryFlow({ userId, onClose }) {
     }
     if (stage === 'complete') {
       return (
-        <div className="guided-self-discovery__complete-actions">
-          <button
-            type="button"
-            onClick={restart}
-            className="guided-self-discovery__restart-btn"
-          >
-            Начать заново
-          </button>
+        <div className="mx-completion-action mx-completion-action--evening">
           <button
             type="button"
             onClick={onClose}
-            className="guided-self-discovery__close-btn"
+            className="cta-pill"
+            data-testid="gsd-complete-close"
           >
             Вернуться в журнал
           </button>
@@ -365,7 +307,7 @@ export default function GuidedSelfDiscoveryFlow({ userId, onClose }) {
       scroll={stage === 'intro'}
       fullFrame={stage !== 'intro'}
       footer={footerContent}
-      footerClassName="guided-self-discovery__footer"
+      footerClassName={stage === 'complete' ? 'guided-self-discovery__footer--complete' : 'guided-self-discovery__footer'}
       bodyClassName={stage === 'complete' ? 'guided-self-discovery__body--complete' : ''}
     >
       {stage === 'intro' && <IntroContent hasDraft={Boolean(initial)} />}
@@ -382,10 +324,27 @@ export default function GuidedSelfDiscoveryFlow({ userId, onClose }) {
       )}
 
       {stage === 'complete' && (
-        <CompleteContent
-          experiment={answers.experiment}
-          feedback={completionFeedback}
-          onFeedback={setCompletionFeedback}
+        <CheckInCompletion
+          evening
+          art={<TrackerArtComplete className="mx-completion__art" />}
+          title={
+            <>
+              <strong>Готово!</strong>
+              <span>Следующий шаг готов.</span>
+            </>
+          }
+          feedbackQuestion="Помогло ли это?"
+          onFeedback={label => {
+            platform.haptic('light')
+            setCompletionFeedback(label)
+          }}
+          body={
+            answered(answers.experiment) ? (
+              <p className="mx-type-body text-muted mt-6 max-w-sm mx-auto" data-testid="gsd-experiment-text">
+                {answers.experiment}
+              </p>
+            ) : null
+          }
         />
       )}
     </Screen>
