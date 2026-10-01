@@ -1,5 +1,6 @@
 import { ProfilePage } from './settings/ProfileUi'
 import { privacyPolicy } from '../content/privacyPolicy'
+import './PrivacyNotice.css'
 
 function renderPart(part, i) {
   if (part.href) {
