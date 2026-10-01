@@ -1235,8 +1235,8 @@
   letter-spacing: 0.14em;
 }
 .mx-layered-catalog__rail-card:first-child .mx-layered-catalog__rail-badge {
-  background: rgb(137 163 255);
-  color: rgb(19 22 35);
+  background: rgb(var(--c-text));
+  color: rgb(var(--c-bg));
 }
 .mx-layered-catalog__rail-category {
   margin-top: 8px;

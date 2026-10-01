@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
 import { ArrowRight, ChevronRight } from 'lucide-react'
 
-import JournalArt from './practice-art/JournalArt'
+import JournalArtNew from './practice-art/JournalArtNew'
 import SemanticGlyph from './SemanticGlyph'
 import { getPracticeByKey, PRACTICE_COLLECTIONS } from '../lib/practiceCatalogRegistry'
 import './ui-lab/LayeredPracticeCatalogExperiment.css'
@@ -17,7 +17,7 @@ function JournalBanner({ onOpen }) {
   return (
     <article className="mx-layered-catalog__journal-hero">
       <div className="mx-layered-catalog__journal-hero-art" aria-hidden="true">
-        <JournalArt />
+        <JournalArtNew />
       </div>
       <div className="mx-layered-catalog__journal-hero-copy">
         <span>ЖУРНАЛ · СЕГОДНЯ</span>
