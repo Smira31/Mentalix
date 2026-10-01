@@ -566,8 +566,6 @@ function seedState(todayState = null) {
       { practice_id: 'lila-discover' },
       { practice_id: 'rituals' },
       { practice_id: 'ascezas' },
-      { practice_id: 'mood' },
-      { practice_id: 'alter-ego' },
     ],
     checkins: [...history, ...(checkin ? [checkin] : [])],
     profile: {
