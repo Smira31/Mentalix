@@ -815,8 +815,8 @@ test('локальный UX smoke по основному маршруту', asy
     await page.getByRole('button', { name: 'Назад' }).click()
     await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
 
+    // Коллекция ведёт прямо в единый список практик, без промежуточного экрана.
     await page.getByRole('button', { name: 'Открыть Ритуалы' }).click()
-    await page.getByRole('button', { name: 'Открыть ритуалы' }).click()
     await captureScreen({
       page,
       viewport,
@@ -837,7 +837,6 @@ test('локальный UX smoke по основному маршруту', asy
     await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
 
     await page.getByRole('button', { name: 'Открыть Аскезы' }).click()
-    await page.getByRole('button', { name: 'Открыть аскезы' }).click()
     await captureScreen({
       page,
       viewport,

@@ -46,7 +46,9 @@ export const PRACTICE_WORDING = {
     signSubtitle: 'Выбери иконку ритуала.',
     createCta: 'Создать ритуал',
     cardMinimumLabel: 'минимум',
-    statusLabel: streak => `серия ${streak} ${pluralize(streak, DAY_FORMS)}`,
+    // Ноль дней — это не «серия 0 дней», а ещё не начатая практика.
+    statusLabel: streak =>
+      streak > 0 ? `серия ${streak} ${pluralize(streak, DAY_FORMS)}` : 'новый ритуал',
     markButton: 'Отметить сегодня',
     markedButton: 'Отмечено сегодня',
     isDone: item => isRitualDoneToday(item.today_level),
@@ -84,7 +86,8 @@ export const PRACTICE_WORDING = {
     signSubtitle: 'Выбери иконку аскезы.',
     createCta: 'Принять аскезу',
     cardMinimumLabel: 'граница',
-    statusLabel: streak => `держишься ${streak} ${pluralize(streak, DAY_FORMS)}`,
+    statusLabel: streak =>
+      streak > 0 ? `держишься ${streak} ${pluralize(streak, DAY_FORMS)}` : 'новая аскеза',
     markButton: 'Держусь сегодня',
     markedButton: 'Держусь ✓',
     isDone: item => item.today_status === 'held',

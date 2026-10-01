@@ -6,12 +6,14 @@ import {
   FULLSCREEN_SCROLL_CLASS,
   getFullscreenPortalTarget,
 } from '../../lib/fullscreenSurface'
+import PracticeWeek from './PracticeWeek'
 import './PracticeMilestone.css'
 
 /*
  * Веха серии (3 / 7 / 21 / 30 дней) — отдельный полноэкранный экран,
- * а не карточка: круг с числом дней, подпись «7 дней.», одна фраза
- * о ступени, неделя кружками и белая кнопка «Готово».
+ * а не карточка: круг с числом дней, капсом название практики,
+ * крупное «3 дня.», одна фраза о ступени, неделя кружками
+ * и белая кнопка «Готово».
  *
  * Экран ждёт решения человека: автоскрытия нет, закрывает «Готово»,
  * системный «Назад» или свайп.
@@ -19,9 +21,6 @@ import './PracticeMilestone.css'
 export default function PracticeMilestone({ streak, dayLabel, phrase, name, onDone }) {
   const { style: surfaceStyle } = useFullscreenSurface()
   useBackButton(onDone)
-
-  const weekDots = 7
-  const filledDots = Math.min(streak, weekDots)
 
   return createPortal(
     <div
@@ -35,17 +34,12 @@ export default function PracticeMilestone({ streak, dayLabel, phrase, name, onDo
           <div className="mx-practice-milestone-screen__circle" data-testid="practice-milestone-count">
             {streak}
           </div>
-          <p className="mx-practice-milestone-screen__days">{dayLabel}</p>
-          {phrase && <p className="mx-practice-milestone-screen__phrase">{phrase}</p>}
           {name && <p className="mx-practice-milestone-screen__name">{name}</p>}
-          <div className="mx-practice-milestone-screen__week" aria-hidden="true">
-            {Array.from({ length: weekDots }, (_, index) => (
-              <span
-                key={index}
-                className={`mx-practice-milestone-screen__dot${index < filledDots ? ' is-on' : ''}`}
-              />
-            ))}
-          </div>
+          <p className="mx-practice-milestone-screen__days" data-testid="practice-milestone-days">
+            {dayLabel}
+          </p>
+          {phrase && <p className="mx-practice-milestone-screen__phrase">{phrase}</p>}
+          <PracticeWeek streak={streak} />
         </div>
       </div>
 

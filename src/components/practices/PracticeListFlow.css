@@ -16,9 +16,11 @@
   margin-bottom: 18px;
 }
 
+/* Круглая «‹» 43×43 слева сверху, как на остальных вложенных экранах.
+   В Telegram кнопки нет — там работает системная «Назад». */
 .mx-practice-flow-screen__back {
   position: absolute;
-  top: -2px;
+  top: 0;
   left: 0;
 }
 
@@ -109,6 +111,7 @@
   height: 38px;
 }
 
+/* Название — до двух строк без «…»: длинное имя переносится целиком. */
 .mx-practice-flow-tile__name {
   margin-top: 4px;
   font-size: 16px;
@@ -116,8 +119,10 @@
   line-height: 1.2;
   max-width: 100%;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow-wrap: anywhere;
 }
 
 .mx-practice-flow-tile__minimum {
@@ -285,7 +290,11 @@
   height: 26px;
 }
 
+/* Колонка: название 16/600 сверху, «Минимум: …» 13 muted строкой ниже. */
 .mx-practice-ready-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   flex: 1;
   min-width: 0;
 }
@@ -293,26 +302,26 @@
 .mx-practice-ready-card__name {
   font-size: 16px;
   font-weight: 600;
-  line-height: 1.2;
+  line-height: 1.25;
   color: rgb(var(--c-text));
+  overflow-wrap: anywhere;
 }
 
 .mx-practice-ready-card__minimum {
-  margin-top: 2px;
   font-size: 13px;
   line-height: 1.35;
   color: rgb(var(--c-muted));
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 
+/* «+» / галочка стоит справа отдельно — текст на неё не заезжает. */
 .mx-practice-ready-card__action {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 32px;
   height: 32px;
+  margin-left: auto;
   flex-shrink: 0;
   font-size: 22px;
   font-weight: 400;

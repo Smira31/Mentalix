@@ -11,6 +11,7 @@ import { PRACTICE_WORDING, buildEditPatch } from '../lib/practiceWording'
 import { ProgressGlassMenu, ProgressGlassMenuItem } from './ProgressGlassMenu'
 import PracticeFieldFlow from './practices/PracticeFieldFlow'
 import PracticeSignScreen from './practices/PracticeSignScreen'
+import PracticeWeek from './practices/PracticeWeek'
 import './PracticeDetail.css'
 
 function AccordionRow({ testId, label, children }) {
@@ -58,6 +59,9 @@ export default function PracticeDetail({
   const isRitual = kind === 'ritual'
   const wording = PRACTICE_WORDING[kind]
   const done = isRitual ? isRitualDoneToday(practice.today_level) : practice.today_status === 'held'
+  // Ритуал с двумя ступенями отмечается уровнем (минимум / оптимум);
+  // у остальных практик остаётся одна кнопка отметки.
+  const hasLevels = isRitual && Boolean(practice.min_version && practice.optimal_version)
   // Знак выбирается в меню «…» и хранится вместе с практикой; без него — по названию.
   const glyphKind =
     practice.glyph ||
@@ -94,6 +98,19 @@ export default function PracticeDetail({
           : 'optimal'
       : 'held'
     // Отметка оживляет герой коротким импульсом иконки.
+    setPulse(true)
+    clearTimeout(pulseTimer.current)
+    pulseTimer.current = setTimeout(() => setPulse(false), 520)
+    await onLog(practice.id, level)
+  }
+
+  // Отметка уровня: повторный тап по активной ступени снимает отметку.
+  async function logLevel(level) {
+    platform.haptic('success')
+    if (practice.today_level === level) {
+      await onLog(practice.id, null)
+      return
+    }
     setPulse(true)
     clearTimeout(pulseTimer.current)
     pulseTimer.current = setTimeout(() => setPulse(false), 520)
@@ -206,15 +223,45 @@ export default function PracticeDetail({
         </button>
       )}
 
-      <button
-        type="button"
-        className="mx-practice-detail__mark"
-        data-testid="practice-detail-toggle"
-        aria-pressed={done}
-        onClick={toggle}
-      >
-        {done ? wording.markedButton : wording.markButton}
-      </button>
+      {/* ЭТА НЕДЕЛЯ: неделя кружками и правило про один пропуск */}
+      <section className="mx-practice-detail__week" data-testid="practice-detail-week">
+        <p className="mx-practice-detail__week-title">Эта неделя</p>
+        <PracticeWeek streak={practice.streak || 0} />
+        <p className="mx-practice-detail__week-hint">1 пропуск в неделю не рвёт серию</p>
+      </section>
+
+      {hasLevels ? (
+        <div className="mx-practice-detail__levels">
+          {[
+            { value: 'min', caption: 'Минимум', text: practice.min_version },
+            { value: 'optimal', caption: 'Оптимум', text: practice.optimal_version },
+          ].map(item => (
+            <button
+              type="button"
+              key={item.value}
+              className={`mx-practice-detail__level${
+                practice.today_level === item.value ? ' is-active' : ''
+              }`}
+              aria-pressed={practice.today_level === item.value}
+              data-testid={`practice-detail-level-${item.value}`}
+              onClick={() => logLevel(item.value)}
+            >
+              <span className="mx-practice-detail__level-caption">{item.caption}</span>
+              <span className="mx-practice-detail__level-text">{item.text}</span>
+            </button>
+          ))}
+        </div>
+      ) : (
+        <button
+          type="button"
+          className="mx-practice-detail__mark"
+          data-testid="practice-detail-toggle"
+          aria-pressed={done}
+          onClick={toggle}
+        >
+          {done ? wording.markedButton : wording.markButton}
+        </button>
+      )}
 
       {sub === 'edit' && (
         <PracticeFieldFlow
