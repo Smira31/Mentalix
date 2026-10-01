@@ -2210,3 +2210,43 @@
 
 /* Light-preview: карточка остаётся тёмной (как --c-card), текст #d6d6d6
    читается на тёмном фоне без корректировки. */
+
+/* «Сегодня» — сколько практик отмечено: «N из M» */
+.mx-today-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 20px 0 4px;
+}
+
+.mx-today-progress__label {
+  font-family: 'Manrope', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgb(var(--c-muted));
+  white-space: nowrap;
+}
+
+.mx-today-progress__track {
+  flex: 1;
+  height: 3px;
+  border-radius: 9999px;
+  background: rgb(var(--c-line) / 0.12);
+  overflow: hidden;
+}
+
+.mx-today-progress__fill {
+  height: 100%;
+  border-radius: 9999px;
+  background: rgb(var(--c-gold));
+  transition: width 400ms ease;
+}
+
+.mx-today-progress__count {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgb(var(--c-text));
+  white-space: nowrap;
+}

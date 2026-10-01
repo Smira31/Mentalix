@@ -36,10 +36,9 @@ test('MXL-547: production rail содержит практику и две че�
 test('MXL-547: отдельная коллекция скрыта только из отображаемых коллекций', () => {
   assert.match(catalog, /PRACTICE_COLLECTIONS\.filter\(collection => collection\.key !== 'lila'\)/)
   assert.match(catalog, /VISIBLE_COLLECTIONS\.length/)
-  assert.match(
-    catalog,
-    /PRACTICE_COLLECTIONS\.find\(collection => collection\.key === selectedCollectionKey\)/
-  )
+  // Живая коллекция не открывает свой экран: она ведёт в единый список практик.
+  assert.match(catalog, /<CollectionGrid onOpen=\{onOpenCollection\} \/>/)
+  assert.doesNotMatch(catalog, /selectedCollectionKey/)
 })
 
 test('MXL-547: каталог показывает максимум четыре реальных дня текущей темы', () => {

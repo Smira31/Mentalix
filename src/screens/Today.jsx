@@ -1580,6 +1580,18 @@ export default function Today({
         </button>
       )}
 
+      {!isEmpty && (
+        <div className="mx-today-progress" role="status" data-testid="today-progress">
+          <span className="mx-today-progress__label">Сегодня</span>
+          <div className="mx-today-progress__track" aria-hidden="true">
+            <div className="mx-today-progress__fill" style={{ width: `${pct}%` }} />
+          </div>
+          <span className="mx-today-progress__count" data-testid="today-progress-count">
+            {done} из {total}
+          </span>
+        </div>
+      )}
+
       <PinnedPractices
         user={user}
         onOpenPractice={onOpenPractice}

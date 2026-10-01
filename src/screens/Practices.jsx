@@ -49,8 +49,6 @@ export default function Practices({ user, initialSub = null, onGameChange, onReg
     if (action === 'ascezas_list' || action === 'asceza_detail') return 'ascezas'
     return null
   })
-  const [selectedCollectionKey, setSelectedCollectionKey] = useState(null)
-
   const returnToPracticeOrigin = () => setSub(null)
 
   const [initialPracticesData] = useState(() => (user ? peekPracticesData(user.id) : null))
@@ -76,16 +74,14 @@ export default function Practices({ user, initialSub = null, onGameChange, onReg
   useEffect(() => {
     const handler = selectedThemeId
       ? () => setSelectedThemeId(null)
-      : selectedCollectionKey
-        ? () => setSelectedCollectionKey(null)
-        : sub
-          ? () => setSub(null)
-          : null
+      : sub
+        ? () => setSub(null)
+        : null
 
     onRegisterBack?.(handler)
 
     return () => onRegisterBack?.(null)
-  }, [onRegisterBack, selectedCollectionKey, selectedThemeId, sub])
+  }, [onRegisterBack, selectedThemeId, sub])
   /*
    * initialSub приходит из навигации (открыть Practices сразу на
    * конкретном экране) — синхронизация с внешним пропом, без побочных
@@ -230,22 +226,18 @@ export default function Practices({ user, initialSub = null, onGameChange, onReg
       <h1 className="font-display mx-type-page text-cream lowercase mb-[28px]">практики.</h1>
       <PracticeCatalogV2
         practices={catalogPractices}
-        rituals={rituals}
-        ascezas={ascezas}
         themes={themes}
         themeLoading={themeLoading}
         themesError={themesError}
         onRetryThemes={() => loadThemes({ force: true })}
-        selectedCollectionKey={selectedCollectionKey}
-        onCollectionChange={setSelectedCollectionKey}
-        onOpenPractice={(practice, collectionKey = null) => {
+        onOpenCollection={collection => {
+          // Коллекция «Ритуалы»/«Аскезы» ведёт прямо в единый список практик:
+          // промежуточного экрана «Твои данные» больше нет.
           platform.haptic('light')
-          if (practice.key === 'lila-discover') {
-            setSelectedCollectionKey(null)
-            setSub('lila-discover')
-            return
-          }
-          setSelectedCollectionKey(collectionKey)
+          if (collection.source) setSub(collection.source)
+        }}
+        onOpenPractice={practice => {
+          platform.haptic('light')
           setSub(practice.sub)
         }}
         onOpenJournal={() => {

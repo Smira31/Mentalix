@@ -1,0 +1,38 @@
+/* ── Неделя кружками: 7 дней с подписями (экран практики и экран вехи) ── */
+
+.mx-practice-week {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.mx-practice-week__day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.mx-practice-week__circle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1.5px solid rgb(var(--c-line) / 0.22);
+}
+
+.mx-practice-week__circle.is-on {
+  background: rgb(var(--c-gold));
+  border-color: rgb(var(--c-gold));
+}
+
+/* Сегодняшний день виден всегда — даже когда он ещё не отмечен. */
+.mx-practice-week__circle.is-today {
+  box-shadow: 0 0 0 1.5px rgb(var(--c-card2)), 0 0 0 3px rgb(var(--c-line) / 0.35);
+}
+
+.mx-practice-week__label {
+  font-family: 'Manrope', sans-serif;
+  font-size: 11px;
+  line-height: 1;
+  color: rgb(var(--c-muted));
+}

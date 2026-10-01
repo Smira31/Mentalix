@@ -1,0 +1,57 @@
+/* ── «Знак»: сетка 4×3 иконок SemanticGlyph ── */
+
+.mx-practice-sign__title {
+  margin: 0 0 6px;
+  font-family: 'Manrope', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: rgb(var(--c-text));
+  text-transform: lowercase;
+}
+
+.mx-practice-sign__subtitle {
+  margin: 0 0 20px;
+  font-size: 15px;
+  line-height: 1.4;
+  color: rgb(var(--c-muted));
+}
+
+.mx-practice-sign__grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.mx-practice-sign__cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1 / 1;
+  padding: 8px;
+  background: rgb(var(--c-card2));
+  border: 1px solid rgb(var(--c-line) / 0.08);
+  border-radius: 18px;
+  cursor: pointer;
+  transition: background-color 200ms ease, border-color 200ms ease, transform 150ms ease;
+}
+
+.mx-practice-sign__cell:active {
+  transform: scale(0.96);
+}
+
+.mx-practice-sign__cell.is-active {
+  background: rgb(var(--c-gold) / 0.12);
+  border-color: rgb(var(--c-gold));
+}
+
+.mx-practice-sign__cell svg {
+  width: 34px;
+  height: 34px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-practice-sign__cell {
+    transition: none;
+  }
+}
