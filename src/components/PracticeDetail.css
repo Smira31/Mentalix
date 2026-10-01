@@ -189,6 +189,81 @@
   opacity: 0.88;
 }
 
+/* Блок-герой 220: концентрические тонкие круги + иконка в круге 96 */
+.mx-practice-detail__hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 220px;
+  margin: 8px 0 16px;
+  border-radius: 28px;
+  background: rgb(var(--c-card2));
+  border: 1px solid rgb(var(--c-line) / 0.08);
+  overflow: hidden;
+}
+
+.mx-practice-detail__hero.is-done {
+  background: #ece8e1;
+  border-color: #ece8e1;
+}
+
+.mx-practice-detail__hero-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgb(var(--c-line) / 0.1);
+  pointer-events: none;
+}
+
+.mx-practice-detail__hero.is-done .mx-practice-detail__hero-ring {
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.mx-practice-detail__hero-ring:nth-child(1) {
+  width: 180px;
+  height: 180px;
+}
+.mx-practice-detail__hero-ring:nth-child(2) {
+  width: 140px;
+  height: 140px;
+}
+.mx-practice-detail__hero-ring:nth-child(3) {
+  width: 100px;
+  height: 100px;
+}
+
+.mx-practice-detail__hero-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: rgb(var(--c-line) / 0.06);
+  z-index: 1;
+}
+
+.mx-practice-detail__hero.is-done .mx-practice-detail__hero-icon {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.mx-practice-detail__hero-icon svg {
+  width: 56px;
+  height: 56px;
+}
+
+.mx-practice-detail__streak-label {
+  margin: 0 0 6px;
+  font-family: 'Manrope', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgb(var(--c-muted));
+  text-align: center;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .mx-practice-tile,
   .mx-practice-detail__mark {

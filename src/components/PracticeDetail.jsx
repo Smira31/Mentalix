@@ -7,6 +7,7 @@ import { RoundBackButton } from './NestedScreenHeader'
 import DeleteConfirmationDialog from './DeleteConfirmationDialog'
 import SemanticGlyph, { semanticKindForAsceza, semanticKindForRitual } from './SemanticGlyph'
 import { isRitualDoneToday } from '../lib/practiceDoneToday'
+import { PRACTICE_WORDING } from '../lib/practiceWording'
 import { ProgressGlassMenu, ProgressGlassMenuItem } from './ProgressGlassMenu'
 import './PracticeDetail.css'
 
@@ -40,6 +41,7 @@ export default function PracticeDetail({ kind, practice, onBack, onLog, onBreak,
   useEdgeSwipeBack(screenRef, onBack)
   useBackButton(onBack)
   const isRitual = kind === 'ritual'
+  const wording = PRACTICE_WORDING[kind]
   const done = isRitual ? isRitualDoneToday(practice.today_level) : practice.today_status === 'held'
   const glyphKind = isRitual
     ? semanticKindForRitual(practice.name)
@@ -124,6 +126,20 @@ export default function PracticeDetail({ kind, practice, onBack, onLog, onBreak,
           )}
         </div>
       </div>
+
+      {/* Блок-герой 220: концентрические круги + иконка в круге 96 */}
+      <div className={`mx-practice-detail__hero${done ? ' is-done' : ''}`}>
+        <span className="mx-practice-detail__hero-ring" />
+        <span className="mx-practice-detail__hero-ring" />
+        <span className="mx-practice-detail__hero-ring" />
+        <span className="mx-practice-detail__hero-icon">
+          <SemanticGlyph kind={glyphKind} className="w-full h-full" />
+        </span>
+      </div>
+
+      <p className="mx-practice-detail__streak-label">
+        {wording.statusLabel(practice.streak || 0)}
+      </p>
       <h1 className="font-display mx-type-page text-cream lowercase mb-5">
         {practice.name.toLowerCase()}.
       </h1>
@@ -157,7 +173,7 @@ export default function PracticeDetail({ kind, practice, onBack, onLog, onBreak,
         aria-pressed={done}
         onClick={toggle}
       >
-        {done ? 'Отмечено сегодня ✓' : 'Отметить сегодня'}
+        {done ? wording.markedButton : wording.markButton}
       </button>
 
       {confirming && (

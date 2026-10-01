@@ -4,24 +4,23 @@ import test from 'node:test'
 
 const rituals = await readFile(new URL('../../src/screens/Rituals.jsx', import.meta.url), 'utf8')
 const ascezas = await readFile(new URL('../../src/screens/Ascezas.jsx', import.meta.url), 'utf8')
+const flow = await readFile(new URL('../../src/components/practices/PracticeListFlow.jsx', import.meta.url), 'utf8')
+const wording = await readFile(new URL('../../src/lib/practiceWording.js', import.meta.url), 'utf8')
 const detail = await readFile(new URL('../../src/components/PracticeDetail.jsx', import.meta.url), 'utf8')
-const css = await readFile(new URL('../../src/components/PracticeDetail.css', import.meta.url), 'utf8')
+const flowCss = await readFile(new URL('../../src/components/practices/PracticeListFlow.css', import.meta.url), 'utf8')
 
-function assertListScreen(source, heading, statusExpression) {
-  assert.match(source, new RegExp(`NestedScreenHeader[^>]*title="${heading}\\."`))
-  assert.match(source, /mx-practice-grid/)
-  assert.match(source, /data-testid="practice-tile"/)
-  assert.match(source, /data-done=/)
-  assert.match(source, new RegExp(statusExpression))
-  assert.match(source, /setSelected\(/)
-  assert.doesNotMatch(source, /StreakBar|StreakRestoreSheet|restoreTarget|freezes/)
-}
-
-test('production lists use the two-column Variant C tile contract', () => {
-  assertListScreen(rituals, 'ритуалы', 'ritual\\.today_level')
-  assertListScreen(ascezas, 'аскезы', "asceza\\.today_status === 'held'")
-  assert.match(css, /\.mx-practice-grid\s*\{[\s\S]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)/)
-  assert.match(css, /\.mx-practice-tile\.is-done\s*\{[\s\S]*background: rgb\(var\(--c-text\)\)/)
+test('production lists use the unified two-column flow tile contract', () => {
+  assert.match(rituals, /kind="ritual"/)
+  assert.match(ascezas, /kind="asceza"/)
+  assert.match(flow, /mx-practice-flow-grid/)
+  assert.match(flow, /data-testid="practice-tile"/)
+  assert.match(flow, /data-done=/)
+  assert.match(flow, /onOpenDetail\(/)
+  assert.doesNotMatch(flow, /StreakBar|StreakRestoreSheet|restoreTarget|freezes/)
+  assert.match(flowCss, /\.mx-practice-flow-grid\s*\{[\s\S]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)/)
+  assert.match(flowCss, /\.mx-practice-flow-tile\.is-done\s*\{[\s\S]*#ece8e1/)
+  assert.match(wording, /серия/)
+  assert.match(wording, /держишься/)
 })
 
 test('practice detail exposes toggle, three accordions and the asceza break action', () => {
@@ -49,20 +48,14 @@ test('delete remains a named confirmation flow', () => {
   assert.match(detail, /onDelete\(practice\.id\)/)
 })
 
-test('existing create flows retain fullscreen, Telegram actions and 16px fields', () => {
-  for (const [source, formName, heading, cta] of [
-    [rituals, 'CreateRitualScreen', 'новый ритуал.', 'Создать ритуал'],
-    [ascezas, 'CreateAscezaScreen', 'новая аскеза.', 'Принять аскезу'],
-  ]) {
-    const start = source.indexOf(`function ${formName}`)
-    const end = source.indexOf('export default function', start)
-    const form = source.slice(start, end)
-    assert.match(form, /useFullscreenSurface\(\)/)
-    assert.match(form, /useBackButton\(onCancel\)/)
-    assert.match(form, /text-\[16px\]/)
-    assert.match(form, /<WebActionBar action=\{webAction\} \/>/)
-    assert.match(form, /useMainButton\(/)
-    assert.match(form, new RegExp(heading))
-    assert.match(form, new RegExp(cta))
-  }
+test('unified own-create flow is a 2-step magazine with fullscreen and native BackButton', () => {
+  const start = flow.indexOf('function OwnScreen')
+  const end = flow.indexOf('export default function', start)
+  const ownSlice = flow.slice(start, end)
+  assert.match(ownSlice, /useFullscreenSurface\(\)/)
+  assert.match(ownSlice, /useBackButton\(/)
+  assert.match(wording, /от чего отказываешься/)
+  assert.match(wording, /где твоя граница даже в плохой день/)
+  assert.match(wording, /Держусь сегодня/)
+  assert.match(wording, /Отметить сегодня/)
 })
