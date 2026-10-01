@@ -82,7 +82,7 @@ test('MXL-LILA-UX-001 renders dialog after theme selection with local Lila metad
 test('MXL-LILA-UX-001 keeps Intro free of the practice eyebrow label', () => {
   const introBranch = between(flow, 'function Intro', 'function ThemePicker')
   assert.doesNotMatch(introBranch, /ПРАКТИКА · ЛИЛА/)
-  assert.match(flow, /<StageShell title=\{stage === 'theme' \? 'Тема' : 'Следопыт'\}/)
+  assert.match(flow, /<StageShell[\s\S]*title=\{stage === 'theme' \? 'Тема' : 'Следопыт'\}/)
   assert.match(introBranch, /Описать ситуацию/)
 })
 
@@ -188,7 +188,7 @@ test('MXL-LILA-UX-006 keeps Telegram native BackButton and draws the web/PWA fal
   assert.match(flow, /import BackButton from/)
   assert.match(flow, /<BackButton onClick=\{onBack\} \/>/)
   assert.doesNotMatch(flow, /useBackButton/)
-  assert.match(flow, /<StageShell title=\{stage === 'theme' \? 'Тема' : 'Следопыт'\} onBack=\{stage === 'intro' \? onBack : goBack\}>/)
+  assert.match(flow, /<StageShell[\s\S]*title=\{stage === 'theme' \? 'Тема' : 'Следопыт'\}[\s\S]*onBack=\{stage === 'intro' \? onBack : goBack\}[\s\S]*>/)
   assert.equal((between(flow, "if (stage === 'intro' || stage === 'query' || stage === 'theme')", "if (stage === 'dialog' && card)").match(/<StageShell/g) || []).length, 1)
   assert.match(flow, /createPortal\(/)
   assert.match(flow, /getFullscreenPortalTarget\(\)/)
@@ -201,7 +201,7 @@ test('MXL-LILA-UX-006 keeps Telegram native BackButton and draws the web/PWA fal
 test('MXL-LILA-UX-007 keeps query input on Mentalix tokens and removes azure focus ring', () => {
   assert.match(lilaCss, /font-size: var\(--mx-type-control-size\)/)
   assert.match(lilaCss, /caret-color: rgb\(var\(--c-gold\) \/ 0\.35\)/)
-  assert.match(lilaCss, /practice-writing-canvas__field:focus-visible[\s\S]*outline: 0/)
+  assert.match(lilaCss, /\.mx-lila-query-field:focus-visible[\s\S]*outline: none/)
   assert.doesNotMatch(lilaCss, /font-size: 1rem/)
 })
 

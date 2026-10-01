@@ -160,7 +160,7 @@ test.describe('MXL-246 Journal responsive contract (tablet/desktop)', () => {
       )
       expect(fontSize).toBeGreaterThanOrEqual(16)
 
-      const submitButton = page.getByRole('button', { name: 'Сохранить и продолжить' })
+      const submitButton = page.getByRole('button', { name: 'Далее' })
       await expect(submitButton).toBeVisible()
       await expect(page.locator('[aria-label="Действия ввода"]')).toHaveCount(0)
       await expect(page.locator('.guided-self-discovery__writing')).toBeVisible()
@@ -192,7 +192,7 @@ test.describe('MXL-246 Journal responsive contract (tablet/desktop)', () => {
         await page
           .getByRole('button', {
             name:
-              index === guidedSteps.length - 1 ? 'Сохранить эксперимент' : 'Сохранить и продолжить',
+              index === guidedSteps.length - 1 ? 'Сохранить эксперимент' : 'Далее',
           })
           .click()
         if (index < guidedSteps.length - 1) {
@@ -200,7 +200,7 @@ test.describe('MXL-246 Journal responsive contract (tablet/desktop)', () => {
         }
       }
 
-      await expect(page.getByText('Хорошо. Следующий шаг готов.')).toBeVisible()
+      await expect(page.getByText('Готово! Следующий шаг готов.')).toBeVisible()
       await assertNoHorizontalOverflow(page)
       await screenshot(page, viewport, '03-journal-complete')
 

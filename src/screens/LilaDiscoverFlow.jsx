@@ -1,8 +1,10 @@
 import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
 import { createPortal } from 'react-dom'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
-import PracticeWritingCanvas from '../components/PracticeWritingCanvas'
+import JournalField from '../components/ui/JournalField'
+import RoundNextButton from '../components/ui/RoundNextButton'
+import { illustrations } from '../assets/illustrations'
 import BackButton from '../components/BackButton'
 import { platform } from '../platform'
 import { findLilaCard, LILA_DISCOVER_CARDS } from '../data/lilaDiscoverCards'
@@ -11,9 +13,9 @@ import { FULLSCREEN_SHELL_CLASS, useFullscreenSurface } from '../lib/fullscreenS
 import { ConversationChat } from './Mentalix'
 import './LilaDiscoverFlow.css'
 
-export const LILA_TOPIC_PROFILE_KEY = 'mx-lila-topic-profile-v1'
+const LILA_TOPIC_PROFILE_KEY = 'mx-lila-topic-profile-v1'
 
-export const LILA_CONVERSATION_META = {
+const LILA_CONVERSATION_META = {
   key: 'lila',
   name: 'Следопыт',
   tagline: 'поможет увидеть следующий шаг',
@@ -56,47 +58,93 @@ function StageShell({ children, title, onBack }) {
 }
 
 function Intro({ onStart }) {
+  const StartArt = illustrations.trackerStart
   return (
-      <div className="flex flex-1 flex-col">
-        <h1 className="mx-type-flow-title mt-2 text-cream">Когда неясно, с чего начать</h1>
-        <p className="mx-type-flow-body mt-3 max-w-[34ch] text-muted">
-          Сначала опиши ситуацию своими словами. Затем выбери одну тему, чтобы начать разговор со
-          Следопытом. Это не тест и не диагноз.
-        </p>
-        <div className="mx-lila-action-zone mt-auto pt-6">
-          <button
-            type="button"
-            onClick={onStart}
-            className="cta-pill mx-type-flow-action w-full px-6 py-4"
-          >
-            Описать ситуацию
-          </button>
+    <div className="flex flex-1 flex-col">
+      {StartArt && (
+        <div className="mx-lila-intro-art" aria-hidden="true">
+          <StartArt className="mx-lila-intro-art-svg" />
         </div>
+      )}
+      <h1 className="mx-type-flow-title mt-2 text-cream">Когда неясно, с чего начать</h1>
+      <p className="mx-type-flow-body mt-3 max-w-[34ch] text-muted">
+        Сначала опиши ситуацию своими словами. Затем выбери одну тему, чтобы начать разговор со
+        Следопытом. Это не тест и не диагноз.
+      </p>
+      <div className="mx-lila-action-zone mt-auto pt-6">
+        <button
+          type="button"
+          onClick={onStart}
+          className="cta-pill mx-type-flow-action w-full px-6 py-4"
+        >
+          Описать ситуацию
+        </button>
       </div>
+    </div>
+  )
+}
+
+function QueryStage({ query, setQuery, onSubmit }) {
+  const fieldRef = useRef(null)
+
+  useEffect(() => {
+    const focusField = () => fieldRef.current?.focus({ preventScroll: true })
+    const frame = window.requestAnimationFrame(focusField)
+    const retry = window.setTimeout(focusField, 80)
+    return () => {
+      window.cancelAnimationFrame(frame)
+      window.clearTimeout(retry)
+    }
+  }, [])
+
+  return (
+    <div className="mx-lila-query-stage flex flex-1 flex-col">
+      <JournalField
+        question="Что сейчас хочешь разобрать?"
+        hint="Опиши ситуацию своими словами. Достаточно нескольких предложений — без правильной формулировки."
+      />
+      <textarea
+        ref={fieldRef}
+        className="mx-lila-query-field"
+        value={query}
+        onChange={e => setQuery(e.target.value)}
+        placeholder="Например: я откладываю разговор и не понимаю, как начать…"
+        aria-label="Опиши ситуацию для разговора со Следопытом"
+        data-testid="lila-query-input"
+      />
+      <div className="mx-lila-query-submit-zone mt-auto flex justify-end pt-4">
+        <RoundNextButton
+          onClick={onSubmit}
+          disabled={!query.trim()}
+          label="Выбрать тему"
+          testId="lila-query-submit"
+        />
+      </div>
+    </div>
   )
 }
 
 function ThemePicker({ query, selectedCardId, onPick }) {
   return (
-      <div className="flex flex-1 flex-col">
-        <h1 className="mx-type-flow-title mt-2 text-cream">На что посмотрим внимательнее?</h1>
-        <div className="mx-lila-query-preview mx-type-flow-body mt-3 text-muted">{query}</div>
-        <div className="mt-4 grid gap-2" role="group" aria-label="Темы Следопыта">
-          {LILA_DISCOVER_CARDS.map(card => (
-            <ChoiceButton
-              key={card.id}
-              active={selectedCardId === card.id}
-              onClick={() => onPick(card.id)}
-            >
-              <span className="mx-type-card block">{card.title}</span>
-              <span className="mx-type-list-body mt-1 block text-muted">{card.dilemma}</span>
-            </ChoiceButton>
-          ))}
-        </div>
-        <p className="mx-type-meta mt-auto pt-4 text-faint">
-          Тема — только символический ориентир для разговора, не диагноз и не готовый ответ.
-        </p>
+    <div className="flex flex-1 flex-col">
+      <h1 className="mx-type-flow-title mt-2 text-cream">На что посмотрим внимательнее?</h1>
+      <div className="mx-lila-query-preview mx-type-flow-body mt-3 text-muted">{query}</div>
+      <div className="mt-4 grid gap-2" role="group" aria-label="Темы Следопыта">
+        {LILA_DISCOVER_CARDS.map(card => (
+          <ChoiceButton
+            key={card.id}
+            active={selectedCardId === card.id}
+            onClick={() => onPick(card.id)}
+          >
+            <span className="mx-type-card block">{card.title}</span>
+            <span className="mx-type-list-body mt-1 block text-muted">{card.dilemma}</span>
+          </ChoiceButton>
+        ))}
       </div>
+      <p className="mx-type-meta mt-auto pt-4 text-faint">
+        Тема — только символический ориентир для разговора, не диагноз и не готовый ответ.
+      </p>
+    </div>
   )
 }
 
@@ -191,23 +239,16 @@ export default function LilaDiscoverFlow({ userId, onBack, onOpenJournal }) {
 
   if (stage === 'intro' || stage === 'query' || stage === 'theme') {
     return (
-      <StageShell title={stage === 'theme' ? 'Тема' : 'Следопыт'} onBack={stage === 'intro' ? onBack : goBack}>
-        {stage === 'intro' ? <Intro onStart={startQuery} /> : stage === 'theme' ? (
+      <StageShell
+        title={stage === 'theme' ? 'Тема' : 'Следопыт'}
+        onBack={stage === 'intro' ? onBack : goBack}
+      >
+        {stage === 'intro' ? (
+          <Intro onStart={startQuery} />
+        ) : stage === 'theme' ? (
           <ThemePicker query={query} selectedCardId={selectedCardId} onPick={selectTheme} />
         ) : (
-        <PracticeWritingCanvas
-          question="Что сейчас хочешь разобрать?"
-          description="Опиши ситуацию своими словами. Достаточно нескольких предложений — без правильной формулировки."
-          value={query}
-          onChange={setQuery}
-          placeholder="Например: я откладываю разговор и не понимаю, как начать…"
-          ariaLabel="Опиши ситуацию для разговора со Следопытом"
-          autoFocus
-          submitLabel="Выбрать тему"
-          submitDisabled={!query.trim()}
-          onSubmit={continueToTheme}
-          className="mx-lila-query-canvas min-h-0 flex-1"
-        />
+          <QueryStage query={query} setQuery={setQuery} onSubmit={continueToTheme} />
         )}
       </StageShell>
     )

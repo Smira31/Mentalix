@@ -753,7 +753,7 @@ test('локальный UX smoke по основному маршруту', asy
         const editor = page.getByRole('textbox', { name: 'Что сейчас происходит?' })
         await expect(editor).toBeVisible()
         await expect(page.getByRole('button', { name: 'Назад' })).toHaveCount(1)
-        await expect(page.getByRole('button', { name: 'Сохранить и продолжить' })).toBeVisible()
+        await expect(page.getByRole('button', { name: 'Далее' })).toBeVisible()
       },
     })
     const guidedSteps = [
@@ -772,7 +772,7 @@ test('локальный UX smoke по основному маршруту', asy
       await page
         .getByRole('button', {
           name:
-            index === guidedSteps.length - 1 ? 'Сохранить эксперимент' : 'Сохранить и продолжить',
+            index === guidedSteps.length - 1 ? 'Сохранить эксперимент' : 'Далее',
         })
         .click()
     }
@@ -785,12 +785,12 @@ test('локальный UX smoke по основному маршруту', asy
       results,
       check: async () => {
         await expect(
-          page.getByRole('heading', { name: 'Хорошо. Следующий шаг готов.' })
+          page.getByRole('heading', { name: 'Готово! Следующий шаг готов.' })
         ).toBeVisible()
-        await assertClickable(page.getByRole('button', { name: 'Вернуться в журнал' }))
+        await assertClickable(page.getByRole('button', { name: 'Сохранить и выйти' }))
       },
     })
-    await page.getByRole('button', { name: 'Вернуться в журнал' }).click()
+    await page.getByRole('button', { name: 'Сохранить и выйти' }).click()
     await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
     await page.getByRole('button', { name: 'Открыть журнал' }).click()
     await expect(page.getByRole('heading', { name: 'Продолжи разбирать ситуацию' })).toBeVisible()
