@@ -238,11 +238,24 @@
   --mx-space-7: 28px;
   --mx-space-8: 32px;
   --mx-space-10: 40px;
+  --mx-space-12: 48px;
 
+  /* Радиусы поверхностей и контролов. */
+  --mx-radius-xs: 14px;
   --mx-radius-control: 16px;
+  --mx-radius-md: 20px;
   --mx-radius-card: 24px;
+  --mx-radius-lg: 28px;
   --mx-radius-hero: 32px;
   --mx-radius-pill: 999px;
+
+  /* Высоты кнопок — единый контракт для всех экранов. */
+  --mx-btn-pill-h: 54px;
+  --mx-btn-round-h: 45px;
+  --mx-btn-glass-h: 49px;
+
+  /* Верх экрана под шапкой Telegram: safe-top + контролы (56) + воздух (16). */
+  --mx-screen-top: calc(var(--app-safe-top) + 56px + 16px);
 
   /* Шрифт с засечками — только для заголовков разделов экрана «Шаги»
      («Тема недели: …», «Другие темы», «Все темы»), референс Stoic Explore.

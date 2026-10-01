@@ -147,8 +147,8 @@ test('unified own-create flow is a 2-step magazine with fullscreen and native Ba
   assert.match(ownSlice, /ownSteps/)
   assert.match(ownSlice, /buildOwnDraft/)
   // Экран-поле общий для «Свой» и «Изменить»: полноэкранная поверхность
-  // и нативный «Назад» живут в нём.
-  assert.match(fieldFlow, /useFullscreenSurface\(\)/)
+  // и нативный «Назад» живут в <Screen>.
+  assert.match(fieldFlow, /import Screen from '\.\.\/Screen'/)
   assert.match(fieldFlow, /useBackButton\(/)
   assert.match(wording, /от чего отказываешься/)
   assert.match(wording, /где твоя граница даже в плохой день/)
