@@ -63,6 +63,21 @@ export default function Rituals({ user, onBack }) {
     }
   }
 
+  async function updateRitual(ritualId, patch) {
+    try {
+      const updated = await api.rituals.update(ritualId, user.id, patch)
+      setWriteError(null)
+      setRituals(previous => previous.map(r => (r.id === ritualId ? { ...r, ...updated } : r)))
+      invalidateTodayData(user.id)
+      invalidatePracticesData(user.id)
+      return updated
+    } catch (error) {
+      console.error(error)
+      if (isLinkedWebWriteBlocked(user, error)) setWriteError(LINKED_WEB_WRITE_NOTICE)
+      return null
+    }
+  }
+
   async function deleteRitual(ritualId) {
     try {
       await api.rituals.remove(ritualId)
@@ -81,6 +96,7 @@ export default function Rituals({ user, onBack }) {
       loading={loading}
       onLog={logRitual}
       onCreate={createRitual}
+      onUpdate={updateRitual}
       onDelete={deleteRitual}
       onBack={onBack}
       writeError={writeError}

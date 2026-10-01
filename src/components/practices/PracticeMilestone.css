@@ -1,0 +1,110 @@
+/* ── Веха серии: полноэкранный экран 3 / 7 / 21 / 30 ── */
+
+.mx-practice-milestone-screen__body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 24px 0;
+}
+
+/* Большой круг с числом дней */
+.mx-practice-milestone-screen__circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 180px;
+  height: 180px;
+  margin-bottom: 22px;
+  border-radius: 50%;
+  border: 2px solid rgb(var(--c-gold));
+  font-family: 'Manrope', sans-serif;
+  font-size: 68px;
+  font-weight: 700;
+  line-height: 1;
+  color: rgb(var(--c-text));
+  animation: mx-practice-milestone-pop 420ms cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+@keyframes mx-practice-milestone-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.88);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.mx-practice-milestone-screen__days {
+  margin: 0 0 18px;
+  font-size: 15px;
+  color: rgb(var(--c-muted));
+}
+
+.mx-practice-milestone-screen__phrase {
+  margin: 0 0 24px;
+  max-width: 280px;
+  font-family: 'Manrope', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: rgb(var(--c-text));
+}
+
+.mx-practice-milestone-screen__name {
+  margin: -14px 0 24px;
+  font-size: 13px;
+  color: rgb(var(--c-muted));
+}
+
+/* Неделя кружками */
+.mx-practice-milestone-screen__week {
+  display: flex;
+  gap: 10px;
+}
+
+.mx-practice-milestone-screen__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1.5px solid rgb(var(--c-line) / 0.3);
+}
+
+.mx-practice-milestone-screen__dot.is-on {
+  background: rgb(var(--c-gold));
+  border-color: rgb(var(--c-gold));
+}
+
+/* Белая кнопка «Готово» */
+.mx-practice-milestone-screen__done {
+  display: flex;
+  width: 100%;
+  min-height: 50px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  font-size: 15px;
+  font-weight: 600;
+  color: rgb(var(--c-bg));
+  background: rgb(var(--c-text));
+  border: 0;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: opacity 200ms ease;
+}
+
+.mx-practice-milestone-screen__done:active {
+  opacity: 0.88;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-practice-milestone-screen__circle {
+    animation: none;
+  }
+
+  .mx-practice-milestone-screen__done {
+    transition: none;
+  }
+}

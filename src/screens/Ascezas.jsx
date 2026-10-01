@@ -194,6 +194,21 @@ export default function Ascezas({ user, onBack }) {
     }
   }
 
+  async function updateAsceza(ascezaId, patch) {
+    try {
+      const updated = await api.ascezas.update(ascezaId, user.id, patch)
+      setWriteError(null)
+      setAscezas(previous => previous.map(a => (a.id === ascezaId ? { ...a, ...updated } : a)))
+      invalidateTodayData(user.id)
+      invalidatePracticesData(user.id)
+      return updated
+    } catch (error) {
+      console.error(error)
+      if (isLinkedWebWriteBlocked(user, error)) setWriteError(LINKED_WEB_WRITE_NOTICE)
+      return null
+    }
+  }
+
   async function deleteAsceza(ascezaId) {
     try {
       await api.ascezas.remove(ascezaId)
@@ -212,6 +227,7 @@ export default function Ascezas({ user, onBack }) {
       loading={loading}
       onLog={logAsceza}
       onCreate={createAsceza}
+      onUpdate={updateAsceza}
       onDelete={deleteAsceza}
       onBack={onBack}
       onBreak={setBreakTarget}

@@ -751,6 +751,13 @@ function respond(path, options = {}) {
     writeState({ ...state, rituals })
     return json(ritual)
   }
+  if (pathname.match(/^\/rituals\/\d+$/) && method === 'PATCH') {
+    const id = numericId(pathname)
+    const { user_id: _userId, ...patch } = body
+    const rituals = state.rituals.map(item => (item.id === id ? { ...item, ...patch, id } : item))
+    writeState({ ...state, rituals })
+    return json(rituals.find(item => item.id === id))
+  }
   if (pathname.match(/^\/rituals\/\d+$/) && method === 'DELETE') {
     const id = numericId(pathname)
     writeState({ ...state, rituals: state.rituals.filter(item => item.id !== id) })
@@ -771,6 +778,13 @@ function respond(path, options = {}) {
     const asceza = ascezas.find(item => item.id === id)
     writeState({ ...state, ascezas })
     return json(asceza)
+  }
+  if (pathname.match(/^\/ascezas\/\d+$/) && method === 'PATCH') {
+    const id = numericId(pathname)
+    const { user_id: _userId, ...patch } = body
+    const ascezas = state.ascezas.map(item => (item.id === id ? { ...item, ...patch, id } : item))
+    writeState({ ...state, ascezas })
+    return json(ascezas.find(item => item.id === id))
   }
   if (pathname.match(/^\/ascezas\/\d+$/) && method === 'DELETE') {
     const id = numericId(pathname)

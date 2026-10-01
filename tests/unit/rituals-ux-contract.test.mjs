@@ -8,6 +8,10 @@ const wordingSource = await readFile(new URL('../../src/lib/practiceWording.js',
 const detailSource = await readFile(new URL('../../src/components/PracticeDetail.jsx', import.meta.url), 'utf8')
 const flowCss = await readFile(new URL('../../src/components/practices/PracticeListFlow.css', import.meta.url), 'utf8')
 const detailCss = await readFile(new URL('../../src/components/PracticeDetail.css', import.meta.url), 'utf8')
+const fieldFlowSource = await readFile(
+  new URL('../../src/components/practices/PracticeFieldFlow.jsx', import.meta.url),
+  'utf8'
+)
 
 test('Rituals list uses the unified two-column flow without streak counters or restore controls', () => {
   assert.match(flowSource, /mx-practice-flow-grid/)
@@ -41,10 +45,10 @@ test('Rituals own-create flow is a 2-step magazine with fullscreen and native Ba
   const end = flowSource.indexOf('export default function', start)
   assert.notEqual(start, -1)
   const ownSlice = flowSource.slice(start, end)
-  assert.match(ownSlice, /useFullscreenSurface\(\)/)
-  assert.match(ownSlice, /useBackButton\(/)
   assert.match(ownSlice, /ownSteps/)
   assert.match(ownSlice, /buildOwnDraft/)
+  assert.match(fieldFlowSource, /useFullscreenSurface\(\)/)
+  assert.match(fieldFlowSource, /useBackButton\(/)
   assert.match(wordingSource, /как назовёшь ритуал/)
   assert.match(wordingSource, /какой минимум даже в плохой день/)
 })

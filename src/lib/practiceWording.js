@@ -39,7 +39,11 @@ export const PRACTICE_WORDING = {
     readyTitle: 'новый ритуал.',
     readySubtitle: 'Выбери готовый — или придумай свой.',
     addedToast: 'Ритуал добавлен',
+    savedToast: 'Изменено',
     ownLabel: 'НОВЫЙ РИТУАЛ',
+    editLabel: 'ИЗМЕНИТЬ',
+    signTitle: 'знак.',
+    signSubtitle: 'Выбери иконку ритуала.',
     createCta: 'Создать ритуал',
     cardMinimumLabel: 'минимум',
     statusLabel: streak => `серия ${streak} ${pluralize(streak, DAY_FORMS)}`,
@@ -73,7 +77,11 @@ export const PRACTICE_WORDING = {
     readyTitle: 'новая аскеза.',
     readySubtitle: 'Выбери готовый — или придумай свой.',
     addedToast: 'Аскеза добавлена',
+    savedToast: 'Изменено',
     ownLabel: 'НОВАЯ АСКЕЗА',
+    editLabel: 'ИЗМЕНИТЬ',
+    signTitle: 'знак.',
+    signSubtitle: 'Выбери иконку аскезы.',
     createCta: 'Принять аскезу',
     cardMinimumLabel: 'граница',
     statusLabel: streak => `держишься ${streak} ${pluralize(streak, DAY_FORMS)}`,
@@ -113,6 +121,14 @@ export function buildOwnDraft(kind, name, minimum) {
 }
 
 /*
+ * Собирает патч правки: имя практики и её минимум.
+ * Серверные поля те же, что при создании, — новых полей не вводим.
+ */
+export function buildEditPatch(kind, name, minimum) {
+  return kind === 'ritual' ? { name, min_version: minimum } : { name, reason: minimum }
+}
+
+/*
  * Собирает драфт из готового пресета — добавляется сразу, одним тапом.
  */
 export function buildPresetDraft(kind, preset) {
@@ -124,9 +140,45 @@ export function buildPresetDraft(kind, preset) {
 
 /*
  * Вехи серии — дни, которые отмечаются отдельно: 3 / 7 / 21 / 30.
- * На отметке, доводящей серию до вехи, каркас показывает короткую награду.
+ * На отметке, доводящей серию до вехи, каркас открывает экран вехи.
  */
 export const PRACTICE_STREAK_MILESTONES = [3, 7, 21, 30]
+
+/* Одна фраза на ступень — что человек уже доказал себе. */
+export const MILESTONE_PHRASES = {
+  3: 'Три дня подряд — ты уже не новичок.',
+  7: 'Неделя. Привычка начинает держаться сама.',
+  21: 'Три недели. Это уже часть тебя.',
+  30: 'Месяц. Ты доказал себе, что можешь.',
+}
+
+export function milestonePhrase(streak) {
+  return MILESTONE_PHRASES[streak] || ''
+}
+
+/* Подпись под кругом вехи: «3 дня.» / «7 дней.» / «21 день.». */
+export function milestoneDayLabel(streak) {
+  return `${streak} ${pluralize(streak, DAY_FORMS)}.`
+}
+
+/*
+ * «Знак» практики — 12 иконок SemanticGlyph сеткой 4×3.
+ * Набор общий для ритуалов и аскез: визуальный язык один.
+ */
+export const PRACTICE_GLYPHS = [
+  'ritual',
+  'water',
+  'breath',
+  'journal',
+  'prayer',
+  'purpose',
+  'shower',
+  'meditation',
+  'asceza',
+  'alcohol',
+  'smoking',
+  'focus',
+]
 
 export function isStreakMilestone(streak) {
   return PRACTICE_STREAK_MILESTONES.includes(streak)

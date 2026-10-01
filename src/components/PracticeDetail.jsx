@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { ChevronDown, Trash2 } from 'lucide-react'
+import { ChevronDown, Grid2x2, PenLine, Trash2 } from 'lucide-react'
 import { platform } from '../platform'
 import { useEdgeSwipeBack } from '../lib/gestures/useEdgeSwipeBack'
 import { useBackButton } from '../platform/telegram.hooks'
@@ -7,8 +7,10 @@ import { RoundBackButton } from './NestedScreenHeader'
 import DeleteConfirmationDialog from './DeleteConfirmationDialog'
 import SemanticGlyph, { semanticKindForAsceza, semanticKindForRitual } from './SemanticGlyph'
 import { isRitualDoneToday } from '../lib/practiceDoneToday'
-import { PRACTICE_WORDING } from '../lib/practiceWording'
+import { PRACTICE_WORDING, buildEditPatch } from '../lib/practiceWording'
 import { ProgressGlassMenu, ProgressGlassMenuItem } from './ProgressGlassMenu'
+import PracticeFieldFlow from './practices/PracticeFieldFlow'
+import PracticeSignScreen from './practices/PracticeSignScreen'
 import './PracticeDetail.css'
 
 function AccordionRow({ testId, label, children }) {
@@ -34,10 +36,19 @@ function AccordionRow({ testId, label, children }) {
   )
 }
 
-export default function PracticeDetail({ kind, practice, onBack, onLog, onBreak, onDelete }) {
+export default function PracticeDetail({
+  kind,
+  practice,
+  onBack,
+  onLog,
+  onUpdate,
+  onBreak,
+  onDelete,
+}) {
   const screenRef = useRef(null)
   const [confirming, setConfirming] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [sub, setSub] = useState(null)
   const [pulse, setPulse] = useState(false)
   const pulseTimer = useRef(null)
   useEdgeSwipeBack(screenRef, onBack)
@@ -47,9 +58,10 @@ export default function PracticeDetail({ kind, practice, onBack, onLog, onBreak,
   const isRitual = kind === 'ritual'
   const wording = PRACTICE_WORDING[kind]
   const done = isRitual ? isRitualDoneToday(practice.today_level) : practice.today_status === 'held'
-  const glyphKind = isRitual
-    ? semanticKindForRitual(practice.name)
-    : semanticKindForAsceza(practice)
+  // Знак выбирается в меню «…» и хранится вместе с практикой; без него — по названию.
+  const glyphKind =
+    practice.glyph ||
+    (isRitual ? semanticKindForRitual(practice.name) : semanticKindForAsceza(practice))
   const why = practice.goal || practice.reason
   const how = isRitual
     ? [
@@ -120,6 +132,24 @@ export default function PracticeDetail({ kind, practice, onBack, onLog, onBreak,
                 style={{ position: 'absolute', top: '44px', right: 0 }}
               >
                 <ProgressGlassMenuItem
+                  icon={PenLine}
+                  label="Изменить"
+                  testId="practice-detail-edit"
+                  onClick={() => {
+                    setMenuOpen(false)
+                    setSub('edit')
+                  }}
+                />
+                <ProgressGlassMenuItem
+                  icon={Grid2x2}
+                  label="Знак"
+                  testId="practice-detail-sign"
+                  onClick={() => {
+                    setMenuOpen(false)
+                    setSub('sign')
+                  }}
+                />
+                <ProgressGlassMenuItem
                   icon={Trash2}
                   label="Удалить"
                   danger
@@ -185,6 +215,43 @@ export default function PracticeDetail({ kind, practice, onBack, onLog, onBreak,
       >
         {done ? wording.markedButton : wording.markButton}
       </button>
+
+      {sub === 'edit' && (
+        <PracticeFieldFlow
+          label={wording.editLabel}
+          steps={wording.ownSteps}
+          initialValues={[practice.name, wording.minimumValue(practice)]}
+          onCancel={() => setSub(null)}
+          onSubmit={values => {
+            const patch = buildEditPatch(kind, values[0], values[1])
+            return onUpdate(practice.id, patch).then(updated => {
+              if (updated) {
+                platform.haptic('success')
+                setSub(null)
+              }
+              return updated
+            })
+          }}
+        />
+      )}
+
+      {sub === 'sign' && (
+        <PracticeSignScreen
+          title={wording.signTitle}
+          subtitle={wording.signSubtitle}
+          current={glyphKind}
+          onCancel={() => setSub(null)}
+          onPick={glyph =>
+            onUpdate(practice.id, { glyph }).then(updated => {
+              if (updated) {
+                platform.haptic('success')
+                setSub(null)
+              }
+              return updated
+            })
+          }
+        />
+      )}
 
       {confirming && (
         <DeleteConfirmationDialog

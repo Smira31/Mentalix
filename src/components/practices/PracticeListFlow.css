@@ -509,68 +509,12 @@
   animation: mx-practice-check-pop 260ms cubic-bezier(0.2, 0.9, 0.3, 1.2);
 }
 
-/* ── Веха серии (3 / 7 / 21 / 30) ── */
-.mx-practice-milestone {
-  position: fixed;
-  left: 50%;
-  bottom: calc(var(--mx-bottom-nav-space) + 84px);
-  transform: translateX(-50%);
-  z-index: 95;
-  width: min(320px, calc(100vw - 32px));
-  padding: 18px 20px;
-  text-align: center;
-  background: rgb(var(--c-card) / 0.92);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  backdrop-filter: blur(20px) saturate(160%);
-  border: 1px solid rgb(var(--c-gold) / 0.4);
-  border-radius: 24px;
-  pointer-events: none;
-  animation: mx-practice-milestone-in 340ms cubic-bezier(0.2, 0.9, 0.3, 1.2);
-}
-
-@keyframes mx-practice-milestone-in {
-  from {
-    opacity: 0;
-    transform: translate(-50%, 14px) scale(0.94);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, 0) scale(1);
-  }
-}
-
-.mx-practice-milestone__eyebrow {
-  margin: 0 0 6px;
-  font-family: 'Manrope', sans-serif;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: rgb(var(--c-gold));
-}
-
-.mx-practice-milestone__title {
-  margin: 0;
-  font-family: 'Manrope', sans-serif;
-  font-size: 26px;
-  font-weight: 700;
-  line-height: 1.15;
-  color: rgb(var(--c-text));
-}
-
-.mx-practice-milestone__name {
-  margin: 6px 0 0;
-  font-size: 13px;
-  color: rgb(var(--c-muted));
-}
-
 @media (prefers-reduced-motion: reduce) {
   .mx-practice-flow-tile,
   .mx-practice-flow-pill,
   .mx-practice-ready-card,
   .mx-practice-own-go,
   .mx-practice-flow-toast,
-  .mx-practice-milestone,
   .mx-practice-flow-tile.is-done .mx-practice-flow-tile__check-circle {
     transition: none;
     animation: none;

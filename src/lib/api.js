@@ -372,6 +372,15 @@ export const api = {
         }),
       }),
 
+    update: (ritualId, userId, patch) =>
+      request(`/rituals/${ritualId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          user_id: userId,
+          ...patch,
+        }),
+      }),
+
     remove: ritualId =>
       request(`/rituals/${ritualId}`, {
         method: 'DELETE',
@@ -408,6 +417,15 @@ export const api = {
           break_trigger: breakTrigger,
           break_note: breakNote,
           ...(restoreDaysAgo === null ? {} : { restore_days_ago: restoreDaysAgo }),
+        }),
+      }),
+
+    update: (ascezaId, userId, patch) =>
+      request(`/ascezas/${ascezaId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          user_id: userId,
+          ...patch,
         }),
       }),
 

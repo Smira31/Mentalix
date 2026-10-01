@@ -1,27 +1,21 @@
 import { useEffect, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
 import { Check } from 'lucide-react'
 import { platform } from '../../platform'
-import { useBackButton } from '../../platform/telegram.hooks'
 import { RoundBackButton } from '../NestedScreenHeader'
 import SemanticGlyph, {
   semanticKindForRitual,
   semanticKindForAsceza,
 } from '../SemanticGlyph'
-import {
-  useFullscreenSurface,
-  FULLSCREEN_SHELL_CLASS,
-  FULLSCREEN_HEADER_SLOT_CLASS,
-  FULLSCREEN_SCROLL_CLASS,
-} from '../../lib/fullscreenSurface'
-import { getFullscreenPortalTarget } from '../../lib/fullscreenSurface'
 import PracticeDetail from '../PracticeDetail'
 import {
   PRACTICE_WORDING,
   buildOwnDraft,
   buildPresetDraft,
   isStreakMilestone,
+  milestoneDayLabel,
+  milestonePhrase,
 } from '../../lib/practiceWording'
+import PracticeFieldFlow from './PracticeFieldFlow'
 import PracticeMilestone from './PracticeMilestone'
 import './PracticeListFlow.css'
 
@@ -65,9 +59,10 @@ function ListScreen({ wording, items, loading, isDone, onToggleTile, onOpenDetai
             {items.map(item => {
               const done = isDone(item)
               const glyph =
-                wording.kind === 'ritual'
+                item.glyph ||
+                (wording.kind === 'ritual'
                   ? semanticKindForRitual(item.name)
-                  : semanticKindForAsceza(item)
+                  : semanticKindForAsceza(item))
               const minimum = wording.minimumValue(item)
               return (
                 <div
@@ -184,130 +179,15 @@ function ReadyScreen({ wording, items, onAddPreset, onOpenOwn, onBack }) {
   )
 }
 
-/* ── Свой — 2 экрана в стиле журнала ── */
+/* ── Свой — 2 экрана в стиле журнала (общий PracticeFieldFlow) ── */
 function OwnScreen({ wording, onCreate, onCancel }) {
-  const { style: surfaceStyle } = useFullscreenSurface()
-  useBackButton(onCancel)
-
-  const [step, setStep] = useState(0)
-  const [name, setName] = useState('')
-  const [minimum, setMinimum] = useState('')
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState(null)
-  const inputRef = useRef(null)
-
-  const steps = wording.ownSteps
-  const current = steps[step]
-  const value = step === 0 ? name : minimum
-  const setValue = step === 0 ? setName : setMinimum
-  const canAdvance = value.trim().length > 0
-
-  useEffect(() => {
-    // автофокус — клавиатура открыта сразу
-    inputRef.current?.focus()
-  }, [step])
-
-  async function advance() {
-    if (!canAdvance || saving) return
-    if (step === 0) {
-      setStep(1)
-      return
-    }
-    setSaving(true)
-    setError(null)
-    try {
-      const draft = buildOwnDraft(wording.kind, name.trim(), minimum.trim())
-      const result = await onCreate(draft)
-      if (!result) {
-        setError('Не получилось сохранить. Проверь соединение и попробуй ещё раз.')
-        setSaving(false)
-      }
-    } catch (e) {
-      setError('Не получилось сохранить. Проверь соединение и попробуй ещё раз.')
-      setSaving(false)
-    }
-  }
-
-  return createPortal(
-    <div className={`${FULLSCREEN_SHELL_CLASS} mx-practice-flow`} style={surfaceStyle}>
-      <div
-        className={`${FULLSCREEN_HEADER_SLOT_CLASS} mx-practice-flow__header px-[var(--mx-screen-x)]`}
-      >
-        <div className="w-full max-w-md mx-auto">
-          <RoundBackButton
-            onClick={step === 0 ? onCancel : () => setStep(0)}
-          />
-        </div>
-      </div>
-
-      <div className={`${FULLSCREEN_SCROLL_CLASS} mx-practice-flow__body`}>
-        <div className="w-full max-w-md mx-auto px-[var(--mx-screen-x)] flex flex-col pt-4">
-          <p className="mx-practice-own-step-label">
-            {wording.ownLabel} · {step + 1} / {steps.length}
-          </p>
-          <div className="mx-practice-own-progress">
-            {steps.map((_, i) => (
-              <span
-                key={i}
-                className={`mx-practice-own-progress__bar${i <= step ? ' is-active' : ''}`}
-              />
-            ))}
-          </div>
-
-          <h2 className="mx-practice-own-question">{current.question}</h2>
-          <p className="mx-practice-own-hint">{current.hint}</p>
-
-          <input
-            ref={inputRef}
-            className="mx-practice-own-field"
-            value={value}
-            onChange={e => setValue(e.target.value)}
-            placeholder={step === 0 ? '…' : '…'}
-            aria-label={current.question}
-            data-testid={`practice-own-input-${step}`}
-          />
-
-          {error && (
-            <p role="alert" className="text-[13px] text-red-300 leading-relaxed mt-4">
-              {error}
-            </p>
-          )}
-        </div>
-      </div>
-
-      <div className="mx-practice-flow__footer px-[var(--mx-screen-x)] pb-4">
-        <div className="w-full max-w-md mx-auto">
-          <div className="mx-practice-own-bar">
-            <div className="mx-practice-own-chips">
-              {current.chips.map(chip => (
-                <button
-                  type="button"
-                  key={chip}
-                  className="mx-practice-own-chip"
-                  onClick={() => {
-                    platform.haptic('light')
-                    setValue(chip)
-                  }}
-                >
-                  {chip}
-                </button>
-              ))}
-            </div>
-            <button
-              type="button"
-              className="mx-practice-own-go"
-              disabled={!canAdvance || saving}
-              aria-label={step === 0 ? 'Далее' : 'Сохранить'}
-              data-testid="practice-own-go"
-              onClick={advance}
-            >
-              {step === 0 ? '›' : '✓'}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>,
-    getFullscreenPortalTarget()
+  return (
+    <PracticeFieldFlow
+      label={wording.ownLabel}
+      steps={wording.ownSteps}
+      onCancel={onCancel}
+      onSubmit={values => onCreate(buildOwnDraft(wording.kind, values[0], values[1]))}
+    />
   )
 }
 
@@ -318,6 +198,7 @@ export default function PracticeListFlow({
   loading,
   onLog,
   onCreate,
+  onUpdate,
   onDelete,
   onBack,
   onBreak,
@@ -330,7 +211,6 @@ export default function PracticeListFlow({
   const [toast, setToast] = useState(null)
   const [milestone, setMilestone] = useState(null)
   const toastTimer = useRef(null)
-  const milestoneTimer = useRef(null)
 
   function showToast(message) {
     setToast(message)
@@ -338,13 +218,7 @@ export default function PracticeListFlow({
     toastTimer.current = setTimeout(() => setToast(null), 2200)
   }
 
-  useEffect(
-    () => () => {
-      clearTimeout(toastTimer.current)
-      clearTimeout(milestoneTimer.current)
-    },
-    []
-  )
+  useEffect(() => () => clearTimeout(toastTimer.current), [])
 
   // Пустое состояние — сразу экран «готовые», не пустая сетка
   useEffect(() => {
@@ -360,15 +234,22 @@ export default function PracticeListFlow({
     if (item && value != null && !wording.isDone(item)) {
       const nextStreak = (item.streak || 0) + 1
       if (isStreakMilestone(nextStreak)) {
-        setMilestone({ title: wording.statusLabel(nextStreak), name: item.name })
-        clearTimeout(milestoneTimer.current)
-        milestoneTimer.current = setTimeout(() => setMilestone(null), 2600)
+        setMilestone({ streak: nextStreak, name: item.name })
       }
     }
     const updated = await onLog(id, value)
     if (updated) {
       setSelected(prev => (prev?.id === id ? { ...prev, ...updated } : prev))
     }
+  }
+
+  // onUpdate(id, patch) → возвращает обновлённый объект; синхронизируем selected
+  async function handleUpdate(id, patch) {
+    const updated = await onUpdate(id, patch)
+    if (updated) {
+      setSelected(prev => (prev?.id === id ? { ...prev, ...updated } : prev))
+    }
+    return updated
   }
 
   function toggleTile(item) {
@@ -396,7 +277,13 @@ export default function PracticeListFlow({
   }
 
   const milestoneNode = milestone ? (
-    <PracticeMilestone title={milestone.title} name={milestone.name} />
+    <PracticeMilestone
+      streak={milestone.streak}
+      dayLabel={milestoneDayLabel(milestone.streak)}
+      phrase={milestonePhrase(milestone.streak)}
+      name={milestone.name}
+      onDone={() => setMilestone(null)}
+    />
   ) : null
 
   if (selected) {
@@ -407,6 +294,7 @@ export default function PracticeListFlow({
           practice={selected}
           onBack={() => setSelected(null)}
           onLog={handleLog}
+          onUpdate={handleUpdate}
           onBreak={onBreak}
           onDelete={onDelete}
         />
