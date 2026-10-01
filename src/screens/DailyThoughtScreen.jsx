@@ -333,7 +333,10 @@ export default function DailyThoughtScreen({ thought, onClose, onGoMentor, user 
           </button>
         )}
 
-        <div className="mx-daily-thought__day-nav" data-testid="daily-thought-day-nav">
+        <div
+          className={`mx-daily-thought__day-nav${offset === 0 ? ' mx-daily-thought__day-nav--single' : ''}`}
+          data-testid="daily-thought-day-nav"
+        >
           {offset === 0 ? (
             <button
               type="button"

@@ -134,6 +134,11 @@
   flex: 1;
 }
 
+/* Единственная кнопка («‹ вчера» на сегодня) — по центру, не слева. */
+.mx-daily-thought__day-nav--single {
+  justify-content: center;
+}
+
 /* «Мои мысли · N ›» — как подписи: muted, не бледнее, тап-зона 44 */
 .mx-daily-thought__my-link {
   display: inline-flex;
