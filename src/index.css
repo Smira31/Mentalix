@@ -1988,9 +1988,11 @@ button.mx-demo-telegram-chrome__pill {
 /* Demo-эмуляция Telegram: видна только пилюля «‹ Назад», кнопка остаётся в DOM. */
 .mx-nested-screen-back--demo-hidden {
   position: absolute;
-  top: 0;
+  top: 56px;
   left: var(--mx-screen-x);
   z-index: 1;
+  width: 1px;
+  height: 1px;
   opacity: 0;
 }
 

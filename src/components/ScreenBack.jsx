@@ -34,6 +34,8 @@ export default function ScreenBack({
       type="button"
       data-testid={testId}
       aria-label="Назад"
+      aria-hidden={demoHidden ? 'true' : undefined}
+      tabIndex={demoHidden ? -1 : undefined}
       className={`mx-nested-screen-back ${demoHidden ? 'mx-nested-screen-back--demo-hidden' : ''} ${className}`}
       onClick={() => {
         platform.haptic('light')
