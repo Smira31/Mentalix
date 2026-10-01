@@ -14,7 +14,8 @@ test('MXL-525 (G2): hero-копия соответствует Guided Self-Disco
   assert.doesNotMatch(source, /Идея, действие, анализ и новый шаг/)
 })
 
-test('MXL-525 (G7): декоративное «•••» на rail-карточках убрано', () => {
-  assert.doesNotMatch(source, /mx-layered-catalog__rail-menu/)
+test('MXL-525 (G7): функциональное меню «…» с «Открыть» на rail-карточках', () => {
+  assert.match(source, /mx-layered-catalog__rail-menu/)
+  assert.match(source, /Открыть/)
   assert.doesNotMatch(source, /•••/)
 })
