@@ -7,7 +7,6 @@ import { invalidateTodayData } from '../lib/todayDataCache'
 import { invalidatePracticesData } from '../lib/practicesDataCache'
 import { useBackButton } from '../platform/telegram.hooks'
 import { isLinkedWebWriteBlocked, LINKED_WEB_WRITE_NOTICE } from '../lib/webAuthLimits'
-import { previewPracticeAction } from '../lib/demoMode'
 import { useVisualViewportHeight } from '../lib/visualViewport'
 import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
 import PracticeWritingCanvas from '../components/PracticeWritingCanvas'
@@ -140,12 +139,7 @@ export default function Ascezas({ user, onBack }) {
       .finally(() => setLoading(false))
   }, [user])
 
-  useEffect(() => {
-    if (ascezas.length === 0) return
-    if (previewPracticeAction() === 'asceza_detail') {
-      // demo-параметр обрабатывается каркасом через onOpenDetail
-    }
-  }, [ascezas])
+
 
   useEffect(() => {
     document.body.style.overflow = breakTarget ? 'hidden' : ''
@@ -154,14 +148,34 @@ export default function Ascezas({ user, onBack }) {
     }
   }, [breakTarget])
 
-  async function logAsceza(ascezaId, status, breakTrigger = null, breakNote = null) {
+  async function logAsceza(
+    ascezaId,
+    status,
+    breakTrigger = null,
+    breakNote = null,
+    restoreDaysAgo = null
+  ) {
     try {
-      const updated = await api.ascezas.log(ascezaId, user.id, status, breakTrigger, breakNote)
+      const updated = await api.ascezas.log(
+        ascezaId,
+        user.id,
+        status,
+        breakTrigger,
+        breakNote,
+        restoreDaysAgo
+      )
       setWriteError(null)
       setAscezas(previous =>
         previous.map(a =>
           a.id === ascezaId
-            ? { ...a, ...updated, today_status: updated.today_status ?? status }
+            ? {
+                ...a,
+                ...updated,
+                // Восстановленный вчерашний день не отмечает сегодняшний.
+                ...(restoreDaysAgo === null
+                  ? { today_status: updated.today_status ?? status }
+                  : {}),
+              }
             : a
         )
       )
@@ -177,6 +191,11 @@ export default function Ascezas({ user, onBack }) {
       }
       throw error
     }
+  }
+
+  // Восстановление пропущенного дня: день держался, срыва в нём не было.
+  async function restoreAsceza(ascezaId, { restoreDaysAgo }) {
+    return logAsceza(ascezaId, 'held', null, null, restoreDaysAgo)
   }
 
   async function createAsceza(draft) {
@@ -229,6 +248,7 @@ export default function Ascezas({ user, onBack }) {
       onCreate={createAsceza}
       onUpdate={updateAsceza}
       onDelete={deleteAsceza}
+      onRestore={restoreAsceza}
       onBack={onBack}
       onBreak={setBreakTarget}
       breakSheet={

@@ -1,7 +1,7 @@
 import { now } from './clock.js'
 import { DEFAULT_REVIEW_HOUR } from './todayCardState.js'
 
-const DEMO_STATE_KEY = 'mentalix_preview_demo_state_v5'
+const DEMO_STATE_KEY = 'mentalix_preview_demo_state_v6'
 
 const DEMO_JOURNAL_TEMPLATES = [
   {
@@ -446,6 +446,16 @@ function seedState(todayState = null) {
       ? []
       : [
           {
+            // Демо-случай «вчера пропущено»: серия начата сегодня,
+            // поэтому на экране практики видна ссылка «Отметить вчера».
+            id: 900100,
+            name: 'Вечерний разбор',
+            goal: 'Отделить сделанное от шума дня.',
+            min_version: 'одна строка о дне',
+            today_level: 'optimal',
+            streak: 1,
+          },
+          {
             id: 900101,
             name: 'Утренний спорт',
             goal: 'Разбудить тело и внимание.',
@@ -485,6 +495,15 @@ function seedState(todayState = null) {
     ascezas: empty
       ? []
       : [
+          {
+            // Демо-случай «вчера пропущено»: триггер и замена ещё не заданы —
+            // на экране практики видны строки «+ Что тебя тянет?» и «+ Чем заменишь?».
+            id: 900200,
+            name: 'Без сахара после ужина',
+            reason: 'Ровный сон и лёгкое утро важнее вечернего сладкого.',
+            today_status: 'held',
+            streak: 1,
+          },
           {
             id: 900201,
             name: 'Без Reels после 22:00',
@@ -744,8 +763,13 @@ function respond(path, options = {}) {
   }
   if (pathname.match(/^\/rituals\/\d+\/log$/) && method === 'POST') {
     const id = numericId(pathname)
+    // Восстановление пропущенного дня продлевает серию, но не отмечает сегодня.
     const rituals = state.rituals.map(item =>
-      item.id === id ? { ...item, today_level: body.level, streak: (item.streak || 0) + 1 } : item
+      item.id === id
+        ? body.restore_days_ago
+          ? { ...item, streak: (item.streak || 0) + 1 }
+          : { ...item, today_level: body.level, streak: (item.streak || 0) + 1 }
+        : item
     )
     const ritual = rituals.find(item => item.id === id)
     writeState({ ...state, rituals })
@@ -772,8 +796,13 @@ function respond(path, options = {}) {
   }
   if (pathname.match(/^\/ascezas\/\d+\/log$/) && method === 'POST') {
     const id = numericId(pathname)
+    // Восстановление пропущенного дня продлевает серию, но не отмечает сегодня.
     const ascezas = state.ascezas.map(item =>
-      item.id === id ? { ...item, today_status: body.status, streak: (item.streak || 0) + 1 } : item
+      item.id === id
+        ? body.restore_days_ago
+          ? { ...item, streak: (item.streak || 0) + 1 }
+          : { ...item, today_status: body.status, streak: (item.streak || 0) + 1 }
+        : item
     )
     const asceza = ascezas.find(item => item.id === id)
     writeState({ ...state, ascezas })

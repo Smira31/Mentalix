@@ -3,7 +3,6 @@ import { api } from '../lib/api'
 import { invalidateTodayData } from '../lib/todayDataCache'
 import { invalidatePracticesData } from '../lib/practicesDataCache'
 import { isLinkedWebWriteBlocked, LINKED_WEB_WRITE_NOTICE } from '../lib/webAuthLimits'
-import { previewPracticeAction } from '../lib/demoMode'
 import PracticeListFlow from '../components/practices/PracticeListFlow'
 
 export default function Rituals({ user, onBack }) {
@@ -20,21 +19,21 @@ export default function Rituals({ user, onBack }) {
       .finally(() => setLoading(false))
   }, [user])
 
-  useEffect(() => {
-    if (rituals.length === 0) return
-    if (previewPracticeAction() === 'ritual_detail') {
-      // demo-параметр обрабатывается каркасом через onOpenDetail
-    }
-  }, [rituals])
-
-  async function logRitual(ritualId, level) {
+  async function logRitual(ritualId, level, restoreDaysAgo = null) {
     try {
-      const updated = await api.rituals.log(ritualId, user.id, level)
+      const updated = await api.rituals.log(ritualId, user.id, level, restoreDaysAgo)
       setWriteError(null)
       setRituals(previous =>
         previous.map(r =>
           r.id === ritualId
-            ? { ...r, ...updated, today_level: updated.today_level ?? level }
+            ? {
+                ...r,
+                ...updated,
+                // Восстановленный вчерашний день не отмечает сегодняшний.
+                ...(restoreDaysAgo === null
+                  ? { today_level: updated.today_level ?? level }
+                  : {}),
+              }
             : r
         )
       )
@@ -46,6 +45,11 @@ export default function Rituals({ user, onBack }) {
       if (isLinkedWebWriteBlocked(user, error)) setWriteError(LINKED_WEB_WRITE_NOTICE)
       return null
     }
+  }
+
+  // Восстановление пропущенного дня: уровень выбирается в листе.
+  async function restoreRitual(ritualId, { restoreDaysAgo, value }) {
+    return logRitual(ritualId, value, restoreDaysAgo)
   }
 
   async function createRitual(draft) {
@@ -98,6 +102,7 @@ export default function Rituals({ user, onBack }) {
       onCreate={createRitual}
       onUpdate={updateRitual}
       onDelete={deleteRitual}
+      onRestore={restoreRitual}
       onBack={onBack}
       writeError={writeError}
     />

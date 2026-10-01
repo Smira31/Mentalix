@@ -26,6 +26,47 @@ export const ASCEZA_PRESETS = [
 ]
 
 /*
+ * Необязательные поля экрана практики: одна тихая строка «+ …» в карточке
+ * «Зачем». Тап открывает экран-поле журнала (PracticeFieldFlow) и сохраняет
+ * значение в практику; при создании эти поля не спрашиваются.
+ */
+export const RITUAL_OPTIONAL_FIELDS = [
+  {
+    key: 'optimal_version',
+    label: 'Оптимум',
+    flowLabel: 'ОПТИМУМ',
+    step: {
+      question: 'как сделать на полную?',
+      hint: 'Версия ритуала, когда сил больше обычного.',
+      chips: ['30 минут', 'два подхода', 'без спешки', 'на полную'],
+    },
+  },
+]
+
+export const ASCEZA_OPTIONAL_FIELDS = [
+  {
+    key: 'trigger',
+    label: 'Что тебя тянет?',
+    flowLabel: 'ТРИГГЕР',
+    step: {
+      question: 'что тебя тянет?',
+      hint: 'Ситуация или чувство, после которого рука сама тянется к привычке.',
+      chips: ['Стресс', 'Скука', 'Усталость', 'Тревога'],
+    },
+  },
+  {
+    key: 'replacement',
+    label: 'Чем заменишь?',
+    flowLabel: 'ЗАМЕНА',
+    step: {
+      question: 'чем заменишь?',
+      hint: 'Действие, выбранное заранее вместо привычки.',
+      chips: ['Дыхание', 'Прогулка', 'Стакан воды', 'Книга'],
+    },
+  },
+]
+
+/*
  * Единый каркас для ритуалов и аскез — отличаются только слова.
  * kind, поля и API-вызовы остаются на стороне сервера; здесь — только подача.
  */
@@ -68,6 +109,7 @@ export const PRACTICE_WORDING = {
       },
     ],
     presets: RITUAL_PRESETS,
+    optionalFields: RITUAL_OPTIONAL_FIELDS,
     defaultGlyph: 'ritual',
   },
   asceza: {
@@ -107,8 +149,44 @@ export const PRACTICE_WORDING = {
       },
     ],
     presets: ASCEZA_PRESETS,
+    optionalFields: ASCEZA_OPTIONAL_FIELDS,
     defaultGlyph: 'asceza',
   },
+}
+
+/*
+ * Тихая ссылка «Отметить вчера» под карточкой недели.
+ *
+ * Неделя кружками всегда заканчивается сегодняшним днём, поэтому вчера
+ * не отмечено, когда серия до него не дотянулась: сегодняшний день отмечен,
+ * а дни набираются с нуля (серия короче двух). Разрешает восстановление
+ * сервер: лист отправляет restore_days_ago и показывает его отказ.
+ */
+export function canRestoreYesterday(item, kind) {
+  const streak = item.streak || 0
+  const done = PRACTICE_WORDING[kind].isDone(item)
+  // Серия идёт сегодня, но вчера в неё не попало — есть что восстанавливать.
+  // Без живой серии (0 дней) восстанавливать нечего: практика считается новой.
+  return done && streak < 2
+}
+
+export const RESTORE_LINK_LABEL = 'Отметить вчера'
+
+/*
+ * Варианты отметки для восстановленного дня: у ритуала — ступени, которые
+ * у него есть, у аскезы — «держусь».
+ */
+export function restoreChoicesFor(kind, item) {
+  if (kind !== 'ritual') {
+    return [{ value: 'held', label: 'Держусь', description: 'Восстановить день без срыва.' }]
+  }
+  const choices = []
+  if (item.min_version) choices.push({ value: 'min', label: 'Минимум', description: item.min_version })
+  if (item.optimal_version)
+    choices.push({ value: 'optimal', label: 'Оптимум', description: item.optimal_version })
+  if (choices.length === 0)
+    choices.push({ value: 'optimal', label: 'Отметить', description: 'Восстановить день.' })
+  return choices
 }
 
 /*

@@ -7,7 +7,12 @@ import { RoundBackButton } from './NestedScreenHeader'
 import DeleteConfirmationDialog from './DeleteConfirmationDialog'
 import SemanticGlyph, { semanticKindForAsceza, semanticKindForRitual } from './SemanticGlyph'
 import { isRitualDoneToday } from '../lib/practiceDoneToday'
-import { PRACTICE_WORDING, buildEditPatch } from '../lib/practiceWording'
+import {
+  PRACTICE_WORDING,
+  RESTORE_LINK_LABEL,
+  buildEditPatch,
+  canRestoreYesterday,
+} from '../lib/practiceWording'
 import { ProgressGlassMenu, ProgressGlassMenuItem } from './ProgressGlassMenu'
 import PracticeFieldFlow from './practices/PracticeFieldFlow'
 import PracticeSignScreen from './practices/PracticeSignScreen'
@@ -45,6 +50,7 @@ export default function PracticeDetail({
   onUpdate,
   onBreak,
   onDelete,
+  onRestore,
 }) {
   const screenRef = useRef(null)
   const [confirming, setConfirming] = useState(false)
@@ -67,21 +73,15 @@ export default function PracticeDetail({
     practice.glyph ||
     (isRitual ? semanticKindForRitual(practice.name) : semanticKindForAsceza(practice))
   const why = practice.goal || practice.reason
+  // «Как» — только обязательная часть: минимум у ритуала и описание у аскезы.
+  // Оптимум и триггер с заменой живут необязательными строками «+ …».
   const how = isRitual
-    ? [
-        practice.min_version && `Минимум: ${practice.min_version}`,
-        practice.optimal_version && `Оптимум: ${practice.optimal_version}`,
-      ]
+    ? [practice.min_version && `Минимум: ${practice.min_version}`]
         .filter(Boolean)
         .join('\n')
-    : practice.description ||
-      [
-        practice.trigger && `Триггер: ${practice.trigger}`,
-        practice.replacement && `Замена: ${practice.replacement}`,
-        practice.relapse_cost && `Цена срыва: ${practice.relapse_cost}`,
-      ]
-        .filter(Boolean)
-        .join('\n')
+    : practice.description || ''
+  const optionalFields = wording.optionalFields || []
+  const canRestore = canRestoreYesterday(practice, kind)
   const note = practice.note || practice.notes || practice.today_note
 
   async function toggle() {
@@ -154,7 +154,7 @@ export default function PracticeDetail({
                   testId="practice-detail-edit"
                   onClick={() => {
                     setMenuOpen(false)
-                    setSub('edit')
+                    setSub({ type: 'edit' })
                   }}
                 />
                 <ProgressGlassMenuItem
@@ -163,7 +163,7 @@ export default function PracticeDetail({
                   testId="practice-detail-sign"
                   onClick={() => {
                     setMenuOpen(false)
-                    setSub('sign')
+                    setSub({ type: 'sign' })
                   }}
                 />
                 <ProgressGlassMenuItem
@@ -201,10 +201,33 @@ export default function PracticeDetail({
         {practice.name.toLowerCase()}.
       </h1>
 
+      {/* Карточка «Зачем»: смысл практики и необязательные строки «+ …» */}
       <div className="mx-practice-detail__accordions">
         <AccordionRow testId="practice-accordion-why" label="Зачем">
           {why && <p>{why}</p>}
         </AccordionRow>
+
+        {optionalFields.map(field => {
+          const value = practice[field.key]
+          return (
+            <button
+              type="button"
+              key={field.key}
+              className={`mx-practice-detail__field${value ? ' is-set' : ''}`}
+              data-testid={`practice-detail-field-${field.key}`}
+              onClick={() => {
+                platform.haptic('light')
+                setSub({ type: 'field', field })
+              }}
+            >
+              <span className="mx-practice-detail__field-label">
+                {value ? field.label : `+ ${field.label}`}
+              </span>
+              {value && <span className="mx-practice-detail__field-value">{value}</span>}
+            </button>
+          )
+        })}
+
         <AccordionRow testId="practice-accordion-how" label="Как">
           {how && <p className="whitespace-pre-line">{how}</p>}
         </AccordionRow>
@@ -229,6 +252,21 @@ export default function PracticeDetail({
         <PracticeWeek streak={practice.streak || 0} />
         <p className="mx-practice-detail__week-hint">1 пропуск в неделю не рвёт серию</p>
       </section>
+
+      {/* Вчера не отмечено — тихая ссылка на восстановление дня */}
+      {canRestore && (
+        <button
+          type="button"
+          className="mx-practice-detail__restore"
+          data-testid="practice-restore-yesterday"
+          onClick={() => {
+            platform.haptic('light')
+            onRestore?.(practice)
+          }}
+        >
+          {RESTORE_LINK_LABEL}
+        </button>
+      )}
 
       {hasLevels ? (
         <div className="mx-practice-detail__levels">
@@ -263,7 +301,7 @@ export default function PracticeDetail({
         </button>
       )}
 
-      {sub === 'edit' && (
+      {sub?.type === 'edit' && (
         <PracticeFieldFlow
           label={wording.editLabel}
           steps={wording.ownSteps}
@@ -282,7 +320,7 @@ export default function PracticeDetail({
         />
       )}
 
-      {sub === 'sign' && (
+      {sub?.type === 'sign' && (
         <PracticeSignScreen
           title={wording.signTitle}
           subtitle={wording.signSubtitle}
@@ -290,6 +328,25 @@ export default function PracticeDetail({
           onCancel={() => setSub(null)}
           onPick={glyph =>
             onUpdate(practice.id, { glyph }).then(updated => {
+              if (updated) {
+                platform.haptic('success')
+                setSub(null)
+              }
+              return updated
+            })
+          }
+        />
+      )}
+
+      {/* Необязательное поле: экран-поле журнала на один шаг */}
+      {sub?.type === 'field' && (
+        <PracticeFieldFlow
+          label={sub.field.flowLabel}
+          steps={[sub.field.step]}
+          initialValues={[practice[sub.field.key] || '']}
+          onCancel={() => setSub(null)}
+          onSubmit={values =>
+            onUpdate(practice.id, { [sub.field.key]: values[0] }).then(updated => {
               if (updated) {
                 platform.haptic('success')
                 setSub(null)

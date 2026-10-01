@@ -45,7 +45,7 @@ test('production lists use the unified two-column flow tile contract', () => {
   assert.match(flow, /data-testid="practice-tile"/)
   assert.match(flow, /data-done=/)
   assert.match(flow, /onOpenDetail\(/)
-  assert.doesNotMatch(flow, /StreakBar|StreakRestoreSheet|restoreTarget|freezes/)
+  assert.doesNotMatch(flow, /StreakBar|freezes/)
   assert.match(flowCss, /\.mx-practice-flow-grid\s*\{[\s\S]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)/)
   assert.match(flowCss, /\.mx-practice-flow-tile\.is-done\s*\{[\s\S]*#ece8e1/)
   assert.match(wording, /серия/)
@@ -123,7 +123,7 @@ test('экран практики показывает «ЭТА НЕДЕЛЯ» �
 })
 
 test('practice logging keeps user scope and invalidates Today and practices caches', () => {
-  assert.match(rituals, /api\.rituals\.log\(ritualId, user\.id, level\)/)
+  assert.match(rituals, /api\.rituals\.log\(ritualId, user\.id, level, restoreDaysAgo\)/)
   assert.match(ascezas, /api\.ascezas\.log\(ascezaId, user\.id, status, breakTrigger, breakNote\)/)
   for (const source of [rituals, ascezas]) {
     assert.match(source, /invalidateTodayData\(user\.id\)/)
@@ -183,4 +183,26 @@ test('streak milestone — круг, «3 дня.» 34/700, капс-назван
   assert.match(wording, /Три дня подряд — ты уже не новичок\./)
   assert.match(wording, /Месяц\. Ты доказал себе, что можешь\./)
   assert.match(wording, /milestoneDayLabel/)
+})
+
+test('экран практики: восстановление дня и необязательные строки «+ …»', () => {
+  // Ссылка под карточкой недели, лист восстановления — в общем каркасе.
+  assert.match(detail, /data-testid="practice-restore-yesterday"/)
+  assert.match(detail, /canRestoreYesterday/)
+  assert.match(flow, /StreakRestoreSheet/)
+  assert.match(wording, /RESTORE_LINK_LABEL = 'Отметить вчера'/)
+  // Серия считается живой, только если сегодня отмечено, а вчера — нет.
+  assert.match(wording, /return done && streak < 2/)
+
+  // Необязательные поля: подпись «+ …», тап — экран-поле журнала.
+  assert.match(wording, /label: 'Оптимум'/)
+  assert.match(wording, /label: 'Что тебя тянет\?'/)
+  assert.match(wording, /label: 'Чем заменишь\?'/)
+  assert.match(detail, /practice-detail-field-\$\{field\.key\}/)
+  assert.match(detail, /<PracticeFieldFlow/)
+  // Цена срыва не возвращается в интерфейс.
+  assert.doesNotMatch(detail, /relapse_cost/)
+  // Демо-ссылка открывает экран практики напрямую.
+  assert.match(flow, /previewPracticeAction/)
+  assert.match(flow, /'ritual_detail' : 'asceza_detail'/)
 })

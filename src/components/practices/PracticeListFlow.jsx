@@ -7,6 +7,8 @@ import SemanticGlyph, {
   semanticKindForAsceza,
 } from '../SemanticGlyph'
 import PracticeDetail from '../PracticeDetail'
+import StreakRestoreSheet from '../StreakRestoreSheet'
+import { previewPracticeAction } from '../../lib/demoMode'
 import {
   PRACTICE_WORDING,
   buildOwnDraft,
@@ -14,6 +16,7 @@ import {
   isStreakMilestone,
   milestoneDayLabel,
   milestonePhrase,
+  restoreChoicesFor,
 } from '../../lib/practiceWording'
 import PracticeFieldFlow from './PracticeFieldFlow'
 import PracticeMilestone from './PracticeMilestone'
@@ -200,6 +203,7 @@ export default function PracticeListFlow({
   onCreate,
   onUpdate,
   onDelete,
+  onRestore,
   onBack,
   onBreak,
   breakSheet,
@@ -210,6 +214,7 @@ export default function PracticeListFlow({
   const [selected, setSelected] = useState(null)
   const [toast, setToast] = useState(null)
   const [milestone, setMilestone] = useState(null)
+  const [restoring, setRestoring] = useState(null)
   const toastTimer = useRef(null)
 
   function showToast(message) {
@@ -227,6 +232,13 @@ export default function PracticeListFlow({
     }
   }, [loading, items.length, view])
 
+  // Демо-ссылка на экран практики: ?demo=1&action=ritual_detail | asceza_detail
+  useEffect(() => {
+    if (loading || selected || items.length === 0) return
+    const wanted = kind === 'ritual' ? 'ritual_detail' : 'asceza_detail'
+    if (previewPracticeAction() === wanted) setSelected(items[0])
+  }, [loading, items, kind, selected])
+
   // onLog(id, value) → возвращает обновлённый объект; синхронизируем selected
   async function handleLog(id, value) {
     // Веха 3 / 7 / 21 / 30 — только на отметке, не на снятии.
@@ -241,6 +253,17 @@ export default function PracticeListFlow({
     if (updated) {
       setSelected(prev => (prev?.id === id ? { ...prev, ...updated } : prev))
     }
+  }
+
+  // Восстановление пропущенного дня: сервер сам решает, доступно ли оно,
+  // и лист показывает его отказ.
+  async function handleRestore({ restoreDaysAgo, value }) {
+    if (!restoring) return null
+    const updated = await onRestore(restoring.id, { restoreDaysAgo, value })
+    if (updated) {
+      setSelected(prev => (prev?.id === restoring.id ? { ...prev, ...updated } : prev))
+    }
+    return updated
   }
 
   // onUpdate(id, patch) → возвращает обновлённый объект; синхронизируем selected
@@ -297,7 +320,16 @@ export default function PracticeListFlow({
           onUpdate={handleUpdate}
           onBreak={onBreak}
           onDelete={onDelete}
+          onRestore={practice => setRestoring(practice)}
         />
+        {restoring && (
+          <StreakRestoreSheet
+            itemName={restoring.name}
+            choices={restoreChoicesFor(kind, restoring)}
+            onSave={handleRestore}
+            onClose={() => setRestoring(null)}
+          />
+        )}
         {milestoneNode}
         {breakSheet}
       </>
