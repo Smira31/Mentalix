@@ -236,26 +236,28 @@ export function HistoryDetail({
                   <button
                     type="button"
                     role="menuitem"
+                    data-testid="history-redo-item-morning"
                     className="w-full rounded-xl px-4 py-3 text-left text-[14px] font-medium text-cream hover:bg-cream/5"
                     onClick={() => {
                       setRedoMenuOpen(false)
                       setRedoConfirm('morning')
                     }}
                   >
-                    data-testid="history-redo-item-morning" Пройти утро заново
+                    Пройти утро заново
                   </button>
                 )}
                 {onRedoReview && checkin?.review_completed_at && (
                   <button
                     type="button"
                     role="menuitem"
+                    data-testid="history-redo-item-evening"
                     className="w-full rounded-xl px-4 py-3 text-left text-[14px] font-medium text-cream hover:bg-cream/5"
                     onClick={() => {
                       setRedoMenuOpen(false)
                       setRedoConfirm('evening')
                     }}
                   >
-                    data-testid="history-redo-item-evening" Пройти разбор заново
+                    Пройти разбор заново
                   </button>
                 )}
               </div>
