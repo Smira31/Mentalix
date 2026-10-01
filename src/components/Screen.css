@@ -10,6 +10,12 @@
   padding-top: var(--mx-space-2);
 }
 
+/* Единый отступ крупного заголовка от шапки Telegram для всех экранов.
+   Замер Stoic: 8 px под шапкой (DESIGN_SYSTEM.md §5.4). */
+:root {
+  --mx-screen-title-gap: 8px;
+}
+
 .mx-screen__body {
   padding-bottom: var(--app-safe-bottom);
 }

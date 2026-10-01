@@ -25,6 +25,13 @@ import './ProfileUi.css'
  * на скролл-контейнере <Screen> — программный scrollTop (IntersectionObserver
  * в headless Chrome срабатывает по нему ненадёжно).
  */
+/*
+ * Маленький заголовок появляется ТОЛЬКО когда большой полностью ушёл
+ * под шапку (порог = низ большого заголовка). Гистерезис 4 px исключяет
+ * мигание на границе: расширение — когда низ заголовка на 4 px ниже шапки.
+ */
+const COLLAPSE_HYSTERESIS = 4
+
 function useTitleCollapsed(headerRef, titleRef) {
   const [collapsed, setCollapsed] = useState(false)
 
@@ -32,27 +39,34 @@ function useTitleCollapsed(headerRef, titleRef) {
     const header = headerRef.current
     const title = titleRef.current
     if (!header || !title) return undefined
-    const headerBottom = Math.max(0, Math.round(header.getBoundingClientRect().bottom))
 
-    let observer
-    if (typeof IntersectionObserver !== 'undefined') {
-      observer = new IntersectionObserver(
-        ([entry]) =>
-          setCollapsed(!entry.isIntersecting && entry.boundingClientRect.bottom < headerBottom),
-        { rootMargin: `-${headerBottom}px 0px 0px 0px`, threshold: 0 }
-      )
-      observer.observe(title)
+    const check = () => {
+      const headerBottom = Math.max(0, Math.round(header.getBoundingClientRect().bottom))
+      const titleBottom = title.getBoundingClientRect().bottom
+      setCollapsed(prev => {
+        if (prev) return titleBottom < headerBottom + COLLAPSE_HYSTERESIS
+        return titleBottom < headerBottom
+      })
     }
 
-    const check = () => setCollapsed(title.getBoundingClientRect().bottom < headerBottom)
     // Скролл-контейнер <Screen> — .mx-fullscreen-scroll; fallback на старый
     // корень App на случай, если экран ещё не внутри <Screen>.
     const scrollRoot = title.closest('.mx-fullscreen-scroll, .mx-app-scroll-root')
     if (scrollRoot) scrollRoot.addEventListener('scroll', check, { passive: true })
 
+    // ResizeObserver ловит layout/viewport-изменения (поворот, появление
+    // клавиатуры), заменяя ненадёжный IntersectionObserver в headless Chrome.
+    let resizeObserver
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(check)
+      if (scrollRoot) resizeObserver.observe(scrollRoot)
+    }
+
+    check()
+
     return () => {
-      if (observer) observer.disconnect()
       if (scrollRoot) scrollRoot.removeEventListener('scroll', check)
+      if (resizeObserver) resizeObserver.disconnect()
     }
   }, [headerRef, titleRef])
 
