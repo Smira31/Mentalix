@@ -41,7 +41,13 @@ function PracticesCatalogLoading() {
   )
 }
 
-export default function Practices({ user, initialSub = null, onGameChange, onRegisterBack }) {
+export default function Practices({
+  user,
+  initialSub = null,
+  onGameChange,
+  onRegisterBack,
+  onReturnToToday,
+}) {
   const [sub, setSub] = useState(() => {
     if (initialSub) return initialSub
     const action = previewPracticeAction()
@@ -49,9 +55,18 @@ export default function Practices({ user, initialSub = null, onGameChange, onReg
     if (action === 'ascezas_list' || action === 'asceza_detail') return 'ascezas'
     return null
   })
-  const [selectedCollectionKey, setSelectedCollectionKey] = useState(null)
+  // Откуда открыт список: внешний вход (из «Сегодня») или коллекция каталога
+  // «Шагов». «Назад» возвращает именно туда, откуда пришли.
+  const [enteredFromToday, setEnteredFromToday] = useState(() => initialSub != null)
 
-  const returnToPracticeOrigin = () => setSub(null)
+  const backToList = useCallback(() => {
+    if (enteredFromToday) {
+      setEnteredFromToday(false)
+      onReturnToToday?.()
+      return
+    }
+    setSub(null)
+  }, [enteredFromToday, onReturnToToday])
 
   const [initialPracticesData] = useState(() => (user ? peekPracticesData(user.id) : null))
   const [initialThemesData] = useState(() => (user ? peekThemesData(user.id) : null))
@@ -74,18 +89,12 @@ export default function Practices({ user, initialSub = null, onGameChange, onReg
   }, [nestedFlowOpen, onGameChange])
 
   useEffect(() => {
-    const handler = selectedThemeId
-      ? () => setSelectedThemeId(null)
-      : selectedCollectionKey
-        ? () => setSelectedCollectionKey(null)
-        : sub
-          ? () => setSub(null)
-          : null
+    const handler = selectedThemeId ? () => setSelectedThemeId(null) : sub ? backToList : null
 
     onRegisterBack?.(handler)
 
     return () => onRegisterBack?.(null)
-  }, [onRegisterBack, selectedCollectionKey, selectedThemeId, sub])
+  }, [backToList, onRegisterBack, selectedThemeId, sub])
   /*
    * initialSub приходит из навигации (открыть Practices сразу на
    * конкретном экране) — синхронизация с внешним пропом, без побочных
@@ -95,6 +104,7 @@ export default function Practices({ user, initialSub = null, onGameChange, onReg
   if (seenInitialSub !== initialSub) {
     setSeenInitialSub(initialSub)
     setSub(initialSub)
+    setEnteredFromToday(initialSub != null)
   }
 
   const loadPractices = useCallback(
@@ -168,11 +178,11 @@ export default function Practices({ user, initialSub = null, onGameChange, onReg
   }
 
   if (sub === 'rituals') {
-    return <Rituals user={user} onBack={() => setSub(null)} />
+    return <Rituals user={user} onBack={backToList} />
   }
 
   if (sub === 'ascezas') {
-    return <Ascezas user={user} onBack={() => setSub(null)} />
+    return <Ascezas user={user} onBack={backToList} />
   }
 
   if (sub === 'journal') {
@@ -230,22 +240,18 @@ export default function Practices({ user, initialSub = null, onGameChange, onReg
       <h1 className="font-display mx-type-page text-cream lowercase mb-[28px]">практики.</h1>
       <PracticeCatalogV2
         practices={catalogPractices}
-        rituals={rituals}
-        ascezas={ascezas}
         themes={themes}
         themeLoading={themeLoading}
         themesError={themesError}
         onRetryThemes={() => loadThemes({ force: true })}
-        selectedCollectionKey={selectedCollectionKey}
-        onCollectionChange={setSelectedCollectionKey}
-        onOpenPractice={(practice, collectionKey = null) => {
+        onOpenCollection={collection => {
+          // Коллекция «Ритуалы»/«Аскезы» ведёт прямо в единый список практик:
+          // промежуточного экрана «Твои данные» больше нет.
           platform.haptic('light')
-          if (practice.key === 'lila-discover') {
-            setSelectedCollectionKey(null)
-            setSub('lila-discover')
-            return
-          }
-          setSelectedCollectionKey(collectionKey)
+          if (collection.source) setSub(collection.source)
+        }}
+        onOpenPractice={practice => {
+          platform.haptic('light')
           setSub(practice.sub)
         }}
         onOpenJournal={() => {

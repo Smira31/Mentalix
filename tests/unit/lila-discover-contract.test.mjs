@@ -206,10 +206,11 @@ test('MXL-LILA-UX-007 keeps query input on Mentalix tokens and removes azure foc
 })
 
 test('MXL-LILA-UX-008 opens Lila directly from PracticeCatalogV2 without an intermediate detail surface', () => {
-  assert.match(practices, /if \(practice\.key === 'lila-discover'\)/)
-  assert.match(practices, /setSelectedCollectionKey\(null\)/)
-  assert.match(practices, /setSub\('lila-discover'\)/)
-  assert.match(practices, /return\r?\n\s+\}/)
+  // Промежуточного экрана-коллекции больше нет ни у одной практики:
+  // каталог открывает вложенный экран напрямую через sub практики.
+  assert.match(practices, /onOpenPractice=\{practice => \{[\s\S]*setSub\(practice\.sub\)/)
+  assert.match(practices, /if \(sub === 'lila-discover'\) \{[\s\S]*<LilaDiscoverFlow/)
+  assert.doesNotMatch(practices, /setSelectedCollectionKey/)
 })
 
 test('MXL-LILA-UX-009 makes static stages non-scrollable while leaving conversation ownership intact', () => {

@@ -982,6 +982,7 @@ export default function Today({
         <Suspense fallback={null}>
           <DailyThoughtScreen
             thought={thoughtOfDay}
+            user={user}
             onClose={() => changeSub(null)}
             onGoMentor={onGoMentor}
           />
@@ -1578,6 +1579,18 @@ export default function Today({
 
           <span className="mx-type-meta text-muted shrink-0">изменить</span>
         </button>
+      )}
+
+      {!isEmpty && (
+        <div className="mx-today-progress" role="status" data-testid="today-progress">
+          <span className="mx-today-progress__label">Сегодня</span>
+          <div className="mx-today-progress__track" aria-hidden="true">
+            <div className="mx-today-progress__fill" style={{ width: `${pct}%` }} />
+          </div>
+          <span className="mx-today-progress__count" data-testid="today-progress-count">
+            {done} из {total}
+          </span>
+        </div>
       )}
 
       <PinnedPractices

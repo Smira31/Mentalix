@@ -81,6 +81,7 @@ export default function DemoTelegramChrome() {
           <button
             type="button"
             className="mx-demo-telegram-chrome__pill"
+            data-testid="demo-chrome-back"
             onClick={invokeBackAction}
             aria-label="Назад"
           >

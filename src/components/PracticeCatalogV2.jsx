@@ -4,7 +4,6 @@ import { ArrowRight, ChevronRight } from 'lucide-react'
 import JournalArt from './practice-art/JournalArt'
 import SemanticGlyph from './SemanticGlyph'
 import { getPracticeByKey, PRACTICE_COLLECTIONS } from '../lib/practiceCatalogRegistry'
-import { useBackButton } from '../platform/telegram.hooks'
 import './ui-lab/LayeredPracticeCatalogExperiment.css'
 import './ui-lab/practices-a11y-fixes.css'
 
@@ -275,138 +274,18 @@ function CollectionGrid({ onOpen }) {
   )
 }
 
-function itemLabel(item) {
-  return item?.name || item?.title || item?.text || 'Без названия'
-}
-
-function CollectionScreen({ collection, practices, rituals, ascezas, onOpenPractice }) {
-  const practiceItems = (collection.practiceKeys || [])
-    .map(key => getPracticeByKey(practices, key))
-    .filter(Boolean)
-  const source = collection.source || null
-  const liveItems = source === 'rituals' ? rituals : source === 'ascezas' ? ascezas : []
-  const items = liveItems.length ? liveItems : practiceItems
-  const openSource = () => onOpenPractice({ key: source, sub: source }, collection.key)
-
-  return (
-    <section className="mx-layered-category" aria-labelledby="production-category-title">
-      <header className="mx-layered-category__header">
-        <div className="mx-layered-category__heading">
-          <h2 className="mx-type-section" id="production-category-title">
-            {collection.title}.
-          </h2>
-          <p>{collection.description}</p>
-        </div>
-        <span aria-hidden="true" />
-      </header>
-      <div className="mx-layered-category__body">
-        <section className="mx-layered-category__section">
-          <span className="mx-layered-category__label">{source ? 'Твои данные' : 'Практики'}</span>
-          {source && liveItems.length === 0 ? (
-            <div className="mx-layered-category__body">
-              <p className="text-muted text-[13px]">
-                {source === 'rituals'
-                  ? 'Здесь появятся твои ритуалы.'
-                  : 'Здесь появятся твои аскезы.'}
-              </p>
-              <button type="button" className="mx-layered-catalog__pill" onClick={openSource}>
-                {source === 'rituals' ? 'Открыть ритуалы' : 'Открыть аскезы'}
-              </button>
-            </div>
-          ) : (
-            <div className="mx-layered-category__grid">
-              {items.map(item => {
-                const isLive = !item.key
-                const practice = item.key ? item : null
-                const isSoon = Boolean(practice?.soon)
-                const key = practice?.key || `${collection.key}-${item.id || itemLabel(item)}`
-                return (
-                  <button
-                    className="mx-layered-category__card"
-                    type="button"
-                    key={key}
-                    disabled={isSoon}
-                    aria-label={
-                      isSoon
-                        ? `${practice?.title || itemLabel(item)}, скоро`
-                        : `Открыть ${practice?.title || itemLabel(item)}`
-                    }
-                    onClick={() => {
-                      if (isSoon) return
-                      if (isLive) openSource()
-                      else if (practice) onOpenPractice(practice, collection.key)
-                    }}
-                  >
-                    <span className="mx-layered-category__art" aria-hidden="true">
-                      <span className="mx-layered-category__art-glyph">
-                        <PracticeGlyph kind={practice?.kind || collection.kind} />
-                      </span>
-                      <span className="mx-layered-category__art-base" />
-                    </span>
-                    <strong>{practice?.title || itemLabel(item)}</strong>
-                    <small>
-                      {isSoon
-                        ? 'скоро'
-                        : practice?.subtitle ||
-                          (source === 'rituals'
-                            ? item.today_level
-                              ? 'сегодня выполнено'
-                              : 'открыть ритуалы'
-                            : item.today_status === 'held'
-                              ? 'сегодня удержано'
-                              : 'открыть аскезы')}
-                    </small>
-                    {isSoon && (
-                      <span className="mx-layered-category__completion" aria-hidden="true">
-                        Скоро
-                      </span>
-                    )}
-                    {!isSoon && practice?.completedToday && (
-                      <span className="mx-layered-category__completion">сегодня</span>
-                    )}
-                  </button>
-                )
-              })}
-            </div>
-          )}
-        </section>
-      </div>
-    </section>
-  )
-}
-
 export default function PracticeCatalogV2({
   practices,
-  rituals,
-  ascezas,
   themes,
   themeLoading = false,
   themesError = false,
   onRetryThemes,
   onOpenPractice,
-  selectedCollectionKey = null,
-  onCollectionChange,
+  onOpenCollection,
   onOpenJournal,
   onOpenTheme,
 }) {
-  const selectedCollection =
-    PRACTICE_COLLECTIONS.find(collection => collection.key === selectedCollectionKey) || null
   const visiblePractices = useMemo(() => practices || [], [practices])
-  useBackButton(() => onCollectionChange?.(null), Boolean(selectedCollection))
-
-  if (selectedCollection) {
-    return (
-      <div className="mx-production-catalog mx-production-catalog--category">
-        <CollectionScreen
-          collection={selectedCollection}
-          practices={visiblePractices}
-          rituals={rituals}
-          ascezas={ascezas}
-          onOpenPractice={onOpenPractice}
-        />
-      </div>
-    )
-  }
 
   return (
     <div
@@ -423,7 +302,7 @@ export default function PracticeCatalogV2({
         onRetry={onRetryThemes}
         onOpen={onOpenTheme}
       />
-      <CollectionGrid onOpen={collection => onCollectionChange?.(collection.key)} />
+      <CollectionGrid onOpen={onOpenCollection} />
     </div>
   )
 }

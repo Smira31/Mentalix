@@ -7,21 +7,13 @@ const source = await readFile(
   'utf8'
 )
 
-test('MXL-PRACTICES-CATALOG-POLISH-001 (G3): live-ритуалы/аскезы открываются, а не disabled', () => {
-  assert.match(
-    source,
-    /const openSource = \(\) => onOpenPractice\(\{ key: source, sub: source \}, collection\.key\)/
-  )
-  assert.doesNotMatch(source, /disabled=\{!practice\}/)
-  assert.match(source, /if \(isLive\) openSource\(\)/)
-  assert.match(source, /else if \(practice\) onOpenPractice\(practice, collection\.key\)/)
-})
-
-test('MXL-PRACTICES-CATALOG-POLISH-001 (G3): пустое состояние ритуалов/аскез имеет CTA', () => {
-  assert.match(source, /Здесь появятся твои ритуалы\./)
-  assert.match(source, /Здесь появятся твои аскезы\./)
-  assert.match(source, /Открыть ритуалы/)
-  assert.match(source, /Открыть аскезы/)
+test('MXL-PRACTICES-CATALOG-POLISH-001 (G3): коллекция открывает единый список практик', () => {
+  // Тап по коллекции «Ритуалы»/«Аскезы» ведёт прямо в PracticeListFlow:
+  // промежуточный экран «Твои данные» удалён вместе с двойной вложенностью.
+  assert.match(source, /<CollectionGrid onOpen=\{onOpenCollection\} \/>/)
+  assert.doesNotMatch(source, /CollectionScreen/)
+  assert.doesNotMatch(source, /Твои данные/)
+  assert.doesNotMatch(source, /mx-layered-category/)
 })
 
 test('MXL-547: верхний rail сохраняет рабочую практику и честно блокирует будущие карточки', () => {
