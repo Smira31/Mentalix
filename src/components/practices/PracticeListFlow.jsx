@@ -55,7 +55,11 @@ function ListScreen({
   return (
     <div className="mx-practice-flow-screen w-full max-w-md px-[var(--mx-screen-x)] animate-fade-in">
       <div className="mx-practice-flow-screen__header">
-        <RoundBackButton onClick={onBack} className="mx-practice-flow-screen__back" />
+        <RoundBackButton
+          onClick={onBack}
+          registerSystemBack
+          className="mx-practice-flow-screen__back"
+        />
         <h1 className="mx-practice-flow-screen__title">{wording.title}</h1>
         <p className="mx-practice-flow-screen__subtitle">{wording.subtitle}</p>
       </div>
@@ -142,7 +146,11 @@ function ReadyScreen({ wording, items, onAddPreset, onOpenOwn, onBack }) {
   return (
     <div className="mx-practice-ready-screen w-full max-w-md px-[var(--mx-screen-x)] animate-fade-in">
       <div className="mx-practice-flow-screen__header">
-        <RoundBackButton onClick={onBack} className="mx-practice-flow-screen__back" />
+        <RoundBackButton
+          onClick={onBack}
+          registerSystemBack
+          className="mx-practice-flow-screen__back"
+        />
         <h1 className="mx-practice-flow-screen__title">{wording.readyTitle}</h1>
         <p className="mx-practice-flow-screen__subtitle">{wording.readySubtitle}</p>
       </div>

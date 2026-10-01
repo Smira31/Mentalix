@@ -244,8 +244,8 @@
 }
 
 .mx-practice-detail__hero.is-done {
-  background: #ece8e1;
-  border-color: #ece8e1;
+  background: #262626;
+  border-color: rgb(var(--c-line) / 0.08);
 }
 
 .mx-practice-detail__hero-ring {
@@ -256,7 +256,7 @@
 }
 
 .mx-practice-detail__hero.is-done .mx-practice-detail__hero-ring {
-  border-color: rgba(0, 0, 0, 0.08);
+  border-color: rgb(var(--c-line) / 0.1);
 }
 
 .mx-practice-detail__hero-ring:nth-child(1) {
@@ -285,7 +285,8 @@
 }
 
 .mx-practice-detail__hero.is-done .mx-practice-detail__hero-icon {
-  background: rgba(0, 0, 0, 0.05);
+  background: #ece8e1;
+  color: #1a1a1a;
 }
 
 .mx-practice-detail__hero-icon svg {
