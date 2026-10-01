@@ -311,10 +311,18 @@ test.describe('MXL-010 automated technical gate', () => {
     await expect(page.locator('[data-testid="checkin-feedback-option"][aria-pressed="true"]')).toHaveCount(0)
 
 
-    // ── Хендофф к Следопыту ──
-    const scoutBtn = page.locator('[data-testid="checkin-open-scout"]')
-    await expect(scoutBtn).toBeVisible()
-    await scoutBtn.click()
+    // ── Переход к Следопыту ──
+    // Кнопка «Разобрать со Следопыты» убрана с вечернего завершения:
+    // проверяем её отсутствие и входим в диалог напрямую.
+    await expect(page.locator('[data-testid="checkin-open-scout"]')).toHaveCount(0)
+    await page.evaluate(() => {
+      sessionStorage.setItem('mx-mentor-persona', 'dnevnik')
+      sessionStorage.setItem(
+        'mx-mentor-handoff',
+        JSON.stringify({ type: 'evening_review', date: new Date().toISOString().slice(0, 10) })
+      )
+    })
+    await page.goto('/?tab=mentor')
     await expect(page).toHaveURL(/tab=mentor/)
     await expect(page.locator('#root')).not.toHaveText('', { timeout: 30_000 })
 

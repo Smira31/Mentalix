@@ -69,7 +69,13 @@ const CONTEXT_LABELS = {
 }
 
 function capitalize(s) {
-  return s ? s.charAt(0).toUpperCase() + s.slice(1) : s
+  return s
+    ? s
+        .split(',')
+        .map(part => part.trim())
+        .map(part => (part ? part.charAt(0).toUpperCase() + part.slice(1) : part))
+        .join(', ')
+    : s
 }
 
 function moodWord(level) {

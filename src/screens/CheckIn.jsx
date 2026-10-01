@@ -1415,11 +1415,9 @@ function CheckInCore({
               }
             : null
 
-  const skipAction = isFinal
-    ? isEvening
-      ? { text: 'Разобрать со Следопытом', run: openScout }
-      : null
-    : null
+  // Кнопка «Разобрать со Следопытом» убрана с вечернего завершения:
+  // остаётся только «Сохранить и выйти». Утро и без того не имело skipAction.
+  const skipAction = null
 
   const writingAction = isMorningNoteStep
     ? { text: saving ? 'Сохраняю...' : 'Завершить чек-ин', run: submit }
@@ -1461,10 +1459,7 @@ function CheckInCore({
         }
       : null
 
-  const webSecondaryAction =
-    skipAction && isCompletion && !saving && !isMorningNoteStep
-      ? { text: skipAction.text, testId: 'checkin-open-scout', onClick: skipAction.run }
-      : null
+  const webSecondaryAction = null
 
   const compactStepAction = isEmotionStep
     ? () => goToStep(current => current + 1)
