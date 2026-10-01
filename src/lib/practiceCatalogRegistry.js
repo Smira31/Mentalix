@@ -31,26 +31,6 @@ export const PRACTICE_CATALOG_REGISTRY = [
     completionSource: 'none',
     sub: 'lila-discover',
   },
-  {
-    key: PRACTICE_KEYS.mood,
-    title: 'Настроение',
-    subtitle: 'заметить эмоцию и при желании разобрать её',
-    description: 'Отметь, что чувствуешь, и заметь, от чего это зависит.',
-    section: 'Практики',
-    kind: 'mood',
-    completionSource: 'none',
-    sub: 'mood',
-  },
-  {
-    key: PRACTICE_KEYS.alterEgo,
-    title: 'Альтер-эго',
-    subtitle: 'собери маску, в которой ты сильнее',
-    description: 'Посмотри на задачу глазами своей сильной версии.',
-    section: 'Практики',
-    kind: 'alter-ego',
-    completionSource: 'none',
-    sub: 'alter-ego',
-  },
 ]
 
 export const PRACTICE_RAIL_KEYS = [
@@ -75,27 +55,11 @@ export const PRACTICE_COLLECTIONS = [
     source: 'ascezas',
   },
   {
-    key: 'psychological',
-    title: 'Психологические практики',
-    description: 'Четыре коротких практики для начала, выбора и завершения.',
-    kind: 'release',
-    active: false,
-    soon: true,
-  },
-  {
     key: 'lila',
     title: 'Следопыт',
     description: 'Карта, несколько вопросов и один рабочий шаг.',
     kind: 'journal',
     practiceKeys: ['lila-discover'],
-  },
-  {
-    key: 'living-lens',
-    title: 'Живая линза',
-    description: 'Четыре способа настроить внимание и состояние.',
-    kind: 'focus',
-    active: false,
-    soon: true,
   },
 ]
 

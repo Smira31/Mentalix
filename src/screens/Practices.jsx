@@ -15,8 +15,6 @@ import Ascezas from './Ascezas'
 import GuidedSelfDiscoveryFlow from './GuidedSelfDiscoveryFlow'
 import LilaDiscoverFlow from './LilaDiscoverFlow'
 import ThemeCarouselScreen from './ThemeCarouselScreen'
-import MoodPractice from './MoodPractice'
-import AlterEgo from './AlterEgo'
 
 function PracticesCatalogLoading() {
   return (
@@ -79,7 +77,7 @@ export default function Practices({
   const [selectedThemeId, setSelectedThemeId] = useState(null)
   const [isLoading, setIsLoading] = useState(!initialPracticesData)
   const [loadError, setLoadError] = useState(null)
-  const focusedFlowOpen = ['journal', 'self-discovery', 'lila-discover', 'mood'].includes(sub)
+  const focusedFlowOpen = ['journal', 'self-discovery', 'lila-discover'].includes(sub)
   const nestedFlowOpen = focusedFlowOpen || Boolean(selectedThemeId)
 
   useEffect(() => {
@@ -203,12 +201,11 @@ export default function Practices({
     )
   }
 
-  if (sub === 'mood') {
-    return <MoodPractice user={user} onDone={() => setSub(null)} />
-  }
-
-  if (sub === 'alter-ego') {
-    return <AlterEgo user={user} onBack={() => setSub(null)} />
+  // Убранные практики (Настроение, Альтер-эго) — мягкий редирект на «Сегодня»
+  const REMOVED_SUBS = new Set(['mood', 'alter-ego'])
+  if (REMOVED_SUBS.has(sub)) {
+    onReturnToToday?.()
+    return null
   }
 
   if (isLoading) {

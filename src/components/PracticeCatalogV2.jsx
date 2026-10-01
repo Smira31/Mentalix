@@ -39,8 +39,6 @@ function PracticeRail({ practices, onOpen }) {
     kind: 'journal',
     sub: 'lila-discover',
   }
-  const mood = getPracticeByKey(practices, 'mood')
-  const alterEgo = getPracticeByKey(practices, 'alter-ego')
   const railCards = [
     {
       key: 'lila-discover',
@@ -51,26 +49,6 @@ function PracticeRail({ practices, onOpen }) {
       kind: 'journal',
       active: true,
       practice: lila,
-    },
-    {
-      key: 'alter-ego',
-      title: 'Альтер-эго',
-      category: 'Уверенность',
-      description: 'Собери маску, в которой ты сильнее',
-      status: 'НОВОЕ',
-      kind: 'purpose',
-      active: Boolean(alterEgo),
-      practice: alterEgo,
-    },
-    {
-      key: 'mood',
-      title: 'Настроение',
-      category: 'Эмоции',
-      description: 'Заметь эмоцию и при желании разбери её',
-      status: 'НОВОЕ',
-      kind: 'mood',
-      active: Boolean(mood),
-      practice: mood,
     },
     {
       key: 'lion-action',

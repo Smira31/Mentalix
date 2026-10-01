@@ -690,7 +690,6 @@ test('локальный UX smoke по основному маршруту', asy
         const journalBox = await journalEntry.boundingBox()
         const collectionsBox = await collectionsHeading.boundingBox()
         expect(journalBox?.y || 0).toBeLessThan(collectionsBox?.y || Number.POSITIVE_INFINITY)
-        await expect(page.getByRole('button', { name: /Психологические практики/ })).toBeDisabled()
         await assertSoonControls(page)
         await assertClickable(page.getByRole('button', { name: 'Открыть Ритуалы' }))
         await assertClickable(page.getByRole('button', { name: 'Открыть Аскезы' }))
@@ -854,7 +853,6 @@ test('локальный UX smoke по основному маршруту', asy
     await page.getByRole('button', { name: 'Шаги' }).click()
     await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
 
-    await expect(page.getByRole('button', { name: /Психологические практики/ })).toBeDisabled()
     await page.getByRole('button', { name: 'Библиотека' }).click()
     await captureScreen({
       page,
