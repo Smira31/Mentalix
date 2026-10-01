@@ -66,18 +66,32 @@ test('isThoughtQuote отсеивает обычные фразы пользов
 // ── записи /quotes → элементы «Мысли дня» ──
 
 test('toQuoteItem превращает запись /quotes в элемент мысли дня', () => {
-  assert.deepEqual(toQuoteItem({ id: 7, text: 'Моя мысль', tag: 'thought:2026-10-01' }), {
-    id: 7,
-    text: 'Моя мысль',
-    kind: THOUGHT_KIND,
-    date: '2026-10-01',
-  })
-  assert.deepEqual(toQuoteItem({ id: 8, text: ' Цитата ', tag: 'saved:2026-09-30' }), {
-    id: 8,
-    text: 'Цитата',
-    kind: SAVED_KIND,
-    date: '2026-09-30',
-  })
+  // createdAt — время записи: нужно ленте «История», чтобы показать, когда мысль записана.
+  assert.deepEqual(
+    toQuoteItem({
+      id: 7,
+      text: 'Моя мысль',
+      tag: 'thought:2026-10-01',
+      created_at: '2026-10-01T20:46:00Z',
+    }),
+    {
+      id: 7,
+      text: 'Моя мысль',
+      kind: THOUGHT_KIND,
+      date: '2026-10-01',
+      createdAt: '2026-10-01T20:46:00Z',
+    }
+  )
+  assert.deepEqual(
+    toQuoteItem({ id: 8, text: ' Цитата ', tag: 'saved:2026-09-30', createdAt: '2026-09-30T08:00:00Z' }),
+    {
+      id: 8,
+      text: 'Цитата',
+      kind: SAVED_KIND,
+      date: '2026-09-30',
+      createdAt: '2026-09-30T08:00:00Z',
+    }
+  )
 })
 
 test('toQuoteItem отсеивает чужие, пустые и битые записи', () => {
