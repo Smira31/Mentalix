@@ -150,75 +150,79 @@ function ThemeCarousel({
   if (themeLoading || themeError || !theme || questions.length === 0) {
     return (
       <section className="mx-steps-theme-section" aria-label="Тема недели" aria-live="polite">
-        <h2 className="mx-steps-theme-heading">
-          <span className="mx-steps-theme-heading__label">Тема недели:</span>
-          <span className="mx-steps-theme-heading__name">
-            {themeLoading ? 'Загрузка…' : themeError ? 'Ошибка' : 'Скоро'}
-          </span>
-        </h2>
-        {themeLoading ? (
-          <div className="mx-steps-theme-skeleton" role="status" aria-label="Загрузка вопросов">
-            <span className="animate-pulse" aria-hidden="true" />
-          </div>
-        ) : (
-          <>
-            <p className="mx-steps-empty-copy">
-              {themeError
-                ? 'Не удалось загрузить тему. Проверь соединение и попробуй ещё раз.'
-                : 'Опубликованная тема появится здесь, когда будет доступна для тебя.'}
-            </p>
-            {themeError && (
-              <button type="button" className="mx-steps-pill" onClick={onRetry}>
-                Повторить
-              </button>
-            )}
-          </>
-        )}
+        <div className="mx-steps-theme-panel">
+          <h2 className="mx-steps-theme-heading">
+            <span className="mx-steps-theme-heading__label">Тема недели:</span>
+            <span className="mx-steps-theme-heading__name">
+              {themeLoading ? 'Загрузка…' : themeError ? 'Ошибка' : 'Скоро'}
+            </span>
+          </h2>
+          {themeLoading ? (
+            <div className="mx-steps-theme-skeleton" role="status" aria-label="Загрузка вопросов">
+              <span className="animate-pulse" aria-hidden="true" />
+            </div>
+          ) : (
+            <>
+              <p className="mx-steps-empty-copy">
+                {themeError
+                  ? 'Не удалось загрузить тему. Проверь соединение и попробуй ещё раз.'
+                  : 'Опубликованная тема появится здесь, когда будет доступна для тебя.'}
+              </p>
+              {themeError && (
+                <button type="button" className="mx-steps-pill" onClick={onRetry}>
+                  Повторить
+                </button>
+              )}
+            </>
+          )}
+        </div>
       </section>
     )
   }
 
   return (
     <section className="mx-steps-theme-section" aria-labelledby="steps-theme-title">
-      <h2 className="mx-steps-theme-heading" id="steps-theme-title">
-        <span className="mx-steps-theme-heading__label">Тема недели:</span>
-        <span className="mx-steps-theme-heading__name">{theme.title || 'Один вопрос.'}</span>
-      </h2>
-      <div className="mx-steps-theme-track" ref={trackRef} onScroll={handleScroll}>
-        {questions.map((question, index) => (
-          <article
-            className="mx-steps-theme-card"
-            key={question.day ?? index}
-            aria-label={`Вопрос ${question.day ?? index + 1}: ${question.text}`}
-          >
-            <span className="mx-steps-theme-card__num">{question.day ?? index + 1}</span>
-            <strong className="mx-steps-theme-card__question">{question.text}</strong>
-            {question.prompt && (
-              <span className="mx-steps-theme-card__prompt">{question.prompt}</span>
-            )}
-          </article>
-        ))}
+      <div className="mx-steps-theme-panel">
+        <h2 className="mx-steps-theme-heading" id="steps-theme-title">
+          <span className="mx-steps-theme-heading__label">Тема недели:</span>
+          <span className="mx-steps-theme-heading__name">{theme.title || 'Один вопрос.'}</span>
+        </h2>
+        <div className="mx-steps-theme-track" ref={trackRef} onScroll={handleScroll}>
+          {questions.map((question, index) => (
+            <article
+              className="mx-steps-theme-card"
+              key={question.day ?? index}
+              aria-label={`Вопрос ${question.day ?? index + 1}: ${question.text}`}
+            >
+              <span className="mx-steps-theme-card__num">{question.day ?? index + 1}</span>
+              <strong className="mx-steps-theme-card__question">{question.text}</strong>
+              {question.prompt && (
+                <span className="mx-steps-theme-card__prompt">{question.prompt}</span>
+              )}
+            </article>
+          ))}
+        </div>
+        <span
+          className="mx-steps-dots"
+          role="img"
+          aria-label={`Вопрос ${safeQuestionIndex + 1} из ${questions.length}`}
+        >
+          {questions.map((question, index) => (
+            <i
+              key={question.day ?? index}
+              data-active={index === safeQuestionIndex ? 'true' : undefined}
+              aria-hidden="true"
+            />
+          ))}
+        </span>
+        <button
+          type="button"
+          className="mx-steps-pill mx-steps-pill--solid"
+          onClick={() => onOpen(theme)}
+        >
+          Начать запись
+        </button>
       </div>
-      <span
-        className="mx-steps-dots"
-        role="img"
-        aria-label={`Вопрос ${safeQuestionIndex + 1} из ${questions.length}`}
-      >
-        {questions.map((question, index) => (
-          <i
-            key={question.day ?? index}
-            data-active={index === safeQuestionIndex ? 'true' : undefined}
-            aria-hidden="true"
-          />
-        ))}
-      </span>
-      <button
-        type="button"
-        className="mx-steps-pill mx-steps-pill--solid"
-        onClick={() => onOpen(theme)}
-      >
-        Начать запись
-      </button>
       <button
         type="button"
         className="mx-steps-pill mx-steps-pill--outline"
@@ -256,7 +260,7 @@ function CollectionTile({ collection, onOpen }) {
 function CollectionGrid({ onOpen }) {
   return (
     <section className="mx-steps-collections-section" aria-label="Коллекции">
-      <h2 className="mx-steps-collections-heading">Твоя библиотека, по полочкам</h2>
+      <h2 className="mx-steps-collections-heading">Коллекции</h2>
       <div className="mx-steps-collections">
         {VISIBLE_COLLECTIONS.map(collection => (
           <CollectionTile key={collection.key} collection={collection} onOpen={onOpen} />
