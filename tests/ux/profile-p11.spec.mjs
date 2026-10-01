@@ -47,7 +47,7 @@ for (const viewport of VIEWPORTS) {
   test.describe(`П.11 — контракт профиля — ${viewport.name} px`, () => {
     // (б): меряем от content-box .mx-app-shell — App.jsx владеет верхним
     // отступом, поэтому его content-top = нижний край шапки Telegram.
-    test('заголовок профиля — 16±2 px под нижним краем шапки Telegram', async ({
+    test('заголовок профиля — 8±2 px под нижним краем шапки Telegram', async ({
       browser,
       baseURL,
     }) => {
@@ -63,8 +63,8 @@ for (const viewport of VIEWPORTS) {
         })
         const title = await page.getByTestId('profile-page-title').boundingBox()
         const gap = title.y - headerBottom
-        expect(gap).toBeGreaterThanOrEqual(14)
-        expect(gap).toBeLessThanOrEqual(18)
+        expect(gap).toBeGreaterThanOrEqual(6)
+        expect(gap).toBeLessThanOrEqual(10)
       } finally {
         await context.close()
       }

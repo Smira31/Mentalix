@@ -41,11 +41,14 @@ function useTitleCollapsed(headerRef, titleRef) {
     if (!header || !title) return undefined
 
     const check = () => {
-      const headerBottom = Math.max(0, Math.round(header.getBoundingClientRect().bottom))
+      // Порог — верх липкой шапки (top), не низ surface.
+      // Маленький заголовок появляется когда низ большого
+      // уходит выше верха шапки — т.е. полностью скрывается.
+      const headerTop = Math.max(0, Math.round(header.getBoundingClientRect().top))
       const titleBottom = title.getBoundingClientRect().bottom
       setCollapsed(prev => {
-        if (prev) return titleBottom < headerBottom + COLLAPSE_HYSTERESIS
-        return titleBottom < headerBottom
+        if (prev) return titleBottom < headerTop + COLLAPSE_HYSTERESIS
+        return titleBottom < headerTop
       })
     }
 
