@@ -865,6 +865,22 @@ body::-webkit-scrollbar,
 .mx-app-scroll-root {
   scrollbar-width: none;
   overscroll-behavior-y: auto;
+  /*
+   * Ни одна вкладка не должна уезжать вбок. Карусели (.mx-tqc-track,
+   * .mx-steps-rail и др.) имеют собственный overflow-x: auto и
+   * листаются внутри себя; отрицательные margin каруселей не должны
+   * создавать горизонтальный скролл у корневого контейнера.
+   *
+   * clip предпочтительнее hidden: он не создаёт scroll-контейнер,
+   * поэтому содержимое нельзя прокрутить программно. fallback на
+   * hidden для браузеров без поддержки clip.
+   */
+  overflow-x: hidden;
+  overflow-x: clip;
+  overscroll-behavior-x: none;
+  /* Явный тёмный фон скролл-контейнера — убирает белую вспышку при
+     переключении вкладок, когда содержимое на мгновение пусто. */
+  background: rgb(var(--c-bg));
 }
 
 /*
@@ -892,6 +908,40 @@ body::-webkit-scrollbar,
   display: none;
   width: 0;
   height: 0;
+}
+
+/* ============================================================
+   TAB PANELS — удержание вкладок смонтированными
+   Однажды открытые вкладки не удаляются из DOM, а скрываются.
+   Позиция скролла и состояние каждой вкладки сохраняются.
+   ============================================================ */
+
+.mx-tab-panel {
+  width: 100%;
+}
+
+.mx-tab-panel--hidden {
+  display: none;
+}
+
+.mx-tab-panel--active {
+  animation: mx-tab-fade-in 150ms ease-out;
+}
+
+@keyframes mx-tab-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-tab-panel--active {
+    animation: none;
+  }
 }
 
 /* Demo contract: every tab, overlay, sheet, and streak surface stays visually

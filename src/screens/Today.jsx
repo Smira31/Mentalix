@@ -399,7 +399,17 @@ export default function Today({
   // День, на который переходит прямой тап по карточке («Записать»).
   const [themeWriteDay, setThemeWriteDay] = useState(1)
 
-  const [activeToday, setActiveToday] = useState(null)
+  // activeToday показывается сразу из sessionStorage (если уже был),
+  // обновляется в фоне. Резерв высоты исключает сдвиг контента.
+  const [activeToday, setActiveToday] = useState(() => {
+    if (!user?.id) return null
+    try {
+      const cached = sessionStorage.getItem(`mx-pulse-today:${user.id}`)
+      return cached != null ? Number(cached) : null
+    } catch {
+      return null
+    }
+  })
 
   const [sub, setSub] = useState(initialSub)
   const activeSub =
@@ -694,7 +704,14 @@ export default function Today({
 
         api.pulse
           .today()
-          .then(pulse => setActiveToday(pulse.active_today))
+          .then(pulse => {
+            setActiveToday(pulse.active_today)
+            try {
+              sessionStorage.setItem(`mx-pulse-today:${user.id}`, String(pulse.active_today))
+            } catch {
+              /* sessionStorage может быть недоступен */
+            }
+          })
           .catch(() => {})
 
         setRituals(ritualsData)
@@ -1441,12 +1458,19 @@ export default function Today({
           ====================================================== */}
 
       {!hiddenCards.includes('pulse') &&
-        activeToday != null &&
         (cardStates.morning !== 'done' || cardStates.review !== 'done') && (
-          <p className="mx-today-pulse">
-            {activeToday < 20
-              ? `Сегодня в пути вместе с тобой: ${activeToday}`
-              : `Сегодня свой путь продолжили ${activeToday.toLocaleString('ru-RU')} человек`}
+          <p
+            className="mx-today-pulse"
+            style={{
+              opacity: activeToday != null ? 1 : 0,
+              transition: 'opacity 200ms ease',
+            }}
+          >
+            {activeToday != null
+              ? activeToday < 20
+                ? `Сегодня в пути вместе с тобой: ${activeToday}`
+                : `Сегодня свой путь продолжили ${activeToday.toLocaleString('ru-RU')} человек`
+              : '\u00A0'}
           </p>
         )}
 

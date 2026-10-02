@@ -1,4 +1,4 @@
-import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
+import { Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 import DemoTelegramChrome from './components/DemoTelegramChrome'
 
@@ -327,6 +327,13 @@ function App() {
   /* Единый scroll-root обычных вкладок, ограниченный видимым viewport. */
   const scrollRootRef = useRef(null)
 
+  /* Позиция скролла каждой вкладки для восстановления при возврате. */
+  const scrollPositions = useRef({})
+
+  /* Флаг: прокрутить новую вкладку наверх (программный переход) или
+     восстановить сохранённую позицию (переключение через navbar). */
+  const shouldScrollToTop = useRef(false)
+
   /* Корневой элемент приложения — на нём висит глобальный edge-swipe. */
   const appRootRef = useRef(null)
   const [appRootMounted, setAppRootMounted] = useState(false)
@@ -412,6 +419,37 @@ function App() {
   useEffect(() => {
     tabRef.current = tab
   }, [tab])
+
+  /*
+   * Однажды открытые вкладки остаются смонтированными (display:none),
+   * а не удаляются — данные и позиция скролла сохраняются при возврате.
+   */
+  const [openedTabs, setOpenedTabs] = useState(() => new Set([tab]))
+
+  // Добавляем текущую вкладку в набор открытых — useLayoutEffect
+  // выполняется до paint, поэтому панель рендерится без вспышки.
+  useLayoutEffect(() => {
+    setOpenedTabs(prev => {
+      if (prev.has(tab)) return prev
+      return new Set([...prev, tab])
+    })
+  }, [tab])
+
+  // Восстанавливаем позицию скролла при переключении вкладки.
+  // Зависимость от openedTabs гарантирует, что панель уже отрендерена.
+  useLayoutEffect(() => {
+    if (!scrollRootRef.current) return
+    if (shouldScrollToTop.current) {
+      scrollRootRef.current.scrollTop = 0
+      shouldScrollToTop.current = false
+    } else {
+      const savedPos = scrollPositions.current[tab] ?? 0
+      scrollRootRef.current.scrollTop = savedPos
+    }
+    lastScrollY.current = scrollRootRef.current.scrollTop
+    scrollDirection.current = null
+    scrollDistance.current = 0
+  }, [tab, openedTabs])
 
   // ?tab=history → заменяем на ?tab=trends (история теперь сегмент внутри Прогресса)
   useEffect(() => {
@@ -777,6 +815,11 @@ function App() {
 
       const currentY = Math.max(scrollRootRef.current?.scrollTop || 0, window.scrollY || 0)
 
+      // Сохраняем позицию скролла текущей вкладки для восстановления
+      if (scrollRootRef.current && tabRef.current) {
+        scrollPositions.current[tabRef.current] = scrollRootRef.current.scrollTop
+      }
+
       const previousY = lastScrollY.current
 
       const difference = currentY - previousY
@@ -933,6 +976,15 @@ function App() {
     setPracticesSub(null)
 
     syncTabUrl(key)
+
+    // Сохраняем позицию скролла текущей вкладки перед уходом
+    if (scrollRootRef.current) {
+      scrollPositions.current[tab] = scrollRootRef.current.scrollTop
+    }
+
+    // Переключение через navbar — восстанавливаем сохранённую позицию
+    shouldScrollToTop.current = false
+    setOpenedTabs(prev => (prev.has(key) ? prev : new Set([...prev, key])))
     setTab(key)
 
     setNavCollapsed(false)
@@ -940,8 +992,6 @@ function App() {
     lastScrollY.current = 0
     scrollDirection.current = null
     scrollDistance.current = 0
-
-    scrollAppToTop()
   }
 
   const goToday = useCallback(() => {
@@ -950,6 +1000,8 @@ function App() {
     syncTabUrl('today')
     setMentorPersonaOpen(false)
     setPracticesSub(null)
+    shouldScrollToTop.current = true
+    setOpenedTabs(prev => (prev.has('today') ? prev : new Set([...prev, 'today'])))
     setTab('today')
     setNavCollapsed(false)
     resetNavigationGesture()
@@ -961,9 +1013,14 @@ function App() {
    * (например, Settings) и возвращает на «Сегодня». resetKey границы
    * меняется вместе с вкладкой/оверлеем, поэтому ошибка не застревает.
    */
+  // Счётчик сброса ошибок: «На главную» инкрементирует ключ, и каждая
+  // граница ошибки сбрасывается без переключения вкладки.
+  const [errorResetKey, setErrorResetKey] = useState(0)
+
   const goHome = useCallback(() => {
     setOverlay(null)
     goToday()
+    setErrorResetKey(k => k + 1)
   }, [goToday])
 
   const openPractice = useCallback(
@@ -975,6 +1032,8 @@ function App() {
 
       setPracticesSub(sub || null)
 
+      shouldScrollToTop.current = true
+      setOpenedTabs(prev => (prev.has('practices') ? prev : new Set([...prev, 'practices'])))
       setTab('practices')
 
       setNavCollapsed(false)
@@ -994,6 +1053,8 @@ function App() {
     syncTabUrl('mentor')
     setMentorPersonaOpen(false)
 
+    shouldScrollToTop.current = true
+    setOpenedTabs(prev => (prev.has('mentor') ? prev : new Set([...prev, 'mentor'])))
     setTab('mentor')
 
     setNavCollapsed(false)
@@ -1290,7 +1351,6 @@ function App() {
          ======================================================== */}
 
           <div
-            key={overlay || 'main'}
             className={[
               'mx-scroll-content flex-1 w-full flex flex-col items-center',
               tab === 'mentor' && !overlay
@@ -1308,25 +1368,25 @@ function App() {
               tab === 'mentor' && !overlay ? undefined : { paddingBottom: contentBottomPadding }
             }
           >
-            <ScreenErrorBoundary resetKey={overlay || tab} onHome={goHome}>
-              <Suspense fallback={<ScreenLoading />}>
-                {!user && (
-                  <p
-                    className="
-              text-muted
-              text-[13px]
-              px-6
-              text-center
-              pt-8
-            "
-                  >
-                    Открой приложение через кнопку в боте, чтобы Менталикс увидел тебя
-                  </p>
-                )}
+            {!user && (
+              <p
+                className="
+          text-muted
+          text-[13px]
+          px-6
+          text-center
+          pt-8
+        "
+              >
+                Открой приложение через кнопку в боте, чтобы Менталикс увидел тебя
+              </p>
+            )}
 
-                {/* Settings */}
+            {/* Settings — отдельная граница ошибки и Suspense */}
 
-                {overlay === 'settings' && (
+            {overlay === 'settings' && (
+              <ScreenErrorBoundary resetKey={`settings-${errorResetKey}`} onHome={goHome}>
+                <Suspense fallback={<ScreenLoading />}>
                   <Settings
                     user={user}
                     onBack={() => {
@@ -1340,122 +1400,153 @@ function App() {
                     onThemeChange={setThemeRaw}
                     onGuestLogin={() => setShowGuestAuth(true)}
                   />
-                )}
+                </Suspense>
+              </ScreenErrorBoundary>
+            )}
 
-                {/* ======================================================
-            MAIN TABS
+            {/* ======================================================
+            MAIN TABS — удержание смонтированными
+            Однажды открытые вкладки остаются в DOM (display:none),
+            а не удаляются. Данные и позиция скролла сохраняются
+            при возврате. Каждая вкладка — своя Suspense + граница
+            ошибки, чтобы загрузка/ошибка одной не затрагивала другие.
            ====================================================== */}
 
-                {!overlay && (
-                  <>
-                    {user && tab === 'today' && (
-                      <Today
-                        user={user}
-                        recoveryAllowed={recoveryAllowedAtLaunch}
-                        onOpenPractice={openPractice}
-                        initialSub={initialTodaySub}
-                        returnFlowActive={initialReturnFlow}
-                        onReturnFlowEvent={reportReturnFlowEvent}
-                        onGoMentor={goMentor}
-                        onFlowChange={setTodayFlowOpen}
-                        onRegisterBack={registerTodayBack}
-                        onOpenSettings={openSettings}
-                        onOpenDemoPanel={demoPanelAllowed ? openDemoPanel : undefined}
-                        onOpenSeries={openTodaySeries}
-                        seriesOpen={todaySeriesOpen}
-                        onCloseSeries={closeTodaySeries}
-                      />
-                    )}
-
-                    {user && tab === 'practices' && (
-                      <Practices
-                        user={user}
-                        initialSub={practicesSub}
-                        onGameChange={setPracticeGameOpen}
-                        onRegisterBack={registerPracticesBack}
-                        onReturnToToday={goToday}
-                      />
-                    )}
-
-                    {user && tab === 'mentor' && (
-                      <MentalixChat
-                        user={user}
-                        onPersonaChange={setMentorPersonaOpen}
-                        onRegisterBack={registerMentorBack}
-                      />
-                    )}
-
-                    {user && tab === 'library' && (
-                      <Library user={user} onInputModeChange={setLibraryInputMode} />
-                    )}
-
-                    {user && tab === 'trends' && (
-                      <Analytics
-                        user={user}
-                        historyTrigger={progressHistoryTrigger}
-                        navCollapsed={navCollapsed}
-                        onOpenHistory={() => {
-                          platform.haptic('light')
-                          setProgressHistoryTrigger(n => n + 1)
-                          scrollAppToTop()
-                        }}
-                        onGoCheckin={() => {
-                          platform.haptic('light')
-
-                          setMentorPersonaOpen(false)
-
-                          setTab('today')
-
-                          setPracticesSub(null)
-
-                          setNavCollapsed(false)
-
-                          resetNavigationGesture()
-
-                          scrollAppToTop()
-                        }}
-                        onStartMood={() => {
-                          platform.haptic('light')
-                          setMentorPersonaOpen(false)
-                          setTab('practices')
-                          setPracticesSub('mood')
-                          setNavCollapsed(false)
-                          resetNavigationGesture()
-                          scrollAppToTop()
-                        }}
-                        onOpenNotifications={() => {
-                          platform.haptic('light')
-                          try {
-                            sessionStorage.setItem('mx-settings-initial-sub', 'notifications')
-                          } catch {
-                            /* */
-                          }
-                          setOverlay('settings')
-                        }}
-                        onRedo={() => {
-                          platform.haptic('light')
-                          setMentorPersonaOpen(false)
-                          setTab('today')
-                          setPracticesSub(null)
-                          setNavCollapsed(false)
-                          resetNavigationGesture()
-                          scrollAppToTop()
-                        }}
-                        onRedoReview={() => {
-                          platform.haptic('light')
-                          setMentorPersonaOpen(false)
-                          setTab('today')
-                          setPracticesSub(null)
-                          setNavCollapsed(false)
-                          resetNavigationGesture()
-                          scrollAppToTop()
-                        }}
-                      />
-                    )}
-                  </>
+            {user && !overlay && (
+              <>
+                {openedTabs.has('today') && (
+                  <div
+                    className={
+                      tab === 'today'
+                        ? 'mx-tab-panel mx-tab-panel--active'
+                        : 'mx-tab-panel mx-tab-panel--hidden'
+                    }
+                    aria-hidden={tab !== 'today'}
+                  >
+                    <ScreenErrorBoundary resetKey={`today-${errorResetKey}`} onHome={goHome}>
+                      <Suspense fallback={<ScreenLoading />}>
+                        <Today
+                          user={user}
+                          recoveryAllowed={recoveryAllowedAtLaunch}
+                          onOpenPractice={openPractice}
+                          initialSub={initialTodaySub}
+                          returnFlowActive={initialReturnFlow}
+                          onReturnFlowEvent={reportReturnFlowEvent}
+                          onGoMentor={goMentor}
+                          onFlowChange={setTodayFlowOpen}
+                          onRegisterBack={registerTodayBack}
+                          onOpenSettings={openSettings}
+                          onOpenDemoPanel={demoPanelAllowed ? openDemoPanel : undefined}
+                          onOpenSeries={openTodaySeries}
+                          seriesOpen={todaySeriesOpen}
+                          onCloseSeries={closeTodaySeries}
+                        />
+                      </Suspense>
+                    </ScreenErrorBoundary>
+                  </div>
                 )}
-              </Suspense>
-            </ScreenErrorBoundary>
+
+                {openedTabs.has('practices') && (
+                  <div
+                    className={
+                      tab === 'practices'
+                        ? 'mx-tab-panel mx-tab-panel--active'
+                        : 'mx-tab-panel mx-tab-panel--hidden'
+                    }
+                    aria-hidden={tab !== 'practices'}
+                  >
+                    <ScreenErrorBoundary resetKey={`practices-${errorResetKey}`} onHome={goHome}>
+                      <Suspense fallback={<ScreenLoading />}>
+                        <Practices
+                          user={user}
+                          initialSub={practicesSub}
+                          onGameChange={setPracticeGameOpen}
+                          onRegisterBack={registerPracticesBack}
+                          onReturnToToday={goToday}
+                        />
+                      </Suspense>
+                    </ScreenErrorBoundary>
+                  </div>
+                )}
+
+                {openedTabs.has('mentor') && (
+                  <div
+                    className={
+                      tab === 'mentor'
+                        ? 'mx-tab-panel mx-tab-panel--active'
+                        : 'mx-tab-panel mx-tab-panel--hidden'
+                    }
+                    aria-hidden={tab !== 'mentor'}
+                  >
+                    <ScreenErrorBoundary resetKey={`mentor-${errorResetKey}`} onHome={goHome}>
+                      <Suspense fallback={<ScreenLoading />}>
+                        <MentalixChat
+                          user={user}
+                          onPersonaChange={setMentorPersonaOpen}
+                          onRegisterBack={registerMentorBack}
+                        />
+                      </Suspense>
+                    </ScreenErrorBoundary>
+                  </div>
+                )}
+
+                {openedTabs.has('library') && (
+                  <div
+                    className={
+                      tab === 'library'
+                        ? 'mx-tab-panel mx-tab-panel--active'
+                        : 'mx-tab-panel mx-tab-panel--hidden'
+                    }
+                    aria-hidden={tab !== 'library'}
+                  >
+                    <ScreenErrorBoundary resetKey={`library-${errorResetKey}`} onHome={goHome}>
+                      <Suspense fallback={<ScreenLoading />}>
+                        <Library user={user} onInputModeChange={setLibraryInputMode} />
+                      </Suspense>
+                    </ScreenErrorBoundary>
+                  </div>
+                )}
+
+                {openedTabs.has('trends') && (
+                  <div
+                    className={
+                      tab === 'trends'
+                        ? 'mx-tab-panel mx-tab-panel--active'
+                        : 'mx-tab-panel mx-tab-panel--hidden'
+                    }
+                    aria-hidden={tab !== 'trends'}
+                  >
+                    <ScreenErrorBoundary resetKey={`trends-${errorResetKey}`} onHome={goHome}>
+                      <Suspense fallback={<ScreenLoading />}>
+                        <Analytics
+                          user={user}
+                          historyTrigger={progressHistoryTrigger}
+                          navCollapsed={navCollapsed}
+                          onOpenHistory={() => {
+                            platform.haptic('light')
+                            setProgressHistoryTrigger(n => n + 1)
+                            scrollAppToTop()
+                          }}
+                          onGoCheckin={goToday}
+                          onStartMood={() => openPractice('mood')}
+                          onOpenNotifications={() => {
+                            platform.haptic('light')
+                            try {
+                              sessionStorage.setItem('mx-settings-initial-sub', 'notifications')
+                            } catch {
+                              /* */
+                            }
+                            setOverlay('settings')
+                          }}
+                          onRedo={goToday}
+                          onRedoReview={goToday}
+                        />
+                      </Suspense>
+                    </ScreenErrorBoundary>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </div>
 
