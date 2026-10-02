@@ -164,6 +164,8 @@ const ACTIVITY_WRITE = [
   /^\/journal\/templates\/sessions\/complete$/,
   /^\/journey\/entries(?:\/[^/]+)?$/,
   /^\/daily-journal\/entries$/,
+  /^\/quotes$/,
+  /^\/themes\/\d+\/reflect$/,
   // Даймон: бросок кубика и ответ на клетке — тоже активность дня.
   /^\/daimon\/roll$/,
   /^\/daimon\/insight$/,
