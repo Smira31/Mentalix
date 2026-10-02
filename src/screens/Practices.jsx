@@ -45,8 +45,8 @@ const PRACTICE_SEARCH_STYLES = `
   display: flex;
   align-items: center;
   gap: 12px;
-  /* под кнопками Telegram: safe-top (включая contentSafeAreaInset) + 56 + воздух */
-  padding: var(--mx-screen-top, 72px) 16px 12px;
+  /* тот же верхний отступ, что у заголовка «практики.»: верх shell (App.jsx) + space-1 */
+  padding: calc(var(--mx-progress-overlay-top, var(--mx-screen-top, 72px)) + var(--mx-space-1)) 16px 12px;
 }
 .mx-steps-search-input {
   flex: 1;
