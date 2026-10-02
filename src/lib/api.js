@@ -1007,6 +1007,37 @@ export const api = {
       }),
   },
 
+  daimon: {
+    board: () => request('/api/daimon/board'),
+    state: userId => request(withQuery('/api/daimon/state', { user_id: userId })),
+    createGame: (userId, gameRequest) =>
+      request('/api/daimon/games', {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId, request: gameRequest }),
+      }),
+    roll: userId =>
+      request('/api/daimon/roll', {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId }),
+      }),
+    chat: (userId, message) =>
+      request('/api/daimon/chat', {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId, message }),
+      }),
+    insight: (userId, text, skip = false) =>
+      request('/api/daimon/insight', {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId, text, skip }),
+      }),
+    summary: (userId, gameId) =>
+      request('/api/daimon/summary', {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId, game_id: gameId }),
+      }),
+    games: userId => request(withQuery('/api/daimon/games', { user_id: userId })),
+  },
+
   health: {
     check: () => request('/health', { silentDiagnostics: true }),
   },

@@ -1,5 +1,6 @@
 import { now } from './clock.js'
 import { DEFAULT_REVIEW_HOUR } from './todayCardState.js'
+import { DAIMON_CELLS, DAIMON_LEVELS, DAIMON_INSIGHT_PROMPT, getCell as getDaimonCell } from './daimonBoard.js'
 
 const DEMO_STATE_KEY = 'mentalix_preview_demo_state_v6'
 
@@ -689,6 +690,7 @@ function seedState(todayState = null) {
       },
     ],
     moodPractices: empty ? [] : moodPractices,
+    daimon: { game: null, games: [] },
     // В прерванной серии вчера нет ни одной активности.
     practiceDays: empty
       ? []
@@ -740,6 +742,40 @@ function json(value) {
 function numericId(pathname) {
   const match = pathname.match(/\/(\d+)(?:\/|$)/)
   return match ? Number(match[1]) : null
+}
+
+function buildDaimonBoardResponse() {
+  return {
+    levels: DAIMON_LEVELS,
+    cells: DAIMON_CELLS,
+  }
+}
+
+function buildDaimonStateResponse(state, _userId) {
+  const daimon = state.daimon || { game: null, games: [] }
+  const game = daimon.game
+  if (!game) return { game: null }
+  // Убираем внутренние поля чата из ответа
+  const { chat_asked_count, chat_ask_insight, ...cleanGame } = game
+  return {
+    game: {
+      ...cleanGame,
+      moves: game.moves.map(m => ({
+        id: m.id,
+        n: m.n,
+        roll: m.roll,
+        from: m.from,
+        to: m.to,
+        cell: m.cell,
+        via: m.via,
+        via_to: m.via_to,
+        insight: m.insight,
+        skipped: m.skipped,
+        created_at: m.created_at,
+      })),
+      summary: game.summary,
+    },
+  }
 }
 
 function respond(path, options = {}) {
@@ -1254,6 +1290,209 @@ function respond(path, options = {}) {
     const status = url.searchParams.get('status')
     if (status === 'completed') return json(state.journalCompletedSessions || [])
     return json([])
+  }
+
+  // ── Daimon (demo) ──
+
+  if (pathname === '/api/daimon/board' && method === 'GET') {
+    return json(buildDaimonBoardResponse())
+  }
+
+  if (pathname === '/api/daimon/state' && method === 'GET') {
+    return json(buildDaimonStateResponse(state, url.searchParams.get('user_id')))
+  }
+
+  if (pathname === '/api/daimon/games' && method === 'POST') {
+    const req = (body.request || '').trim()
+    if (req.length < 3 || req.length > 500) {
+      const error = new Error('Запрос слишком короткий или слишком длинный')
+      error.status = 422
+      throw error
+    }
+    const game = {
+      id: `daimon-${Date.now()}`,
+      request: req,
+      position: 0,
+      status: 'active',
+      throws_today: 0,
+      throws_limit: 3,
+      free_until_cell: 12,
+      paywall_enabled: false,
+      pending_move_id: null,
+      moves: [],
+      summary: null,
+      chat_asked_count: 0,
+      chat_ask_insight: false,
+      created_at: now().toISOString(),
+    }
+    writeState({ ...state, daimon: { ...state.daimon, game } })
+    return json(buildDaimonStateResponse({ ...state, daimon: { ...state.daimon, game } }, body.user_id))
+  }
+
+  if (pathname === '/api/daimon/roll' && method === 'POST') {
+    const daimon = state.daimon || { game: null, games: [] }
+    const game = daimon.game
+    if (!game) {
+      const error = new Error('Нет активной игры')
+      error.status = 404
+      throw error
+    }
+    if (game.pending_move_id) {
+      const error = new Error('Есть незакрытая клетка')
+      error.status = 409
+      throw error
+    }
+    if (game.throws_today >= game.throws_limit) {
+      const error = new Error('На сегодня всё')
+      error.status = 429
+      throw error
+    }
+    const roll = Math.floor(Math.random() * 6) + 1
+    const from = game.position
+    let to = from + roll
+    if (to > 36) to = from // нужен точный бросок для финиша
+    const cellData = to > 0 ? getDaimonCell(to) : null
+    let via = null
+    let viaTo = null
+    let finalCell = to
+    if (cellData) {
+      if (cellData.snake_to) {
+        via = 'snake'
+        viaTo = cellData.snake_to
+        finalCell = cellData.snake_to
+      } else if (cellData.arrow_to) {
+        via = 'arrow'
+        viaTo = cellData.arrow_to
+        finalCell = cellData.arrow_to
+      }
+    }
+    const move = {
+      id: `move-${Date.now()}`,
+      n: game.moves.length + 1,
+      roll,
+      from,
+      to,
+      cell: finalCell,
+      via,
+      via_to: viaTo,
+      insight: null,
+      skipped: false,
+      created_at: now().toISOString(),
+    }
+    const updatedGame = {
+      ...game,
+      position: finalCell,
+      throws_today: game.throws_today + 1,
+      pending_move_id: via ? null : move.id, // змея/стрела закрывает клетку автоматически
+      status: finalCell === 36 ? 'finished' : 'active',
+      moves: [...game.moves, move],
+      chat_asked_count: 0,
+      chat_ask_insight: false,
+    }
+    writeState({ ...state, daimon: { ...daimon, game: updatedGame } })
+    return json(buildDaimonStateResponse({ ...state, daimon: { ...daimon, game: updatedGame } }, body.user_id))
+  }
+
+  if (pathname === '/api/daimon/chat' && method === 'POST') {
+    const daimon = state.daimon || { game: null, games: [] }
+    const game = daimon.game
+    if (!game || !game.pending_move_id) {
+      const error = new Error('Нет активной клетки')
+      error.status = 409
+      throw error
+    }
+    const move = game.moves.find(m => m.id === game.pending_move_id)
+    const cellData = move ? getDaimonCell(move.cell) : null
+    const askedCount = (game.chat_asked_count || 0) + 1
+    const askInsight = askedCount >= 3
+    let reply
+    if (askInsight) {
+      reply = DAIMON_INSIGHT_PROMPT
+    } else if (cellData) {
+      reply = cellData.questions[askedCount - 1] || cellData.questions[0]
+    } else {
+      reply = 'Что ты здесь ощущаешь?'
+    }
+    const updatedGame = {
+      ...game,
+      chat_asked_count: askedCount,
+      chat_ask_insight: askInsight,
+    }
+    writeState({ ...state, daimon: { ...daimon, game: updatedGame } })
+    return json({ reply, asked_count: askedCount, ask_insight: askInsight })
+  }
+
+  if (pathname === '/api/daimon/insight' && method === 'POST') {
+    const daimon = state.daimon || { game: null, games: [] }
+    const game = daimon.game
+    if (!game || !game.pending_move_id) {
+      const error = new Error('Нет активной клетки')
+      error.status = 409
+      throw error
+    }
+    const moveId = game.pending_move_id
+    const moves = game.moves.map(m =>
+      m.id === moveId
+        ? { ...m, insight: body.skip ? null : (body.text || '').trim(), skipped: Boolean(body.skip) }
+        : m
+    )
+    const closedMove = moves.find(m => m.id === moveId)
+    let position = game.position
+    let via = null
+    let viaTo = null
+    // После закрытия клетки — применяем змею/стрелу, если она есть
+    if (closedMove && closedMove.cell) {
+      const cellData = getDaimonCell(closedMove.cell)
+      if (cellData?.snake_to) {
+        via = 'snake'
+        viaTo = cellData.snake_to
+        position = cellData.snake_to
+      } else if (cellData?.arrow_to) {
+        via = 'arrow'
+        viaTo = cellData.arrow_to
+        position = cellData.arrow_to
+      }
+    }
+    const updatedGame = {
+      ...game,
+      moves,
+      pending_move_id: null,
+      chat_asked_count: 0,
+      chat_ask_insight: false,
+      position,
+      status: position === 36 ? 'finished' : 'active',
+    }
+    writeState({ ...state, daimon: { ...daimon, game: updatedGame } })
+    return json(buildDaimonStateResponse({ ...state, daimon: { ...daimon, game: updatedGame } }, body.user_id))
+  }
+
+  if (pathname === '/api/daimon/summary' && method === 'POST') {
+    const daimon = state.daimon || { game: null, games: [] }
+    const game = daimon.game
+    if (!game) {
+      const error = new Error('Нет активной игры')
+      error.status = 404
+      throw error
+    }
+    const cellInsights = game.moves
+      .filter(m => m.insight)
+      .map(m => `${getDaimonCell(m.cell)?.title || m.cell}: ${m.insight}`)
+    const summary = cellInsights.length > 0
+      ? `Твой путь: ${cellInsights.join('; ')}.`
+      : 'Ты прошёл поле, не останавливаясь. В следующий раз замедли на клетках.'
+    const updatedGame = { ...game, summary }
+    writeState({ ...state, daimon: { ...daimon, game: updatedGame } })
+    return json({ summary })
+  }
+
+  if (pathname === '/api/daimon/games' && method === 'GET') {
+    const daimon = state.daimon || { game: null, games: [] }
+    const game = daimon.game
+    const gamesList = [...(daimon.games || [])]
+    if (game && game.status === 'finished' && !gamesList.some(g => g.id === game.id)) {
+      gamesList.unshift(game)
+    }
+    return json(gamesList)
   }
 
   if (pathname === '/health' && method === 'GET') return json({ status: 'ok' })
