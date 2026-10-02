@@ -646,8 +646,8 @@ export default function DailyJournalFlow({ userId, onClose }) {
               <CapsLabel className="mx-dj-review__label">Напоминание</CapsLabel>
               <p className="mx-dj-review__reminder">
                 {setup.reminder.enabled
-                  ? `Напоминание: ${setup.reminder.time}`
-                  : 'без напоминания'}
+                  ? `Каждый день в ${setup.reminder.time}`
+                  : 'Выключено'}
               </p>
             </div>
           )}

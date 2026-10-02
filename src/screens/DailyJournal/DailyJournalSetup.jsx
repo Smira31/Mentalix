@@ -98,7 +98,14 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
   const [customTime, setCustomTime] = useState(
     () => initialSetup?.reminder?.time || '21:00'
   )
+  const [reminderMode, setReminderMode] = useState(() => {
+    if (!initialSetup?.reminder?.enabled) return 'off'
+    return REMINDER_TILES.some(t => t.time === initialSetup.reminder.time)
+      ? 'preset'
+      : 'custom'
+  })
   const [saving, setSaving] = useState(false)
+  const timeInputRef = useRef(null)
 
   const step = SETUP_STEPS[stepIndex]
   const isLastStep = stepIndex === SETUP_STEPS.length - 1
@@ -227,6 +234,7 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
   // ── Reminder tile handlers ──
   function selectReminderTile(time) {
     platform.haptic('light')
+    setReminderMode('preset')
     setReminder({ enabled: true, time })
     setCustomTime(time)
   }
@@ -236,13 +244,28 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
     setReminder({ enabled: true, time: timeStr })
   }
 
-  function selectReminderOff() {
+  function handleCustomTileClick() {
     platform.haptic('light')
-    setReminder({ enabled: false, time: '21:00' })
+    if (reminderMode === 'custom') {
+      // Повторный тап — открываем выбор времени снова
+      const input = timeInputRef.current
+      if (input) {
+        input.focus()
+        if (typeof input.showPicker === 'function') {
+          try { input.showPicker() } catch (_) { /* not supported */ }
+        }
+      }
+      return
+    }
+    setReminderMode('custom')
+    setReminder({ enabled: true, time: customTime })
   }
 
-  const isCustomSelected =
-    reminder.enabled && !REMINDER_TILES.some(t => t.time === reminder.time)
+  function selectReminderOff() {
+    platform.haptic('light')
+    setReminderMode('off')
+    setReminder({ enabled: false, time: '21:00' })
+  }
 
   function renderStep() {
     if (stepIndex === 0) {
@@ -376,7 +399,7 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
               key={tile.time}
               type="button"
               className={`mx-dj-reminder__tile${
-                reminder.enabled && reminder.time === tile.time
+                reminderMode === 'preset' && reminder.time === tile.time
                   ? ' mx-dj-reminder__tile--selected'
                   : ''
               }`}
@@ -390,20 +413,22 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
           <button
             type="button"
             className={`mx-dj-reminder__tile${
-              isCustomSelected ? ' mx-dj-reminder__tile--selected' : ''
+              reminderMode === 'custom' ? ' mx-dj-reminder__tile--selected' : ''
             }`}
             data-testid="dj-setup-reminder-custom"
-            onClick={() => selectReminderCustom(customTime)}
+            onClick={handleCustomTileClick}
           >
             <span>Своё время</span>
-            {isCustomSelected && (
+            {reminderMode === 'custom' && (
               <span className="mx-dj-reminder__tile-time">{reminder.time}</span>
             )}
           </button>
-          {isCustomSelected && (
+          {reminderMode === 'custom' && (
             <div className="mx-dj-reminder__time-picker">
               <input
+                ref={timeInputRef}
                 type="time"
+                step={300}
                 className="mx-dj-reminder__time-input"
                 value={reminder.time}
                 onChange={e => selectReminderCustom(e.target.value)}
@@ -414,7 +439,7 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
           <button
             type="button"
             className={`mx-dj-reminder__tile${
-              !reminder.enabled ? ' mx-dj-reminder__tile--selected' : ''
+              reminderMode === 'off' ? ' mx-dj-reminder__tile--selected' : ''
             }`}
             data-testid="dj-setup-reminder-off"
             onClick={selectReminderOff}

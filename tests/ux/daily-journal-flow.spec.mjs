@@ -150,11 +150,20 @@ test('журнал: настройка — 3 подэкрана картинки
 
   // ── Шаг 5 — Напоминание ──
   await expect(page.locator('.mx-dj-setup__step-label')).toHaveText('Шаг 5 из 5 · Напоминание')
+  // Выбираем «Своё время» → плитка выделяется, появляется input
+  await page.getByTestId('dj-setup-reminder-custom').click()
+  await expect(page.getByTestId('dj-setup-reminder-time')).toBeVisible()
+  // Вводим 07:30
+  await page.getByTestId('dj-setup-reminder-time').fill('07:30')
+  // Плитка показывает выбранное время
+  await expect(page.getByTestId('dj-setup-reminder-custom')).toContainText('07:30')
   await page.getByTestId('dj-setup-next').click()
 
   // ── Перечитай (после настройки с данными) ──
   await expect(page.locator('.mx-dj-review')).toBeVisible()
   await expect(page.getByTestId('dj-review-edit')).toBeVisible()
+  // Блок напоминания: «Каждый день в 07:30»
+  await expect(page.locator('.mx-dj-review__reminder')).toHaveText('Каждый день в 07:30')
 })
 
 test('журнал: сброс настройки → intro → поток без настройки', async ({ page }) => {
