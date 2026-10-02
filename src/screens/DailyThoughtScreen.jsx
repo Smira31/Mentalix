@@ -64,6 +64,7 @@ export default function DailyThoughtScreen({ thought, onClose, onGoMentor, user 
   const [view, setView] = useState('main')
   const [copied, setCopied] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [quoteError, setQuoteError] = useState(false)
   const [items, setItems] = useState(() => readCachedDailyItems(user?.id))
   const touchStart = useRef(null)
   const mouseStart = useRef(null)
@@ -143,6 +144,7 @@ export default function DailyThoughtScreen({ thought, onClose, onGoMentor, user 
 
   async function handleSaveQuote() {
     platform.haptic('light')
+    setQuoteError(false)
     try {
       const next = await saveSavedQuote({
         date: currentDate,
@@ -155,6 +157,8 @@ export default function DailyThoughtScreen({ thought, onClose, onGoMentor, user 
     } catch (error) {
       platform.haptic('error')
       console.error(error)
+      setQuoteError(true)
+      setTimeout(() => setQuoteError(false), 3000)
     }
   }
 
@@ -321,6 +325,12 @@ export default function DailyThoughtScreen({ thought, onClose, onGoMentor, user 
             Обсудить
           </button>
         </div>
+
+        {quoteError && (
+          <p role="alert" className="text-[13px] text-red-300 mt-2" data-testid="quote-save-error">
+            Не удалось сохранить. Попробуй ещё раз.
+          </p>
+        )}
 
         {allThoughtsCount > 0 && (
           <button

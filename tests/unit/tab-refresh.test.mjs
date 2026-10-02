@@ -52,7 +52,7 @@ test('App.jsx отправляет tab-refresh при закрытии овер�
 })
 
 test('Today.jsx слушает tab-refresh и инвалидирует кеш для тихого обновления', () => {
-  assert.match(todaySource, /import \{ useTabRefresh \} from '\.\.\/lib\/tabRefresh'/)
+  assert.match(todaySource, /import \{[^}]*useTabRefresh[^}]*\} from '\.\.\/lib\/tabRefresh'/)
   assert.match(todaySource, /useTabRefresh\('today'/)
   assert.match(todaySource, /invalidateTodayData\(user\.id\)/)
   assert.match(todaySource, /setReloadToken/)
