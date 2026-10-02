@@ -1352,6 +1352,29 @@ function respond(path, options = {}) {
     return json({ items, total_days: uniqueDates.size })
   }
 
+  if (pathname === '/export/send-to-telegram') {
+    // Строгий мок контракта бота: только POST {user_id}, до 3 отправок в день.
+    const fail = (status, message) => {
+      const error = new Error(message)
+      error.status = status
+      return Promise.reject(error)
+    }
+    if (method !== 'POST') return fail(405, 'Демо: метод не поддерживается')
+    const keys = Object.keys(body)
+    if (keys.length !== 1 || keys[0] !== 'user_id' || !Number.isSafeInteger(body.user_id)) {
+      return fail(422, 'Демо: ожидается только {user_id: число}')
+    }
+    if (body.user_id <= 0) return fail(422, 'Демо: user_id должен быть положительным')
+    const today = now().toISOString().slice(0, 10)
+    const sent = (state.exportSends || []).filter(date => date === today)
+    if (sent.length >= 3) return fail(429, 'Демо: лимит 3 отправки в день')
+    if (new URLSearchParams(window.location.search).get('export_mock') === 'bot_blocked') {
+      return json({ ok: false, reason: 'bot_blocked' })
+    }
+    writeState({ ...state, exportSends: [...sent, today] })
+    return json({ ok: true })
+  }
+
   if (pathname === '/health' && method === 'GET') return json({ status: 'ok' })
 
   if (pathname === '/mentalix/transcribe' && method === 'POST') {

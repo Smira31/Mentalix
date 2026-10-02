@@ -117,11 +117,34 @@ function authHeader() {
   }
 }
 
+const EXPORT_DOWNLOAD_TIMEOUT_MS = 30_000
+
 async function download(path, filename) {
-  const response = await fetch(`${BASE}${path}`, { credentials: 'include', headers: authHeader() })
-  if (response.status === 401) platform.clearSessionToken?.()
-  if (!response.ok) throw new Error(`Export ${path} failed: ${response.status}`)
-  const blob = await response.blob()
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), EXPORT_DOWNLOAD_TIMEOUT_MS)
+  let response
+  let blob
+  try {
+    response = await fetch(`${BASE}${path}`, {
+      credentials: 'include',
+      headers: authHeader(),
+      signal: controller.signal,
+    })
+    if (response.status === 401) platform.clearSessionToken?.()
+    if (!response.ok) throw new Error(`Export ${path} failed: ${response.status}`)
+    blob = await response.blob()
+  } catch (error) {
+    if (error?.name === 'AbortError') {
+      throw new ApiError(`Export ${path} timed out after ${EXPORT_DOWNLOAD_TIMEOUT_MS}ms`, {
+        path,
+        kind: 'timeout',
+        cause: error,
+      })
+    }
+    throw error
+  } finally {
+    clearTimeout(timeoutId)
+  }
   const href = URL.createObjectURL(blob)
   const anchor = document.createElement('a')
   anchor.href = href
@@ -857,6 +880,15 @@ export const api = {
     deleteCheckin: (userId, checkinId) =>
       request(withQuery(`/privacy/checkins/${checkinId}`, { user_id: userId, confirmed: true }), {
         method: 'DELETE',
+      }),
+
+    // Бот присылает файл экспорта в личный чат. Ответ: {ok:true} или
+    // {ok:false, reason:'bot_blocked'}; 429 — лимит 3 раза в день.
+    sendExportToTelegram: userId =>
+      request('/export/send-to-telegram', {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId }),
+        timeoutMs: 30_000,
       }),
 
     eraseAccount: userId =>

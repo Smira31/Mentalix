@@ -417,6 +417,41 @@ export const cloud = {
     })
   },
 
+  // Удаляет ВСЕ ключи пользователя из CloudStorage (после удаления аккаунта).
+  clearAll() {
+    return new Promise(resolve => {
+      const storage = api()?.CloudStorage
+
+      if (!storage?.getKeys || !storage?.removeItems) {
+        resolve(false)
+
+        return
+      }
+
+      safely(
+        () =>
+          storage.getKeys((error, keys) => {
+            if (error || !Array.isArray(keys) || keys.length === 0) {
+              resolve(!error)
+
+              return
+            }
+
+            // Telegram принимает до 100 ключей за вызов.
+            const chunks = []
+            for (let i = 0; i < keys.length; i += 100) chunks.push(keys.slice(i, i + 100))
+            Promise.all(
+              chunks.map(
+                chunk =>
+                  new Promise(done => storage.removeItems(chunk, removeError => done(!removeError)))
+              )
+            ).then(results => resolve(results.every(Boolean)))
+          }),
+        'CloudStorage.getKeys'
+      )
+    })
+  },
+
   remove(key) {
     return new Promise(resolve => {
       const storage = api()?.CloudStorage

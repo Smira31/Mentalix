@@ -70,3 +70,14 @@
   text-decoration: underline;
   text-underline-offset: 2px;
 }
+
+.mx-privacy-copy {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+}
