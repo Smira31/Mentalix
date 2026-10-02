@@ -2261,3 +2261,16 @@
   color: rgb(var(--c-text));
   white-space: nowrap;
 }
+
+/* «Мысль дня» — 17/500/1.35, eyebrow faint (иерархия Stoic). */
+.mx-today-quote-card__eyebrow {
+  color: rgb(var(--c-faint));
+}
+
+.mx-today-quote-card__text {
+  color: rgb(var(--c-text));
+  font-family: 'Onest', sans-serif;
+  font-size: 17px;
+  font-weight: var(--mx-weight-control);
+  line-height: 1.35;
+}
