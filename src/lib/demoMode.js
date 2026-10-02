@@ -1381,10 +1381,10 @@ function respond(path, options = {}) {
     }
     const updatedGame = {
       ...game,
-      position: finalCell,
+      position: to, // позиция — клетка приземления, не финальная
       throws_today: game.throws_today + 1,
-      pending_move_id: via ? null : move.id, // змея/стрела закрывает клетку автоматически
-      status: finalCell === 36 ? 'finished' : 'active',
+      pending_move_id: move.id, // клетка всегда требует разговора
+      status: 'active', // финиш — после вывода на клетке 36
       moves: [...game.moves, move],
       chat_asked_count: 0,
       chat_ask_insight: false,
@@ -1402,7 +1402,7 @@ function respond(path, options = {}) {
       throw error
     }
     const move = game.moves.find(m => m.id === game.pending_move_id)
-    const cellData = move ? getDaimonCell(move.cell) : null
+    const cellData = move ? getDaimonCell(move.to) : null
     const askedCount = (game.chat_asked_count || 0) + 1
     const askInsight = askedCount >= 3
     let reply
@@ -1441,8 +1441,8 @@ function respond(path, options = {}) {
     let via = null
     let viaTo = null
     // После закрытия клетки — применяем змею/стрелу, если она есть
-    if (closedMove && closedMove.cell) {
-      const cellData = getDaimonCell(closedMove.cell)
+    if (closedMove && closedMove.to) {
+      const cellData = getDaimonCell(closedMove.to)
       if (cellData?.snake_to) {
         via = 'snake'
         viaTo = cellData.snake_to
