@@ -6,6 +6,7 @@ import NestedScreenHeader from '../components/NestedScreenHeader'
 import ArticleCover from '../components/ArticleCover'
 import { ARTICLES } from '../data/articles'
 import { fetchArticles, peekArticles, peekArticlesSnapshot } from '../lib/libraryDataCache'
+import { useTabRefresh } from '../lib/tabRefresh'
 import { platform } from '../platform'
 import { useBackButton } from '../platform/telegram.hooks'
 import Articles from './Articles'
@@ -300,6 +301,9 @@ function LibraryHome({
   const [loading, setLoading] = useState(() => initialArticlesState.data === null)
   const [error, setError] = useState(false)
   const [retryCount, setRetryCount] = useState(0)
+
+  // Тихий фоновый рефетч статей при возврате на вкладку или из фона
+  useTabRefresh('library', () => setRetryCount(c => c + 1))
 
   useEffect(() => {
     let active = true

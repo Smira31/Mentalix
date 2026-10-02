@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
 
 import { pluralize } from '../lib/pluralize'
+import { useTabRefresh } from '../lib/tabRefresh'
 import {
   ANALYTICS_CARDS,
   readCardPreferences,
@@ -823,6 +824,10 @@ export default function Analytics({
   const sourceResultRef = useRef(null)
   const retryFailedSourcesRef = useRef(false)
   const [reloadKey, setReloadKey] = useState(0)
+
+  // Тихий фоновый рефетч при возврате на вкладку или из фона —
+  // перезапускает эффекты загрузки без показа loading.
+  useTabRefresh('trends', () => setReloadKey(k => k + 1))
 
   const gran = getGranularity(granularity)
 

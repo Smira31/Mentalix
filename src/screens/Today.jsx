@@ -8,6 +8,7 @@ import {
   invalidateTodayData,
   peekTodaySnapshot,
 } from '../lib/todayDataCache'
+import { useTabRefresh } from '../lib/tabRefresh'
 import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
 import { ChevronRight, ArrowUpRight, Lightbulb, X } from 'lucide-react'
 
@@ -283,6 +284,17 @@ export default function Today({
   const [loadError, setLoadError] = useState(false)
 
   const [reloadToken, setReloadToken] = useState(0)
+
+  // Тихое фоновое обновление при возврате на вкладку из фона или
+  // другой вкладки: инвалидируем кеш и перезапускаем основной эффект.
+  // Скелетон и loading не показываются — эффект не ставит loading
+  // в true, только обновляет state по готовности свежих данных.
+  useTabRefresh('today', () => {
+    if (!user) return
+    invalidateTodayData(user.id)
+    setReloadToken(token => token + 1)
+  })
+
   const [recovery, setRecovery] = useState(null)
   const [recoveryStage, setRecoveryStage] = useState('offer')
   const recoveryRequested = useRef(null)

@@ -44,6 +44,7 @@ import { installDemoPressFeedback } from './lib/demoPressFeedback'
 import { shouldRenderDemoTelegramChrome } from './lib/demoChrome'
 import { switchUserDataScope } from './lib/userDataScope'
 import { clearTodayDataCache } from './lib/todayDataCache'
+import { dispatchTabRefresh } from './lib/tabRefresh'
 import { clearHistoryCache } from './lib/mentalixHistoryCache'
 import { clearSeriesSnapshots } from './lib/series'
 import { clearTrendsDataCache } from './lib/trendsDataCache'
@@ -671,6 +672,9 @@ function App() {
     function handleVisibility() {
       if (document.hidden) return
 
+      // Тихое фоновое обновление активной вкладки при возврате из фона
+      dispatchTabRefresh(tabRef.current)
+
       if (appLockEnabled && hasPinRecord()) {
         setLocked(true)
       }
@@ -968,6 +972,8 @@ function App() {
       scrollDirection.current = null
       scrollDistance.current = 0
 
+      dispatchTabRefresh(key)
+
       return
     }
 
@@ -992,6 +998,8 @@ function App() {
     lastScrollY.current = 0
     scrollDirection.current = null
     scrollDistance.current = 0
+
+    dispatchTabRefresh(key)
   }
 
   const goToday = useCallback(() => {
@@ -1006,6 +1014,8 @@ function App() {
     setNavCollapsed(false)
     resetNavigationGesture()
     scrollAppToTop()
+
+    dispatchTabRefresh('today')
   }, [scrollAppToTop])
 
   /*
@@ -1043,6 +1053,8 @@ function App() {
       scrollDistance.current = 0
 
       scrollAppToTop()
+
+    dispatchTabRefresh('practices')
     },
     [scrollAppToTop]
   )
@@ -1064,6 +1076,8 @@ function App() {
     scrollDistance.current = 0
 
     scrollAppToTop()
+
+    dispatchTabRefresh('mentor')
   }, [scrollAppToTop])
 
   const completeOnboarding = useCallback(() => {
@@ -1391,6 +1405,7 @@ function App() {
                     user={user}
                     onBack={() => {
                       setOverlay(null)
+                      dispatchTabRefresh(tabRef.current)
                     }}
                     onRegisterBack={registerSettingsBack}
                     onScrollTop={scrollAppToTop}
