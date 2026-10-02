@@ -1,4 +1,4 @@
-import { telegramAdapter } from './telegram.adapter'
+import { telegramAdapter, earlyInitTelegram } from './telegram.adapter'
 import { webAdapter } from './web.adapter'
 import { installZoomGuard } from './zoomGuard'
 
@@ -24,3 +24,6 @@ function detectPlatform() {
 
 export const platform = detectPlatform() === 'telegram' ? telegramAdapter : webAdapter
 export const platformName = platform.name
+
+// Telegram: ready/expand/цвета/запрет свайпа — синхронно, до первого рендера.
+if (platformName === 'telegram') earlyInitTelegram()

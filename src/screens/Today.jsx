@@ -59,8 +59,8 @@ import { pickVisibleTodayHint } from '../lib/todayHints'
 const Path = lazyWithRetry(() => import('./Path'))
 const YearPath = lazyWithRetry(() => import('./YearPath'))
 const CheckIn = lazyWithRetry(() => import('./CheckIn'))
-const ThemeScreen = lazyWithRetry(() => import('./ThemeScreen'))
 const ThemeCarouselScreen = lazyWithRetry(() => import('./ThemeCarouselScreen'))
+const ThemeScreen = lazyWithRetry(() => import('./ThemeScreen'))
 const History = lazyWithRetry(() => import('./History'))
 const QuoteView = lazyWithRetry(() => import('./QuoteView'))
 const DailyThoughtScreen = lazyWithRetry(() => import('./DailyThoughtScreen'))
@@ -688,6 +688,62 @@ export default function Today({
 
     refreshStreak()
 
+    /*
+     * Второстепенные запросы стартуют сразу, параллельно с основным
+     * раундом (fetchTodayData), а не после него. Блоки по-прежнему
+     * появляются на своих местах без прыжков: резерв высоты задан в разметке.
+     */
+    api.pulse
+      .today()
+      .then(pulse => {
+        if (!active) return
+        setActiveToday(pulse.active_today)
+        try {
+          sessionStorage.setItem(`mx-pulse-today:${user.id}`, String(pulse.active_today))
+        } catch {
+          /* sessionStorage может быть недоступен */
+        }
+      })
+      .catch(() => {})
+
+    api.checkin
+      .history(user.id, 90)
+      .then(history => {
+        if (!active) return
+        const safeHistory = Array.isArray(history) ? history : []
+        setCheckinHistory(safeHistory)
+      })
+      .catch(error => {
+        // Не глотаем молча: без истории огонёк серии в шапке
+        // показывает 0 (регрессия после #801). В предупреждении —
+        // только путь и статус, без персональных данных.
+        console.warn('[Today] история чек-инов не загружена', {
+          path: 'GET /api/checkin/history',
+          status: error?.status ?? null,
+        })
+      })
+
+    api.moodPractices
+      .list(user.id)
+      .then(items => {
+        if (active) setMoodPractices(Array.isArray(items) ? items : [])
+      })
+      .catch(() => {})
+
+    // Детали текущей темы (days[], current_day): id темы известен сразу,
+    // если есть снимок/кэш; иначе запрос уходит, как только придёт список тем.
+    let themeDetailRequestedFor = null
+    const loadThemeDetail = themeId => {
+      if (!themeId || themeDetailRequestedFor === themeId) return
+      themeDetailRequestedFor = themeId
+      fetchThemeDetail(user.id, themeId)
+        .then(d => {
+          if (active && d) setThemeDetail(d)
+        })
+        .catch(() => {})
+    }
+    loadThemeDetail(pickCurrentTheme(initialTodaySnapshot?.themes)?.id)
+
     ;(async () => {
       try {
         const {
@@ -702,58 +758,13 @@ export default function Today({
 
         setLoadError(false)
         setTheme(pickCurrentTheme(themesData))
-
-        // Подгружаем детали текущей темы (days[], current_day) для
-        // карточки «Тема недели»: список тем не содержит days.
-        const currentTheme = pickCurrentTheme(themesData)
-        if (currentTheme?.id) {
-          fetchThemeDetail(user.id, currentTheme.id)
-            .then(d => {
-              if (active && d) setThemeDetail(d)
-            })
-            .catch(() => {})
-        }
-
-        api.pulse
-          .today()
-          .then(pulse => {
-            setActiveToday(pulse.active_today)
-            try {
-              sessionStorage.setItem(`mx-pulse-today:${user.id}`, String(pulse.active_today))
-            } catch {
-              /* sessionStorage может быть недоступен */
-            }
-          })
-          .catch(() => {})
+        loadThemeDetail(pickCurrentTheme(themesData)?.id)
 
         setRituals(ritualsData)
 
         setAscezas(ascezasData)
 
         setCheckin(checkinData)
-
-        api.checkin
-          .history(user.id, 90)
-          .then(history => {
-            const safeHistory = Array.isArray(history) ? history : []
-            setCheckinHistory(safeHistory)
-          })
-          .catch(error => {
-            // Не глотаем молча: без истории огонёк серии в шапке
-            // показывает 0 (регрессия после #801). В предупреждении —
-            // только путь и статус, без персональных данных.
-            console.warn('[Today] история чек-инов не загружена', {
-              path: 'GET /api/checkin/history',
-              status: error?.status ?? null,
-            })
-          })
-
-        api.moodPractices
-          .list(user.id)
-          .then(items => {
-            if (active) setMoodPractices(Array.isArray(items) ? items : [])
-          })
-          .catch(() => {})
 
         setReviewHour(settingsData?.review_hour ?? DEFAULT_REVIEW_HOUR)
       } catch (error) {
@@ -767,6 +778,8 @@ export default function Today({
           setLoading(false)
           setConnecting(false)
         }
+        // Сигнал для App: данные «Сегодня» загружены — можно предзагружать вкладки.
+        window.dispatchEvent(new Event('mentalix:today-loaded'))
       }
     })()
 
@@ -981,7 +994,7 @@ export default function Today({
   }
 
   // Прямой переход из карточки «Тема недели» на «Сегодня» → экран записи
-  // ответа на ждущий вопрос (ThemeScreen с initialDay).
+  // ответа на следующий непройденный вопрос (ThemeScreen с initialDay).
   if (sub === 'themeWrite' && theme) {
     return (
       <SubScreenBoundary resetKey="themeWrite" onExit={() => changeSub(null)}>
@@ -1326,12 +1339,15 @@ export default function Today({
 
   function handleThemeCardTap() {
     platform.haptic('light')
-    if (themeAllAnswered || !themeWaitingDay) {
+    // Все пройдены — смотрим запись последнего вопроса; иначе пишем следующий.
+    const targetDay =
+      themeWaitingDay?.day ?? (themeAllAnswered ? themeDays[themeDays.length - 1]?.day : null)
+    if (!targetDay) {
       changeSub('theme')
-    } else {
-      setThemeWriteDay(themeWaitingDay.day)
-      changeSub('themeWrite')
+      return
     }
+    setThemeWriteDay(targetDay)
+    changeSub('themeWrite')
   }
 
   return (

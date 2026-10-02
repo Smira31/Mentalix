@@ -43,7 +43,10 @@ function StageShell({ children, title, onBack }) {
   const { style } = useFullscreenSurface()
 
   return createPortal(
-    <div className={`${FULLSCREEN_SHELL_CLASS} mx-lila-stage`} style={style}>
+    <div className={`${FULLSCREEN_SHELL_CLASS} mx-lila-stage`}
+      style={style}
+      data-testid="lila-stage-shell"
+    >
       <div className="mx-lila-screen mx-screen-shell mx-auto flex min-h-0 w-full max-w-md flex-1 flex-col px-[var(--mx-screen-x)]">
         <div className="mx-lila-header grid h-[52px] shrink-0 grid-cols-[1fr_auto_1fr] items-center">
           <BackButton onClick={onBack} />
