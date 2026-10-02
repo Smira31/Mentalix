@@ -342,6 +342,69 @@ function offsetDate(date, amount) {
   return value.toISOString().slice(0, 10)
 }
 
+/*
+ * Демо-разговоры для блока «Продолжить разговор»: 2–3 разговора разных
+ * ролей с историей сообщений, чтобы превью показывало блок сразу.
+ */
+function buildDemoConversations() {
+  const today = now()
+  const yesterday = offsetDate(today, -1)
+  const daysAgo3 = offsetDate(today, -3)
+  return [
+    {
+      id: 'demo-conv-1',
+      persona: 'mayak',
+      title: 'Сегодня было тяжело',
+      last_message: 'Спутник рядом. Давай разберём это спокойно.',
+      updated_at: new Date(`${yesterday}T20:30:00`).toISOString(),
+      messages: [
+        { id: 'm1', role: 'user', content: 'Сегодня было тяжело' },
+        {
+          id: 'm2',
+          role: 'assistant',
+          content: 'Слышу тебя. Расскажи, что именно отняло силы today?',
+        },
+        { id: 'm3', role: 'user', content: 'Много встреч и дедлайны.' },
+        {
+          id: 'm4',
+          role: 'assistant',
+          content: 'Спутник рядом. Давай разберём это спокойно.',
+        },
+      ],
+    },
+    {
+      id: 'demo-conv-2',
+      persona: 'kompas',
+      title: 'Разложи цель на шаги',
+      last_message: 'Наставник: начнём с одного маленького шага.',
+      updated_at: new Date(`${daysAgo3}T10:15:00`).toISOString(),
+      messages: [
+        { id: 'm5', role: 'user', content: 'Разложи цель на шаги' },
+        {
+          id: 'm6',
+          role: 'assistant',
+          content: 'Наставник: начнём с одного маленького шага.',
+        },
+      ],
+    },
+    {
+      id: 'demo-conv-3',
+      persona: 'dnevnik',
+      title: 'Подведи итоги дня',
+      last_message: 'Наблюдатель: я заметил один повторяющийся паттерн.',
+      updated_at: new Date(`${daysAgo3}T22:00:00`).toISOString(),
+      messages: [
+        { id: 'm7', role: 'user', content: 'Подведи итоги дня' },
+        {
+          id: 'm8',
+          role: 'assistant',
+          content: 'Наблюдатель: я заметил один повторяющийся паттерн.',
+        },
+      ],
+    },
+  ]
+}
+
 function seedState(todayState = null) {
   const today = now()
   const todayStr = today.toISOString().slice(0, 10)
@@ -569,6 +632,7 @@ function seedState(todayState = null) {
     ],
     notes: { 900401: [] },
     messages: [],
+    conversations: buildDemoConversations(),
     pinnedPractices: [
       { practice_id: 'daimon' },
       { practice_id: 'rituals' },
@@ -1300,6 +1364,12 @@ function respond(path, options = {}) {
       const threads = state.daimonMessages || {}
       return json(threads[url.searchParams.get('move_id')] || [])
     }
+    // Конкретный разговор через conversation_id
+    const convId = url.searchParams.get('conversation_id')
+    if (convId) {
+      const conv = (state.conversations || []).find(c => c.id === convId)
+      return json(conv?.messages || [])
+    }
     return json(state.messages || [])
   }
   if (pathname === '/mentalix/messages' && method === 'POST') {
@@ -1315,8 +1385,69 @@ function respond(path, options = {}) {
       role: 'assistant',
       content: `${personaName} рядом. Давай разберём это спокойно: что в этой ситуации сейчас важнее всего заметить?`,
     }
-    writeState({ ...state, messages: [...(state.messages || []), userMessage, reply] })
-    return json(reply)
+    // Отдельные разговоры: сохраняем в conversation или в общий массив.
+    const convId = body.conversation_id
+    const conversations = [...(state.conversations || [])]
+    if (convId) {
+      const idx = conversations.findIndex(c => c.id === convId)
+      if (idx !== -1) {
+        conversations[idx] = {
+          ...conversations[idx],
+          messages: [...(conversations[idx].messages || []), userMessage, reply],
+          last_message: reply.content.slice(0, 80),
+          updated_at: now().toISOString(),
+        }
+      }
+    }
+    writeState({ ...state, messages: [...(state.messages || []), userMessage, reply], conversations })
+    return json({ ...reply, conversationId: convId || conversations[0]?.id || null })
+  }
+
+  // ── Отдельные разговоры (demo) ──
+
+  if (pathname === '/mentalix/conversations' && method === 'GET') {
+    const limit = parseInt(url.searchParams.get('limit') || '5', 10)
+    const personaFilter = url.searchParams.get('persona')
+    let conversations = [...(state.conversations || [])]
+    if (personaFilter) conversations = conversations.filter(c => c.persona === personaFilter)
+    // Сортировка по updated_at (новые сверху), пустые не возвращаем.
+    conversations.sort((a, b) => (b.updated_at || '').localeCompare(a.updated_at || ''))
+    return json(
+      conversations
+        .filter(c => c.messages?.length > 0)
+        .slice(0, limit)
+        .map(c => ({
+          id: c.id,
+          persona: c.persona,
+          title: c.title,
+          last_message: (c.last_message || '').slice(0, 80),
+          updated_at: c.updated_at,
+        }))
+    )
+  }
+  if (pathname === '/mentalix/conversations' && method === 'POST') {
+    const conv = {
+      id: `demo-conv-${Date.now()}`,
+      persona: body.persona || 'mayak',
+      title: '',
+      last_message: '',
+      updated_at: now().toISOString(),
+      created_at: now().toISOString(),
+      messages: [],
+    }
+    writeState({ ...state, conversations: [conv, ...(state.conversations || [])] })
+    return json({
+      id: conv.id,
+      persona: conv.persona,
+      title: conv.title,
+      created_at: conv.created_at,
+      updated_at: conv.updated_at,
+    })
+  }
+  if (pathname.match(/^\/mentalix\/conversations\/[^/]+\/messages$/) && method === 'GET') {
+    const convId = pathname.split('/')[3]
+    const conv = (state.conversations || []).find(c => c.id === convId)
+    return json(conv?.messages || [])
   }
   if (pathname === '/mentalix/feedback' && method === 'POST') return json({ ok: true })
   /*
