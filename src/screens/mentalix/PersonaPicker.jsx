@@ -11,6 +11,9 @@ import './PersonaPicker.css'
 
 const DEFAULT_INDEX = 1
 
+// Соседняя (неактивная) карточка — 0.86 от активной, как соседи «Темы недели».
+const NEIGHBOR_SCALE = 0.86
+
 // Визуальный порядок entry-карусели: Наставник, Спутник (центр), Наблюдатель, Даймон.
 const DISPLAY_PERSONAS = [PERSONAS[1], PERSONAS[0], PERSONAS[2]]
 
@@ -50,7 +53,6 @@ export default function PersonaPicker({
   const [conversations, setConversations] = useState([])
   const [creating, setCreating] = useState(false)
   const trackRef = useRef(null)
-  const cardHeightRef = useRef(0)
   const scaleFrameRef = useRef(null)
   const userId = user?.id
 
@@ -68,16 +70,11 @@ export default function PersonaPicker({
     return () => cancelAnimationFrame(frame)
   }, [])
 
-  // Поворот телефона или ресайз: полная высота карточки считается от clamp(),
-  // поэтому базовую высоту и масштаб собираем заново.
+  // Поворот телефона или ресайз: масштаб карточки считается от её ширины,
+  // поэтому после смены размера собираем карусель заново.
   useEffect(() => {
     const onResize = () => {
-      const track = trackRef.current
-      if (!track) return
-      cardHeightRef.current = 0
-      Array.from(track.children).forEach(card => {
-        card.style.height = ''
-      })
+      if (!trackRef.current) return
       syncActive()
     }
     window.addEventListener('resize', onResize)
@@ -119,28 +116,19 @@ export default function PersonaPicker({
     }
   }, [])
 
-  // Полная высота карточки — читается один раз, до первой установки высот.
-  function fullCardHeight() {
-    const card = trackRef.current?.children?.[0]
-    if (!card) return 0
-    if (!cardHeightRef.current) {
-      card.style.height = ''
-      cardHeightRef.current = card.getBoundingClientRect().height
-    }
-    return cardHeightRef.current
-  }
-
   // Масштаб карусели — как у «Темы недели» (ThemeQuestionCarousel):
-  // активная карточка полного размера, сосед — 243 из 322 (~0.75) от неё.
+  // активная карточка полного размера, сосед — NEIGHBOR_SCALE от неё.
+  // Меняется только transform: ширина в разметке остаётся 204px, поэтому
+  // высота активной карточки по-прежнему считается по содержимому, а соседи
+  // из-за align-items: center стоят по центру трека.
   function applyScale() {
     const track = trackRef.current
-    const full = fullCardHeight()
-    if (!track || !full) return
+    if (!track || !track.clientWidth) return
     const center = track.scrollLeft + track.clientWidth / 2
     Array.from(track.children).forEach(card => {
       const cardCenter = card.offsetLeft + card.offsetWidth / 2
       const t = Math.min(Math.abs(cardCenter - center) / card.offsetWidth, 1)
-      card.style.height = `${Math.round(full - full * (79 / 322) * t)}px`
+      card.style.transform = `scale(${(1 - (1 - NEIGHBOR_SCALE) * t).toFixed(4)})`
     })
   }
 
