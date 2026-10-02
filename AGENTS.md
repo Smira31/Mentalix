@@ -235,13 +235,6 @@ screens, and keep article cards unchanged unless the owner explicitly approves t
 - Отступы в новых и изменяемых экранах — только токенами (`--mx-space-*`, `--mx-radius-*`, `--mx-btn-*-h`, `--mx-screen-top`). Локальные пиксельные значения запрещены. Токены описаны в `docs/DESIGN_TOKENS.md`.
 - Пилотные экраны (MyThoughtsScreen, DailyThoughtInput, PracticeFieldFlow) уже переведены на `<Screen>` — использовать их как референс.
 
-## Base44: проверенное окружение разработки
-
-- `docker-compose.base44.yml` запускает Vite из bind-mounted исходников на порту 3000; зависимости синхронизируются через `npm ci --ignore-scripts` при старте. `__VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS` передаётся из окружения платформы, точный hostname в конфиг не записывать.
-- Проверки выполнять внутри сервиса `web`: `docker compose -f docker-compose.base44.yml exec -T web npm run check:core`. Для UX сначала установить браузеры внутри контейнера: `npx playwright install --with-deps chromium webkit`; целевые файлы — `typography-weights.spec.mjs` и `steps-reliability.spec.mjs`, конфиг `playwright.ux.config.mjs`. Для iOS-проверки добавлять `--browser=webkit`.
-- Утренний чек-ин не показывает старые `.mx-demo-checkin__eyebrow`/`__action-bar`: UX-проверка должна пройти реальные шкалы до завершения через `checkin-helpers.mjs`. У `.mx-library-v2__pill` учитывать специфичность родительского `.mx-library-catalog button { font: inherit; }`.
-- Скриншоты снимать после `document.fonts.ready` и завершения конечных анимаций; иначе переход экрана может выглядеть как ошибочно приглушённый текст. Временные сценарии снимков хранить в `/tmp`, evidence — в игнорируемом `artifacts/`.
-
 ## Context economy
 
 - Читай только файлы из порядка чтения (AGENTS.md → PROJECT_STATE.md → PRODUCT.md →
