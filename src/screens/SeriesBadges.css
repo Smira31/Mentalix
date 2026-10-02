@@ -108,7 +108,7 @@
   background: transparent;
   color: rgb(var(--c-muted, 133 133 133));
   font: inherit;
-  font-size: 14px;
+  font-size: var(--mx-type-body-size);
   font-weight: 600;
 }
 
@@ -161,7 +161,7 @@
 }
 .mx-path-all-badges > h1 {
   margin: 12px 0 28px;
-  font-size: 34px;
+  font-size: var(--mx-type-page-size);
   font-weight: 700;
   text-align: center;
 }
@@ -171,7 +171,7 @@
 .mx-path-all-group h2 {
   margin-bottom: 16px;
   color: rgb(var(--c-muted, 133 133 133));
-  font-size: 13px;
+  font-size: var(--mx-type-caption-size);
   text-align: center;
 }
 .mx-path-badge-grid {
@@ -199,13 +199,13 @@
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   max-width: 100%;
-  font-size: 12px;
+  font-size: var(--mx-type-caption-size);
   font-weight: 500;
   line-height: 1.2;
 }
 .mx-path-badge-grid span {
   color: rgb(var(--c-muted, 133 133 133));
-  font-size: 12px;
+  font-size: var(--mx-type-caption-size);
 }
 
 .mx-path-content {
@@ -229,7 +229,7 @@
 .mx-path-award-count {
   display: block;
   padding-top: 38px;
-  font-size: 30px;
+  font-size: var(--mx-type-theme-number-size);
   font-weight: 700;
   line-height: 1;
 }
@@ -239,7 +239,7 @@
 .mx-path-stat-section h2,
 .mx-badge-sheet__eyebrow {
   color: rgb(var(--c-muted, 133 133 133));
-  font-size: 11px;
+  font-size: var(--mx-type-meta-size);
   font-weight: 600;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -277,7 +277,7 @@
   position: relative;
   z-index: 1;
   margin-top: 18px;
-  font-size: 13px;
+  font-size: var(--mx-type-caption-size);
   font-weight: 600;
 }
 .mx-path-featured-copy {
@@ -285,7 +285,7 @@
   z-index: 1;
   margin-top: 4px;
   color: rgb(var(--c-muted, 133 133 133));
-  font-size: 12px;
+  font-size: var(--mx-type-caption-size);
 }
 
 .mx-reward-icon {
@@ -334,7 +334,7 @@
   border: 0;
   background: transparent;
   color: rgb(var(--c-muted, 133 133 133));
-  font-size: 15px;
+  font-size: var(--mx-type-checkin-label-size);
   font-weight: 500;
   text-align: right;
 }
@@ -344,7 +344,7 @@
 }
 .mx-path-see-all span {
   margin-left: 4px;
-  font-size: 20px;
+  font-size: var(--mx-type-card-size);
 }
 .mx-path-awards-section h2 {
   margin: 0 0 16px;
@@ -356,7 +356,7 @@
   margin: 0 0 12px;
   text-align: center;
   font-family: 'Manrope', sans-serif;
-  font-size: 13px;
+  font-size: var(--mx-type-caption-size);
   font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -395,7 +395,7 @@
   white-space: nowrap;
   text-overflow: ellipsis;
   color: rgb(var(--c-text, 243 243 243));
-  font-size: 15px;
+  font-size: var(--mx-type-checkin-label-size);
   font-weight: 500;
   line-height: 1.2;
 }
@@ -408,7 +408,7 @@
   -webkit-line-clamp: 2;
   white-space: normal;
   color: rgb(var(--c-muted, 133 133 133));
-  font-size: 11px;
+  font-size: var(--mx-type-meta-size);
   font-weight: 400;
   line-height: 1.3;
 }
@@ -419,7 +419,7 @@
   align-items: flex-end;
   gap: 6px;
   color: rgb(var(--c-muted, 133 133 133));
-  font-size: 13px;
+  font-size: var(--mx-type-caption-size);
   font-weight: 600;
 }
 .mx-path-row-value strong {
@@ -453,7 +453,7 @@
   justify-content: space-between;
   padding: 0 16px;
   color: rgb(var(--c-text, 243 243 243));
-  font-size: 17px;
+  font-size: var(--mx-type-control-size);
   font-weight: 400;
 }
 .mx-path-toggle-row + .mx-path-toggle-row {
@@ -518,13 +518,13 @@
   scroll-snap-align: start;
 }
 .mx-path-tile strong {
-  font-size: 28px;
+  font-size: var(--mx-type-theme-size);
   font-weight: 700;
   line-height: 1;
   color: rgb(var(--c-text, 243 243 243));
 }
 .mx-path-tile span {
-  font-size: 13px;
+  font-size: var(--mx-type-caption-size);
   font-weight: 400;
   line-height: 1.2;
   color: rgb(var(--c-muted, 133 133 133));
@@ -548,11 +548,11 @@
   gap: 18px;
   padding: 0 16px;
   color: rgb(var(--c-text, 243 243 243));
-  font-size: 15px;
+  font-size: var(--mx-type-checkin-label-size);
   font-weight: 400;
 }
 .mx-path-stat-row strong {
-  font-size: 17px;
+  font-size: var(--mx-type-control-size);
   font-weight: 700;
   text-align: right;
 }
@@ -613,13 +613,13 @@
 }
 .mx-badge-sheet__body h2 {
   margin: 7px 0 0;
-  font-size: 28px;
+  font-size: var(--mx-type-theme-size);
   font-weight: 700;
 }
 .mx-badge-sheet__body p {
   margin: 12px 0 0;
   color: rgb(var(--c-muted, 133 133 133));
-  font-size: 15px;
+  font-size: var(--mx-type-checkin-label-size);
 }
 .mx-badge-sheet__progress,
 .mx-badge-sheet__received {
@@ -627,7 +627,7 @@
   justify-content: center;
   gap: 8px;
   margin-top: 16px;
-  font-size: 15px;
+  font-size: var(--mx-type-checkin-label-size);
 }
 .mx-badge-sheet__progress strong,
 .mx-badge-sheet__received strong {
@@ -651,7 +651,7 @@
   border-radius: 999px;
   background: rgb(var(--c-card2, 17 17 17));
   color: rgb(var(--c-text, 243 243 243));
-  font-size: 17px;
+  font-size: var(--mx-type-control-size);
   font-weight: 600;
 }
 .mx-badge-sheet__share {

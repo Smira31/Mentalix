@@ -1277,7 +1277,7 @@ button {
 }
 
 .mx-type-checkin-label {
-  font-size: 0.8125rem;
+  font-size: var(--mx-type-checkin-label-size);
   line-height: 1.25;
   font-weight: 400;
 }
