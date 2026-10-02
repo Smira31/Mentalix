@@ -85,7 +85,7 @@
 .mx-profile-page__bar-title {
   max-width: calc(100% - 128px);
   overflow: hidden;
-  font-size: 17px;
+  font-size: var(--mx-type-control-size);
   font-weight: 600;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -133,7 +133,7 @@
 .mx-profile-page__title {
   margin: var(--mx-profile-title-gap) 0 20px;
   padding-inline: 20px;
-  font-size: 34px;
+  font-size: var(--mx-type-page-size);
   font-weight: 700;
   line-height: 1.15;
   letter-spacing: -0.02em;
@@ -155,7 +155,7 @@
   margin: 0 0 8px;
   padding-inline: 4px;
   color: rgb(var(--c-muted));
-  font-size: 11px;
+  font-size: var(--mx-type-meta-size);
   font-weight: 600;
   line-height: 13px;
   letter-spacing: 0.08em;
@@ -221,7 +221,7 @@ button.mx-profile-row:active {
 }
 
 .mx-profile-row__title {
-  font-size: 17px;
+  font-size: var(--mx-type-control-size);
   font-weight: 400;
   line-height: 22px;
   white-space: normal;
@@ -230,7 +230,7 @@ button.mx-profile-row:active {
 .mx-profile-row__subtitle {
   margin-top: 2px;
   color: rgb(var(--c-muted));
-  font-size: 13px;
+  font-size: var(--mx-type-caption-size);
   line-height: 17px;
 }
 
@@ -246,7 +246,7 @@ button.mx-profile-row:active {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  font-size: 17px;
+  font-size: var(--mx-type-control-size);
   font-weight: 700;
   text-align: right;
 }
@@ -286,7 +286,7 @@ button.mx-profile-row:active {
   margin: 8px 0 0;
   padding-inline: 4px;
   color: rgb(var(--c-muted));
-  font-size: 13px;
+  font-size: var(--mx-type-caption-size);
   line-height: 1.4;
 }
 
@@ -315,7 +315,7 @@ button.mx-profile-row:active {
   border-radius: 12px;
   background: rgb(var(--c-card));
   color: rgb(var(--c-muted));
-  font-size: 13px;
+  font-size: var(--mx-type-caption-size);
   font-weight: 700;
 }
 
@@ -327,7 +327,7 @@ button.mx-profile-row:active {
 
 .mx-profile-chip__hint {
   margin-top: 2px;
-  font-size: 11px;
+  font-size: var(--mx-type-meta-size);
   font-weight: 600;
   opacity: 0.7;
 }
@@ -341,13 +341,13 @@ button.mx-profile-row:active {
   border-radius: 12px;
   background: rgb(var(--c-card));
   color: rgb(var(--c-text));
-  font-size: 16px;
+  font-size: var(--mx-type-segment-size);
 }
 
 .mx-profile-label {
   display: block;
   color: rgb(var(--c-muted));
-  font-size: 13px;
+  font-size: var(--mx-type-caption-size);
 }
 
 .mx-profile-text-button {
@@ -357,7 +357,7 @@ button.mx-profile-row:active {
   border-radius: 999px;
   background: transparent;
   color: rgb(var(--c-text));
-  font-size: 14px;
+  font-size: var(--mx-type-body-size);
   font-weight: 600;
 }
 
@@ -453,7 +453,7 @@ button.mx-profile-row:active {
   border-radius: 16px;
   background: rgb(var(--c-card2));
   color: rgb(var(--c-muted));
-  font-size: 15px;
+  font-size: var(--mx-type-checkin-label-size);
   font-weight: 600;
   cursor: not-allowed;
 }
@@ -471,7 +471,7 @@ button.mx-profile-row:active {
   border-radius: 999px;
   background: rgb(var(--c-pill-light));
   color: rgb(var(--c-bg));
-  font-size: 16px;
+  font-size: var(--mx-type-segment-size);
   font-weight: 700;
   transition: transform 160ms ease;
 }
@@ -500,7 +500,7 @@ button.mx-profile-row:active {
   display: flex;
   gap: 12px;
   color: rgb(var(--c-text));
-  font-size: 15px;
+  font-size: var(--mx-type-checkin-label-size);
   line-height: 1.4;
 }
 
@@ -513,7 +513,7 @@ button.mx-profile-row:active {
   border-radius: 50%;
   background: rgb(var(--c-card3));
   color: rgb(var(--c-muted));
-  font-size: 13px;
+  font-size: var(--mx-type-caption-size);
   font-weight: 700;
 }
 
@@ -556,7 +556,7 @@ button.mx-profile-row:active {
   border-radius: 16px;
   background: rgb(var(--c-card2));
   color: rgb(var(--c-text));
-  font-size: 16px;
+  font-size: var(--mx-type-segment-size);
   font-weight: 400;
   text-align: left;
 }
@@ -580,7 +580,7 @@ button.mx-profile-row:active {
 .mx-wtp-description {
   margin-top: 12px;
   padding-inline: 17px;
-  font-size: 13px;
+  font-size: var(--mx-type-caption-size);
   line-height: 1.4;
 }
 
@@ -594,7 +594,7 @@ button.mx-profile-row:active {
   border-radius: 999px;
   background: rgb(var(--c-text));
   color: rgb(var(--c-bg));
-  font-size: 16px;
+  font-size: var(--mx-type-segment-size);
   font-weight: 600;
 }
 
@@ -632,7 +632,7 @@ button.mx-profile-row:active {
   gap: 12px;
   padding: 8px 20px;
   color: rgb(var(--c-text));
-  font-size: 17px;
+  font-size: var(--mx-type-control-size);
   cursor: pointer;
   list-style: none;
 }
@@ -682,7 +682,7 @@ button.mx-profile-row:active {
 .mx-profile-version {
   margin: 32px 0 0;
   color: rgb(var(--c-faint));
-  font-size: 13px;
+  font-size: var(--mx-type-caption-size);
   text-align: center;
 }
 
@@ -694,7 +694,7 @@ button.mx-profile-row:active {
   background: transparent;
   color: rgb(var(--c-text));
   font: inherit;
-  font-size: 16px;
+  font-size: var(--mx-type-segment-size);
   font-weight: 600;
   text-align: right;
   width: 120px;
@@ -704,7 +704,7 @@ button.mx-profile-row:active {
 
 .mx-profile-page--sub .mx-profile-date-input {
   color: rgb(var(--c-muted));
-  font-size: 17px;
+  font-size: var(--mx-type-control-size);
   font-weight: 400;
 }
 
@@ -728,7 +728,7 @@ button.mx-profile-row:active {
   border-radius: 8px;
   background: rgb(var(--c-card));
   color: rgb(var(--c-muted));
-  font-size: 16px;
+  font-size: var(--mx-type-segment-size);
   cursor: pointer;
   color-scheme: dark;
 }
@@ -763,13 +763,13 @@ button.mx-profile-row:active {
 }
 
 .mx-profile-milestone__title {
-  font-size: 15px;
+  font-size: var(--mx-type-checkin-label-size);
   font-weight: 600;
   color: rgb(var(--c-text));
 }
 
 .mx-profile-milestone__desc {
-  font-size: 13px;
+  font-size: var(--mx-type-caption-size);
   color: rgb(var(--c-muted));
 }
 
@@ -779,7 +779,7 @@ button.mx-profile-row:active {
   margin: -12px 0 28px;
   padding-inline: 20px;
   color: rgb(var(--c-muted));
-  font-size: 13px;
+  font-size: var(--mx-type-caption-size);
   line-height: 1.4;
 }
 
@@ -794,7 +794,7 @@ button.mx-profile-row:active {
 .mx-privacy-heading {
   margin: 0 0 12px;
   color: rgb(var(--c-text));
-  font-size: 17px;
+  font-size: var(--mx-type-control-size);
   font-weight: 700;
   line-height: 1.3;
 }
@@ -802,7 +802,7 @@ button.mx-profile-row:active {
 .mx-privacy-text {
   margin: 0 0 12px;
   color: rgb(var(--c-text));
-  font-size: 15px;
+  font-size: var(--mx-type-checkin-label-size);
   font-weight: 400;
   line-height: 1.5;
 }
@@ -819,7 +819,7 @@ button.mx-profile-row:active {
 
 .mx-privacy-list li {
   color: rgb(var(--c-text));
-  font-size: 15px;
+  font-size: var(--mx-type-checkin-label-size);
   font-weight: 400;
   line-height: 1.5;
 }
@@ -859,7 +859,7 @@ button.mx-profile-row:active {
   margin: 0 0 9px;
   padding-inline: 16px;
   font-family: 'Manrope', system-ui, sans-serif;
-  font-size: 12px;
+  font-size: var(--mx-type-meta-size);
   font-weight: 700;
   letter-spacing: 0.3em;
 }

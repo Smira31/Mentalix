@@ -33,7 +33,7 @@
 
 .mx-journal-day-header__meta,
 .mx-journal-step-note {
-  font-size: 0.6875rem;
+  font-size: var(--mx-type-meta-size);
   line-height: 1.35;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -64,7 +64,7 @@
 
 .mx-journal-editor-wrap [contenteditable='true'] {
   min-height: 11rem;
-  font-size: 1rem;
+  font-size: var(--mx-type-segment-size);
   line-height: 1.6;
   caret-color: rgb(var(--c-gold));
 }
@@ -111,7 +111,7 @@
 
   .mx-journal-intro h1,
   .mx-journal-prompt h1 {
-    font-size: 1.375rem;
+    font-size: var(--mx-type-hero-size);
   }
 
   .mx-journal-intro .mx-journal-primary-action {
@@ -128,7 +128,7 @@
 
   .mx-journal-prompt h1 {
     margin-top: 8px;
-    font-size: 1.25rem;
+    font-size: var(--mx-type-card-size);
   }
 
   .mx-journal-prompt p {
