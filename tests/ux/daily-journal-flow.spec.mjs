@@ -102,7 +102,7 @@ test('журнал: настройка — 3 подэкрана картинки
 
   // ── Шаг 1 — Цели (пусто → ✕ = назад на intro) ──
   await expect(page.getByTestId('dj-setup-next')).toBeVisible()
-  await expect(page.locator('.mx-dj-setup__step-label')).toHaveText('Шаг 1 из 4 · Цели')
+  await expect(page.locator('.mx-dj-setup__step-label')).toHaveText('Шаг 1 из 5 · Цели')
   await page.getByTestId('dj-setup-next').click()
   // Вернулись на intro
   await expect(page.getByTestId('dj-intro-skip')).toBeVisible()
@@ -114,38 +114,42 @@ test('журнал: настройка — 3 подэкрана картинки
   await page.getByTestId('dj-setup-next').click()
 
   // ── Шаг 2 — Кем я становлюсь ──
-  await expect(page.locator('.mx-dj-setup__step-label')).toHaveText('Шаг 2 из 4 · Кем я становлюсь')
+  await expect(page.locator('.mx-dj-setup__step-label')).toHaveText('Шаг 2 из 5 · Кем я становлюсь')
   await page.getByTestId('dj-setup-reminder-0').fill('Я делаю главное до обеда')
   await page.getByTestId('dj-setup-next').click()
 
   // ── Шаг 3 — Картинка будущего · 1/3 ──
-  await expect(page.locator('.mx-dj-setup__step-label')).toHaveText('Шаг 3 из 4 · Картинка будущего · 1/3')
+  await expect(page.locator('.mx-dj-setup__step-label')).toHaveText('Шаг 3 из 5 · Картинка будущего · 1/3')
   await expect(page.getByTestId('dj-setup-vision-scene')).toBeVisible()
   // Пусто → ✕ = назад на шаг 2
   await page.getByTestId('dj-setup-next').click()
-  await expect(page.locator('.mx-dj-setup__step-label')).toHaveText('Шаг 2 из 4 · Кем я становлюсь')
+  await expect(page.locator('.mx-dj-setup__step-label')).toHaveText('Шаг 2 из 5 · Кем я становлюсь')
   // Назад на шаг 3
   await page.getByTestId('dj-setup-next').click()
-  await expect(page.locator('.mx-dj-setup__step-label')).toHaveText('Шаг 3 из 4 · Картинка будущего · 1/3')
+  await expect(page.locator('.mx-dj-setup__step-label')).toHaveText('Шаг 3 из 5 · Картинка будущего · 1/3')
 
   // Заполняем scene → ✓ дальше
   await page.getByTestId('dj-setup-vision-scene').fill('Сижу у окна, работа сделана')
   await page.getByTestId('dj-setup-next').click()
 
   // ── 2/3 ──
-  await expect(page.locator('.mx-dj-setup__step-label')).toHaveText('Шаг 3 из 4 · Картинка будущего · 2/3')
+  await expect(page.locator('.mx-dj-setup__step-label')).toHaveText('Шаг 3 из 5 · Картинка будущего · 2/3')
   await expect(page.getByTestId('dj-setup-vision-obstacle')).toBeVisible()
   await page.getByTestId('dj-setup-vision-obstacle').fill('Усталость')
   await page.getByTestId('dj-setup-next').click()
 
   // ── 3/3 ──
-  await expect(page.locator('.mx-dj-setup__step-label')).toHaveText('Шаг 3 из 4 · Картинка будущего · 3/3')
+  await expect(page.locator('.mx-dj-setup__step-label')).toHaveText('Шаг 3 из 5 · Картинка будущего · 3/3')
   await expect(page.getByTestId('dj-setup-vision-plan')).toBeVisible()
   await page.getByTestId('dj-setup-vision-plan').fill('Сделаю перерыв')
   await page.getByTestId('dj-setup-next').click()
 
   // ── Шаг 4 — Мои вопросы (есть дефолт → ✓) ──
-  await expect(page.locator('.mx-dj-setup__step-label')).toHaveText('Шаг 4 из 4 · Мои вопросы')
+  await expect(page.locator('.mx-dj-setup__step-label')).toHaveText('Шаг 4 из 5 · Мои вопросы')
+  await page.getByTestId('dj-setup-next').click()
+
+  // ── Шаг 5 — Напоминание ──
+  await expect(page.locator('.mx-dj-setup__step-label')).toHaveText('Шаг 5 из 5 · Напоминание')
   await page.getByTestId('dj-setup-next').click()
 
   // ── Перечитай (после настройки с данными) ──
@@ -171,6 +175,8 @@ test('журнал: сброс настройки → intro → поток бе�
   await page.getByTestId('dj-setup-next').click()
   await page.getByTestId('dj-setup-vision-plan').fill('Перерыв')
   await page.getByTestId('dj-setup-next').click()
+  await page.getByTestId('dj-setup-next').click()
+  // Шаг 5 — Напоминание (дефолт «Не напоминать» → ✓)
   await page.getByTestId('dj-setup-next').click()
 
   // ── Перечитай — настройка заполнена ──

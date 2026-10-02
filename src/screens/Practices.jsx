@@ -415,7 +415,7 @@ export default function Practices({
   }
 
   if (sub === 'journal') {
-    return <DailyJournalFlow userId={user.id} onClose={() => setSub(null)} />
+    return <DailyJournalFlow userId={user.id} onClose={backToList} />
   }
 
   if (sub === 'self-discovery') {

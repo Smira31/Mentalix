@@ -20,6 +20,7 @@ import {
 import { dispatchTabRefresh } from '../../lib/tabRefresh'
 import { DEFAULT_JOURNAL_PROMPTS } from '../../lib/dailyJournalConstants'
 import DailyJournalSetup from './DailyJournalSetup'
+import DailyJournalEntries from './DailyJournalEntries'
 import './DailyJournalFlow.css'
 
 const MONTHS_RU = [
@@ -84,6 +85,7 @@ export default function DailyJournalFlow({ userId, onClose }) {
   const [resetError, setResetError] = useState(false)
   const [pendingComplete, setPendingComplete] = useState(false)
   const [hasTodayEntry, setHasTodayEntry] = useState(false)
+  const [entriesReturnStage, setEntriesReturnStage] = useState(null)
   const streamRef = useRef(null)
   const answerRef = useRef(null)
   const appendCursorRef = useRef(false)
@@ -230,6 +232,7 @@ export default function DailyJournalFlow({ userId, onClose }) {
   // ── Back button ──
   const goBack = useCallback(() => {
     if (stage === 'setup') return
+    if (stage === 'entries') return
     if (stage === 'today') {
       onClose()
       return
@@ -285,6 +288,7 @@ export default function DailyJournalFlow({ userId, onClose }) {
         reminders: [],
         vision: { scene: '', obstacle: '', plan: '' },
         prompts: [...DEFAULT_JOURNAL_PROMPTS],
+        reminder: { enabled: false, time: '21:00' },
       })
       setSetup(result)
       setResetError(false)
@@ -294,6 +298,17 @@ export default function DailyJournalFlow({ userId, onClose }) {
       setResetError(true)
       setTimeout(() => setResetError(false), 3000)
     }
+  }
+
+  // ── Мои записи ──
+  function openEntries() {
+    platform.haptic('light')
+    setEntriesReturnStage(stage)
+    setStage('entries')
+  }
+
+  function closeEntries() {
+    setStage(entriesReturnStage || (hasTodayEntry ? 'today' : 'review'))
   }
 
   // ── Дописать: открыть поток с уже введённым текстом ──
@@ -401,6 +416,11 @@ export default function DailyJournalFlow({ userId, onClose }) {
     )
   }
 
+  // ── Entries (Мои записи) ──
+  if (stage === 'entries') {
+    return <DailyJournalEntries userId={userId} onBack={closeEntries} />
+  }
+
   // ── Footer ──
   let footerContent = null
   if (stage === 'intro') {
@@ -416,19 +436,29 @@ export default function DailyJournalFlow({ userId, onClose }) {
         >
           Дописать
         </button>
-        {setupHasData(setup) && (
+        <div className="mx-dj-today__links">
+          {setupHasData(setup) && (
+            <button
+              type="button"
+              className="mx-dj-today__review-link"
+              data-testid="dj-today-review"
+              onClick={() => {
+                platform.haptic('light')
+                setStage('review')
+              }}
+            >
+              Перечитай
+            </button>
+          )}
           <button
             type="button"
             className="mx-dj-today__review-link"
-            data-testid="dj-today-review"
-            onClick={() => {
-              platform.haptic('light')
-              setStage('review')
-            }}
+            data-testid="dj-today-entries"
+            onClick={openEntries}
           >
-            Перечитай
+            Мои записи
           </button>
-        )}
+        </div>
       </div>
     )
   } else if (stage === 'review') {
@@ -611,6 +641,16 @@ export default function DailyJournalFlow({ userId, onClose }) {
               )}
             </div>
           )}
+          {setup?.reminder && (
+            <div className="mx-dj-review__section">
+              <CapsLabel className="mx-dj-review__label">Напоминание</CapsLabel>
+              <p className="mx-dj-review__reminder">
+                {setup.reminder.enabled
+                  ? `Напоминание: ${setup.reminder.time}`
+                  : 'без напоминания'}
+              </p>
+            </div>
+          )}
           <button
             type="button"
             className="mx-dj-review__edit-link"
@@ -618,6 +658,14 @@ export default function DailyJournalFlow({ userId, onClose }) {
             onClick={() => setStage('setup')}
           >
             Изменить настройку
+          </button>
+          <button
+            type="button"
+            className="mx-dj-review__edit-link"
+            data-testid="dj-review-entries"
+            onClick={openEntries}
+          >
+            Мои записи
           </button>
           <button
             type="button"
@@ -704,7 +752,12 @@ export default function DailyJournalFlow({ userId, onClose }) {
             datePill={
               dayNumber ? (
                 <>
-                  <span aria-hidden="true">✓</span> день {dayNumber}
+                  <span aria-hidden="true">✓</span>{' '}
+                  {dayNumber >= 90
+                    ? dayNumber === 90
+                      ? '90 дней. Ты сделал это.'
+                      : `день ${dayNumber}`
+                    : `день ${dayNumber} из 90`}
                 </>
               ) : (
                 <>

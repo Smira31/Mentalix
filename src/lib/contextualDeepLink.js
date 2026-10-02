@@ -6,6 +6,9 @@ export function parseContextualDeepLink(search, startParam) {
   const action = new URLSearchParams(search).get('action')
   const returnFlow = parseReturnFlow(startParam)
   if (returnFlow) return { sub: returnFlow === 'evening_v1' ? 'evening' : 'checkin', returnFlow }
+  // start_param 'journal' (Telegram initDataUnsafe.start_param, в вебе ?startapp=journal)
+  // — открывает журнал сразу; «Назад» из журнала → «Сегодня».
+  if (startParam === 'journal') return { sub: null, returnFlow: null, practicesSub: 'journal' }
   if (action === 'checkin') return { sub: 'contextualCheckin', returnFlow: null }
   if (action === 'evening' || action === 'breathing') return { sub: action, returnFlow: null }
   if (action === 'theme') return { sub: 'theme', returnFlow: null }

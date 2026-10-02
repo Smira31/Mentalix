@@ -1268,6 +1268,7 @@ function respond(path, options = {}) {
         reminders: [],
         vision: { scene: '', obstacle: '', plan: '' },
         prompts: [...DEFAULT_JOURNAL_PROMPTS],
+        reminder: { enabled: false, time: '21:00' },
         updated_at: null,
       }
       writeState(state)
@@ -1292,6 +1293,7 @@ function respond(path, options = {}) {
         plan: body.vision?.plan || '',
       },
       prompts,
+      reminder: body.reminder || { enabled: false, time: '21:00' },
       updated_at: now().toISOString(),
     }
     writeState(state)
@@ -1334,6 +1336,11 @@ function respond(path, options = {}) {
     )
     writeState({ ...state, dailyJournalEntries: entries })
     return json(entries.find(e => e.id === id))
+  }
+  if (pathname.match(/^\/daily-journal\/entries\/\d+$/) && method === 'GET') {
+    const id = numericId(pathname)
+    const entry = (state.dailyJournalEntries || []).find(e => e.id === id)
+    return json(entry || { error: 'not found' })
   }
   if (pathname === '/daily-journal/entries' && method === 'GET') {
     const limit = parseInt(url.searchParams.get('limit') || '20', 10)

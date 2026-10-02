@@ -675,10 +675,10 @@ export const api = {
   dailyJournal: {
     getSetup: userId => request(withQuery('/daily-journal/setup', { user_id: userId })),
 
-    saveSetup: (userId, { goals, reminders, vision, prompts }) =>
+    saveSetup: (userId, { goals, reminders, vision, prompts, reminder }) =>
       request('/daily-journal/setup', {
         method: 'PUT',
-        body: JSON.stringify({ user_id: userId, goals, reminders, vision, prompts }),
+        body: JSON.stringify({ user_id: userId, goals, reminders, vision, prompts, reminder }),
       }),
 
     createEntry: (userId, { date, stream_text, prompt_text, prompt_answer, helpful }) =>
@@ -702,6 +702,9 @@ export const api = {
 
     entries: (userId, { limit, before } = {}) =>
       request(withQuery('/daily-journal/entries', { user_id: userId, limit, before })),
+
+    getEntry: (entryId, userId) =>
+      request(withQuery(`/daily-journal/entries/${entryId}`, { user_id: userId })),
   },
 
   goals: {

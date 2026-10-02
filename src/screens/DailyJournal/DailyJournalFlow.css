@@ -350,6 +350,12 @@
   text-align: center;
 }
 
+.mx-dj-today__links {
+  display: flex;
+  justify-content: center;
+  gap: var(--mx-space-4);
+}
+
 .mx-dj-today__review-link {
   background: none;
   border: 0;
@@ -586,6 +592,198 @@
   font-size: 13px;
   z-index: 50;
   white-space: nowrap;
+}
+
+/* ── Entries list (Мои записи) ── */
+.mx-dj-entries {
+  padding-top: var(--mx-space-2);
+  padding-bottom: calc(var(--mx-btn-round-h) + var(--mx-space-4) + var(--app-safe-bottom));
+}
+
+.mx-dj-entries__label {
+  display: block;
+  margin-bottom: var(--mx-space-4);
+}
+
+.mx-dj-entries__loading {
+  color: rgb(var(--c-muted));
+  font-size: 15px;
+  text-align: center;
+  padding: var(--mx-space-6) 0;
+}
+
+.mx-dj-entries__empty {
+  color: rgb(var(--c-muted));
+  font-size: 16px;
+  line-height: 1.5;
+  padding: var(--mx-space-4) 0;
+}
+
+.mx-dj-entries__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mx-space-3);
+}
+
+.mx-dj-entries__item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 0;
+  padding: var(--mx-space-3) 0;
+  cursor: pointer;
+  border-bottom: 1px solid rgb(var(--c-line) / 0.1);
+}
+
+.mx-dj-entries__item-header {
+  display: flex;
+  align-items: baseline;
+  gap: var(--mx-space-2);
+  margin-bottom: var(--mx-space-1);
+}
+
+.mx-dj-entries__item-date {
+  font-size: 16px;
+  font-weight: 600;
+  color: rgb(var(--c-text));
+}
+
+.mx-dj-entries__item-day {
+  font-size: 13px;
+  color: rgb(var(--c-faint));
+}
+
+.mx-dj-entries__item-stream {
+  font-size: 15px;
+  line-height: 1.5;
+  color: rgb(var(--c-muted));
+  margin: 0 0 var(--mx-space-1);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  white-space: pre-wrap;
+}
+
+.mx-dj-entries__item-question {
+  font-size: 14px;
+  line-height: 1.4;
+  color: rgb(var(--c-faint));
+  margin: 0;
+}
+
+.mx-dj-entries__sentinel {
+  text-align: center;
+  color: rgb(var(--c-faint));
+  font-size: 14px;
+  padding: var(--mx-space-2) 0;
+  min-height: 20px;
+}
+
+/* ── Entry view (просмотр записи) ── */
+.mx-dj-entry-view {
+  padding-top: var(--mx-space-2);
+  padding-bottom: calc(var(--mx-btn-round-h) + var(--mx-space-4) + var(--app-safe-bottom));
+}
+
+.mx-dj-entry-view__label {
+  display: block;
+  margin-bottom: var(--mx-space-4);
+}
+
+.mx-dj-entry-view__section {
+  margin-bottom: var(--mx-space-6);
+}
+
+.mx-dj-entry-view__section-label {
+  display: block;
+  margin-bottom: var(--mx-space-2);
+}
+
+.mx-dj-entry-view__question {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: rgb(var(--c-muted));
+  margin: 0 0 var(--mx-space-2);
+}
+
+.mx-dj-entry-view__text {
+  font-size: 16px;
+  line-height: 1.6;
+  color: rgb(var(--c-text));
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+/* ── Reminder step (Шаг 5) ── */
+.mx-dj-reminder {
+  padding-top: var(--mx-space-2);
+}
+
+.mx-dj-reminder__tiles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mx-space-2);
+  margin-bottom: var(--mx-space-3);
+}
+
+.mx-dj-reminder__tile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: var(--mx-space-3) var(--mx-space-4);
+  border-radius: var(--mx-radius-card);
+  background: rgb(var(--c-card2));
+  border: 1px solid transparent;
+  color: rgb(var(--c-text));
+  font-size: 16px;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.mx-dj-reminder__tile--selected {
+  border-color: rgb(var(--c-gold) / 0.5);
+}
+
+.mx-dj-reminder__tile-time {
+  color: rgb(var(--c-faint));
+  font-size: 15px;
+}
+
+.mx-dj-reminder__time-picker {
+  margin-top: var(--mx-space-2);
+}
+
+.mx-dj-reminder__time-input {
+  width: 100%;
+  padding: var(--mx-space-2) var(--mx-space-3);
+  border-radius: var(--mx-radius-card);
+  background: rgb(var(--c-card2));
+  border: 1px solid rgb(var(--c-border) / 0.5);
+  color: rgb(var(--c-text));
+  font-size: 16px;
+  outline: none;
+}
+
+.mx-dj-reminder__time-input:focus {
+  border-color: rgb(var(--c-gold) / 0.5);
+}
+
+.mx-dj-reminder__hint {
+  font-size: 14px;
+  line-height: 1.45;
+  color: rgb(var(--c-faint));
+}
+
+/* ── Review: reminder row ── */
+.mx-dj-review__reminder {
+  font-size: 16px;
+  line-height: 1.5;
+  color: rgb(var(--c-muted));
+  margin-bottom: var(--mx-space-2);
 }
 
 /* ── Responsive ── */

@@ -13,27 +13,33 @@ import './DailyJournalFlow.css'
 const SETUP_STEPS = [
   {
     key: 'goals',
-    label: 'Шаг 1 из 4 · Цели',
+    label: 'Шаг 1 из 5 · Цели',
     title: 'Чего ты хочешь добиться в ближайший год?',
     hint: 'Можно коротко.',
   },
   {
     key: 'reminders',
-    label: 'Шаг 2 из 4 · Кем я становлюсь',
+    label: 'Шаг 2 из 5 · Кем я становлюсь',
     title: 'Кем я становлюсь',
     hint: 'Не похвала себе, а напоминание: что для тебя важно и каким ты хочешь быть.',
   },
   {
     key: 'vision',
-    label: 'Шаг 3 из 4 · Картинка будущего',
+    label: 'Шаг 3 из 5 · Картинка будущего',
     title: 'Картинка будущего',
     hint: 'Помогает не терять направление, когда всё идёт не по плану.',
   },
   {
     key: 'prompts',
-    label: 'Шаг 4 из 4 · Мои вопросы',
+    label: 'Шаг 4 из 5 · Мои вопросы',
     title: 'Вопросы для дневной записи',
     hint: 'Один вопрос на каждый день — по кругу. Можно изменить, удалить или добавить.',
+  },
+  {
+    key: 'reminder',
+    label: 'Шаг 5 из 5 · Напоминание',
+    title: 'Когда напомнить?',
+    hint: 'Бот напомнит, только если ты ещё не писал сегодня.',
   },
 ]
 
@@ -61,6 +67,12 @@ const VISION_PLACEHOLDERS = {
   plan: 'Например: делаю 10 минут, а не всё сразу…',
 }
 
+const REMINDER_TILES = [
+  { label: 'Утром', time: '08:00' },
+  { label: 'Днём', time: '13:00' },
+  { label: 'Вечером', time: '21:00' },
+]
+
 export default function DailyJournalSetup({ userId, initialSetup, onComplete, onBack }) {
   const [stepIndex, setStepIndex] = useState(0)
   const [visionSubStep, setVisionSubStep] = useState(0)
@@ -80,6 +92,12 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
     const p = initialSetup?.prompts || []
     return p.length > 0 ? [...p] : ['']
   })
+  const [reminder, setReminder] = useState(
+    () => initialSetup?.reminder || { enabled: false, time: '21:00' }
+  )
+  const [customTime, setCustomTime] = useState(
+    () => initialSetup?.reminder?.time || '21:00'
+  )
   const [saving, setSaving] = useState(false)
 
   const step = SETUP_STEPS[stepIndex]
@@ -106,6 +124,7 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
       return Boolean(vision[fieldKey]?.trim())
     }
     if (stepIndex === 3) return prompts.some(p => p.trim())
+    if (stepIndex === 4) return true
     return false
   }
 
@@ -119,6 +138,11 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
       platform.haptic('light')
       setStepIndex(2)
       setVisionSubStep(2)
+      return
+    }
+    if (stepIndex === 4) {
+      platform.haptic('light')
+      setStepIndex(3)
       return
     }
     if (stepIndex > 0) {
@@ -152,6 +176,7 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
       reminders: reminders.filter(r => r.trim()),
       vision,
       prompts: prompts.filter(p => p.trim()).slice(0, 7),
+      reminder,
     }
     setSaving(true)
     try {
@@ -198,6 +223,26 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
     if (prompts.length <= 1) return
     setPrompts(prev => prev.filter((_, idx) => idx !== i))
   }
+
+  // ── Reminder tile handlers ──
+  function selectReminderTile(time) {
+    platform.haptic('light')
+    setReminder({ enabled: true, time })
+    setCustomTime(time)
+  }
+
+  function selectReminderCustom(timeStr) {
+    setCustomTime(timeStr)
+    setReminder({ enabled: true, time: timeStr })
+  }
+
+  function selectReminderOff() {
+    platform.haptic('light')
+    setReminder({ enabled: false, time: '21:00' })
+  }
+
+  const isCustomSelected =
+    reminder.enabled && !REMINDER_TILES.some(t => t.time === reminder.time)
 
   function renderStep() {
     if (stepIndex === 0) {
@@ -281,39 +326,102 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
       )
     }
 
-    // Step 3: Prompts (textarea — текст переносится)
+    if (stepIndex === 3) {
+      return (
+        <>
+          <CapsLabel className="mx-dj-setup__step-label">{step.label}</CapsLabel>
+          <JournalField question={step.title} hint={step.hint} className="mx-dj-setup__field-group" />
+          {prompts.map((p, i) => (
+            <div key={i} className="mx-dj-setup__input-row">
+              <textarea
+                className="mx-dj-setup__input mx-dj-setup__input--textarea"
+                value={p}
+                onChange={e => updatePrompt(i, e.target.value)}
+                placeholder={`Вопрос ${i + 1}`}
+                maxLength={500}
+                rows={2}
+                data-testid={`dj-setup-prompt-${i}`}
+              />
+              {prompts.length > 1 && (
+                <button
+                  type="button"
+                  className="mx-dj-setup__delete"
+                  onClick={() => deletePrompt(i)}
+                  aria-label="Удалить"
+                >
+                  <X size={16} strokeWidth={1.5} />
+                </button>
+              )}
+            </div>
+          ))}
+          {prompts.length < 7 && (
+            <button type="button" className="mx-dj-setup__add" onClick={addPrompt}>
+              <Plus size={16} strokeWidth={1.5} /> Добавить вопрос
+            </button>
+          )}
+        </>
+      )
+    }
+
+    // Step 4: Reminder (tiles)
     return (
       <>
-        <CapsLabel className="mx-dj-setup__step-label">{step.label}</CapsLabel>
+        <CapsLabel className="mx-dj-setup__step-label" data-testid="dj-setup-reminder-label">
+          {step.label}
+        </CapsLabel>
         <JournalField question={step.title} hint={step.hint} className="mx-dj-setup__field-group" />
-        {prompts.map((p, i) => (
-          <div key={i} className="mx-dj-setup__input-row">
-            <textarea
-              className="mx-dj-setup__input mx-dj-setup__input--textarea"
-              value={p}
-              onChange={e => updatePrompt(i, e.target.value)}
-              placeholder={`Вопрос ${i + 1}`}
-              maxLength={500}
-              rows={2}
-              data-testid={`dj-setup-prompt-${i}`}
-            />
-            {prompts.length > 1 && (
-              <button
-                type="button"
-                className="mx-dj-setup__delete"
-                onClick={() => deletePrompt(i)}
-                aria-label="Удалить"
-              >
-                <X size={16} strokeWidth={1.5} />
-              </button>
+        <div className="mx-dj-reminder__tiles">
+          {REMINDER_TILES.map(tile => (
+            <button
+              key={tile.time}
+              type="button"
+              className={`mx-dj-reminder__tile${
+                reminder.enabled && reminder.time === tile.time
+                  ? ' mx-dj-reminder__tile--selected'
+                  : ''
+              }`}
+              data-testid={`dj-setup-reminder-${tile.label}`}
+              onClick={() => selectReminderTile(tile.time)}
+            >
+              <span>{tile.label}</span>
+              <span className="mx-dj-reminder__tile-time">{tile.time}</span>
+            </button>
+          ))}
+          <button
+            type="button"
+            className={`mx-dj-reminder__tile${
+              isCustomSelected ? ' mx-dj-reminder__tile--selected' : ''
+            }`}
+            data-testid="dj-setup-reminder-custom"
+            onClick={() => selectReminderCustom(customTime)}
+          >
+            <span>Своё время</span>
+            {isCustomSelected && (
+              <span className="mx-dj-reminder__tile-time">{reminder.time}</span>
             )}
-          </div>
-        ))}
-        {prompts.length < 7 && (
-          <button type="button" className="mx-dj-setup__add" onClick={addPrompt}>
-            <Plus size={16} strokeWidth={1.5} /> Добавить вопрос
           </button>
-        )}
+          {isCustomSelected && (
+            <div className="mx-dj-reminder__time-picker">
+              <input
+                type="time"
+                className="mx-dj-reminder__time-input"
+                value={reminder.time}
+                onChange={e => selectReminderCustom(e.target.value)}
+                data-testid="dj-setup-reminder-time"
+              />
+            </div>
+          )}
+          <button
+            type="button"
+            className={`mx-dj-reminder__tile${
+              !reminder.enabled ? ' mx-dj-reminder__tile--selected' : ''
+            }`}
+            data-testid="dj-setup-reminder-off"
+            onClick={selectReminderOff}
+          >
+            <span>Не напоминать</span>
+          </button>
+        </div>
       </>
     )
   }
