@@ -474,7 +474,10 @@ function App() {
   }, [overlay, tab, mentorPersonaOpen, todayFlowOpen, todaySeriesOpen, practiceGameOpen])
 
   // Только разрешённые contextual deep-links открывают вложенный экран «Сегодня».
-  const [practicesSub, setPracticesSub] = useState(null)
+  // ?tab=practices&sub=daimon — deep link на конкретную практику (Даймон и др.)
+  const [practicesSub, setPracticesSub] = useState(
+    () => (initialTab === 'practices' ? searchParams.get('sub') : null)
+  )
 
   const reportReturnFlowEvent = useCallback(
     async suffix => {

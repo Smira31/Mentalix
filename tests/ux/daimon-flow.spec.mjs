@@ -43,8 +43,21 @@ test.describe('Даймон — флоу игры', () => {
     await expect(page.getByTestId('daimon-cell-title')).toBeVisible({ timeout: 5000 })
     await expect(page.getByTestId('daimon-chat')).toBeVisible()
 
-    // Разговор: отвечаем на 3 вопроса
-    for (let i = 0; i < 3; i++) {
+    // Ждём первый авто-вопрос ассистента (монтирование клетки шлёт chat('')
+    await expect(page.locator('.mx-daimon-chat__msg--assistant')).toBeVisible({ timeout: 5000 })
+
+    // На клетке: кнопка микрофона при пустом поле
+    await expect(page.getByTestId('daimon-chat-input')).toBeVisible({ timeout: 5000 })
+    await expect(page.getByTestId('daimon-chat-mic')).toBeVisible()
+    // При введённом тексте микрофон исчезает, кнопка показывает ✓
+    await page.getByTestId('daimon-chat-input').fill('тест')
+    await expect(page.getByTestId('daimon-chat-mic')).toBeHidden()
+    await expect(page.getByTestId('daimon-chat-send')).toHaveText('✓')
+    await page.getByTestId('daimon-chat-input').fill('')
+
+    // Разговор: отвечаем на 2 вопроса (первый вопрос — авто, askedCount=1;
+    // после второго ответа askedCount=3 → askInsight=true)
+    for (let i = 0; i < 2; i++) {
       await expect(page.getByTestId('daimon-chat-input')).toBeVisible({ timeout: 5000 })
       await page.getByTestId('daimon-chat-input').fill(`Ответ ${i + 1}`)
       await page.getByTestId('daimon-chat-send').click()
