@@ -7,6 +7,7 @@ import { useBackButton } from '../../platform/telegram.hooks'
 import { platform } from '../../platform'
 import { api } from '../../lib/api'
 import { findCell, DAIMON_FINAL_CELL } from '../../lib/daimonBoard'
+import { formatCount } from '../../lib/pluralize'
 import { useVoiceRecorder } from '../../lib/useVoiceRecorder'
 import { Mic, Square, LoaderCircle } from 'lucide-react'
 import {
@@ -96,6 +97,7 @@ function IntroView({ onStart, onGames, hasGames }) {
 function HelpView({ onDone }) {
   return (
     <div className="mx-daimon-help" data-testid="daimon-help">
+      <div className="mx-daimon-help__spacer" aria-hidden="true" />
       <h1 className="mx-daimon-help__title">Как играть</h1>
       <IntroSteps />
       <p className="mx-daimon-help__text">
@@ -311,14 +313,21 @@ function BoardView({
               Продолжить клетку {pendingCellNum}
             </PillButton>
           ) : (
-            <PillButton variant="light" onClick={onRoll} testId="daimon-roll">
+            <PillButton
+              variant="light"
+              onClick={onRoll}
+              testId="daimon-roll"
+              disabled={throwsLeft <= 0}
+            >
               Бросить кубик
             </PillButton>
           )}
           {!paywallMessage && !pendingMove && (
             <>
               <p className="mx-daimon-board__throws" data-testid="daimon-throws-left">
-                Осталось бросков сегодня: {throwsLeft}
+                {throwsLeft <= 0
+                  ? 'На сегодня всё. Возвращайся завтра — Даймон подождёт.'
+                  : `Осталось бросков сегодня: ${throwsLeft}`}
               </p>
               {passedCount > 0 && (
                 <button
@@ -327,7 +336,7 @@ function BoardView({
                   onClick={onOpenPath}
                   data-testid="daimon-path-link"
                 >
-                  Твой путь · {passedCount} клеток
+                  Твой путь · {formatCount(passedCount, ['клетка', 'клетки', 'клеток'])}
                 </button>
               )}
             </>
@@ -1024,8 +1033,8 @@ export default function DaimonFlow({ userId, onClose }) {
   const position = gameState?.game?.position || 0
   const showPaywall = paywallEnabled && position > (gameState?.game?.free_until_cell || 12)
 
-  const scrollStages = ['intro', 'help', 'finish', 'games', 'pathView', 'error', 'loading']
-  const fullFrameStages = ['request', 'cell', 'rolling', 'transition', 'saved']
+  const scrollStages = ['intro', 'finish', 'games', 'pathView', 'error', 'loading']
+  const fullFrameStages = ['request', 'cell', 'rolling', 'transition', 'saved', 'help']
 
   return (
     <Screen
