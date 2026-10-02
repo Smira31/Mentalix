@@ -484,7 +484,7 @@ export default function DailyJournalFlow({ userId, onClose }) {
             if (streamHasContent) {
               setStage('question')
             } else {
-              setStage('review')
+              setStage(setupHasData(setup) ? 'review' : 'intro')
             }
           }}
           icon={streamHasContent ? 'check' : 'close'}

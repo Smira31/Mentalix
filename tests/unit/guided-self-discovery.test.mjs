@@ -41,7 +41,9 @@ test('MXL-SELF-DISCOVERY-001 stores drafts user-scoped without changing journal 
 
 test('MXL-SELF-DISCOVERY-001 keeps the existing Practices routing contract', () => {
   // Журнал — отдельная практика (DailyJournalFlow), Следопыт остаётся
-  assert.match(practices, /if \(sub === 'journal'\) \{[\s\S]*<DailyJournalFlow userId=\{user\.id\} onClose=\{\(\) => setSub\(null\)\} \/>/)
+  // backToList handles deep-link return (enteredFromToday → onReturnToToday,
+  // otherwise setSub(null)) — see journal-v4 contextual deep linking
+  assert.match(practices, /if \(sub === 'journal'\) \{[\s\S]*<DailyJournalFlow userId=\{user\.id\} onClose=\{backToList\} \/>/)
   assert.match(practices, /sub === 'self-discovery'/)
   assert.match(practices, /if \(sub === 'self-discovery'\) \{[\s\S]*onClose=\{\(\) => setSub\(null\)\}/)
   assert.doesNotMatch(practices, /onOpenGuided=/)
