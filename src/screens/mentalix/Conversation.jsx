@@ -400,8 +400,15 @@ export default function Conversation({
 
                 if (isUser) {
                   return (
-                    <div key={messageKey} className="mx-imessage-row mx-imessage-row--user">
-                      <div className="mx-imessage-bubble mx-imessage-bubble--user">
+                    <div
+                      key={messageKey}
+                      data-testid="chat-message-user"
+                      className="mx-imessage-row mx-imessage-row--user"
+                    >
+                      <div
+                        data-testid="chat-message-bubble"
+                        className="mx-imessage-bubble mx-imessage-bubble--user"
+                      >
                         {messageContent(message)}
                       </div>
                     </div>
@@ -409,8 +416,15 @@ export default function Conversation({
                 }
 
                 return (
-                  <div key={messageKey} className="mx-imessage-row mx-imessage-row--assistant">
-                    <div className="mx-imessage-bubble mx-imessage-bubble--assistant mx-ai-body text-cream break-words">
+                  <div
+                    key={messageKey}
+                    data-testid="chat-message-assistant"
+                    className="mx-imessage-row mx-imessage-row--assistant"
+                  >
+                    <div
+                      data-testid="chat-message-bubble"
+                      className="mx-imessage-bubble mx-imessage-bubble--assistant mx-ai-body text-cream break-words"
+                    >
                       <MessageText content={messageContent(message)} />
                     </div>
 
