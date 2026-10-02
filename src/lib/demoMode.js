@@ -1308,8 +1308,8 @@ function respond(path, options = {}) {
       role: 'user',
       content: body.content || '',
     }
-    const personaNames = { kompas: 'Наставник', mayak: 'Собеседник', dnevnik: 'Следопыт' }
-    const personaName = personaNames[body.persona] || 'Собеседник'
+    const personaNames = { kompas: 'Наставник', mayak: 'Спутник', dnevnik: 'Наблюдатель' }
+    const personaName = personaNames[body.persona] || 'Спутник'
     const reply = {
       id: `demo-reply-${Date.now()}`,
       role: 'assistant',

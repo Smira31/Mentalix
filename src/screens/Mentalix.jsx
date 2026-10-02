@@ -30,7 +30,7 @@ function isGuestAiForbidden(error) {
 
 export function GuestAiGate({
   onLogin,
-  message = 'Войди, чтобы поговорить со Следопытом',
+  message = 'Войди, чтобы поговорить с Наблюдателем',
   buttonLabel = 'Войти',
   testId = 'guest-ai-gate',
   buttonTestId = 'guest-ai-login-button',
@@ -109,7 +109,7 @@ export function ConversationChat({
             ]
           : history
 
-        // «Дайджест от Следопыта» (ROADMAP.md, идея 3): только при обычном
+        // «Дайджест от Наблюдателя» (ROADMAP.md, идея 3): только при обычном
         // входе в dnevnik, не через openScout()-хендофф вечернего разбора.
         if (persona === 'dnevnik' && !viaHandoff) {
           const insight = await maybeBuildInsightMessage(user)

@@ -130,7 +130,7 @@ export default function MoodPractice({ user, onDone }) {
 
   /*
    * Тот же переход-хендофф, что в CheckIn.jsx (openListener):
-   * к Собеседнику (mayak) с одним универсальным драфтом для тяжёлых эмоций.
+   * к Спутнику (mayak) с одним универсальным драфтом для тяжёлых эмоций.
    */
   function openListener() {
     platform.haptic('medium')

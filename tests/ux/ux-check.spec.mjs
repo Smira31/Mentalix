@@ -1071,7 +1071,7 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
       ).toBeLessThanOrEqual(geometry.clientWidth)
     }
     const mentorCard = cards.filter({ hasText: 'Наставник' })
-    const sideCard = cards.filter({ hasText: 'Собеседник' })
+    const sideCard = cards.filter({ hasText: 'Спутник' })
     await sideCard.click()
     await expect(sideCard).toHaveAttribute('aria-current', 'true')
     await expect(mentorCard).not.toHaveAttribute('aria-current', 'true')

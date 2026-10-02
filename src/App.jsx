@@ -252,8 +252,8 @@ function App() {
    * false — экран выбора трёх персон,
    *         navbar виден.
    *
-   * true  — Собеседник / Наставник /
-   *         Следопыт открыт,
+   * true  — Спутник / Наставник /
+   *         Наблюдатель открыт,
    *         navbar полностью скрыт.
    */
   const [mentorPersonaOpen, setMentorPersonaOpen] = useState(false)
