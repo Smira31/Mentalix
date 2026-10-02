@@ -45,19 +45,30 @@ const PRACTICE_SEARCH_STYLES = `
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: max(var(--app-safe-top, env(safe-area-inset-top, 0px)), 16px) 16px 12px;
+  /* под кнопками Telegram: safe-top (включая contentSafeAreaInset) + 56 + воздух */
+  padding: var(--mx-screen-top, 72px) 16px 12px;
 }
 .mx-steps-search-input {
   flex: 1;
   height: 44px;
   padding: 0 16px;
-  border: 1px solid #333;
+  border: 0;
   border-radius: 999px;
   background: #1a1a1a;
   color: #f3f3f3;
   font-size: 16px;
   outline: none;
+  box-shadow: none;
+  -webkit-appearance: none;
+  appearance: none;
 }
+input.mx-steps-search-input:focus,
+input.mx-steps-search-input:focus-visible {
+  outline: none;
+  border: 0;
+  box-shadow: none;
+}
+.mx-steps-search-input::-webkit-search-cancel-button { display: none; }
 .mx-steps-search-input::placeholder { color: #666; }
 .mx-steps-search-close {
   display: grid;
@@ -99,6 +110,15 @@ const PRACTICE_SEARCH_STYLES = `
 .mx-steps-search-result span .mx-semantic-glyph { width: 80%; height: 80%; }
 .mx-steps-search-result strong { font-size: 16px; font-weight: 500; }
 .mx-steps-search-empty { padding: 40px 16px; text-align: center; color: #666; font-size: 14px; }
+.mx-steps-search-hint {
+  display: grid;
+  min-height: 40vh;
+  place-items: center;
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+  text-align: center;
+}
 `
 
 function PracticeSearchOverlay({ practices, themes, onOpenPractice, onOpenTheme, onClose }) {
@@ -138,6 +158,7 @@ function PracticeSearchOverlay({ practices, themes, onOpenPractice, onOpenTheme,
         </button>
       </div>
       <div className="mx-steps-search-results">
+        {!q && <p className="mx-steps-search-hint">Ищи практики и темы</p>}
         {q && matchedPractices.length === 0 && matchedThemes.length === 0 && (
           <p className="mx-steps-search-empty">Ничего не найдено.</p>
         )}
@@ -218,6 +239,7 @@ export default function Practices({
   onGuestLogin,
 }) {
   const [searchOpen, setSearchOpen] = useState(false)
+  const [searchKeyboardOpen, setSearchKeyboardOpen] = useState(false)
 
   // Инъекция стилей шапки/поиска (один раз)
   const styleInjected = useRef(false)
@@ -265,10 +287,41 @@ export default function Practices({
   const nestedFlowOpen = focusedFlowOpen || Boolean(selectedThemeId)
 
   useEffect(() => {
-    onGameChange?.(nestedFlowOpen)
+    onGameChange?.(nestedFlowOpen || (searchOpen && searchKeyboardOpen))
 
     return () => onGameChange?.(false)
-  }, [nestedFlowOpen, onGameChange])
+  }, [nestedFlowOpen, onGameChange, searchOpen, searchKeyboardOpen])
+
+  // При открытой клавиатуре в поиске панель вкладок прячется.
+  useEffect(() => {
+    if (!searchOpen) return undefined
+    const viewport = window.visualViewport
+    if (!viewport) return undefined
+    const update = () => setSearchKeyboardOpen(window.innerHeight - viewport.height > 80)
+    update()
+    viewport.addEventListener('resize', update)
+    return () => {
+      viewport.removeEventListener('resize', update)
+      setSearchKeyboardOpen(false)
+    }
+  }, [searchOpen])
+
+  // Мягкое затухание под шапкой Telegram: включается, когда лента прокручена.
+  const catalogVisible = !sub && !selectedThemeId && !searchOpen && !isLoading && !loadError
+  useEffect(() => {
+    if (!catalogVisible) return undefined
+    const root = document.querySelector('.mx-app-scroll-root')
+    if (!root) return undefined
+    const sync = () => {
+      root.dataset.mxStepsScrolled = root.scrollTop > 2 ? '1' : '0'
+    }
+    sync()
+    root.addEventListener('scroll', sync, { passive: true })
+    return () => {
+      root.removeEventListener('scroll', sync)
+      delete root.dataset.mxStepsScrolled
+    }
+  }, [catalogVisible])
 
   useEffect(() => {
     const handler = selectedThemeId ? () => setSelectedThemeId(null) : sub ? backToList : null
