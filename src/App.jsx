@@ -401,11 +401,16 @@ function App() {
   const [locked, setLocked] = useState(() => appLockEnabled && hasPinRecord())
 
   const searchParams = new URLSearchParams(window.location.search)
-  const { sub: initialTodaySub, returnFlow: initialReturnFlow } = parseContextualDeepLink(
-    window.location.search,
-    platform.getStartParam?.()
-  )
-  const initialTab = initialTodaySub ? null : searchParams.get('tab')
+  const { sub: initialTodaySub, returnFlow: initialReturnFlow, practicesSub: initialPracticesSub } =
+    parseContextualDeepLink(
+      window.location.search,
+      platform.getStartParam?.()
+    )
+  const initialTab = initialTodaySub
+    ? null
+    : initialPracticesSub
+      ? 'practices'
+      : searchParams.get('tab')
   const validTabs = ['today', 'practices', 'mentor', 'library', 'trends']
 
   // ?tab=history → открывает «Прогресс» на вкладке «История»
@@ -474,7 +479,7 @@ function App() {
   }, [overlay, tab, mentorPersonaOpen, todayFlowOpen, todaySeriesOpen, practiceGameOpen])
 
   // Только разрешённые contextual deep-links открывают вложенный экран «Сегодня».
-  const [practicesSub, setPracticesSub] = useState(null)
+  const [practicesSub, setPracticesSub] = useState(initialPracticesSub || null)
 
   const reportReturnFlowEvent = useCallback(
     async suffix => {

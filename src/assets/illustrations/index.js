@@ -26,4 +26,9 @@ export const illustrations = {
   stepsHero: null,
   stepsCollectionsRituals: null,
   stepsCollectionsAscezas: null,
+  // Ключи для Журнала (отдельная практика).
+  // Пока null — фолбэк на иконку книги (SemanticGlyph 'journal').
+  // Владелец заменит слоты на свои иллюстрации.
+  journalIntro: null,
+  journalComplete: null,
 }
