@@ -51,7 +51,8 @@
  * Шапка «Диалога» = сам рисунок (PNG) + --mx-space-3 под линиями шеи.
  * Высота не фиксирована: она равна высоте картинки на текущей ширине,
  * поэтому отступ сверху и снизу одинаковы на всех вьюпортах.
- * Верхний отступ экрана принадлежит App.jsx (shell) — экран его не дублирует.
+ * Верхний отступ экрана принадлежит App.jsx (shell) — экран его не дублирует:
+ * margin-top: --mx-space-3 и есть 12px от кнопок Telegram до линий голов.
  */
 .mx-dialog-hero {
   position: relative;
@@ -95,9 +96,10 @@
   display: block;
   width: 100%;
   height: auto;
-  /* 15 пустых строк сверху PNG (15/851 ширины) уходят под край шапки:
-     рисунок начинается ровно с её верха. */
-  margin-top: -1.7627%;
+  /* 30 строк сверху PNG (30/851 ширины) уходят под край шапки: линии голов
+     начинаются ровно с её верха, поэтому расстояние от низа кнопок Telegram
+     до верхней точки линий — это margin-top шапки (--mx-space-3 = 12px). */
+  margin-top: -3.5253%;
   mix-blend-mode: lighten;
   pointer-events: none;
 }
@@ -183,7 +185,9 @@
   z-index: 3;
   display: flex;
   flex: 0 0 auto;
-  align-items: stretch;
+  /* Соседние карточки ниже активной — выравниваются по центру по вертикали,
+     как в карусели «Темы недели» («Шаги»). */
+  align-items: center;
   gap: var(--mx-space-3);
   width: 100%;
   min-width: 0;
@@ -207,7 +211,9 @@
   position: relative;
   display: flex;
   flex: 0 0 var(--mx-dialog-card-width);
-  height: 100%;
+  /* Полная высота активной карточки; высоту соседних считает масштаб
+     карусели (PersonaPicker) — как ThemeQuestionCarousel у «Темы недели». */
+  height: calc(var(--mx-dialog-card-min-height) - var(--mx-dialog-card-bottom-gap));
   min-height: 0;
   max-height: none;
   flex-direction: column;
@@ -221,12 +227,14 @@
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 0.025),
     0 18px 44px rgb(0 0 0 / 0.18);
-  opacity: 0.32;
+  /* Соседняя карточка приглушена настолько, что текст на ней не читается. */
+  opacity: 0.18;
   scroll-snap-align: center;
   transform: none;
-  will-change: opacity;
+  will-change: height;
   transition:
     opacity var(--mx-motion-base) ease,
+    height 120ms ease-out,
     transform var(--mx-motion-base) var(--mx-ease-out);
   cursor: pointer;
   text-align: center;
@@ -390,10 +398,6 @@
     --mx-dialog-card-width: 204px;
     --mx-dialog-card-min-height: 300px;
   }
-
-  .mx-dialog-card {
-    min-height: 260px;
-  }
 }
 
 /* Pro Max keeps the same geometry; only the real viewport width changes. */
@@ -401,10 +405,6 @@
   .mx-dialog-entry {
     --mx-dialog-card-width: 204px;
     --mx-dialog-card-min-height: 300px;
-  }
-
-  .mx-dialog-card {
-    min-height: 280px;
   }
 }
 
