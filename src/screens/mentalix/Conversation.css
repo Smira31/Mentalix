@@ -71,8 +71,8 @@
 .mx-imessage-bubble--assistant {
   max-width: min(88%, 360px);
   padding: 12px 16px;
-  background: rgb(9 13 14 / 0.92);
-  border: 1px solid rgb(var(--c-cream) / 0.08);
+  background: var(--mx-steps-card-bg);
+  border: 1px solid var(--mx-steps-card-border);
   border-bottom-left-radius: 7px;
 }
 
@@ -83,7 +83,7 @@
   bottom: 0;
   width: 11px;
   height: 12px;
-  background: rgb(9 13 14 / 0.92);
+  background: var(--mx-steps-card-bottom);
   clip-path: polygon(0 100%, 100% 0, 100% 100%);
 }
 
