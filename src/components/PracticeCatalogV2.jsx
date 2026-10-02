@@ -90,7 +90,7 @@ function PracticeRail({ practices, onOpen }) {
     },
     {
       key: 'lion-action',
-      title: 'Импульс к действию со Львом',
+      title: 'Импульс со Львом',
       category: 'Мотивация',
       description: 'Мягкий толчок к делу, которое давно откладываешь',
       status: 'СКОРО',
