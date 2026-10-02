@@ -148,6 +148,30 @@ test('Today: подтверждённая активность обновляе�
   assert.match(todaySource, /if \(requestId !== streakRequest\.current\) return/)
 })
 
+test('ACTIVITY_WRITE: POST /quotes и POST /themes/{id}/reflect обновляют серию', () => {
+  // Сохранение своей мысли (POST /quotes) и ответ на вопрос Темы недели
+  // (POST /themes/{id}/reflect) попадают под ACTIVITY_WRITE — огонёк серии
+  // обновляется сразу, как после чек-ина или ритуала.
+  const blockStart = apiSource.indexOf('const ACTIVITY_WRITE = [')
+  const blockEnd = apiSource.indexOf(']', blockStart)
+  const block = apiSource.slice(blockStart, blockEnd + 1)
+  const arrayExpr = block.replace('const ACTIVITY_WRITE = ', '')
+  const patterns = new Function(`return ${arrayExpr}`)()
+
+  assert.ok(
+    patterns.some(p => p.test('/quotes')),
+    'POST /quotes попадает под ACTIVITY_WRITE'
+  )
+  assert.ok(
+    patterns.some(p => p.test('/themes/42/reflect')),
+    'POST /themes/{id}/reflect попадает под ACTIVITY_WRITE'
+  )
+  // GET /quotes?user_id=… и DELETE /quotes/{id} не должны матчится
+  // (они и так отсеиваются по method, но шаблон не должен ловить лишнее).
+  assert.ok(!patterns.some(p => p.test('/quotes/today')), 'GET /quotes/today не матчится')
+  assert.ok(!patterns.some(p => p.test('/quotes/123')), 'DELETE /quotes/123 не матчится')
+})
+
 test('Today: заморозка недели обрабатывается сервером, строка-уведомление убрана', () => {
   // Строка «Заморозка: …» убрана из экрана; логика заморозки остаётся на сервере.
   assert.doesNotMatch(todaySource, /Заморозка.*не рвёт серию/)

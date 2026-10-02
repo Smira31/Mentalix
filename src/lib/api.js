@@ -140,6 +140,8 @@ const ACTIVITY_WRITE = [
   /^\/journal\/templates\/sessions\/complete$/,
   /^\/journey\/entries(?:\/[^/]+)?$/,
   /^\/daily-journal\/entries$/,
+  /^\/quotes$/,
+  /^\/themes\/\d+\/reflect$/,
 ]
 
 function notifyActivity(path, options) {
