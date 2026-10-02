@@ -27,6 +27,24 @@ test('Диалог: карусель ролей без демо-подмены �
   assert.match(picker, /onOpenDaimon\?\.\(\)/)
 })
 
+test('Диалог: короткие надписи чипсов покрывают все стартеры ролей', async () => {
+  const { PERSONA_STARTER_PROMPTS, PERSONA_STARTER_CHIP_LABELS } = await import(
+    '../../src/data/prompts.js'
+  )
+
+  for (const [personaKey, starters] of Object.entries(PERSONA_STARTER_PROMPTS)) {
+    for (const starter of starters) {
+      const label = PERSONA_STARTER_CHIP_LABELS[starter]
+      assert.ok(label, `Нет короткой надписи для стартера ${personaKey}: ${starter}`)
+      assert.ok(label.split(/\s+/).length <= 4, `Надпись должна быть короткой: ${label}`)
+    }
+  }
+
+  // Короткая надпись — только на чипсе; в поле ввода уходит прежний стартер роли.
+  assert.match(picker, /PERSONA_STARTER_CHIP_LABELS\[starter\] \|\| starter/)
+  assert.match(picker, /startWithChip\(activePersona, starter\)/)
+})
+
 test('Диалог: шапка — PNG-референс, инлайн-SVG профилей убран', () => {
   // Возврат к референсу владельца: текст шапки нарисован на PNG, SVG удалён.
   assert.match(picker, /dialog-hero-reference/)
