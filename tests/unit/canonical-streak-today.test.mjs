@@ -153,8 +153,9 @@ test('ACTIVITY_WRITE: POST /quotes и POST /themes/{id}/reflect обновляю
   // (POST /themes/{id}/reflect) попадают под ACTIVITY_WRITE — огонёк серии
   // обновляется сразу, как после чек-ина или ритуала.
   const blockStart = apiSource.indexOf('const ACTIVITY_WRITE = [')
-  const blockEnd = apiSource.indexOf(']', blockStart)
-  const block = apiSource.slice(blockStart, blockEnd + 1)
+  const rest = apiSource.slice(blockStart)
+  const closingIndex = rest.indexOf('\n]')
+  const block = rest.slice(0, closingIndex + 2)
   const arrayExpr = block.replace('const ACTIVITY_WRITE = ', '')
   const patterns = new Function(`return ${arrayExpr}`)()
 
