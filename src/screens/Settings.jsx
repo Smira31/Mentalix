@@ -1008,24 +1008,13 @@ export default function Settings({
                   subtitle="Хранение, черновики, синхронизация и ограничения"
                   onClick={() => setScreen('privacy-notice')}
                 />
-                {[
-                  [
-                    'json',
-                    'Экспорт JSON',
-                    'Часть данных: профиль, чек-ины, завершённые направленные записи',
-                  ],
-                  ['markdown', 'Экспорт Markdown', 'Только данные чек-инов для чтения'],
-                  ['csv', 'Экспорт CSV', 'Только данные чек-инов в таблице'],
-                ].map(([format, title, subtitle]) => (
-                  <ProfileRow
-                    key={format}
-                    title={exporting === format ? 'Подготовка…' : title}
-                    subtitle={subtitle}
-                    onClick={() => exportPersonalData(format)}
-                    disabled={Boolean(exporting)}
-                    testId={`profile-row-export-${format}`}
-                  />
-                ))}
+                <ProfileRow
+                  title={exporting ? 'Подготовка…' : 'Отправить мои данные в чат'}
+                  subtitle="Файл JSON: профиль, чек-ины, завершённые направленные записи"
+                  onClick={() => exportPersonalData()}
+                  disabled={Boolean(exporting)}
+                  testId="profile-row-export"
+                />
               </>
             ) : (
               <>

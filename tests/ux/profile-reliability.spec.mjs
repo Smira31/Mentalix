@@ -140,7 +140,7 @@ test('экспорт в Telegram-режиме показывает «Отпра�
   const { context, page } = await openTelegramProfile(browser, baseURL)
   await page.getByTestId('profile-row-data').click()
 
-  const row = page.getByTestId('profile-row-export-json')
+  const row = page.getByTestId('profile-row-export')
   await row.click()
   await expect(page.getByText('Отправили файл в чат с Mentalix')).toBeVisible()
 
@@ -167,7 +167,7 @@ test('экспорт в Telegram: ошибки контракта и путь з
     const { context, page } = await openTelegramProfile(browser, baseURL)
     await page.evaluate(m => history.replaceState(null, '', `/?demo=1&export_mock=${m}`), mock)
     await page.getByTestId('profile-row-data').click()
-    await page.getByTestId('profile-row-export-json').click()
+    await page.getByTestId('profile-row-export').click()
     await expect(page.getByText(message)).toBeVisible()
     await expect(page.getByTestId('profile-export-open-chat')).toHaveCount(0)
     await context.close()
