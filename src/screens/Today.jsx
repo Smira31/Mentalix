@@ -1596,9 +1596,9 @@ export default function Today({
 
             <div className="flex-1 h-[5px] rounded-full bg-cream/10 overflow-hidden">
               <div
-                className="h-full rounded-full bg-gold transition-all duration-500"
+                className="h-full w-full origin-left bg-gold transition-transform duration-500 motion-reduce:transition-none"
                 style={{
-                  width: `${pct}%`,
+                  transform: `scaleX(${Math.min(100, Math.max(0, pct)) / 100})`,
                 }}
               />
             </div>
@@ -1643,7 +1643,7 @@ export default function Today({
         <div className="mx-today-progress" role="status" data-testid="today-progress">
           <span className="mx-today-progress__label">Сегодня</span>
           <div className="mx-today-progress__track" aria-hidden="true">
-            <div className="mx-today-progress__fill" style={{ width: `${pct}%` }} />
+            <div className="mx-today-progress__fill" style={{ transform: `scaleX(${Math.min(100, Math.max(0, pct)) / 100})` }} />
           </div>
           <span className="mx-today-progress__count" data-testid="today-progress-count">
             {done} из {total}
