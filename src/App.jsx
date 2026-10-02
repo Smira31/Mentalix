@@ -1097,17 +1097,6 @@ function App() {
     [scrollAppToTop]
   )
 
-  const openDaimonFromMentor = useCallback(() => {
-    setDaimonFromMentor(true)
-    openPractice('daimon')
-  }, [openPractice])
-
-  const returnFromDaimonToMentor = useCallback(() => {
-    setDaimonFromMentor(false)
-    setPracticesSub(null)
-    goMentor()
-  }, [goMentor])
-
   const goMentor = useCallback(() => {
     platform.haptic('light')
 
@@ -1128,6 +1117,17 @@ function App() {
 
     dispatchTabRefresh('mentor')
   }, [scrollAppToTop])
+
+  const openDaimonFromMentor = useCallback(() => {
+    setDaimonFromMentor(true)
+    openPractice('daimon')
+  }, [openPractice])
+
+  const returnFromDaimonToMentor = useCallback(() => {
+    setDaimonFromMentor(false)
+    setPracticesSub(null)
+    goMentor()
+  }, [goMentor])
 
   const completeOnboarding = useCallback(() => {
     /*
