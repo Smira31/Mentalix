@@ -14,3 +14,6 @@ playwright-report/
 # Все локальные артефакты визуальной проверки
 artifacts/
 audit-artifacts/
+
+# core dumps
+core
