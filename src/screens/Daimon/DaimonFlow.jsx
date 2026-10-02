@@ -42,8 +42,10 @@ function voiceHint(kind) {
 
 /* ── Гость без Telegram: ИИ недоступен, предлагаем сохранить прогресс ── */
 
+/* Заглушка на время загрузки — без текста: «Загрузка…» мигала перед экранами
+   Даймона и читалась как рывок. Показываем только фон, контент идёт следом. */
 function Loading() {
-  return <div className="mx-daimon-loading">Загрузка…</div>
+  return <div className="mx-daimon-loading" role="status" aria-label="Загрузка" />
 }
 
 function ErrorView({ message, onRetry }) {
@@ -1019,11 +1021,14 @@ function PathView({ game, board }) {
 }
 
 /*
- * Заголовки Даймона набраны Lora с font-display: swap. Пока шрифт не загружен,
- * браузер рисует запасной сериф — он шире Lora примерно на 10%, и после
- * подмены заголовок «прыгает». Ждём загрузку кириллических начертаний Lora
- * (500/600/700) и только потом показываем экраны игры.
+ * Заголовки Даймона набраны Lora. Кириллические начертания предзагружены в
+ * index.html, а запасной сериф подогнан по метрикам Lora (@font-face
+ * 'Lora Fallback' в index.css), поэтому подмена шрифта текст не двигает.
+ * Этот гейт — только страховка на случай медленной сети: ждём загрузку
+ * максимум 300 мс и дальше рендерим в любом случае.
  */
+const SERIF_GATE_MS = 300
+
 function useSerifReady() {
   const [ready, setReady] = useState(false)
 
@@ -1037,6 +1042,7 @@ function useSerifReady() {
       done()
       return undefined
     }
+    const guard = window.setTimeout(done, SERIF_GATE_MS)
     Promise.all([
       fonts.load('500 1rem Lora', 'Даймон'),
       fonts.load('600 1rem Lora', 'Даймон'),
@@ -1044,6 +1050,7 @@ function useSerifReady() {
     ]).then(done, done)
     return () => {
       cancelled = true
+      window.clearTimeout(guard)
     }
   }, [])
 
