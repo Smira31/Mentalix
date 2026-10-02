@@ -23,44 +23,35 @@ async function storedGame(page, mode) {
   return page.evaluate(key => JSON.parse(localStorage.getItem(key)).daimon.game, stateKey(mode))
 }
 
-// Экран перехода живёт меньше секунды, поэтому ждём его и снимаем состояние
-// внутри страницы (кадр за кадром) — поллинг извне окно 400–800 мс пропускает.
-// «Столбиком»: подпись, откуда, стрелка и куда идут сверху вниз одной колонкой.
-async function captureTransition(page, kind) {
-  return page.evaluate(async expectedKind => {
-    const read = () => {
-      const root = document.querySelector('[data-testid="daimon-transition"]')
-      if (!root) return null
-      const text = testId => root.querySelector(`[data-testid="${testId}"]`)?.textContent?.trim()
-      const path = root.querySelector('.mx-daimon-transition__path')
-      const rectOf = el => (el ? el.getBoundingClientRect() : null)
-      const labelRect = rectOf(root.querySelector('[data-testid="daimon-transition-label"]'))
-      const fromRect = rectOf(root.querySelector('[data-testid="daimon-transition-from"]'))
-      const arrowRect = rectOf(root.querySelector('.mx-daimon-transition__arrow'))
-      const toRect = rectOf(root.querySelector('[data-testid="daimon-transition-to"]'))
-      const stacked =
-        Boolean(labelRect && fromRect && arrowRect && toRect) &&
-        labelRect.bottom <= fromRect.top + 1 &&
-        fromRect.bottom <= arrowRect.top + 1 &&
-        arrowRect.bottom <= toRect.top + 1
-      return {
-        kind: root.getAttribute('data-kind'),
-        label: text('daimon-transition-label'),
-        from: text('daimon-transition-from'),
-        to: text('daimon-transition-to'),
-        sub: text('daimon-transition-sub'),
-        flexDirection: path ? getComputedStyle(path).flexDirection : null,
-        stacked,
-      }
+// Экран перехода держится 2,2 с и закрывается тапом, поэтому его видно обычным
+// expect. Геометрию снимаем одним замером: подпись, откуда, стрелка и куда идут
+// сверху вниз одной колонкой.
+async function readTransition(page, kind) {
+  const root = page.getByTestId('daimon-transition')
+  await expect(root).toBeVisible()
+  await expect(root).toHaveAttribute('data-kind', kind)
+  await expect(page.getByTestId('daimon-transition-sub')).toHaveText('Нажми, чтобы продолжить')
+  return root.evaluate(el => {
+    const text = testId => el.querySelector(`[data-testid="${testId}"]`)?.textContent?.trim()
+    const path = el.querySelector('.mx-daimon-transition__path')
+    const rectOf = node => (node ? node.getBoundingClientRect() : null)
+    const labelRect = rectOf(el.querySelector('[data-testid="daimon-transition-label"]'))
+    const fromRect = rectOf(el.querySelector('[data-testid="daimon-transition-from"]'))
+    const arrowRect = rectOf(el.querySelector('.mx-daimon-transition__arrow'))
+    const toRect = rectOf(el.querySelector('[data-testid="daimon-transition-to"]'))
+    const stacked =
+      Boolean(labelRect && fromRect && arrowRect && toRect) &&
+      labelRect.bottom <= fromRect.top + 1 &&
+      fromRect.bottom <= arrowRect.top + 1 &&
+      arrowRect.bottom <= toRect.top + 1
+    return {
+      label: text('daimon-transition-label'),
+      from: text('daimon-transition-from'),
+      to: text('daimon-transition-to'),
+      flexDirection: path ? getComputedStyle(path).flexDirection : null,
+      stacked,
     }
-    const deadline = Date.now() + 6000
-    while (Date.now() < deadline) {
-      const root = document.querySelector('[data-testid="daimon-transition"]')
-      if (root && root.getAttribute('data-kind') === expectedKind) return read()
-      await new Promise(resolve => window.requestAnimationFrame(() => resolve()))
-    }
-    return null
-  }, kind)
+  })
 }
 
 test('прямая ссылка работает и после изменения URL без перезагрузки', async ({ page }) => {
@@ -152,34 +143,35 @@ test('bounce: 34 + 4 → экран отскока «Даймон ↓ Тишин
 }) => {
   await openMode(page, 'bounce')
   await page.getByTestId('daimon-roll').click()
-  const snap = await captureTransition(page, 'bounce')
+  const snap = await readTransition(page, 'bounce')
   expect(snap).toMatchObject({
-    kind: 'bounce',
     label: 'Отскок',
     from: 'Даймон',
     to: 'Тишина',
-    sub: 'Продолжай путь',
   })
   expect((await storedGame(page, 'bounce')).position).toBe(34)
-  // После экрана перехода — клетка приземления.
+  // Экран закроется сам через 2,2 с — после него клетка приземления.
   await expect(page.getByTestId('daimon-cell-title')).toHaveText('Тишина')
   await expect(page.getByTestId('daimon-finish')).toBeHidden()
 })
 
-test('nearSnake: 10 + 1 → 11, экран перехода «Змея» столбиком, затем 2', async ({ page }) => {
+test('nearSnake: 10 + 1 → 11, экран перехода «Змея» столбиком, тап закрывает', async ({
+  page,
+}) => {
   await openMode(page, 'nearSnake')
   await page.getByTestId('daimon-roll').click()
   await answerCell(page)
   await page.getByTestId('daimon-skip').click()
-  // Экран перехода короткий (reduced motion ≈ 400 мс) — ловим его одним замером.
-  const snap = await captureTransition(page, 'snake')
+  const snap = await readTransition(page, 'snake')
   expect(snap.label).toBe('Змея')
   expect(snap.from).toBe('Самообман')
   expect(snap.to).toBe('Автопилот')
-  expect(snap.sub).toBe('Продолжай путь')
   expect(snap.flexDirection).toBe('column')
   expect(snap.stacked).toBe(true)
 
+  // Тап в любом месте закрывает переход раньше срока — сразу поле клетки 2.
+  await page.getByTestId('daimon-transition').click()
+  await expect(page.getByTestId('daimon-transition')).toBeHidden()
   await expect(page.getByTestId('daimon-position')).toContainText('Ты здесь: 2 ·')
   expect((await storedGame(page, 'nearSnake')).position).toBe(2)
 })

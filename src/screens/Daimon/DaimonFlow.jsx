@@ -27,6 +27,10 @@ import './DaimonFlow.css'
 const REQUEST_MAX = 500
 const INSIGHT_MAX = 300
 const COUNTER_LEAD = 50 // счётчик появляется за 50 символов до лимита
+// Экран перехода (змея/стрела/отскок) — ключевой момент игры: держим 2,2 с,
+// чтобы его успели увидеть, или закрываем тапом раньше. При reduced motion
+// время то же, только без анимации фишки.
+const TRANSITION_HOLD_MS = 2200
 
 // Сервер отказывает гостю в ИИ: 403 guest_ai_forbidden.
 function isGuestAiForbidden(error) {
@@ -839,11 +843,25 @@ function SavedView({ quote }) {
 }
 
 /* ── Переход (змея/стрела/отскок): столбиком, без переноса посреди фразы ── */
-function TransitionView({ kind, fromTitle, toTitle }) {
+function TransitionView({ kind, fromTitle, toTitle, onContinue }) {
   const isDown = kind !== 'arrow'
   const label = kind === 'arrow' ? 'Стрела' : kind === 'snake' ? 'Змея' : 'Отскок'
   return (
-    <div className="mx-daimon-transition" data-testid="daimon-transition" data-kind={kind}>
+    <div
+      className="mx-daimon-transition"
+      data-testid="daimon-transition"
+      data-kind={kind}
+      role="button"
+      tabIndex={0}
+      aria-label="Нажми, чтобы продолжить"
+      onClick={onContinue}
+      onKeyDown={e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          onContinue()
+        }
+      }}
+    >
       <span
         className={`mx-daimon-transition__piece${isDown ? ' mx-daimon-transition__piece--down' : ' mx-daimon-transition__piece--up'}`}
         aria-hidden="true"
@@ -863,7 +881,7 @@ function TransitionView({ kind, fromTitle, toTitle }) {
         </span>
       </div>
       <p className="mx-daimon-transition__sub" data-testid="daimon-transition-sub">
-        Продолжай путь
+        Нажми, чтобы продолжить
       </p>
     </div>
   )
@@ -1147,6 +1165,36 @@ export default function DaimonFlow({ userId, onClose, onGuestLogin }) {
     return id
   }, [])
 
+  // Экран перехода: следующая стадия и таймер авто-закрытия. Тап закрывает
+  // раньше — таймер снимаем, чтобы стадия не перескочила дважды.
+  const transitionTargetRef = useRef(null)
+  const transitionTimerRef = useRef(null)
+
+  const advanceTransition = useCallback(() => {
+    const target = transitionTargetRef.current
+    if (!target) return
+    transitionTargetRef.current = null
+    if (transitionTimerRef.current) {
+      window.clearTimeout(transitionTimerRef.current)
+      transitionTimerRef.current = null
+    }
+    setTransition(null)
+    setStage(target)
+  }, [])
+
+  const enterTransition = useCallback(
+    (data, target) => {
+      transitionTargetRef.current = target
+      setTransition(data)
+      setStage('transition')
+      transitionTimerRef.current = later(() => {
+        transitionTimerRef.current = null
+        advanceTransition()
+      }, TRANSITION_HOLD_MS)
+    },
+    [advanceTransition, later]
+  )
+
   useEffect(
     () => () => {
       timersRef.current.forEach(window.clearTimeout)
@@ -1220,6 +1268,8 @@ export default function DaimonFlow({ userId, onClose, onGuestLogin }) {
     } else if (stage === 'cell') {
       setStage('board')
     } else if (stage === 'saved' || stage === 'transition') {
+      transitionTargetRef.current = null
+      transitionTimerRef.current = null
       setTransition(null)
       setStage('board')
     } else if (stage === 'games') {
@@ -1287,18 +1337,13 @@ export default function DaimonFlow({ userId, onClose, onGuestLogin }) {
       later(() => {
         // Отскок — отдельный экран перехода, как у змеи и стрелы, затем клетка.
         if (isBounce) {
-          setTransition({
-            kind: 'bounce',
-            fromTitle: findCell(board, DAIMON_FINAL_CELL)?.title,
-            toTitle: findCell(board, res.game.position)?.title,
-          })
-          setStage('transition')
-          later(
-            () => {
-              setTransition(null)
-              setStage('cell')
+          enterTransition(
+            {
+              kind: 'bounce',
+              fromTitle: findCell(board, DAIMON_FINAL_CELL)?.title,
+              toTitle: findCell(board, res.game.position)?.title,
             },
-            reduceMotion ? 400 : 1600
+            'cell'
           )
           return
         }
@@ -1343,22 +1388,14 @@ export default function DaimonFlow({ userId, onClose, onGuestLogin }) {
       if (lastClosed?.via) {
         const fromCell = findCell(board, lastClosed.to)
         const toCell = findCell(board, lastClosed.via_to)
-        setTransition({
-          kind: lastClosed.via,
-          fromTitle: fromCell?.title,
-          toTitle: toCell?.title,
-        })
-        setStage('transition')
         platform.haptic('success')
-        const reduceMotion =
-          typeof window !== 'undefined' &&
-          window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
-        later(
-          () => {
-            setTransition(null)
-            setStage(res.game.position === DAIMON_FINAL_CELL ? 'finish' : 'board')
+        enterTransition(
+          {
+            kind: lastClosed.via,
+            fromTitle: fromCell?.title,
+            toTitle: toCell?.title,
           },
-          reduceMotion ? 400 : 1600
+          res.game.position === DAIMON_FINAL_CELL ? 'finish' : 'board'
         )
       } else if (res.game.position === DAIMON_FINAL_CELL || res.game.status === 'finished') {
         setStage('finish')
@@ -1514,6 +1551,7 @@ export default function DaimonFlow({ userId, onClose, onGuestLogin }) {
           kind={transition.kind}
           fromTitle={transition.fromTitle}
           toTitle={transition.toTitle}
+          onContinue={advanceTransition}
         />
       )}
 

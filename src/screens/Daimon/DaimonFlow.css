@@ -843,6 +843,8 @@
   flex: 1;
   gap: var(--mx-space-5);
   text-align: center;
+  cursor: pointer;
+  user-select: none;
 }
 
 .mx-daimon-transition__piece {
@@ -852,34 +854,34 @@
   background: rgb(var(--c-text));
 }
 
+/* Фишка едет к цели один раз за ~700 мс и замирает — дальше экран спокойно стоит,
+   пока его не закроют тапом или таймером. */
 .mx-daimon-transition__piece--down {
-  animation: mx-daimon-piece-down 1.4s ease-in-out infinite;
+  animation: mx-daimon-piece-down 0.7s var(--mx-ease-out, ease-out) 1 forwards;
 }
 
 .mx-daimon-transition__piece--up {
-  animation: mx-daimon-piece-up 1.4s ease-in-out infinite;
+  animation: mx-daimon-piece-up 0.7s var(--mx-ease-out, ease-out) 1 forwards;
 }
 
 @keyframes mx-daimon-piece-down {
-  0%,
-  100% {
+  from {
     transform: translateY(-14px);
-    opacity: 0.5;
+    opacity: 0.35;
   }
-  50% {
-    transform: translateY(14px);
+  to {
+    transform: translateY(0);
     opacity: 1;
   }
 }
 
 @keyframes mx-daimon-piece-up {
-  0%,
-  100% {
+  from {
     transform: translateY(14px);
-    opacity: 0.5;
+    opacity: 0.35;
   }
-  50% {
-    transform: translateY(-14px);
+  to {
+    transform: translateY(0);
     opacity: 1;
   }
 }
