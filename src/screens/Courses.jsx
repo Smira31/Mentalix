@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
-import ThemeScreen from './ThemeScreen'
+import ThemeCarouselScreen from './ThemeCarouselScreen'
 import ScreenBack from '../components/ScreenBack'
 import { MotifArt } from '../components/Motif'
 import EmptyState from '../components/EmptyState'
@@ -363,7 +363,7 @@ export default function Courses({ user }) {
   const filtered = courses.filter(c => filter === 'all' || c.status === filter)
 
   if (openTheme) {
-    return <ThemeScreen user={user} themeId={openTheme} onBack={() => setOpenTheme(null)} />
+    return <ThemeCarouselScreen user={user} themeId={openTheme} onBack={() => setOpenTheme(null)} />
   }
 
   return (

@@ -597,7 +597,6 @@ function seedState(todayState = null) {
         subtitle: 'Неделя про внимание и усталость',
         is_current: true,
         current_day: empty ? 1 : 3,
-        free_days: 2,
         total_days: 7,
         reflected_days: empty ? 0 : 2,
         days: Array.from({ length: 7 }, (_, i) => ({
@@ -622,7 +621,6 @@ function seedState(todayState = null) {
         subtitle: 'Семь коротких наблюдений о том, что действительно двигает.',
         is_current: false,
         current_day: 7,
-        free_days: 0,
         total_days: 7,
         reflected_days: 7,
         days: Array.from({ length: 7 }, (_, i) => ({
@@ -647,7 +645,6 @@ function seedState(todayState = null) {
         subtitle: 'Неделя про «нет», которое бережёт «да».',
         is_current: false,
         current_day: 4,
-        free_days: 3,
         total_days: 7,
         reflected_days: 3,
         days: Array.from({ length: 7 }, (_, i) => ({
@@ -672,7 +669,6 @@ function seedState(todayState = null) {
         subtitle: 'Что слышно, когда замолкает внешний шум.',
         is_current: false,
         current_day: 1,
-        free_days: 7,
         total_days: 7,
         reflected_days: 0,
         days: Array.from({ length: 7 }, (_, i) => ({
