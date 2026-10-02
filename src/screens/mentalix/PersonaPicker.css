@@ -13,6 +13,16 @@
   padding-bottom: 0 !important;
 }
 
+/*
+ * Мягкое затухание контента под шапкой Telegram — тот же механизм, что у
+ * «Шагов» (PR #987). Класс data-mx-dialog-scrolled ставит PersonaPicker,
+ * когда страница «Диалога» прокручена.
+ */
+.mx-app-scroll-root[data-mx-dialog-scrolled='1']:has(.mx-dialog-entry) {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 var(--mx-steps-fade-h));
+  mask-image: linear-gradient(to bottom, transparent 0, #000 var(--mx-steps-fade-h));
+}
+
 .mx-dialog-entry {
   --mx-dialog-card-width: 204px;
   --mx-dialog-card-min-height: clamp(250px, 36vh, 300px);
@@ -56,7 +66,7 @@
   isolation: isolate;
 }
 
-.mx-dialog-hero-svg {
+.mx-dialog-hero-reference {
   position: absolute;
   z-index: 1;
   top: 8px;
@@ -65,24 +75,6 @@
   width: 100%;
   height: auto;
   pointer-events: none;
-}
-
-.mx-dialog-hero-lines {
-  fill: none;
-  stroke: rgb(168 168 168);
-  stroke-width: 1.5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  animation: mx-hero-breathe 6s ease-in-out infinite;
-}
-
-@keyframes mx-hero-breathe {
-  0%, 100% {
-    opacity: 0.55;
-  }
-  50% {
-    opacity: 0.9;
-  }
 }
 
 .mx-dialog-hero__content {
@@ -110,8 +102,11 @@
   color: rgb(var(--c-text));
 }
 
-.mx-dialog-hero h1 strong {
-  font-weight: 700;
+/* Текст шапки уже нарисован на PNG-референсе: держим его для a11y, но скрываем. */
+.mx-dialog-hero__content .mx-dialog-eyebrow,
+.mx-dialog-hero__content h1 {
+  visibility: visible;
+  opacity: 0;
 }
 
 .mx-dialog-surface {
@@ -125,7 +120,7 @@
   border: 1px solid var(--mx-steps-card-border);
   border-bottom: 0;
   border-radius: var(--mx-radius-card) var(--mx-radius-card) 0 0;
-  background: var(--mx-steps-card-bg);
+  background: var(--mx-steps-card-bottom);
   overflow-x: clip;
   overflow-y: visible;
   display: flex;
@@ -411,27 +406,24 @@
   .mx-dialog-card__start {
     transition: none;
   }
-
-  .mx-dialog-hero-lines {
-    animation: none;
-    opacity: 0.72;
-  }
 }
 
 /* ── «Продолжить разговор» ── */
 
 .mx-dialog-continue {
-  padding: 0 var(--mx-space-6) var(--mx-space-2);
+  padding: var(--mx-space-5) var(--mx-space-6) var(--mx-space-2);
 }
 
-.mx-dialog-continue__title {
-  margin: 0 0 var(--mx-space-2);
+/* Заголовки разделов «Диалога» — как заголовки разделов «Шагов»
+   («Коллекции»): по центру, шрифт с засечками, размер раздела. */
+.mx-dialog-section-title {
+  margin: 0 0 var(--mx-space-3);
   color: rgb(var(--c-text));
-  font-family: 'Onest', sans-serif;
-  font-size: var(--mx-type-meta-size);
+  font-family: var(--font-serif);
+  font-size: var(--mx-type-section-size);
   font-weight: 600;
-  letter-spacing: 0.02em;
-  line-height: 1.2;
+  line-height: 1.25;
+  text-align: center;
 }
 
 .mx-dialog-continue__all {
@@ -468,6 +460,7 @@
   display: grid;
   grid-template-columns: 1fr auto;
   grid-template-rows: auto auto;
+  align-content: center;
   column-gap: var(--mx-space-2);
   width: 100%;
   min-height: 50px;
@@ -497,9 +490,10 @@
   white-space: nowrap;
 }
 
+/* Дата — на одной линии с основным текстом строки, а не у разделителя. */
 .mx-conversation-row__date {
   grid-column: 2;
-  grid-row: 1 / 3;
+  grid-row: 2;
   align-self: center;
   color: rgb(var(--c-faint));
   font-size: var(--mx-type-meta-size);
@@ -512,28 +506,23 @@
   padding: var(--mx-space-3) var(--mx-space-6) var(--mx-space-4);
 }
 
-.mx-dialog-chips__label {
-  margin: 0 0 var(--mx-space-2);
-  color: rgb(var(--c-muted));
-  font-size: var(--mx-type-meta-size);
-  font-weight: 500;
-  line-height: 1.2;
-}
-
 .mx-dialog-chips__list {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: var(--mx-space-2);
 }
 
 .mx-dialog-chip {
+  max-width: calc(50% - var(--mx-space-1));
   min-height: 36px;
-  padding: 0 var(--mx-space-3);
+  padding: var(--mx-space-1) var(--mx-space-3);
   border-radius: var(--mx-radius-pill);
   color: rgb(var(--c-text));
   font-size: 0.85rem;
   line-height: 1.2;
-  white-space: nowrap;
+  text-align: center;
+  white-space: normal;
   cursor: pointer;
   transition: border-color var(--mx-motion-base) ease;
 }
