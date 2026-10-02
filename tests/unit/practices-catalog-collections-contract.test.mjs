@@ -19,7 +19,7 @@ test('MXL-PRACTICES-CATALOG-POLISH-001 (G3): коллекция открывае
 test('MXL-547: верхний rail сохраняет рабочую практику и честно блокирует будущие карточки', () => {
   assert.match(source, /key: 'daimon'/)
   assert.match(source, /title: 'Даймон'/)
-  assert.match(source, /title: 'Импульс к действию со Львом'/)
+  assert.match(source, /title: 'Импульс со Львом'/)
   assert.match(source, /title: 'Фокус'/)
   assert.match(source, /disabled=\{!card\.active\}/)
   assert.match(source, /onClick=\{\(\) => card\.active && onOpen\(card\.practice\)\}/)
