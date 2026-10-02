@@ -264,6 +264,9 @@ function App() {
 
   const [practiceGameOpen, setPracticeGameOpen] = useState(false)
   const [libraryInputMode, setLibraryInputMode] = useState(false)
+
+  // Даймон открыт из «Диалога» — «Назад» из игры возвращает на «Диалог».
+  const [daimonFromMentor, setDaimonFromMentor] = useState(false)
   const demoBackRefs = useRef({ mentor: null, today: null, practices: null, settings: null })
   const [demoMotionTick, setDemoMotionTick] = useState(0)
 
@@ -844,16 +847,6 @@ function App() {
         return
       }
 
-      /*
-       * Dialog — fullscreen-сценарий: нижняя панель остаётся якорем
-       * навигации и не должна исчезать при прокрутке истории сообщений.
-       */
-      if (tabRef.current === 'mentor') {
-        setNavCollapsed(false)
-        resetGesture()
-        return
-      }
-
       const currentY = Math.max(scrollRootRef.current?.scrollTop || 0, window.scrollY || 0)
 
       // Сохраняем позицию скролла текущей вкладки для восстановления
@@ -1103,6 +1096,17 @@ function App() {
     },
     [scrollAppToTop]
   )
+
+  const openDaimonFromMentor = useCallback(() => {
+    setDaimonFromMentor(true)
+    openPractice('daimon')
+  }, [openPractice])
+
+  const returnFromDaimonToMentor = useCallback(() => {
+    setDaimonFromMentor(false)
+    setPracticesSub(null)
+    goMentor()
+  }, [goMentor])
 
   const goMentor = useCallback(() => {
     platform.haptic('light')
@@ -1423,9 +1427,7 @@ function App() {
             // Нижний отступ — внутри содержимого, а не на скролл-контейнере:
             // WebKit (iPhone/Telegram) игнорирует padding-bottom у flex-контейнера
             // с overflow, и конец экрана уходил под нижнюю панель.
-            style={
-              tab === 'mentor' && !overlay ? undefined : { paddingBottom: contentBottomPadding }
-            }
+            style={{ paddingBottom: contentBottomPadding }}
           >
             {!user && (
               <p
@@ -1526,6 +1528,8 @@ function App() {
                           onRegisterBack={registerPracticesBack}
                           onReturnToToday={goToday}
                           onGuestLogin={() => setShowGuestAuth(true)}
+                          daimonFromMentor={daimonFromMentor}
+                          onReturnToMentor={returnFromDaimonToMentor}
                         />
                       </Suspense>
                     </ScreenErrorBoundary>
@@ -1548,6 +1552,7 @@ function App() {
                           user={user}
                           onPersonaChange={setMentorPersonaOpen}
                           onRegisterBack={registerMentorBack}
+                          onOpenDaimon={openDaimonFromMentor}
                         />
                       </Suspense>
                     </ScreenErrorBoundary>
