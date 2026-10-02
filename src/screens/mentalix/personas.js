@@ -27,6 +27,9 @@ export const PERSONAS = [
     starters: [
       pickByDay(PERSONA_STARTER_PROMPTS.mayak, 0),
       pickByDay(PERSONA_STARTER_PROMPTS.mayak, 1),
+      pickByDay(PERSONA_STARTER_PROMPTS.mayak, 2),
+      pickByDay(PERSONA_STARTER_PROMPTS.mayak, 3),
+      pickByDay(PERSONA_STARTER_PROMPTS.mayak, 4),
     ],
   },
 
@@ -44,6 +47,9 @@ export const PERSONAS = [
     starters: [
       pickByDay(PERSONA_STARTER_PROMPTS.kompas, 0),
       pickByDay(PERSONA_STARTER_PROMPTS.kompas, 1),
+      pickByDay(PERSONA_STARTER_PROMPTS.kompas, 2),
+      pickByDay(PERSONA_STARTER_PROMPTS.kompas, 3),
+      pickByDay(PERSONA_STARTER_PROMPTS.kompas, 4),
     ],
   },
 
@@ -61,6 +67,9 @@ export const PERSONAS = [
     starters: [
       pickByDay(PERSONA_STARTER_PROMPTS.dnevnik, 0),
       pickByDay(PERSONA_STARTER_PROMPTS.dnevnik, 1),
+      pickByDay(PERSONA_STARTER_PROMPTS.dnevnik, 2),
+      pickByDay(PERSONA_STARTER_PROMPTS.dnevnik, 3),
+      pickByDay(PERSONA_STARTER_PROMPTS.dnevnik, 4),
     ],
   },
 ]
