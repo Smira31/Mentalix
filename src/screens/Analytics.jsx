@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
 
 import { pluralize } from '../lib/pluralize'
-import { useTabRefresh } from '../lib/tabRefresh'
+import { useTabRefresh, useTabReset } from '../lib/tabRefresh'
 import {
   ANALYTICS_CARDS,
   readCardPreferences,
@@ -828,6 +828,13 @@ export default function Analytics({
   // Тихий фоновый рефетч при возврате на вкладку или из фона —
   // перезапускает эффекты загрузки без показа loading.
   useTabRefresh('trends', () => setReloadKey(k => k + 1))
+
+  // Повторный тап по активной вкладке «Прогресс» — сброс на главный экран
+  useTabReset('trends', () => {
+    setView('analytics')
+    setPeriodMenuOpen(false)
+    setOpenCardMenu(null)
+  })
 
   const gran = getGranularity(granularity)
 

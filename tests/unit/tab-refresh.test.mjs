@@ -33,7 +33,7 @@ test('useTabRefresh использует ref для handler — не перез�
 })
 
 test('App.jsx отправляет tab-refresh при переключении вкладки', () => {
-  assert.match(appSource, /import \{ dispatchTabRefresh \} from '\.\/lib\/tabRefresh'/)
+  assert.match(appSource, /import \{[^}]*dispatchTabRefresh[^}]*\} from '\.\/lib\/tabRefresh'/)
   // При повторном тапе по активной вкладке
   assert.match(appSource, /if \(key === tab\) \{[\s\S]*?dispatchTabRefresh\(key\)/)
   // При переключении на другую вкладку
@@ -59,7 +59,7 @@ test('Today.jsx слушает tab-refresh и инвалидирует кеш д
 })
 
 test('Practices.jsx слушает tab-refresh и делает тихий force-рефетч', () => {
-  assert.match(practicesSource, /import \{ useTabRefresh \} from '\.\.\/lib\/tabRefresh'/)
+  assert.match(practicesSource, /import \{[^}]*useTabRefresh[^}]*\} from '\.\.\/lib\/tabRefresh'/)
   assert.match(practicesSource, /useTabRefresh\('practices'/)
   assert.match(practicesSource, /fetchPracticesData\(user\.id, \{[\s\S]*?force: true[\s\S]*?\}/)
   // Обновление при закрытии вложенного экрана (Rituals/Ascezas)
@@ -67,7 +67,7 @@ test('Practices.jsx слушает tab-refresh и делает тихий force-
 })
 
 test('Analytics.jsx слушает tab-refresh и перезапускает загрузку', () => {
-  assert.match(analyticsSource, /import \{ useTabRefresh \} from '\.\.\/lib\/tabRefresh'/)
+  assert.match(analyticsSource, /import \{[^}]*useTabRefresh[^}]*\} from '\.\.\/lib\/tabRefresh'/)
   assert.match(analyticsSource, /useTabRefresh\('trends'/)
   assert.match(analyticsSource, /setReloadKey\(k => k \+ 1\)/)
 })

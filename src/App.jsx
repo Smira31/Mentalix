@@ -44,7 +44,7 @@ import { installDemoPressFeedback } from './lib/demoPressFeedback'
 import { shouldRenderDemoTelegramChrome } from './lib/demoChrome'
 import { switchUserDataScope } from './lib/userDataScope'
 import { clearTodayDataCache } from './lib/todayDataCache'
-import { dispatchTabRefresh } from './lib/tabRefresh'
+import { dispatchTabRefresh, dispatchTabReset } from './lib/tabRefresh'
 import { clearHistoryCache } from './lib/mentalixHistoryCache'
 import { clearSeriesSnapshots } from './lib/series'
 import { clearTrendsDataCache } from './lib/trendsDataCache'
@@ -973,13 +973,12 @@ function App() {
       scrollDistance.current = 0
 
       dispatchTabRefresh(key)
+      dispatchTabReset(key)
 
       return
     }
 
     platform.haptic('light')
-
-    setPracticesSub(null)
 
     syncTabUrl(key)
 

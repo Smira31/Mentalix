@@ -4,7 +4,7 @@ import { Search, ArrowRight } from 'lucide-react'
 import { platform } from '../platform'
 import { fetchPracticesData, peekPracticesData } from '../lib/practicesDataCache'
 import { fetchThemesData, peekThemesData } from '../lib/themesDataCache'
-import { useTabRefresh } from '../lib/tabRefresh'
+import { useTabRefresh, useTabReset } from '../lib/tabRefresh'
 import { buildPracticeViewModels } from '../lib/practiceCatalogRegistry'
 import { previewPracticeAction } from '../lib/demoMode'
 
@@ -377,6 +377,13 @@ export default function Practices({
   useTabRefresh('practices', () => {
     silentRefreshPractices()
     silentRefreshThemes()
+  })
+
+  // Повторный тап по активной вкладке «Шаги» — сброс на главный экран каталога
+  useTabReset('practices', () => {
+    setSub(null)
+    setEnteredFromToday(false)
+    setSelectedThemeId(null)
   })
 
   // Закрытие вложенного экрана (Rituals/Ascezas) — тихо обновляем каталог
