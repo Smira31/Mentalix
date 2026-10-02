@@ -39,6 +39,7 @@ function JournalBanner({ onOpen }) {
 
 /* ── 3. Новое и рекомендованное ── */
 function RailCard({ card, onOpen }) {
+  const CardArt = card.illustrationKey ? illustrations[card.illustrationKey] : null
   return (
     <button
       className="mx-steps-rail-card"
@@ -48,7 +49,11 @@ function RailCard({ card, onOpen }) {
       onClick={() => card.active && onOpen(card.practice)}
     >
       <span className="mx-steps-rail-card__icon" aria-hidden="true">
-        <PracticeGlyph kind={card.kind} highlighted={card.active} />
+        {CardArt ? (
+          <CardArt />
+        ) : (
+          <PracticeGlyph kind={card.kind} highlighted={card.active} />
+        )}
       </span>
       <span
         className={`mx-steps-rail-card__badge ${card.badgeColor === 'gold' ? 'mx-steps-rail-card__badge--gold' : ''}`}
@@ -67,7 +72,7 @@ function PracticeRail({ practices, onOpen }) {
     key: 'daimon',
     title: 'Даймон',
     subtitle: 'Игра для самопознания: вопрос, кубик, разговор с внутренним голосом',
-    kind: 'journal',
+    kind: 'daimon',
     sub: 'daimon',
   }
   const railCards = [
@@ -78,7 +83,8 @@ function PracticeRail({ practices, onOpen }) {
       description: 'Игра для самопознания: вопрос, кубик, разговор с внутренним голосом',
       status: 'НОВОЕ',
       badgeColor: 'gold',
-      kind: 'journal',
+      kind: 'daimon',
+      illustrationKey: 'daimonCard',
       active: true,
       practice: daimon,
     },

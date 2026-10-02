@@ -27,7 +27,7 @@ export const PRACTICE_CATALOG_REGISTRY = [
     subtitle: 'игра для самопознания: вопрос, кубик, разговор с внутренним голосом',
     description: 'Игра для самопознания: задай вопрос, брось кубик, поговори с внутренним голосом.',
     section: 'Даймон',
-    kind: 'journal',
+    kind: 'daimon',
     completionSource: 'none',
     sub: 'daimon',
   },
@@ -58,7 +58,7 @@ export const PRACTICE_COLLECTIONS = [
     key: 'lila',
     title: 'Даймон',
     description: 'Игра для самопознания: вопрос, кубик, разговор с внутренним голосом.',
-    kind: 'journal',
+    kind: 'daimon',
     practiceKeys: [PRACTICE_KEYS.daimon],
   },
 ]

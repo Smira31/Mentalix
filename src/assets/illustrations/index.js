@@ -26,4 +26,10 @@ export const illustrations = {
   // Владелец заменит слоты на свои иллюстрации.
   journalIntro: null,
   journalComplete: null,
+  // Ключи для игры «Даймон».
+  // daimonCard — карточка в каталоге «Шаги» и рейле «Новое и рекомендованное».
+  //   Пока null — фолбэк на крупную залитую форму (SemanticGlyph 'daimon').
+  // daimonIntro — пустой слот на входе в игру (текст поднят к середине экрана).
+  daimonCard: null,
+  daimonIntro: null,
 }

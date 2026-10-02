@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 
 /*
- * UX-тест флоу Даймона: вход → запрос → бросок → клетка → вывод → поле.
+ * UX-тест флоу Даймона: вход → запрос → «Как играть» → поле → бросок → клетка → вывод → поле.
  * В демо-режиме. Открывается через sub 'daimon' в Practices.
  */
 
@@ -10,7 +10,7 @@ const DEMO_URL =
   'http://127.0.0.1:5173/?demo=1&tab=practices&sub=daimon'
 
 test.describe('Даймон — флоу игры', () => {
-  test('вход → запрос → бросок → клетка → вывод → поле', async ({ browser }) => {
+  test('вход → запрос → «Как играть» → поле → бросок → клетка → вывод', async ({ browser }) => {
     const context = await browser.newContext({
       viewport: { width: 402, height: 874 },
       colorScheme: 'dark',
@@ -25,15 +25,35 @@ test.describe('Даймон — флоу игры', () => {
     await expect(page.getByRole('heading', { name: 'Даймон' })).toBeVisible()
     await expect(page.getByTestId('daimon-start')).toBeVisible()
 
-    // Запрос
+    // Запрос — крупный заголовок и поле
     await page.getByTestId('daimon-start').click()
     await expect(page.getByTestId('daimon-request-input')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'С чем ты приходишь?' })).toBeVisible()
     await page.getByTestId('daimon-request-input').fill('Не понимаю, куда двигаться дальше в жизни')
     await page.getByTestId('daimon-request-submit').click()
+
+    // «Как играть» показывается один раз автоматически после ввода запроса
+    await expect(page.getByTestId('daimon-help')).toBeVisible()
+    await expect(page.getByTestId('daimon-help-done')).toBeVisible()
+    await page.getByTestId('daimon-help-done').click()
 
     // Поле
     await expect(page.getByTestId('daimon-board')).toBeVisible()
     await expect(page.getByTestId('daimon-roll')).toBeVisible()
+    await expect(page.getByTestId('daimon-position')).toContainText('Начни с броска кубика')
+
+    // Тап по клетке — нижняя шторка с номером и названием
+    await page.getByTestId('daimon-cell-3').click()
+    await expect(page.getByTestId('daimon-cell-sheet')).toBeVisible()
+    await expect(page.getByTestId('daimon-cell-sheet')).toContainText('Клетка 3')
+    await page.getByTestId('daimon-cell-sheet').click({ position: { x: 8, y: 8 } })
+    await expect(page.getByTestId('daimon-cell-sheet')).toBeHidden()
+
+    // «?» открывает «Как играть» снова
+    await page.getByTestId('daimon-help').click()
+    await expect(page.getByTestId('daimon-help-done')).toBeVisible()
+    await page.getByTestId('daimon-help-done').click()
+    await expect(page.getByTestId('daimon-board')).toBeVisible()
 
     // Бросок
     await page.getByTestId('daimon-roll').click()
@@ -43,10 +63,10 @@ test.describe('Даймон — флоу игры', () => {
     await expect(page.getByTestId('daimon-cell-title')).toBeVisible({ timeout: 5000 })
     await expect(page.getByTestId('daimon-chat')).toBeVisible()
 
-    // Ждём первый авто-вопрос ассистента (монтирование клетки шлёт chat('')
+    // Ждём первый авто-вопрос ассистента (монтирование клетки шлёт chat(''))
     await expect(page.locator('.mx-daimon-chat__msg--assistant')).toBeVisible({ timeout: 5000 })
 
-    // На клетке: кнопка микрофона при пустом поле
+    // На клетке: пустое поле — только микрофон
     await expect(page.getByTestId('daimon-chat-input')).toBeVisible({ timeout: 5000 })
     await expect(page.getByTestId('daimon-chat-mic')).toBeVisible()
     // При введённом тексте микрофон исчезает, кнопка показывает ✓
@@ -63,13 +83,19 @@ test.describe('Даймон — флоу игры', () => {
       await page.getByTestId('daimon-chat-send').click()
     }
 
-    // Вывод — поле insight
-    await expect(page.getByTestId('daimon-insight-input')).toBeVisible({ timeout: 5000 })
+    // Вывод — отдельный экран «Что ты увидел на этой клетке?»
+    await expect(page.getByTestId('daimon-insight')).toBeVisible({ timeout: 5000 })
+    await expect(page.getByTestId('daimon-skip')).toBeVisible()
     await page.getByTestId('daimon-insight-input').fill('Я увидел, что стою на месте')
     await page.getByTestId('daimon-insight-submit').click()
 
+    // Короткий экран-отклик «Записано»
+    await expect(page.getByTestId('daimon-saved')).toBeVisible({ timeout: 5000 })
+
     // Возврат на поле (или переход, или финиш)
-    await expect(page.getByTestId('daimon-board').or(page.getByTestId('daimon-transition'))).toBeVisible({ timeout: 5000 })
+    await expect(
+      page.getByTestId('daimon-board').or(page.getByTestId('daimon-transition'))
+    ).toBeVisible({ timeout: 5000 })
 
     await context.close()
   })

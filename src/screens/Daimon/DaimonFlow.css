@@ -1,40 +1,46 @@
-/* ── Даймон: игра самопознания ── */
+/* ── Даймон: игра самопознания — визуал в стиле Mentalix / Stoic ── */
 
+/* ── Вход ── */
 .mx-daimon-intro {
   display: flex;
   flex-direction: column;
   flex: 1;
 }
 
+/* Пустой слот под иллюстрацию: поднимает блок текста примерно к середине экрана. */
 .mx-daimon-intro__art {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: clamp(180px, 30dvh, 260px);
+  min-height: clamp(200px, 42dvh, 360px);
 }
 
-.mx-daimon-intro__title {
-  font-family: var(--font-display, Georgia, serif);
-  font-size: clamp(1.75rem, 7vw, 2.35rem);
-  font-weight: 700;
-  line-height: 1.12;
-  color: rgb(var(--c-text));
-  margin-top: var(--mx-space-2);
+.mx-daimon-intro__art svg {
+  width: 100%;
+  max-height: 100%;
 }
 
 .mx-daimon-intro__body {
-  font-size: var(--mx-type-control-size, 16px);
-  line-height: 1.5;
-  color: rgb(var(--c-muted));
-  margin-top: var(--mx-space-3);
-  max-width: 34ch;
+  display: flex;
+  flex-direction: column;
+}
+
+.mx-daimon-intro__title {
+  font-family: var(--font-serif);
+  font-size: clamp(2rem, 8vw, 2.5rem);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: rgb(var(--c-text));
+  margin: 0 0 var(--mx-space-5);
 }
 
 .mx-daimon-intro__note {
   font-size: 13px;
-  line-height: 1.4;
+  line-height: 1.45;
   color: rgb(var(--c-faint));
-  margin-top: var(--mx-space-3);
+  margin-top: var(--mx-space-5);
+  max-width: 34ch;
 }
 
 .mx-daimon-intro__actions {
@@ -61,12 +67,80 @@
   color: rgb(var(--c-gold));
 }
 
-/* ── Запрос ── */
+/* ── Три шага ── */
+.mx-daimon-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--mx-space-4);
+}
 
+.mx-daimon-steps__item {
+  display: flex;
+  align-items: baseline;
+  gap: var(--mx-space-3);
+}
+
+.mx-daimon-steps__num {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 600;
+  color: rgb(var(--c-faint));
+  min-width: 16px;
+}
+
+.mx-daimon-steps__text {
+  font-size: 16px;
+  line-height: 1.45;
+  color: rgb(var(--c-text));
+}
+
+/* ── Как играть ── */
+.mx-daimon-help {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding-top: var(--mx-space-2);
+}
+
+.mx-daimon-help__title {
+  font-family: var(--font-serif);
+  font-size: clamp(1.75rem, 7vw, 2.25rem);
+  font-weight: 600;
+  line-height: 1.12;
+  color: rgb(var(--c-text));
+  margin: 0 0 var(--mx-space-6);
+}
+
+.mx-daimon-help__text {
+  font-size: 15px;
+  line-height: 1.5;
+  color: rgb(var(--c-muted));
+  margin: var(--mx-space-5) 0 0;
+}
+
+.mx-daimon-help__actions {
+  margin-top: auto;
+  padding-top: var(--mx-space-6);
+}
+
+/* ── Запрос ── */
 .mx-daimon-request {
   display: flex;
   flex-direction: column;
   flex: 1;
+  min-height: 0;
+}
+
+.mx-daimon-request__title {
+  font-family: var(--font-serif);
+  font-size: clamp(1.75rem, 7vw, 2.25rem);
+  font-weight: 600;
+  line-height: 1.15;
+  color: rgb(var(--c-text));
+  margin: 0 0 var(--mx-space-5);
 }
 
 .mx-daimon-request__field {
@@ -75,7 +149,10 @@
   background: transparent;
   border: 0;
   outline: none;
+  box-shadow: none;
   resize: none;
+  -webkit-appearance: none;
+  appearance: none;
   font-size: 16px;
   line-height: 1.5;
   color: rgb(var(--c-text));
@@ -87,12 +164,15 @@
   color: rgb(var(--c-faint));
 }
 
+.mx-daimon-request__field:focus,
 .mx-daimon-request__field:focus-visible {
   outline: none;
+  box-shadow: none;
+  border: 0;
+  background: transparent;
 }
 
 /* ── Круглая кнопка ✕/✓ ── */
-
 .mx-daimon-round-btn {
   display: flex;
   align-items: center;
@@ -113,8 +193,12 @@
   transform: scale(0.95);
 }
 
-/* ── Поле (доска) ── */
+.mx-daimon-round-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
 
+/* ── Поле (доска) ── */
 .mx-daimon-board-view {
   display: flex;
   flex-direction: column;
@@ -122,15 +206,54 @@
   min-height: 0;
 }
 
+.mx-daimon-board__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--mx-space-3);
+  margin-bottom: var(--mx-space-3);
+}
+
+.mx-daimon-board__request-block {
+  min-width: 0;
+  flex: 1;
+}
+
+.mx-daimon-board__request-label {
+  display: block;
+  font-size: 12px;
+  color: rgb(var(--c-faint));
+  margin-bottom: 2px;
+}
+
 .mx-daimon-board__request {
-  font-size: 13px;
-  line-height: 1.4;
-  color: rgb(var(--c-muted));
+  font-size: 15px;
+  line-height: 1.35;
+  color: rgb(var(--c-text));
+  margin: 0;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  margin-bottom: var(--mx-space-3);
+}
+
+.mx-daimon-board__help {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: rgb(var(--c-faint));
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mx-daimon-board__help:active {
+  color: rgb(var(--c-text));
 }
 
 .mx-daimon-board__grid-wrap {
@@ -156,13 +279,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  aspect-ratio: 1;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  appearance: none;
   border-radius: var(--mx-radius-xs);
   background: rgb(var(--c-card));
+  font: inherit;
   font-size: 13px;
   font-weight: 600;
   color: rgb(var(--c-faint));
-  position: relative;
-  aspect-ratio: 1;
+  cursor: pointer;
   transition: background 0.2s ease, color 0.2s ease;
 }
 
@@ -172,62 +301,85 @@
 }
 
 .mx-daimon-cell--current {
-  background: rgb(var(--c-card2));
   color: rgb(var(--c-text));
 }
 
 .mx-daimon-cell__piece {
   position: absolute;
-  width: 60%;
-  height: 60%;
+  width: 58%;
+  height: 58%;
   border-radius: 50%;
   background: rgb(var(--c-text));
-  opacity: 0.9;
   z-index: 2;
+  transition: transform 0.15s ease;
 }
 
+/* Значок змеи/стрелы: монохром, тонко, в углу клетки. */
 .mx-daimon-cell__marker {
   position: absolute;
-  top: 2px;
-  right: 4px;
-  font-size: 9px;
+  right: 3px;
+  bottom: 2px;
+  font-size: 10px;
+  font-weight: 500;
   line-height: 1;
-  color: rgb(var(--c-faint));
-}
-
-.mx-daimon-cell__marker--snake {
+  letter-spacing: -0.02em;
   color: rgb(var(--c-muted));
 }
 
-.mx-daimon-cell__marker--arrow {
-  color: rgb(var(--c-gold));
+.mx-daimon-board__position {
+  font-size: 13px;
+  color: rgb(var(--c-muted));
+  text-align: center;
+  padding-top: var(--mx-space-3);
 }
 
-/* SVG-слой для змей и стрел */
-.mx-daimon-board__svg {
-  position: absolute;
+/* ── Нижняя шторка клетки ── */
+.mx-daimon-sheet {
+  position: fixed;
   inset: 0;
+  z-index: 90;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgb(0 0 0 / 0.55);
+}
+
+.mx-daimon-sheet__panel {
   width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 1;
+  max-width: 480px;
+  background: rgb(var(--c-card2));
+  border-radius: var(--mx-radius-card) var(--mx-radius-card) 0 0;
+  padding: var(--mx-space-6) var(--mx-space-4) calc(var(--app-safe-bottom) + var(--mx-space-6));
 }
 
-.mx-daimon-board__snake-line {
-  stroke: rgb(var(--c-muted) / 0.4);
-  stroke-width: 1.5;
-  stroke-dasharray: 4 3;
-  fill: none;
+.mx-daimon-sheet__num {
+  font-size: 12px;
+  color: rgb(var(--c-faint));
 }
 
-.mx-daimon-board__arrow-line {
-  stroke: rgb(var(--c-gold) / 0.5);
-  stroke-width: 1.5;
-  fill: none;
+.mx-daimon-sheet__title {
+  font-family: var(--font-serif);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.15;
+  color: rgb(var(--c-text));
+  margin: var(--mx-space-1) 0 var(--mx-space-2);
+}
+
+.mx-daimon-sheet__meaning {
+  font-size: 15px;
+  line-height: 1.45;
+  color: rgb(var(--c-muted));
+  margin: 0;
+}
+
+.mx-daimon-sheet__lead {
+  font-size: 14px;
+  color: rgb(var(--c-faint));
+  margin: var(--mx-space-3) 0 0;
 }
 
 /* ── Действия под полем ── */
-
 .mx-daimon-board__actions {
   display: flex;
   flex-direction: column;
@@ -249,28 +401,27 @@
 }
 
 /* ── Бросок ── */
-
 .mx-daimon-roll {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   flex: 1;
-  gap: var(--mx-space-4);
+  gap: var(--mx-space-5);
 }
 
 .mx-daimon-dice {
-  width: 64px;
-  height: 64px;
-  border-radius: var(--mx-radius-md);
+  width: 112px;
+  height: 112px;
+  border-radius: var(--mx-radius-lg);
   background: rgb(var(--c-card2));
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 32px;
-  font-weight: 700;
+  font-size: 56px;
+  font-weight: 600;
   color: rgb(var(--c-text));
-  font-family: var(--font-display, Georgia, serif);
+  font-family: var(--font-serif);
 }
 
 .mx-daimon-dice--rolling {
@@ -278,11 +429,22 @@
 }
 
 @keyframes mx-daimon-dice-shake {
-  0%, 100% { transform: rotate(0deg) scale(1); }
-  20% { transform: rotate(-15deg) scale(1.1); }
-  40% { transform: rotate(12deg) scale(0.95); }
-  60% { transform: rotate(-8deg) scale(1.05); }
-  80% { transform: rotate(4deg) scale(1); }
+  0%,
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
+  20% {
+    transform: rotate(-14deg) scale(1.12);
+  }
+  40% {
+    transform: rotate(11deg) scale(0.94);
+  }
+  60% {
+    transform: rotate(-7deg) scale(1.06);
+  }
+  80% {
+    transform: rotate(4deg) scale(1);
+  }
 }
 
 .mx-daimon-roll__label {
@@ -296,8 +458,7 @@
   }
 }
 
-/* ── Клетка ── */
-
+/* ── Клетка (разговор) ── */
 .mx-daimon-cell-view {
   display: flex;
   flex-direction: column;
@@ -316,12 +477,12 @@
 }
 
 .mx-daimon-cell__title {
-  font-family: var(--font-display, Georgia, serif);
-  font-size: clamp(1.375rem, 5.6vw, 1.75rem);
-  font-weight: 700;
+  font-family: var(--font-serif);
+  font-size: clamp(1.5rem, 6vw, 1.875rem);
+  font-weight: 600;
   line-height: 1.12;
   color: rgb(var(--c-text));
-  margin-top: var(--mx-space-1);
+  margin: var(--mx-space-1) 0 0;
 }
 
 .mx-daimon-cell__meaning {
@@ -352,7 +513,6 @@
 }
 
 /* ── Чат ── */
-
 .mx-daimon-chat {
   flex: 1;
   min-height: 0;
@@ -395,7 +555,10 @@
   background: transparent;
   border: 0;
   outline: none;
+  box-shadow: none;
   resize: none;
+  -webkit-appearance: none;
+  appearance: none;
   font-size: 16px;
   line-height: 1.5;
   color: rgb(var(--c-text));
@@ -407,25 +570,105 @@
   color: rgb(var(--c-faint));
 }
 
-.mx-daimon-chat__skip {
-  min-height: var(--mx-btn-round-h);
-  padding: 0 var(--mx-space-3);
-  font-size: 13px;
-  font-weight: 600;
-  color: rgb(var(--c-muted));
-  background: transparent;
+.mx-daimon-chat__input:focus,
+.mx-daimon-chat__input:focus-visible {
+  outline: none;
+  box-shadow: none;
   border: 0;
-  cursor: pointer;
-  align-self: center;
-  margin-top: var(--mx-space-1);
+  background: transparent;
 }
 
-.mx-daimon-chat__skip:active {
-  color: rgb(var(--c-gold));
+/* ── Вывод: «Что ты увидел?» — отдельный экран ── */
+.mx-daimon-insight {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.mx-daimon-insight__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--mx-space-3);
+  margin-bottom: var(--mx-space-4);
+}
+
+.mx-daimon-insight__cell {
+  font-size: 13px;
+  color: rgb(var(--c-faint));
+  font-weight: 600;
+}
+
+.mx-daimon-insight__skip {
+  background: none;
+  border: 0;
+  padding: var(--mx-space-1) 0;
+  color: rgb(var(--c-faint));
+  font-size: 14px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.mx-daimon-insight__skip:active {
+  color: rgb(var(--c-muted));
+}
+
+.mx-daimon-insight__question {
+  font-family: var(--font-serif);
+  font-size: clamp(1.75rem, 7vw, 2.25rem);
+  font-weight: 600;
+  line-height: 1.15;
+  color: rgb(var(--c-text));
+  margin: 0;
+}
+
+.mx-daimon-insight__hint {
+  font-size: 14px;
+  color: rgb(var(--c-muted));
+  margin: var(--mx-space-2) 0 0;
+}
+
+.mx-daimon-insight__field {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  margin-top: var(--mx-space-4);
+  background: transparent;
+  border: 0;
+  outline: none;
+  box-shadow: none;
+  resize: none;
+  -webkit-appearance: none;
+  appearance: none;
+  font-size: 16px;
+  line-height: 1.6;
+  color: rgb(var(--c-text));
+  caret-color: rgb(var(--c-gold) / 0.35);
+  padding: 0;
+}
+
+.mx-daimon-insight__field::placeholder {
+  color: rgb(var(--c-faint));
+}
+
+.mx-daimon-insight__field:focus,
+.mx-daimon-insight__field:focus-visible {
+  outline: none;
+  box-shadow: none;
+  border: 0;
+  background: transparent;
+}
+
+.mx-daimon-insight__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--mx-space-3);
+  padding-top: var(--mx-space-4);
 }
 
 /* ── Кнопка микрофона ── */
-
 .mx-daimon-mic-btn {
   display: flex;
   align-items: center;
@@ -435,16 +678,15 @@
   border-radius: 50%;
   background: transparent;
   color: rgb(var(--c-muted));
-  border: 1px solid rgb(var(--c-border));
+  border: 0;
   cursor: pointer;
-  transition: transform 0.1s ease, color 0.15s ease, background 0.15s ease;
+  transition: transform 0.1s ease, color 0.15s ease;
   flex-shrink: 0;
 }
 
 .mx-daimon-mic-btn:active {
   transform: scale(0.95);
   color: rgb(var(--c-gold));
-  background: rgb(var(--c-gold) / 0.08);
 }
 
 .mx-daimon-mic-btn:disabled {
@@ -453,7 +695,6 @@
 }
 
 /* ── Статус голоса ── */
-
 .mx-daimon-voice-status {
   text-align: center;
   font-size: 12px;
@@ -473,9 +714,8 @@
   color: rgb(var(--c-red, #ef4444));
 }
 
-/* ── Переход (змея/стрела) ── */
-
-.mx-daimon-transition {
+/* ── Записано (короткий отклик на вывод) ── */
+.mx-daimon-saved {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -483,17 +723,86 @@
   flex: 1;
   gap: var(--mx-space-4);
   text-align: center;
+  padding: 0 var(--mx-space-4);
 }
 
-.mx-daimon-transition__icon {
-  font-size: 32px;
-  line-height: 1;
+.mx-daimon-saved__label {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 600;
+  color: rgb(var(--c-text));
+  margin: 0;
+}
+
+.mx-daimon-saved__quote {
+  font-size: 17px;
+  line-height: 1.5;
+  color: rgb(var(--c-muted));
+  margin: 0;
+  max-width: 30ch;
+}
+
+/* ── Переход (змея/стрела) ── */
+.mx-daimon-transition {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: var(--mx-space-5);
+  text-align: center;
+}
+
+.mx-daimon-transition__piece {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgb(var(--c-text));
+}
+
+.mx-daimon-transition__piece--down {
+  animation: mx-daimon-piece-down 1.4s ease-in-out infinite;
+}
+
+.mx-daimon-transition__piece--up {
+  animation: mx-daimon-piece-up 1.4s ease-in-out infinite;
+}
+
+@keyframes mx-daimon-piece-down {
+  0%,
+  100% {
+    transform: translateY(-14px);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translateY(14px);
+    opacity: 1;
+  }
+}
+
+@keyframes mx-daimon-piece-up {
+  0%,
+  100% {
+    transform: translateY(14px);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translateY(-14px);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-daimon-transition__piece--down,
+  .mx-daimon-transition__piece--up {
+    animation: none;
+  }
 }
 
 .mx-daimon-transition__text {
-  font-family: var(--font-display, Georgia, serif);
+  font-family: var(--font-serif);
   font-size: clamp(1.25rem, 5vw, 1.5rem);
-  font-weight: 700;
+  font-weight: 600;
   color: rgb(var(--c-text));
 }
 
@@ -503,7 +812,6 @@
 }
 
 /* ── Финиш ── */
-
 .mx-daimon-finish {
   display: flex;
   flex-direction: column;
@@ -518,9 +826,9 @@
 }
 
 .mx-daimon-finish__title {
-  font-family: var(--font-display, Georgia, serif);
-  font-size: clamp(1.75rem, 7vw, 2.35rem);
-  font-weight: 700;
+  font-family: var(--font-serif);
+  font-size: clamp(1.75rem, 7vw, 2.25rem);
+  font-weight: 600;
   line-height: 1.12;
   color: rgb(var(--c-text));
   text-align: center;
@@ -595,12 +903,20 @@
 }
 
 /* ── Мои игры ── */
-
 .mx-daimon-games {
   display: flex;
   flex-direction: column;
   flex: 1;
   gap: var(--mx-space-2);
+}
+
+.mx-daimon-games__title {
+  font-family: var(--font-serif);
+  font-size: clamp(1.75rem, 7vw, 2.25rem);
+  font-weight: 600;
+  line-height: 1.15;
+  color: rgb(var(--c-text));
+  margin: 0 0 var(--mx-space-3);
 }
 
 .mx-daimon-games__item {
@@ -645,7 +961,6 @@
 }
 
 /* ── Загрузка/ошибка ── */
-
 .mx-daimon-loading {
   display: flex;
   align-items: center;

@@ -1,47 +1,28 @@
-import { cellGridPosition, findCell, getBoardSnakes, getBoardArrows } from '../../lib/daimonBoard'
+import { findCell } from '../../lib/daimonBoard'
 
 /*
  * <DaimonBoard> — сетка 6×6 с клетками, змеями и стрелами.
  *
  * Сетка boustrophedon: клетки 1–6 внизу слева направо, 7–12 справа налево, и т.д.
- * Пройденные клетки — чуть светлее, текущая — фишка (кружок).
- * Змеи — пунктирные линии вниз, стрелы — сплошные вверх.
+ * Пройденные клетки — чуть светлее, текущая — белая фишка (кружок).
+ * Змеи и стрелы показаны значком в углу клетки: «↓N» у головы змеи,
+ * «↑N» у основания стрелы. Длинных линий через доску нет — монохром, тихо.
+ * Тап по клетке открывает нижнюю шторку с номером, названием и смыслом.
  *
  * Источник правды — board (GET /api/daimon/board). Если board ещё не загружен,
- * findCell/getBoardSnakes/getBoardArrows fallback на статические данные.
+ * findCell fallback на статические данные.
  */
 
-const VIEWBOX = 600
-const CELL = VIEWBOX / 6
-
-function cellCenter(n) {
-  const { row, col } = cellGridPosition(n)
-  return { cx: col * CELL + CELL / 2, cy: row * CELL + CELL / 2 }
-}
-
-function snakePath(from, to) {
-  const a = cellCenter(from)
-  const b = cellCenter(to)
-  const midX = (a.cx + b.cx) / 2 + 20
-  const midY = (a.cy + b.cy) / 2
-  return `M ${a.cx} ${a.cy} Q ${midX} ${midY} ${b.cx} ${b.cy}`
-}
-
-function arrowPath(from, to) {
-  const a = cellCenter(from)
-  const b = cellCenter(to)
-  return `M ${a.cx} ${a.cy} L ${b.cx} ${b.cy}`
-}
-
-export default function DaimonBoard({ board, position, passedCells = new Set(), testId = 'daimon-board' }) {
-  const snakes = getBoardSnakes(board)
-  const arrows = getBoardArrows(board)
-
+export default function DaimonBoard({
+  board,
+  position,
+  passedCells = new Set(),
+  onSelectCell,
+  testId = 'daimon-board',
+}) {
   const gridCells = []
   for (let row = 0; row < 6; row++) {
     for (let col = 0; col < 6; col++) {
-      const n = row * 6 + col + 1
-      // boustrophedon: вычисляем реальный номер клетки
       const boardRow = 5 - row
       const leftToRight = boardRow % 2 === 0
       const inRow = leftToRight ? col : 5 - col
@@ -51,50 +32,34 @@ export default function DaimonBoard({ board, position, passedCells = new Set(), 
       const isCurrent = cellNum === position
 
       gridCells.push(
-        <div
+        <button
           key={`${row}-${col}`}
+          type="button"
           className={`mx-daimon-cell${isPassed ? ' mx-daimon-cell--passed' : ''}${isCurrent ? ' mx-daimon-cell--current' : ''}`}
           data-testid={`daimon-cell-${cellNum}`}
+          data-cell={cellNum}
+          onClick={() => onSelectCell?.(cellNum)}
         >
           {cellNum}
           {isCurrent && <span className="mx-daimon-cell__piece" data-testid="daimon-piece" />}
           {cell?.snake_to && (
-            <span className="mx-daimon-cell__marker mx-daimon-cell__marker--snake">↘</span>
+            <span className="mx-daimon-cell__marker" data-testid={`daimon-snake-${cellNum}`}>
+              ↓{cell.snake_to}
+            </span>
           )}
           {cell?.arrow_to && (
-            <span className="mx-daimon-cell__marker mx-daimon-cell__marker--arrow">↗</span>
+            <span className="mx-daimon-cell__marker" data-testid={`daimon-arrow-${cellNum}`}>
+              ↑{cell.arrow_to}
+            </span>
           )}
-        </div>
+        </button>
       )
     }
   }
 
   return (
     <div className="mx-daimon-board__grid-wrap" data-testid={testId}>
-      <div className="mx-daimon-board__grid">
-        {gridCells}
-      </div>
-      <svg
-        className="mx-daimon-board__svg"
-        viewBox={`0 0 ${VIEWBOX} ${VIEWBOX}`}
-        preserveAspectRatio="none"
-        aria-hidden="true"
-      >
-        {Object.entries(snakes).map(([from, to]) => (
-          <path
-            key={`snake-${from}`}
-            className="mx-daimon-board__snake-line"
-            d={snakePath(Number(from), to)}
-          />
-        ))}
-        {Object.entries(arrows).map(([from, to]) => (
-          <path
-            key={`arrow-${from}`}
-            className="mx-daimon-board__arrow-line"
-            d={arrowPath(Number(from), to)}
-          />
-        ))}
-      </svg>
+      <div className="mx-daimon-board__grid">{gridCells}</div>
     </div>
   )
 }

@@ -1411,6 +1411,9 @@ function respond(path, options = {}) {
     let reply
     if (askInsight) {
       reply = DAIMON_INSIGHT_PROMPT
+    } else if (askedCount === 1 && cellData) {
+      // Первая реплика Даймона — про конкретную клетку и запрос игрока.
+      reply = `Клетка «${cellData.title}». Как это связано с тем, с чем ты пришёл: «${game.request}»?`
     } else if (cellData) {
       reply = cellData.questions[askedCount - 1] || cellData.questions[0]
     } else {
