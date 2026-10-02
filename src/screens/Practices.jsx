@@ -4,6 +4,7 @@ import { Search, ArrowRight } from 'lucide-react'
 import { platform } from '../platform'
 import { fetchPracticesData, peekPracticesData } from '../lib/practicesDataCache'
 import { fetchThemesData, peekThemesData } from '../lib/themesDataCache'
+import { useTabRefresh, useTabReset } from '../lib/tabRefresh'
 import { buildPracticeViewModels } from '../lib/practiceCatalogRegistry'
 import { previewPracticeAction } from '../lib/demoMode'
 
@@ -347,6 +348,53 @@ export default function Practices({
       themeRequestRef.current += 1
     }
   }, [initialThemesData, loadThemes, sub, user])
+
+  // Тихий фоновый рефетч без скелетона и loading — для возврата на вкладку
+  // и закрытия вложенного экрана (Rituals/Ascezas могли изменить данные).
+  const silentRefreshPractices = useCallback(async () => {
+    if (!user) return
+    try {
+      const { rituals: ritualsData, ascezas: ascezasData } = await fetchPracticesData(user.id, {
+        force: true,
+      })
+      setRituals(ritualsData)
+      setAscezas(ascezasData)
+    } catch {
+      /* сохраняем текущие данные при сбое сети */
+    }
+  }, [user])
+
+  const silentRefreshThemes = useCallback(async () => {
+    if (!user) return
+    try {
+      const themesData = await fetchThemesData(user.id, { force: true })
+      setThemes(themesData)
+    } catch {
+      /* сохраняем текущие темы при сбое сети */
+    }
+  }, [user])
+
+  // Возврат на уже открытую вкладку или из фона — тихое обновление
+  useTabRefresh('practices', () => {
+    silentRefreshPractices()
+    silentRefreshThemes()
+  })
+
+  // Повторный тап по активной вкладке «Шаги» — сброс на главный экран каталога
+  useTabReset('practices', () => {
+    setSub(null)
+    setEnteredFromToday(false)
+    setSelectedThemeId(null)
+  })
+
+  // Закрытие вложенного экрана (Rituals/Ascezas) — тихо обновляем каталог
+  const prevSub = useRef(sub)
+  useEffect(() => {
+    if (prevSub.current !== null && sub === null) {
+      silentRefreshPractices()
+    }
+    prevSub.current = sub
+  }, [sub, silentRefreshPractices])
 
   if (selectedThemeId) {
     return (

@@ -315,8 +315,8 @@ export default function PracticeListFlow({
 
   // back-навигация зависит от текущего вида
   function handleBack() {
-    if (view === 'ready') {
-      setView(items.length > 0 ? 'list' : 'list')
+    if (view === 'ready' && items.length > 0) {
+      setView('list')
       return
     }
     onBack()

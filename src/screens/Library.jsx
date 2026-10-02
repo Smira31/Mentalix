@@ -6,6 +6,7 @@ import NestedScreenHeader from '../components/NestedScreenHeader'
 import ArticleCover from '../components/ArticleCover'
 import { ARTICLES } from '../data/articles'
 import { fetchArticles, peekArticles, peekArticlesSnapshot } from '../lib/libraryDataCache'
+import { useTabRefresh, useTabReset } from '../lib/tabRefresh'
 import { platform } from '../platform'
 import { useBackButton } from '../platform/telegram.hooks'
 import Articles from './Articles'
@@ -301,6 +302,9 @@ function LibraryHome({
   const [error, setError] = useState(false)
   const [retryCount, setRetryCount] = useState(0)
 
+  // Тихий фоновый рефетч статей при возврате на вкладку или из фона
+  useTabRefresh('library', () => setRetryCount(c => c + 1))
+
   useEffect(() => {
     let active = true
     fetchArticles({ force: initialArticlesState.shouldRefresh || retryCount > 0 })
@@ -476,6 +480,12 @@ export default function Library({ user, onInputModeChange }) {
         : null
 
   useBackButton(libraryBackHandler, Boolean(libraryBackHandler))
+
+  // Повторный тап по активной вкладке «Библиотека» — сброс на главный экран
+  useTabReset('library', () => {
+    setScreen('home')
+    setLibraryV2Article(null)
+  })
 
   if (screen === 'library-v2-programs' && LIBRARY_V2_ENABLED) {
     return (
