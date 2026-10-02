@@ -23,6 +23,22 @@ async function storedGame(page, mode) {
   return page.evaluate(key => JSON.parse(localStorage.getItem(key)).daimon.game, stateKey(mode))
 }
 
+// Экран перехода живёт меньше секунды — снимаем его состояние одним замером.
+async function transitionSnapshot(page) {
+  return page.evaluate(() => {
+    const root = document.querySelector('[data-testid="daimon-transition"]')
+    if (!root) return null
+    const text = testId => root.querySelector(`[data-testid="${testId}"]`)?.textContent?.trim()
+    return {
+      kind: root.getAttribute('data-kind'),
+      label: text('daimon-transition-label'),
+      from: text('daimon-transition-from'),
+      to: text('daimon-transition-to'),
+      sub: text('daimon-transition-sub'),
+    }
+  })
+}
+
 test('прямая ссылка работает и после изменения URL без перезагрузки', async ({ page }) => {
   await page.goto('http://127.0.0.1:5173/?demo=1&frame=0', { waitUntil: 'networkidle' })
   await page.evaluate(() => {
@@ -103,11 +119,21 @@ test('nearFinish: 36 → финал, повтор итога, Мои игры и
   await expect(page.getByTestId('daimon-request-preview')).toHaveText('Другой запрос к игре')
 })
 
-test('bounce: 34 + 4 → отскок на 34, не финал', async ({ page }) => {
+test('bounce: 34 + 4 → экран отскока «Даймон ↓ Тишина», затем клетка, не финал', async ({
+  page,
+}) => {
   await openMode(page, 'bounce')
   await page.getByTestId('daimon-roll').click()
-  await expect(page.getByTestId('daimon-bounce')).toHaveText('Отскок на 34')
+  await expect.poll(() => transitionSnapshot(page)).toEqual({
+    kind: 'bounce',
+    label: 'Отскок',
+    from: 'Даймон',
+    to: 'Тишина',
+    sub: 'Продолжай путь',
+  })
   expect((await storedGame(page, 'bounce')).position).toBe(34)
+  // После экрана перехода — клетка приземления.
+  await expect(page.getByTestId('daimon-cell-title')).toHaveText('Тишина')
   await expect(page.getByTestId('daimon-finish')).toBeHidden()
 })
 

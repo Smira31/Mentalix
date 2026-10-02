@@ -1078,6 +1078,15 @@ export const api = {
         method: 'POST',
         body: JSON.stringify({ user_id: userId, message }),
       }),
+    // Разговор клетки: сервер хранит реплики Даймона с move_id.
+    history: (userId, moveId) =>
+      request(
+        withQuery('/mentalix/messages', {
+          user_id: userId,
+          persona: 'daimon',
+          ...(moveId ? { move_id: moveId } : {}),
+        })
+      ),
     insight: (userId, text, skip = false) =>
       request('/daimon/insight', {
         method: 'POST',

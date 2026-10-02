@@ -891,11 +891,33 @@
   }
 }
 
-.mx-daimon-transition__text {
+/* Столбиком: подпись, откуда, стрелка, куда — фраза не рвётся посреди строки. */
+.mx-daimon-transition__path {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mx-space-2);
+}
+
+.mx-daimon-transition__label {
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  color: rgb(var(--c-faint));
+}
+
+.mx-daimon-transition__title {
   font-family: var(--font-serif);
-  font-size: clamp(1.25rem, 5vw, 1.5rem);
+  font-size: clamp(1.5rem, 6vw, 1.875rem);
   font-weight: 600;
+  line-height: 1.15;
   color: rgb(var(--c-text));
+  max-width: 24ch;
+}
+
+.mx-daimon-transition__arrow {
+  font-size: 20px;
+  line-height: 1;
+  color: rgb(var(--c-faint));
 }
 
 .mx-daimon-transition__sub {
@@ -917,20 +939,49 @@
   min-height: clamp(160px, 26dvh, 240px);
 }
 
+.mx-daimon-finish__art svg {
+  width: 100%;
+  max-height: 100%;
+}
+
+/* Заголовок — тем же выравниванием, что у остальных экранов Даймона. */
 .mx-daimon-finish__title {
   font-family: var(--font-serif);
   font-size: clamp(1.75rem, 7vw, 2.25rem);
   font-weight: 600;
   line-height: 1.12;
   color: rgb(var(--c-text));
-  text-align: center;
+  margin: 0;
 }
 
-.mx-daimon-finish__summary {
+.mx-daimon-finish__meta {
+  font-size: 13px;
+  color: rgb(var(--c-faint));
+  margin: var(--mx-space-2) 0 0;
+}
+
+/* ── Взгляд сверху ── */
+.mx-daimon-overview {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.mx-daimon-overview__summary {
+  margin-top: var(--mx-space-4);
+}
+
+.mx-daimon-overview__loading {
+  margin: 0;
   font-size: 15px;
-  line-height: 1.5;
   color: rgb(var(--c-muted));
-  margin-top: var(--mx-space-3);
+}
+
+.mx-daimon-overview__text {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+  color: rgb(var(--c-text));
 }
 
 .mx-daimon-finish__path-heading {
@@ -1018,7 +1069,25 @@
   display: flex;
   flex-direction: column;
   gap: var(--mx-space-2);
+  margin-top: auto;
   padding-top: var(--mx-space-4);
+}
+
+/* Тихая ссылка: на финале «Готово», на «Взгляде сверху» — «Мои игры». */
+.mx-daimon-link {
+  min-height: var(--mx-btn-round-h);
+  padding: 0 var(--mx-space-3);
+  font-size: 14px;
+  font-weight: 600;
+  color: rgb(var(--c-muted));
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  align-self: center;
+}
+
+.mx-daimon-link:active {
+  color: rgb(var(--c-gold));
 }
 
 /* ── Мои игры ── */
@@ -1182,15 +1251,6 @@
   font-size: 17px;
   line-height: 1.5;
   color: rgb(var(--c-text));
-}
-
-/* ── Отскок от 36 ── */
-.mx-daimon-board__bounce {
-  margin: 0;
-  padding-top: var(--mx-space-1);
-  font-size: 13px;
-  color: rgb(var(--c-gold));
-  text-align: center;
 }
 
 /* ── «Взгляд сверху»: ошибка с повтором ── */

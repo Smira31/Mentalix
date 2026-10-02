@@ -6,7 +6,7 @@ import { illustrations } from '../../assets/illustrations'
 import { useBackButton } from '../../platform/telegram.hooks'
 import { platform } from '../../platform'
 import { api } from '../../lib/api'
-import { findCell, DAIMON_FINAL_CELL } from '../../lib/daimonBoard'
+import { findCell, DAIMON_FINAL_CELL, DAIMON_INSIGHT_PROMPT } from '../../lib/daimonBoard'
 import { formatCount } from '../../lib/pluralize'
 import { GuestAiGate } from '../Mentalix'
 import { useVoiceRecorder } from '../../lib/useVoiceRecorder'
@@ -311,7 +311,6 @@ function BoardView({
   walking = false,
   piecePosition,
   rolling = false,
-  bounce = null,
 }) {
   const [sheetCell, setSheetCell] = useState(null)
 
@@ -355,12 +354,6 @@ function BoardView({
       <div className="mx-daimon-board__position" data-testid="daimon-position">
         {posCell ? `Ты здесь: ${pos} · ${posCell.title}` : 'Начни с броска кубика'}
       </div>
-
-      {bounce != null && !walking && (
-        <p className="mx-daimon-board__bounce" data-testid="daimon-bounce">
-          Отскок на {bounce}
-        </p>
-      )}
 
       {!walking && (
         <div className="mx-daimon-board__actions">
@@ -450,7 +443,7 @@ function RollingView({ roll }) {
 }
 
 /* ── Клетка (разговор + вывод) ── */
-function CellView({ game, board, userId, onInsight, onBackToBoard, onGuestLogin, bounce }) {
+function CellView({ game, board, userId, onInsight, onBackToBoard, onGuestLogin }) {
   const pendingMove = game.moves.find(m => m.id === game.pending_move_id)
   const cellNum = pendingMove?.to || game.position
   const cell = findCell(board, cellNum)
@@ -465,9 +458,11 @@ function CellView({ game, board, userId, onInsight, onBackToBoard, onGuestLogin,
   // crisis:true — Даймон отвечает про поддержку, вывод клетки не спрашиваем.
   const [crisis, setCrisis] = useState(false)
   const [guestForbidden, setGuestForbidden] = useState(false)
+  // Пока подтягиваем разговор клетки, отправлять нечего — кнопки ждут.
+  const [historyLoading, setHistoryLoading] = useState(true)
   const chatEndRef = useRef(null)
   const insightRef = useRef(null)
-  const firstQuestionSent = useRef(false)
+  const cellInitRef = useRef(false)
 
   const sendingRef = useRef(false)
 
@@ -483,11 +478,36 @@ function CellView({ game, board, userId, onInsight, onBackToBoard, onGuestLogin,
     disabled: sending,
   })
 
-  // Auto-send first question on mount
+  /*
+   * История клетки: сервер хранит реплики Даймона по move_id, поэтому при
+   * возвращении «Продолжить клетку» показываем весь разговор — и первый
+   * вопрос, и ответы игрока. Пустое стартовое сообщение шлём только тогда,
+   * когда разговора ещё нет.
+   */
   useEffect(() => {
-    if (firstQuestionSent.current) return
-    firstQuestionSent.current = true
-    void sendChat('')
+    if (cellInitRef.current) return
+    cellInitRef.current = true
+    const moveId = pendingMove?.id
+    ;(async () => {
+      let thread = []
+      if (moveId) {
+        try {
+          const res = await api.daimon.history(userId, moveId)
+          thread = (Array.isArray(res) ? res : []).filter(m => m?.content)
+        } catch {
+          thread = []
+        }
+      }
+      if (thread.length > 0) {
+        setMessages(thread.map(m => ({ role: m.role, content: m.content })))
+        // Разговор уже дошёл до поддержки или до вопроса о выводе — возвращаем экран.
+        setCrisis(thread.some(m => m.crisis))
+        setAskInsight(thread[thread.length - 1]?.content === DAIMON_INSIGHT_PROMPT)
+      } else {
+        void sendChat('')
+      }
+      setHistoryLoading(false)
+    })()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Scroll to bottom on new messages
@@ -683,14 +703,13 @@ function CellView({ game, board, userId, onInsight, onBackToBoard, onGuestLogin,
         )}
       </div>
 
-      {bounce != null && (
-        <p className="mx-daimon-board__bounce" data-testid="daimon-bounce">
-          Отскок на {bounce}
-        </p>
-      )}
       <div className="mx-daimon-chat" data-testid="daimon-chat">
         {messages.map((msg, i) => (
-          <div key={i} className={`mx-daimon-chat__msg mx-daimon-chat__msg--${msg.role}`}>
+          <div
+            key={i}
+            className={`mx-daimon-chat__msg mx-daimon-chat__msg--${msg.role}`}
+            data-testid={`daimon-chat-msg-${msg.role}`}
+          >
             {msg.content}
           </div>
         ))}
@@ -759,7 +778,7 @@ function CellView({ game, board, userId, onInsight, onBackToBoard, onGuestLogin,
             onKeyDown={e => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault()
-                if (hasText) void sendChat(input.trim())
+                if (hasText && !historyLoading) void sendChat(input.trim())
               }
             }}
           />
@@ -780,7 +799,7 @@ function CellView({ game, board, userId, onInsight, onBackToBoard, onGuestLogin,
               onPointerLeave={() => chatVoice.stopRecording()}
               onPointerCancel={() => chatVoice.stopRecording()}
               onContextMenu={e => e.preventDefault()}
-              disabled={sending || chatVoice.voiceState === 'transcribing'}
+              disabled={sending || historyLoading || chatVoice.voiceState === 'transcribing'}
               style={{ touchAction: 'none' }}
             >
               {chatVoice.voiceState === 'recording' ? (
@@ -797,7 +816,7 @@ function CellView({ game, board, userId, onInsight, onBackToBoard, onGuestLogin,
               aria-label="Отправить"
               data-testid="daimon-chat-send"
               onClick={() => sendChat(input.trim())}
-              disabled={sending || !hasText}
+              disabled={sending || historyLoading || !hasText}
               className="mx-daimon-round-btn"
             >
               ✓
@@ -819,27 +838,39 @@ function SavedView({ quote }) {
   )
 }
 
-/* ── Переход (змея/стрела) ── */
-function TransitionView({ via, fromTitle, toTitle, position }) {
-  const isSnake = via === 'snake'
+/* ── Переход (змея/стрела/отскок): столбиком, без переноса посреди фразы ── */
+function TransitionView({ kind, fromTitle, toTitle }) {
+  const isDown = kind !== 'arrow'
+  const label = kind === 'arrow' ? 'Стрела' : kind === 'snake' ? 'Змея' : 'Отскок'
   return (
-    <div className="mx-daimon-transition" data-testid="daimon-transition">
+    <div className="mx-daimon-transition" data-testid="daimon-transition" data-kind={kind}>
       <span
-        className={`mx-daimon-transition__piece${isSnake ? ' mx-daimon-transition__piece--down' : ' mx-daimon-transition__piece--up'}`}
+        className={`mx-daimon-transition__piece${isDown ? ' mx-daimon-transition__piece--down' : ' mx-daimon-transition__piece--up'}`}
         aria-hidden="true"
       />
-      <p className="mx-daimon-transition__text">
-        {isSnake ? 'Змея' : 'Стрела'}: {fromTitle} {isSnake ? '↓' : '↑'} {toTitle}
-      </p>
-      <p className="mx-daimon-transition__sub">
-        {position === DAIMON_FINAL_CELL ? 'Ты дошёл до Даймона' : 'Продолжай путь'}
+      <div className="mx-daimon-transition__path">
+        <span className="mx-daimon-transition__label" data-testid="daimon-transition-label">
+          {label}
+        </span>
+        <span className="mx-daimon-transition__title" data-testid="daimon-transition-from">
+          {fromTitle}
+        </span>
+        <span className="mx-daimon-transition__arrow" aria-hidden="true">
+          {isDown ? '↓' : '↑'}
+        </span>
+        <span className="mx-daimon-transition__title" data-testid="daimon-transition-to">
+          {toTitle}
+        </span>
+      </div>
+      <p className="mx-daimon-transition__sub" data-testid="daimon-transition-sub">
+        Продолжай путь
       </p>
     </div>
   )
 }
 
 /* ── Твой путь: запрос и список пройденных клеток (общий для поля и финала) ── */
-function DaimonPath({ game, board }) {
+function DaimonPath({ game, board, children }) {
   const moves = game.moves.filter(m => m.insight || m.skipped)
 
   return (
@@ -848,6 +879,7 @@ function DaimonPath({ game, board }) {
         <span className="mx-daimon-path__request-label">Твой запрос</span>
         <p className="mx-daimon-path__request-text">{game.request}</p>
       </div>
+      {children}
       <div className="mx-daimon-finish__path-heading">Твой путь</div>
       <div className="mx-daimon-finish__path" data-testid="daimon-path">
         {moves.map((m, i) => {
@@ -878,71 +910,100 @@ function DaimonPath({ game, board }) {
   )
 }
 
-/* ── Финиш ── */
-function FinishView({
-  game,
-  board,
-  onSummary,
-  onNewGame,
-  onGames,
-  onClose,
-  summary,
-  summaryLoading = false,
-  summaryError = false,
-}) {
+/* ── Финиш: короткий экран без прокрутки ── */
+function FinishView({ game, onOverview, onClose }) {
+  const FinishArt = illustrations.daimonFinish
+  const cellsCount = game.moves.filter(m => m.insight || m.skipped).length
+  const daysCount =
+    new Set(game.moves.map(m => (m.created_at || '').slice(0, 10)).filter(Boolean)).size || 1
+
   return (
     <div className="mx-daimon-finish" data-testid="daimon-finish">
-      <div className="mx-daimon-finish__art" aria-hidden="true" data-testid="daimon-finish-art" />
+      <div className="mx-daimon-finish__art" aria-hidden="true" data-testid="daimon-finish-art">
+        {FinishArt ? <FinishArt /> : null}
+      </div>
       <h1 className="mx-daimon-finish__title">Ты дошёл до Даймона</h1>
-      {summary && (
-        <p className="mx-daimon-finish__summary" data-testid="daimon-summary">
-          {summary}
-        </p>
-      )}
-      <DaimonPath game={game} board={board} />
+      <p className="mx-daimon-finish__meta" data-testid="daimon-finish-meta">
+        {formatCount(cellsCount, ['клетка', 'клетки', 'клеток'])} ·{' '}
+        {formatCount(daysCount, ['день', 'дня', 'дней'])} пути
+      </p>
       <div className="mx-daimon-finish__actions">
-        {summaryError ? (
-          <div className="mx-daimon-finish__summary-error" data-testid="daimon-summary-error">
-            <p className="mx-daimon-error__text">Не удалось создать итог.</p>
-            <PillButton
-              variant="light"
-              onClick={onSummary}
-              testId="daimon-summary-retry"
-              disabled={summaryLoading}
-            >
-              Повторить
-            </PillButton>
-          </div>
-        ) : !summary ? (
-          <PillButton
-            variant="light"
-            onClick={onSummary}
-            testId="daimon-summary-btn"
-            disabled={summaryLoading}
-          >
-            {summaryLoading ? (
-              <>
-                <LoaderCircle
-                  size={18}
-                  className="animate-spin"
-                  data-testid="daimon-summary-spinner"
-                />
-                Собираем…
-              </>
-            ) : (
-              'Взгляд сверху'
-            )}
-          </PillButton>
-        ) : null}
-        <PillButton variant="transparent" onClick={onNewGame} testId="daimon-new-game">
+        <PillButton variant="light" onClick={onOverview} testId="daimon-overview-open">
+          Взгляд сверху
+        </PillButton>
+        <button
+          type="button"
+          className="mx-daimon-link"
+          onClick={onClose}
+          data-testid="daimon-done"
+        >
+          Готово
+        </button>
+      </div>
+    </div>
+  )
+}
+
+/* ── Взгляд сверху: итог Даймона и весь путь ── */
+function OverviewView({ game, board, userId, onNewGame, onGames }) {
+  const [summary, setSummary] = useState(game.summary || '')
+  const [loading, setLoading] = useState(!game.summary)
+  const [error, setError] = useState(false)
+  const requestedRef = useRef(false)
+
+  const loadSummary = useCallback(async () => {
+    setLoading(true)
+    setError(false)
+    try {
+      const res = await api.daimon.summary(userId, game.id)
+      setSummary(res.summary)
+    } catch {
+      setError(true)
+    } finally {
+      setLoading(false)
+    }
+  }, [userId, game.id])
+
+  useEffect(() => {
+    if (summary || requestedRef.current) return
+    requestedRef.current = true
+    void loadSummary()
+  }, [summary, loadSummary])
+
+  return (
+    <div className="mx-daimon-overview" data-testid="daimon-overview">
+      <DaimonPath game={game} board={board}>
+        <div className="mx-daimon-overview__summary">
+          {loading ? (
+            <p className="mx-daimon-overview__loading" data-testid="daimon-summary-loading">
+              Даймон смотрит на твой путь…
+            </p>
+          ) : error ? (
+            <div className="mx-daimon-finish__summary-error" data-testid="daimon-summary-error">
+              <p className="mx-daimon-error__text">Не удалось создать итог.</p>
+              <PillButton variant="light" onClick={loadSummary} testId="daimon-summary-retry">
+                Повторить
+              </PillButton>
+            </div>
+          ) : (
+            <p className="mx-daimon-overview__text" data-testid="daimon-summary">
+              {summary}
+            </p>
+          )}
+        </div>
+      </DaimonPath>
+      <div className="mx-daimon-finish__actions">
+        <PillButton variant="light" onClick={onNewGame} testId="daimon-overview-new-game">
           Новая игра
         </PillButton>
-        <PillButton variant="transparent" onClick={onGames} testId="daimon-finish-games">
+        <button
+          type="button"
+          className="mx-daimon-link"
+          onClick={onGames}
+          data-testid="daimon-overview-games"
+        >
           Мои игры
-        </PillButton>
-        <PillButton variant="transparent" onClick={onClose} testId="daimon-done">
-          Готово
-        </PillButton>
+        </button>
       </div>
     </div>
   )
@@ -1067,19 +1128,14 @@ export default function DaimonFlow({ userId, onClose, onGuestLogin }) {
   const [error, setError] = useState(null)
   const [rollValue, setRollValue] = useState(null)
   const [transition, setTransition] = useState(null)
-  const [summary, setSummary] = useState(null)
   const [savedQuote, setSavedQuote] = useState('')
   const [walk, setWalk] = useState(null)
   const [viewedGame, setViewedGame] = useState(null)
   const [pathSource, setPathSource] = useState('games')
   const [creating, setCreating] = useState(false)
   const creatingRef = useRef(false)
-  const summaryRef = useRef(false)
   const [rolling, setRolling] = useState(false)
-  const [bounce, setBounce] = useState(null)
   const [confirmNewGame, setConfirmNewGame] = useState(false)
-  const [summaryLoading, setSummaryLoading] = useState(false)
-  const [summaryError, setSummaryError] = useState(false)
 
   // Жёсткая защита от двойного тапа по «Бросить кубик» (state не успевает обновиться).
   const rollingRef = useRef(false)
@@ -1170,6 +1226,8 @@ export default function DaimonFlow({ userId, onClose, onGuestLogin }) {
       setStage('intro')
     } else if (stage === 'pathView') {
       setStage(pathSource === 'board' ? 'board' : 'games')
+    } else if (stage === 'overview') {
+      setStage(pathSource === 'finish' ? 'finish' : 'games')
     } else {
       onClose()
     }
@@ -1211,16 +1269,13 @@ export default function DaimonFlow({ userId, onClose, onGuestLogin }) {
     if (rollingRef.current) return
     rollingRef.current = true
     setRolling(true)
-    setBounce(null)
     try {
       const from = gameState?.game?.position ?? 0
       const res = await api.daimon.roll(userId)
       const lastMove = res.game.moves[res.game.moves.length - 1]
       setRollValue(lastMove?.roll)
-      // Перебор через 36 — фишка отскакивает назад, показываем «Отскок на N».
-      if (lastMove && lastMove.from + lastMove.roll > DAIMON_FINAL_CELL) {
-        setBounce(res.game.position)
-      }
+      // Перебор через 36 — фишка отскакивает от «Даймона» назад.
+      const isBounce = Boolean(lastMove && lastMove.from + lastMove.roll > DAIMON_FINAL_CELL)
       setGameState(res)
       setStage('rolling')
       platform.haptic('light')
@@ -1230,6 +1285,23 @@ export default function DaimonFlow({ userId, onClose, onGuestLogin }) {
         window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
       const diceDelay = reduceMotion ? 400 : 600
       later(() => {
+        // Отскок — отдельный экран перехода, как у змеи и стрелы, затем клетка.
+        if (isBounce) {
+          setTransition({
+            kind: 'bounce',
+            fromTitle: findCell(board, DAIMON_FINAL_CELL)?.title,
+            toTitle: findCell(board, res.game.position)?.title,
+          })
+          setStage('transition')
+          later(
+            () => {
+              setTransition(null)
+              setStage('cell')
+            },
+            reduceMotion ? 400 : 1600
+          )
+          return
+        }
         const to = res.game.position
         if (reduceMotion || to <= from) {
           setStage('cell')
@@ -1272,10 +1344,9 @@ export default function DaimonFlow({ userId, onClose, onGuestLogin }) {
         const fromCell = findCell(board, lastClosed.to)
         const toCell = findCell(board, lastClosed.via_to)
         setTransition({
-          via: lastClosed.via,
+          kind: lastClosed.via,
           fromTitle: fromCell?.title,
           toTitle: toCell?.title,
-          position: res.game.position,
         })
         setStage('transition')
         platform.haptic('success')
@@ -1309,30 +1380,11 @@ export default function DaimonFlow({ userId, onClose, onGuestLogin }) {
     later(proceed, 1200)
   }
 
-  async function handleSummary() {
-    if (summaryRef.current) return
-    summaryRef.current = true
-    setSummaryLoading(true)
-    setSummaryError(false)
-    try {
-      const res = await api.daimon.summary(userId, gameState?.game?.id)
-      setSummary(res.summary)
-    } catch {
-      setSummaryError(true)
-    } finally {
-      summaryRef.current = false
-      setSummaryLoading(false)
-    }
-  }
-
   function startNewGame() {
     setConfirmNewGame(false)
     setError(null)
     setRequest('')
-    setSummary(null)
-    setSummaryError(false)
     setSavedQuote('')
-    setBounce(null)
     setGameState(null)
     setStage('intro')
     platform.haptic('light')
@@ -1361,6 +1413,15 @@ export default function DaimonFlow({ userId, onClose, onGuestLogin }) {
     platform.haptic('light')
   }
 
+  // «Взгляд сверху» с финала: итог Даймона и весь путь.
+  function handleOpenOverview() {
+    if (!gameState?.game) return
+    setViewedGame(gameState.game)
+    setPathSource('finish')
+    setStage('overview')
+    platform.haptic('light')
+  }
+
   const throwsLeft = gameState?.game ? gameState.game.throws_limit - gameState.game.throws_today : 0
   const paywallEnabled = gameState?.game?.paywall_enabled
   const position = gameState?.game?.position || 0
@@ -1368,8 +1429,8 @@ export default function DaimonFlow({ userId, onClose, onGuestLogin }) {
 
   const serifReady = useSerifReady()
 
-  const scrollStages = ['intro', 'finish', 'games', 'pathView', 'error', 'loading']
-  const fullFrameStages = ['request', 'cell', 'rolling', 'transition', 'saved', 'help']
+  const scrollStages = ['intro', 'games', 'pathView', 'overview', 'error', 'loading']
+  const fullFrameStages = ['request', 'cell', 'rolling', 'transition', 'saved', 'help', 'finish']
 
   if (!serifReady) {
     return (
@@ -1430,7 +1491,6 @@ export default function DaimonFlow({ userId, onClose, onGuestLogin }) {
           walking={Boolean(walk)}
           piecePosition={walk?.current}
           rolling={rolling}
-          bounce={bounce}
         />
       )}
 
@@ -1444,7 +1504,6 @@ export default function DaimonFlow({ userId, onClose, onGuestLogin }) {
           onInsight={handleInsight}
           onBackToBoard={() => setStage('board')}
           onGuestLogin={onGuestLogin}
-          bounce={bounce}
         />
       )}
 
@@ -1452,25 +1511,14 @@ export default function DaimonFlow({ userId, onClose, onGuestLogin }) {
 
       {stage === 'transition' && transition && (
         <TransitionView
-          via={transition.via}
+          kind={transition.kind}
           fromTitle={transition.fromTitle}
           toTitle={transition.toTitle}
-          position={transition.position}
         />
       )}
 
       {stage === 'finish' && gameState?.game && (
-        <FinishView
-          game={gameState.game}
-          board={board}
-          onSummary={handleSummary}
-          onNewGame={handleNewGame}
-          onGames={handleOpenGames}
-          onClose={onClose}
-          summary={summary}
-          summaryLoading={summaryLoading}
-          summaryError={summaryError}
-        />
+        <FinishView game={gameState.game} onOverview={handleOpenOverview} onClose={onClose} />
       )}
 
       {stage === 'games' && (
@@ -1478,13 +1526,25 @@ export default function DaimonFlow({ userId, onClose, onGuestLogin }) {
           games={games}
           onOpen={g => {
             setViewedGame(g)
-            setStage('pathView')
+            setPathSource('games')
+            // Завершённую игру открываем сразу на «Взгляде сверху».
+            setStage(g.status === 'finished' ? 'overview' : 'pathView')
           }}
           onNewGame={handleNewGame}
         />
       )}
 
       {stage === 'pathView' && viewedGame && <PathView game={viewedGame} board={board} />}
+
+      {stage === 'overview' && viewedGame && (
+        <OverviewView
+          game={viewedGame}
+          board={board}
+          userId={userId}
+          onNewGame={handleNewGame}
+          onGames={handleOpenGames}
+        />
+      )}
 
       {confirmNewGame && (
         <NewGameConfirm onConfirm={startNewGame} onCancel={() => setConfirmNewGame(false)} />

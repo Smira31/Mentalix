@@ -1295,6 +1295,11 @@ function respond(path, options = {}) {
   }
 
   if (pathname === '/mentalix/messages' && method === 'GET') {
+    // Разговор клетки Даймона: реплики хранятся по move_id.
+    if (url.searchParams.get('persona') === 'daimon') {
+      const threads = state.daimonMessages || {}
+      return json(threads[url.searchParams.get('move_id')] || [])
+    }
     return json(state.messages || [])
   }
   if (pathname === '/mentalix/messages' && method === 'POST') {
@@ -1517,9 +1522,18 @@ function respond(path, options = {}) {
 
     // ?daimonTest=crisis: ответ Даймона просит не игру, а поддержку.
     if (testMode === 'crisis') {
+      const reply =
+        'Слышу тебя. Спасибо, что сказал это здесь. Сейчас важнее не клетка — важно, чтобы ты не оставался с этим один.'
+      const crisisThreads = state.daimonMessages || {}
+      const crisisThread = [...(crisisThreads[game.pending_move_id] || [])]
+      if (body.message?.trim()) crisisThread.push({ role: 'user', content: body.message.trim() })
+      crisisThread.push({ role: 'assistant', content: reply, crisis: true })
+      writeState({
+        ...state,
+        daimonMessages: { ...crisisThreads, [game.pending_move_id]: crisisThread },
+      })
       return json({
-        reply:
-          'Слышу тебя. Спасибо, что сказал это здесь. Сейчас важнее не клетка — важно, чтобы ты не оставался с этим один.',
+        reply,
         asked_count: 1,
         ask_insight: false,
         crisis: true,
@@ -1547,7 +1561,18 @@ function respond(path, options = {}) {
       ...(body.message?.trim() ? { last_activity_at: now().toISOString() } : {}),
       chat_ask_insight: askInsight,
     }
-    writeState({ ...state, daimon: { ...daimon, game: updatedGame } })
+    // Разговор клетки хранится по move_id — «Продолжить клетку» показывает историю целиком.
+    const threads = state.daimonMessages || {}
+    const thread = move ? [...(threads[move.id] || [])] : null
+    if (thread) {
+      if (body.message?.trim()) thread.push({ role: 'user', content: body.message.trim() })
+      thread.push({ role: 'assistant', content: reply })
+    }
+    writeState({
+      ...state,
+      daimon: { ...daimon, game: updatedGame },
+      ...(thread ? { daimonMessages: { ...threads, [move.id]: thread } } : {}),
+    })
     return json({ reply, asked_count: askedCount, ask_insight: askInsight })
   }
 
