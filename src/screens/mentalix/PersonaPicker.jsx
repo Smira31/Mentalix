@@ -4,7 +4,6 @@ import { platform } from '../../platform'
 import { api } from '../../lib/api'
 import { PERSONAS } from './personas'
 import { relativeConversationDate } from './conversationDate'
-import { isPreviewDemoMode } from '../../lib/demoMode'
 
 import './PersonaPicker.css'
 
@@ -16,15 +15,15 @@ const DISPLAY_PERSONAS = [PERSONAS[1], PERSONAS[0], PERSONAS[2]]
 const PERSONA_NAMES = Object.fromEntries(PERSONAS.map(p => [p.key, p.name]))
 
 const PROMISES = {
-  mayak: 'Поможет разобраться в том, что чувствуешь.',
-  kompas: 'Поможет увидеть новые перспективы и найти решения.',
-  dnevnik: 'Поможет исследовать свои мысли и эмоции глубже.',
+  mayak: 'Выслушает, когда нужно выговориться.',
+  kompas: 'Превратит намерение в один шаг.',
+  dnevnik: 'Подведёт итоги дня со стороны.',
 }
 
 const DIALOG_DESCRIPTIONS = {
-  mayak: 'Тёплый и внимательный разговор без оценки, когда нужно выговориться или услышать себя.',
-  kompas: 'Строгий и честный. Разложит цель на шаги и не даст себя жалеть.',
-  dnevnik: 'Наблюдательный. Подведёт итоги дня и заметит то, что ты пропустил.',
+  mayak: 'Идёт рядом. Не оценивает и не торопит.',
+  kompas: 'Честный и строгий. Не даст себя жалеть.',
+  dnevnik: 'Спокойный. Замечает то, что ты пропустил.',
 }
 
 // 4-я карточка — Даймон. Не создаёт разговор (POST /conversations),
@@ -205,7 +204,7 @@ export default function PersonaPicker({
             return (
               <article
                 key={persona.key}
-                className={`mx-dialog-card mx-card-surface ${isActive ? 'is-active' : ''}`}
+                className={`mx-dialog-card ${isActive ? 'is-active' : ''}`}
                 data-testid="mentor-persona-card"
                 aria-label={`${persona.name}: ${promise}`}
                 aria-current={isActive ? 'true' : undefined}
@@ -297,7 +296,7 @@ export default function PersonaPicker({
                 type="button"
                 data-testid="dialog-starter-chip"
                 key={`${activePersona.key}-${i}`}
-                className="mx-dialog-chip"
+                className="mx-dialog-chip mx-glass"
                 disabled={creating}
                 onClick={() => void startWithChip(activePersona, starter)}
               >
