@@ -147,6 +147,21 @@ export const PERSONA_STARTER_CHIP_LABELS = {
   'Разбери день целиком': 'Разбери день',
 }
 
+/*
+ * MXL-DIALOG-CHIPS-002: набор чипсов «Не знаешь, с чего начать?» больше не
+ * зависит от активной карточки — один и тот же список при любой роли.
+ * За чипсом закреплены роль открываемого разговора (persona) и прежний
+ * длинный стартер: он уходит в поле ввода, а на чипсе показывается короткая
+ * надпись из PERSONA_STARTER_CHIP_LABELS.
+ */
+export const DIALOG_STARTER_CHIPS = [
+  { persona: 'mayak', starter: 'Чувствую себя вымотанным' }, // «Всё вымотало»
+  { persona: 'mayak', starter: 'Что-то давит, не пойму что' }, // «Что-то давит»
+  { persona: 'mayak', starter: 'Хочется, чтобы кто-то просто выслушал' }, // «Хочу выговориться»
+  { persona: 'mayak', starter: 'Внутри тревожно с самого утра' }, // «Тревожно с утра»
+  { persona: 'kompas', starter: 'Не знаю, что с этим делать' }, // «Не знаю, что делать»
+]
+
 // 4. CheckIn morning Journal modes: UI-only selector until backend supports journal_mode.
 // Questions stay in this file so Moscow-day rotation remains deterministic and stable.
 // 5. Hero Journey — starters for AI personas based on the 16 trials.
