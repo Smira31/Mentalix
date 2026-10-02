@@ -350,6 +350,7 @@ function buildDemoConversations() {
   const today = now()
   const yesterday = offsetDate(today, -1)
   const daysAgo3 = offsetDate(today, -3)
+  const daysAgo6 = offsetDate(today, -6)
   return [
     {
       id: 'demo-conv-1',
@@ -399,6 +400,23 @@ function buildDemoConversations() {
           id: 'm8',
           role: 'assistant',
           content: 'Наблюдатель: я заметил один повторяющийся паттерн.',
+        },
+      ],
+    },
+    // Четвёртый разговор — чтобы в демо был доступен вход «Все разговоры»
+    // (ссылка появляется, когда разговоров больше трёх).
+    {
+      id: 'demo-conv-4',
+      persona: 'kompas',
+      title: 'С чего начать неделю',
+      last_message: 'Наставник: выбери один шаг и сделай его сегодня.',
+      updated_at: new Date(`${daysAgo6}T09:00:00`).toISOString(),
+      messages: [
+        { id: 'm9', role: 'user', content: 'С чего начать неделю' },
+        {
+          id: 'm10',
+          role: 'assistant',
+          content: 'Наставник: выбери один шаг и сделай его сегодня.',
         },
       ],
     },
@@ -834,10 +852,10 @@ function daimonTestMode() {
 
 /*
  * ?dialogTest= — детерминированные сбои «Диалога» для UX-тестов аудита.
- * Каждый сбой одноразовый (кроме sendError — дважды), чтобы проверить,
- * что «Повторить» действительно повторяет запрос и он проходит.
+ * Сбой держится ровно на время первой загрузки, а «Повторить» проходит,
+ * чтобы проверить, что кнопка действительно повторяет запрос.
  *   historyError — не грузится история разговора
- *   listError    — падает список разговоров: по одному разу на каждый запрос
+ *   listError    — падает список разговоров: независимо на каждый запрос
  *                  (и «Продолжить разговор», и «Все разговоры»)
  *   createError  — падает создание разговора
  *   sendError    — две неудачные отправки подряд
@@ -859,13 +877,21 @@ function dialogTestMode() {
   return DIALOG_TEST_MODES.includes(value) ? value : null
 }
 
+/*
+ * В dev React StrictMode вызывает эффекты дважды, поэтому первая загрузка
+ * истории/списка уходит минимум двумя запросами. Одноразовый сбой съел бы
+ * второй (успешный) запрос, и баннер ошибки не появился бы вовсе. Поэтому
+ * сбой удерживается на всех попытках первой загрузки, а «Повторить»
+ * пользователя (следующий запрос) уже проходит.
+ */
+const DIALOG_TEST_GET_FAILURES = 2
+
 let dialogTestState = {
   mode: null,
-  historyFailed: false,
-  listFailed: false,
-  listFailedLimits: new Set(),
-  createFailed: false,
-  limitFailed: false,
+  historyFailuresLeft: 0,
+  listFailuresLeft: new Map(),
+  createFailuresLeft: 0,
+  limitFailuresLeft: 0,
   sendFailuresLeft: 0,
 }
 
@@ -873,11 +899,10 @@ function dialogTestCounters(mode) {
   if (dialogTestState.mode !== mode) {
     dialogTestState = {
       mode,
-      historyFailed: false,
-      listFailed: false,
-      listFailedLimits: new Set(),
-      createFailed: false,
-      limitFailed: false,
+      historyFailuresLeft: mode === 'historyError' ? DIALOG_TEST_GET_FAILURES : 0,
+      listFailuresLeft: new Map(),
+      createFailuresLeft: mode === 'createError' ? 1 : 0,
+      limitFailuresLeft: mode === 'dailyLimit' ? 1 : 0,
       sendFailuresLeft: mode === 'sendError' ? 2 : 0,
     }
   }
@@ -998,16 +1023,17 @@ function respond(path, options = {}) {
         /^\/mentalix\/conversations\/[^/]+\/messages$/.test(pathname)) &&
       url.searchParams.get('persona') !== 'daimon'
 
-    if (dialogTest === 'historyError' && isMessagesGet && !counters.historyFailed) {
-      counters.historyFailed = true
+    if (dialogTest === 'historyError' && isMessagesGet && counters.historyFailuresLeft > 0) {
+      counters.historyFailuresLeft -= 1
       throw fail(500)
     }
     if (dialogTest === 'listError' && pathname === '/mentalix/conversations' && method === 'GET') {
-      // Сбой по одному разу на каждый запрос списка: «Продолжить разговор»
-      // (limit 4) и «Все разговоры» (limit 50) проверяются независимо.
+      // Сбой независимо на каждый запрос списка: «Продолжить разговор»
+      // (limit 4) и «Все разговоры» (limit 50) проверяются отдельно.
       const limitKey = url.searchParams.get('limit') || 'default'
-      if (!counters.listFailedLimits.has(limitKey)) {
-        counters.listFailedLimits.add(limitKey)
+      const left = counters.listFailuresLeft.get(limitKey) ?? DIALOG_TEST_GET_FAILURES
+      if (left > 0) {
+        counters.listFailuresLeft.set(limitKey, left - 1)
         throw fail(500)
       }
     }
@@ -1015,14 +1041,14 @@ function respond(path, options = {}) {
       dialogTest === 'createError' &&
       pathname === '/mentalix/conversations' &&
       method === 'POST' &&
-      !counters.createFailed
+      counters.createFailuresLeft > 0
     ) {
-      counters.createFailed = true
+      counters.createFailuresLeft -= 1
       throw fail(500)
     }
     if (pathname === '/mentalix/messages' && method === 'POST') {
-      if (dialogTest === 'dailyLimit' && !counters.limitFailed) {
-        counters.limitFailed = true
+      if (dialogTest === 'dailyLimit' && counters.limitFailuresLeft > 0) {
+        counters.limitFailuresLeft -= 1
         throw fail(429, 'daily_limit')
       }
       if (dialogTest === 'sendError' && counters.sendFailuresLeft > 0) {

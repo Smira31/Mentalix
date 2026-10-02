@@ -225,10 +225,6 @@ export function ConversationChat({
    * поэтому неудача помечает конкретный пузырь, а не весь чат.
    */
   async function deliver(text, visibleText, { appendUser = true } = {}) {
-    // Сообщение никогда не уходит без conversation_id: без него непонятно,
-    // в какой разговор его писать, и реплику можно потерять.
-    if (!conversationIdRef.current) return false
-
     setSending(true)
     platform.haptic('light')
 
@@ -246,6 +242,37 @@ export function ConversationChat({
           retryVisibleText: visibleText,
         },
       ])
+    }
+
+    /*
+     * Сообщение никогда не уходит без conversation_id: без него непонятно,
+     * в какой разговор его писать. Если разговор не создался на входе
+     * (сбой POST /conversations), создаём его здесь; при повторной неудаче
+     * помечаем пузырь «Не отправлено» — реплика не теряется молча.
+     */
+    if (!conversationIdRef.current) {
+      try {
+        const created = user?.id
+          ? await api.mentalix.createConversation(user.id, persona, {
+              timeoutMs: CONVERSATION_CREATE_TIMEOUT_MS,
+            })
+          : null
+        conversationIdRef.current = created?.id || null
+      } catch {
+        conversationIdRef.current = null
+      }
+
+      if (!conversationIdRef.current) {
+        if (userMessageId) {
+          setMessages(previous =>
+            previous.map(message =>
+              message.id === userMessageId ? { ...message, status: 'failed' } : message
+            )
+          )
+        }
+        setSending(false)
+        return false
+      }
     }
 
     const handoff = handoffRef.current
@@ -601,6 +628,9 @@ export default function MentalixChat({ user, onPersonaChange, onRegisterBack, on
       onBack={exitConversation}
       onGuestForbidden={() => setGuestForbidden(true)}
       onNewConversation={handleNewConversation}
+      creatingConversation={creatingConversation}
+      creationError={conversationError}
+      onRetryCreate={handleNewConversation}
     />
   )
 }
