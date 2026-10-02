@@ -180,6 +180,7 @@ function PracticeSearchOverlay({ practices, themes, onOpenPractice, onOpenTheme,
 import Rituals from './Rituals'
 import Ascezas from './Ascezas'
 import GuidedSelfDiscoveryFlow from './GuidedSelfDiscoveryFlow'
+import DailyJournalFlow from './DailyJournal/DailyJournalFlow'
 import LilaDiscoverFlow from './LilaDiscoverFlow'
 import ThemeCarouselScreen from './ThemeCarouselScreen'
 
@@ -366,7 +367,7 @@ export default function Practices({
   }
 
   if (sub === 'journal') {
-    return <GuidedSelfDiscoveryFlow userId={user.id} onClose={() => setSub(null)} />
+    return <DailyJournalFlow userId={user.id} onClose={() => setSub(null)} />
   }
 
   if (sub === 'self-discovery') {

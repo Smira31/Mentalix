@@ -139,6 +139,7 @@ const ACTIVITY_WRITE = [
   /^\/mood-practices$/,
   /^\/journal\/templates\/sessions\/complete$/,
   /^\/journey\/entries(?:\/[^/]+)?$/,
+  /^\/daily-journal\/entries$/,
 ]
 
 function notifyActivity(path, options) {
@@ -669,6 +670,38 @@ export const api = {
         method: 'PUT',
         body: JSON.stringify({ user_id: userId, tag_ids: normalizeJourneyTagIds(tagIds) }),
       }),
+  },
+
+  dailyJournal: {
+    getSetup: userId => request(withQuery('/daily-journal/setup', { user_id: userId })),
+
+    saveSetup: (userId, { goals, reminders, vision, prompts }) =>
+      request('/daily-journal/setup', {
+        method: 'PUT',
+        body: JSON.stringify({ user_id: userId, goals, reminders, vision, prompts }),
+      }),
+
+    createEntry: (userId, { date, stream_text, prompt_text, prompt_answer, helpful }) =>
+      request('/daily-journal/entries', {
+        method: 'POST',
+        body: JSON.stringify({
+          user_id: userId,
+          date,
+          stream_text,
+          prompt_text,
+          prompt_answer,
+          helpful,
+        }),
+      }),
+
+    updateEntry: (entryId, userId, helpful) =>
+      request(`/daily-journal/entries/${entryId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ user_id: userId, helpful }),
+      }),
+
+    entries: (userId, { limit, before } = {}) =>
+      request(withQuery('/daily-journal/entries', { user_id: userId, limit, before })),
   },
 
   goals: {

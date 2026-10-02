@@ -17,7 +17,7 @@ function formatReviewDate() {
   }
 }
 
-export default function CheckInCompletion({ evening, onFeedback, children, title, art, body, feedbackQuestion }) {
+export default function CheckInCompletion({ evening, onFeedback, children, title, art, body, feedbackQuestion, datePill }) {
   const [selected, setSelected] = useState(null)
   const questionText = feedbackQuestion || (evening ? 'Был ли разбор полезен?' : 'Было полезно сегодня?')
 
@@ -43,7 +43,7 @@ export default function CheckInCompletion({ evening, onFeedback, children, title
         ))}
       </h1>
       <div className="mx-completion__date-pill" aria-label="Дата">
-        <span aria-hidden="true">✓</span> {formatReviewDate()}
+        {datePill || (<><span aria-hidden="true">✓</span> {formatReviewDate()}</>)}
       </div>
       {body}
       <div className="mx-completion__feedback">

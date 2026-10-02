@@ -1,0 +1,365 @@
+/* ── Журнал: визуал в стиле Mentalix / Stoic (как Запись/чек-ины) ── */
+
+/* ── Review (Перечитай) ── */
+.mx-dj-review {
+  padding-top: var(--mx-space-2);
+}
+
+.mx-dj-review__art {
+  display: flex;
+  min-height: clamp(120px, 20dvh, 180px);
+  align-items: center;
+  justify-content: center;
+  padding-top: var(--mx-space-2);
+}
+
+.mx-dj-review__art svg {
+  width: auto;
+  height: 140px;
+  max-height: 100%;
+}
+
+.mx-dj-review__section {
+  margin-bottom: var(--mx-space-6);
+}
+
+.mx-dj-review__label {
+  display: block;
+  margin-bottom: var(--mx-space-2);
+}
+
+.mx-dj-review__item {
+  font-size: 16px;
+  line-height: 1.5;
+  color: rgb(var(--c-text));
+  margin-bottom: var(--mx-space-2);
+}
+
+.mx-dj-review__item--muted {
+  color: rgb(var(--c-faint));
+  font-style: italic;
+}
+
+.mx-dj-review__empty {
+  display: flex;
+  align-items: center;
+  gap: var(--mx-space-2);
+  margin-bottom: var(--mx-space-6);
+  padding: var(--mx-space-3);
+  border-radius: var(--mx-radius-card);
+  background: rgb(var(--c-card2));
+  color: rgb(var(--c-muted));
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.mx-dj-review__empty button {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: rgb(var(--c-text));
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* ── Setup ── */
+.mx-dj-setup {
+  padding-top: var(--mx-space-2);
+}
+
+.mx-dj-setup__step-label {
+  display: block;
+  margin-bottom: var(--mx-space-2);
+}
+
+.mx-dj-setup__field-group .mx-journal-field__question {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.mx-dj-setup__field-group .mx-journal-field__hint {
+  margin-bottom: var(--mx-space-3);
+}
+
+.mx-dj-setup__input {
+  width: 100%;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid rgb(var(--c-border) / 0.5);
+  outline: 0;
+  font-size: 16px;
+  line-height: 1.5;
+  color: rgb(var(--c-text));
+  padding: var(--mx-space-2) 0;
+  resize: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.mx-dj-setup__input::placeholder {
+  color: rgb(var(--c-faint));
+}
+
+.mx-dj-setup__input:focus {
+  border-bottom-color: rgb(var(--c-text));
+}
+
+.mx-dj-setup__input-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--mx-space-2);
+  margin-bottom: var(--mx-space-2);
+}
+
+.mx-dj-setup__input-row .mx-dj-setup__input {
+  flex: 1;
+}
+
+.mx-dj-setup__delete {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: rgb(var(--c-faint));
+  cursor: pointer;
+  margin-top: var(--mx-space-2);
+}
+
+.mx-dj-setup__add {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--mx-space-2);
+  background: none;
+  border: 0;
+  padding: var(--mx-space-2) 0;
+  color: rgb(var(--c-muted));
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.mx-dj-setup__add:disabled {
+  color: rgb(var(--c-faint));
+  cursor: default;
+}
+
+/* ── Stream (Поток) ── */
+.mx-dj-stream {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.mx-dj-stream__hint {
+  font-size: 14px;
+  line-height: 1.45;
+  color: rgb(var(--c-muted));
+  margin-bottom: var(--mx-space-3);
+}
+
+.mx-dj-stream__field {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  resize: none;
+  -webkit-appearance: none;
+  appearance: none;
+  font-size: 16px;
+  line-height: 1.6;
+  color: rgb(var(--c-text));
+  padding: 0;
+}
+
+.mx-dj-stream__field::placeholder {
+  color: rgb(var(--c-faint));
+}
+
+.mx-dj-stream__field:focus,
+.mx-dj-stream__field:focus-visible {
+  outline: none;
+  box-shadow: none;
+  border: 0;
+  background: transparent;
+}
+
+.mx-dj-stream__bar {
+  flex-shrink: 0;
+  height: 2px;
+  border-radius: 999px;
+  background: rgb(var(--c-line) / 0.15);
+  margin-top: var(--mx-space-3);
+  overflow: hidden;
+}
+
+.mx-dj-stream__bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: rgb(var(--c-text) / 0.25);
+  transition: width 0.3s ease;
+}
+
+/* ── Question (Один вопрос) ── */
+.mx-dj-question {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.mx-dj-question__text {
+  font-family: 'Manrope', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: rgb(var(--c-text));
+  margin: 0 0 var(--mx-space-3);
+}
+
+.mx-dj-question__field {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  resize: none;
+  -webkit-appearance: none;
+  appearance: none;
+  font-size: 16px;
+  line-height: 1.6;
+  color: rgb(var(--c-text));
+  padding: 0;
+}
+
+.mx-dj-question__field::placeholder {
+  color: rgb(var(--c-faint));
+}
+
+.mx-dj-question__field:focus,
+.mx-dj-question__field:focus-visible {
+  outline: none;
+  box-shadow: none;
+  border: 0;
+  background: transparent;
+}
+
+/* ── Footer ── */
+.mx-dj-footer-bar {
+  display: flex;
+  justify-content: flex-end;
+  padding: var(--mx-space-2) 0;
+}
+
+.mx-dj-footer--complete {
+  padding: 0;
+}
+
+.mx-dj-footer--complete > div {
+  max-width: none;
+}
+
+/* ── Completion ── */
+.mx-dj-complete .mx-screen__content {
+  max-width: none;
+  padding: 0;
+}
+
+.mx-dj-complete .mx-completion {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+}
+
+.mx-dj-complete__art {
+  width: 120px;
+  height: 84px;
+  flex: none;
+}
+
+.mx-dj-complete__art svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Setup menu (•••) ── */
+.mx-dj-menu-wrap {
+  position: relative;
+  margin-left: auto;
+}
+
+.mx-dj-menu-btn {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: rgb(var(--c-muted));
+  cursor: pointer;
+  font-size: 20px;
+  letter-spacing: 1px;
+  line-height: 1;
+}
+
+.mx-dj-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  padding: 4px;
+  min-width: 180px;
+  border-radius: var(--mx-radius-card);
+  background: rgb(var(--c-card2));
+  border: 1px solid rgb(var(--c-border) / 0.5);
+  z-index: 10;
+}
+
+.mx-dj-menu button {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: var(--mx-radius-pill);
+  background: transparent;
+  color: rgb(var(--c-text));
+  font-size: 15px;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* ── Save error banner ── */
+.mx-dj-save-error {
+  position: fixed;
+  bottom: calc(var(--app-safe-bottom, 0px) + 80px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 18px;
+  border-radius: var(--mx-radius-pill);
+  background: rgb(var(--c-card2));
+  border: 1px solid rgb(var(--c-border) / 0.5);
+  color: rgb(var(--c-muted));
+  font-size: 13px;
+  z-index: 50;
+  white-space: nowrap;
+}
+
+/* ── Responsive ── */
+@media (max-height: 650px) {
+  .mx-dj-review__art {
+    min-height: 100px;
+  }
+
+  .mx-dj-review__art svg {
+    height: 100px;
+  }
+}

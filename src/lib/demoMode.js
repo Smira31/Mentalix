@@ -692,6 +692,8 @@ function seedState(todayState = null) {
         })),
       },
     ],
+    dailyJournalSetup: null,
+    dailyJournalEntries: [],
     moodPractices: empty ? [] : moodPractices,
     // В прерванной серии вчера нет ни одной активности.
     practiceDays: empty
@@ -1258,6 +1260,97 @@ function respond(path, options = {}) {
     const status = url.searchParams.get('status')
     if (status === 'completed') return json(state.journalCompletedSessions || [])
     return json([])
+  }
+
+  // ── Daily Journal (demo) ──
+  const DEMO_JOURNAL_PROMPTS = [
+    'Что я откладываю, хотя знаю, что это важно?',
+    'Каким был бы сегодняшний день, если бы всё было проще?',
+    'Что сейчас отнимает у меня больше всего сил — и стоит ли оно того?',
+    'Что бы я сделал сегодня, если бы не боялся выглядеть глупо?',
+    'Кому мне давно стоит написать — и что сказать?',
+    'Что из того, что я делаю каждый день, я бы не выбрал заново?',
+    'Какой один шаг сегодня приблизит меня к моей цели?',
+  ]
+
+  if (pathname === '/daily-journal/setup' && method === 'GET') {
+    if (!state.dailyJournalSetup) {
+      state.dailyJournalSetup = {
+        goals: [],
+        reminders: [],
+        vision: { scene: '', obstacle: '', plan: '' },
+        prompts: [...DEMO_JOURNAL_PROMPTS],
+        updated_at: null,
+      }
+      writeState(state)
+    }
+    return json(state.dailyJournalSetup)
+  }
+  if (pathname === '/daily-journal/setup' && method === 'PUT') {
+    state.dailyJournalSetup = {
+      goals: Array.isArray(body.goals) ? body.goals.filter(Boolean).slice(0, 3) : [],
+      reminders: Array.isArray(body.reminders)
+        ? body.reminders.filter(Boolean).slice(0, 5)
+        : [],
+      vision: {
+        scene: body.vision?.scene || '',
+        obstacle: body.vision?.obstacle || '',
+        plan: body.vision?.plan || '',
+      },
+      prompts: Array.isArray(body.prompts) ? body.prompts.filter(Boolean).slice(0, 7) : [],
+      updated_at: now().toISOString(),
+    }
+    writeState(state)
+    return json(state.dailyJournalSetup)
+  }
+  if (pathname === '/daily-journal/entries' && method === 'POST') {
+    const existing = (state.dailyJournalEntries || []).find(e => e.date === body.date)
+    if (existing) {
+      const entry = {
+        ...existing,
+        stream_text: body.stream_text ?? existing.stream_text,
+        prompt_text: body.prompt_text ?? existing.prompt_text,
+        prompt_answer: body.prompt_answer ?? existing.prompt_answer,
+        helpful: body.helpful ?? existing.helpful,
+        updated_at: now().toISOString(),
+      }
+      const entries = (state.dailyJournalEntries || []).map(e =>
+        e.id === existing.id ? entry : e
+      )
+      writeState({ ...state, dailyJournalEntries: entries })
+      return json(entry)
+    }
+    const uniqueDates = new Set((state.dailyJournalEntries || []).map(e => e.date))
+    const entry = {
+      id: Date.now(),
+      date: body.date,
+      stream_text: body.stream_text || '',
+      prompt_text: body.prompt_text || '',
+      prompt_answer: body.prompt_answer || '',
+      helpful: body.helpful || null,
+      day_number: uniqueDates.size + 1,
+      created_at: now().toISOString(),
+      updated_at: now().toISOString(),
+    }
+    writeState({ ...state, dailyJournalEntries: [entry, ...(state.dailyJournalEntries || [])] })
+    return json(entry)
+  }
+  if (pathname.match(/^\/daily-journal\/entries\/\d+$/) && method === 'PATCH') {
+    const id = numericId(pathname)
+    const entries = (state.dailyJournalEntries || []).map(e =>
+      e.id === id ? { ...e, helpful: body.helpful, updated_at: now().toISOString() } : e
+    )
+    writeState({ ...state, dailyJournalEntries: entries })
+    return json(entries.find(e => e.id === id))
+  }
+  if (pathname === '/daily-journal/entries' && method === 'GET') {
+    const limit = parseInt(url.searchParams.get('limit') || '20', 10)
+    const before = url.searchParams.get('before')
+    let items = state.dailyJournalEntries || []
+    if (before) items = items.filter(e => e.date < before)
+    items = items.slice(0, limit)
+    const uniqueDates = new Set((state.dailyJournalEntries || []).map(e => e.date))
+    return json({ items, total_days: uniqueDates.size })
   }
 
   if (pathname === '/health' && method === 'GET') return json({ status: 'ok' })
