@@ -173,28 +173,23 @@ test('тема недели: черновик восстанавливается
   await input.click()
   await page.keyboard.type('Черновик темы — тест восстановления')
 
-  // Отладка: проверить, что текст попал в редактор
-  const editorText = await input.textContent()
-  // eslint-disable-next-line no-console
-  console.log('THEME editor text:', editorText)
-  const allKeys = await page.evaluate(() => Object.keys(localStorage))
-  // eslint-disable-next-line no-console
-  console.log('THEME localStorage keys:', allKeys)
-
   // Подождать debounced-сохранения (500 мс).
+  // Webkit вставляет <br> в contenteditable → serializeEditor добавляет trailing \n,
+  // поэтому проверяем включение, а не строгое равенство.
+  const expectedSnippet = 'Черновик темы — тест восстановления'
   await page.waitForFunction(
-    () => {
+    (snippet) => {
       const keys = Object.keys(localStorage)
       const themeKey = keys.find(k => k.startsWith('mx-theme-draft-v1:'))
       if (!themeKey) return false
       try {
         const parsed = JSON.parse(localStorage.getItem(themeKey))
-        return parsed.text === 'Черновик темы — тест восстановления'
+        return typeof parsed.text === 'string' && parsed.text.includes(snippet)
       } catch {
         return false
       }
     },
-    undefined,
+    expectedSnippet,
     { timeout: 5000 }
   )
 
