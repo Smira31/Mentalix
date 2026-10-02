@@ -140,13 +140,26 @@ const ACTIVITY_WRITE = [
   /^\/journal\/templates\/sessions\/complete$/,
   /^\/journey\/entries(?:\/[^/]+)?$/,
   /^\/daily-journal\/entries$/,
+  // Даймон: бросок кубика и ответ на клетке — тоже активность дня.
+  /^\/daimon\/roll$/,
+  /^\/daimon\/insight$/,
+  /^\/daimon\/chat$/,
 ]
 
 function notifyActivity(path, options) {
   const method = (options.method || 'GET').toUpperCase()
-  if (!['POST', 'PUT', 'PATCH'].includes(method) || !ACTIVITY_WRITE.some(pattern => pattern.test(path))) return
+  if (
+    !['POST', 'PUT', 'PATCH'].includes(method) ||
+    !ACTIVITY_WRITE.some(pattern => pattern.test(path))
+  )
+    return
+  if (path === '/daimon/chat' && !JSON.parse(options.body || '{}').message?.trim()) return
   let userId = null
-  try { userId = JSON.parse(options.body)?.user_id ?? null } catch { /* empty body */ }
+  try {
+    userId = JSON.parse(options.body)?.user_id ?? null
+  } catch {
+    /* empty body */
+  }
   window.dispatchEvent(new CustomEvent('mentalix:activity-saved', { detail: { userId } }))
 }
 
@@ -827,7 +840,11 @@ export const api = {
         } else {
           const lines = ['# Mentalix Journal Export']
           for (const c of checkins || []) {
-            lines.push(`\n## ${c.date ?? ''}`, `Mood: ${c.mood ?? '—'}, Energy: ${c.energy ?? '—'}`, c.note || '')
+            lines.push(
+              `\n## ${c.date ?? ''}`,
+              `Mood: ${c.mood ?? '—'}, Energy: ${c.energy ?? '—'}`,
+              c.note || ''
+            )
           }
           content = lines.join('\n')
         }
@@ -1041,6 +1058,46 @@ export const api = {
           occurred_at: occurredAt,
         }),
       }),
+  },
+
+  daimon: {
+    board: () => request('/daimon/board'),
+    state: userId => request(withQuery('/daimon/state', { user_id: userId })),
+    createGame: (userId, gameRequest) =>
+      request('/daimon/games', {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId, request: gameRequest }),
+      }),
+    roll: userId =>
+      request('/daimon/roll', {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId }),
+      }),
+    chat: (userId, message) =>
+      request('/daimon/chat', {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId, message }),
+      }),
+    // Разговор клетки: сервер хранит реплики Даймона с move_id.
+    history: (userId, moveId) =>
+      request(
+        withQuery('/mentalix/messages', {
+          user_id: userId,
+          persona: 'daimon',
+          ...(moveId ? { move_id: moveId } : {}),
+        })
+      ),
+    insight: (userId, text, skip = false) =>
+      request('/daimon/insight', {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId, text, skip }),
+      }),
+    summary: (userId, gameId) =>
+      request('/daimon/summary', {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId, game_id: gameId }),
+      }),
+    games: userId => request(withQuery('/daimon/games', { user_id: userId })),
   },
 
   health: {

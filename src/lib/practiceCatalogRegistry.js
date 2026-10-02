@@ -22,19 +22,19 @@ export const PRACTICE_CATALOG_REGISTRY = [
     sub: 'ascezas',
   },
   {
-    key: PRACTICE_KEYS.lilaDiscover || 'lila-discover',
-    title: 'Разобраться со Следопытом',
-    subtitle: 'карта, несколько вопросов и один рабочий шаг',
-    description: 'Разложи ситуацию по шагам вместе со Следопытом.',
-    section: 'Следопыт',
-    kind: 'journal',
+    key: PRACTICE_KEYS.daimon,
+    title: 'Даймон',
+    subtitle: 'игра для самопознания: вопрос, кубик, разговор с внутренним голосом',
+    description: 'Игра для самопознания: задай вопрос, брось кубик, поговори с внутренним голосом.',
+    section: 'Самопознание',
+    kind: 'daimon',
     completionSource: 'none',
-    sub: 'lila-discover',
+    sub: 'daimon',
   },
 ]
 
 export const PRACTICE_RAIL_KEYS = [
-  'lila-discover',
+  PRACTICE_KEYS.daimon,
   PRACTICE_KEYS.rituals,
   PRACTICE_KEYS.ascezas,
 ]
@@ -56,10 +56,10 @@ export const PRACTICE_COLLECTIONS = [
   },
   {
     key: 'lila',
-    title: 'Следопыт',
-    description: 'Карта, несколько вопросов и один рабочий шаг.',
-    kind: 'journal',
-    practiceKeys: ['lila-discover'],
+    title: 'Даймон',
+    description: 'Игра для самопознания: вопрос, кубик, разговор с внутренним голосом.',
+    kind: 'daimon',
+    practiceKeys: [PRACTICE_KEYS.daimon],
   },
 ]
 

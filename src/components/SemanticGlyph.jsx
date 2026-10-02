@@ -222,6 +222,16 @@ function Drawing({ kind, debugSource }) {
         </>
       )
 
+    // Даймон: простая крупная залитая форма (пламя свечи), без деталей —
+    // в стиле одобренного фонаря со свечой.
+    case 'daimon':
+      return (
+        <path
+          className="mx-semantic-glyph__daimon-flame"
+          d="M80 16C95 38 111 51 111 71C111 90 97 100 80 100C63 100 49 90 49 71C49 51 65 38 80 16Z"
+        />
+      )
+
     case 'prayer':
       return (
         <>

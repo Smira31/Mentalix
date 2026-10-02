@@ -162,6 +162,12 @@
   opacity: 0.08;
 }
 
+/* Даймон: залитая белая форма — пламя свечи, без деталей. */
+.mx-semantic-glyph__daimon-flame {
+  fill: rgb(var(--c-text));
+  stroke: none;
+}
+
 .mx-semantic-glyph__point,
 .mx-semantic-glyph__path-point {
   fill: rgb(var(--c-line-secondary));

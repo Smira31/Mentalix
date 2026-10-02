@@ -39,7 +39,7 @@ export default {
         // Lora — шрифт с засечками, только для заголовков разделов
         // экрана «Шаги» («Тема недели: …», «Другие темы», «Все темы»),
         // референс Stoic Explore. См. DESIGN_SYSTEM.md §3.
-        serif: ['Lora', 'PT Serif', 'Georgia', 'serif'],
+        serif: ['Lora', 'Lora Fallback', 'PT Serif', 'Georgia', 'serif'],
       },
       keyframes: {
         // Появление без сдвига layout: движение целого экрана дёргается в WKWebView.

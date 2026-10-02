@@ -189,7 +189,8 @@ test('Mentalix.jsx: 403 guest_ai_forbidden обрабатывается', async 
   assert.match(mentalixSource, /error\?\.status === 403/)
   assert.match(mentalixSource, /guest_ai_forbidden/)
   assert.match(mentalixSource, /GuestAiGate/)
-  assert.match(mentalixSource, /data-testid="guest-ai-gate"/)
+  assert.match(mentalixSource, /testId = 'guest-ai-gate'/)
+  assert.match(mentalixSource, /data-testid=\{testId\}/)
 })
 
 /* ── Контракт: Settings — гостевые подсказки ── */

@@ -401,11 +401,11 @@ function App() {
   const [locked, setLocked] = useState(() => appLockEnabled && hasPinRecord())
 
   const searchParams = new URLSearchParams(window.location.search)
-  const { sub: initialTodaySub, returnFlow: initialReturnFlow, practicesSub: initialPracticesSub } =
-    parseContextualDeepLink(
-      window.location.search,
-      platform.getStartParam?.()
-    )
+  const {
+    sub: initialTodaySub,
+    returnFlow: initialReturnFlow,
+    practicesSub: initialPracticesSub,
+  } = parseContextualDeepLink(window.location.search, platform.getStartParam?.())
   const initialTab = initialTodaySub
     ? null
     : initialPracticesSub
@@ -479,7 +479,27 @@ function App() {
   }, [overlay, tab, mentorPersonaOpen, todayFlowOpen, todaySeriesOpen, practiceGameOpen])
 
   // Только разрешённые contextual deep-links открывают вложенный экран «Сегодня».
-  const [practicesSub, setPracticesSub] = useState(initialPracticesSub || null)
+  // ?tab=practices&sub=daimon — deep link на конкретную практику (Даймон и др.)
+  // initialPracticesSub — из parseContextualDeepLink (например, ?startapp=journal);
+  // fallback на ?sub= для прямых ссылок вида ?tab=practices&sub=daimon.
+  const [practicesSub, setPracticesSub] = useState(
+    () => initialPracticesSub || (initialTab === 'practices' ? searchParams.get('sub') : null)
+  )
+
+  // В превью URL меняется без перемонтирования App (history/popstate).
+  // Начальные useState сами по себе не замечают такой вход в игру.
+  useEffect(() => {
+    const openDaimonLink = () => {
+      const link = parseContextualDeepLink(window.location.search, platform.getStartParam?.())
+      if (link.practicesSub !== 'daimon') return
+      setOverlay(null)
+      setPracticesSub('daimon')
+      setOpenedTabs(prev => new Set([...prev, 'practices']))
+      setTab('practices')
+    }
+    window.addEventListener('popstate', openDaimonLink)
+    return () => window.removeEventListener('popstate', openDaimonLink)
+  }, [])
 
   const reportReturnFlowEvent = useCallback(
     async suffix => {
@@ -1505,6 +1525,7 @@ function App() {
                           onGameChange={setPracticeGameOpen}
                           onRegisterBack={registerPracticesBack}
                           onReturnToToday={goToday}
+                          onGuestLogin={() => setShowGuestAuth(true)}
                         />
                       </Suspense>
                     </ScreenErrorBoundary>

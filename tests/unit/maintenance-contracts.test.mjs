@@ -26,8 +26,8 @@ import {
   saveCheckinDraft,
 } from '../../src/lib/checkinDraft.js'
 
-test('allowlist сохраняет доступные практики и активирует Lila entry', () => {
-  assert.deepEqual(AVAILABLE_PRACTICES, ['lila-discover', 'rituals', 'ascezas'])
+test('allowlist сохраняет доступные практики и активирует Daimon entry', () => {
+  assert.deepEqual(AVAILABLE_PRACTICES, ['daimon', 'rituals', 'ascezas'])
 
   assert.equal(isPracticeAvailable('unknown-practice'), false)
 })
@@ -268,7 +268,7 @@ test('MXL-021 связывает Journey с продолжением Today', () 
   assert.match(yearPath, /onContinueToday/)
 })
 
-test('MXL-JOURNAL-001 открывает единственный Guided Self-Discovery Journal flow из «Практик»', () => {
+test('MXL-JOURNAL-001 открывает единственный Journal flow из «Практик»', () => {
   const journal = readFileSync(
     new URL('../../src/screens/JournalFlow.jsx', import.meta.url),
     'utf8'
@@ -292,14 +292,14 @@ test('MXL-JOURNAL-001 открывает единственный Guided Self-Di
   assert.doesNotMatch(journal, /JournalTextarea|SceneLayout|JournalProgress/)
   assert.doesNotMatch(journal, /<button[\s\S]*>\s*Назад\s*<\/button>/)
   assert.match(practices, /import PracticeCatalogV2 from '\.\.\/components\/PracticeCatalogV2'/)
-  assert.match(practices, /import GuidedSelfDiscoveryFlow from '\.\/GuidedSelfDiscoveryFlow'/)
+  assert.match(practices, /import DailyJournalFlow from '\.\/DailyJournal\/DailyJournalFlow'/)
   assert.match(practices, /<PracticeCatalogV2[\s\S]*practices=\{catalogPractices\}/)
   assert.doesNotMatch(practices, /PRACTICE_CATALOG_V2_ENABLED|VITE_PRACTICES_CATALOG_V2/)
   assert.doesNotMatch(practices, /function PracticeRow\(|function PracticeCategory\(/)
   assert.match(practices, /setSub\('journal'\)/)
   assert.match(
     practices,
-    /if \(sub === 'journal'\) \{[\s\S]*<GuidedSelfDiscoveryFlow userId=\{user\.id\} onClose=\{\(\) => setSub\(null\)\} \/>/
+    /if \(sub === 'journal'\) \{[\s\S]*<DailyJournalFlow userId=\{user\.id\} onClose=\{backToList\} \/>/
   )
   assert.doesNotMatch(practices, /<JournalFlow/)
   assert.doesNotMatch(mentalix, /JournalHome|journalOpen/)
