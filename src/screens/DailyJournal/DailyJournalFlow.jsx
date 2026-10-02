@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
 import Screen from '../../components/Screen'
 import CapsLabel from '../../components/ui/CapsLabel'
@@ -103,8 +103,10 @@ export default function DailyJournalFlow({ userId, onClose }) {
   const pendingRef = useRef(false)
   const dateStrRef = useRef(dateStr)
   const latestRef = useRef({})
-  dateStrRef.current = dateStr
-  latestRef.current = { stage, streamText, promptAnswer, promptText, userId, dateStr }
+  useLayoutEffect(() => {
+    dateStrRef.current = dateStr
+    latestRef.current = { stage, streamText, promptAnswer, promptText, userId, dateStr }
+  })
 
   // Отправка записи; бросает ошибку при сбое. Дата — по Москве в момент отправки.
   const postEntry = useCallback(
