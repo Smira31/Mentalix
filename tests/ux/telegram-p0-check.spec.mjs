@@ -9,6 +9,10 @@ const DEMO_URL =
   process.env.MENTALIX_TELEGRAM_P0_URL ||
   'http://127.0.0.1:5173/?demo=1&toolbar=1&device=pro-max&tab=today&frame=0'
 
+// Порт dev-сервера задаёт конфиг (в CI это 4173), поэтому навигацию внутрь
+// игры строим от того же origin, а не от жёстко прописанного 5173.
+const DEMO_ORIGIN = new URL(DEMO_URL).origin
+
 async function openTelegramDemo(browser, viewport) {
   const context = await browser.newContext({
     viewport: { width: viewport.width, height: viewport.height },
@@ -203,7 +207,7 @@ for (const viewport of P0_VIEWPORTS) {
     }) => {
       const { context, page } = await openTelegramDemo(browser, viewport)
       await page.goto(
-        'http://127.0.0.1:5173/?demo=1&frame=0&tab=practices&sub=daimon&daimonTest=nearSnake',
+        `${DEMO_ORIGIN}/?demo=1&frame=0&tab=practices&sub=daimon&daimonTest=nearSnake`,
         { waitUntil: 'networkidle' }
       )
       await page.getByTestId('daimon-roll').click()

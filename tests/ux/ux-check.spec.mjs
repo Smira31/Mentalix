@@ -1,6 +1,7 @@
 import { devices, expect, test } from '@playwright/test'
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
+import { DAIMON_CELLS, DAIMON_LEVELS } from '../../src/lib/daimonBoard.js'
 
 const ARTIFACT_ROOT = path.resolve('artifacts/ux-check')
 
@@ -257,6 +258,13 @@ function fixtureFor(request) {
       },
     ])
   }
+
+  // Даймон: поле из статических данных, пустое состояние → интро новой игры.
+  if (pathname === '/api/daimon/board') {
+    return jsonResponse({ levels: DAIMON_LEVELS, cells: DAIMON_CELLS })
+  }
+  if (pathname === '/api/daimon/state') return jsonResponse({ game: null })
+  if (pathname === '/api/daimon/games') return jsonResponse([])
 
   // Daily Journal: setup без updated_at → intro, entries — stateful.
   if (pathname === '/api/daily-journal/setup') {
