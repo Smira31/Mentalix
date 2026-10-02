@@ -217,3 +217,23 @@
     opacity: 1;
   }
 }
+
+/* ── «Новый разговор» — стеклянная плашка под заголовком ── */
+
+.mx-conversation-new-pill-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: var(--mx-space-1) var(--mx-screen-x) 0;
+}
+
+.mx-conversation-new-pill {
+  min-height: 32px;
+  padding: 4px var(--mx-space-3);
+  border: 1px solid rgb(var(--c-line) / 0.1);
+  border-radius: var(--mx-radius-pill);
+  color: rgb(var(--c-muted));
+  font-size: var(--mx-type-meta-size);
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+}

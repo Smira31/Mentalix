@@ -41,6 +41,7 @@ export default function Conversation({
   sending,
   onSend,
   onBack,
+  onNewConversation = null,
   contextSlot = null,
   footerSlot = null,
   sendError = '',
@@ -346,6 +347,21 @@ export default function Conversation({
 
         <span aria-hidden="true" />
       </div>
+
+      {/* ── «Новый разговор» — стеклянная плашка под заголовком ── */}
+
+      {!loading && messages.length > 0 && onNewConversation && (
+        <div className="mx-conversation-new-pill-wrapper">
+          <button
+            type="button"
+            data-testid="conversation-new-pill"
+            className="mx-conversation-new-pill mx-glass"
+            onClick={onNewConversation}
+          >
+            Новый разговор
+          </button>
+        </div>
+      )}
 
       {/* ── история сообщений ── */}
 
