@@ -23,6 +23,7 @@ export default defineConfig({
     'today-subscreen-navigation.spec.mjs',
     'daily-journal-flow.spec.mjs',
     'steps-reliability.spec.mjs',
+    'steps-reliability.spec.mjs',
     'dialog-screen.spec.mjs',
   ],
   outputDir: 'artifacts/ux-check/playwright-output',
