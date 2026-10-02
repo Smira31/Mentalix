@@ -87,6 +87,7 @@ export function ConversationChat({
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const [sendError, setSendError] = useState('')
+  const [dailyLimit, setDailyLimit] = useState(false)
   const lastFailedSend = useRef(null)
   const initialPromptSent = useRef(false)
   const handoffRef = useRef(initialHandoff)
@@ -164,6 +165,7 @@ export function ConversationChat({
 
     if (!isVoiceMessage) setInput('')
     setSendError('')
+    setDailyLimit(false)
 
     if (appendUser) {
       localMessageSequence.current += 1
@@ -212,6 +214,15 @@ export function ConversationChat({
         onGuestForbidden?.()
         return
       }
+      // 429 daily_limit: спокойная строка, поле неактивно, набранный текст не теряется
+      if (
+        error?.status === 429 &&
+        String(error?.body?.detail || error?.message || '').includes('daily_limit')
+      ) {
+        if (!isVoiceMessage) setInput(text)
+        setDailyLimit(true)
+        return
+      }
       lastFailedSend.current = { text, visibleText }
       setSendError('Не удалось получить ответ. Попробуй ещё раз.')
     } finally {
@@ -249,6 +260,7 @@ export function ConversationChat({
       contextSlot={contextSlot}
       footerSlot={footerSlot}
       sendError={sendError}
+      dailyLimit={dailyLimit}
       onRetry={retryLastSend}
     />
   )
@@ -258,7 +270,7 @@ export function ConversationChat({
 // MENTALIX
 // ============================================================
 
-export default function MentalixChat({ user, onPersonaChange, onRegisterBack }) {
+export default function MentalixChat({ user, onPersonaChange, onRegisterBack, onOpenDaimon }) {
   const [pending, setPending] = useState(() => readPendingMentor())
   const [surpriseMessage] = useState(() =>
     pending.persona === 'dnevnik' ? sessionStorage.getItem(SURPRISE_MESSAGE_KEY) : null
@@ -393,6 +405,7 @@ export default function MentalixChat({ user, onPersonaChange, onRegisterBack }) 
         }}
         onContinueConversation={handleContinueConversation}
         onShowAllConversations={() => setShowAllConversations(true)}
+        onOpenDaimon={onOpenDaimon}
       />
     )
   }
