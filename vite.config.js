@@ -100,7 +100,6 @@ export default defineConfig({
         manualChunks: {
           'react-vendor': ['react', 'react-dom'],
           icons: ['lucide-react'],
-          charts: ['recharts'],
           query: ['@tanstack/react-query'],
           telegram: ['@twa-dev/sdk'],
         },

@@ -1,16 +1,58 @@
 import WebApp from '@twa-dev/sdk'
 
-export const telegramAdapter = {
-  name: 'telegram',
+// Цвет фона приложения (--c-bg) для шапки/фона/нижней полосы Telegram.
+// Запасной — значение токена по умолчанию из index.css.
+const DEFAULT_BG_HEX = '#050403'
 
-  init() {
+function readAppBackground() {
+  try {
+    const channels = getComputedStyle(document.documentElement)
+      .getPropertyValue('--c-bg')
+      .trim()
+      .split(/\s+/)
+      .map(Number)
+    if (channels.length === 3 && channels.every(c => Number.isFinite(c) && c >= 0 && c <= 255)) {
+      return `#${channels.map(c => c.toString(16).padStart(2, '0')).join('')}`
+    }
+  } catch {
+    // нет DOM/стилей — берём значение по умолчанию
+  }
+  return DEFAULT_BG_HEX
+}
+
+let earlyInitDone = false
+
+/*
+ * Вызывается синхронно при загрузке модуля platform — до createRoot и
+ * первого кадра: Telegram сразу разворачивает окно и красит шапку, фон и
+ * нижнюю полосу в цвет приложения (без белой вспышки). Каждый вызов
+ * защищён — вне Telegram или в старых клиентах ничего не падает.
+ */
+export function earlyInitTelegram() {
+  if (earlyInitDone) return
+  earlyInitDone = true
+  const bg = readAppBackground()
+  const run = action => {
     try {
-      WebApp.ready?.()
-      WebApp.expand?.()
-      WebApp.disableVerticalSwipes?.()
+      action()
     } catch {
       // старые версии Telegram SDK/клиента могут не поддерживать вызов — не критично
     }
+  }
+  run(() => WebApp.ready?.())
+  run(() => WebApp.expand?.())
+  run(() => WebApp.setHeaderColor?.(bg))
+  run(() => WebApp.setBackgroundColor?.(bg))
+  run(() => WebApp.setBottomBarColor?.(bg))
+  run(() => WebApp.disableVerticalSwipes?.())
+}
+
+export const telegramAdapter = {
+  name: 'telegram',
+
+  // Всё уже сделано при загрузке; здесь — страховка, если ранний вызов не выполнялся.
+  init() {
+    earlyInitTelegram()
   },
 
   // шапка и фон Telegram синхронизируются с темой приложения (день/ночь).
