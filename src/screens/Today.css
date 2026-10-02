@@ -2238,10 +2238,17 @@
 }
 
 .mx-today-progress__fill {
+  width: 100%;
   height: 100%;
-  border-radius: 9999px;
   background: rgb(var(--c-gold));
-  transition: width 400ms ease;
+  transform-origin: left center;
+  transition: transform 400ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-today-progress__fill {
+    transition: none;
+  }
 }
 
 .mx-today-progress__count {
