@@ -160,7 +160,7 @@ export default function EmotionStep({
 
       {HEAVY_EMOTIONS.includes(emotion) && onHeavyEmotionClick ? (
         <button type="button" onClick={onHeavyEmotionClick} className="mx-emotion-heavy">
-          Поговорить об этом с Собеседником →
+          Поговорить об этом со Спутником →
         </button>
       ) : null}
     </div>

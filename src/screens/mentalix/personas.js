@@ -15,18 +15,21 @@ export const MENTOR_SAFETY_KEY = 'mx-mentor-safety'
 export const PERSONAS = [
   {
     key: 'mayak',
-    name: 'Собеседник',
-    dative: 'Собеседнику',
+    name: 'Спутник',
+    dative: 'Спутнику',
     tagline: 'выслушает без оценки',
     desc: 'Тёплый и внимательный. Поможет разобраться в чувствах, когда непросто.',
     question: 'Что сейчас\nу тебя на душе?',
     intro: 'Расскажи всё, что чувствуешь. Я рядом, чтобы выслушать.',
-    asking: 'Собеседник спрашивает',
+    asking: 'Спутник спрашивает',
     typing: 'слушает тебя…',
     Icon: MessageCircle,
     starters: [
       pickByDay(PERSONA_STARTER_PROMPTS.mayak, 0),
       pickByDay(PERSONA_STARTER_PROMPTS.mayak, 1),
+      pickByDay(PERSONA_STARTER_PROMPTS.mayak, 2),
+      pickByDay(PERSONA_STARTER_PROMPTS.mayak, 3),
+      pickByDay(PERSONA_STARTER_PROMPTS.mayak, 4),
     ],
   },
 
@@ -44,23 +47,29 @@ export const PERSONAS = [
     starters: [
       pickByDay(PERSONA_STARTER_PROMPTS.kompas, 0),
       pickByDay(PERSONA_STARTER_PROMPTS.kompas, 1),
+      pickByDay(PERSONA_STARTER_PROMPTS.kompas, 2),
+      pickByDay(PERSONA_STARTER_PROMPTS.kompas, 3),
+      pickByDay(PERSONA_STARTER_PROMPTS.kompas, 4),
     ],
   },
 
   {
     key: 'dnevnik',
-    name: 'Следопыт',
-    dative: 'Следопыту',
+    name: 'Наблюдатель',
+    dative: 'Наблюдателю',
     tagline: 'видит твои паттерны',
     desc: 'Наблюдательный. Подведёт итоги дня и заметит то, что ты пропустил.',
     question: 'Что сегодня\nосталось с тобой?',
     intro: 'Отвечай свободно. Я разберу твой день и помогу заметить то, что легко пропустить.',
-    asking: 'Следопыт спрашивает',
+    asking: 'Наблюдатель спрашивает',
     typing: 'разбирает твой день…',
     Icon: Footprints,
     starters: [
       pickByDay(PERSONA_STARTER_PROMPTS.dnevnik, 0),
       pickByDay(PERSONA_STARTER_PROMPTS.dnevnik, 1),
+      pickByDay(PERSONA_STARTER_PROMPTS.dnevnik, 2),
+      pickByDay(PERSONA_STARTER_PROMPTS.dnevnik, 3),
+      pickByDay(PERSONA_STARTER_PROMPTS.dnevnik, 4),
     ],
   },
 ]
