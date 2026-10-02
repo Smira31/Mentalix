@@ -1,5 +1,6 @@
 import { now } from './clock.js'
 import { DEFAULT_REVIEW_HOUR } from './todayCardState.js'
+import { DEFAULT_JOURNAL_PROMPTS } from './dailyJournalConstants.js'
 
 const DEMO_STATE_KEY = 'mentalix_preview_demo_state_v6'
 
@@ -1263,15 +1264,6 @@ function respond(path, options = {}) {
   }
 
   // ── Daily Journal (demo) ──
-  const DEMO_JOURNAL_PROMPTS = [
-    'Что я откладываю, хотя знаю, что это важно?',
-    'Каким был бы сегодняшний день, если бы всё было проще?',
-    'Что сейчас отнимает у меня больше всего сил — и стоит ли оно того?',
-    'Что бы я сделал сегодня, если бы не боялся выглядеть глупо?',
-    'Кому мне давно стоит написать — и что сказать?',
-    'Что из того, что я делаю каждый день, я бы не выбрал заново?',
-    'Какой один шаг сегодня приблизит меня к моей цели?',
-  ]
 
   if (pathname === '/daily-journal/setup' && method === 'GET') {
     if (!state.dailyJournalSetup) {
@@ -1279,7 +1271,7 @@ function respond(path, options = {}) {
         goals: [],
         reminders: [],
         vision: { scene: '', obstacle: '', plan: '' },
-        prompts: [...DEMO_JOURNAL_PROMPTS],
+        prompts: [...DEFAULT_JOURNAL_PROMPTS],
         updated_at: null,
       }
       writeState(state)
@@ -1288,18 +1280,22 @@ function respond(path, options = {}) {
   }
   if (pathname === '/daily-journal/setup' && method === 'PUT') {
     const prompts = Array.isArray(body.prompts) ? body.prompts.filter(Boolean).slice(0, 7) : []
+    // Как на сервере: prompts должен содержать 1–7 вопросов.
+    // Пустой список → 422 (в проде сервер отклонит, демо делает так же).
+    if (prompts.length === 0) {
+      const error = new Error('Prompts must contain 1–7 questions')
+      error.status = 422
+      throw error
+    }
     state.dailyJournalSetup = {
       goals: Array.isArray(body.goals) ? body.goals.filter(Boolean).slice(0, 3) : [],
-      reminders: Array.isArray(body.reminders)
-        ? body.reminders.filter(Boolean).slice(0, 5)
-        : [],
+      reminders: Array.isArray(body.reminders) ? body.reminders.filter(Boolean).slice(0, 5) : [],
       vision: {
         scene: body.vision?.scene || '',
         obstacle: body.vision?.obstacle || '',
         plan: body.vision?.plan || '',
       },
-      // Пустые prompts → возвращаем 7 вопросов по умолчанию (сброс настройки).
-      prompts: prompts.length > 0 ? prompts : [...DEMO_JOURNAL_PROMPTS],
+      prompts,
       updated_at: now().toISOString(),
     }
     writeState(state)
@@ -1316,9 +1312,7 @@ function respond(path, options = {}) {
         helpful: body.helpful ?? existing.helpful,
         updated_at: now().toISOString(),
       }
-      const entries = (state.dailyJournalEntries || []).map(e =>
-        e.id === existing.id ? entry : e
-      )
+      const entries = (state.dailyJournalEntries || []).map(e => (e.id === existing.id ? entry : e))
       writeState({ ...state, dailyJournalEntries: entries })
       return json(entry)
     }

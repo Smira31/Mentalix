@@ -18,12 +18,23 @@ import {
   clearDailyJournalDraft,
 } from '../../lib/dailyJournalDraft'
 import { dispatchTabRefresh } from '../../lib/tabRefresh'
+import { DEFAULT_JOURNAL_PROMPTS } from '../../lib/dailyJournalConstants'
 import DailyJournalSetup from './DailyJournalSetup'
 import './DailyJournalFlow.css'
 
 const MONTHS_RU = [
-  'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
-  'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря',
+  'января',
+  'февраля',
+  'марта',
+  'апреля',
+  'мая',
+  'июня',
+  'июля',
+  'августа',
+  'сентября',
+  'октября',
+  'ноября',
+  'декабря',
 ]
 
 function formatRussianDateTime(d) {
@@ -39,10 +50,10 @@ function setupHasData(setup) {
   if (!setup) return false
   return Boolean(
     setup.goals?.some(g => g.trim()) ||
-      setup.reminders?.some(r => r.trim()) ||
-      setup.vision?.scene?.trim() ||
-      setup.vision?.obstacle?.trim() ||
-      setup.vision?.plan?.trim()
+    setup.reminders?.some(r => r.trim()) ||
+    setup.vision?.scene?.trim() ||
+    setup.vision?.obstacle?.trim() ||
+    setup.vision?.plan?.trim()
   )
 }
 
@@ -235,7 +246,7 @@ export default function DailyJournalFlow({ userId, onClose }) {
         goals: [],
         reminders: [],
         vision: { scene: '', obstacle: '', plan: '' },
-        prompts: [],
+        prompts: [...DEFAULT_JOURNAL_PROMPTS],
       })
       setSetup(result)
       setResetError(false)
@@ -423,8 +434,8 @@ export default function DailyJournalFlow({ userId, onClose }) {
           </div>
           <h1 className="mx-dj-intro__title">Страница для себя</h1>
           <p className="mx-dj-intro__text">
-            Каждый день: перечитай, кем становишься, выпиши всё из головы и ответь на один
-            вопрос. 5 минут.
+            Каждый день: перечитай, кем становишься, выпиши всё из головы и ответь на один вопрос. 5
+            минут.
           </p>
           <div className="mx-dj-intro__actions">
             <button
@@ -462,21 +473,25 @@ export default function DailyJournalFlow({ userId, onClose }) {
           {setup?.goals?.filter(g => g.trim()).length > 0 && (
             <div className="mx-dj-review__section">
               <CapsLabel className="mx-dj-review__label">Цели</CapsLabel>
-              {setup.goals.filter(g => g.trim()).map((g, i) => (
-                <p key={i} className="mx-dj-review__item">
-                  {g}
-                </p>
-              ))}
+              {setup.goals
+                .filter(g => g.trim())
+                .map((g, i) => (
+                  <p key={i} className="mx-dj-review__item">
+                    {g}
+                  </p>
+                ))}
             </div>
           )}
           {setup?.reminders?.filter(r => r.trim()).length > 0 && (
             <div className="mx-dj-review__section">
               <CapsLabel className="mx-dj-review__label">Кем я становлюсь</CapsLabel>
-              {setup.reminders.filter(r => r.trim()).map((r, i) => (
-                <p key={i} className="mx-dj-review__item">
-                  {r}
-                </p>
-              ))}
+              {setup.reminders
+                .filter(r => r.trim())
+                .map((r, i) => (
+                  <p key={i} className="mx-dj-review__item">
+                    {r}
+                  </p>
+                ))}
             </div>
           )}
           {(setup?.vision?.scene?.trim() ||
@@ -529,15 +544,12 @@ export default function DailyJournalFlow({ userId, onClose }) {
             ПОТОК · {formatRussianDateTime(todayDate)}
           </CapsLabel>
           <div className="mx-dj-stream__bar" aria-hidden="true">
-            <div
-              className="mx-dj-stream__bar-fill"
-              style={{ width: `${fillPercent}%` }}
-            />
+            <div className="mx-dj-stream__bar-fill" style={{ width: `${fillPercent}%` }} />
           </div>
           <h2 className="mx-dj-stream__title">Выпиши всё из головы</h2>
           <p className="mx-dj-stream__hint">
-            Где ты, что видишь, что чувствуешь — и дальше всё, что приходит в голову. Ошибки
-            не важны.
+            Где ты, что видишь, что чувствуешь — и дальше всё, что приходит в голову. Ошибки не
+            важны.
           </p>
           <textarea
             ref={streamRef}
@@ -596,7 +608,7 @@ export default function DailyJournalFlow({ userId, onClose }) {
               dayNumber ? (
                 <>
                   <span aria-hidden="true">✓</span> день {dayNumber}
-              </>
+                </>
               ) : (
                 <>
                   <span aria-hidden="true">✓</span> Сохранено
