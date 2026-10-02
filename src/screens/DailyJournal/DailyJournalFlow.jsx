@@ -37,24 +37,28 @@ function wordCount(text) {
 
 function setupHasData(setup) {
   if (!setup) return false
-  return (
+  return Boolean(
     setup.goals?.some(g => g.trim()) ||
-    setup.reminders?.some(r => r.trim()) ||
-    setup.vision?.scene?.trim() ||
-    setup.vision?.obstacle?.trim() ||
-    setup.vision?.plan?.trim()
+      setup.reminders?.some(r => r.trim()) ||
+      setup.vision?.scene?.trim() ||
+      setup.vision?.obstacle?.trim() ||
+      setup.vision?.plan?.trim()
   )
+}
+
+function stripLeadingTimestamp(text) {
+  if (!text) return text
+  return text.replace(/^\d{1,2}\s+\S+,\s\d{2}:\d{2}\.\s*/, '')
 }
 
 export default function DailyJournalFlow({ userId, onClose }) {
   const [todayDate] = useState(() => now())
   const dateStr = toLocalCalendarDate(todayDate)
-  const firstLine = `${formatRussianDateTime(todayDate)}. Я сейчас…`
 
   const [stage, setStage] = useState('loading')
   const [setup, setSetup] = useState(null)
   const [totalDays, setTotalDays] = useState(0)
-  const [streamText, setStreamText] = useState(firstLine)
+  const [streamText, setStreamText] = useState('')
   const [promptText, setPromptText] = useState('')
   const [promptAnswer, setPromptAnswer] = useState('')
   const [entryId, setEntryId] = useState(null)
@@ -101,7 +105,7 @@ export default function DailyJournalFlow({ userId, onClose }) {
 
         if (todayEntry) {
           setEntryId(todayEntry.id)
-          setStreamText(todayEntry.stream_text || firstLine)
+          setStreamText(stripLeadingTimestamp(todayEntry.stream_text || ''))
           setPromptAnswer(todayEntry.prompt_answer || '')
           setPromptText(todayEntry.prompt_text || '')
         } else {
@@ -120,12 +124,14 @@ export default function DailyJournalFlow({ userId, onClose }) {
 
         if (!setupData?.updated_at) {
           setStage('intro')
-        } else {
+        } else if (setupHasData(setupData)) {
           setStage('review')
+        } else {
+          setStage('stream')
         }
       } catch (error) {
         console.error('[dailyJournal] init failed', error)
-        if (!cancelled) setStage('review')
+        if (!cancelled) setStage('stream')
       }
     }
 
@@ -188,7 +194,7 @@ export default function DailyJournalFlow({ userId, onClose }) {
     if (stage === 'setup') return
     if (stage === 'stream') {
       platform.haptic('light')
-      setStage('review')
+      setStage(setupHasData(setup) ? 'review' : 'intro')
       return
     }
     if (stage === 'question') {
@@ -197,14 +203,14 @@ export default function DailyJournalFlow({ userId, onClose }) {
       return
     }
     onClose()
-  }, [stage, onClose])
+  }, [stage, onClose, setup])
 
   useBackButton(goBack)
 
   // ── Setup handlers ──
   function handleSetupComplete(newSetup) {
     setSetup(newSetup)
-    setStage('review')
+    setStage(setupHasData(newSetup) ? 'review' : 'stream')
   }
 
   function handleSetupBack() {
@@ -224,9 +230,11 @@ export default function DailyJournalFlow({ userId, onClose }) {
 
     setSaving(true)
     try {
+      const timestamp = `${formatRussianDateTime(todayDate)}.`
+      const streamTextWithTs = streamText.trim() ? `${timestamp} ${streamText}` : ''
       const result = await api.dailyJournal.createEntry(userId, {
         date: dateStr,
-        stream_text: streamText,
+        stream_text: streamTextWithTs,
         prompt_text: promptText,
         prompt_answer: promptAnswer,
         helpful: null,
@@ -273,8 +281,7 @@ export default function DailyJournalFlow({ userId, onClose }) {
 
   // ── Derived values ──
   const streamWords = wordCount(streamText)
-  const firstLineWords = wordCount(firstLine)
-  const streamHasContent = streamWords > firstLineWords + 1
+  const streamHasContent = streamText.trim().length > 0
   const fillPercent = Math.min(100, (streamWords / 250) * 100)
   const answerHasContent = promptAnswer.trim().length > 0
   // ── Loading ──
@@ -411,7 +418,7 @@ export default function DailyJournalFlow({ userId, onClose }) {
               data-testid="dj-intro-skip"
               onClick={() => {
                 platform.haptic('light')
-                setStage('review')
+                setStage('stream')
               }}
             >
               Начать без настройки
@@ -483,24 +490,30 @@ export default function DailyJournalFlow({ userId, onClose }) {
     if (stage === 'stream') {
       return (
         <div className="mx-dj-stream">
-          <p className="mx-dj-stream__hint">
-            Пиши, не останавливаясь. Где ты, что видишь, что чувствуешь — и дальше всё, что
-            приходит в голову. Ошибки не важны.
-          </p>
-          <textarea
-            ref={streamRef}
-            className="mx-dj-stream__field"
-            value={streamText}
-            onChange={e => setStreamText(e.target.value)}
-            aria-label="Поток сознания"
-            data-testid="dj-stream-input"
-          />
+          <CapsLabel className="mx-dj-stream__label">
+            ПОТОК · {formatRussianDateTime(todayDate)}
+          </CapsLabel>
           <div className="mx-dj-stream__bar" aria-hidden="true">
             <div
               className="mx-dj-stream__bar-fill"
               style={{ width: `${fillPercent}%` }}
             />
           </div>
+          <h2 className="mx-dj-stream__title">Выпиши всё из головы</h2>
+          <p className="mx-dj-stream__hint">
+            Где ты, что видишь, что чувствуешь — и дальше всё, что приходит в голову. Ошибки
+            не важны.
+          </p>
+          <textarea
+            ref={streamRef}
+            className="mx-dj-stream__field"
+            value={streamText}
+            onChange={e => setStreamText(e.target.value)}
+            onInput={e => setStreamText(e.target.value)}
+            placeholder="Я сейчас…"
+            aria-label="Поток сознания"
+            data-testid="dj-stream-input"
+          />
         </div>
       )
     }
@@ -515,7 +528,7 @@ export default function DailyJournalFlow({ userId, onClose }) {
             className="mx-dj-question__field"
             value={promptAnswer}
             onChange={e => setPromptAnswer(e.target.value)}
-            placeholder="Ответь коротко или развернуто — как хочется."
+            placeholder="Ответь коротко или развёрнуто — как хочется."
             aria-label={promptText}
             data-testid="dj-question-input"
           />

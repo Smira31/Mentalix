@@ -2,8 +2,10 @@ import { test, expect } from '@playwright/test'
 
 /*
  * UX-смок Журнала: Шаги → Открыть журнал → intro «Начать без настройки» →
- * Перечитай → Поток (✕ = назад при пустом, ✓ = дальше при тексте) →
+ * Поток (✕ = назад при пустом, ✓ = дальше при тексте) →
  * Вопрос (✕ = назад, ✓ = сохранить) → финал «день 1».
+ *
+ * Без настройки «Перечитай» пропускается — сразу «Поток».
  *
  * Второй тест: настройка с подэкранами «Картинка будущего» (1/3, 2/3, 3/3)
  * и проверка ✕ = назад на первом шаге.
@@ -28,37 +30,34 @@ test('журнал: intro → пропуск настройки → поток �
   // Пропускаем настройку
   await page.getByTestId('dj-intro-skip').click()
 
-  // ── Перечитай ──
-  await expect(page.locator('.mx-dj-review')).toBeVisible()
-  // Ссылка «Изменить настройку» внизу
-  await expect(page.getByTestId('dj-review-edit')).toBeVisible()
-  await page.getByTestId('dj-review-next').click()
-
-  // ── Поток ──
+  // ── Поток (без настройки «Перечитай» пропускается) ──
   await expect(page.getByTestId('dj-stream-input')).toBeVisible()
+  // «Перечитай» не показан
+  await expect(page.locator('.mx-dj-review')).not.toBeVisible()
+  // Поле пустое — серый placeholder
   const streamValue = await page.getByTestId('dj-stream-input').inputValue()
-  // Первая строка подставлена: «{дата}, {время}. Я сейчас…»
-  expect(streamValue).toContain('Я сейчас')
-  // Полоса «страницы» видна
+  expect(streamValue).toBe('')
+  // Надпись «ПОТОК · …»
+  await expect(page.locator('.mx-dj-stream__label')).toBeVisible()
+  // Заголовок
+  await expect(page.locator('.mx-dj-stream__title')).toHaveText('Выпиши всё из головы')
+  // Полоса «страницы» видна вверху, под надписью
   await expect(page.locator('.mx-dj-stream__bar')).toBeVisible()
 
-  // Поле пустое (только первая строка) → кнопка ✕ (назад)
+  // Поле пустое → кнопка ✕ (назад на intro)
   const streamBtn = page.getByTestId('dj-stream-next')
-  // ✕ — белая, не skip-стиль
   await expect(streamBtn).not.toHaveClass(/mx-round-next-btn--skip/)
-
-  // ✕ возвращает на «Перечитай»
   await streamBtn.click()
-  await expect(page.locator('.mx-dj-review')).toBeVisible()
+  // Вернулись на intro
+  await expect(page.getByTestId('dj-intro-skip')).toBeVisible()
 
   // Снова идём в поток
-  await page.getByTestId('dj-review-next').click()
+  await page.getByTestId('dj-intro-skip').click()
   await expect(page.getByTestId('dj-stream-input')).toBeVisible()
 
-  // Вводим текст → кнопка ✓ (дальше)
-  await page.getByTestId('dj-stream-input').fill(
-    '2 октября, 10:15. Я сейчас… сижу дома, пью чай. Думаю о том, что нужно сделать сегодня.'
-  )
+  // Вводим текст → кнопка ✓ (дальше). Проверяем на каждом нажатии (input event).
+  await page.getByTestId('dj-stream-input').fill('Сижу дома, пью чай. Думаю о том, что нужно сделать сегодня.')
+  // После ввода появляется ✓
   await streamBtn.click()
 
   // ── Один вопрос ──
@@ -149,7 +148,7 @@ test('журнал: настройка — 3 подэкрана картинки
   await expect(page.locator('.mx-dj-setup__step-label')).toHaveText('Шаг 4 из 4 · Мои вопросы')
   await page.getByTestId('dj-setup-next').click()
 
-  // ── Перечитай (после настройки) ──
+  // ── Перечитай (после настройки с данными) ──
   await expect(page.locator('.mx-dj-review')).toBeVisible()
   await expect(page.getByTestId('dj-review-edit')).toBeVisible()
 })

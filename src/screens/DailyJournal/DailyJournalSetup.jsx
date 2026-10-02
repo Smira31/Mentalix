@@ -43,6 +43,23 @@ const VISION_QUESTIONS = [
   { key: 'plan', text: 'Что ты тогда сделаешь?' },
 ]
 
+const GOAL_PLACEHOLDERS = [
+  'Например: пробежать 10 км',
+  'Например: сменить работу',
+  'Например: читать каждый день',
+]
+
+const REMINDER_PLACEHOLDERS = [
+  'Например: я делаю главное до обеда',
+  'Например: я выбираю сон, а не ленту',
+]
+
+const VISION_PLACEHOLDERS = {
+  scene: 'Например: утро, я спокойно пью кофе и знаю, что делаю сегодня…',
+  obstacle: 'Например: усталость, лента, страх, что не получится…',
+  plan: 'Например: делаю 10 минут, а не всё сразу…',
+}
+
 export default function DailyJournalSetup({ userId, initialSetup, onComplete, onBack }) {
   const [stepIndex, setStepIndex] = useState(0)
   const [visionSubStep, setVisionSubStep] = useState(0)
@@ -194,7 +211,7 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
               className="mx-dj-setup__input"
               value={g}
               onChange={e => updateGoal(i, e.target.value)}
-              placeholder={`Цель ${i + 1}`}
+              placeholder={GOAL_PLACEHOLDERS[i] || GOAL_PLACEHOLDERS[0]}
               maxLength={500}
               data-testid={`dj-setup-goal-${i}`}
             />
@@ -215,7 +232,7 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
                 className="mx-dj-setup__input"
                 value={r}
                 onChange={e => updateReminder(i, e.target.value)}
-                placeholder={`Напоминание ${i + 1}`}
+                placeholder={REMINDER_PLACEHOLDERS[i % REMINDER_PLACEHOLDERS.length]}
                 maxLength={500}
                 data-testid={`dj-setup-reminder-${i}`}
               />
@@ -256,6 +273,7 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
             onChange={e => setVision(prev => ({ ...prev, [vq.key]: e.target.value }))}
             rows={3}
             maxLength={1000}
+            placeholder={VISION_PLACEHOLDERS[vq.key] || ''}
             data-testid={`dj-setup-vision-${vq.key}`}
           />
         </>

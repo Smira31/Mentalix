@@ -158,7 +158,6 @@
   width: 100%;
   background: transparent;
   border: 0;
-  border-bottom: 1px solid rgb(var(--c-border) / 0.5);
   outline: 0;
   font-size: 16px;
   line-height: 1.5;
@@ -175,16 +174,16 @@
 
 .mx-dj-setup__input:focus,
 .mx-dj-setup__input:focus-visible {
-  border-bottom-color: rgb(var(--c-text));
   outline: none;
   box-shadow: none;
+  border: 0;
 }
 
 .mx-dj-setup__input-row {
   display: flex;
   align-items: flex-start;
   gap: var(--mx-space-2);
-  margin-bottom: var(--mx-space-2);
+  margin-bottom: var(--mx-space-4);
 }
 
 .mx-dj-setup__input-row .mx-dj-setup__input {
@@ -236,7 +235,6 @@
   width: 100%;
   background: transparent;
   border: 0;
-  border-bottom: 1px solid rgb(var(--c-border) / 0.5);
   outline: none;
   box-shadow: none;
   font-size: 16px;
@@ -250,9 +248,9 @@
 
 .mx-dj-setup__vision-field:focus,
 .mx-dj-setup__vision-field:focus-visible {
-  border-bottom-color: rgb(var(--c-text));
   outline: none;
   box-shadow: none;
+  border: 0;
 }
 
 .mx-dj-setup__vision-field::placeholder {
@@ -274,11 +272,41 @@
   min-height: 0;
 }
 
+.mx-dj-stream__label {
+  display: block;
+  margin-bottom: var(--mx-space-2);
+}
+
+.mx-dj-stream__bar {
+  flex-shrink: 0;
+  height: 2px;
+  border-radius: 999px;
+  background: rgb(var(--c-line) / 0.15);
+  overflow: hidden;
+  margin-bottom: var(--mx-space-4);
+}
+
+.mx-dj-stream__bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: rgb(var(--c-text) / 0.25);
+  transition: width 0.3s ease;
+}
+
+.mx-dj-stream__title {
+  font-family: 'Manrope', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: rgb(var(--c-text));
+  margin: 0 0 var(--mx-space-2);
+}
+
 .mx-dj-stream__hint {
   font-size: 14px;
   line-height: 1.45;
   color: rgb(var(--c-muted));
-  margin-bottom: var(--mx-space-3);
+  margin-bottom: var(--mx-space-4);
 }
 
 .mx-dj-stream__field {
@@ -307,22 +335,6 @@
   box-shadow: none;
   border: 0;
   background: transparent;
-}
-
-.mx-dj-stream__bar {
-  flex-shrink: 0;
-  height: 2px;
-  border-radius: 999px;
-  background: rgb(var(--c-line) / 0.15);
-  margin-top: var(--mx-space-3);
-  overflow: hidden;
-}
-
-.mx-dj-stream__bar-fill {
-  height: 100%;
-  border-radius: 999px;
-  background: rgb(var(--c-text) / 0.25);
-  transition: width 0.3s ease;
 }
 
 /* ── Question (Один вопрос) ── */
