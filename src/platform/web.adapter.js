@@ -125,4 +125,8 @@ export const webAdapter = {
   openTelegramLink(url) {
     window.open(url, '_blank', 'noopener,noreferrer')
   },
+
+  showConfirm(message) {
+    return Promise.resolve(window.confirm(message))
+  },
 }

@@ -124,6 +124,17 @@
   transform: scale(0.92);
 }
 
+.mx-round-next-btn:focus,
+.mx-round-next-btn:focus-visible {
+  outline: none;
+}
+
+.mx-round-next-btn--skip {
+  background: transparent;
+  color: rgb(var(--c-faint));
+  border-color: rgb(var(--c-border));
+}
+
 /* ── Card ── */
 .mx-card {
   border: 1px solid rgb(var(--c-border) / 0.72);

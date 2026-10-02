@@ -40,7 +40,10 @@ test('MXL-SELF-DISCOVERY-001 stores drafts user-scoped without changing journal 
 })
 
 test('MXL-SELF-DISCOVERY-001 keeps the existing Practices routing contract', () => {
-  assert.match(practices, /if \(sub === 'journal'\) \{[\s\S]*<GuidedSelfDiscoveryFlow userId=\{user\.id\} onClose=\{\(\) => setSub\(null\)\} \/>/)
+  // Журнал — отдельная практика (DailyJournalFlow), Следопыт остаётся
+  // backToList handles deep-link return (enteredFromToday → onReturnToToday,
+  // otherwise setSub(null)) — see journal-v4 contextual deep linking
+  assert.match(practices, /if \(sub === 'journal'\) \{[\s\S]*<DailyJournalFlow userId=\{user\.id\} onClose=\{backToList\} \/>/)
   assert.match(practices, /sub === 'self-discovery'/)
   assert.match(practices, /if \(sub === 'self-discovery'\) \{[\s\S]*onClose=\{\(\) => setSub\(null\)\}/)
   assert.doesNotMatch(practices, /onOpenGuided=/)
@@ -59,7 +62,9 @@ test('MXL-SELF-DISCOVERY-002 blurs active field and waits for viewport before co
   assert.match(flow, /setStage\('complete'\)/)
   // The submit button must be disabled during the pending transition
   // to prevent a double-tap from re-entering continueFlow.
-  assert.match(flow, /disabled=\{!answered\(value\) \|\| pendingComplete\}/)
+  // Поле пустое → ✕ (пропустить), есть текст → ✓ (далее/сохранить).
+  // Кнопка не disabled при пустом поле — ✕ активна.
+  assert.match(flow, /disabled=\{pendingComplete\}/)
 })
 
 test('MXL-SELF-DISCOVERY-002 uses approved CTA «Сохранить и выйти»', () => {

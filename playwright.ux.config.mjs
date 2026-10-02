@@ -21,6 +21,7 @@ export default defineConfig({
     'library-read-opens-catalog.spec.mjs',
     'library-read-opens-catalog.spec.mjs',
     'today-subscreen-navigation.spec.mjs',
+    'daily-journal-flow.spec.mjs',
   ],
   outputDir: 'artifacts/ux-check/playwright-output',
   fullyParallel: false,
