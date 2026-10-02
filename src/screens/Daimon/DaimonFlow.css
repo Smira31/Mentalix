@@ -424,6 +424,55 @@
   color: rgb(var(--c-gold));
 }
 
+/* ── Кнопка микрофона ── */
+
+.mx-daimon-mic-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: transparent;
+  color: rgb(var(--c-muted));
+  border: 1px solid rgb(var(--c-border));
+  cursor: pointer;
+  transition: transform 0.1s ease, color 0.15s ease, background 0.15s ease;
+  flex-shrink: 0;
+}
+
+.mx-daimon-mic-btn:active {
+  transform: scale(0.95);
+  color: rgb(var(--c-gold));
+  background: rgb(var(--c-gold) / 0.08);
+}
+
+.mx-daimon-mic-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* ── Статус голоса ── */
+
+.mx-daimon-voice-status {
+  text-align: center;
+  font-size: 12px;
+  padding-bottom: var(--mx-space-1);
+  min-height: 18px;
+}
+
+.mx-daimon-voice-status__rec {
+  color: rgb(var(--c-gold));
+}
+
+.mx-daimon-voice-status__trans {
+  color: rgb(var(--c-muted));
+}
+
+.mx-daimon-voice-status__err {
+  color: rgb(var(--c-red, #ef4444));
+}
+
 /* ── Переход (змея/стрела) ── */
 
 .mx-daimon-transition {

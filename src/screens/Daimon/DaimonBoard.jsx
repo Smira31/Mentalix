@@ -1,4 +1,4 @@
-import { DAIMON_CELLS, DAIMON_SNAKES, DAIMON_ARROWS, cellGridPosition, getCell } from '../../lib/daimonBoard'
+import { cellGridPosition, findCell, getBoardSnakes, getBoardArrows } from '../../lib/daimonBoard'
 
 /*
  * <DaimonBoard> — сетка 6×6 с клетками, змеями и стрелами.
@@ -6,6 +6,9 @@ import { DAIMON_CELLS, DAIMON_SNAKES, DAIMON_ARROWS, cellGridPosition, getCell }
  * Сетка boustrophedon: клетки 1–6 внизу слева направо, 7–12 справа налево, и т.д.
  * Пройденные клетки — чуть светлее, текущая — фишка (кружок).
  * Змеи — пунктирные линии вниз, стрелы — сплошные вверх.
+ *
+ * Источник правды — board (GET /api/daimon/board). Если board ещё не загружен,
+ * findCell/getBoardSnakes/getBoardArrows fallback на статические данные.
  */
 
 const VIEWBOX = 600
@@ -30,7 +33,10 @@ function arrowPath(from, to) {
   return `M ${a.cx} ${a.cy} L ${b.cx} ${b.cy}`
 }
 
-export default function DaimonBoard({ position, passedCells = new Set(), testId = 'daimon-board' }) {
+export default function DaimonBoard({ board, position, passedCells = new Set(), testId = 'daimon-board' }) {
+  const snakes = getBoardSnakes(board)
+  const arrows = getBoardArrows(board)
+
   const gridCells = []
   for (let row = 0; row < 6; row++) {
     for (let col = 0; col < 6; col++) {
@@ -40,7 +46,7 @@ export default function DaimonBoard({ position, passedCells = new Set(), testId 
       const leftToRight = boardRow % 2 === 0
       const inRow = leftToRight ? col : 5 - col
       const cellNum = boardRow * 6 + inRow + 1
-      const cell = getCell(cellNum)
+      const cell = findCell(board, cellNum)
       const isPassed = passedCells.has(cellNum)
       const isCurrent = cellNum === position
 
@@ -74,14 +80,14 @@ export default function DaimonBoard({ position, passedCells = new Set(), testId 
         preserveAspectRatio="none"
         aria-hidden="true"
       >
-        {Object.entries(DAIMON_SNAKES).map(([from, to]) => (
+        {Object.entries(snakes).map(([from, to]) => (
           <path
             key={`snake-${from}`}
             className="mx-daimon-board__snake-line"
             d={snakePath(Number(from), to)}
           />
         ))}
-        {Object.entries(DAIMON_ARROWS).map(([from, to]) => (
+        {Object.entries(arrows).map(([from, to]) => (
           <path
             key={`arrow-${from}`}
             className="mx-daimon-board__arrow-line"

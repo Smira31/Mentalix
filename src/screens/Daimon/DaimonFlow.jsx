@@ -6,7 +6,9 @@ import CapsLabel from '../../components/ui/CapsLabel'
 import { useBackButton } from '../../platform/telegram.hooks'
 import { platform } from '../../platform'
 import { api } from '../../lib/api'
-import { getCell, getLevel, DAIMON_INSIGHT_PROMPT, DAIMON_FINAL_CELL } from '../../lib/daimonBoard'
+import { findCell, getLevel, DAIMON_INSIGHT_PROMPT, DAIMON_FINAL_CELL } from '../../lib/daimonBoard'
+import { useVoiceRecorder } from '../../lib/useVoiceRecorder'
+import { Mic, Square, LoaderCircle } from 'lucide-react'
 import {
   useVisualViewportGeometry,
   getKeyboardViewportHeight,
@@ -145,7 +147,7 @@ function BoardView({ game, board, onRoll, onContinueCell, throwsLeft, paywallMes
       <div className="mx-daimon-board__request" data-testid="daimon-request-preview">
         {game.request}
       </div>
-      <DaimonBoard position={game.position} passedCells={passedCells} />
+      <DaimonBoard board={board} position={game.position} passedCells={passedCells} />
       <div className="mx-daimon-board__actions">
         {paywallMessage ? (
           <p className="mx-daimon-board__paywall" data-testid="daimon-paywall">{paywallMessage}</p>
@@ -185,7 +187,7 @@ function RollingView({ roll }) {
 function CellView({ game, board, userId, onInsight, onBack }) {
   const pendingMove = game.moves.find(m => m.id === game.pending_move_id)
   const cellNum = pendingMove?.to || game.position
-  const cell = getCell(cellNum)
+  const cell = findCell(board, cellNum)
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [askedCount, setAskedCount] = useState(0)
@@ -196,6 +198,21 @@ function CellView({ game, board, userId, onInsight, onBack }) {
   const chatEndRef = useRef(null)
   const insightRef = useRef(null)
   const firstQuestionSent = useRef(false)
+
+  const sendingRef = useRef(sending)
+  useEffect(() => { sendingRef.current = sending }, [sending])
+
+  const chatVoice = useVoiceRecorder({
+    userId,
+    onTranscript: text => setInput(text),
+    disabled: sending,
+  })
+
+  const insightVoice = useVoiceRecorder({
+    userId,
+    onTranscript: text => setInsightText(text),
+    disabled: sending,
+  })
 
   // Auto-send first question on mount
   useEffect(() => {
@@ -245,6 +262,7 @@ function CellView({ game, board, userId, onInsight, onBack }) {
   if (!cell) return <Loading />
 
   const hasText = input.trim().length > 0
+  const hasInsightText = insightText.trim().length > 0
 
   return (
     <div className="mx-daimon-cell-view">
@@ -271,6 +289,22 @@ function CellView({ game, board, userId, onInsight, onBack }) {
 
       {error && <p className="mx-daimon-error__text">{error}</p>}
 
+      {((askInsight ? insightVoice : chatVoice).voiceState !== 'idle' || (askInsight ? insightVoice : chatVoice).voiceError) && (
+        <div className="mx-daimon-voice-status">
+          {(askInsight ? insightVoice : chatVoice).voiceState === 'recording' && (
+            <span className="mx-daimon-voice-status__rec">
+              Запись · 0:{String((askInsight ? insightVoice : chatVoice).voiceSeconds).padStart(2, '0')} · отпусти кнопку
+            </span>
+          )}
+          {(askInsight ? insightVoice : chatVoice).voiceState === 'transcribing' && (
+            <span className="mx-daimon-voice-status__trans">Распознаю голос…</span>
+          )}
+          {(askInsight ? insightVoice : chatVoice).voiceError && (askInsight ? insightVoice : chatVoice).voiceState === 'idle' && (
+            <span className="mx-daimon-voice-status__err">{(askInsight ? insightVoice : chatVoice).voiceError}</span>
+          )}
+        </div>
+      )}
+
       {askInsight ? (
         <div className="mx-daimon-chat__input-row" data-testid="daimon-insight-row">
           <textarea
@@ -283,6 +317,25 @@ function CellView({ game, board, userId, onInsight, onBack }) {
             data-testid="daimon-insight-input"
             rows={1}
           />
+          {!hasInsightText && (
+            <button
+              type="button"
+              aria-label="Записать голос"
+              data-testid="daimon-insight-mic"
+              className="mx-daimon-mic-btn"
+              onPointerDown={e => { e.preventDefault(); insightVoice.startRecording() }}
+              onPointerUp={e => { e.preventDefault(); insightVoice.stopRecording() }}
+              onPointerLeave={() => insightVoice.stopRecording()}
+              onPointerCancel={() => insightVoice.stopRecording()}
+              onContextMenu={e => e.preventDefault()}
+              disabled={sending || insightVoice.voiceState === 'transcribing'}
+              style={{ touchAction: 'none' }}
+            >
+              {insightVoice.voiceState === 'recording' ? <Square size={18} fill="currentColor" />
+                : insightVoice.voiceState === 'transcribing' ? <LoaderCircle size={20} className="animate-spin" />
+                : <Mic size={22} />}
+            </button>
+          )}
           <button
             type="button"
             aria-label="Сохранить вывод"
@@ -320,6 +373,25 @@ function CellView({ game, board, userId, onInsight, onBack }) {
               }
             }}
           />
+          {!hasText && (
+            <button
+              type="button"
+              aria-label="Записать голос"
+              data-testid="daimon-chat-mic"
+              className="mx-daimon-mic-btn"
+              onPointerDown={e => { e.preventDefault(); chatVoice.startRecording() }}
+              onPointerUp={e => { e.preventDefault(); chatVoice.stopRecording() }}
+              onPointerLeave={() => chatVoice.stopRecording()}
+              onPointerCancel={() => chatVoice.stopRecording()}
+              onContextMenu={e => e.preventDefault()}
+              disabled={sending || chatVoice.voiceState === 'transcribing'}
+              style={{ touchAction: 'none' }}
+            >
+              {chatVoice.voiceState === 'recording' ? <Square size={18} fill="currentColor" />
+                : chatVoice.voiceState === 'transcribing' ? <LoaderCircle size={20} className="animate-spin" />
+                : <Mic size={22} />}
+            </button>
+          )}
           <button
             type="button"
             aria-label={hasText ? 'Отправить' : 'Вернуться к полю'}
@@ -364,7 +436,7 @@ function FinishView({ game, board, onSummary, onNewGame, onClose, summary, pathV
       <div className="mx-daimon-finish__path-heading">Твой путь</div>
       <div className="mx-daimon-finish__path" data-testid="daimon-path">
         {moves.map((m, i) => {
-          const cell = getCell(m.to)
+          const cell = findCell(board, m.to)
           return (
             <div key={i} className="mx-daimon-finish__path-item">
               <span className="mx-daimon-finish__path-num">{m.to}</span>
@@ -431,14 +503,14 @@ function GamesView({ games, onOpen, onBack }) {
 }
 
 /* ── Просмотр пути (только чтение) ── */
-function PathView({ game, onBack }) {
+function PathView({ game, board, onBack }) {
   const moves = game.moves.filter(m => m.insight || m.skipped)
   return (
     <div className="mx-daimon-finish" data-testid="daimon-path-view">
       <div className="mx-daimon-finish__path-heading">Твой путь</div>
       <div className="mx-daimon-finish__path">
         {moves.map((m, i) => {
-          const cell = getCell(m.to)
+          const cell = findCell(board, m.to)
           return (
             <div key={i} className="mx-daimon-finish__path-item">
               <span className="mx-daimon-finish__path-num">{m.to}</span>
@@ -574,8 +646,8 @@ export default function DaimonFlow({ userId, onClose }) {
     const lastClosed = [...res.game.moves].reverse().find(m => m.insight || m.skipped)
 
     if (lastClosed?.via) {
-      const fromCell = getCell(lastClosed.to)
-      const toCell = getCell(lastClosed.via_to)
+      const fromCell = findCell(board, lastClosed.to)
+      const toCell = findCell(board, lastClosed.via_to)
       setTransition({ via: lastClosed.via, fromTitle: fromCell?.title, toTitle: toCell?.title, position: res.game.position })
       setStage('transition')
       platform.haptic('success')
@@ -715,7 +787,7 @@ export default function DaimonFlow({ userId, onClose }) {
       )}
 
       {stage === 'pathView' && viewedGame && (
-        <PathView game={viewedGame} onBack={() => setStage('games')} />
+        <PathView game={viewedGame} board={board} onBack={() => setStage('games')} />
       )}
     </Screen>
   )

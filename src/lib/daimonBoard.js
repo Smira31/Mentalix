@@ -121,6 +121,41 @@ export function getCell(n) {
   return DAIMON_CELLS.find(cell => cell.n === n) || null
 }
 
+/**
+ * Поиск клетки в данных, полученных с сервера (GET /api/daimon/board).
+ * Если board отсутствует (загрузка), fallback на статические данные.
+ */
+export function findCell(board, n) {
+  if (board?.cells) {
+    return board.cells.find(c => c.n === n) || null
+  }
+  return getCell(n)
+}
+
+/**
+ * Змеи из данных сервера. Fallback на статические, если board отсутствует.
+ */
+export function getBoardSnakes(board) {
+  if (!board?.cells) return DAIMON_SNAKES
+  const snakes = {}
+  for (const cell of board.cells) {
+    if (cell.snake_to) snakes[cell.n] = cell.snake_to
+  }
+  return snakes
+}
+
+/**
+ * Стрелы из данных сервера. Fallback на статические, если board отсутствует.
+ */
+export function getBoardArrows(board) {
+  if (!board?.cells) return DAIMON_ARROWS
+  const arrows = {}
+  for (const cell of board.cells) {
+    if (cell.arrow_to) arrows[cell.n] = cell.arrow_to
+  }
+  return arrows
+}
+
 export function getLevel(levelN) {
   return DAIMON_LEVELS.find(level => level.n === levelN) || null
 }
