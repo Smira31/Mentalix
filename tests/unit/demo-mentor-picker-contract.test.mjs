@@ -27,22 +27,30 @@ test('Диалог: карусель ролей без демо-подмены �
   assert.match(picker, /onOpenDaimon\?\.\(\)/)
 })
 
-test('Диалог: короткие надписи чипсов покрывают все стартеры ролей', async () => {
-  const { PERSONA_STARTER_PROMPTS, PERSONA_STARTER_CHIP_LABELS } = await import(
+test('Диалог: чипсы — один постоянный набор из 5 стартеров', async () => {
+  const { DIALOG_STARTER_CHIPS, PERSONA_STARTER_CHIP_LABELS } = await import(
     '../../src/data/prompts.js'
   )
 
-  for (const [personaKey, starters] of Object.entries(PERSONA_STARTER_PROMPTS)) {
-    for (const starter of starters) {
-      const label = PERSONA_STARTER_CHIP_LABELS[starter]
-      assert.ok(label, `Нет короткой надписи для стартера ${personaKey}: ${starter}`)
-      assert.ok(label.split(/\s+/).length <= 4, `Надпись должна быть короткой: ${label}`)
-    }
+  // Один и тот же набор чипсов при любой активной роли (решение владельца).
+  assert.match(picker, /DIALOG_STARTER_CHIPS/)
+
+  assert.equal(DIALOG_STARTER_CHIPS.length, 5)
+
+  // За чипсом закреплена роль и непустой длинный стартер, уходящий в поле ввода.
+  for (const chip of DIALOG_STARTER_CHIPS) {
+    assert.ok(['mayak', 'kompas'].includes(chip.persona), `Неизвестная роль чипса: ${chip.persona}`)
+    assert.ok(
+      typeof chip.starter === 'string' && chip.starter.trim().length > 0,
+      `Пустой стартер чипса роли ${chip.persona}`
+    )
   }
 
-  // Короткая надпись — только на чипсе; в поле ввода уходит прежний стартер роли.
-  assert.match(picker, /PERSONA_STARTER_CHIP_LABELS\[starter\] \|\| starter/)
-  assert.match(picker, /startWithChip\(activePersona, starter\)/)
+  // Надписи чипсов — ровно заданный владельцем набор.
+  assert.deepEqual(
+    DIALOG_STARTER_CHIPS.map(chip => PERSONA_STARTER_CHIP_LABELS[chip.starter]),
+    ['Всё вымотало', 'Что-то давит', 'Хочу выговориться', 'Тревожно с утра', 'Не знаю, что делать']
+  )
 })
 
 test('Диалог: шапка — PNG-референс, инлайн-SVG профилей убран', () => {
