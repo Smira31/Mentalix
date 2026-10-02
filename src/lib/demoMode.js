@@ -1,6 +1,11 @@
 import { now } from './clock.js'
 import { DEFAULT_REVIEW_HOUR } from './todayCardState.js'
-import { DAIMON_CELLS, DAIMON_LEVELS, DAIMON_INSIGHT_PROMPT, getCell as getDaimonCell } from './daimonBoard.js'
+import {
+  DAIMON_CELLS,
+  DAIMON_LEVELS,
+  DAIMON_INSIGHT_PROMPT,
+  getCell as getDaimonCell,
+} from './daimonBoard.js'
 import { DEFAULT_JOURNAL_PROMPTS } from './dailyJournalConstants.js'
 
 const DEMO_STATE_KEY = 'mentalix_preview_demo_state_v6'
@@ -711,7 +716,7 @@ function seedState(todayState = null) {
 
 function readState() {
   const todayState = previewTodayState()
-  const stateKey = todayState ? `${DEMO_STATE_KEY}:${todayState}` : DEMO_STATE_KEY
+  const stateKey = `${DEMO_STATE_KEY}${todayState ? `:${todayState}` : ''}${daimonTestMode() ? `:daimon:${daimonTestMode()}` : ''}`
 
   try {
     const raw = localStorage.getItem(stateKey)
@@ -723,7 +728,7 @@ function readState() {
 
 function writeState(state) {
   const todayState = previewTodayState()
-  const stateKey = todayState ? `${DEMO_STATE_KEY}:${todayState}` : DEMO_STATE_KEY
+  const stateKey = `${DEMO_STATE_KEY}${todayState ? `:${todayState}` : ''}${daimonTestMode() ? `:daimon:${daimonTestMode()}` : ''}`
   localStorage.setItem(stateKey, JSON.stringify(state))
   return state
 }
@@ -752,6 +757,74 @@ function buildDaimonBoardResponse() {
     levels: DAIMON_LEVELS,
     cells: DAIMON_CELLS,
   }
+}
+
+const DAIMON_TEST_MODES = ['chatError', 'crisis', 'slow', 'nearSnake', 'nearFinish', 'bounce']
+
+// ?daimonTest= — только в превью-демо (demoRequest работает лишь в demo-режиме).
+function daimonTestMode() {
+  if (typeof window === 'undefined' || !isPreviewDemoMode()) return null
+  const value = new URLSearchParams(window.location.search).get('daimonTest')
+  return DAIMON_TEST_MODES.includes(value) ? value : null
+}
+
+// Детерминированный бросок для сценариев у клеток 11 / 36 / отскока.
+function daimonTestRoll(mode) {
+  if (mode === 'nearSnake') return 1
+  if (mode === 'nearFinish') return 3
+  if (mode === 'bounce') return 4
+  return null
+}
+
+/*
+ * Стартовое поле для сценариев проверки крайних случаев:
+ *   nearSnake  — фишка на 10, следующий бросок 1 → клетка 11 (змея ↓ 2)
+ *   nearFinish — фишка на 33, бросок 3 → точное попадание на 36
+ *   bounce     — фишка на 34, бросок 4 → перебор и отскок
+ *   chatError  — первый /chat отвечает 502
+ *   crisis     — ответ Даймона приходит с crisis:true
+ */
+function buildDaimonTestGame(mode) {
+  const base = {
+    id: `daimon-test-${mode}`,
+    request: 'Проверка крайних случаев',
+    position: 0,
+    status: 'active',
+    throws_today: 0,
+    throws_limit: 3,
+    free_until_cell: 12,
+    paywall_enabled: false,
+    pending_move_id: null,
+    moves: [],
+    summary: null,
+    chat_asked_count: 0,
+    chat_ask_insight: false,
+    created_at: now().toISOString(),
+  }
+
+  if (mode === 'nearSnake') return { ...base, position: 10 }
+  if (mode === 'nearFinish') return { ...base, position: 33 }
+  if (mode === 'bounce') return { ...base, position: 34 }
+
+  if (mode === 'chatError' || mode === 'crisis') {
+    const move = {
+      id: 'move-test-1',
+      n: 1,
+      roll: 3,
+      from: 0,
+      to: 3,
+      cell: 3,
+      via: null,
+      via_to: null,
+      insight: null,
+      skipped: false,
+      created_at: now().toISOString(),
+    }
+    return { ...base, position: 3, pending_move_id: move.id, moves: [move] }
+  }
+
+  if (mode === 'slow') return base
+  return null
 }
 
 function buildDaimonStateResponse(state, _userId) {
@@ -903,6 +976,7 @@ function respond(path, options = {}) {
       longest_streak: state.profile.best_streak ?? 0,
       total_active_days: state.profile.days_active ?? 0,
       is_active_today:
+        state.daimon?.game?.last_activity_at?.slice(0, 10) === today ||
         state.checkins.some(item => item?.date === today) ||
         state.rituals.some(item => item.today_level) ||
         state.ascezas.some(item => item.today_status) ||
@@ -1297,15 +1371,26 @@ function respond(path, options = {}) {
 
   // ── Daimon (demo) ──
 
-  if (pathname === '/api/daimon/board' && method === 'GET') {
+  if (pathname === '/daimon/board' && method === 'GET') {
     return json(buildDaimonBoardResponse())
   }
 
-  if (pathname === '/api/daimon/state' && method === 'GET') {
+  if (pathname === '/daimon/state' && method === 'GET') {
+    // Режим проверки: каждый вход в игру поднимает сценарий заново.
+    const seeded = buildDaimonTestGame(daimonTestMode())
+    if (seeded && !state.daimonTest?.seeded) {
+      const next = {
+        ...state,
+        daimon: { ...(state.daimon || {}), game: seeded, games: state.daimon?.games || [] },
+        daimonTest: { seeded: true },
+      }
+      writeState(next)
+      return json(buildDaimonStateResponse(next, url.searchParams.get('user_id')))
+    }
     return json(buildDaimonStateResponse(state, url.searchParams.get('user_id')))
   }
 
-  if (pathname === '/api/daimon/games' && method === 'POST') {
+  if (pathname === '/daimon/games' && method === 'POST') {
     const req = (body.request || '').trim()
     if (req.length < 3 || req.length > 500) {
       const error = new Error('Запрос слишком короткий или слишком длинный')
@@ -1328,11 +1413,16 @@ function respond(path, options = {}) {
       chat_ask_insight: false,
       created_at: now().toISOString(),
     }
-    writeState({ ...state, daimon: { ...state.daimon, game } })
-    return json(buildDaimonStateResponse({ ...state, daimon: { ...state.daimon, game } }, body.user_id))
+    const previous = state.daimon?.game
+    const games = [...(state.daimon?.games || [])]
+    if (previous && !games.some(item => item.id === previous.id)) games.unshift(previous)
+    writeState({ ...state, daimon: { ...state.daimon, game, games } })
+    return json(
+      buildDaimonStateResponse({ ...state, daimon: { ...state.daimon, game } }, body.user_id)
+    )
   }
 
-  if (pathname === '/api/daimon/roll' && method === 'POST') {
+  if (pathname === '/daimon/roll' && method === 'POST') {
     const daimon = state.daimon || { game: null, games: [] }
     const game = daimon.game
     if (!game) {
@@ -1350,10 +1440,10 @@ function respond(path, options = {}) {
       error.status = 429
       throw error
     }
-    const roll = Math.floor(Math.random() * 6) + 1
+    const roll = daimonTestRoll(daimonTestMode()) || Math.floor(Math.random() * 6) + 1
     const from = game.position
     let to = from + roll
-    if (to > 36) to = from // нужен точный бросок для финиша
+    if (to > 36) to = 36 - (to - 36) // перебор: отскок назад от последней клетки
     const cellData = to > 0 ? getDaimonCell(to) : null
     let via = null
     let viaTo = null
@@ -1386,6 +1476,7 @@ function respond(path, options = {}) {
       ...game,
       position: to, // позиция — клетка приземления, не финальная
       throws_today: game.throws_today + 1,
+      last_activity_at: now().toISOString(),
       pending_move_id: move.id, // клетка всегда требует разговора
       status: 'active', // финиш — после вывода на клетке 36
       moves: [...game.moves, move],
@@ -1393,10 +1484,19 @@ function respond(path, options = {}) {
       chat_ask_insight: false,
     }
     writeState({ ...state, daimon: { ...daimon, game: updatedGame } })
-    return json(buildDaimonStateResponse({ ...state, daimon: { ...daimon, game: updatedGame } }, body.user_id))
+    return json(
+      buildDaimonStateResponse({ ...state, daimon: { ...daimon, game: updatedGame } }, body.user_id)
+    )
   }
 
-  if (pathname === '/api/daimon/chat' && method === 'POST') {
+  if (pathname === '/daimon/chat' && method === 'POST') {
+    // Гость в вебе не получает ИИ — тот же отказ, что и у сервера.
+    if (isDemoGuestMode()) {
+      const error = new Error('guest_ai_forbidden')
+      error.status = 403
+      throw error
+    }
+
     const daimon = state.daimon || { game: null, games: [] }
     const game = daimon.game
     if (!game || !game.pending_move_id) {
@@ -1404,6 +1504,28 @@ function respond(path, options = {}) {
       error.status = 409
       throw error
     }
+
+    const testMode = daimonTestMode()
+
+    // ?daimonTest=chatError: первый ответ нейросети падает, повтор проходит.
+    if (testMode === 'chatError' && !state.daimonTest?.chatErrorShown) {
+      writeState({ ...state, daimonTest: { ...(state.daimonTest || {}), chatErrorShown: true } })
+      const error = new Error('Демо: нейросеть не ответила')
+      error.status = 502
+      throw error
+    }
+
+    // ?daimonTest=crisis: ответ Даймона просит не игру, а поддержку.
+    if (testMode === 'crisis') {
+      return json({
+        reply:
+          'Слышу тебя. Спасибо, что сказал это здесь. Сейчас важнее не клетка — важно, чтобы ты не оставался с этим один.',
+        asked_count: 1,
+        ask_insight: false,
+        crisis: true,
+      })
+    }
+
     const move = game.moves.find(m => m.id === game.pending_move_id)
     const cellData = move ? getDaimonCell(move.to) : null
     const askedCount = (game.chat_asked_count || 0) + 1
@@ -1422,13 +1544,14 @@ function respond(path, options = {}) {
     const updatedGame = {
       ...game,
       chat_asked_count: askedCount,
+      ...(body.message?.trim() ? { last_activity_at: now().toISOString() } : {}),
       chat_ask_insight: askInsight,
     }
     writeState({ ...state, daimon: { ...daimon, game: updatedGame } })
     return json({ reply, asked_count: askedCount, ask_insight: askInsight })
   }
 
-  if (pathname === '/api/daimon/insight' && method === 'POST') {
+  if (pathname === '/daimon/insight' && method === 'POST') {
     const daimon = state.daimon || { game: null, games: [] }
     const game = daimon.game
     if (!game || !game.pending_move_id) {
@@ -1436,10 +1559,19 @@ function respond(path, options = {}) {
       error.status = 409
       throw error
     }
+    if (!body.skip && (body.text || '').length > 300) {
+      const error = new Error('Вывод не должен превышать 300 символов')
+      error.status = 422
+      throw error
+    }
     const moveId = game.pending_move_id
     const moves = game.moves.map(m =>
       m.id === moveId
-        ? { ...m, insight: body.skip ? null : (body.text || '').trim(), skipped: Boolean(body.skip) }
+        ? {
+            ...m,
+            insight: body.skip ? null : (body.text || '').trim(),
+            skipped: Boolean(body.skip),
+          }
         : m
     )
     const closedMove = moves.find(m => m.id === moveId)
@@ -1467,12 +1599,15 @@ function respond(path, options = {}) {
       chat_ask_insight: false,
       position,
       status: position === 36 ? 'finished' : 'active',
+      last_activity_at: now().toISOString(),
     }
     writeState({ ...state, daimon: { ...daimon, game: updatedGame } })
-    return json(buildDaimonStateResponse({ ...state, daimon: { ...daimon, game: updatedGame } }, body.user_id))
+    return json(
+      buildDaimonStateResponse({ ...state, daimon: { ...daimon, game: updatedGame } }, body.user_id)
+    )
   }
 
-  if (pathname === '/api/daimon/summary' && method === 'POST') {
+  if (pathname === '/daimon/summary' && method === 'POST') {
     const daimon = state.daimon || { game: null, games: [] }
     const game = daimon.game
     if (!game) {
@@ -1483,15 +1618,16 @@ function respond(path, options = {}) {
     const cellInsights = game.moves
       .filter(m => m.insight)
       .map(m => `${getDaimonCell(m.cell)?.title || m.cell}: ${m.insight}`)
-    const summary = cellInsights.length > 0
-      ? `Твой путь: ${cellInsights.join('; ')}.`
-      : 'Ты прошёл поле, не останавливаясь. В следующий раз замедли на клетках.'
+    const summary =
+      cellInsights.length > 0
+        ? `Твой путь: ${cellInsights.join('; ')}.`
+        : 'Ты прошёл поле, не останавливаясь. В следующий раз замедли на клетках.'
     const updatedGame = { ...game, summary }
     writeState({ ...state, daimon: { ...daimon, game: updatedGame } })
     return json({ summary })
   }
 
-  if (pathname === '/api/daimon/games' && method === 'GET') {
+  if (pathname === '/daimon/games' && method === 'GET') {
     const daimon = state.daimon || { game: null, games: [] }
     const game = daimon.game
     const gamesList = [...(daimon.games || [])]
@@ -1592,7 +1728,6 @@ function respond(path, options = {}) {
     items = items.slice(0, limit)
     const uniqueDates = new Set((state.dailyJournalEntries || []).map(e => e.date))
     return json({ items, total_days: uniqueDates.size })
-
   }
 
   if (pathname === '/health' && method === 'GET') return json({ status: 'ok' })
@@ -1607,6 +1742,10 @@ function respond(path, options = {}) {
 }
 
 export async function demoRequest(path, options = {}) {
+  // ?daimonTest=slow: искусственная задержка Даймона для проверки состояний загрузки.
+  if (daimonTestMode() === 'slow' && path.startsWith('/daimon')) {
+    await new Promise(resolve => setTimeout(resolve, 3000))
+  }
   const network = demoNetwork()
   if (network === 'Медленно') await new Promise(resolve => setTimeout(resolve, 4000))
   if (network === 'Нет сети') throw new Error('Нет сети')

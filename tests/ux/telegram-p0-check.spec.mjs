@@ -132,19 +132,31 @@ for (const viewport of P0_VIEWPORTS) {
       const { context, page } = await openTelegramDemo(browser, viewport)
       // Стабильный путь: Даймон (DaimonFlow), поле ввода по data-testid.
       await page.getByRole('button', { name: 'Шаги' }).click()
-      await page.getByRole('button', { name: /Открыть Даймон/ }).first().click()
+      await page
+        .getByRole('button', { name: /Открыть Даймон/ })
+        .first()
+        .click()
       await page.getByTestId('daimon-start').click()
       await expect.poll(() => page.evaluate(() => window.__telegramBackState.isVisible)).toBe(true)
 
       const editor = page.getByTestId('daimon-request-input')
       await editor.fill('P0 keyboard draft')
       await editor.focus()
-      await page.setViewportSize({ width: viewport.width, height: Math.round(viewport.height * 0.58) })
+      await page.setViewportSize({
+        width: viewport.width,
+        height: Math.round(viewport.height * 0.58),
+      })
       // Ждём состояние после ресайза, а не фиксированный таймаут — на медленном CI re-render не успевает за 120 мс.
-      await expect.poll(() => page.evaluate(() => {
-        const shell = document.querySelector('[data-testid="mx-screen-shell"]')
-        return (shell?.getBoundingClientRect().bottom ?? Infinity) - window.innerHeight
-      }), { timeout: 5000 }).toBeLessThanOrEqual(1)
+      await expect
+        .poll(
+          () =>
+            page.evaluate(() => {
+              const shell = document.querySelector('[data-testid="mx-screen-shell"]')
+              return (shell?.getBoundingClientRect().bottom ?? Infinity) - window.innerHeight
+            }),
+          { timeout: 5000 }
+        )
+        .toBeLessThanOrEqual(1)
 
       const geometry = await page.evaluate(() => {
         const shell = document.querySelector('[data-testid="mx-screen-shell"]')
@@ -152,7 +164,9 @@ for (const viewport of P0_VIEWPORTS) {
           shellBottom: shell?.getBoundingClientRect().bottom,
           viewportHeight: window.innerHeight,
           bodyOverflow: getComputedStyle(document.body).overflow,
-          focused: document.activeElement === document.querySelector('[data-testid="daimon-request-input"]'),
+          focused:
+            document.activeElement ===
+            document.querySelector('[data-testid="daimon-request-input"]'),
         }
       })
 
@@ -175,6 +189,54 @@ for (const viewport of P0_VIEWPORTS) {
       await expect(page.getByRole('heading', { name: 'твой профиль.' })).toBeVisible()
       await nativeBack(page)
       await expect(page.getByRole('heading', { name: 'Сегодня' })).toBeVisible()
+      await context.close()
+    })
+
+    test('Daimon chat and insight stay above the keyboard, native Back preserves pending cell', async ({
+      browser,
+    }) => {
+      const { context, page } = await openTelegramDemo(browser, viewport)
+      await page.goto(
+        'http://127.0.0.1:5173/?demo=1&frame=0&tab=practices&sub=daimon&daimonTest=nearSnake',
+        { waitUntil: 'networkidle' }
+      )
+      await page.getByTestId('daimon-roll').click()
+      await expect(page.getByTestId('daimon-chat-input')).toBeVisible()
+      await expect(page.getByTestId('daimon-thinking')).toBeHidden()
+      const shortHeight = Math.round(viewport.height * 0.58)
+      await page.getByTestId('daimon-chat-input').focus()
+      await page.setViewportSize({ width: viewport.width, height: shortHeight })
+      await expect
+        .poll(() =>
+          page
+            .getByTestId('daimon-chat-row')
+            .evaluate(el => el.getBoundingClientRect().bottom - window.innerHeight)
+        )
+        .toBeLessThanOrEqual(1)
+      for (let i = 0; i < 2; i++) {
+        await page.getByTestId('daimon-chat-input').fill(`Ответ ${i + 1}`)
+        await page.getByTestId('daimon-chat-send').click()
+        await expect(page.getByTestId('daimon-thinking')).toBeHidden()
+      }
+      await page.getByTestId('daimon-insight-input').fill('Мой вывод')
+      await page.getByTestId('daimon-insight-input').focus()
+      await expect
+        .poll(() =>
+          page
+            .getByTestId('daimon-insight-submit')
+            .evaluate(el => el.getBoundingClientRect().bottom - window.innerHeight)
+        )
+        .toBeLessThanOrEqual(1)
+      await expect
+        .poll(() =>
+          page
+            .getByTestId('daimon-insight-input')
+            .evaluate(el => el.getBoundingClientRect().bottom - window.innerHeight)
+        )
+        .toBeLessThanOrEqual(1)
+      expect(await page.evaluate(() => getComputedStyle(document.body).overflow)).toBe('hidden')
+      await nativeBack(page)
+      await expect(page.getByTestId('daimon-continue-cell')).toContainText('Продолжить клетку 11 ·')
       await context.close()
     })
 
@@ -201,8 +263,10 @@ for (const viewport of P0_VIEWPORTS) {
         localStorage.setItem('mx-journal-v2:user:900001', JSON.stringify(store('user-a')))
         localStorage.setItem('mx-journal-v2:user:900002', JSON.stringify(store('user-b')))
         return {
-          a: JSON.parse(localStorage.getItem('mx-journal-v2:user:900001')).entries['2026-09-14'].cycle.idea.text,
-          b: JSON.parse(localStorage.getItem('mx-journal-v2:user:900002')).entries['2026-09-14'].cycle.idea.text,
+          a: JSON.parse(localStorage.getItem('mx-journal-v2:user:900001')).entries['2026-09-14']
+            .cycle.idea.text,
+          b: JSON.parse(localStorage.getItem('mx-journal-v2:user:900002')).entries['2026-09-14']
+            .cycle.idea.text,
           legacy: localStorage.getItem('mx-journal-v2'),
         }
       })

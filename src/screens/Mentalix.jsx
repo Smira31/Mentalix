@@ -28,22 +28,26 @@ function isGuestAiForbidden(error) {
   return error?.status === 403 || String(error?.message || '').includes('guest_ai_forbidden')
 }
 
-export function GuestAiGate({ onLogin }) {
+export function GuestAiGate({
+  onLogin,
+  message = 'Войди, чтобы поговорить со Следопытом',
+  buttonLabel = 'Войти',
+  testId = 'guest-ai-gate',
+  buttonTestId = 'guest-ai-login-button',
+}) {
   return (
     <div
       className="flex flex-col items-center justify-center text-center px-6 py-16"
-      data-testid="guest-ai-gate"
+      data-testid={testId}
     >
-      <p className="text-cream text-[18px] leading-relaxed max-w-xs">
-        Войди, чтобы поговорить со Следопытом
-      </p>
+      <p className="text-cream text-[18px] leading-relaxed max-w-xs">{message}</p>
       <button
         type="button"
         className="mt-6 min-h-11 rounded-full bg-gold px-8 text-[14px] font-semibold text-emerald-deep"
         onClick={onLogin}
-        data-testid="guest-ai-login-button"
+        data-testid={buttonTestId}
       >
-        Войти
+        {buttonLabel}
       </button>
     </div>
   )
@@ -96,7 +100,13 @@ export function ConversationChat({
         if (cancelled) return
 
         let combined = initialInsight
-          ? [{ role: 'assistant', content: `Кое-что заметил, пока смотрел твои дни. ${initialInsight}` }, ...history]
+          ? [
+              {
+                role: 'assistant',
+                content: `Кое-что заметил, пока смотрел твои дни. ${initialInsight}`,
+              },
+              ...history,
+            ]
           : history
 
         // «Дайджест от Следопыта» (ROADMAP.md, идея 3): только при обычном
@@ -311,7 +321,9 @@ export default function MentalixChat({ user, onPersonaChange, onRegisterBack }) 
       persona={persona}
       initialText={draft}
       initialInsight={surpriseMessage}
-      initialHandoff={persona === 'dnevnik' && pending.persona === 'dnevnik' ? pending.handoff : null}
+      initialHandoff={
+        persona === 'dnevnik' && pending.persona === 'dnevnik' ? pending.handoff : null
+      }
       viaHandoff={Boolean(pending.persona)}
       withSafetyNotice={Boolean(pending.safety)}
       refreshSignal={refreshSignal}

@@ -2,7 +2,8 @@ import { defineConfig } from '@playwright/test'
 
 export default defineConfig({
   testDir: './tests/ux',
-  testMatch: 'daimon-flow.spec.mjs',
+  testMatch: ['daimon-flow.spec.mjs', 'daimon-edge-cases.spec.mjs'],
+  projects: [{ name: 'chromium' }, { name: 'webkit', use: { browserName: 'webkit' } }],
   outputDir: 'artifacts/daimon-flow/playwright-output',
   fullyParallel: false,
   workers: 1,

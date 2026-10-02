@@ -29,6 +29,10 @@ export function useVoiceRecorder({ userId, onTranscript, disabled = false }) {
   const [voiceState, setVoiceState] = useState('idle')
   const [voiceSeconds, setVoiceSeconds] = useState(0)
   const [voiceError, setVoiceError] = useState('')
+  // Машинный вид сбоя: 'denied' — нет доступа к микрофону, 'recognize' — не
+  // распозналось. Экраны показывают по нему свою подсказку (Даймон), не
+  // разбирая текст voiceError.
+  const [voiceErrorKind, setVoiceErrorKind] = useState('')
 
   const demoVoice = isPreviewDemoMode()
 
@@ -80,6 +84,7 @@ export function useVoiceRecorder({ userId, onTranscript, disabled = false }) {
 
   const startRecording = useCallback(() => {
     setVoiceError('')
+    setVoiceErrorKind('')
 
     if (demoVoice) {
       setVoiceState('recording')
@@ -90,111 +95,122 @@ export function useVoiceRecorder({ userId, onTranscript, disabled = false }) {
 
     if (!voiceSupported) {
       setVoiceError('Запись голоса недоступна в этой версии Telegram.')
+      setVoiceErrorKind('denied')
       return
     }
 
     try {
-      navigator.mediaDevices.getUserMedia({
-        audio: {
-          channelCount: 1,
-          echoCancellation: true,
-          noiseSuppression: true,
-        },
-      }).then(stream => {
-        const Recorder = window.MediaRecorder
-        const mimeType = ['audio/mp4', 'audio/webm;codecs=opus', 'audio/webm'].find(type =>
-          Recorder.isTypeSupported(type)
-        )
+      navigator.mediaDevices
+        .getUserMedia({
+          audio: {
+            channelCount: 1,
+            echoCancellation: true,
+            noiseSuppression: true,
+          },
+        })
+        .then(stream => {
+          const Recorder = window.MediaRecorder
+          const mimeType = ['audio/mp4', 'audio/webm;codecs=opus', 'audio/webm'].find(type =>
+            Recorder.isTypeSupported(type)
+          )
 
-        const recorder = new Recorder(stream, mimeType ? { mimeType } : undefined)
+          const recorder = new Recorder(stream, mimeType ? { mimeType } : undefined)
 
-        streamRef.current = stream
-        recorderRef.current = recorder
-        chunksRef.current = []
-
-        recorder.ondataavailable = event => {
-          if (event.data.size > 0) {
-            chunksRef.current.push(event.data)
-          }
-        }
-
-        recorder.onerror = () => {
-          setVoiceError('Не удалось записать голос. Попробуй ещё раз.')
-          setVoiceState('idle')
-        }
-
-        recorder.onstop = async () => {
-          clearTimeout(stopTimerRef.current)
-          clearInterval(secondsTimerRef.current)
-
-          stream.getTracks().forEach(track => track.stop())
-          streamRef.current = null
-          recorderRef.current = null
-
-          const audio = new Blob(chunksRef.current, { type: recorder.mimeType || 'audio/webm' })
-
+          streamRef.current = stream
+          recorderRef.current = recorder
           chunksRef.current = []
 
-          if (!audio.size) {
-            setVoiceError('Голос не записался. Попробуй ещё раз.')
-            setVoiceState('idle')
-            return
+          recorder.ondataavailable = event => {
+            if (event.data.size > 0) {
+              chunksRef.current.push(event.data)
+            }
           }
 
-          setVoiceState('transcribing')
+          recorder.onerror = () => {
+            setVoiceError('Не удалось записать голос. Попробуй ещё раз.')
+            setVoiceErrorKind('recognize')
+            setVoiceState('idle')
+          }
 
-          try {
-            const result = await api.mentalix.transcribe(userId, audio)
+          recorder.onstop = async () => {
+            clearTimeout(stopTimerRef.current)
+            clearInterval(secondsTimerRef.current)
 
-            const transcript = String(result?.text || '').trim()
+            stream.getTracks().forEach(track => track.stop())
+            streamRef.current = null
+            recorderRef.current = null
 
-            if (!transcript) {
-              throw new Error('empty transcript')
-            }
+            const audio = new Blob(chunksRef.current, { type: recorder.mimeType || 'audio/webm' })
 
-            if (disabledRef.current) {
-              setVoiceError('Не удалось отправить голосовое сообщение, дождитесь отправки текущего.')
+            chunksRef.current = []
+
+            if (!audio.size) {
+              setVoiceError('Голос не записался. Попробуй ещё раз.')
+              setVoiceErrorKind('recognize')
+              setVoiceState('idle')
               return
             }
 
-            platform.haptic('medium')
-            onTranscriptRef.current(transcript)
-          } catch (error) {
-            console.error(error)
-            const message = String(error?.message || '')
-            const voiceCode = message.match(/VOICE_[A-Z0-9_]+/)?.[0]
-            const httpStatus = message.match(/failed: (\d{3})/)?.[1]
-            const diagnosticCode = voiceCode || (httpStatus ? `HTTP_${httpStatus}` : 'NETWORK')
+            setVoiceState('transcribing')
 
-            setVoiceError(`Не удалось распознать голос. Код: ${diagnosticCode}.`)
-          } finally {
-            setVoiceState('idle')
-            setVoiceSeconds(0)
+            try {
+              const result = await api.mentalix.transcribe(userId, audio)
+
+              const transcript = String(result?.text || '').trim()
+
+              if (!transcript) {
+                throw new Error('empty transcript')
+              }
+
+              if (disabledRef.current) {
+                setVoiceError(
+                  'Не удалось отправить голосовое сообщение, дождитесь отправки текущего.'
+                )
+                return
+              }
+
+              platform.haptic('medium')
+              onTranscriptRef.current(transcript)
+            } catch (error) {
+              console.error(error)
+              const message = String(error?.message || '')
+              const voiceCode = message.match(/VOICE_[A-Z0-9_]+/)?.[0]
+              const httpStatus = message.match(/failed: (\d{3})/)?.[1]
+              const diagnosticCode = voiceCode || (httpStatus ? `HTTP_${httpStatus}` : 'NETWORK')
+
+              setVoiceError(`Не удалось распознать голос. Код: ${diagnosticCode}.`)
+              setVoiceErrorKind('recognize')
+            } finally {
+              setVoiceState('idle')
+              setVoiceSeconds(0)
+            }
           }
-        }
 
-        recorder.start(250)
-        setVoiceSeconds(0)
-        setVoiceState('recording')
-        platform.haptic('medium')
+          recorder.start(250)
+          setVoiceSeconds(0)
+          setVoiceState('recording')
+          platform.haptic('medium')
 
-        const startedAt = Date.now()
+          const startedAt = Date.now()
 
-        secondsTimerRef.current = setInterval(() => {
-          setVoiceSeconds(Math.floor((Date.now() - startedAt) / 1000))
-        }, 250)
+          secondsTimerRef.current = setInterval(() => {
+            setVoiceSeconds(Math.floor((Date.now() - startedAt) / 1000))
+          }, 250)
 
-        stopTimerRef.current = setTimeout(() => {
-          stopRecording()
-        }, 60000)
-      }).catch(error => {
-        console.error(error)
-        setVoiceError('Разреши Mentalix доступ к микрофону и попробуй ещё раз.')
-        setVoiceState('idle')
-      })
+          stopTimerRef.current = setTimeout(() => {
+            stopRecording()
+          }, 60000)
+        })
+        .catch(error => {
+          console.error(error)
+          setVoiceError('Разреши Mentalix доступ к микрофону и попробуй ещё раз.')
+          setVoiceErrorKind('denied')
+          setVoiceState('idle')
+        })
     } catch (error) {
       console.error(error)
       setVoiceError('Разреши Mentalix доступ к микрофону и попробуй ещё раз.')
+      setVoiceErrorKind('denied')
       setVoiceState('idle')
     }
   }, [demoVoice, voiceSupported, userId, stopRecording])
@@ -203,6 +219,7 @@ export function useVoiceRecorder({ userId, onTranscript, disabled = false }) {
     voiceState,
     voiceSeconds,
     voiceError,
+    voiceErrorKind,
     voiceSupported,
     startRecording,
     stopRecording,

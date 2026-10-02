@@ -3,7 +3,15 @@ import { resolveTodayCardStates } from './todayCardState.js'
 
 // В Telegram start_param приходит из initDataUnsafe, в браузере — из ?startapp=.
 export function parseContextualDeepLink(search, startParam) {
-  const action = new URLSearchParams(search).get('action')
+  const params = new URLSearchParams(search)
+  const action = params.get('action')
+  // Явная ссылка игры важнее оставшегося action/start_param от «Сегодня».
+  if (
+    (params.get('tab') === 'practices' && params.get('sub') === 'daimon') ||
+    startParam === 'daimon'
+  ) {
+    return { sub: null, returnFlow: null, practicesSub: 'daimon' }
+  }
   const returnFlow = parseReturnFlow(startParam)
   if (returnFlow) return { sub: returnFlow === 'evening_v1' ? 'evening' : 'checkin', returnFlow }
   // start_param 'journal' (Telegram initDataUnsafe.start_param, в вебе ?startapp=journal)

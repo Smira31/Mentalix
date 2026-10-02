@@ -215,6 +215,7 @@ export default function Practices({
   onGameChange,
   onRegisterBack,
   onReturnToToday,
+  onGuestLogin,
 }) {
   const [searchOpen, setSearchOpen] = useState(false)
 
@@ -418,7 +419,7 @@ export default function Practices({
   }
 
   if (sub === 'daimon') {
-    return <DaimonFlow userId={user.id} onClose={() => setSub(null)} />
+    return <DaimonFlow userId={user.id} onClose={() => setSub(null)} onGuestLogin={onGuestLogin} />
   }
 
   // Убранные практики (Настроение, Альтер-эго) — мягкий редирект на «Сегодня»
