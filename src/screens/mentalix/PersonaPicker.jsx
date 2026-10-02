@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { platform } from '../../platform'
+import { api } from '../../lib/api'
 import { PERSONAS } from './personas'
+import { relativeConversationDate } from './conversationDate'
 import heroReference from '../../assets/dialog-hero-reference.png'
 import { isPreviewDemoMode } from '../../lib/demoMode'
 
@@ -12,6 +14,8 @@ const DEFAULT_INDEX = 1
 // Визуальный порядок entry-карусели задан reference screenshot. Сами persona
 // keys и backend-контракт остаются прежними.
 const DISPLAY_PERSONAS = [PERSONAS[1], PERSONAS[0], PERSONAS[2]]
+
+const PERSONA_NAMES = Object.fromEntries(PERSONAS.map(p => [p.key, p.name]))
 
 const PROMISES = {
   mayak: 'Поможет разобраться в том, что чувствуешь.',
@@ -25,9 +29,17 @@ const DIALOG_DESCRIPTIONS = {
   dnevnik: 'Наблюдательный. Подведёт итоги дня и заметит то, что ты пропустил.',
 }
 
-export default function PersonaPicker({ onPick }) {
+export default function PersonaPicker({
+  user,
+  onPick,
+  onContinueConversation,
+  onShowAllConversations,
+}) {
   const [active, setActive] = useState(DEFAULT_INDEX)
+  const [conversations, setConversations] = useState([])
+  const [creating, setCreating] = useState(false)
   const trackRef = useRef(null)
+  const userId = user?.id
   const previewDemoMode = isPreviewDemoMode()
 
   useEffect(() => {
@@ -43,6 +55,21 @@ export default function PersonaPicker({ onPick }) {
     })
     return () => cancelAnimationFrame(frame)
   }, [])
+
+  // Загружаем последние разговоры для блока «Продолжить разговор».
+  useEffect(() => {
+    if (!userId) return
+    let cancelled = false
+    api.mentalix
+      .listConversations(userId, { limit: 4 })
+      .then(data => {
+        if (!cancelled) setConversations(Array.isArray(data) ? data : [])
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [userId])
 
   function syncActive() {
     const track = trackRef.current
@@ -72,10 +99,40 @@ export default function PersonaPicker({ onPick }) {
     setActive(index)
   }
 
-  function startRole(persona) {
+  // «НАЧАТЬ» на карточке: создаём НОВЫЙ разговор, открываем пустой чат.
+  // Создание упало — открываем чат без conversation_id (как раньше).
+  async function startRole(persona) {
+    if (creating) return
+    setCreating(true)
     platform.haptic('light')
-    onPick(persona.key, '')
+    try {
+      const conv = userId ? await api.mentalix.createConversation(userId, persona.key) : null
+      onPick(persona.key, '', conv?.id || null)
+    } catch {
+      onPick(persona.key, '')
+    } finally {
+      setCreating(false)
+    }
   }
+
+  // Тап по чипсу: создаём НОВЫЙ разговор, текст чипса — в поле ввода, не отправляем.
+  async function startWithChip(persona, chipText) {
+    if (creating) return
+    setCreating(true)
+    platform.haptic('light')
+    try {
+      const conv = userId ? await api.mentalix.createConversation(userId, persona.key) : null
+      onPick(persona.key, chipText, conv?.id || null)
+    } catch {
+      onPick(persona.key, chipText)
+    } finally {
+      setCreating(false)
+    }
+  }
+
+  const activePersona = DISPLAY_PERSONAS[active] || DISPLAY_PERSONAS[0]
+  const recentConversations = conversations.slice(0, 3)
+  const hasMore = conversations.length > 3
 
   return (
     <main className="mx-dialog-entry" data-testid="dialog-entry">
@@ -135,9 +192,10 @@ export default function PersonaPicker({ onPick }) {
                     data-testid={`mentor-start-${persona.key}`}
                     className="mx-dialog-card__start mx-type-control"
                     tabIndex={isActive ? undefined : -1}
+                    disabled={creating}
                     onClick={event => {
                       event.stopPropagation()
-                      startRole(persona)
+                      void startRole(persona)
                     }}
                     aria-label={`Начать разговор: ${persona.name}`}
                   >
@@ -147,6 +205,66 @@ export default function PersonaPicker({ onPick }) {
               </article>
             )
           })}
+        </div>
+
+        {/* ── «Продолжить разговор» — до 3 последних разговоров ── */}
+
+        {recentConversations.length > 0 && (
+          <div className="mx-dialog-continue" data-testid="continue-conversation-block">
+            <h3 className="mx-dialog-continue__title">Продолжить разговор</h3>
+            <ul className="mx-conversation-list">
+              {recentConversations.map(conv => (
+                <li key={conv.id}>
+                  <button
+                    type="button"
+                    data-testid="continue-conversation-row"
+                    className="mx-conversation-row"
+                    onClick={() => onContinueConversation?.(conv)}
+                  >
+                    <span className="mx-conversation-row__persona">
+                      {PERSONA_NAMES[conv.persona] || conv.persona}
+                    </span>
+                    <span className="mx-conversation-row__text">
+                      {conv.title || conv.last_message || 'Без сообщений'}
+                    </span>
+                    <span className="mx-conversation-row__date">
+                      {relativeConversationDate(conv.updated_at)}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+            {hasMore && (
+              <button
+                type="button"
+                data-testid="all-conversations-link"
+                className="mx-dialog-continue__all"
+                onClick={() => onShowAllConversations?.()}
+              >
+                Все разговоры
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* ── «Не знаешь, с чего начать?» — чипсы стартера активной роли ── */}
+
+        <div className="mx-dialog-chips">
+          <p className="mx-dialog-chips__label">Не знаешь, с чего начать?</p>
+          <div className="mx-dialog-chips__list">
+            {(activePersona?.starters || []).map((starter, i) => (
+              <button
+                type="button"
+                data-testid="dialog-starter-chip"
+                key={`${activePersona.key}-${i}`}
+                className="mx-dialog-chip"
+                disabled={creating}
+                onClick={() => void startWithChip(activePersona, starter)}
+              >
+                {starter}
+              </button>
+            ))}
+          </div>
         </div>
       </section>
     </main>
