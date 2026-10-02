@@ -401,11 +401,16 @@ function App() {
   const [locked, setLocked] = useState(() => appLockEnabled && hasPinRecord())
 
   const searchParams = new URLSearchParams(window.location.search)
-  const { sub: initialTodaySub, returnFlow: initialReturnFlow } = parseContextualDeepLink(
-    window.location.search,
-    platform.getStartParam?.()
-  )
-  const initialTab = initialTodaySub ? null : searchParams.get('tab')
+  const { sub: initialTodaySub, returnFlow: initialReturnFlow, practicesSub: initialPracticesSub } =
+    parseContextualDeepLink(
+      window.location.search,
+      platform.getStartParam?.()
+    )
+  const initialTab = initialTodaySub
+    ? null
+    : initialPracticesSub
+      ? 'practices'
+      : searchParams.get('tab')
   const validTabs = ['today', 'practices', 'mentor', 'library', 'trends']
 
   // ?tab=history → открывает «Прогресс» на вкладке «История»
@@ -475,8 +480,10 @@ function App() {
 
   // Только разрешённые contextual deep-links открывают вложенный экран «Сегодня».
   // ?tab=practices&sub=daimon — deep link на конкретную практику (Даймон и др.)
+  // initialPracticesSub — из parseContextualDeepLink (например, ?startapp=journal);
+  // fallback на ?sub= для прямых ссылок вида ?tab=practices&sub=daimon.
   const [practicesSub, setPracticesSub] = useState(
-    () => (initialTab === 'practices' ? searchParams.get('sub') : null)
+    () => initialPracticesSub || (initialTab === 'practices' ? searchParams.get('sub') : null)
   )
 
   const reportReturnFlowEvent = useCallback(

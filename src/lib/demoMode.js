@@ -1,6 +1,7 @@
 import { now } from './clock.js'
 import { DEFAULT_REVIEW_HOUR } from './todayCardState.js'
 import { DAIMON_CELLS, DAIMON_LEVELS, DAIMON_INSIGHT_PROMPT, getCell as getDaimonCell } from './daimonBoard.js'
+import { DEFAULT_JOURNAL_PROMPTS } from './dailyJournalConstants.js'
 
 const DEMO_STATE_KEY = 'mentalix_preview_demo_state_v6'
 
@@ -689,6 +690,8 @@ function seedState(todayState = null) {
         })),
       },
     ],
+    dailyJournalSetup: null,
+    dailyJournalEntries: [],
     moodPractices: empty ? [] : moodPractices,
     daimon: { game: null, games: [] },
     // В прерванной серии вчера нет ни одной активности.
@@ -1493,6 +1496,99 @@ function respond(path, options = {}) {
       gamesList.unshift(game)
     }
     return json(gamesList)
+
+  // ── Daily Journal (demo) ──
+
+  if (pathname === '/daily-journal/setup' && method === 'GET') {
+    if (!state.dailyJournalSetup) {
+      state.dailyJournalSetup = {
+        goals: [],
+        reminders: [],
+        vision: { scene: '', obstacle: '', plan: '' },
+        prompts: [...DEFAULT_JOURNAL_PROMPTS],
+        reminder: { enabled: false, time: '21:00' },
+        updated_at: null,
+      }
+      writeState(state)
+    }
+    return json(state.dailyJournalSetup)
+  }
+  if (pathname === '/daily-journal/setup' && method === 'PUT') {
+    const prompts = Array.isArray(body.prompts) ? body.prompts.filter(Boolean).slice(0, 7) : []
+    // Как на сервере: prompts должен содержать 1–7 вопросов.
+    // Пустой список → 422 (в проде сервер отклонит, демо делает так же).
+    if (prompts.length === 0) {
+      const error = new Error('Prompts must contain 1–7 questions')
+      error.status = 422
+      throw error
+    }
+    state.dailyJournalSetup = {
+      goals: Array.isArray(body.goals) ? body.goals.filter(Boolean).slice(0, 3) : [],
+      reminders: Array.isArray(body.reminders) ? body.reminders.filter(Boolean).slice(0, 5) : [],
+      vision: {
+        scene: body.vision?.scene || '',
+        obstacle: body.vision?.obstacle || '',
+        plan: body.vision?.plan || '',
+      },
+      prompts,
+      reminder: body.reminder || { enabled: false, time: '21:00' },
+      updated_at: now().toISOString(),
+    }
+    writeState(state)
+    return json(state.dailyJournalSetup)
+  }
+  if (pathname === '/daily-journal/entries' && method === 'POST') {
+    const existing = (state.dailyJournalEntries || []).find(e => e.date === body.date)
+    if (existing) {
+      const entry = {
+        ...existing,
+        stream_text: body.stream_text ?? existing.stream_text,
+        prompt_text: body.prompt_text ?? existing.prompt_text,
+        prompt_answer: body.prompt_answer ?? existing.prompt_answer,
+        helpful: body.helpful ?? existing.helpful,
+        updated_at: now().toISOString(),
+      }
+      const entries = (state.dailyJournalEntries || []).map(e => (e.id === existing.id ? entry : e))
+      writeState({ ...state, dailyJournalEntries: entries })
+      return json(entry)
+    }
+    const uniqueDates = new Set((state.dailyJournalEntries || []).map(e => e.date))
+    const entry = {
+      id: Date.now(),
+      date: body.date,
+      stream_text: body.stream_text || '',
+      prompt_text: body.prompt_text || '',
+      prompt_answer: body.prompt_answer || '',
+      helpful: body.helpful || null,
+      day_number: uniqueDates.size + 1,
+      created_at: now().toISOString(),
+      updated_at: now().toISOString(),
+    }
+    writeState({ ...state, dailyJournalEntries: [entry, ...(state.dailyJournalEntries || [])] })
+    return json(entry)
+  }
+  if (pathname.match(/^\/daily-journal\/entries\/\d+$/) && method === 'PATCH') {
+    const id = numericId(pathname)
+    const entries = (state.dailyJournalEntries || []).map(e =>
+      e.id === id ? { ...e, helpful: body.helpful, updated_at: now().toISOString() } : e
+    )
+    writeState({ ...state, dailyJournalEntries: entries })
+    return json(entries.find(e => e.id === id))
+  }
+  if (pathname.match(/^\/daily-journal\/entries\/\d+$/) && method === 'GET') {
+    const id = numericId(pathname)
+    const entry = (state.dailyJournalEntries || []).find(e => e.id === id)
+    return json(entry || { error: 'not found' })
+  }
+  if (pathname === '/daily-journal/entries' && method === 'GET') {
+    const limit = parseInt(url.searchParams.get('limit') || '20', 10)
+    const before = url.searchParams.get('before')
+    let items = state.dailyJournalEntries || []
+    if (before) items = items.filter(e => e.date < before)
+    items = items.slice(0, limit)
+    const uniqueDates = new Set((state.dailyJournalEntries || []).map(e => e.date))
+    return json({ items, total_days: uniqueDates.size })
+
   }
 
   if (pathname === '/health' && method === 'GET') return json({ status: 'ok' })

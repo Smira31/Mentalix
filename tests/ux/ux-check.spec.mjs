@@ -39,6 +39,10 @@ async function freezePageTime(page) {
   await page.clock.setFixedTime(`2026-09-23T${UX_FIXED_TIME}:00+03:00`)
 }
 
+// Stateful fixture для Daily Journal: хранит записи, созданные через POST,
+// чтобы повторный GET /entries возвращал запись текущего дня.
+let dailyJournalEntries = []
+
 const FIXTURES = {
   rituals: [],
   ascezas: [],
@@ -172,6 +176,32 @@ function fixtureFor(request) {
       return jsonResponse({ ok: true })
     }
 
+    // Daily Journal: POST создаёт запись, PATCH обновляет helpful.
+    if (method === 'POST' && pathname === '/api/daily-journal/entries') {
+      let body = {}
+      try {
+        body = JSON.parse(request.postData() || '{}')
+      } catch {
+        /* empty body */
+      }
+      const entry = {
+        id: Date.now(),
+        date: body.date,
+        stream_text: body.stream_text || '',
+        prompt_text: body.prompt_text || '',
+        prompt_answer: body.prompt_answer || '',
+        day_number: dailyJournalEntries.length + 1,
+      }
+      dailyJournalEntries.push(entry)
+      return jsonResponse(entry)
+    }
+    if (method === 'PATCH' && pathname.match(/^\/api\/daily-journal\/entries\/[^/]+$/)) {
+      return jsonResponse({ ok: true })
+    }
+    if (method === 'PUT' && pathname === '/api/daily-journal/setup') {
+      return jsonResponse({ updated_at: new Date().toISOString(), prompts: [] })
+    }
+
     return jsonResponse({ ok: true })
   }
 
@@ -226,6 +256,14 @@ function fixtureFor(request) {
         content: `История ${persona}`,
       },
     ])
+  }
+
+  // Daily Journal: setup без updated_at → intro, entries — stateful.
+  if (pathname === '/api/daily-journal/setup') {
+    return jsonResponse({ prompts: ['Что ты откладываешь, хотя знаешь, что это важно?'] })
+  }
+  if (pathname === '/api/daily-journal/entries') {
+    return jsonResponse({ items: dailyJournalEntries, total_days: dailyJournalEntries.length })
   }
 
   return jsonResponse({ error: `Нет локального fixture для ${method} ${pathname}` }, 501)
@@ -492,6 +530,8 @@ test('локальный UX smoke по основному маршруту', asy
   const results = []
 
   for (const viewport of VIEWPORTS) {
+    dailyJournalEntries.length = 0
+
     const context = await browser.newContext({
       baseURL,
       viewport: { width: viewport.width, height: viewport.height },
@@ -725,7 +765,8 @@ test('локальный UX smoke по основному маршруту', asy
       },
     })
 
-    await page.getByRole('button', { name: 'Открыть журнал' }).click()
+    // ── Daily Journal «Страница для себя» (новый флоу) ──
+    await page.getByTestId('journal-open-cta').click()
     await captureScreen({
       page,
       viewport,
@@ -734,48 +775,32 @@ test('локальный UX smoke по основному маршруту', asy
       runtimeErrors,
       results,
       check: async () => {
-        await expect(
-          page.getByRole('heading', { name: 'Когда непонятно, что делать' })
-        ).toBeVisible()
-        await expect(page.getByText('Разложи день на четыре спокойных шага')).toHaveCount(0)
-        await assertClickable(page.getByRole('button', { name: 'Начать' }))
+        await expect(page.getByRole('heading', { name: 'Страница для себя' })).toBeVisible()
+        await assertClickable(page.getByTestId('dj-intro-skip'))
+        await assertClickable(page.getByTestId('dj-intro-setup'))
       },
     })
-    await page.getByRole('button', { name: 'Начать' }).click()
+    // «Начать без настройки» — короткий путь сразу в поток
+    await page.getByTestId('dj-intro-skip').click()
     await captureScreen({
       page,
       viewport,
-      screen: 'Journal writer',
-      slug: '03c-journal-writer',
+      screen: 'Journal flow',
+      slug: '03c-journal-flow',
       runtimeErrors,
       results,
       check: async () => {
-        const editor = page.getByRole('textbox', { name: 'Что сейчас происходит?' })
-        await expect(editor).toBeVisible()
-        await expect(page.getByRole('button', { name: 'Назад' })).toHaveCount(1)
-        await expect(page.getByRole('button', { name: 'Далее' })).toBeVisible()
+        await expect(page.getByTestId('dj-stream-input')).toBeVisible()
+        await assertClickable(page.getByTestId('dj-stream-next'))
       },
     })
-    const guidedSteps = [
-      ['Что сейчас происходит?', 'Сегодня я замечаю главное'],
-      ['Что здесь точно известно?', 'Известно, что я могу сделать один шаг'],
-      ['Что ты предполагаешь?', 'Я предполагаю, что разговор можно начать спокойно'],
-      ['Чего ты пока не знаешь?', 'Пока не знаю, какой будет ответ'],
-      ['Что ощущается самым тяжёлым?', 'Самым тяжёлым кажется неопределённость'],
-      ['Что зависит от тебя сегодня?', 'Сегодня я могу сделать первый небольшой шаг'],
-      ['Какой маленький эксперимент попробуешь?', 'Попробую начать с короткого сообщения'],
-    ]
-    for (const [index, [label, text]] of guidedSteps.entries()) {
-      const editor = page.getByRole('textbox', { name: label })
-      await expect(editor).toBeVisible()
-      await editor.fill(text)
-      await page
-        .getByRole('button', {
-          name:
-            index === guidedSteps.length - 1 ? 'Сохранить эксперимент' : 'Далее',
-        })
-        .click()
-    }
+    // Поток: вводим текст → ✓ (далее в вопрос)
+    await page.getByTestId('dj-stream-input').fill('Замечаю главное, пишу без оценки.')
+    await page.getByTestId('dj-stream-next').click()
+    // Вопрос дня: вводим ответ → ✓ (сохранить)
+    await expect(page.getByTestId('dj-question-input')).toBeVisible()
+    await page.getByTestId('dj-question-input').fill('Один спокойный шаг.')
+    await page.getByTestId('dj-question-next').click()
     await captureScreen({
       page,
       viewport,
@@ -784,29 +809,18 @@ test('локальный UX smoke по основному маршруту', asy
       runtimeErrors,
       results,
       check: async () => {
-        await expect(
-          page.getByRole('heading', { name: 'Готово! Следующий шаг готов.' })
-        ).toBeVisible()
-        await assertClickable(page.getByRole('button', { name: 'Сохранить и выйти' }))
+        await expect(page.locator('.mx-completion')).toBeVisible()
+        await assertClickable(page.getByTestId('dj-complete-close'))
       },
     })
-    await page.getByRole('button', { name: 'Сохранить и выйти' }).click()
+    // Выход → повторный вход в тот же день: экран сегодняшней записи с «Дописать»
+    await page.getByTestId('dj-complete-close').click()
     await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
-    await page.getByRole('button', { name: 'Открыть журнал' }).click()
-    await expect(page.getByRole('heading', { name: 'Продолжи разбирать ситуацию' })).toBeVisible()
-    await page.getByRole('button', { name: 'Продолжить' }).click()
-    await expect(
-      page.getByRole('textbox', { name: 'Какой маленький эксперимент попробуешь?' })
-    ).toHaveValue('Попробую начать с короткого сообщения')
-    await page.getByRole('button', { name: 'Назад' }).click()
-    await expect(page.getByRole('textbox', { name: 'Что зависит от тебя сегодня?' })).toHaveValue(
-      'Сегодня я могу сделать первый небольшой шаг'
-    )
-    for (let index = 0; index < 6; index += 1) {
-      await page.getByRole('button', { name: 'Назад' }).click()
-    }
-    await expect(page.getByRole('heading', { name: 'Продолжи разбирать ситуацию' })).toBeVisible()
-    await page.getByRole('button', { name: 'Назад' }).click()
+    await page.getByTestId('journal-open-cta').click()
+    await expect(page.getByTestId('dj-today')).toBeVisible()
+    await assertClickable(page.getByTestId('dj-today-append'))
+    // Выход обратно в практики
+    await page.getByTestId('back-button').click()
     await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
     await page.getByRole('button', { name: 'Открыть Даймон' }).click()
     await expect(page.getByRole('heading', { name: 'Даймон' })).toBeVisible()

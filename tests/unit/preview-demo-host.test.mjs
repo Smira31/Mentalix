@@ -7,6 +7,7 @@ const source = (await readFile(new URL('../../src/lib/demoMode.js', import.meta.
   .replace("import { now } from './clock.js'", 'const now = () => new Date()')
   .replace("import { DEFAULT_REVIEW_HOUR } from './todayCardState.js'", 'const DEFAULT_REVIEW_HOUR = 19')
   .replace(/import \{[^}]*\} from '\.\/daimonBoard\.js'/, 'const DAIMON_CELLS=[];const DAIMON_LEVELS=[];const DAIMON_INSIGHT_PROMPT="";const getCell=()=>null')
+  .replace("import { DEFAULT_JOURNAL_PROMPTS } from './dailyJournalConstants.js'", 'const DEFAULT_JOURNAL_PROMPTS = []')
   .replaceAll('import.meta.env', "{ DEV: false, VITE_LOCAL_PREVIEW: 'true' }")
 const { isPreviewDemoMode } = await import(
   `data:text/javascript,${encodeURIComponent(source)}`

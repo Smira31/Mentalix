@@ -1,9 +1,9 @@
-import { ArrowRight, Check } from 'lucide-react'
+import { ArrowRight, Check, X } from 'lucide-react'
 
 /*
- * <RoundNextButton> — круглая кнопка «→» / «✓».
+ * <RoundNextButton> — круглая белая кнопка «→» / «✓» / «✕».
  * 45px (--mx-btn-round-h), серая когда disabled.
- * Используется над клавиатурой и в шаговых потоках.
+ * ✕ и ✓ одинаково заметные (белый фон) — ✕ = назад, ✓ = дальше/сохранить.
  */
 export default function RoundNextButton({
   onClick,
@@ -26,6 +26,8 @@ export default function RoundNextButton({
     >
       {icon === 'check' ? (
         <Check size={25} strokeWidth={2.4} />
+      ) : icon === 'close' ? (
+        <X size={22} strokeWidth={2.2} />
       ) : (
         <ArrowRight size={25} strokeWidth={2.4} />
       )}

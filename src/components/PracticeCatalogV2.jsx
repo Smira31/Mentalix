@@ -27,9 +27,9 @@ function JournalBanner({ onOpen }) {
       </div>
       <div className="mx-steps-journal__body">
         <span className="mx-steps-journal__label">Журнал · сегодня</span>
-        <h2 className="mx-steps-journal__title">Разбери день на части</h2>
-        <p className="mx-steps-journal__desc">Семь простых вопросов, чтобы увидеть главное</p>
-        <button type="button" className="mx-steps-journal__cta" onClick={onOpen}>
+        <h2 className="mx-steps-journal__title">Страница для себя</h2>
+        <p className="mx-steps-journal__desc">Перечитай, кем становишься, и выпиши всё из головы. 5 минут.</p>
+        <button type="button" className="mx-steps-journal__cta" data-testid="journal-open-cta" onClick={onOpen}>
           Открыть журнал <ChevronRight size={15} />
         </button>
       </div>

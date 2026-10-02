@@ -156,7 +156,6 @@ export default function GuidedSelfDiscoveryFlow({ userId, onClose }) {
   }
 
   function continueFlow() {
-    if (!answered(value)) return
     if (stepIndex < STEPS.length - 1) {
       platform.haptic('light')
       setStepIndex(index => index + 1)
@@ -280,10 +279,10 @@ export default function GuidedSelfDiscoveryFlow({ userId, onClose }) {
       return (
         <div className="guided-self-discovery__footer-bar">
           <RoundNextButton
-            onClick={continueFlow}
-            icon={isLastStep ? 'check' : 'arrow'}
-            label={isLastStep ? 'Сохранить эксперимент' : 'Далее'}
-            disabled={!answered(value) || pendingComplete}
+            onClick={answered(value) ? continueFlow : goBack}
+            icon={answered(value) ? 'check' : 'close'}
+            label={isLastStep ? (answered(value) ? 'Сохранить' : 'Назад') : (answered(value) ? 'Далее' : 'Назад')}
+            disabled={pendingComplete}
             testId="gsd-next"
           />
         </div>
