@@ -1,15 +1,60 @@
+import { useState } from 'react'
+import { canOpenMailto, copyText, openExternal } from '../lib/externalLinks'
 import { ProfilePage } from './settings/ProfileUi'
 import { privacyPolicy } from '../content/privacyPolicy'
 import './PrivacyNotice.css'
 
+function MailtoPart({ text, href }) {
+  const [copied, setCopied] = useState(false)
+
+  // В вебе mailto открывается почтовым клиентом браузера.
+  if (canOpenMailto()) {
+    return (
+      <a
+        href={href}
+        onClick={event => {
+          event.preventDefault()
+          openExternal(href)
+        }}
+      >
+        {text}
+      </a>
+    )
+  }
+
+  // В Telegram mailto не открывается надёжно — показываем адрес и даём скопировать.
+  return (
+    <span>
+      <span>{text}</span>{' '}
+      <button
+        type="button"
+        className="mx-privacy-copy"
+        onClick={async () => {
+          if (await copyText(text)) {
+            setCopied(true)
+            window.setTimeout(() => setCopied(false), 2000)
+          }
+        }}
+      >
+        {copied ? 'Скопировано' : 'Скопировать'}
+      </button>
+    </span>
+  )
+}
+
 function renderPart(part, i) {
+  if (part.href?.startsWith('mailto:')) {
+    return <MailtoPart key={i} text={part.text} href={part.href} />
+  }
   if (part.href) {
     return (
       <a
         key={i}
         href={part.href}
-        target={part.href.startsWith('http') ? '_blank' : undefined}
-        rel={part.href.startsWith('http') ? 'noreferrer' : undefined}
+        onClick={event => {
+          event.preventDefault()
+          openExternal(part.href)
+        }}
       >
         {part.text}
       </a>
@@ -38,11 +83,7 @@ function renderBlock(block, i) {
 
 export default function PrivacyNotice({ onBack }) {
   return (
-    <ProfilePage
-      title={privacyPolicy.screenTitle}
-      onBack={onBack}
-      testId="profile-screen-privacy"
-    >
+    <ProfilePage title={privacyPolicy.screenTitle} onBack={onBack} testId="profile-screen-privacy">
       <p className="mx-privacy-subtitle">
         Версия {privacyPolicy.version} · действует с {privacyPolicy.effectiveDate}
       </p>

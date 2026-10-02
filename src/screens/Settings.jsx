@@ -5,12 +5,12 @@
 // АККАУНТ (уведомления, твои данные, подписка) → ПОМОЩЬ → ПРИЛОЖЕНИЕ → версия.
 // Каждый пункт открывает под-экран с существующими настройками.
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Check } from 'lucide-react'
 import { version as appVersion } from '../../package.json'
 import { api } from '../lib/api'
 import { forget, useSynced } from '../lib/store'
-import { requestMessages, biometric } from '../platform/telegram.hooks'
+import { requestMessages, biometric, cloud } from '../platform/telegram.hooks'
 import { platform, platformName } from '../platform'
 import { hasPinRecord, clearPinRecord, APP_LOCK_ENABLED_KEY } from '../lib/appLock'
 import { clearCheckinDraft } from '../lib/checkinDraft'
@@ -21,7 +21,9 @@ import {
   parseHiddenCards,
 } from '../lib/todayCardVisibility'
 import { getAccentColors } from '../lib/accentColor'
-import { openSupportChat } from '../lib/support'
+import { MENTALIX_BOT_URL, openSupportChat } from '../lib/support'
+import { clearAllLocalUserData } from '../lib/localUserData'
+import { openExternal } from '../lib/externalLinks'
 import { THEMES } from '../lib/theme'
 import { isGuestUser } from '../lib/guestAuth'
 import { DEFAULT_REVIEW_HOUR } from '../lib/todayCardState'
@@ -59,6 +61,8 @@ function Toggle({ checked, label, onChange }) {
     />
   )
 }
+
+const SAVE_FAILED = 'Не удалось сохранить. Попробуй ещё раз'
 
 const hh = hour => `${String(hour).padStart(2, '0')}:00`
 
@@ -163,6 +167,7 @@ export default function Settings({
   const [insightsStatus, setInsightsStatus] = useState('')
   const [reminderStatus, setReminderStatus] = useState('')
   const [exportStatus, setExportStatus] = useState('')
+  // false или формат выполняющегося экспорта: строка показывает «Подготовка…».
   const [exporting, setExporting] = useState(false)
   const [erasingAccount, setErasingAccount] = useState(false)
   const [accountErased, setAccountErased] = useState(false)
@@ -228,6 +233,9 @@ export default function Settings({
       await requestMessages()
     }
 
+    const previousHour = reminderHour
+    const previousOn = reminderOn
+    setReminderStatus('')
     setReminderHour(hour)
     setReminderOn(enabled)
 
@@ -235,6 +243,9 @@ export default function Settings({
       await api.profile.saveSettings(user.id, { reminder_enabled: enabled, reminder_hour: hour })
     } catch (e) {
       console.error(e)
+      setReminderHour(previousHour)
+      setReminderOn(previousOn)
+      setReminderStatus(SAVE_FAILED)
     }
   }
 
@@ -243,7 +254,11 @@ export default function Settings({
     nextStart = quietStart,
     nextEnd = quietEnd
   ) {
+    const previous = { on: quietHoursOn, start: quietStart, end: quietEnd }
+    setReminderStatus('')
     setQuietHoursOn(nextEnabled)
+    setQuietStart(nextStart)
+    setQuietEnd(nextEnd)
     try {
       await api.profile.saveSettings(user.id, {
         quiet_hours_enabled: nextEnabled,
@@ -251,7 +266,10 @@ export default function Settings({
         quiet_hours_end: nextEnd,
       })
     } catch {
-      setReminderStatus('Не удалось сохранить тихие часы.')
+      setQuietHoursOn(previous.on)
+      setQuietStart(previous.start)
+      setQuietEnd(previous.end)
+      setReminderStatus(SAVE_FAILED)
     }
   }
 
@@ -308,7 +326,11 @@ export default function Settings({
     }
   }
 
+  const snoozingRef = useRef(false)
+
   async function snoozeReminders() {
+    if (snoozingRef.current) return
+    snoozingRef.current = true
     try {
       const result = await api.profile.snoozeReminders(user.id, 2)
       setReminderStatus(
@@ -316,36 +338,61 @@ export default function Settings({
       )
     } catch {
       setReminderStatus('Не удалось отложить напоминания.')
+    } finally {
+      snoozingRef.current = false
     }
   }
 
-  async function downloadPersonalExport(format) {
-    if (
-      exporting ||
-      !window.confirm(
-        'Скачать копию личных данных на это устройство? Файл не будет отправлен третьей стороне.'
-      )
+  const [exportChatReady, setExportChatReady] = useState(false)
+
+  const EXPORT_SEND_MESSAGES = {
+    bot_blocked: 'Разблокируй бота Mentalix и попробуй снова',
+    rate_limited: 'Можно 3 раза в день, попробуй завтра',
+  }
+  const EXPORT_SEND_FAILED = 'Не получилось отправить. Попробуй ещё раз'
+
+  // Telegram: бот присылает файл в личный чат. Web: прежнее скачивание (таймаут 30 с в api.js).
+  async function exportPersonalData(format = 'json') {
+    if (exporting) return
+    const viaTelegram = platformName === 'telegram'
+    const confirmed = await platform.showConfirm(
+      viaTelegram
+        ? 'Отправить копию личных данных в твой чат с Mentalix? Файл придёт только тебе.'
+        : 'Скачать копию личных данных на это устройство? Файл не будет отправлен третьей стороне.'
     )
-      return
-    setExporting(true)
+    if (!confirmed) return
+    setExporting(format)
     setExportStatus('')
+    setExportChatReady(false)
     try {
-      await api.privacy.downloadExport(user.id, { format })
-      setExportStatus('Файл подготовлен для скачивания на этом устройстве.')
+      if (viaTelegram) {
+        const result = await api.privacy.sendExportToTelegram(user.id)
+        if (result.ok) {
+          setExportStatus('Отправили файл в чат с Mentalix')
+          setExportChatReady(true)
+        } else {
+          setExportStatus(EXPORT_SEND_MESSAGES[result.reason] || EXPORT_SEND_FAILED)
+        }
+      } else {
+        await api.privacy.downloadExport(user.id, { format })
+        setExportStatus('Файл подготовлен для скачивания на этом устройстве.')
+      }
     } catch {
-      setExportStatus('Не удалось подготовить файл. Проверь соединение и попробуй ещё раз.')
+      setExportStatus(
+        viaTelegram
+          ? EXPORT_SEND_FAILED
+          : 'Не удалось подготовить файл. Проверь соединение и попробуй ещё раз.'
+      )
     } finally {
       setExporting(false)
     }
   }
 
-  function clearLocalDraft() {
-    if (
-      !window.confirm(
-        'Очистить незавершённую утреннюю запись только на этом устройстве? Сохранённые записи не изменятся.'
-      )
+  async function clearLocalDraft() {
+    const confirmed = await platform.showConfirm(
+      'Очистить незавершённую утреннюю запись только на этом устройстве? Сохранённые записи не изменятся.'
     )
-      return
+    if (!confirmed) return
     const cleared = clearCheckinDraft({ userId: user.id })
     setExportStatus(
       cleared
@@ -356,11 +403,11 @@ export default function Settings({
 
   async function eraseAccountAndData() {
     if (!privacyProtectedByTelegram || erasingAccount) return
-    const firstConfirmation = window.confirm(
+    const firstConfirmation = await platform.showConfirm(
       'Удалить аккаунт и связанные данные из активной базы Mentalix? Это нельзя отменить. Резервные копии и журналы провайдеров могут храниться отдельно.'
     )
     if (!firstConfirmation) return
-    const finalConfirmation = window.confirm(
+    const finalConfirmation = await platform.showConfirm(
       'Это последнее подтверждение. Удалить аккаунт и связанные данные Mentalix?'
     )
     if (!finalConfirmation) return
@@ -369,8 +416,12 @@ export default function Settings({
     setAccountEraseError('')
     try {
       await api.privacy.eraseAccount(user.id)
-      clearCheckinDraft({ userId: user.id })
+      // Все локальные данные пользователя: черновики, дата рождения, опросы,
+      // тема/акцент, блокировка, гостевой токен и облачные ключи Telegram.
+      clearAllLocalUserData()
+      await cloud.clearAll()
       platform.clearUser?.()
+      platform.clearSessionToken?.()
       setAccountErased(true)
     } catch {
       setAccountEraseError(
@@ -382,12 +433,10 @@ export default function Settings({
   }
 
   async function clearAllReminderSettings() {
-    if (
-      !window.confirm(
-        'Отключить напоминания и удалить их тихие часы, откладывание и цель записей? Дневник и другие настройки не изменятся.'
-      )
+    const confirmed = await platform.showConfirm(
+      'Отключить напоминания и удалить их тихие часы, откладывание и цель записей? Дневник и другие настройки не изменятся.'
     )
-      return
+    if (!confirmed) return
     try {
       const settings = await api.profile.clearReminderSettings(user.id)
       setReminderOn(Boolean(settings?.reminder_enabled))
@@ -402,12 +451,14 @@ export default function Settings({
 
   async function saveReviewHour(hour) {
     const prev = reviewHour
+    setReminderStatus('')
     setReviewHour(hour)
     try {
       await api.profile.saveSettings(user.id, { review_hour: hour })
     } catch (e) {
       console.error(e)
       setReviewHour(prev)
+      setReminderStatus(SAVE_FAILED)
     }
   }
 
@@ -564,7 +615,8 @@ export default function Settings({
           <h1 className="font-display text-[26px] text-cream">данные удалены.</h1>
           <p className="mt-3 text-[14px] leading-relaxed text-muted">
             Мы получили подтверждение удаления аккаунта Mentalix и связанных серверных данных.
-            Локальный незавершённый чек-ин на этом устройстве также очищен.
+            Локальные данные приложения на этом устройстве (черновики, настройки, блокировка) также
+            удалены.
           </p>
           <p className="mt-3 text-[12px] leading-relaxed text-muted">
             В Telegram закрой мини-приложение. Если захочешь начать с чистого листа, сначала отправь
@@ -647,7 +699,7 @@ export default function Settings({
                   >
                     <div
                       style={{
-                        width: `${Math.min(100, Math.round((writingGoalProgress.completed / writingGoalProgress.goal) * 100))}%`,
+                        width: `${Math.min(100, Math.round((writingGoalProgress.completed / Math.max(1, writingGoalProgress.goal)) * 100))}%`,
                       }}
                     />
                   </div>
@@ -836,7 +888,11 @@ export default function Settings({
                   <p className="text-[15px] font-semibold text-cream">Тихие часы</p>
                   <p className="mt-1 text-[13px] text-muted">В это время бот не пишет.</p>
                 </div>
-                <Toggle checked={quietHoursOn} label="Тихие часы" onChange={saveQuietHours} />
+                <Toggle
+                  checked={quietHoursOn}
+                  label="Тихие часы"
+                  onChange={next => saveQuietHours(next)}
+                />
               </div>
               {quietHoursOn && (
                 <div className="grid grid-cols-2 gap-2">
@@ -846,7 +902,6 @@ export default function Settings({
                       value={quietStart}
                       onChange={event => {
                         const value = Number(event.target.value)
-                        setQuietStart(value)
                         saveQuietHours(true, value, quietEnd)
                       }}
                       className="mx-profile-select"
@@ -864,7 +919,6 @@ export default function Settings({
                       value={quietEnd}
                       onChange={event => {
                         const value = Number(event.target.value)
-                        setQuietEnd(value)
                         saveQuietHours(true, quietStart, value)
                       }}
                       className="mx-profile-select"
@@ -955,19 +1009,11 @@ export default function Settings({
                   onClick={() => setScreen('privacy-notice')}
                 />
                 <ProfileRow
-                  title="Экспорт JSON"
-                  subtitle="Часть данных: профиль, чек-ины, завершённые направленные записи"
-                  onClick={() => downloadPersonalExport('json')}
-                />
-                <ProfileRow
-                  title="Экспорт Markdown"
-                  subtitle="Только данные чек-инов для чтения"
-                  onClick={() => downloadPersonalExport('markdown')}
-                />
-                <ProfileRow
-                  title="Экспорт CSV"
-                  subtitle="Только данные чек-инов в таблице"
-                  onClick={() => downloadPersonalExport('csv')}
+                  title={exporting ? 'Подготовка…' : 'Отправить мои данные в чат'}
+                  subtitle="Файл JSON: профиль, чек-ины, завершённые направленные записи"
+                  onClick={() => exportPersonalData()}
+                  disabled={Boolean(exporting)}
+                  testId="profile-row-export"
                 />
               </>
             ) : (
@@ -1004,6 +1050,16 @@ export default function Settings({
             )}
           </ProfileCard>
           {exportStatus && <ProfileNote role="status">{exportStatus}</ProfileNote>}
+          {exportChatReady && (
+            <button
+              type="button"
+              className="mx-profile-text-button"
+              onClick={() => openExternal(MENTALIX_BOT_URL)}
+              data-testid="profile-export-open-chat"
+            >
+              Открыть чат
+            </button>
+          )}
           {accountEraseError && (
             <ProfileNote role="alert" danger>
               {accountEraseError}

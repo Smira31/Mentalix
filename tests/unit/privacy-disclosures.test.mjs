@@ -38,7 +38,7 @@ test('privacy policy describes deletion boundaries without a false timing promis
 
 test('privacy policy honestly limits export scope', () => {
   assert.match(policyText, /Не утверждается, что абсолютно все возможные данные.*входят в экспорт/)
-  assert.match(policyText, /Markdown\/CSV — данные чек-инов/)
+  assert.match(policyText, /Файл с твоими данными в формате JSON приходит в чат с ботом/)
   assert.match(policyText, /Self-service экспорт поддерживается для пользователей, привязавших Telegram-аккаунт/)
 })
 
