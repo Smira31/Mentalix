@@ -135,4 +135,49 @@ test.describe('Даймон — флоу игры', () => {
 
     await context.close()
   })
+
+  test('заголовки Даймона набраны Lora с первого кадра — без сдвига через 1 с', async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({
+      viewport: { width: 402, height: 874 },
+      colorScheme: 'dark',
+      serviceWorkers: 'block',
+    })
+
+    const page = await context.newPage()
+    await page.goto(DEMO_URL, { waitUntil: 'domcontentloaded' })
+
+    const measure = locator =>
+      locator.evaluate(el => ({
+        width: el.getBoundingClientRect().width,
+        fontFamily: getComputedStyle(el).fontFamily,
+        loraReady: document.fonts.check('600 1rem Lora', el.textContent.trim()),
+      }))
+
+    // Первый кадр экрана входа: заголовок уже рисуется Lora, без подмены серифом.
+    const introTitle = page.getByRole('heading', { name: 'Даймон' })
+    await introTitle.waitFor({ state: 'visible' })
+    const introFirst = await measure(introTitle)
+    expect(introFirst.fontFamily).toContain('Lora')
+    expect(introFirst.loraReady).toBe(true)
+
+    // Через секунду ширина не «прыгает»: подмена шрифта не двигает заголовок.
+    await page.waitForTimeout(1000)
+    const introLater = await measure(introTitle)
+    expect(introLater.fontFamily).toBe(introFirst.fontFamily)
+    expect(Math.abs(introLater.width - introFirst.width) / introFirst.width).toBeLessThanOrEqual(
+      0.02
+    )
+
+    // Экран запроса: та же серифная пара.
+    await page.getByTestId('daimon-start').click()
+    const requestTitle = page.getByRole('heading', { name: 'С чем ты приходишь?' })
+    await requestTitle.waitFor({ state: 'visible' })
+    const requestFont = await measure(requestTitle)
+    expect(requestFont.fontFamily).toContain('Lora')
+    expect(requestFont.loraReady).toBe(true)
+
+    await context.close()
+  })
 })

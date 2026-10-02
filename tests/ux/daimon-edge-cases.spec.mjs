@@ -23,20 +23,44 @@ async function storedGame(page, mode) {
   return page.evaluate(key => JSON.parse(localStorage.getItem(key)).daimon.game, stateKey(mode))
 }
 
-// Экран перехода живёт меньше секунды — снимаем его состояние одним замером.
-async function transitionSnapshot(page) {
-  return page.evaluate(() => {
-    const root = document.querySelector('[data-testid="daimon-transition"]')
-    if (!root) return null
-    const text = testId => root.querySelector(`[data-testid="${testId}"]`)?.textContent?.trim()
-    return {
-      kind: root.getAttribute('data-kind'),
-      label: text('daimon-transition-label'),
-      from: text('daimon-transition-from'),
-      to: text('daimon-transition-to'),
-      sub: text('daimon-transition-sub'),
+// Экран перехода живёт меньше секунды, поэтому ждём его и снимаем состояние
+// внутри страницы (кадр за кадром) — поллинг извне окно 400–800 мс пропускает.
+// «Столбиком»: подпись, откуда, стрелка и куда идут сверху вниз одной колонкой.
+async function captureTransition(page, kind) {
+  return page.evaluate(async expectedKind => {
+    const read = () => {
+      const root = document.querySelector('[data-testid="daimon-transition"]')
+      if (!root) return null
+      const text = testId => root.querySelector(`[data-testid="${testId}"]`)?.textContent?.trim()
+      const path = root.querySelector('.mx-daimon-transition__path')
+      const rectOf = el => (el ? el.getBoundingClientRect() : null)
+      const labelRect = rectOf(root.querySelector('[data-testid="daimon-transition-label"]'))
+      const fromRect = rectOf(root.querySelector('[data-testid="daimon-transition-from"]'))
+      const arrowRect = rectOf(root.querySelector('.mx-daimon-transition__arrow'))
+      const toRect = rectOf(root.querySelector('[data-testid="daimon-transition-to"]'))
+      const stacked =
+        Boolean(labelRect && fromRect && arrowRect && toRect) &&
+        labelRect.bottom <= fromRect.top + 1 &&
+        fromRect.bottom <= arrowRect.top + 1 &&
+        arrowRect.bottom <= toRect.top + 1
+      return {
+        kind: root.getAttribute('data-kind'),
+        label: text('daimon-transition-label'),
+        from: text('daimon-transition-from'),
+        to: text('daimon-transition-to'),
+        sub: text('daimon-transition-sub'),
+        flexDirection: path ? getComputedStyle(path).flexDirection : null,
+        stacked,
+      }
     }
-  })
+    const deadline = Date.now() + 6000
+    while (Date.now() < deadline) {
+      const root = document.querySelector('[data-testid="daimon-transition"]')
+      if (root && root.getAttribute('data-kind') === expectedKind) return read()
+      await new Promise(resolve => window.requestAnimationFrame(() => resolve()))
+    }
+    return null
+  }, kind)
 }
 
 test('прямая ссылка работает и после изменения URL без перезагрузки', async ({ page }) => {
@@ -88,35 +112,39 @@ test('crisis: ответ и помощь без вывода, pending-клетк
   await expect(page.getByTestId('daimon-continue-cell')).toBeVisible()
 })
 
-test('nearFinish: 36 → финал, повтор итога, Мои игры и Новая игра', async ({ page }) => {
+test('nearFinish: 36 → финал → «Взгляд сверху» → «Твой путь»', async ({ page }) => {
   await openMode(page, 'nearFinish')
   await page.getByTestId('daimon-roll').click()
   await answerCell(page)
   await page.getByTestId('daimon-skip').click()
   await expect(page.getByTestId('daimon-finish')).toBeVisible()
   expect((await storedGame(page, 'nearFinish')).status).toBe('finished')
+
+  // Итог Даймона падает — «Взгляд сверху» показывает ошибку и повтор.
   await page.evaluate(() => sessionStorage.setItem('mentalix:demo-network:v1', 'Ошибка сервера'))
-  await page.getByTestId('daimon-summary-btn').click()
+  await page.getByTestId('daimon-overview-open').click()
+  await expect(page.getByTestId('daimon-overview')).toBeVisible()
   await expect(page.getByTestId('daimon-summary-error')).toBeVisible()
   await page.evaluate(() => sessionStorage.removeItem('mentalix:demo-network:v1'))
   await page.getByTestId('daimon-summary-retry').click()
   await expect(page.getByTestId('daimon-summary')).toBeVisible()
-  await page.getByTestId('daimon-finish-games').click()
-  await expect(page.getByTestId('daimon-games-list')).toContainText('1 клетка')
+
+  // «Взгляд сверху» показывает запрос и «Твой путь» с пройденной клеткой.
+  await expect(page.getByTestId('daimon-overview')).toContainText('Твой запрос')
+  await expect(page.getByTestId('daimon-overview')).toContainText('Твой путь')
+  await expect(page.getByTestId('daimon-path')).toContainText('Даймон')
+
+  // Завершённая игра из «Моих игр» открывается тем же «Взглядом сверху».
+  await page.getByTestId('daimon-overview-games').click()
+  await expect(page.getByTestId('daimon-games-list')).toContainText('Завершена')
   await page.getByTestId('daimon-game-daimon-test-nearFinish').click()
-  await expect(page.getByTestId('daimon-path-view')).toBeVisible()
-  await page.reload()
-  await page.getByTestId('daimon-new-game').click()
+  await expect(page.getByTestId('daimon-overview')).toBeVisible()
+  await expect(page.getByTestId('daimon-path')).toContainText('Даймон')
+
+  // Игра завершена — новая начинается без подтверждения.
+  await page.getByTestId('daimon-overview-new-game').click()
   await expect(page.getByTestId('daimon-new-game-confirm')).toBeHidden()
   await expect(page.getByTestId('daimon-start')).toBeVisible()
-  await page.getByTestId('daimon-start').click()
-  await page.getByTestId('daimon-request-input').fill('Другой запрос к игре')
-  await page.getByTestId('daimon-request-submit').click()
-  await page.getByTestId('daimon-help-done').click()
-  await expect(page.getByTestId('daimon-position')).toContainText('Начни с броска')
-  await page.reload()
-  await expect(page.getByTestId('daimon-board')).toBeVisible()
-  await expect(page.getByTestId('daimon-request-preview')).toHaveText('Другой запрос к игре')
 })
 
 test('bounce: 34 + 4 → экран отскока «Даймон ↓ Тишина», затем клетка, не финал', async ({
@@ -124,7 +152,8 @@ test('bounce: 34 + 4 → экран отскока «Даймон ↓ Тишин
 }) => {
   await openMode(page, 'bounce')
   await page.getByTestId('daimon-roll').click()
-  await expect.poll(() => transitionSnapshot(page)).toEqual({
+  const snap = await captureTransition(page, 'bounce')
+  expect(snap).toMatchObject({
     kind: 'bounce',
     label: 'Отскок',
     from: 'Даймон',
@@ -137,13 +166,40 @@ test('bounce: 34 + 4 → экран отскока «Даймон ↓ Тишин
   await expect(page.getByTestId('daimon-finish')).toBeHidden()
 })
 
-test('nearSnake: 10 + 1 → 11, после вывода змея → 2', async ({ page }) => {
+test('nearSnake: 10 + 1 → 11, экран перехода «Змея» столбиком, затем 2', async ({ page }) => {
   await openMode(page, 'nearSnake')
   await page.getByTestId('daimon-roll').click()
   await answerCell(page)
   await page.getByTestId('daimon-skip').click()
+  // Экран перехода короткий (reduced motion ≈ 400 мс) — ловим его одним замером.
+  const snap = await captureTransition(page, 'snake')
+  expect(snap.label).toBe('Змея')
+  expect(snap.from).toBe('Самообман')
+  expect(snap.to).toBe('Автопилот')
+  expect(snap.sub).toBe('Продолжай путь')
+  expect(snap.flexDirection).toBe('column')
+  expect(snap.stacked).toBe(true)
+
   await expect(page.getByTestId('daimon-position')).toContainText('Ты здесь: 2 ·')
   expect((await storedGame(page, 'nearSnake')).position).toBe(2)
+})
+
+test('возврат в клетку показывает первую реплику и ответ игрока', async ({ page }) => {
+  await openMode(page, 'nearSnake')
+  await page.getByTestId('daimon-roll').click()
+  await expect(page.getByTestId('daimon-chat-msg-assistant').first()).toContainText('Самообман')
+  await page.getByTestId('daimon-chat-input').fill('Мой ответ игрока')
+  await page.getByTestId('daimon-chat-send').click()
+  await expect(page.getByTestId('daimon-chat-msg-user').first()).toContainText('Мой ответ игрока')
+  await expect(page.getByTestId('daimon-thinking')).toBeHidden()
+
+  // Уходим на поле и возвращаемся в ту же клетку — разговор восстанавливается.
+  await page.getByTestId('back-button').click()
+  await expect(page.getByTestId('daimon-continue-cell')).toContainText('Продолжить клетку 11')
+  await page.getByTestId('daimon-continue-cell').click()
+  await expect(page.getByTestId('daimon-chat-msg-assistant').first()).toContainText('Самообман')
+  await expect(page.getByTestId('daimon-chat-msg-user').first()).toContainText('Мой ответ игрока')
+  await expect(page.getByTestId('daimon-thinking')).toBeHidden()
 })
 
 test('slow: загрузка, блокировка отправки и один бросок при двойном тапе', async ({ page }) => {
