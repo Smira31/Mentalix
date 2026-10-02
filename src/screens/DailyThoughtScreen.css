@@ -10,7 +10,7 @@
 .mx-daily-thought__label {
   font-family: 'Manrope', sans-serif;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: var(--mx-weight-heading);
   text-transform: uppercase;
   letter-spacing: 0.2em;
   color: rgb(var(--c-muted));
@@ -19,7 +19,7 @@
 
 .mx-daily-thought__text {
   font-size: 28px;
-  font-weight: 700;
+  font-weight: var(--mx-weight-title);
   line-height: 1.3;
   color: rgb(var(--c-text));
   text-align: center;
@@ -63,10 +63,10 @@
   max-width: 340px;
   border: 0;
   border-radius: 9999px;
-  background: rgb(var(--c-text));
-  color: rgb(var(--c-bg));
+  background: var(--mx-btn-light-bg);
+  color: #111;
   font-size: 15px;
-  font-weight: 600;
+  font-weight: var(--mx-weight-control);
   cursor: pointer;
   transition: transform 0.1s ease;
 }
@@ -89,7 +89,7 @@
   background: transparent;
   color: rgb(var(--c-muted));
   font-size: 14px;
-  font-weight: 500;
+  font-weight: var(--mx-weight-control);
   cursor: pointer;
   transition: color 0.15s ease;
 }
@@ -120,7 +120,7 @@
   border: 0;
   background: transparent;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: var(--mx-weight-control);
   color: rgb(var(--c-muted));
   cursor: pointer;
   transition: color 0.15s ease;
@@ -150,7 +150,7 @@
   background: transparent;
   color: rgb(var(--c-muted));
   font-size: 14px;
-  font-weight: 500;
+  font-weight: var(--mx-weight-control);
   cursor: pointer;
   transition: color 0.15s ease;
 }

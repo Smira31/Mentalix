@@ -128,7 +128,7 @@ export default function DailyThoughtInput({ date, user, onClose, onSaved }) {
             {quoteOfDay.text}
           </p>
         )}
-        <h3 className="font-display text-[24px] font-bold leading-[1.15] text-cream">
+        <h3 className="font-display mx-w-title text-[24px] leading-[1.15] text-cream">
           Что ты об этом думаешь?
         </h3>
         <p className="mt-3 border-l border-gold pl-4 text-[16px] font-normal leading-relaxed text-muted">
@@ -167,7 +167,7 @@ export default function DailyThoughtInput({ date, user, onClose, onSaved }) {
         data-testid="daily-thought-input-round"
         onClick={hasText ? handleSave : onClose}
         disabled={saving}
-        className="flex h-11 w-11 items-center justify-center rounded-full bg-[#efefef] text-[22px] font-semibold text-[#111] transition-transform active:scale-95"
+        className="mx-w-control flex h-11 w-11 items-center justify-center rounded-full bg-[var(--mx-btn-light-bg)] text-[22px] text-[#111] transition-transform active:scale-95"
         style={roundButtonStyle}
       >
         {hasText ? '✓' : '✕'}
