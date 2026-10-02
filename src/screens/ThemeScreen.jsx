@@ -1,5 +1,5 @@
 import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import { api } from '../lib/api'
@@ -92,6 +92,11 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
   const [text, setText] = useState('')
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState(false)
+  const [loadError, setLoadError] = useState(false)
+  const [retryToken, setRetryToken] = useState(0)
+  const savingRef = useRef(false)
+  const textRef = useRef('')
+  const dataRef = useRef(cachedDetail)
   const [view, setView] = useState(
     cachedDetail
       ? initialDay || cachedDetail.days.some(d => d.reflection)
@@ -133,20 +138,29 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
 
   const [seenTextKey, setSeenTextKey] = useState({ day: null, data: null })
   if (data && (seenTextKey.day !== day || seenTextKey.data !== data)) {
+    const dayChanged = seenTextKey.day !== day
     setSeenTextKey({ day, data })
-    const current = data.days.find(x => x.day === day)
-    const existingReflection = current?.reflection || ''
-    // Восстановление черновика темы, если нет сохранённого ответа (#6)
-    if (existingReflection) {
-      setText(existingReflection)
-    } else if (themeId != null && day != null) {
-      const draft = readThemeDraft({ userId: user?.id, themeId, day })
-      setText(draft || '')
-    } else {
-      setText('')
+    // Фоновое обновление данных не трогает уже набранный текст
+    if (dayChanged || !text.trim()) {
+      const current = data.days.find(x => x.day === day)
+      const existingReflection = current?.reflection || ''
+      // Восстановление черновика темы, если нет сохранённого ответа (#6)
+      if (existingReflection) {
+        setText(existingReflection)
+      } else if (themeId != null && day != null) {
+        const draft = readThemeDraft({ userId: user?.id, themeId, day })
+        setText(draft || '')
+      } else {
+        setText('')
+      }
+      setSaveError(false)
     }
-    setSaveError(false)
   }
+
+  useEffect(() => {
+    textRef.current = text
+    dataRef.current = data
+  })
 
   useEffect(() => {
     if (!user) return
@@ -165,7 +179,16 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
       .then(fresh => {
         if (!alive || !fresh) return
 
+        setLoadError(false)
         setData(fresh)
+
+        // Фоновое обновление не трогает день и вид, пока человек пишет
+        const editing =
+          Boolean(dataRef.current) &&
+          (textRef.current.trim().length > 0 ||
+            Boolean(document.activeElement && document.activeElement.isContentEditable))
+        if (editing) return
+
         setDay(Math.min(initialDay || fresh.current_day || 1, fresh.days.length))
 
         /*
@@ -178,12 +201,15 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
 
         setView(initialDay || started ? 'day' : 'intro')
       })
-      .catch(console.error)
+      .catch(error => {
+        console.error(error)
+        if (alive && !dataRef.current) setLoadError(true)
+      })
 
     return () => {
       alive = false
     }
-  }, [user, activeId])
+  }, [user, activeId, retryToken])
 
   // Debounced-сохранение черновика темы недели (#6)
   useEffect(() => {
@@ -195,45 +221,60 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
   }, [text, themeId, day, user?.id])
 
   async function persistReflection({ advance = true } = {}) {
-    if (!data) return
+    if (!data || savingRef.current) return false
+    savingRef.current = true
 
     setSaving(true)
     setSaveError(false)
 
     try {
       await api.themes.reflect(activeId, user.id, day, text)
-      platform.haptic('success')
-
-      // Сохранено — очищаем черновик (#6)
-      clearThemeDraft({ userId: user?.id, themeId: activeId, day })
-
-      invalidateThemeDetail(user.id, activeId)
-      const fresh = await fetchThemeDetail(user.id, activeId, { force: true })
-
-      setData(fresh)
-
-      const answered = fresh.days.filter(x => x.reflection).length
-
-      /*
-       * Последний ответ недели ведёт не на восьмой день, которого
-       * нет, а сразу в разбор: это и есть завершение темы.
-       */
-      if (advance) {
-        if (answered === fresh.days.length) {
-          setView('review')
-        } else if (day < data.days.length) {
-          setDay(day + 1)
-        }
-      }
-
-      return true
     } catch (error) {
       console.error(error)
       setSaveError(true)
-      return false
-    } finally {
+      savingRef.current = false
       setSaving(false)
+      return false
     }
+
+    platform.haptic('success')
+    invalidateThemeDetail(user.id, activeId)
+
+    // Ответ уже сохранён: при сбое повторной загрузки подставляем его локально
+    let fresh = null
+    try {
+      fresh = await fetchThemeDetail(user.id, activeId, { force: true })
+    } catch (error) {
+      console.error(error)
+    }
+    if (fresh) {
+      clearThemeDraft({ userId: user?.id, themeId: activeId, day })
+    } else {
+      fresh = {
+        ...data,
+        days: data.days.map(x => (x.day === day ? { ...x, reflection: text } : x)),
+      }
+    }
+
+    setData(fresh)
+
+    const answered = fresh.days.filter(x => x.reflection).length
+
+    /*
+     * Последний ответ недели ведёт не на восьмой день, которого
+     * нет, а сразу в разбор: это и есть завершение темы.
+     */
+    if (advance) {
+      if (answered === fresh.days.length) {
+        setView('review')
+      } else if (day < data.days.length) {
+        setDay(day + 1)
+      }
+    }
+
+    savingRef.current = false
+    setSaving(false)
+    return true
   }
 
   async function save() {
@@ -382,7 +423,26 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
       <Shell style={style}>
         <RoundBackButton onClick={onBack} />
 
-        <p className="w-full m-auto px-6 text-center text-muted text-[13px]">Загрузка...</p>
+        {loadError ? (
+          <div className="w-full m-auto px-6 text-center" role="alert" data-testid="theme-load-error">
+            <p className="text-muted text-[13px]">
+              Не удалось загрузить тему. Проверь соединение и попробуй ещё раз.
+            </p>
+            <button
+              type="button"
+              data-testid="theme-load-retry"
+              onClick={() => {
+                setLoadError(false)
+                setRetryToken(n => n + 1)
+              }}
+              className="mt-5 min-h-11 rounded-full bg-cream px-4 py-2 text-[13px] font-semibold text-emerald-deep"
+            >
+              Повторить
+            </button>
+          </div>
+        ) : (
+          <p className="w-full m-auto px-6 text-center text-muted text-[13px]">Загрузка...</p>
+        )}
       </Shell>,
       getFullscreenPortalTarget()
     )
@@ -538,6 +598,7 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
         formatting={false}
         floatingToolbar={false}
         writingCanvas={false}
+        maxLength={4000}
         autoFocus={!current?.reflection}
         onSubmit={save}
         submitLabel={current?.reflection ? 'Обновить мысль' : 'Сохранить мысль'}

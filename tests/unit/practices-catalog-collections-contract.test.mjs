@@ -10,7 +10,7 @@ const source = await readFile(
 test('MXL-PRACTICES-CATALOG-POLISH-001 (G3): коллекция открывает единый список практик', () => {
   // Тап по коллекции «Ритуалы»/«Аскезы» ведёт прямо в PracticeListFlow:
   // промежуточный экран «Твои данные» удалён вместе с двойной вложенностью.
-  assert.match(source, /<CollectionGrid onOpen=\{onOpenCollection\} \/>/)
+  assert.match(source, /<CollectionGrid\s+onOpen=\{onOpenCollection\}/)
   assert.doesNotMatch(source, /CollectionScreen/)
   assert.doesNotMatch(source, /Твои данные/)
   assert.doesNotMatch(source, /mx-layered-category/)

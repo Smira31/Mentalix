@@ -77,6 +77,28 @@ function toLocalCalendarDate(input) {
   return `${year}-${month}-${day}`
 }
 
+/*
+ * Календарная дата по Москве (Europe/Moscow, без перехода на летнее время).
+ * Сервер считает день записи журнала по МСК, поэтому клиент не должен
+ * зависеть от часового пояса устройства.
+ */
+const MOSCOW_DATE_FORMAT =
+  typeof Intl !== 'undefined'
+    ? new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Europe/Moscow',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      })
+    : null
+
+function toMoscowCalendarDate(input) {
+  const date = toDate(input)
+  if (!date) return null
+  if (!MOSCOW_DATE_FORMAT) return toLocalCalendarDate(date)
+  return MOSCOW_DATE_FORMAT.format(date)
+}
+
 class UnimplementedDatePolicyError extends Error {
   constructor(policy) {
     super(
@@ -110,5 +132,6 @@ export {
   isValidDate,
   resolveCalendarDate,
   toLocalCalendarDate,
+  toMoscowCalendarDate,
   toUtcInstant,
 }

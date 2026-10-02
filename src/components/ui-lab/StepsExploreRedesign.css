@@ -103,12 +103,20 @@
 .mx-steps-rail::-webkit-scrollbar {
   display: none;
 }
+@media (min-width: 600px) {
+  .mx-steps-rail .mx-steps-rail-card {
+    flex-basis: 174px;
+    width: 174px;
+    min-width: 174px;
+  }
+}
 .mx-steps-rail-card {
   position: relative;
   display: grid;
-  flex: 0 0 174px;
-  width: 174px;
-  min-width: 174px;
+  /* телефон: две карточки + ~25px третьей (формула от ширины контента ряда) */
+  flex: 0 0 calc((100% - 33px) / 2);
+  width: calc((100% - 33px) / 2);
+  min-width: calc((100% - 33px) / 2);
   height: 225px;
   align-content: start;
   justify-items: center;

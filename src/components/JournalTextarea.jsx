@@ -181,6 +181,7 @@ export default function JournalTextarea({
   guidedFlow = false,
   showAddAction = false,
   hideAddAction = false,
+  maxLength,
 }) {
   const editorRef = useRef(null)
   const emittedValueRef = useRef(null)
@@ -255,7 +256,21 @@ export default function JournalTextarea({
     const editor = editorRef.current
     if (!editor) return
 
-    const nextValue = serializeEditor(editor)
+    let nextValue = serializeEditor(editor)
+    if (maxLength && nextValue.length > maxLength) {
+      // Лимит длины: обрезаем и ставим курсор в конец
+      nextValue = nextValue.slice(0, maxLength)
+      if (formatting) renderMarkdown(editor, nextValue)
+      else renderPlainText(editor, nextValue)
+      const selection = editor.ownerDocument.getSelection()
+      if (selection) {
+        const range = editor.ownerDocument.createRange()
+        range.selectNodeContents(editor)
+        range.collapse(false)
+        selection.removeAllRanges()
+        selection.addRange(range)
+      }
+    }
     emittedValueRef.current = nextValue
     onChange(nextValue)
   }
