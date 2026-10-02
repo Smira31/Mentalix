@@ -59,8 +59,8 @@ import { pickVisibleTodayHint } from '../lib/todayHints'
 const Path = lazyWithRetry(() => import('./Path'))
 const YearPath = lazyWithRetry(() => import('./YearPath'))
 const CheckIn = lazyWithRetry(() => import('./CheckIn'))
-const ThemeScreen = lazyWithRetry(() => import('./ThemeScreen'))
 const ThemeCarouselScreen = lazyWithRetry(() => import('./ThemeCarouselScreen'))
+const ThemeScreen = lazyWithRetry(() => import('./ThemeScreen'))
 const History = lazyWithRetry(() => import('./History'))
 const QuoteView = lazyWithRetry(() => import('./QuoteView'))
 const DailyThoughtScreen = lazyWithRetry(() => import('./DailyThoughtScreen'))
@@ -981,7 +981,7 @@ export default function Today({
   }
 
   // Прямой переход из карточки «Тема недели» на «Сегодня» → экран записи
-  // ответа на ждущий вопрос (ThemeScreen с initialDay).
+  // ответа на следующий непройденный вопрос (ThemeScreen с initialDay).
   if (sub === 'themeWrite' && theme) {
     return (
       <SubScreenBoundary resetKey="themeWrite" onExit={() => changeSub(null)}>
@@ -1326,12 +1326,15 @@ export default function Today({
 
   function handleThemeCardTap() {
     platform.haptic('light')
-    if (themeAllAnswered || !themeWaitingDay) {
+    // Все пройдены — смотрим запись последнего вопроса; иначе пишем следующий.
+    const targetDay =
+      themeWaitingDay?.day ?? (themeAllAnswered ? themeDays[themeDays.length - 1]?.day : null)
+    if (!targetDay) {
       changeSub('theme')
-    } else {
-      setThemeWriteDay(themeWaitingDay.day)
-      changeSub('themeWrite')
+      return
     }
+    setThemeWriteDay(targetDay)
+    changeSub('themeWrite')
   }
 
   return (

@@ -98,7 +98,7 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
   const viewportGeometry = useVisualViewportGeometry()
 
   useBackButton(() => {
-    if (view === 'review' || view === 'list') {
+    if (view === 'review') {
       platform.haptic('light')
       setView('day')
     } else {
@@ -273,7 +273,7 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
       alive = false
     }
   }, [finished])
-  const canSave = Boolean(text.trim()) && !current?.locked
+  const canSave = Boolean(text.trim())
   const hasText = Boolean(text.trim())
 
   const visualHeight = viewportGeometry?.height
@@ -320,14 +320,14 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
         ? onBack
         : save
 
-  const mainVisible = Boolean(data) && view !== 'list' && (view !== 'day' || !current?.locked)
+  const mainVisible = Boolean(data)
   const mainEnabled = view === 'day' ? canSave && !saving : true
 
   /*
    * Хук вызывается всегда, а видимостью и текстом управляет вид.
    * Условный вызов сломал бы порядок хуков.
    */
-  const writingDay = view === 'day' && !current?.locked
+  const writingDay = view === 'day'
 
   useMainButton({
     text: mainText,
@@ -387,10 +387,6 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
               Ответы сохраняются. В конце ты увидишь всю неделю сразу — и это главное, ради чего она
               нужна.
             </Fact>
-
-            {data.free_days > 0 && data.free_days < data.days.length && (
-              <Fact>Первые {data.free_days} дня открыты всем, остальные — часть Библиотеки.</Fact>
-            )}
 
             <Fact>Пропущенный день не сгорает: к нему можно вернуться.</Fact>
           </ul>
@@ -470,71 +466,6 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
     )
   }
 
-  /* ── другие темы ───────────────────────────────────────── */
-
-  if (view === 'list') {
-    return createPortal(
-      <Shell style={style}>
-        <RoundBackButton onClick={back} />
-
-        <h2 className="font-display text-[22px] text-cream lowercase leading-tight mt-4 mb-1">
-          все темы.
-        </h2>
-
-        <p className="text-[12px] text-faint mb-6">
-          пройденные остаются с тобой — их можно перечитать
-        </p>
-
-        <div className="flex flex-col gap-3">
-          {themes.map(item => {
-            const done = item.reflected_days >= item.total_days
-            const active = item.id === activeId
-
-            return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  platform.haptic('light')
-                  setActiveId(item.id)
-                  setView('day')
-                }}
-                className={`w-full text-left rounded-[24px] border p-5 transition-transform active:scale-[0.99] ${
-                  active ? 'bg-gold/10 border-gold/30' : 'bg-emerald border-cream/10'
-                }`}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="font-display text-[16px] text-cream leading-tight lowercase">
-                      {item.title}
-                    </div>
-
-                    {item.subtitle && (
-                      <p className="text-[12px] text-muted leading-snug mt-1.5">{item.subtitle}</p>
-                    )}
-                  </div>
-
-                  {done && <Check size={16} className="text-gold shrink-0 mt-1" strokeWidth={3} />}
-                </div>
-
-                <div className="flex gap-[3px] mt-4" aria-hidden="true">
-                  {Array.from({ length: item.total_days || 0 }).map((_, index) => (
-                    <span
-                      key={index}
-                      className={`h-[3px] flex-1 rounded-full ${
-                        index < item.reflected_days ? 'bg-gold' : 'bg-cream/20'
-                      }`}
-                    />
-                  ))}
-                </div>
-              </button>
-            )
-          })}
-        </div>
-      </Shell>,
-      getFullscreenPortalTarget()
-    )
-  }
-
   /* ── день ──────────────────────────────────────────────── */
 
   return createPortal(
@@ -543,116 +474,51 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
         <RoundBackButton onClick={onBack} />
       </div>
 
-      <div className="mb-3 flex items-center justify-between gap-4 [@media(max-height:650px)]:hidden">
-        <div className="flex items-center gap-4">
-          {answered > 0 && (
-            <button
-              onClick={() => {
-                platform.haptic('light')
-                setView('review')
-              }}
-              className="border-0 bg-transparent p-0 text-[13px] font-medium text-cream active:opacity-60"
-            >
-              Мои ответы
-            </button>
-          )}
+      <div className="shrink-0">
+        <div className="text-left" data-testid="journal-day-content">
+          <div className="mb-2 font-label text-[11px] font-bold uppercase tracking-[0.14em] text-gold">
+            День {day} из {data.days.length}
+          </div>
 
-          {themes.length > 1 && (
-            <button
-              onClick={() => {
-                platform.haptic('light')
-                setView('list')
-              }}
-              className="border-0 bg-transparent p-0 text-[13px] font-medium text-muted active:opacity-60"
-            >
-              Все темы
-            </button>
+          <h3 className="font-display text-[20px] font-bold leading-[1.16] text-cream">
+            {current?.text}
+          </h3>
+
+          {current?.prompt && (
+            <p className="mt-3 border-l border-gold pl-4 text-[16px] font-normal leading-relaxed text-muted">
+              {current.prompt}
+            </p>
           )}
         </div>
-
-        <button
-          onClick={() => {
-            platform.haptic('light')
-            setView('intro')
-          }}
-          className="border-0 bg-transparent p-0 text-[13px] font-medium text-muted active:opacity-60"
-        >
-          {data.title}
-        </button>
       </div>
 
-      <div className="shrink-0">
-        {current?.locked ? (
-          <div className="rounded-[28px] bg-emerald px-6 py-8 text-center">
-            <>
-              <MotifArt name="povedenie" size={110} className="mx-auto mb-4" />
+      <JournalTextarea
+        value={text}
+        onChange={setText}
+        placeholder="Записать мысль..."
+        ariaLabel="Мысль по теме недели"
+        className="mt-6 flex-1"
+        editorClassName="!text-[16px] font-normal pb-16"
+        formatting={false}
+        floatingToolbar={false}
+        writingCanvas={false}
+        autoFocus={!current?.reflection}
+        onSubmit={save}
+        submitLabel={current?.reflection ? 'Обновить мысль' : 'Сохранить мысль'}
+        submitDisabled={!canSave}
+        submitLoading={saving}
+      />
 
-              <h3 className="font-display text-[18px] text-cream leading-tight">
-                День {day} под замком
-              </h3>
-
-              <p className="text-[13px] text-muted mt-3 leading-relaxed">
-                Первые {data.free_days} дня открыты всем. Остальные — часть Библиотеки.
-              </p>
-
-              <button
-                onClick={() => platform.haptic('light')}
-                className="cta-pill text-[14px] px-9 py-3.5 mt-6"
-              >
-                Скоро откроется
-              </button>
-            </>
-          </div>
-        ) : (
-          <div className="text-left" data-testid="journal-day-content">
-            <div className="mb-2 font-label text-[11px] font-bold uppercase tracking-[0.14em] text-gold">
-              День {day} из {data.days.length}
-            </div>
-
-            <h3 className="font-display text-[20px] font-bold leading-[1.16] text-cream">
-              {current?.text}
-            </h3>
-
-            {current?.prompt && (
-              <p className="mt-3 border-l border-gold pl-4 text-[16px] font-normal leading-relaxed text-muted">
-                {current.prompt}
-              </p>
-            )}
-          </div>
-        )}
-      </div>
-
-      {!current?.locked && (
-        <JournalTextarea
-          value={text}
-          onChange={setText}
-          placeholder="Записать мысль..."
-          ariaLabel="Мысль по теме недели"
-          className="mt-6 flex-1"
-          editorClassName="!text-[16px] font-normal pb-16"
-          formatting={false}
-          floatingToolbar={false}
-          writingCanvas={false}
-          autoFocus={!current?.reflection}
-          onSubmit={save}
-          submitLabel={current?.reflection ? 'Обновить мысль' : 'Сохранить мысль'}
-          submitDisabled={!canSave}
-          submitLoading={saving}
-        />
-      )}
-
-      {!current?.locked && (
-        <button
-          type="button"
-          aria-label={hasText ? 'Сохранить мысль' : undefined}
-          onClick={hasText ? save : onBack}
-          disabled={saving}
-          className="flex h-11 w-11 items-center justify-center rounded-full bg-[#efefef] text-[22px] font-semibold text-[#111] transition-transform active:scale-95"
-          style={roundButtonStyle}
-        >
-          {hasText ? '›' : '✕'}
-        </button>
-      )}
+      <button
+        type="button"
+        aria-label={hasText ? 'Сохранить мысль' : undefined}
+        onClick={hasText ? save : onBack}
+        disabled={saving}
+        className="flex h-11 w-11 items-center justify-center rounded-full bg-[#efefef] text-[22px] font-semibold text-[#111] transition-transform active:scale-95"
+        style={roundButtonStyle}
+      >
+        {hasText ? '›' : '✕'}
+      </button>
     </Shell>,
     getFullscreenPortalTarget()
   )
