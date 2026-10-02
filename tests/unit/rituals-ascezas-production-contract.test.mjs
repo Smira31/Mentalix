@@ -90,9 +90,11 @@ test('нулевая серия называется новым ритуалом
 test('кнопка «‹» списка — круглая 43 слева сверху, в Telegram её рисует система', () => {
   assert.match(header, /export function RoundBackButton\(\{[\s\S]*className = ''/)
   assert.match(header, /<ScreenBack[\s\S]*className=\{className\}/)
-  // «Назад» списка регистрируется в системном стеке: нативная «Назад» Telegram
-  // и демо-шапка работают и на списке.
-  assert.match(flow, /<RoundBackButton\n\s+onClick=\{onBack\}\n\s+registerSystemBack\n\s+className="mx-practice-flow-screen__back"\n\s+\/>/)
+  // Системная «Назад» централизована на уровне каркаса: единый useBackButton
+  // в PracticeListFlow, RoundBackButton в экранах не регистрируется отдельно.
+  assert.match(flow, /useBackButton\(/)
+  assert.match(flow, /<RoundBackButton\n\s+onClick=\{onBack\}\n\s+className="mx-practice-flow-screen__back"\n\s+\/>/)
+  assert.doesNotMatch(flow, /registerSystemBack/)
   assert.match(
     flowCss,
     /\.mx-practice-flow-screen__back \{[\s\S]*position: absolute;[\s\S]*left: 0;/

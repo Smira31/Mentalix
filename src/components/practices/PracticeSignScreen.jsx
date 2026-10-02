@@ -18,9 +18,9 @@ import './PracticeSignScreen.css'
  * Один набор знаков на ритуалы и аскезы: визуальный язык общий.
  * Выбранный знак едет вместе с практикой (поле glyph).
  */
-export default function PracticeSignScreen({ title, subtitle, current, onPick, onCancel }) {
+export default function PracticeSignScreen({ title, subtitle, current, onPick, onCancel, systemBack = true }) {
   const { style: surfaceStyle } = useFullscreenSurface()
-  useBackButton(onCancel)
+  useBackButton(onCancel, systemBack)
 
   return createPortal(
     <div className={`${FULLSCREEN_SHELL_CLASS} mx-practice-sign`} style={surfaceStyle}>
