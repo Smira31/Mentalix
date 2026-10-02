@@ -4,6 +4,7 @@ import { platform } from '../../platform'
 import { api } from '../../lib/api'
 import { PERSONAS } from './personas'
 import { relativeConversationDate } from './conversationDate'
+import { PERSONA_STARTER_CHIP_LABELS } from '../../data/prompts'
 import heroReference from '../../assets/dialog-hero-reference.png'
 
 import './PersonaPicker.css'
@@ -236,72 +237,72 @@ export default function PersonaPicker({
             )
           })}
         </div>
-
-        {/* ── «Продолжить разговор» — до 3 последних разговоров ── */}
-
-        {recentConversations.length > 0 && (
-          <div className="mx-dialog-continue" data-testid="continue-conversation-block">
-            <h3 className="mx-dialog-section-title">Продолжить разговор</h3>
-            <ul className="mx-conversation-list">
-              {recentConversations.map(conv => (
-                <li key={conv.id}>
-                  <button
-                    type="button"
-                    data-testid="continue-conversation-row"
-                    className="mx-conversation-row"
-                    onClick={() => onContinueConversation?.(conv)}
-                  >
-                    <span className="mx-conversation-row__persona">
-                      {PERSONA_NAMES[conv.persona] || conv.persona}
-                    </span>
-                    <span className="mx-conversation-row__text">
-                      {conv.title || conv.last_message || 'Без сообщений'}
-                    </span>
-                    <span className="mx-conversation-row__date">
-                      {relativeConversationDate(conv.updated_at)}
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-            {hasMore && (
-              <button
-                type="button"
-                data-testid="all-conversations-link"
-                className="mx-dialog-continue__all"
-                onClick={() => onShowAllConversations?.()}
-              >
-                Все разговоры
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* ── «Не знаешь, с чего начать?» — чипсы стартера активной роли ── */}
-
-        <div className="mx-dialog-chips">
-          <p className="mx-dialog-section-title">Не знаешь, с чего начать?</p>
-          <div className="mx-dialog-chips__list">
-            {(activePersona?.starters || []).map((starter, i) => (
-              <button
-                type="button"
-                data-testid="dialog-starter-chip"
-                key={`${activePersona.key}-${i}`}
-                className="mx-dialog-chip mx-glass"
-                disabled={creating}
-                onClick={() => void startWithChip(activePersona, starter)}
-              >
-                {starter}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* ── Дисклеймер внизу ── */}
-        <p className="mx-dialog-disclaimer" data-testid="dialog-disclaimer">
-          Разговоры видишь только ты. Это не терапия.
-        </p>
       </section>
+
+      {/* ── «Продолжить разговор» — до 3 последних разговоров ── */}
+
+      {recentConversations.length > 0 && (
+        <div className="mx-dialog-continue" data-testid="continue-conversation-block">
+          <h3 className="mx-dialog-section-title">Продолжить разговор</h3>
+          <ul className="mx-conversation-list">
+            {recentConversations.map(conv => (
+              <li key={conv.id}>
+                <button
+                  type="button"
+                  data-testid="continue-conversation-row"
+                  className="mx-conversation-row"
+                  onClick={() => onContinueConversation?.(conv)}
+                >
+                  <span className="mx-conversation-row__persona">
+                    {PERSONA_NAMES[conv.persona] || conv.persona}
+                  </span>
+                  <span className="mx-conversation-row__text">
+                    {conv.title || conv.last_message || 'Без сообщений'}
+                  </span>
+                  <span className="mx-conversation-row__date">
+                    {relativeConversationDate(conv.updated_at)}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+          {hasMore && (
+            <button
+              type="button"
+              data-testid="all-conversations-link"
+              className="mx-dialog-continue__all"
+              onClick={() => onShowAllConversations?.()}
+            >
+              Все разговоры
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* ── «Не знаешь, с чего начать?» — чипсы стартера активной роли ── */}
+
+      <div className="mx-dialog-chips">
+        <p className="mx-dialog-section-title">Не знаешь, с чего начать?</p>
+        <div className="mx-dialog-chips__list">
+          {(activePersona?.starters || []).map((starter, i) => (
+            <button
+              type="button"
+              data-testid="dialog-starter-chip"
+              key={`${activePersona.key}-${i}`}
+              className="mx-dialog-chip mx-glass"
+              disabled={creating}
+              onClick={() => void startWithChip(activePersona, starter)}
+            >
+              {PERSONA_STARTER_CHIP_LABELS[starter] || starter}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Дисклеймер внизу ── */}
+      <p className="mx-dialog-disclaimer" data-testid="dialog-disclaimer">
+        Разговоры видишь только ты. Это не терапия.
+      </p>
     </main>
   )
 }
