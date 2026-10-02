@@ -152,3 +152,43 @@ test('журнал: настройка — 3 подэкрана картинки
   await expect(page.locator('.mx-dj-review')).toBeVisible()
   await expect(page.getByTestId('dj-review-edit')).toBeVisible()
 })
+
+test('журнал: сброс настройки → intro → поток без настройки', async ({ page }) => {
+  await page.goto('/?demo=1&tab=practices')
+
+  await expect(page.getByTestId('journal-open-cta')).toBeVisible()
+  await page.getByTestId('journal-open-cta').click()
+
+  // ── Настраиваем журнал ──
+  await page.getByTestId('dj-intro-setup').click()
+  await page.getByTestId('dj-setup-goal-0').fill('Спокойствие')
+  await page.getByTestId('dj-setup-next').click()
+  await page.getByTestId('dj-setup-reminder-0').fill('Я делаю главное до обеда')
+  await page.getByTestId('dj-setup-next').click()
+  await page.getByTestId('dj-setup-vision-scene').fill('Сижу у окна')
+  await page.getByTestId('dj-setup-next').click()
+  await page.getByTestId('dj-setup-vision-obstacle').fill('Усталость')
+  await page.getByTestId('dj-setup-next').click()
+  await page.getByTestId('dj-setup-vision-plan').fill('Перерыв')
+  await page.getByTestId('dj-setup-next').click()
+  await page.getByTestId('dj-setup-next').click()
+
+  // ── Перечитай — настройка заполнена ──
+  await expect(page.locator('.mx-dj-review')).toBeVisible()
+  await expect(page.getByTestId('dj-review-edit')).toBeVisible()
+
+  // ── Сбросить и начать заново ──
+  await expect(page.getByTestId('dj-review-reset')).toBeVisible()
+  page.on('dialog', d => d.accept())
+  await page.getByTestId('dj-review-reset').click()
+
+  // ── Открывается intro ──
+  await expect(page.getByTestId('dj-intro-skip')).toBeVisible()
+  await expect(page.getByTestId('dj-intro-setup')).toBeVisible()
+
+  // ── «Начать без настройки» ведёт сразу в «Поток» ──
+  await page.getByTestId('dj-intro-skip').click()
+  await expect(page.getByTestId('dj-stream-input')).toBeVisible()
+  // «Перечитай» не показан
+  await expect(page.locator('.mx-dj-review')).not.toBeVisible()
+})

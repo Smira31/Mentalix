@@ -96,4 +96,13 @@ export const telegramAdapter = {
       window.open(url, '_blank', 'noopener,noreferrer')
     }
   },
+
+  showConfirm(message) {
+    if (WebApp.showConfirm) {
+      return new Promise(resolve => {
+        WebApp.showConfirm(message, ok => resolve(Boolean(ok)))
+      })
+    }
+    return Promise.resolve(window.confirm(message))
+  },
 }

@@ -1287,6 +1287,7 @@ function respond(path, options = {}) {
     return json(state.dailyJournalSetup)
   }
   if (pathname === '/daily-journal/setup' && method === 'PUT') {
+    const prompts = Array.isArray(body.prompts) ? body.prompts.filter(Boolean).slice(0, 7) : []
     state.dailyJournalSetup = {
       goals: Array.isArray(body.goals) ? body.goals.filter(Boolean).slice(0, 3) : [],
       reminders: Array.isArray(body.reminders)
@@ -1297,7 +1298,8 @@ function respond(path, options = {}) {
         obstacle: body.vision?.obstacle || '',
         plan: body.vision?.plan || '',
       },
-      prompts: Array.isArray(body.prompts) ? body.prompts.filter(Boolean).slice(0, 7) : [],
+      // Пустые prompts → возвращаем 7 вопросов по умолчанию (сброс настройки).
+      prompts: prompts.length > 0 ? prompts : [...DEMO_JOURNAL_PROMPTS],
       updated_at: now().toISOString(),
     }
     writeState(state)

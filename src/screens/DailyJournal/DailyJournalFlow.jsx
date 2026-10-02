@@ -66,6 +66,7 @@ export default function DailyJournalFlow({ userId, onClose }) {
   const [helpful, setHelpful] = useState(null)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState(false)
+  const [resetError, setResetError] = useState(false)
   const [pendingComplete, setPendingComplete] = useState(false)
   const streamRef = useRef(null)
   const answerRef = useRef(null)
@@ -218,6 +219,31 @@ export default function DailyJournalFlow({ userId, onClose }) {
       setStage('review')
     } else {
       setStage('intro')
+    }
+  }
+
+  // ── Reset setup ──
+  async function handleResetSetup() {
+    const confirmed = await platform.showConfirm(
+      'Сбросить цели, напоминания и картинку будущего? Записи журнала останутся.'
+    )
+    if (!confirmed) return
+
+    platform.haptic('light')
+    try {
+      const result = await api.dailyJournal.saveSetup(userId, {
+        goals: [],
+        reminders: [],
+        vision: { scene: '', obstacle: '', plan: '' },
+        prompts: [],
+      })
+      setSetup(result)
+      setResetError(false)
+      setStage('intro')
+    } catch (error) {
+      console.error('[dailyJournal] reset failed', error)
+      setResetError(true)
+      setTimeout(() => setResetError(false), 3000)
     }
   }
 
@@ -481,6 +507,17 @@ export default function DailyJournalFlow({ userId, onClose }) {
           >
             Изменить настройку
           </button>
+          <button
+            type="button"
+            className="mx-dj-review__reset-link"
+            data-testid="dj-review-reset"
+            onClick={handleResetSetup}
+          >
+            Сбросить и начать заново
+          </button>
+          {resetError && (
+            <div className="mx-dj-reset-error">Не получилось сбросить, попробуй ещё раз</div>
+          )}
         </div>
       )
     }
