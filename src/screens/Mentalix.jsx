@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
 import { fetchHistory, invalidateHistory } from '../lib/mentalixHistoryCache'
+import { useTabRefresh } from '../lib/tabRefresh'
 import { mergeConversationMessages } from '../lib/mentalixConversationUtils'
 
 import {
@@ -70,6 +71,7 @@ export function ConversationChat({
   conversationMeta = null,
   contextSlot = null,
   footerSlot = null,
+  refreshSignal = 0,
   onBack,
   onGuestForbidden,
 }) {
@@ -128,7 +130,7 @@ export function ConversationChat({
     }
     // The request is scoped to stable userId/persona inputs, not the mutable user object.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId, persona, viaHandoff, withSafetyNotice])
+  }, [userId, persona, viaHandoff, withSafetyNotice, refreshSignal])
 
   async function send(overrideText, displayText = overrideText, { appendUser = true } = {}) {
     const isVoiceMessage = typeof overrideText === 'string'
@@ -236,6 +238,15 @@ export default function MentalixChat({ user, onPersonaChange, onRegisterBack }) 
   const [persona, setPersona] = useState(pending.persona)
   const [draft, setDraft] = useState(pending.draft)
   const [guestForbidden, setGuestForbidden] = useState(false)
+  const [refreshSignal, setRefreshSignal] = useState(0)
+
+  // Тихий фоновый рефетч истории диалога при возврате на вкладку или из фона
+  useTabRefresh('mentor', () => {
+    if (user?.id && persona) {
+      invalidateHistory(user.id, persona)
+      setRefreshSignal(s => s + 1)
+    }
+  })
 
   useEffect(() => {
     // Read without side effects during render: StrictMode repeats state initializers.
@@ -303,6 +314,7 @@ export default function MentalixChat({ user, onPersonaChange, onRegisterBack }) 
       initialHandoff={persona === 'dnevnik' && pending.persona === 'dnevnik' ? pending.handoff : null}
       viaHandoff={Boolean(pending.persona)}
       withSafetyNotice={Boolean(pending.safety)}
+      refreshSignal={refreshSignal}
       onBack={exitConversation}
       onGuestForbidden={() => setGuestForbidden(true)}
     />
