@@ -749,7 +749,8 @@ test('локальный UX smoke по основному маршруту', asy
           )
           const practiceCopy = rail?.querySelector('small')
           const collectionCopy = catalog?.querySelector('.mx-steps-collection__desc')
-          const catalogRect = catalog?.getBoundingClientRect()
+          // Ряд — full-bleed до края экрана: граница — окно, а не поля каталога.
+          const catalogRect = { right: window.innerWidth }
           const railRect = rail?.getBoundingClientRect()
           const fontSize = element =>
             element ? Number.parseFloat(getComputedStyle(element).fontSize) : 0

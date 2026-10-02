@@ -313,6 +313,22 @@
   /* Верх экрана под шапкой Telegram: safe-top + контролы (56) + воздух (16). */
   --mx-screen-top: calc(var(--app-safe-top) + 56px + 16px);
 
+  /* Поверхности карточек «Шагов» (Stoic Explore): #131313 с лёгким
+     вертикальным градиентом и рамкой 1px rgba(255,255,255,.06).
+     Карточка карусели внутри «Темы недели» темнее блока. */
+  --mx-steps-card-top: #1a1a1a;
+  --mx-steps-card-bottom: #111111;
+  --mx-steps-card-bg: linear-gradient(
+    to bottom,
+    var(--mx-steps-card-top),
+    #131313 45%,
+    var(--mx-steps-card-bottom)
+  );
+  --mx-steps-card-border: rgba(255, 255, 255, 0.06);
+  --mx-steps-card-inner-bg: #101010;
+  --mx-steps-card-inner-border: rgba(255, 255, 255, 0.08);
+  --mx-steps-fade-h: 28px;
+
   /* Шрифт с засечками — только для заголовков разделов экрана «Шаги»
      («Тема недели: …», «Другие темы», «Все темы»), референс Stoic Explore.
      Lora с кириллицей, загружается через @fontsource/lora. */
@@ -2158,4 +2174,11 @@ button.mx-demo-telegram-chrome__pill:focus:not(:focus-visible) {
   .mx-preview-stage > .h-screen {
     padding-top: calc(56px + env(safe-area-inset-top, 0px)) !important;
   }
+}
+
+/* «Шаги»: мягкое затухание контента под шапкой Telegram вместо жёсткого среза.
+   Класс data-mx-steps-scrolled ставит Practices, когда лента прокручена. */
+.mx-app-scroll-root[data-mx-steps-scrolled='1']:has(.mx-steps-explore-catalog) {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 var(--mx-steps-fade-h));
+  mask-image: linear-gradient(to bottom, transparent 0, #000 var(--mx-steps-fade-h));
 }
