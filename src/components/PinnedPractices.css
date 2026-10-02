@@ -57,7 +57,7 @@
   -webkit-line-clamp: 2;
 }
 
-/* Длинные названия («Разобраться со Следопытом») — две строки целиком,
+/* Длинные названия («Разобраться с Даймоном») — две строки целиком,
    без «…»: 14px гарантирует перенос в две строки, anywhere — без обрезки. */
 .mx-pinned-practices__rail > .mx-pinned-practice-card .mx-pinned-practice-card__title {
   font-size: 14px;

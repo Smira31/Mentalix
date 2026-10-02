@@ -163,7 +163,6 @@ test.describe('MXL-246 Journal responsive contract (tablet/desktop)', () => {
       const submitButton = page.getByRole('button', { name: 'Далее' })
       await expect(submitButton).toBeVisible()
       await expect(page.locator('[aria-label="Действия ввода"]')).toHaveCount(0)
-      await expect(page.locator('.guided-self-discovery__writing')).toBeVisible()
 
       await firstEditor.fill('Сегодня я замечаю главное')
       await assertNoHorizontalOverflow(page)

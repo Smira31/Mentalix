@@ -13,6 +13,12 @@
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <link rel="manifest" href="/manifest.json" />
   <link rel="preconnect" href="https://mentalix-bot.onrender.com" crossorigin />
+  <!-- Кириллические начертания Lora (500/600/700) — предзагрузка, чтобы заголовки
+       были набраны финальным шрифтом уже к первому кадру и не «прыгали» при подмене.
+       Файлы лежат в public/fonts/lora, @font-face для них — в src/index.css. -->
+  <link rel="preload" href="/fonts/lora/lora-cyrillic-500-normal.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/lora/lora-cyrillic-600-normal.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/lora/lora-cyrillic-700-normal.woff2" as="font" type="font/woff2" crossorigin />
   <title>Mentalix</title>
 </head>
 
