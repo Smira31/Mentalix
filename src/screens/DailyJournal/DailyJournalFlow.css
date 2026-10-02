@@ -22,7 +22,7 @@
 .mx-dj-intro__title {
   font-family: 'Manrope', sans-serif;
   font-size: 28px;
-  font-weight: 700;
+  font-weight: var(--mx-weight-title);
   line-height: 1.15;
   color: rgb(var(--c-text));
   margin: var(--mx-space-4) 0 var(--mx-space-3);
@@ -72,7 +72,7 @@
 .mx-dj-review__title {
   font-family: 'Manrope', sans-serif;
   font-size: 24px;
-  font-weight: 700;
+  font-weight: var(--mx-weight-title);
   line-height: 1.2;
   color: rgb(var(--c-text));
   margin: 0 0 var(--mx-space-4);
@@ -175,7 +175,7 @@
 
 .mx-dj-setup__field-group .mx-journal-field__question {
   font-size: 24px;
-  font-weight: 700;
+  font-weight: var(--mx-weight-title);
 }
 
 .mx-dj-setup__field-group .mx-journal-field__hint {
@@ -253,7 +253,7 @@
 .mx-dj-setup__vision-title {
   font-family: 'Manrope', sans-serif;
   font-size: 24px;
-  font-weight: 700;
+  font-weight: var(--mx-weight-title);
   line-height: 1.2;
   color: rgb(var(--c-text));
   margin: 0 0 var(--mx-space-4);
@@ -306,7 +306,7 @@
 .mx-dj-today__title {
   font-family: 'Manrope', sans-serif;
   font-size: 24px;
-  font-weight: 700;
+  font-weight: var(--mx-weight-title);
   line-height: 1.2;
   color: rgb(var(--c-text));
   margin: 0 0 var(--mx-space-6);
@@ -399,7 +399,7 @@
 .mx-dj-stream__title {
   font-family: 'Manrope', sans-serif;
   font-size: 24px;
-  font-weight: 700;
+  font-weight: var(--mx-weight-title);
   line-height: 1.2;
   color: rgb(var(--c-text));
   margin: 0 0 var(--mx-space-2);
@@ -456,7 +456,7 @@
 .mx-dj-question__text {
   font-family: 'Manrope', sans-serif;
   font-size: 24px;
-  font-weight: 700;
+  font-weight: var(--mx-weight-title);
   line-height: 1.2;
   color: rgb(var(--c-text));
   margin: 0 0 var(--mx-space-3);

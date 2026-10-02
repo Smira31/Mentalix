@@ -833,7 +833,12 @@ test('MXL-TYPE-CONSISTENCY-001 задаёт единый Onest typography scale 
 
   assert.match(styles, /--mx-type-page-size:\s*2\.125rem/)
   assert.match(styles, /--mx-type-greeting-size:\s*1\.25rem/)
-  assert.match(styles, /\.mx-type-page\s*\{[\s\S]*line-height:\s*1\.1[\s\S]*font-weight:\s*700/)
+  // Веса идут через централизованные токены (--mx-weight-*) — см. типографическую миграцию.
+  assert.match(styles, /--mx-weight-title:\s*700/)
+  assert.match(
+    styles,
+    /\.mx-type-page\s*\{[\s\S]*line-height:\s*1\.1[\s\S]*font-weight:\s*(700|var\(--mx-weight-title\))/
+  )
   assert.match(styles, /\.mx-type-greeting\s*\{[\s\S]*font-size:\s*var\(--mx-type-greeting-size\)/)
   assert.match(styles, /\.mx-type-body\s*\{[\s\S]*font-size:\s*var\(--mx-type-body-size\)/)
   assert.match(styles, /\.mx-type-control\s*\{[\s\S]*font-size:\s*var\(--mx-type-control-size\)/)

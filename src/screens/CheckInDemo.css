@@ -253,7 +253,7 @@
   margin: 0 0 12px;
   color: #888;
   font-size: var(--mx-type-meta-size);
-  font-weight: 700;
+  font-weight: var(--mx-weight-heading);
   letter-spacing: 0.16em;
   text-transform: uppercase;
 }
@@ -373,7 +373,7 @@
   display: block;
   margin-bottom: 6px;
   font-size: var(--mx-type-card-size);
-  font-weight: 700;
+  font-weight: var(--mx-weight-heading);
 }
 .mx-demo-checkin__focus-grid b {
   display: block;
@@ -454,9 +454,9 @@
   padding: 0 24px;
   border: 0;
   border-radius: 999px;
-  background: #f4f4f4;
+  background: var(--mx-btn-light-bg);
   color: #111;
-  font-weight: 700;
+  font-weight: var(--mx-weight-control);
 }
 .mx-demo-checkin__scene--complete {
   max-width: 560px;
@@ -488,7 +488,7 @@
   margin: 0 auto 16px !important;
   color: #888 !important;
   font-size: var(--mx-type-meta-size);
-  font-weight: 700;
+  font-weight: var(--mx-weight-heading);
   letter-spacing: 0.16em;
   text-transform: uppercase;
 }
@@ -682,7 +682,7 @@
   min-height: 54px;
   border-radius: 27px;
   font-size: var(--mx-type-segment-size);
-  font-weight: 700;
+  font-weight: var(--mx-weight-control);
 }
 
 /* Check-in v2 — §5.2. */
@@ -796,7 +796,7 @@
 }
 
 .mx-demo-checkin__scene--complete h1 strong {
-  font-weight: 700;
+  font-weight: var(--mx-weight-title);
 }
 
 .mx-demo-checkin__complete-eyebrow,
@@ -838,7 +838,7 @@
   min-height: 56px;
   border-radius: var(--mx-radius-pill);
   font-size: var(--mx-type-card-size);
-  font-weight: 700;
+  font-weight: var(--mx-weight-control);
 }
 
 @media (max-width: 359px) {
@@ -946,7 +946,7 @@
 }
 
 .mx-checkin-completion-title strong {
-  font-weight: 700;
+  font-weight: var(--mx-weight-title);
 }
 
 /* ── StepSlide — §6, горизонтальный переход между шагами вбок ── */
@@ -1226,7 +1226,7 @@
    (правило h2 с clamp(…36px) выше перебивало inline-типографику). */
 .mx-checkin-question--evening-card > h2 {
   font-size: 24px;
-  font-weight: 700;
+  font-weight: var(--mx-weight-title);
   line-height: 1.2;
 }
 
@@ -1235,7 +1235,7 @@
    и множит заголовок в 3 строки — это правило выше по специфичности. */
 .mx-checkin-question--emotion > h2 {
   font-size: 24px;
-  font-weight: 700;
+  font-weight: var(--mx-weight-title);
   line-height: 1.2;
   text-align: center;
 }

@@ -58,7 +58,7 @@
   margin: 0 0 20px;
   padding-left: 0;
   font-size: var(--mx-type-page-size);
-  font-weight: 800;
+  font-weight: var(--mx-weight-title);
   line-height: 1;
   letter-spacing: -0.01em;
   color: rgb(var(--c-text, 243 243 243));
@@ -401,7 +401,7 @@
 .mx-progress-ai-sheet__title {
   margin: 0 0 20px;
   font-size: var(--mx-type-page-size);
-  font-weight: 800;
+  font-weight: var(--mx-weight-title);
   line-height: 1;
   letter-spacing: -0.01em;
   color: rgb(var(--c-text, 243 243 243));
@@ -471,7 +471,7 @@
   padding-left: 0;
   font-family: 'Manrope', system-ui, sans-serif;
   font-size: var(--mx-type-meta-size);
-  font-weight: 700;
+  font-weight: var(--mx-weight-heading);
   letter-spacing: 0.25em;
   text-transform: uppercase;
   color: rgb(var(--c-muted, 133 133 133));
@@ -481,7 +481,7 @@
   margin: 11px 0 0;
   padding-left: 0;
   font-size: var(--mx-type-page-size);
-  font-weight: 800;
+  font-weight: var(--mx-weight-title);
   line-height: 1;
   letter-spacing: -0.01em;
   color: rgb(var(--c-text, 243 243 243));
@@ -504,7 +504,7 @@
 .mx-progress-entry__field-label {
   margin-bottom: 12px;
   font-size: var(--mx-type-control-size);
-  font-weight: 700;
+  font-weight: var(--mx-weight-control);
   letter-spacing: 0;
   color: rgb(var(--c-text, 243 243 243));
 }
@@ -532,7 +532,7 @@
   border-radius: 999px;
   background: rgba(237, 189, 96, 0.1);
   font-size: var(--mx-type-caption-size);
-  font-weight: 700;
+  font-weight: var(--mx-weight-control);
   color: rgb(var(--c-gold, 237 189 96));
 }
 
@@ -552,7 +552,7 @@
 .mx-progress-entry__wins-label {
   margin-bottom: 10px;
   font-size: var(--mx-type-caption-size);
-  font-weight: 700;
+  font-weight: var(--mx-weight-heading);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: rgb(var(--c-muted, 133 133 133));
@@ -582,7 +582,7 @@
   border-radius: 999px;
   background: rgba(237, 189, 96, 0.15);
   font-size: var(--mx-type-meta-size);
-  font-weight: 700;
+  font-weight: var(--mx-weight-control);
   color: rgb(var(--c-gold, 237 189 96));
 }
 
@@ -707,7 +707,7 @@
 
 .mx-progress-entry__confirm-title {
   font-size: var(--mx-type-hero-size);
-  font-weight: 700;
+  font-weight: var(--mx-weight-title);
   color: rgb(var(--c-text, 243 243 243));
 }
 
@@ -744,7 +744,7 @@
   background: rgb(var(--c-text, 243 243 243));
   font: inherit;
   font-size: var(--mx-type-body-size);
-  font-weight: 700;
+  font-weight: var(--mx-weight-control);
   color: rgb(var(--c-bg, 5 4 3));
   cursor: pointer;
 }
@@ -838,7 +838,7 @@
   margin: 0 0 12px;
   padding-left: 1px;
   font-size: var(--mx-type-card-size);
-  font-weight: 700;
+  font-weight: var(--mx-weight-heading);
   line-height: 1;
   color: rgb(var(--c-text, 243 243 243));
   text-align: left;
@@ -879,7 +879,7 @@
 
 .mx-progress-history__period-card-title {
   font-size: var(--mx-type-card-size);
-  font-weight: 700;
+  font-weight: var(--mx-weight-heading);
   line-height: 1.1;
   color: rgb(var(--c-text, 243 243 243));
 }
@@ -921,7 +921,7 @@
   margin: 0;
   padding: 0 72px 0 20px;
   font-size: var(--mx-type-page-size);
-  font-weight: 800;
+  font-weight: var(--mx-weight-title);
   line-height: 1;
   letter-spacing: -0.01em;
   color: rgb(var(--c-text, 243 243 243));
@@ -979,7 +979,7 @@
   border-radius: 999px;
   border: 1.5px solid rgb(var(--c-border, 41 41 41));
   font-size: var(--mx-type-caption-size);
-  font-weight: 700;
+  font-weight: var(--mx-weight-control);
   color: rgb(var(--c-bg, 5 4 3));
 }
 
@@ -1044,7 +1044,7 @@
 .mx-progress-search-sheet__empty-title {
   font-size: var(--mx-type-control-size);
   line-height: 1.35;
-  font-weight: 700;
+  font-weight: var(--mx-weight-heading);
   color: rgb(var(--c-text, 243 243 243));
 }
 
