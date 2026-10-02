@@ -30,6 +30,10 @@ export const illustrations = {
   // daimonCard — карточка в каталоге «Шаги» и рейле «Новое и рекомендованное».
   //   Пока null — фолбэк на крупную залитую форму (SemanticGlyph 'daimon').
   // daimonIntro — пустой слот на входе в игру (текст поднят к середине экрана).
+  // daimonHowTo — пустой слот сверху экрана «Как играть».
+  // daimonFinish — пустой слот сверху экрана финала игры.
   daimonCard: null,
   daimonIntro: null,
+  daimonHowTo: null,
+  daimonFinish: null,
 }

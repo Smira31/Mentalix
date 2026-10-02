@@ -117,15 +117,20 @@ function IntroView({ onStart, onGames, hasGames }) {
 
 /* ── Как играть ── */
 function HelpView({ onDone }) {
+  const HelpArt = illustrations.daimonHowTo
   return (
     <div className="mx-daimon-help" data-testid="daimon-help">
-      <div className="mx-daimon-help__spacer" aria-hidden="true" />
-      <h1 className="mx-daimon-help__title">Как играть</h1>
-      <IntroSteps />
-      <p className="mx-daimon-help__text">
-        Змеи тянут вниз, стрелы — вверх: попадёшь на змею — спустишься, на стрелу — поднимешься.
-      </p>
-      <p className="mx-daimon-help__text">В день — 3 броска.</p>
+      <div className="mx-daimon-help__art" aria-hidden="true" data-testid="daimon-howto-art">
+        {HelpArt ? <HelpArt /> : null}
+      </div>
+      <div className="mx-daimon-help__body">
+        <h1 className="mx-daimon-help__title">Как играть</h1>
+        <IntroSteps />
+        <p className="mx-daimon-help__text">
+          Змеи тянут вниз, стрелы — вверх: попадёшь на змею — спустишься, на стрелу — поднимешься.
+        </p>
+        <p className="mx-daimon-help__text">В день — 3 броска.</p>
+      </div>
       <div className="mx-daimon-help__actions">
         <PillButton variant="light" onClick={onDone} testId="daimon-help-done">
           Понятно
@@ -1013,6 +1018,38 @@ function PathView({ game, board }) {
   )
 }
 
+/*
+ * Заголовки Даймона набраны Lora с font-display: swap. Пока шрифт не загружен,
+ * браузер рисует запасной сериф — он шире Lora примерно на 10%, и после
+ * подмены заголовок «прыгает». Ждём загрузку кириллических начертаний Lora
+ * (500/600/700) и только потом показываем экраны игры.
+ */
+function useSerifReady() {
+  const [ready, setReady] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    const done = () => {
+      if (!cancelled) setReady(true)
+    }
+    const fonts = typeof document !== 'undefined' ? document.fonts : null
+    if (!fonts?.load) {
+      done()
+      return undefined
+    }
+    Promise.all([
+      fonts.load('500 1rem Lora', 'Даймон'),
+      fonts.load('600 1rem Lora', 'Даймон'),
+      fonts.load('700 1rem Lora', 'Даймон'),
+    ]).then(done, done)
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  return ready
+}
+
 /* ── Главный компонент ── */
 export default function DaimonFlow({ userId, onClose, onGuestLogin }) {
   const [board, setBoard] = useState(null)
@@ -1322,8 +1359,18 @@ export default function DaimonFlow({ userId, onClose, onGuestLogin }) {
   const position = gameState?.game?.position || 0
   const showPaywall = paywallEnabled && position > (gameState?.game?.free_until_cell || 12)
 
+  const serifReady = useSerifReady()
+
   const scrollStages = ['intro', 'finish', 'games', 'pathView', 'error', 'loading']
   const fullFrameStages = ['request', 'cell', 'rolling', 'transition', 'saved', 'help']
+
+  if (!serifReady) {
+    return (
+      <Screen onBack={goBack} registerSystemBack={false} scroll fullFrame>
+        <Loading />
+      </Screen>
+    )
+  }
 
   return (
     <Screen

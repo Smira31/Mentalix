@@ -108,11 +108,22 @@
   padding-bottom: var(--mx-space-6);
 }
 
-/* Гибкий отступ сверху: опускает блок текста ближе к середине,
-   «Понятно» при этом остаётся прижатой к низу — ритм экрана входа. */
-.mx-daimon-help__spacer {
-  flex: 1 1 0;
-  min-height: 0;
+/* Слот иллюстрации сверху — тот же ритм, что у слота входа (mx-daimon-intro__art). */
+.mx-daimon-help__art {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: clamp(200px, 42dvh, 360px);
+}
+
+.mx-daimon-help__art svg {
+  width: 100%;
+  max-height: 100%;
+}
+
+.mx-daimon-help__body {
+  display: flex;
+  flex-direction: column;
 }
 
 .mx-daimon-help__title {
@@ -134,6 +145,7 @@
 .mx-daimon-help__actions {
   display: flex;
   flex-direction: column;
+  margin-top: auto;
   padding-top: var(--mx-space-6);
 }
 
