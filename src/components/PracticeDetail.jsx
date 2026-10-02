@@ -71,6 +71,7 @@ export default function PracticeDetail({
   onBreak,
   onDelete,
   onRestore,
+  systemBack = true,
 }) {
   const screenRef = useRef(null)
   const [confirming, setConfirming] = useState(false)
@@ -79,7 +80,7 @@ export default function PracticeDetail({
   const [pulse, setPulse] = useState(false)
   const pulseTimer = useRef(null)
   useEdgeSwipeBack(screenRef, onBack)
-  useBackButton(onBack)
+  useBackButton(onBack, systemBack)
 
   useEffect(() => () => clearTimeout(pulseTimer.current), [])
   const isRitual = kind === 'ritual'
@@ -331,6 +332,7 @@ export default function PracticeDetail({
           steps={wording.ownSteps}
           initialValues={[practice.name, wording.minimumValue(practice)]}
           onCancel={() => setSub(null)}
+          systemBack={systemBack}
           onSubmit={values => {
             const patch = buildEditPatch(kind, values[0], values[1])
             return onUpdate(practice.id, patch).then(updated => {
@@ -350,6 +352,7 @@ export default function PracticeDetail({
           subtitle={wording.signSubtitle}
           current={glyphKind}
           onCancel={() => setSub(null)}
+          systemBack={systemBack}
           onPick={glyph =>
             onUpdate(practice.id, { glyph }).then(updated => {
               if (updated) {
@@ -369,6 +372,7 @@ export default function PracticeDetail({
           steps={[sub.field.step]}
           initialValues={[practice[sub.field.key] || '']}
           onCancel={() => setSub(null)}
+          systemBack={systemBack}
           onSubmit={values =>
             onUpdate(practice.id, { [sub.field.key]: values[0] }).then(updated => {
               if (updated) {

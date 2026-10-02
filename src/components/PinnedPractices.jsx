@@ -307,6 +307,8 @@ export default function PinnedPractices({
   }
 
   function openPractice(practice) {
+    // Закрываем шторку до навигации, иначе портал persists поверх нового экрана.
+    setSheet(null)
     // `sub` is the navigation contract. Keep `key` as a fallback so an old
     // persisted pin cannot navigate to an empty screen after a catalog update.
     onOpenPractice?.(practice.sub || practice.key)
@@ -419,6 +421,7 @@ export default function PinnedPractices({
                   <button
                     type="button"
                     className="mx-pinned-practice-card__main"
+                    data-testid="practice-manage-open"
                     aria-label={`Открыть практику: ${practice.title}`}
                     onClick={() => openPractice(practice)}
                   >
