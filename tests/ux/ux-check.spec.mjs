@@ -436,7 +436,7 @@ async function assertBottomNavigationLabelsFit(page) {
 async function assertSoonControls(page) {
   await assertClickable(page.getByRole('button', { name: 'Открыть Даймон' }))
   // Каталог владельца показывает будущие практики как неактивные карточки.
-  await expect(page.getByRole('button', { name: /Импульс к действию/ })).toBeDisabled()
+  await expect(page.getByRole('button', { name: /Импульс со Львом/ })).toBeDisabled()
   await expect(page.getByRole('button', { name: /Фокус, скоро/ })).toBeDisabled()
 }
 
