@@ -31,9 +31,12 @@ test('Telegram requestAuth waits for user id AND signed initData before user-own
   assert.match(telegramSource, /id <= 0/)
   assert.match(telegramSource, /timeoutMs = 3000/)
   assert.match(appSource, /const existing = await platform\.requestAuth\(\)/)
-  assert.match(appSource, /user && tab === 'today'/)
-  assert.match(appSource, /user && tab === 'practices'/)
-  assert.match(appSource, /user && tab === 'trends'/)
+  // Вкладки рендерятся только для авторизованного пользователя и
+  // без оверлея; видимость определяется активной вкладкой.
+  assert.match(appSource, /user && !overlay && \(/)
+  assert.match(appSource, /openedTabs\.has\('today'\)/)
+  assert.match(appSource, /openedTabs\.has\('practices'\)/)
+  assert.match(appSource, /openedTabs\.has\('trends'\)/)
 
   const webApp = { initDataUnsafe: { user: { id: 123 } }, initData: '' }
   globalThis.__telegramAuthWebApp = webApp
