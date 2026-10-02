@@ -181,6 +181,7 @@ export default function JournalTextarea({
   guidedFlow = false,
   showAddAction = false,
   hideAddAction = false,
+  maxLength,
 }) {
   const editorRef = useRef(null)
   const emittedValueRef = useRef(null)
@@ -255,7 +256,21 @@ export default function JournalTextarea({
     const editor = editorRef.current
     if (!editor) return
 
-    const nextValue = serializeEditor(editor)
+    let nextValue = serializeEditor(editor)
+    if (maxLength && nextValue.length > maxLength) {
+      // Лимит длины: обрезаем и ставим курсор в конец
+      nextValue = nextValue.slice(0, maxLength)
+      if (formatting) renderMarkdown(editor, nextValue)
+      else renderPlainText(editor, nextValue)
+      const selection = editor.ownerDocument.getSelection()
+      if (selection) {
+        const range = editor.ownerDocument.createRange()
+        range.selectNodeContents(editor)
+        range.collapse(false)
+        selection.removeAllRanges()
+        selection.addRange(range)
+      }
+    }
     emittedValueRef.current = nextValue
     onChange(nextValue)
   }
@@ -347,7 +362,7 @@ export default function JournalTextarea({
           'min-h-[9rem] flex-1 bg-transparent text-[17px] leading-[1.65] text-cream outline-none font-body caret-gold',
           '[overflow-wrap:anywhere] empty:before:pointer-events-none empty:before:text-muted empty:before:content-[attr(data-placeholder)]',
           formatting
-            ? '[&_strong]:font-semibold [&_em]:italic [&_mark]:rounded-[4px] [&_mark]:bg-gold/20 [&_mark]:px-0.5 [&_mark]:text-inherit'
+            ? '[&_strong]:font-[var(--mx-weight-heading)] [&_em]:italic [&_mark]:rounded-[4px] [&_mark]:bg-gold/20 [&_mark]:px-0.5 [&_mark]:text-inherit'
             : '',
           formatting ? '[&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-5 [&_ol]:pl-5' : '',
           editorClassName,
@@ -405,7 +420,7 @@ export default function JournalTextarea({
                     setFormatOpen(current => !current)
                   }}
                   className={[
-                    'mx-keyboard-control mx-keyboard-format flex h-[45px] w-[45px] shrink-0 items-center justify-center rounded-full border text-[18px] font-semibold italic transition-colors active:scale-95',
+                    'mx-keyboard-control mx-keyboard-format flex h-[45px] w-[45px] shrink-0 items-center justify-center rounded-full border text-[18px] mx-w-control italic transition-colors active:scale-95',
                     formatOpen
                       ? 'border-gold/40 bg-gold/15 text-gold'
                       : 'border-[rgb(var(--c-border))] bg-emerald-light text-cream',
@@ -426,7 +441,7 @@ export default function JournalTextarea({
                     submitLoading ||
                     deepenLoading
                   }
-                  className="mx-keyboard-control mx-keyboard-deepen h-[45px] min-w-0 shrink rounded-full border border-[rgb(var(--c-border))] bg-emerald-light px-5 text-[17px] font-medium text-cream transition-transform active:scale-[0.98] max-[360px]:px-[14px] disabled:opacity-35"
+                  className="mx-keyboard-control mx-keyboard-deepen h-[45px] min-w-0 shrink rounded-full border border-[rgb(var(--c-border))] bg-emerald-light px-5 text-[17px] mx-w-control text-cream transition-transform active:scale-[0.98] max-[360px]:px-[14px] disabled:opacity-35"
                 >
                   {deepenLabel}
                 </button>
@@ -464,7 +479,7 @@ export default function JournalTextarea({
         <div
           className={`${stickyToolbar ? 'sticky bottom-0 z-10' : 'relative z-0 journal-toolbar--inline'} mt-3 flex shrink-0 items-center gap-1.5 border-t border-cream/10 bg-emerald-deep/95 py-2 backdrop-blur-md`}
         >
-          <span className="mr-auto text-[11px] font-semibold text-faint">Формат</span>
+          <span className="mr-auto text-[11px] mx-w-heading text-faint">Формат</span>
           {formatButtons}
         </div>
       ) : null}

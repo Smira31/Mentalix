@@ -24,5 +24,6 @@ test('вложенные экраны регистрируют системны�
   assert.match(app, /onRegisterBack=\{register(Today|Practices|Mentor)Back\}/)
   assert.match(mentalix, /onRegisterBack\?\.\(persona \? exitConversation : null\)/)
   assert.match(today, /onRegisterBack\?\.\(handler\)/)
-  assert.match(practices, /onRegisterBack\?\.\(handler\)/)
+  // Practices не регистрирует back через onRegisterBack: каждый экран держит один useBackButton.
+  assert.doesNotMatch(practices, /onRegisterBack\?\.\(/)
 })

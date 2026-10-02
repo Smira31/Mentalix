@@ -231,6 +231,8 @@ export default function PracticeListFlow({
   onBreak,
   breakSheet,
   writeError,
+  loadError = false,
+  onRetry,
 }) {
   const wording = PRACTICE_WORDING[kind]
   const [view, setView] = useState('list')
@@ -243,7 +245,34 @@ export default function PracticeListFlow({
   // Единый обработчик системной «Назад» на уровне каркаса — исключает
   // гонку регистраций useBackButton при переходах между видами.
   useBackButton(() => {
-    if (selected) {
+    // Список не загрузился: не выдаём ошибку за пустой список
+  if (loadError && !loading && items.length === 0) {
+    return (
+      <div
+        className="mx-practice-flow-screen w-full max-w-md px-[var(--mx-screen-x)] animate-fade-in"
+        role="alert"
+        data-testid="practice-load-error"
+      >
+        <div className="mx-practice-flow-screen__header">
+          <RoundBackButton onClick={onBack} className="mx-practice-flow-screen__back" />
+          <h1 className="mx-practice-flow-screen__title">{wording.title}</h1>
+        </div>
+        <p className="text-muted text-[13px] text-center">
+          Не удалось загрузить список. Проверь соединение и попробуй ещё раз.
+        </p>
+        <button
+          type="button"
+          data-testid="practice-load-retry"
+          onClick={onRetry}
+          className="mx-auto mt-5 block min-h-11 rounded-full bg-[var(--mx-btn-light-bg)] px-4 py-2 text-[13px] mx-w-control text-[#111]"
+        >
+          Повторить
+        </button>
+      </div>
+    )
+  }
+
+  if (selected) {
       setSelected(null)
     } else if (view === 'own') {
       setView('ready')
@@ -264,10 +293,10 @@ export default function PracticeListFlow({
 
   // Пустое состояние — сразу экран «готовые», не пустая сетка
   useEffect(() => {
-    if (!loading && items.length === 0 && view === 'list') {
+    if (!loading && !loadError && items.length === 0 && view === 'list') {
       setView('ready')
     }
-  }, [loading, items.length, view])
+  }, [loading, loadError, items.length, view])
 
   // Демо-ссылка на экран практики: ?demo=1&action=ritual_detail | asceza_detail
   useEffect(() => {

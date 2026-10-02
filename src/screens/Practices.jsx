@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Search, X } from 'lucide-react'
 
 import { platform } from '../platform'
+import { useBackButton } from '../platform/telegram.hooks'
+import { useVisualViewportGeometry } from '../lib/visualViewport'
 import { fetchPracticesData, peekPracticesData } from '../lib/practicesDataCache'
 import { fetchThemesData, peekThemesData } from '../lib/themesDataCache'
 import { useTabRefresh, useTabReset } from '../lib/tabRefresh'
@@ -30,7 +32,7 @@ const PRACTICE_SEARCH_STYLES = `
   background: rgba(255,255,255,0.04);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  color: #f3f3f3;
+  color: rgb(var(--c-text));
   cursor: pointer;
 }
 .mx-steps-search-overlay {
@@ -55,7 +57,7 @@ const PRACTICE_SEARCH_STYLES = `
   border: 0;
   border-radius: 999px;
   background: #1a1a1a;
-  color: #f3f3f3;
+  color: rgb(var(--c-text));
   font-size: 16px;
   outline: none;
   box-shadow: none;
@@ -69,7 +71,7 @@ input.mx-steps-search-input:focus-visible {
   box-shadow: none;
 }
 .mx-steps-search-input::-webkit-search-cancel-button { display: none; }
-.mx-steps-search-input::placeholder { color: #666; }
+.mx-steps-search-input::placeholder { color: rgb(var(--c-faint)); }
 .mx-steps-search-close {
   display: grid;
   width: 44px;
@@ -81,7 +83,7 @@ input.mx-steps-search-input:focus-visible {
   background: rgba(255,255,255,0.04);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  color: #f3f3f3;
+  color: rgb(var(--c-text));
   cursor: pointer;
 }
 .mx-steps-search-results {
@@ -97,7 +99,7 @@ input.mx-steps-search-input:focus-visible {
   padding: 14px 0;
   border-bottom: 1px solid #1a1a1a;
   background: transparent;
-  color: #f3f3f3;
+  color: rgb(var(--c-text));
   text-align: left;
   cursor: pointer;
 }
@@ -112,7 +114,7 @@ input.mx-steps-search-input:focus-visible {
 }
 .mx-steps-search-result span .mx-semantic-glyph { width: 80%; height: 80%; }
 .mx-steps-search-result strong { font-size: 16px; font-weight: var(--mx-weight-control); }
-.mx-steps-search-empty { padding: 40px 16px; text-align: center; color: #666; font-size: 14px; }
+.mx-steps-search-empty { padding: 40px 16px; text-align: center; color: rgb(var(--c-faint)); font-size: 14px; }
 .mx-steps-search-start {
   display: flex;
   min-height: 40vh;
@@ -122,7 +124,7 @@ input.mx-steps-search-input:focus-visible {
   gap: 8px;
   text-align: center;
 }
-.mx-steps-search-start svg { color: #707070; }
+.mx-steps-search-start svg { color: rgb(var(--c-faint)); }
 .mx-steps-search-start h2 { margin: 4px 0 0; color: rgb(var(--c-text)); font-size: 17px; font-weight: var(--mx-weight-heading); }
 .mx-steps-search-start p { margin: 0; color: rgb(var(--c-muted)); font-size: 14px; }
 .mx-steps-search-chips {
@@ -140,7 +142,7 @@ input.mx-steps-search-input:focus-visible {
   background: rgba(255,255,255,0.04);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  color: #f3f3f3;
+  color: rgb(var(--c-text));
   font-size: 14px;
   font-weight: var(--mx-weight-control);
   cursor: pointer;
@@ -149,9 +151,25 @@ input.mx-steps-search-input:focus-visible {
 
 const SEARCH_SUGGESTIONS = ['Журнал', 'Даймон', 'Ритуалы', 'Аскезы', 'Тема недели']
 
-function PracticeSearchOverlay({ practices, themes, onOpenPractice, onOpenTheme, onClose }) {
+const JOURNAL_RESULT_TITLE = 'Страница для себя (журнал)'
+
+function PracticeSearchOverlay({
+  practices,
+  themes,
+  themesError,
+  onOpenPractice,
+  onOpenTheme,
+  onOpenJournal,
+  onClose,
+}) {
   const [query, setQuery] = useState('')
   const q = query.trim().toLowerCase()
+  // Высота оверлея — по видимой области: нижние результаты не уходят под клавиатуру
+  const viewport = useVisualViewportGeometry()
+  const overlayStyle = viewport?.height
+    ? { top: viewport.offsetTop || 0, bottom: 'auto', height: viewport.height }
+    : undefined
+  const journalMatches = q ? JOURNAL_RESULT_TITLE.toLowerCase().includes(q) : false
 
   const matchedPractices = q
     ? practices.filter(
@@ -161,12 +179,15 @@ function PracticeSearchOverlay({ practices, themes, onOpenPractice, onOpenTheme,
     : []
   const matchedThemes = q
     ? themes.filter(
-        t => t.title?.toLowerCase().includes(q) || t.subtitle?.toLowerCase().includes(q)
+        t =>
+          t.title?.toLowerCase().includes(q) ||
+          t.subtitle?.toLowerCase().includes(q) ||
+          `тема недели: ${t.title || ''}`.toLowerCase().includes(q)
       )
     : []
 
   return (
-    <div className="mx-steps-search-overlay">
+    <div className="mx-steps-search-overlay" style={overlayStyle}>
       <div className="mx-steps-search-bar">
         <input
           type="search"
@@ -207,14 +228,31 @@ function PracticeSearchOverlay({ practices, themes, onOpenPractice, onOpenTheme,
             </div>
           </div>
         )}
-        {q && matchedPractices.length === 0 && matchedThemes.length === 0 && (
+        {q && !journalMatches && matchedPractices.length === 0 && matchedThemes.length === 0 && (
           <p className="mx-steps-search-empty">Ничего не найдено.</p>
+        )}
+        {journalMatches && (
+          <button
+            type="button"
+            className="mx-steps-search-result"
+            data-testid="steps-search-result"
+            onClick={() => {
+              onOpenJournal()
+              onClose()
+            }}
+          >
+            <span aria-hidden="true">
+              <SemanticGlyph kind="journal" animated={false} />
+            </span>
+            <strong>{JOURNAL_RESULT_TITLE}</strong>
+          </button>
         )}
         {matchedPractices.map(p => (
           <button
             type="button"
             key={p.key}
             className="mx-steps-search-result"
+            data-testid="steps-search-result"
             onClick={() => {
               onOpenPractice(p)
               onClose()
@@ -231,6 +269,7 @@ function PracticeSearchOverlay({ practices, themes, onOpenPractice, onOpenTheme,
             type="button"
             key={t.id}
             className="mx-steps-search-result"
+            data-testid="steps-search-result"
             onClick={() => {
               onOpenTheme(t)
               onClose()
@@ -239,9 +278,14 @@ function PracticeSearchOverlay({ practices, themes, onOpenPractice, onOpenTheme,
             <span aria-hidden="true">
               <SemanticGlyph kind="journal" animated={false} />
             </span>
-            <strong>{t.title}</strong>
+            <strong>{`Тема недели: ${t.title}`}</strong>
           </button>
         ))}
+        {themesError && (
+          <p className="mx-steps-search-empty" data-testid="steps-search-themes-error">
+            Темы не загрузились
+          </p>
+        )}
       </div>
     </div>
   )
@@ -282,12 +326,19 @@ export default function Practices({
   user,
   initialSub = null,
   onGameChange,
-  onRegisterBack,
   onReturnToToday,
   onGuestLogin,
 }) {
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchKeyboardOpen, setSearchKeyboardOpen] = useState(false)
+
+  // Позиция прокрутки каталога: запоминаем перед открытием подэкрана, возвращаем после
+  const savedScrollRef = useRef(null)
+  const rememberScroll = useCallback(() => {
+    if (savedScrollRef.current != null) return
+    const root = document.querySelector('.mx-app-scroll-root')
+    if (root) savedScrollRef.current = root.scrollTop
+  }, [])
 
   // Инъекция стилей шапки/поиска (один раз)
   const styleInjected = useRef(false)
@@ -355,7 +406,7 @@ export default function Practices({
   }, [searchOpen])
 
   // Мягкое затухание под шапкой Telegram: включается, когда лента прокручена.
-  const catalogVisible = !sub && !selectedThemeId && !searchOpen && !isLoading && !loadError
+  const catalogVisible = !sub && !selectedThemeId && !searchOpen && !isLoading
   useEffect(() => {
     if (!catalogVisible) return undefined
     const root = document.querySelector('.mx-app-scroll-root')
@@ -371,13 +422,17 @@ export default function Practices({
     }
   }, [catalogVisible])
 
-  useEffect(() => {
-    const handler = selectedThemeId ? () => setSelectedThemeId(null) : sub ? backToList : null
+  // Каталог снова на экране — возвращаем сохранённую прокрутку (до отрисовки)
+  useLayoutEffect(() => {
+    if (!catalogVisible || savedScrollRef.current == null) return
+    const root = document.querySelector('.mx-app-scroll-root')
+    if (root) root.scrollTop = savedScrollRef.current
+    savedScrollRef.current = null
+  }, [catalogVisible])
 
-    onRegisterBack?.(handler)
+  // «Назад» из поиска закрывает поиск; остальные экраны регистрируют свой обработчик сами
+  useBackButton(() => setSearchOpen(false), searchOpen)
 
-    return () => onRegisterBack?.(null)
-  }, [backToList, onRegisterBack, selectedThemeId, sub])
   /*
    * initialSub приходит из навигации (открыть Practices сразу на
    * конкретном экране) — синхронизация с внешним пропом, без побочных
@@ -410,6 +465,30 @@ export default function Practices({
     },
     [user]
   )
+
+  // Без user (веб-гость до создания) загружать нечего — снимаем скелетоны
+  useEffect(() => {
+    if (user) return
+    Promise.resolve().then(() => {
+      setIsLoading(false)
+      setThemeLoading(false)
+    })
+  }, [user])
+
+  // Повтор загрузки практик без подмены каталога скелетоном
+  const retryPractices = useCallback(async () => {
+    if (!user) return
+    setLoadError(null)
+    try {
+      const { rituals: ritualsData, ascezas: ascezasData } = await fetchPracticesData(user.id, {
+        force: true,
+      })
+      setRituals(ritualsData)
+      setAscezas(ascezasData)
+    } catch (error) {
+      setLoadError(error)
+    }
+  }, [user])
 
   useEffect(() => {
     if (!user || sub !== null || initialPracticesData) return
@@ -483,9 +562,11 @@ export default function Practices({
 
   // Повторный тап по активной вкладке «Шаги» — сброс на главный экран каталога
   useTabReset('practices', () => {
+    savedScrollRef.current = null
     setSub(null)
     setEnteredFromToday(false)
     setSelectedThemeId(null)
+    setSearchOpen(false)
   })
 
   // Закрытие вложенного экрана (Rituals/Ascezas) — тихо обновляем каталог
@@ -515,12 +596,12 @@ export default function Practices({
     return <Ascezas user={user} onBack={backToList} />
   }
 
-  if (sub === 'journal') {
+  if (sub === 'journal' && user) {
     return <DailyJournalFlow userId={user.id} onClose={backToList} />
   }
 
-  if (sub === 'daimon') {
-    return <DaimonFlow userId={user.id} onClose={() => setSub(null)} onGuestLogin={onGuestLogin} />
+  if (sub === 'daimon' && user) {
+    return <DaimonFlow userId={user.id} onClose={backToList} onGuestLogin={onGuestLogin} />
   }
 
   // Убранные практики (Настроение, Альтер-эго) — мягкий редирект на «Сегодня»
@@ -540,26 +621,6 @@ export default function Practices({
     return <PracticesCatalogLoading />
   }
 
-  if (loadError) {
-    return (
-      <div className="w-full max-w-md px-[var(--mx-screen-x)]" role="alert">
-        <div className="mx-steps-header-row">
-          <h1 className="font-display mx-type-page text-cream lowercase">практики.</h1>
-        </div>
-        <p className="mt-6 text-[13px] leading-relaxed text-muted">
-          Не удалось загрузить практики. Попробуйте ещё раз.
-        </p>
-        <button
-          type="button"
-          onClick={() => loadPractices(true)}
-          className="mt-5 min-h-11 rounded-full bg-cream px-4 py-2 text-[13px] mx-w-control text-emerald-deep"
-        >
-          Повторить
-        </button>
-      </div>
-    )
-  }
-
   const catalogPractices = buildPracticeViewModels({ rituals, ascezas })
 
   if (searchOpen) {
@@ -568,6 +629,7 @@ export default function Practices({
         <PracticeSearchOverlay
           practices={catalogPractices}
           themes={themes}
+          themesError={themesError}
           onOpenPractice={practice => {
             platform.haptic('light')
             setSub(practice.sub)
@@ -575,6 +637,10 @@ export default function Practices({
           onOpenTheme={theme => {
             platform.haptic('light')
             setSelectedThemeId(theme.id)
+          }}
+          onOpenJournal={() => {
+            platform.haptic('light')
+            setSub('journal')
           }}
           onClose={() => setSearchOpen(false)}
         />
@@ -590,7 +656,11 @@ export default function Practices({
           type="button"
           className="mx-steps-search-btn"
           aria-label="Открыть поиск"
-          onClick={() => setSearchOpen(true)}
+          data-testid="steps-search-open"
+          onClick={() => {
+            rememberScroll()
+            setSearchOpen(true)
+          }}
         >
           <Search size={20} strokeWidth={1.5} />
         </button>
@@ -601,26 +671,37 @@ export default function Practices({
         themeLoading={themeLoading}
         themesError={themesError}
         onRetryThemes={() => loadThemes({ force: true })}
+        collectionsError={Boolean(loadError)}
+        onRetryCollections={retryPractices}
         onOpenCollection={collection => {
+          rememberScroll()
           platform.haptic('light')
           if (collection.source) setSub(collection.source)
         }}
         onOpenPractice={practice => {
+          rememberScroll()
           platform.haptic('light')
           setSub(practice.sub)
         }}
         onOpenJournal={() => {
+          rememberScroll()
           platform.haptic('light')
           setSub('journal')
         }}
         onOpenTheme={theme => {
+          rememberScroll()
           platform.haptic('light')
           setSelectedThemeId(theme.id)
         }}
-        onOpenAllThemes={() => {
-          platform.haptic('light')
-          if (themes[0]) setSelectedThemeId(themes[0].id)
-        }}
+        onOpenAllThemes={
+          themes.length > 0
+            ? () => {
+                rememberScroll()
+                platform.haptic('light')
+                setSelectedThemeId(themes[0].id)
+              }
+            : undefined
+        }
       />
     </div>
   )

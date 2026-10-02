@@ -481,7 +481,7 @@
   background: rgb(var(--c-card));
 }
 
-.mx-library-v2__pill {
+.mx-library-catalog .mx-library-v2__pill {
   display: inline-flex;
   align-items: center;
   gap: 7px;
