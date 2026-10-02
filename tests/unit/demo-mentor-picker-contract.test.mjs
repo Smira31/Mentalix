@@ -27,8 +27,10 @@ test('Диалог: карусель ролей без демо-подмены �
   assert.match(picker, /onOpenDaimon\?\.\(\)/)
 })
 
-test('Диалог: шапка — инлайн-SVG профилей без PNG-референса', () => {
-  assert.match(picker, /mx-dialog-hero-svg/)
-  assert.doesNotMatch(picker, /dialog-hero-reference/)
-  assert.doesNotMatch(picker, /\.png['"]/)
+test('Диалог: шапка — PNG-референс, инлайн-SVG профилей убран', () => {
+  // Возврат к референсу владельца: текст шапки нарисован на PNG, SVG удалён.
+  assert.match(picker, /dialog-hero-reference/)
+  assert.match(picker, /\.png['"]/)
+  assert.doesNotMatch(picker, /mx-dialog-hero-svg/)
+  assert.doesNotMatch(picker, /mx-dialog-hero-lines/)
 })
