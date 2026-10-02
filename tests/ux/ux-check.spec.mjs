@@ -1000,15 +1000,37 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
     await expect(cards).toHaveCount(4)
     // 4-я карточка — Даймон (открывает игру, а не создаёт разговор).
     await expect(cards.last()).toContainText('Даймон')
-    const cardGeometry = await cards.first().evaluate(element => {
+    // Активная карточка — полного размера (204px), соседние уменьшены
+    // масштабом ~0.86 и приглушены: карусель ролей повторяет поведение
+    // «Темы недели» в «Шагах» (PersonaPicker.applyScale).
+    const activeCard = page.locator('[data-testid="mentor-persona-card"][aria-current="true"]')
+    await expect(activeCard).toHaveCount(1)
+    const cardGeometry = await activeCard.evaluate(element => {
       const rect = element.getBoundingClientRect()
       return { y: rect.y, width: rect.width, height: rect.height }
     })
-    expect(cardGeometry.width, 'Карточка должна оставаться компактной').toBeGreaterThanOrEqual(190)
-    expect(cardGeometry.width, 'Карточка не должна становиться dashboard-like').toBeLessThanOrEqual(
-      204
-    )
+    expect(
+      cardGeometry.width,
+      'Активная карточка должна оставаться компактной (204px)'
+    ).toBeCloseTo(204, 0)
     expect(cardGeometry.height, 'Карточка должна иметь устойчивую высоту').toBeGreaterThan(200)
+    const neighborGeometry = await cards.first().evaluate(element => {
+      const rect = element.getBoundingClientRect()
+      return {
+        width: rect.width,
+        center: rect.top + rect.height / 2,
+        opacity: Number(getComputedStyle(element).opacity),
+      }
+    })
+    expect(
+      neighborGeometry.width,
+      'Соседняя карточка должна быть уменьшена масштабом ~0.86'
+    ).toBeLessThan(cardGeometry.width)
+    expect(neighborGeometry.opacity, 'Соседняя карточка должна быть приглушена').toBeLessThan(0.5)
+    expect(
+      Math.abs(neighborGeometry.center - (cardGeometry.y + cardGeometry.height / 2)),
+      'Соседняя карточка должна стоять по центру активной'
+    ).toBeLessThanOrEqual(1)
     expect(
       await cards.evaluateAll(elements =>
         elements.map(element => getComputedStyle(element).borderTopWidth)
@@ -1040,9 +1062,8 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
       // pan-x pan-y: горизонтальный свайп карусели + вертикальная прокрутка
       // (anti-zoom: pan-y глобально, pan-x добавлен точечно для каруселей)
       await expect(track).toHaveCSS('touch-action', 'pan-x pan-y')
-      const cardWidth = await cards
-        .first()
-        .evaluate(element => element.getBoundingClientRect().width)
+      // Ширина в разметке (204px), а не визуальная: сосед уменьшен масштабом.
+      const cardWidth = await cards.first().evaluate(element => element.offsetWidth)
       await track.evaluate((element, scrollLeft) => {
         element.scrollLeft = scrollLeft
         element.dispatchEvent(new Event('scroll'))
