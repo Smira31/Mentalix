@@ -132,12 +132,12 @@ function useDemoFrameBox(enabled) {
     }
 
     update()
-    window.addEventListener('resize', update)
+    window.addEventListener('resize', update, { passive: true })
     // Страницу превью тоже можно прокрутить — тогда видимая часть фрейма
     // меняется, и поверхность должна пересчитаться.
-    window.addEventListener('scroll', update, true)
-    window.visualViewport?.addEventListener('resize', update)
-    window.visualViewport?.addEventListener('scroll', update)
+    window.addEventListener('scroll', update, { passive: true, capture: true })
+    window.visualViewport?.addEventListener('resize', update, { passive: true })
+    window.visualViewport?.addEventListener('scroll', update, { passive: true })
 
     return () => {
       window.removeEventListener('resize', update)
