@@ -72,7 +72,7 @@ export default function QuickAdd({ onCheckin, onPractice, onMentor }) {
   }
 
   const items = [
-    { Icon: MessageCircle, label: 'Поговорить', hint: 'наставник, собеседник, следопыт', onClick: () => pick(onMentor) },
+    { Icon: MessageCircle, label: 'Поговорить', hint: 'наставник, спутник, наблюдатель', onClick: () => pick(onMentor) },
     { Icon: Wind, label: 'Подышать', hint: 'минута, чтобы утихло', onClick: () => pick(() => onPractice('breathing')) },
     { Icon: Shield, label: 'Отметить аскезу', hint: 'честно, как есть', onClick: () => pick(() => onPractice('ascezas')) },
     { Icon: Sparkles, label: 'Закрыть ритуал', hint: 'один шаг сейчас', onClick: () => pick(() => onPractice('rituals')) },

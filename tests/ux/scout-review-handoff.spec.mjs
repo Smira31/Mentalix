@@ -23,7 +23,7 @@ async function setup(page, context, { hour = 19 } = {}) {
     const method = route.request().method()
     if (pathname === '/api/mentalix/messages' && method === 'POST') {
       sent.push(route.request().postDataJSON())
-      return route.fulfill(response({ id: sent.length, role: 'assistant', content: 'Ответ Следопыта.' }))
+      return route.fulfill(response({ id: sent.length, role: 'assistant', content: 'Ответ Наблюдателя.' }))
     }
     if (pathname === '/api/checkin' && method === 'POST') {
       review = { id: 7010, date: day(hour < 5 ? -1 : 0), mood: 3, energy: 3, review_completed_at: new Date().toISOString() }
@@ -58,7 +58,7 @@ for (const hour of [19, 2]) {
     await emotionStep(page, 'ровно')
     await page.locator('[data-testid="checkin-next"]').click()
     for (const value of ['Результат', 'Трудность', 'Вывод']) await textStep(page, value)
-    // Кнопка «Разобрать со Следопыты» убрана с вечернего завершения:
+    // Кнопка «Разобрать с Наблюдателем» убрана с вечернего завершения:
     // проверяем её отсутствие и «Сохранить и выйти», затем входим в
     // диалог напрямую с хендоффом разбора дня.
     await expect(page.locator('[data-testid="checkin-open-scout"]')).toHaveCount(0)

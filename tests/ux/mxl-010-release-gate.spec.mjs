@@ -311,8 +311,8 @@ test.describe('MXL-010 automated technical gate', () => {
     await expect(page.locator('[data-testid="checkin-feedback-option"][aria-pressed="true"]')).toHaveCount(0)
 
 
-    // ── Переход к Следопыту ──
-    // Кнопка «Разобрать со Следопыты» убрана с вечернего завершения:
+    // ── Переход к Наблюдателю ──
+    // Кнопка «Разобрать с Наблюдателем» убрана с вечернего завершения:
     // проверяем её отсутствие и входим в диалог напрямую.
     await expect(page.locator('[data-testid="checkin-open-scout"]')).toHaveCount(0)
     await page.evaluate(() => {

@@ -21,7 +21,7 @@ export async function maybeBuildSurprise(
     const force =
       isPreviewDemoMode() && new URLSearchParams(window.location.search).get('surprise') === '1'
     if (!shouldShowSurprise({ lastDate, today, random, force, findings })) return null
-    // Общая отметка с дайджестом Следопыта: показали сюрприз —
+    // Общая отметка с дайджестом Наблюдателя: показали сюрприз —
     // дайджест 4 дня молчит (и наоборот), та же дата в insightDigest.js.
     writeInsightSeen(today)
     return findings[0].text
