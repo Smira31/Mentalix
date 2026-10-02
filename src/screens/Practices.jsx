@@ -180,9 +180,7 @@ function PracticeSearchOverlay({ practices, themes, onOpenPractice, onOpenTheme,
 
 import Rituals from './Rituals'
 import Ascezas from './Ascezas'
-import GuidedSelfDiscoveryFlow from './GuidedSelfDiscoveryFlow'
 import DailyJournalFlow from './DailyJournal/DailyJournalFlow'
-import LilaDiscoverFlow from './LilaDiscoverFlow'
 import DaimonFlow from './Daimon/DaimonFlow'
 import ThemeCarouselScreen from './ThemeCarouselScreen'
 
@@ -262,7 +260,7 @@ export default function Practices({
   const [selectedThemeId, setSelectedThemeId] = useState(null)
   const [isLoading, setIsLoading] = useState(!initialPracticesData)
   const [loadError, setLoadError] = useState(null)
-  const focusedFlowOpen = ['journal', 'self-discovery', 'lila-discover', 'daimon'].includes(sub)
+  const focusedFlowOpen = ['journal', 'daimon'].includes(sub)
   const nestedFlowOpen = focusedFlowOpen || Boolean(selectedThemeId)
 
   useEffect(() => {
@@ -419,26 +417,18 @@ export default function Practices({
     return <DailyJournalFlow userId={user.id} onClose={backToList} />
   }
 
-  if (sub === 'self-discovery') {
-    return <GuidedSelfDiscoveryFlow userId={user.id} onClose={() => setSub(null)} />
-  }
-
   if (sub === 'daimon') {
     return <DaimonFlow userId={user.id} onClose={() => setSub(null)} />
   }
 
-  if (sub === 'lila-discover') {
-    return (
-      <LilaDiscoverFlow
-        userId={user.id}
-        onBack={() => setSub(null)}
-        onOpenJournal={() => setSub('journal')}
-      />
-    )
-  }
-
   // Убранные практики (Настроение, Альтер-эго) — мягкий редирект на «Сегодня»
+  // LilaDiscoverFlow и GuidedSelfDiscoveryFlow удалены — редирект на Даймон
   const REMOVED_SUBS = new Set(['mood', 'alter-ego'])
+  const REDIRECT_TO_DAIMON = new Set(['lila-discover', 'self-discovery'])
+  if (REDIRECT_TO_DAIMON.has(sub)) {
+    setSub('daimon')
+    return null
+  }
   if (REMOVED_SUBS.has(sub)) {
     onReturnToToday?.()
     return null

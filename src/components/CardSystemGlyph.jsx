@@ -1,5 +1,4 @@
 const GLYPH_BY_PRACTICE = {
-  'lila-discover': 'neuro-synapse',
   ascezas: 'asceza-boundary',
   breathing: 'breath-flow',
   meditation: 'meditation-contours',
