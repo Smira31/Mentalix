@@ -8,28 +8,39 @@
    Google Fonts URL (400/500/600/700/800 и 400/500), не весь диапазон
    пакета. Кириллица включена в каждый вес по unicode-range, тот же
    паттерн, что уже был у Manrope ниже. */
-@import '@fontsource/onest/400.css';
-@import '@fontsource/onest/500.css';
-@import '@fontsource/onest/600.css';
-@import '@fontsource/onest/700.css';
-@import '@fontsource/onest/800.css';
-@import '@fontsource/jetbrains-mono/400.css';
-@import '@fontsource/jetbrains-mono/500.css';
+@import '@fontsource/onest/cyrillic-400.css';
+@import '@fontsource/onest/latin-400.css';
+@import '@fontsource/onest/cyrillic-500.css';
+@import '@fontsource/onest/latin-500.css';
+@import '@fontsource/onest/cyrillic-600.css';
+@import '@fontsource/onest/latin-600.css';
+@import '@fontsource/onest/cyrillic-700.css';
+@import '@fontsource/onest/latin-700.css';
+@import '@fontsource/onest/cyrillic-800.css';
+@import '@fontsource/onest/latin-800.css';
+@import '@fontsource/jetbrains-mono/cyrillic-400.css';
+@import '@fontsource/jetbrains-mono/latin-400.css';
 
 /* Manrope — вторичный шрифт для лейблов/эйбраузов, самостоятельный хостинг
    (npm-пакет @fontsource/manrope, без Google Fonts CDN). Кириллица включена
    в 500.css/600.css по unicode-range вместе с латиницей. */
-@import '@fontsource/manrope/500.css';
-@import '@fontsource/manrope/600.css';
-@import '@fontsource/manrope/700.css';
+@import '@fontsource/manrope/cyrillic-500.css';
+@import '@fontsource/manrope/latin-500.css';
+@import '@fontsource/manrope/cyrillic-600.css';
+@import '@fontsource/manrope/latin-600.css';
+@import '@fontsource/manrope/cyrillic-700.css';
+@import '@fontsource/manrope/latin-700.css';
 
 /* Lora — шрифт с засечками для заголовков разделов экрана «Шаги»
    («Тема недели: …», «Другие темы», «Все темы»), референс Stoic Explore.
    Самостоятельный хостинг (npm-пакет @fontsource/lora, без Google Fonts CDN).
    Кириллица включена по unicode-range вместе с латиницей. */
-@import '@fontsource/lora/500.css';
-@import '@fontsource/lora/600.css';
-@import '@fontsource/lora/700.css';
+@import '@fontsource/lora/cyrillic-500.css';
+@import '@fontsource/lora/latin-500.css';
+@import '@fontsource/lora/cyrillic-600.css';
+@import '@fontsource/lora/latin-600.css';
+@import '@fontsource/lora/cyrillic-700.css';
+@import '@fontsource/lora/latin-700.css';
 
 @tailwind base;
 @tailwind components;
@@ -533,10 +544,13 @@ svg .animate-celebrate-pop {
   top: 1.65rem;
   left: 9%;
   z-index: 0;
+  width: 82%;
   height: 2px;
   border-radius: 999px;
   background: rgb(var(--c-gold) / 0.82);
-  transition: width 300ms var(--mx-ease-out);
+  transform: scaleX(var(--mx-scale-progress, 0));
+  transform-origin: left;
+  transition: transform 300ms var(--mx-ease-out);
 }
 
 .mx-scale-rail__item {

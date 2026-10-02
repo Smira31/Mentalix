@@ -93,9 +93,9 @@ export function useVisualViewportGeometry() {
     }
 
     update()
-    viewport?.addEventListener('resize', update)
-    viewport?.addEventListener('scroll', update)
-    window.addEventListener('resize', update)
+    viewport?.addEventListener('resize', update, { passive: true })
+    viewport?.addEventListener('scroll', update, { passive: true })
+    window.addEventListener('resize', update, { passive: true })
     webApp?.onEvent?.('viewportChanged', update)
 
     return () => {
