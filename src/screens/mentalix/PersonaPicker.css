@@ -4,26 +4,13 @@
   animation: none !important;
 }
 
+/*
+ * Скролл страницы «Диалога» — тот же механизм, что у «Сегодня»/«Шагов»:
+ * страница листается целиком, панель вкладок сворачивается при скролле.
+ */
 .mx-dialog-runtime-scroll {
-  overflow: hidden;
+  overflow-y: auto;
   padding-bottom: 0 !important;
-}
-
-#root:has(.mx-dialog-entry),
-html:has(.mx-dialog-entry),
-body:has(.mx-dialog-entry) {
-  overflow-y: hidden;
-}
-
-html:has(.mx-dialog-entry),
-body:has(.mx-dialog-entry),
-body:has(.mx-dialog-entry) #root,
-body:has(.mx-dialog-entry) .mx-dialog-app-shell {
-  background-color: rgb(var(--c-bg));
-}
-
-#root:has(.mx-dialog-entry) {
-  --bottom-nav-offset: 0px;
 }
 
 .mx-dialog-entry {
@@ -39,9 +26,7 @@ body:has(.mx-dialog-entry) .mx-dialog-app-shell {
   max-width: 100%;
   min-width: 0;
   height: auto;
-  flex: 1 1 auto;
-  max-height: 100%;
-  min-height: 0;
+  flex: 0 0 auto;
   overflow-x: clip;
   overflow-y: visible;
   display: flex;
@@ -50,10 +35,6 @@ body:has(.mx-dialog-entry) .mx-dialog-app-shell {
   color: rgb(var(--c-text));
   font-family: 'Onest', sans-serif;
   padding-top: var(--app-safe-top);
-  /* Dialog ends directly above the fixed 68px BottomNavigation. */
-  padding-bottom: calc(
-    var(--app-safe-bottom) + var(--bottom-nav-offset) + var(--bottom-nav-height)
-  );
   box-sizing: border-box;
 }
 
@@ -75,7 +56,7 @@ body:has(.mx-dialog-entry) .mx-dialog-app-shell {
   isolation: isolate;
 }
 
-.mx-dialog-hero-reference {
+.mx-dialog-hero-svg {
   position: absolute;
   z-index: 1;
   top: 8px;
@@ -84,6 +65,24 @@ body:has(.mx-dialog-entry) .mx-dialog-app-shell {
   width: 100%;
   height: auto;
   pointer-events: none;
+}
+
+.mx-dialog-hero-lines {
+  fill: none;
+  stroke: rgb(168 168 168);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  animation: mx-hero-breathe 6s ease-in-out infinite;
+}
+
+@keyframes mx-hero-breathe {
+  0%, 100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 0.9;
+  }
 }
 
 .mx-dialog-hero__content {
@@ -111,26 +110,24 @@ body:has(.mx-dialog-entry) .mx-dialog-app-shell {
   color: rgb(var(--c-text));
 }
 
-.mx-dialog-hero__content .mx-dialog-eyebrow,
-.mx-dialog-hero__content h1 {
-  visibility: visible;
-  opacity: 0;
+.mx-dialog-hero h1 strong {
+  font-weight: 700;
 }
 
 .mx-dialog-surface {
   position: relative;
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   min-height: 0;
   width: 100%;
   max-width: 100%;
   margin-top: 0;
   padding: 24px 0 0;
-  border: 1px solid rgb(var(--c-border) / 0.72);
+  border: 1px solid var(--mx-steps-card-border);
   border-bottom: 0;
   border-radius: var(--mx-radius-card) var(--mx-radius-card) 0 0;
-  background: rgb(var(--c-card2) / 0.84);
+  background: var(--mx-steps-card-bg);
   overflow-x: clip;
-  overflow-y: auto;
+  overflow-y: visible;
   display: flex;
   flex-direction: column;
   z-index: 2;
@@ -190,8 +187,6 @@ body:has(.mx-dialog-entry) .mx-dialog-app-shell {
   position: relative;
   display: flex;
   flex: 0 0 var(--mx-dialog-card-width);
-  /* The carousel's percentage height already resolves against its content
-     box; its bottom padding supplies the single visual gap to navigation. */
   height: 100%;
   min-height: 0;
   max-height: none;
@@ -200,9 +195,9 @@ body:has(.mx-dialog-entry) .mx-dialog-app-shell {
   min-width: 0;
   overflow: hidden;
   justify-content: center;
-  border: 1px solid rgb(var(--c-line) / 0.08);
+  border: 1px solid var(--mx-steps-card-border);
   border-radius: var(--mx-radius-hero);
-  background: rgb(var(--c-card2));
+  background: var(--mx-steps-card-bg);
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 0.025),
     0 18px 44px rgb(0 0 0 / 0.18);
@@ -218,7 +213,7 @@ body:has(.mx-dialog-entry) .mx-dialog-app-shell {
 }
 
 .mx-dialog-card.is-active {
-  border-color: rgb(var(--c-line) / 0.08);
+  border-color: var(--mx-steps-card-border);
   opacity: 1;
   transform: translateY(-1px);
 }
@@ -416,6 +411,11 @@ body:has(.mx-dialog-entry) .mx-dialog-app-shell {
   .mx-dialog-card__start {
     transition: none;
   }
+
+  .mx-dialog-hero-lines {
+    animation: none;
+    opacity: 0.72;
+  }
 }
 
 /* ── «Продолжить разговор» ── */
@@ -457,11 +457,11 @@ body:has(.mx-dialog-entry) .mx-dialog-app-shell {
 }
 
 .mx-conversation-list li {
-  border-top: 1px solid rgb(var(--c-line) / 0.08);
+  border-top: 1px solid var(--mx-steps-card-border);
 }
 
 .mx-conversation-list li:last-child {
-  border-bottom: 1px solid rgb(var(--c-line) / 0.08);
+  border-bottom: 1px solid var(--mx-steps-card-border);
 }
 
 .mx-conversation-row {
@@ -529,9 +529,9 @@ body:has(.mx-dialog-entry) .mx-dialog-app-shell {
 .mx-dialog-chip {
   min-height: 36px;
   padding: 0 var(--mx-space-3);
-  border: 1px solid rgb(var(--c-line) / 0.12);
+  border: 1px solid var(--mx-steps-card-border);
   border-radius: var(--mx-radius-pill);
-  background: rgb(var(--c-card2));
+  background: var(--mx-steps-card-bg);
   color: rgb(var(--c-text));
   font-size: 0.85rem;
   line-height: 1.2;
@@ -547,4 +547,15 @@ body:has(.mx-dialog-entry) .mx-dialog-app-shell {
 .mx-dialog-chip:disabled {
   opacity: 0.5;
   pointer-events: none;
+}
+
+/* ── Дисклеймер внизу ── */
+
+.mx-dialog-disclaimer {
+  margin: 0;
+  padding: var(--mx-space-2) var(--mx-space-6) var(--mx-space-4);
+  color: rgb(var(--c-faint));
+  font-size: var(--mx-type-meta-size);
+  text-align: center;
+  line-height: 1.4;
 }
