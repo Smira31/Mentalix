@@ -981,6 +981,11 @@ function App() {
       setMentorPersonaOpen(false)
     }
 
+    // Сброс шторки серии при уходе с «Сегодня» (#5)
+    if (key !== 'today') {
+      setTodaySeriesOpen(false)
+    }
+
     if (key === tab) {
       scrollAppToTop('smooth')
 
@@ -1014,6 +1019,10 @@ function App() {
     lastScrollY.current = 0
     scrollDirection.current = null
     scrollDistance.current = 0
+
+    // Сброс подэкранов старой вкладки: портал в document.body
+    // не удаляется при display:none, поэтому сбрасываем явно (#1)
+    dispatchTabReset(tab)
 
     dispatchTabRefresh(key)
   }
