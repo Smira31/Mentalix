@@ -292,6 +292,75 @@
   padding: var(--mx-space-2) 0;
 }
 
+/* ── Today (запись за сегодня уже сохранена) ── */
+.mx-dj-today {
+  padding-top: var(--mx-space-2);
+  padding-bottom: calc(var(--mx-btn-round-h) + var(--mx-space-4) + var(--app-safe-bottom));
+}
+
+.mx-dj-today__label {
+  display: block;
+  margin-bottom: var(--mx-space-2);
+}
+
+.mx-dj-today__title {
+  font-family: 'Manrope', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: rgb(var(--c-text));
+  margin: 0 0 var(--mx-space-6);
+}
+
+.mx-dj-today__section {
+  margin-bottom: var(--mx-space-6);
+}
+
+.mx-dj-today__section-label {
+  display: block;
+  margin-bottom: var(--mx-space-2);
+}
+
+.mx-dj-today__question {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: rgb(var(--c-muted));
+  margin: 0 0 var(--mx-space-2);
+}
+
+.mx-dj-today__text {
+  font-size: 16px;
+  line-height: 1.6;
+  color: rgb(var(--c-text));
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.mx-dj-today__footer {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--mx-space-2);
+  padding: var(--mx-space-2) 0;
+}
+
+.mx-dj-today__append-btn {
+  width: 100%;
+  text-align: center;
+}
+
+.mx-dj-today__review-link {
+  background: none;
+  border: 0;
+  padding: var(--mx-space-1) 0;
+  color: rgb(var(--c-faint));
+  font-size: 14px;
+  text-decoration: underline;
+  cursor: pointer;
+  text-align: center;
+}
+
 /* ── Stream (Поток) ── */
 .mx-dj-stream {
   display: flex;

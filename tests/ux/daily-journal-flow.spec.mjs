@@ -192,3 +192,72 @@ test('журнал: сброс настройки → intro → поток бе�
   // «Перечитай» не показан
   await expect(page.locator('.mx-dj-review')).not.toBeVisible()
 })
+
+test('журнал: повторный вход — запись сохранена, «Дописать» сохраняет текст целиком', async ({
+  page,
+}) => {
+  await page.goto('/?demo=1&tab=practices')
+
+  // ── Открываем журнал ──
+  await expect(page.getByTestId('journal-open-cta')).toBeVisible()
+  await page.getByTestId('journal-open-cta').click()
+
+  // ── Пропускаем настройку ──
+  await page.getByTestId('dj-intro-skip').click()
+
+  // ── Поток: пишем текст ──
+  await expect(page.getByTestId('dj-stream-input')).toBeVisible()
+  await page.getByTestId('dj-stream-input').fill('Утренний текст записи.')
+  await page.getByTestId('dj-stream-next').click()
+
+  // ── Вопрос: отвечаем ──
+  await expect(page.getByTestId('dj-question-input')).toBeVisible()
+  await page.getByTestId('dj-question-input').fill('Утренний ответ.')
+  await page.getByTestId('dj-question-next').click()
+
+  // ── Финал → выходим ──
+  await expect(page.locator('.mx-completion')).toBeVisible()
+  await page.getByTestId('dj-complete-close').click()
+
+  // ── Открываем журнал снова ──
+  await expect(page.getByTestId('journal-open-cta')).toBeVisible()
+  await page.getByTestId('journal-open-cta').click()
+
+  // ── Экран «Сегодня»: запись сохранена ──
+  await expect(page.getByTestId('dj-today')).toBeVisible()
+  await expect(page.locator('.mx-dj-today__title')).toHaveText('Запись сохранена')
+  // Виден утренний текст
+  await expect(page.getByTestId('dj-today-stream')).toContainText('Утренний текст записи.')
+  // Виден ответ на вопрос
+  await expect(page.getByTestId('dj-today-question')).toContainText('Утренний ответ.')
+
+  // ── «Дописать» ──
+  await page.getByTestId('dj-today-append').click()
+
+  // ── Поток: старый текст на месте ──
+  await expect(page.getByTestId('dj-stream-input')).toBeVisible()
+  const streamValue = await page.getByTestId('dj-stream-input').inputValue()
+  expect(streamValue).toContain('Утренний текст записи.')
+  // Дописываем новый текст
+  await page.getByTestId('dj-stream-input').fill(streamValue + 'Вечерний текст записи.')
+  await page.getByTestId('dj-stream-next').click()
+
+  // ── Вопрос: старый ответ на месте ──
+  await expect(page.getByTestId('dj-question-input')).toBeVisible()
+  const answerValue = await page.getByTestId('dj-question-input').inputValue()
+  expect(answerValue).toContain('Утренний ответ.')
+  // Сохраняем
+  await page.getByTestId('dj-question-next').click()
+
+  // ── Финал → выходим ──
+  await expect(page.locator('.mx-completion')).toBeVisible()
+  await page.getByTestId('dj-complete-close').click()
+
+  // ── Открываем снова — проверяем, что весь текст сохранён ──
+  await expect(page.getByTestId('journal-open-cta')).toBeVisible()
+  await page.getByTestId('journal-open-cta').click()
+
+  await expect(page.getByTestId('dj-today')).toBeVisible()
+  await expect(page.getByTestId('dj-today-stream')).toContainText('Утренний текст записи.')
+  await expect(page.getByTestId('dj-today-stream')).toContainText('Вечерний текст записи.')
+})

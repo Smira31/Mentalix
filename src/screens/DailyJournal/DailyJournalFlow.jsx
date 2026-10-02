@@ -41,6 +41,10 @@ function formatRussianDateTime(d) {
   return `${d.getDate()} ${MONTHS_RU[d.getMonth()]}, ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
 }
 
+function formatRussianDate(d) {
+  return `${d.getDate()} ${MONTHS_RU[d.getMonth()]}`
+}
+
 function wordCount(text) {
   if (!text || !text.trim()) return 0
   return text.trim().split(/\s+/).filter(Boolean).length
@@ -79,8 +83,10 @@ export default function DailyJournalFlow({ userId, onClose }) {
   const [saveError, setSaveError] = useState(false)
   const [resetError, setResetError] = useState(false)
   const [pendingComplete, setPendingComplete] = useState(false)
+  const [hasTodayEntry, setHasTodayEntry] = useState(false)
   const streamRef = useRef(null)
   const answerRef = useRef(null)
+  const appendCursorRef = useRef(false)
 
   // ── Init: fetch setup + entries, try pending draft ──
   useEffect(() => {
@@ -116,34 +122,47 @@ export default function DailyJournalFlow({ userId, onClose }) {
         const todayEntry = entriesData.items?.find(e => e.date === dateStr)
 
         if (todayEntry) {
+          setHasTodayEntry(true)
           setEntryId(todayEntry.id)
           setStreamText(stripLeadingTimestamp(todayEntry.stream_text || ''))
           setPromptAnswer(todayEntry.prompt_answer || '')
           setPromptText(todayEntry.prompt_text || '')
+          setStage('today')
         } else {
           const d = readDailyJournalDraft(userId, dateStr)
           if (d?.streamText) setStreamText(d.streamText)
           if (d?.promptAnswer) setPromptAnswer(d.promptAnswer)
           if (d?.promptText) setPromptText(d.promptText)
-        }
 
-        // Default question (cycling by total_days)
-        if (!todayEntry?.prompt_text && !draft?.promptText) {
-          const prompts = setupData?.prompts || []
-          const qIndex = td % Math.max(1, prompts.length)
-          setPromptText(prompts[qIndex] || '')
-        }
+          // Default question (cycling by total_days)
+          if (!draft?.promptText) {
+            const prompts = setupData?.prompts || []
+            const qIndex = td % Math.max(1, prompts.length)
+            setPromptText(prompts[qIndex] || '')
+          }
 
-        if (!setupData?.updated_at) {
-          setStage('intro')
-        } else if (setupHasData(setupData)) {
-          setStage('review')
-        } else {
-          setStage('stream')
+          if (!setupData?.updated_at) {
+            setStage('intro')
+          } else if (setupHasData(setupData)) {
+            setStage('review')
+          } else {
+            setStage('stream')
+          }
         }
       } catch (error) {
         console.error('[dailyJournal] init failed', error)
-        if (!cancelled) setStage('stream')
+        if (cancelled) return
+        // Сервер недоступен — покажем локально сохранённый черновик
+        const d = readDailyJournalDraft(userId, dateStr)
+        if (d?.streamText || d?.promptAnswer) {
+          setHasTodayEntry(true)
+          setStreamText(d.streamText || '')
+          setPromptAnswer(d.promptAnswer || '')
+          setPromptText(d.promptText || '')
+          setStage('today')
+        } else {
+          setStage('stream')
+        }
       }
     }
 
@@ -163,7 +182,14 @@ export default function DailyJournalFlow({ userId, onClose }) {
   useEffect(() => {
     if (stage !== 'stream' && stage !== 'question') return
     const ref = stage === 'stream' ? streamRef : answerRef
-    const focusField = () => ref.current?.focus({ preventScroll: true })
+    const focusField = () => {
+      ref.current?.focus({ preventScroll: true })
+      if (appendCursorRef.current && ref.current) {
+        const len = ref.current.value.length
+        ref.current.setSelectionRange(len, len)
+        appendCursorRef.current = false
+      }
+    }
     const frame = window.requestAnimationFrame(focusField)
     const retry = window.setTimeout(focusField, 80)
     return () => {
@@ -204,9 +230,17 @@ export default function DailyJournalFlow({ userId, onClose }) {
   // ── Back button ──
   const goBack = useCallback(() => {
     if (stage === 'setup') return
+    if (stage === 'today') {
+      onClose()
+      return
+    }
     if (stage === 'stream') {
       platform.haptic('light')
-      setStage(setupHasData(setup) ? 'review' : 'intro')
+      if (hasTodayEntry) {
+        setStage('today')
+      } else {
+        setStage(setupHasData(setup) ? 'review' : 'intro')
+      }
       return
     }
     if (stage === 'question') {
@@ -214,8 +248,12 @@ export default function DailyJournalFlow({ userId, onClose }) {
       setStage('stream')
       return
     }
+    if (stage === 'review' && hasTodayEntry) {
+      setStage('today')
+      return
+    }
     onClose()
-  }, [stage, onClose, setup])
+  }, [stage, onClose, setup, hasTodayEntry])
 
   useBackButton(goBack)
 
@@ -256,6 +294,16 @@ export default function DailyJournalFlow({ userId, onClose }) {
       setResetError(true)
       setTimeout(() => setResetError(false), 3000)
     }
+  }
+
+  // ── Дописать: открыть поток с уже введённым текстом ──
+  function handleAppend() {
+    platform.haptic('light')
+    appendCursorRef.current = true
+    if (streamText.trim()) {
+      setStreamText(prev => prev + '\n')
+    }
+    setStage('stream')
   }
 
   // ── Save entry ──
@@ -357,6 +405,32 @@ export default function DailyJournalFlow({ userId, onClose }) {
   let footerContent = null
   if (stage === 'intro') {
     footerContent = null
+  } else if (stage === 'today') {
+    footerContent = (
+      <div className="mx-dj-today__footer">
+        <button
+          type="button"
+          className="cta-pill mx-dj-today__append-btn"
+          data-testid="dj-today-append"
+          onClick={handleAppend}
+        >
+          Дописать
+        </button>
+        {setupHasData(setup) && (
+          <button
+            type="button"
+            className="mx-dj-today__review-link"
+            data-testid="dj-today-review"
+            onClick={() => {
+              platform.haptic('light')
+              setStage('review')
+            }}
+          >
+            Перечитай
+          </button>
+        )}
+      </div>
+    )
   } else if (stage === 'review') {
     footerContent = (
       <div className="mx-dj-footer-bar">
@@ -425,6 +499,29 @@ export default function DailyJournalFlow({ userId, onClose }) {
 
   // ── Render stage content ──
   function renderContent() {
+    if (stage === 'today') {
+      return (
+        <div className="mx-dj-today" data-testid="dj-today">
+          <CapsLabel className="mx-dj-today__label">
+            СЕГОДНЯ · {formatRussianDate(todayDate)}
+          </CapsLabel>
+          <h2 className="mx-dj-today__title">Запись сохранена</h2>
+          {streamText.trim() && (
+            <div className="mx-dj-today__section" data-testid="dj-today-stream">
+              <CapsLabel className="mx-dj-today__section-label">Поток</CapsLabel>
+              <p className="mx-dj-today__text">{streamText}</p>
+            </div>
+          )}
+          {promptText && promptAnswer.trim() && (
+            <div className="mx-dj-today__section" data-testid="dj-today-question">
+              <p className="mx-dj-today__question">{promptText}</p>
+              <p className="mx-dj-today__text">{promptAnswer}</p>
+            </div>
+          )}
+        </div>
+      )
+    }
+
     if (stage === 'intro') {
       const IntroArt = illustrations.journalIntro
       return (
@@ -630,8 +727,8 @@ export default function DailyJournalFlow({ userId, onClose }) {
     <Screen
       onBack={goBack}
       registerSystemBack={false}
-      scroll={stage === 'intro' || stage === 'review'}
-      fullFrame={stage !== 'intro' && stage !== 'review'}
+      scroll={stage === 'intro' || stage === 'review' || stage === 'today'}
+      fullFrame={stage !== 'intro' && stage !== 'review' && stage !== 'today'}
       footer={footerContent}
       footerClassName={stage === 'complete' ? 'mx-dj-footer--complete' : ''}
       bodyClassName={stage === 'complete' ? 'mx-dj-complete' : ''}
