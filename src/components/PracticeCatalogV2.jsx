@@ -180,13 +180,15 @@ function ThemeCarousel({
           onViewAnswer={() => onOpen(theme)}
         />
       </div>
-      <button
-        type="button"
-        className="mx-steps-pill mx-steps-pill--outline"
-        onClick={onOpenAllThemes}
-      >
-        Все темы
-      </button>
+      {onOpenAllThemes && (
+        <button
+          type="button"
+          className="mx-steps-pill mx-steps-pill--outline"
+          onClick={onOpenAllThemes}
+        >
+          Все темы
+        </button>
+      )}
     </section>
   )
 }
@@ -214,7 +216,7 @@ function CollectionTile({ collection, onOpen }) {
   )
 }
 
-function CollectionGrid({ onOpen }) {
+function CollectionGrid({ onOpen, error = false, onRetry }) {
   return (
     <section
       className="mx-steps-collections-section"
@@ -227,6 +229,14 @@ function CollectionGrid({ onOpen }) {
           <CollectionTile key={collection.key} collection={collection} onOpen={onOpen} />
         ))}
       </div>
+      {error && (
+        <div role="alert" data-testid="steps-collections-error">
+          <p className="mx-steps-empty-copy">Не удалось загрузить ритуалы и аскезы.</p>
+          <button type="button" className="mx-steps-pill" onClick={onRetry}>
+            Повторить
+          </button>
+        </div>
+      )}
     </section>
   )
 }
@@ -242,6 +252,8 @@ export default function PracticeCatalogV2({
   onOpenJournal,
   onOpenTheme,
   onOpenAllThemes,
+  collectionsError = false,
+  onRetryCollections,
 }) {
   const visiblePractices = useMemo(() => practices || [], [practices])
 
@@ -258,7 +270,11 @@ export default function PracticeCatalogV2({
         onOpen={onOpenTheme}
         onOpenAllThemes={onOpenAllThemes}
       />
-      <CollectionGrid onOpen={onOpenCollection} />
+      <CollectionGrid
+        onOpen={onOpenCollection}
+        error={collectionsError}
+        onRetry={onRetryCollections}
+      />
     </div>
   )
 }

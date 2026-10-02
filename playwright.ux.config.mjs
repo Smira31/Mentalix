@@ -22,6 +22,8 @@ export default defineConfig({
     'library-read-opens-catalog.spec.mjs',
     'today-subscreen-navigation.spec.mjs',
     'daily-journal-flow.spec.mjs',
+    'steps-reliability.spec.mjs',
+    'steps-reliability.spec.mjs',
     'dialog-screen.spec.mjs',
     'dialog-errors.spec.mjs',
   ],

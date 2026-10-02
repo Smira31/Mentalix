@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { createPortal } from 'react-dom'
 
 import { peekThemeDetail, fetchThemeDetail, invalidateThemeDetail } from '../lib/themeDetailCache'
@@ -36,16 +36,19 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
   const [activeId, setActiveId] = useState(themeId)
   const [writing, setWriting] = useState(false)
   const [selectedDay, setSelectedDay] = useState(1)
+  const [loadError, setLoadError] = useState(false)
+  const [retryToken, setRetryToken] = useState(0)
+  const hasDataRef = useRef(Boolean(data))
   const { style } = useFullscreenSurface()
 
+  // Пока открыт ThemeScreen (writing), «Назад» обрабатывает он сам — один обработчик на экран.
   useBackButton(() => {
     platform.haptic('light')
-    if (writing) {
-      setWriting(false)
-      refreshData()
-    } else {
-      onBack()
-    }
+    onBack()
+  }, !writing)
+
+  useEffect(() => {
+    hasDataRef.current = Boolean(data)
   })
 
   useEffect(() => {
@@ -68,13 +71,19 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
     let alive = true
     fetchThemeDetail(user.id, activeId)
       .then(fresh => {
-        if (alive && fresh) setData(fresh)
+        if (alive && fresh) {
+          setLoadError(false)
+          setData(fresh)
+        }
       })
-      .catch(console.error)
+      .catch(error => {
+        console.error(error)
+        if (alive && !hasDataRef.current) setLoadError(true)
+      })
     return () => {
       alive = false
     }
-  }, [user, activeId])
+  }, [user, activeId, retryToken])
 
   function refreshData() {
     if (!user || !activeId) return
@@ -132,7 +141,26 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
         <div className={FULLSCREEN_SCROLL_CLASS}>
           <div className="w-full max-w-md mx-auto px-[var(--mx-screen-x)] pt-2 pb-6 flex flex-col min-h-full">
             <RoundBackButton onClick={onBack} />
-            <p className="w-full m-auto px-6 text-center text-muted text-[13px]">Загрузка...</p>
+            {loadError ? (
+              <div className="w-full m-auto px-6 text-center" role="alert" data-testid="theme-load-error">
+                <p className="text-muted text-[13px]">
+                  Не удалось загрузить тему. Проверь соединение и попробуй ещё раз.
+                </p>
+                <button
+                  type="button"
+                  data-testid="theme-load-retry"
+                  onClick={() => {
+                    setLoadError(false)
+                    setRetryToken(n => n + 1)
+                  }}
+                  className="mt-5 min-h-11 rounded-full bg-cream px-4 py-2 text-[13px] font-semibold text-emerald-deep"
+                >
+                  Повторить
+                </button>
+              </div>
+            ) : (
+              <p className="w-full m-auto px-6 text-center text-muted text-[13px]">Загрузка...</p>
+            )}
           </div>
         </div>
       </div>,

@@ -299,7 +299,7 @@ test('MXL-JOURNAL-001 открывает единственный Journal flow �
   assert.match(practices, /setSub\('journal'\)/)
   assert.match(
     practices,
-    /if \(sub === 'journal'\) \{[\s\S]*<DailyJournalFlow userId=\{user\.id\} onClose=\{backToList\} \/>/
+    /if \(sub === 'journal' && user\) \{[\s\S]*<DailyJournalFlow userId=\{user\.id\} onClose=\{backToList\} \/>/
   )
   assert.doesNotMatch(practices, /<JournalFlow/)
   assert.doesNotMatch(mentalix, /JournalHome|journalOpen/)
