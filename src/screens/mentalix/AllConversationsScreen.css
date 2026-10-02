@@ -19,11 +19,11 @@
 }
 
 .mx-conversation-list li {
-  border-top: 1px solid rgb(var(--c-line) / 0.08);
+  border-top: 1px solid var(--mx-steps-card-border);
 }
 
 .mx-conversation-list li:last-child {
-  border-bottom: 1px solid rgb(var(--c-line) / 0.08);
+  border-bottom: 1px solid var(--mx-steps-card-border);
 }
 
 .mx-conversation-row {
