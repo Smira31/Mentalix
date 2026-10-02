@@ -1496,6 +1496,7 @@ function respond(path, options = {}) {
       gamesList.unshift(game)
     }
     return json(gamesList)
+  }
 
   // ── Daily Journal (demo) ──
 
