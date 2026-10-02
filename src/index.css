@@ -649,7 +649,7 @@ svg .animate-celebrate-pop {
   background: rgb(var(--c-card2));
   color: rgb(var(--c-muted));
   font-size: 1rem;
-  font-weight: 700;
+  font-weight: var(--mx-weight-body);
   transition:
     border-color 220ms ease,
     background-color 220ms ease,
@@ -758,7 +758,7 @@ svg .animate-celebrate-pop {
 .mx-section-label {
   color: rgb(var(--c-muted));
   font-size: var(--mx-type-meta-size);
-  font-weight: 600;
+  font-weight: var(--mx-weight-heading);
   letter-spacing: 0.3em;
   line-height: 1.2;
   text-transform: uppercase;
@@ -770,7 +770,7 @@ svg .animate-celebrate-pop {
   border-radius: var(--mx-radius-pill);
   padding-inline: var(--mx-space-6);
   font-size: var(--mx-type-control-size);
-  font-weight: 500;
+  font-weight: var(--mx-weight-control);
   line-height: 1;
 }
 
@@ -1106,7 +1106,7 @@ button {
    ============================================================ */
 
 .font-display {
-  font-weight: 700;
+  font-weight: var(--mx-weight-title);
 
   letter-spacing: -0.02em;
 }
@@ -1136,26 +1136,39 @@ button {
   --mx-type-subquestion-size: 1rem;
   --mx-type-weekday-size: 0.75rem;
   --mx-type-calendar-date-size: 1rem;
+
+  /*
+   * MXL-TYPE-HIERARCHY-002 — иерархия весов и мягкая светлая кнопка как у Stoic.
+   * 700 — только крупный заголовок экрана и одно акцентное слово;
+   * 600 — заголовки разделов/карточек и caps-eyebrow;
+   * 500 — текст кнопок, подписи плиток, «Мысль дня»;
+   * 400 — весь остальной текст.
+   */
+  --mx-weight-title: 700;
+  --mx-weight-heading: 600;
+  --mx-weight-control: 500;
+  --mx-weight-body: 400;
+  --mx-btn-light-bg: #D6D6D6;
 }
 
 .mx-type-page {
   font-size: var(--mx-type-page-size);
   line-height: 1.1;
-  font-weight: 700;
+  font-weight: var(--mx-weight-title);
   letter-spacing: -0.035em;
 }
 
 .mx-type-greeting {
   font-size: var(--mx-type-greeting-size);
   line-height: 1.05;
-  font-weight: 700;
+  font-weight: var(--mx-weight-title);
   letter-spacing: -0.025em;
 }
 
 .mx-type-hero {
   font-size: var(--mx-type-hero-size);
   line-height: 1.2;
-  font-weight: 700;
+  font-weight: var(--mx-weight-title);
   letter-spacing: -0.02em;
 }
 
@@ -1177,7 +1190,7 @@ button {
 .mx-type-insight {
   font-size: 1.1875rem;
   line-height: 1.3;
-  font-weight: 600;
+  font-weight: var(--mx-weight-heading);
   letter-spacing: -0.02em;
 }
 
@@ -1187,7 +1200,7 @@ button {
 .mx-type-analytics-heading {
   font-size: 0.9375rem;
   line-height: 1.25;
-  font-weight: 600;
+  font-weight: var(--mx-weight-heading);
   letter-spacing: -0.01em;
 }
 
@@ -1207,7 +1220,7 @@ button {
 .mx-type-article-title {
   font-size: 1rem;
   line-height: 1.25;
-  font-weight: 600;
+  font-weight: var(--mx-weight-heading);
   letter-spacing: -0.015em;
 }
 
@@ -1220,52 +1233,52 @@ button {
 .mx-type-article-action {
   font-size: 0.75rem;
   line-height: 1.2;
-  font-weight: 600;
+  font-weight: var(--mx-weight-heading);
 }
 
 .mx-type-article-meta {
   font-size: 0.625rem;
   line-height: 1.2;
-  font-weight: 500;
+  font-weight: var(--mx-weight-control);
 }
 
 .mx-type-section {
   font-size: var(--mx-type-section-size);
   line-height: 1.2;
-  font-weight: 600;
+  font-weight: var(--mx-weight-heading);
   letter-spacing: -0.02em;
 }
 
 .mx-type-card {
   font-size: var(--mx-type-card-size);
   line-height: 1.25;
-  font-weight: 400;
+  font-weight: var(--mx-weight-body);
   letter-spacing: -0.015em;
 }
 
 .mx-type-body {
   font-size: var(--mx-type-body-size);
   line-height: 1.35;
-  font-weight: 400;
+  font-weight: var(--mx-weight-body);
 }
 
 .mx-type-control {
   font-size: var(--mx-type-control-size);
   line-height: 1.2;
-  font-weight: 500;
+  font-weight: var(--mx-weight-control);
   letter-spacing: -0.01em;
 }
 
 .mx-type-segment {
   font-size: var(--mx-type-segment-size);
   line-height: 1.2;
-  font-weight: 500;
+  font-weight: var(--mx-weight-control);
 }
 
 .mx-type-meta {
   font-size: var(--mx-type-meta-size);
   line-height: 1.2;
-  font-weight: 600;
+  font-weight: var(--mx-weight-heading);
   letter-spacing: 0.3em;
   text-transform: uppercase;
 }
@@ -1273,7 +1286,7 @@ button {
 .mx-type-checkin-title {
   font-size: 1.5rem;
   line-height: 1.3;
-  font-weight: 700;
+  font-weight: var(--mx-weight-title);
 }
 
 .mx-type-checkin-label {
@@ -1286,7 +1299,7 @@ button {
   display: block;
   font-size: 11px;
   line-height: 1.2;
-  font-weight: 500;
+  font-weight: var(--mx-weight-control);
 }
 
 .mx-bottom-nav-library {
@@ -1305,11 +1318,18 @@ button {
 
 /* AI-экраны: единая шкала, проверяемая на 320px и 390px viewport. */
 
+
+/* Утилиты иерархии весов для JSX-классов (вместо font-bold/semibold). */
+.mx-w-title { font-weight: var(--mx-weight-title); }
+.mx-w-heading { font-weight: var(--mx-weight-heading); }
+.mx-w-control { font-weight: var(--mx-weight-control); }
+.mx-w-body { font-weight: var(--mx-weight-body); }
+
 /* v5: compact roles for secondary user journeys. Inputs retain 16px separately. */
 .mx-type-flow-title {
   font-size: 1.375rem;
   line-height: 1.15;
-  font-weight: 600;
+  font-weight: var(--mx-weight-heading);
   letter-spacing: -0.02em;
 }
 
