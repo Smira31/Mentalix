@@ -130,43 +130,38 @@ for (const viewport of P0_VIEWPORTS) {
 
     test('native BackButton remains safe during Journal keyboard resize', async ({ browser }) => {
       const { context, page } = await openTelegramDemo(browser, viewport)
+      // Стабильный путь: Следопыт (LilaDiscoverFlow), поле ввода по data-testid.
       await page.getByRole('button', { name: 'Шаги' }).click()
-      await page.getByRole('button', { name: 'Открыть журнал' }).click()
-      await page.getByRole('button', { name: 'Начать' }).click()
+      await page.getByRole('button', { name: /Открыть Разобраться со Следопытом/ }).first().click()
+      await page.getByRole('button', { name: 'Описать ситуацию' }).click()
+      await expect.poll(() => page.evaluate(() => window.__telegramBackState.isVisible)).toBe(true)
 
-      const editor = page.locator('textarea').first()
+      const editor = page.getByTestId('lila-query-input')
       await editor.fill('P0 keyboard draft')
       await editor.focus()
       await page.setViewportSize({ width: viewport.width, height: Math.round(viewport.height * 0.58) })
       // Ждём состояние после ресайза, а не фиксированный таймаут — на медленном CI re-render не успевает за 120 мс.
       await expect.poll(() => page.evaluate(() => {
-        const shell = document.querySelector('.mx-practice-flow')
+        const shell = document.querySelector('[data-testid="lila-stage-shell"]')
         return (shell?.getBoundingClientRect().bottom ?? Infinity) - window.innerHeight
       }), { timeout: 5000 }).toBeLessThanOrEqual(1)
 
       const geometry = await page.evaluate(() => {
-        const shell = document.querySelector('.mx-practice-flow')
-        const dock = document.querySelector('.practice-writing-canvas__dock')
+        const shell = document.querySelector('[data-testid="lila-stage-shell"]')
         return {
           shellBottom: shell?.getBoundingClientRect().bottom,
-          dockBottom: dock?.getBoundingClientRect()?.bottom ?? null,
-          dockExists: Boolean(dock),
           viewportHeight: window.innerHeight,
           bodyOverflow: getComputedStyle(document.body).overflow,
-          focused: document.activeElement === document.querySelector('textarea'),
+          focused: document.activeElement === document.querySelector('[data-testid="lila-query-input"]'),
         }
       })
 
       expect(geometry.shellBottom).toBeLessThanOrEqual(geometry.viewportHeight + 1)
-      // dock рендерится только когда PracticeWritingCanvas получает onSubmit/onDeepen/onFormat.
-      // GuidedSelfDiscoveryFlow (sub='journal') использует нативный MainButton вместо dock —
-      // панели нет по дизайну, проверяем только когда она есть.
-      if (geometry.dockExists) {
-        expect(geometry.dockBottom).toBeLessThanOrEqual(geometry.viewportHeight + 1)
-      }
       expect(geometry.bodyOverflow).toBe('hidden')
       expect(geometry.focused).toBe(true)
+      // Нативная «Назад» возвращает с поля ввода на интро Следопыта.
       await nativeBack(page)
+      await expect(page.getByRole('button', { name: 'Описать ситуацию' })).toBeVisible()
       await context.close()
     })
 
