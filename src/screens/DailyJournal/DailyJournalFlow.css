@@ -61,20 +61,21 @@
 /* ── Review (Перечитай) ── */
 .mx-dj-review {
   padding-top: var(--mx-space-2);
+  padding-bottom: calc(var(--mx-btn-round-h) + var(--mx-space-4) + var(--app-safe-bottom));
 }
 
-.mx-dj-review__art {
-  display: flex;
-  min-height: clamp(120px, 20dvh, 180px);
-  align-items: center;
-  justify-content: center;
-  padding-top: var(--mx-space-2);
+.mx-dj-review__label {
+  display: block;
+  margin-bottom: var(--mx-space-2);
 }
 
-.mx-dj-review__art svg {
-  width: auto;
-  height: 140px;
-  max-height: 100%;
+.mx-dj-review__title {
+  font-family: 'Manrope', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: rgb(var(--c-text));
+  margin: 0 0 var(--mx-space-4);
 }
 
 .mx-dj-review__section {
@@ -95,7 +96,6 @@
 
 .mx-dj-review__item--muted {
   color: rgb(var(--c-faint));
-  font-style: italic;
 }
 
 .mx-dj-review__empty {
@@ -138,6 +138,7 @@
 /* ── Setup ── */
 .mx-dj-setup {
   padding-top: var(--mx-space-2);
+  padding-bottom: calc(var(--mx-btn-round-h) + var(--mx-space-4) + var(--app-safe-bottom));
 }
 
 .mx-dj-setup__step-label {

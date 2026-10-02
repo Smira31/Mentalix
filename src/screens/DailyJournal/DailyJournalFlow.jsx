@@ -429,12 +429,10 @@ export default function DailyJournalFlow({ userId, onClose }) {
     }
 
     if (stage === 'review') {
-      const IntroArt = illustrations.journalIntro
       return (
         <div className="mx-dj-review">
-          <div className="mx-dj-review__art">
-            {IntroArt ? <IntroArt /> : <SemanticGlyph kind="journal" animated={false} />}
-          </div>
+          <CapsLabel className="mx-dj-review__label">ПЕРЕЧИТАЙ</CapsLabel>
+          <h2 className="mx-dj-review__title">Вспомни, куда идёшь</h2>
           {setup?.goals?.filter(g => g.trim()).length > 0 && (
             <div className="mx-dj-review__section">
               <CapsLabel className="mx-dj-review__label">Цели</CapsLabel>
