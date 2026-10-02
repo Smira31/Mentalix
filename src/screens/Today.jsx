@@ -59,7 +59,6 @@ import { pickVisibleTodayHint } from '../lib/todayHints'
 const Path = lazyWithRetry(() => import('./Path'))
 const YearPath = lazyWithRetry(() => import('./YearPath'))
 const CheckIn = lazyWithRetry(() => import('./CheckIn'))
-const ThemeScreen = lazyWithRetry(() => import('./ThemeScreen'))
 const ThemeCarouselScreen = lazyWithRetry(() => import('./ThemeCarouselScreen'))
 const History = lazyWithRetry(() => import('./History'))
 const QuoteView = lazyWithRetry(() => import('./QuoteView'))
@@ -409,7 +408,6 @@ export default function Today({
   )
 
   // День, на который переходит прямой тап по карточке («Записать»).
-  const [themeWriteDay, setThemeWriteDay] = useState(1)
 
   // activeToday показывается сразу из sessionStorage (если уже был),
   // обновляется в фоне. Резерв высоты исключает сдвиг контента.
@@ -980,21 +978,6 @@ export default function Today({
     )
   }
 
-  // Прямой переход из карточки «Тема недели» на «Сегодня» → экран записи
-  // ответа на ждущий вопрос (ThemeScreen с initialDay).
-  if (sub === 'themeWrite' && theme) {
-    return (
-      <SubScreenBoundary resetKey="themeWrite" onExit={() => changeSub(null)}>
-        <ThemeScreen
-          user={user}
-          themeId={theme.id}
-          initialDay={themeWriteDay}
-          onBack={() => changeSub(null)}
-        />
-      </SubScreenBoundary>
-    )
-  }
-
   // ============================================================
   // ЦИТАТЫ
   // ============================================================
@@ -1326,12 +1309,7 @@ export default function Today({
 
   function handleThemeCardTap() {
     platform.haptic('light')
-    if (themeAllAnswered || !themeWaitingDay) {
-      changeSub('theme')
-    } else {
-      setThemeWriteDay(themeWaitingDay.day)
-      changeSub('themeWrite')
-    }
+    changeSub('theme')
   }
 
   return (

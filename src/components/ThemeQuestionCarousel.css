@@ -32,6 +32,7 @@
 
 /* --- Card --- */
 .mx-tqc-card {
+  cursor: pointer;
   scroll-snap-align: center;
   flex-shrink: 0;
   width: 266px;
@@ -80,9 +81,9 @@
   color: #888;
 }
 
-/* --- Closed card: text fades left-to-right --- */
-.mx-tqc-card[data-open='false'] .mx-tqc-card__question,
-.mx-tqc-card[data-open='false'] .mx-tqc-card__prompt {
+/* --- Closed card: question visible at ~35%, fades left-to-right; prompt hidden --- */
+.mx-tqc-card[data-open='false'] .mx-tqc-card__question {
+  opacity: 0.35;
   -webkit-mask-image: linear-gradient(to right, #000 30%, transparent 75%);
   mask-image: linear-gradient(to right, #000 30%, transparent 75%);
 }
@@ -159,4 +160,8 @@
   .mx-tqc-dots i {
     transition: none;
   }
+}
+
+.mx-tqc-card[data-open='false'] {
+  cursor: default;
 }

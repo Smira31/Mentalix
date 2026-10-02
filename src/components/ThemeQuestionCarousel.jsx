@@ -1,4 +1,5 @@
 import { useState, useRef, useLayoutEffect, useEffect, useMemo } from 'react'
+import { platform } from '../platform'
 import './ThemeQuestionCarousel.css'
 
 /**
@@ -124,14 +125,22 @@ export default function ThemeQuestionCarousel({
   const currentIsOpen = currentCard ? isCardOpen(cards, safeIndex) : false
   const currentIsAnswered = !!currentCard?.reflection
 
-  function handleCTAClick() {
-    if (!currentCard) return
-    if (currentIsAnswered) {
-      onViewAnswer?.(currentCard, safeIndex)
-    } else if (currentIsOpen) {
-      onWrite?.(currentCard, safeIndex)
+  // Одно действие для кнопки под каруселью и для тапа по самой карточке.
+  function activateCard(index) {
+    const card = cards[index]
+    if (!card) return
+    if (card.reflection) {
+      onViewAnswer?.(card, index)
+    } else if (isCardOpen(cards, index)) {
+      onWrite?.(card, index)
+    } else {
+      // Закрытая карточка: только лёгкая вибрация, без перехода
+      platform.haptic('light')
     }
-    // Closed: do nothing
+  }
+
+  function handleCTAClick() {
+    activateCard(safeIndex)
   }
 
   let ctaLabel = 'Начать запись'
@@ -166,10 +175,21 @@ export default function ThemeQuestionCarousel({
               data-answered={answered ? 'true' : 'false'}
               data-active={i === safeIndex ? 'true' : 'false'}
               aria-label={`Вопрос ${q.day ?? i + 1}`}
+              role="button"
+              tabIndex={0}
+              aria-disabled={open ? undefined : 'true'}
+              data-testid="theme-carousel-card"
+              onClick={() => activateCard(i)}
+              onKeyDown={e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  activateCard(i)
+                }
+              }}
             >
               <span className="mx-tqc-card__num">{q.day ?? i + 1}</span>
               <strong className="mx-tqc-card__question">{q.text}</strong>
-              {q.prompt && <span className="mx-tqc-card__prompt">{q.prompt}</span>}
+              {open && q.prompt && <span className="mx-tqc-card__prompt">{q.prompt}</span>}
             </article>
           )
         })}
