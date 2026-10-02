@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Search, ArrowRight } from 'lucide-react'
+import { Search, X } from 'lucide-react'
 
 import { platform } from '../platform'
 import { fetchPracticesData, peekPracticesData } from '../lib/practicesDataCache'
@@ -45,8 +45,8 @@ const PRACTICE_SEARCH_STYLES = `
   display: flex;
   align-items: center;
   gap: 12px;
-  /* под кнопками Telegram: safe-top (включая contentSafeAreaInset) + 56 + воздух */
-  padding: var(--mx-screen-top, 72px) 16px 12px;
+  /* тот же верхний отступ, что у заголовка «практики.»: верх shell (App.jsx) + 12px (верх заголовка «практики.» = shell + space-1 + запас строки) */
+  padding: calc(var(--mx-progress-overlay-top, var(--mx-screen-top, 72px)) + 12px) 16px 12px;
 }
 .mx-steps-search-input {
   flex: 1;
@@ -75,9 +75,12 @@ input.mx-steps-search-input:focus-visible {
   width: 44px;
   height: 44px;
   place-items: center;
-  border: 0;
+  flex-shrink: 0;
+  border: 1px solid rgba(255,255,255,0.15);
   border-radius: 50%;
-  background: transparent;
+  background: rgba(255,255,255,0.04);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   color: #f3f3f3;
   cursor: pointer;
 }
@@ -108,18 +111,43 @@ input.mx-steps-search-input:focus-visible {
   flex-shrink: 0;
 }
 .mx-steps-search-result span .mx-semantic-glyph { width: 80%; height: 80%; }
-.mx-steps-search-result strong { font-size: 16px; font-weight: 500; }
+.mx-steps-search-result strong { font-size: 16px; font-weight: var(--mx-weight-control); }
 .mx-steps-search-empty { padding: 40px 16px; text-align: center; color: #666; font-size: 14px; }
-.mx-steps-search-hint {
-  display: grid;
+.mx-steps-search-start {
+  display: flex;
   min-height: 40vh;
-  place-items: center;
-  margin: 0;
-  color: #666;
-  font-size: 14px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   text-align: center;
 }
+.mx-steps-search-start svg { color: #707070; }
+.mx-steps-search-start h2 { margin: 4px 0 0; color: rgb(var(--c-text)); font-size: 17px; font-weight: var(--mx-weight-heading); }
+.mx-steps-search-start p { margin: 0; color: rgb(var(--c-muted)); font-size: 14px; }
+.mx-steps-search-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.mx-steps-search-chip {
+  height: 32px;
+  padding: 0 14px;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 999px;
+  background: rgba(255,255,255,0.04);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #f3f3f3;
+  font-size: 14px;
+  font-weight: var(--mx-weight-control);
+  cursor: pointer;
+}
 `
+
+const SEARCH_SUGGESTIONS = ['Журнал', 'Даймон', 'Ритуалы', 'Аскезы', 'Тема недели']
 
 function PracticeSearchOverlay({ practices, themes, onOpenPractice, onOpenTheme, onClose }) {
   const [query, setQuery] = useState('')
@@ -152,13 +180,33 @@ function PracticeSearchOverlay({ practices, themes, onOpenPractice, onOpenTheme,
           type="button"
           className="mx-steps-search-close"
           aria-label="Закрыть поиск"
+          data-testid="steps-search-close"
           onClick={onClose}
         >
-          <ArrowRight size={20} />
+          <X size={20} />
         </button>
       </div>
       <div className="mx-steps-search-results">
-        {!q && <p className="mx-steps-search-hint">Ищи практики и темы</p>}
+        {!q && (
+          <div className="mx-steps-search-start" data-testid="steps-search-start">
+            <Search size={20} strokeWidth={1.5} aria-hidden="true" />
+            <h2>Что ищешь?</h2>
+            <p>Практики, темы недели и коллекции</p>
+            <div className="mx-steps-search-chips">
+              {SEARCH_SUGGESTIONS.map(label => (
+                <button
+                  type="button"
+                  key={label}
+                  className="mx-steps-search-chip"
+                  data-testid="steps-search-chip"
+                  onClick={() => setQuery(label)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         {q && matchedPractices.length === 0 && matchedThemes.length === 0 && (
           <p className="mx-steps-search-empty">Ничего не найдено.</p>
         )}
@@ -504,7 +552,7 @@ export default function Practices({
         <button
           type="button"
           onClick={() => loadPractices(true)}
-          className="mt-5 min-h-11 rounded-full bg-cream px-4 py-2 text-[13px] font-semibold text-emerald-deep"
+          className="mt-5 min-h-11 rounded-full bg-cream px-4 py-2 text-[13px] mx-w-control text-emerald-deep"
         >
           Повторить
         </button>

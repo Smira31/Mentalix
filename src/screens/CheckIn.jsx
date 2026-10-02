@@ -88,7 +88,7 @@ const DAY_REVIEW_PROMPT =
 /*
  * MXL-EMOTION-STEP-002 — эмоция → один микро-шаг (ROADMAP.md, пункт 2).
  * Один универсальный драфт для тяжёлых эмоций, не зависящий от того, какая
- * именно из трёх выбрана — Собеседник сам спросит, что происходит.
+ * именно из трёх выбрана — Спутник сам спросит, что происходит.
  */
 const EMOTION_TALK_PROMPT =
   'Сейчас тяжело — не хочу делать вид, что всё в порядке. Хочу просто сказать вслух, что чувствую.'
@@ -1091,7 +1091,7 @@ function CheckInCore({
       }
 
       // MXL-AI-HANDOFF-001: вечерний разбор сохраняется заранее, чтобы
-      // хендофф к Следопыту мог отметить сегодняшнюю запись для AI-контекста.
+      // хендофф к Наблюдателю мог отметить сегодняшнюю запись для AI-контекста.
       if (isEvening) {
         setSavedCheckinId(savedCheckin?.id ?? null)
       }
@@ -1210,7 +1210,7 @@ function CheckInCore({
 
         if (!consent?.enabled) {
           const granted = window.confirm(
-            'Следопыт получит доступ к персональному контексту. Передавать можно только записи, отмеченные тобой: сейчас разрешится сегодняшний разбор — состояние, уроки и победы. Разрешить?'
+            'Наблюдатель получит доступ к персональному контексту. Передавать можно только записи, отмеченные тобой: сейчас разрешится сегодняшний разбор — состояние, уроки и победы. Разрешить?'
           )
 
           if (!granted) {
@@ -1252,10 +1252,10 @@ function CheckInCore({
   }
 
   /*
-   * Тот же переход-хендофф, что openScout(), но к Собеседнику
+   * Тот же переход-хендофф, что openScout(), но к Спутнику
    * (mayak) с одним универсальным драфтом вместо разбора дня.
    * Отдельная функция, а не параметризация openScout() — вечерний
-   * флоу к Следопыту (dnevnik) этим не затрагивается.
+   * флоу к Наблюдателю (dnevnik) этим не затрагивается.
    */
   function openListener() {
     platform.haptic('medium')
@@ -1442,7 +1442,7 @@ function CheckInCore({
               }
             : null
 
-  // Кнопка «Разобрать со Следопытом» убрана с вечернего завершения:
+  // Кнопка «Разобрать с Наблюдателем» убрана с вечернего завершения:
   // остаётся только «Сохранить и выйти». Утро и без того не имело skipAction.
   const skipAction = null
 
@@ -1570,7 +1570,7 @@ function CheckInCore({
             )}
             {isEvening && surprise ? (
               <div className="mt-6 w-full max-w-sm" data-testid="surprise-insight">
-                <p className="mx-type-meta text-muted">Следопыт кое-что заметил</p>
+                <p className="mx-type-meta text-muted">Наблюдатель кое-что заметил</p>
                 <p className="mx-type-body mt-2 text-cream">{surprise}</p>
                 <button
                   type="button"
@@ -1578,7 +1578,7 @@ function CheckInCore({
                   onClick={openSurprise}
                   className="mx-type-control mt-4 min-h-11 rounded-full border border-[rgb(var(--c-border))] px-5 text-cream"
                 >
-                  Обсудить со Следопытом
+                  Обсудить с Наблюдателем
                 </button>
               </div>
             ) : !isEvening ? (

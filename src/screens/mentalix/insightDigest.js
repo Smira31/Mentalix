@@ -5,7 +5,7 @@ import { toLocalCalendarDate } from '../../lib/dateTimezonePolicy'
 import { deriveConclusions, MIN_CHECKINS } from '../Analytics'
 import { insightIntervalElapsed } from './surpriseRules'
 
-// ── «Дайджест от Следопыта» (ROADMAP.md, идея 3) ──
+// ── «Дайджест от Наблюдателя» (ROADMAP.md, идея 3) ──
 //
 // Реплика рождается целиком на фронте: та же deriveConclusions, что
 // считает находки для «Тренды» в Analytics.jsx, только вставляется
@@ -42,7 +42,7 @@ function todayIso() {
 }
 
 /*
- * Возвращает синтетическое сообщение-реплику Следопыта или null,
+ * Возвращает синтетическое сообщение-реплику Наблюдателя или null,
  * если показывать нечего: рано (< 4 дней с прошлого раза), данных
  * мало (< MIN_CHECKINS чек-инов — та же отсечка, что у самого
  * «Главного вывода» в Analytics.jsx) или значимых находок не нашлось.

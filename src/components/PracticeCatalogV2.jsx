@@ -14,18 +14,17 @@ function PracticeGlyph({ kind, highlighted = false }) {
 }
 
 /* ── 2. Большая карточка журнала ── */
-/* showArt: левая колонка под иллюстрацию. По умолчанию включается сама,
-   когда в assets/illustrations появится stepsHero (journalIntro) — либо
-   передай showArt явно. Пока картинки нет, текст занимает всю ширину. */
-function JournalBanner({ onOpen, showArt = Boolean(illustrations.stepsHero) }) {
-  const HeroArt = illustrations.stepsHero
+function JournalBanner({ onOpen }) {
   return (
-    <article className={`mx-steps-journal${showArt ? '' : ' mx-steps-journal--no-art'}`}>
-      {showArt && (
-        <div className="mx-steps-journal__art" aria-hidden="true">
-          {HeroArt ? <HeroArt /> : null}
-        </div>
-      )}
+    <article className="mx-steps-journal">
+      <div className="mx-steps-journal__art" aria-hidden="true">
+        {illustrations.stepsHero
+          ? (() => {
+              const HeroArt = illustrations.stepsHero
+              return <HeroArt />
+            })()
+          : null}
+      </div>
       <div className="mx-steps-journal__body">
         <span className="mx-steps-journal__label">Журнал · сегодня</span>
         <h2 className="mx-steps-journal__title">Страница для себя</h2>
@@ -91,7 +90,7 @@ function PracticeRail({ practices, onOpen }) {
     },
     {
       key: 'lion-action',
-      title: 'Импульс к действию со Львом',
+      title: 'Импульс со Львом',
       category: 'Мотивация',
       description: 'Мягкий толчок к делу, которое давно откладываешь',
       status: 'СКОРО',

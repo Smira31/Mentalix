@@ -19,6 +19,7 @@ import { isGuestUser, resetGuestState, dispatchGuestMerged } from '../lib/guestA
 
 import PersonaPicker from './mentalix/PersonaPicker'
 import Conversation from './mentalix/Conversation'
+import AllConversationsScreen from './mentalix/AllConversationsScreen'
 
 // ============================================================
 // ЭКРАН ГОСТЯ ДЛЯ ИИ
@@ -30,7 +31,7 @@ function isGuestAiForbidden(error) {
 
 export function GuestAiGate({
   onLogin,
-  message = 'Войди, чтобы поговорить со Следопытом',
+  message = 'Войди, чтобы поговорить с Наблюдателем',
   buttonLabel = 'Войти',
   testId = 'guest-ai-gate',
   buttonTestId = 'guest-ai-login-button',
@@ -65,6 +66,7 @@ function handleGuestLogin() {
 export function ConversationChat({
   user,
   persona,
+  conversationId = null,
   initialText = '',
   initialPrompt = null,
   initialDisplayText = null,
@@ -78,16 +80,21 @@ export function ConversationChat({
   refreshSignal = 0,
   onBack,
   onGuestForbidden,
+  onNewConversation,
 }) {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState(initialText)
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const [sendError, setSendError] = useState('')
+  const [dailyLimit, setDailyLimit] = useState(false)
   const lastFailedSend = useRef(null)
   const initialPromptSent = useRef(false)
   const handoffRef = useRef(initialHandoff)
   const localMessageSequence = useRef(0)
+  // conversationId из ответа send — используется для последующих отправок,
+  // не вызывает ре-рендер (хранится в ref).
+  const conversationIdRef = useRef(conversationId)
   const userId = user?.id
 
   useEffect(() => {
@@ -95,26 +102,33 @@ export function ConversationChat({
 
     let cancelled = false
 
-    fetchHistory(userId, persona)
+    // Конкретный разговор — через /conversations/{id}/messages;
+    // без conversation_id — последний разговор роли (как раньше).
+    const historyPromise = conversationIdRef.current
+      ? api.mentalix.conversationMessages(conversationIdRef.current, userId)
+      : fetchHistory(userId, persona)
+
+    historyPromise
       .then(async history => {
         if (cancelled) return
 
+        const normalized = Array.isArray(history) ? history : []
         let combined = initialInsight
           ? [
               {
                 role: 'assistant',
                 content: `Кое-что заметил, пока смотрел твои дни. ${initialInsight}`,
               },
-              ...history,
+              ...normalized,
             ]
-          : history
+          : normalized
 
-        // «Дайджест от Следопыта» (ROADMAP.md, идея 3): только при обычном
+        // «Дайджест от Наблюдателя» (ROADMAP.md, идея 3): только при обычном
         // входе в dnevnik, не через openScout()-хендофф вечернего разбора.
-        if (persona === 'dnevnik' && !viaHandoff) {
+        if (persona === 'dnevnik' && !viaHandoff && !conversationIdRef.current) {
           const insight = await maybeBuildInsightMessage(user)
 
-          if (insight && !cancelled) combined = [insight, ...history]
+          if (insight && !cancelled) combined = [insight, ...normalized]
         }
 
         // MXL-AI-REFRAME-001: лид-дисклеймер только для хендоффа «Обсудить
@@ -140,7 +154,7 @@ export function ConversationChat({
     }
     // The request is scoped to stable userId/persona inputs, not the mutable user object.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId, persona, viaHandoff, withSafetyNotice, refreshSignal])
+  }, [userId, persona, viaHandoff, withSafetyNotice, refreshSignal, conversationId])
 
   async function send(overrideText, displayText = overrideText, { appendUser = true } = {}) {
     const isVoiceMessage = typeof overrideText === 'string'
@@ -151,6 +165,7 @@ export function ConversationChat({
 
     if (!isVoiceMessage) setInput('')
     setSendError('')
+    setDailyLimit(false)
 
     if (appendUser) {
       localMessageSequence.current += 1
@@ -178,8 +193,12 @@ export function ConversationChat({
 
     try {
       const reply = handoff
-        ? await api.mentalix.send(user.id, text, persona, handoff)
-        : await api.mentalix.send(user.id, text, persona)
+        ? await api.mentalix.send(user.id, text, persona, handoff, conversationIdRef.current)
+        : await api.mentalix.send(user.id, text, persona, null, conversationIdRef.current)
+
+      // Сохраняем conversationId из ответа для последующих отправок.
+      if (reply?.conversationId) conversationIdRef.current = reply.conversationId
+
       const replyContent = messageContent(reply)
       const safeReply = {
         ...reply,
@@ -193,6 +212,15 @@ export function ConversationChat({
       console.error(error)
       if (isGuestAiForbidden(error)) {
         onGuestForbidden?.()
+        return
+      }
+      // 429 daily_limit: спокойная строка, поле неактивно, набранный текст не теряется
+      if (
+        error?.status === 429 &&
+        String(error?.body?.detail || error?.message || '').includes('daily_limit')
+      ) {
+        if (!isVoiceMessage) setInput(text)
+        setDailyLimit(true)
         return
       }
       lastFailedSend.current = { text, visibleText }
@@ -228,9 +256,11 @@ export function ConversationChat({
       sending={sending}
       onSend={send}
       onBack={onBack}
+      onNewConversation={onNewConversation}
       contextSlot={contextSlot}
       footerSlot={footerSlot}
       sendError={sendError}
+      dailyLimit={dailyLimit}
       onRetry={retryLastSend}
     />
   )
@@ -240,7 +270,7 @@ export function ConversationChat({
 // MENTALIX
 // ============================================================
 
-export default function MentalixChat({ user, onPersonaChange, onRegisterBack }) {
+export default function MentalixChat({ user, onPersonaChange, onRegisterBack, onOpenDaimon }) {
   const [pending, setPending] = useState(() => readPendingMentor())
   const [surpriseMessage] = useState(() =>
     pending.persona === 'dnevnik' ? sessionStorage.getItem(SURPRISE_MESSAGE_KEY) : null
@@ -249,6 +279,9 @@ export default function MentalixChat({ user, onPersonaChange, onRegisterBack }) 
   const [draft, setDraft] = useState(pending.draft)
   const [guestForbidden, setGuestForbidden] = useState(false)
   const [refreshSignal, setRefreshSignal] = useState(0)
+  const [conversationId, setConversationId] = useState(null)
+  const [creatingConversation, setCreatingConversation] = useState(false)
+  const [showAllConversations, setShowAllConversations] = useState(false)
 
   // Тихий фоновый рефетч истории диалога при возврате на вкладку или из фона
   useTabRefresh('mentor', () => {
@@ -257,6 +290,28 @@ export default function MentalixChat({ user, onPersonaChange, onRegisterBack }) 
       setRefreshSignal(s => s + 1)
     }
   })
+
+  // Хендофф (вечерний разбор, «Обсудить с AI» и др.): создаём НОВЫЙ разговор,
+  // чтобы старые темы не смешивались. Создание упало — чат без conversation_id.
+  const handoffConversationCreated = useRef(false)
+  useEffect(() => {
+    if (!pending.persona || handoffConversationCreated.current || !user?.id) return
+    handoffConversationCreated.current = true
+    let cancelled = false
+    setCreatingConversation(true)
+    api.mentalix
+      .createConversation(user.id, pending.persona)
+      .then(conv => {
+        if (!cancelled && conv?.id) setConversationId(conv.id)
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setCreatingConversation(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   useEffect(() => {
     // Read without side effects during render: StrictMode repeats state initializers.
@@ -278,7 +333,33 @@ export default function MentalixChat({ user, onPersonaChange, onRegisterBack }) 
     }
     setDraft('')
     setPersona(null)
+    setConversationId(null)
     setPending({ persona: null, draft: '', safety: false, handoff: null })
+  }, [])
+
+  // «Новый разговор» из чата: создаём новый разговор той же роли.
+  const handleNewConversation = useCallback(() => {
+    if (!user?.id || !persona) return
+    platform.haptic('light')
+    setCreatingConversation(true)
+    api.mentalix
+      .createConversation(user.id, persona)
+      .then(conv => {
+        if (conv?.id) {
+          setConversationId(conv.id)
+          setDraft('')
+        }
+      })
+      .catch(() => {})
+      .finally(() => setCreatingConversation(false))
+  }, [user?.id, persona])
+
+  // «Продолжить разговор»: открыть существующий разговор с историей.
+  const handleContinueConversation = useCallback(conv => {
+    setPersona(conv.persona)
+    setDraft('')
+    setConversationId(conv.id)
+    setShowAllConversations(false)
   }, [])
 
   useEffect(() => {
@@ -303,22 +384,46 @@ export default function MentalixChat({ user, onPersonaChange, onRegisterBack }) 
     return <GuestAiGate onLogin={handleGuestLogin} />
   }
 
+  if (showAllConversations) {
+    return (
+      <AllConversationsScreen
+        user={user}
+        onSelect={handleContinueConversation}
+        onBack={() => setShowAllConversations(false)}
+      />
+    )
+  }
+
   if (!persona) {
     return (
       <PersonaPicker
         user={user}
-        onPick={(key, text) => {
+        onPick={(key, text, convId) => {
           setDraft(text || '')
           setPersona(key)
+          setConversationId(convId || null)
         }}
+        onContinueConversation={handleContinueConversation}
+        onShowAllConversations={() => setShowAllConversations(true)}
+        onOpenDaimon={onOpenDaimon}
       />
+    )
+  }
+
+  if (creatingConversation) {
+    return (
+      <div className="flex items-center justify-center" style={{ minHeight: '60vh' }}>
+        <p className="text-muted text-[14px]">Загрузка...</p>
+      </div>
     )
   }
 
   return (
     <ConversationChat
+      key={conversationId || 'new'}
       user={user}
       persona={persona}
+      conversationId={conversationId}
       initialText={draft}
       initialInsight={surpriseMessage}
       initialHandoff={
@@ -329,6 +434,7 @@ export default function MentalixChat({ user, onPersonaChange, onRegisterBack }) 
       refreshSignal={refreshSignal}
       onBack={exitConversation}
       onGuestForbidden={() => setGuestForbidden(true)}
+      onNewConversation={handleNewConversation}
     />
   )
 }

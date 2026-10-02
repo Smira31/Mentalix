@@ -23,6 +23,7 @@ export default defineConfig({
     'today-subscreen-navigation.spec.mjs',
     'daily-journal-flow.spec.mjs',
     'typography-weights.spec.mjs',
+    'dialog-screen.spec.mjs',
   ],
   outputDir: 'artifacts/ux-check/playwright-output',
   fullyParallel: false,

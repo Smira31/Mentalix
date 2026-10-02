@@ -786,10 +786,46 @@ export const api = {
         body: JSON.stringify({ date, task_id: taskId, status }),
       }),
 
-    history: (userId, persona = 'mayak') =>
-      request(withQuery('/mentalix/messages', { user_id: userId, persona })),
+    history: (userId, persona = 'mayak', conversationId = null) =>
+      request(
+        withQuery('/mentalix/messages', {
+          user_id: userId,
+          persona,
+          ...(conversationId ? { conversation_id: conversationId } : {}),
+        })
+      ),
 
-    send: (userId, content, persona = 'mayak', handoff = null) =>
+    /*
+     * Отдельные разговоры (prefix /api/mentalix):
+     *   GET  /conversations?user_id=&limit=5&persona= → список разговоров
+     *   POST /conversations {"user_id","persona"} → новый разговор
+     *   GET  /conversations/{id}/messages?user_id= → сообщения разговора
+     * POST /messages принимает необязательный conversation_id; в ответе —
+     * доп. поле conversationId. Без conversation_id — в последний разговор роли.
+     */
+    listConversations: (userId, { limit = 5, persona = null } = {}) =>
+      request(
+        withQuery('/mentalix/conversations', {
+          user_id: userId,
+          limit,
+          ...(persona ? { persona } : {}),
+        }),
+        { silentDiagnostics: true }
+      ),
+
+    createConversation: (userId, persona) =>
+      request('/mentalix/conversations', {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId, persona }),
+      }),
+
+    conversationMessages: (conversationId, userId) =>
+      request(
+        withQuery(`/mentalix/conversations/${conversationId}/messages`, { user_id: userId }),
+        { silentDiagnostics: true }
+      ),
+
+    send: (userId, content, persona = 'mayak', handoff = null, conversationId = null) =>
       request('/mentalix/messages', {
         method: 'POST',
         body: JSON.stringify({
@@ -797,6 +833,7 @@ export const api = {
           content,
           persona,
           ...(handoff ? { handoff } : {}),
+          ...(conversationId ? { conversation_id: conversationId } : {}),
         }),
       }),
 

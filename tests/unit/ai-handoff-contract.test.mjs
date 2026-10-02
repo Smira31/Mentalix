@@ -15,7 +15,7 @@ test('openScout — async: сначала проверяет мастер-сог
 
 test('openScout включает мастер-согласие только после явного подтверждения', () => {
   assert.match(checkinSource, /window\.confirm\(/)
-  assert.match(checkinSource, /Следопыт получит доступ к персональному контексту/)
+  assert.match(checkinSource, /Наблюдатель получит доступ к персональному контексту/)
   assert.match(checkinSource, /Передавать можно только записи, отмеченные тобой/)
   assert.match(checkinSource, /api\.mentalix\.setContextConsent\(user\.id, true\)/)
 })
@@ -38,7 +38,7 @@ test('сбой разрешения не роняет флоу: ошибка в�
   assert.match(checkinSource, /scoutBusy/)
 })
 
-test('хендофф сохраняет прежний переход к Следопыту (dnevnik + разбор дня)', () => {
+test('хендофф сохраняет прежний переход к Наблюдателю (dnevnik + разбор дня)', () => {
   assert.match(checkinSource, /MENTOR_PERSONA_KEY, 'dnevnik'/)
   assert.match(checkinSource, /MENTOR_DRAFT_KEY, DAY_REVIEW_PROMPT/)
   assert.match(checkinSource, /url\.searchParams\.set\('tab', 'mentor'\)/)
