@@ -180,7 +180,7 @@ export default function PersonaPicker({
       const conv = userId ? await api.mentalix.createConversation(userId, persona.key) : null
       onPick(persona.key, '', conv?.id || null)
     } catch {
-      onPick(persona.key, '')
+      onPick(persona.key, '', null, true)
     } finally {
       setCreating(false)
     }
@@ -195,7 +195,7 @@ export default function PersonaPicker({
       const conv = userId ? await api.mentalix.createConversation(userId, persona.key) : null
       onPick(persona.key, chipText, conv?.id || null)
     } catch {
-      onPick(persona.key, chipText)
+      onPick(persona.key, chipText, null, true)
     } finally {
       setCreating(false)
     }

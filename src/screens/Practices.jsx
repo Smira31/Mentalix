@@ -328,6 +328,8 @@ export default function Practices({
   onGameChange,
   onReturnToToday,
   onGuestLogin,
+  daimonFromMentor = false,
+  onReturnToMentor,
 }) {
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchKeyboardOpen, setSearchKeyboardOpen] = useState(false)
@@ -363,13 +365,19 @@ export default function Practices({
   const [enteredFromToday, setEnteredFromToday] = useState(() => initialSub != null)
 
   const backToList = useCallback(() => {
+    if (daimonFromMentor) {
+      setSub(null)
+      setEnteredFromToday(false)
+      onReturnToMentor?.()
+      return
+    }
     if (enteredFromToday) {
       setEnteredFromToday(false)
       onReturnToToday?.()
       return
     }
     setSub(null)
-  }, [enteredFromToday, onReturnToToday])
+  }, [daimonFromMentor, enteredFromToday, onReturnToMentor, onReturnToToday])
 
   const [initialPracticesData] = useState(() => (user ? peekPracticesData(user.id) : null))
   const [initialThemesData] = useState(() => (user ? peekThemesData(user.id) : null))

@@ -81,6 +81,8 @@ export function ConversationChat({
   onBack,
   onGuestForbidden,
   onNewConversation,
+  creationError = false,
+  onRetryCreation,
 }) {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState(initialText)
@@ -98,7 +100,10 @@ export function ConversationChat({
   const userId = user?.id
 
   useEffect(() => {
-    if (!userId) return
+    if (!userId || creationError) {
+      setLoading(false)
+      return
+    }
 
     let cancelled = false
 
@@ -154,14 +159,14 @@ export function ConversationChat({
     }
     // The request is scoped to stable userId/persona inputs, not the mutable user object.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId, persona, viaHandoff, withSafetyNotice, refreshSignal, conversationId])
+  }, [userId, persona, viaHandoff, withSafetyNotice, refreshSignal, conversationId, creationError])
 
   async function send(overrideText, displayText = overrideText, { appendUser = true } = {}) {
     const isVoiceMessage = typeof overrideText === 'string'
     const text = (isVoiceMessage ? overrideText : input).trim()
     const visibleText = (typeof displayText === 'string' ? displayText : text).trim() || text
 
-    if (!text || sending) return
+    if (!text || sending || dailyLimit || creationError) return
 
     if (!isVoiceMessage) setInput('')
     setSendError('')
@@ -224,19 +229,19 @@ export function ConversationChat({
         return
       }
       lastFailedSend.current = { text, visibleText }
-      setSendError('Не удалось получить ответ. Попробуй ещё раз.')
+      setSendError('Не отправлено ·')
     } finally {
       setSending(false)
     }
   }
 
   useEffect(() => {
-    if (loading || !initialPrompt || initialPromptSent.current) return
+    if (loading || creationError || !initialPrompt || initialPromptSent.current) return
     initialPromptSent.current = true
     void send(initialPrompt, initialDisplayText || initialPrompt)
     // send intentionally remains the local action function for this one-shot handoff.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading, initialPrompt, initialDisplayText])
+  }, [loading, creationError, initialPrompt, initialDisplayText])
 
   function retryLastSend() {
     const failed = lastFailedSend.current
@@ -262,6 +267,8 @@ export function ConversationChat({
       sendError={sendError}
       dailyLimit={dailyLimit}
       onRetry={retryLastSend}
+      creationError={creationError}
+      onRetryCreation={onRetryCreation}
     />
   )
 }
@@ -281,6 +288,7 @@ export default function MentalixChat({ user, onPersonaChange, onRegisterBack, on
   const [refreshSignal, setRefreshSignal] = useState(0)
   const [conversationId, setConversationId] = useState(null)
   const [creatingConversation, setCreatingConversation] = useState(false)
+  const [creationError, setCreationError] = useState(false)
   const [showAllConversations, setShowAllConversations] = useState(false)
 
   // Тихий фоновый рефетч истории диалога при возврате на вкладку или из фона
@@ -292,7 +300,7 @@ export default function MentalixChat({ user, onPersonaChange, onRegisterBack, on
   })
 
   // Хендофф (вечерний разбор, «Обсудить с AI» и др.): создаём НОВЫЙ разговор,
-  // чтобы старые темы не смешивались. Создание упало — чат без conversation_id.
+  // чтобы старые темы не смешивались. При ошибке ждём явного повтора.
   const handoffConversationCreated = useRef(false)
   useEffect(() => {
     if (!pending.persona || handoffConversationCreated.current || !user?.id) return
@@ -304,7 +312,9 @@ export default function MentalixChat({ user, onPersonaChange, onRegisterBack, on
       .then(conv => {
         if (!cancelled && conv?.id) setConversationId(conv.id)
       })
-      .catch(() => {})
+      .catch(() => {
+        if (!cancelled) setCreationError(true)
+      })
       .finally(() => {
         if (!cancelled) setCreatingConversation(false)
       })
@@ -332,6 +342,7 @@ export default function MentalixChat({ user, onPersonaChange, onRegisterBack, on
       // Leaving the chat must work without sessionStorage.
     }
     setDraft('')
+    setCreationError(false)
     setPersona(null)
     setConversationId(null)
     setPending({ persona: null, draft: '', safety: false, handoff: null })
@@ -342,20 +353,22 @@ export default function MentalixChat({ user, onPersonaChange, onRegisterBack, on
     if (!user?.id || !persona) return
     platform.haptic('light')
     setCreatingConversation(true)
+    setCreationError(false)
     api.mentalix
       .createConversation(user.id, persona)
       .then(conv => {
         if (conv?.id) {
           setConversationId(conv.id)
-          setDraft('')
+          if (!creationError) setDraft('')
         }
       })
-      .catch(() => {})
+      .catch(() => setCreationError(true))
       .finally(() => setCreatingConversation(false))
-  }, [user?.id, persona])
+  }, [user?.id, persona, creationError])
 
   // «Продолжить разговор»: открыть существующий разговор с историей.
   const handleContinueConversation = useCallback(conv => {
+    setCreationError(false)
     setPersona(conv.persona)
     setDraft('')
     setConversationId(conv.id)
@@ -398,7 +411,8 @@ export default function MentalixChat({ user, onPersonaChange, onRegisterBack, on
     return (
       <PersonaPicker
         user={user}
-        onPick={(key, text, convId) => {
+        onPick={(key, text, convId, failed = false) => {
+          setCreationError(failed)
           setDraft(text || '')
           setPersona(key)
           setConversationId(convId || null)
@@ -435,6 +449,8 @@ export default function MentalixChat({ user, onPersonaChange, onRegisterBack, on
       onBack={exitConversation}
       onGuestForbidden={() => setGuestForbidden(true)}
       onNewConversation={handleNewConversation}
+      creationError={creationError}
+      onRetryCreation={handleNewConversation}
     />
   )
 }

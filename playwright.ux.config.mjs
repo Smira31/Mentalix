@@ -25,6 +25,7 @@ export default defineConfig({
     'typography-weights.spec.mjs',
     'steps-reliability.spec.mjs',
     'dialog-screen.spec.mjs',
+    'dialog-errors.spec.mjs',
   ],
   outputDir: 'artifacts/ux-check/playwright-output',
   fullyParallel: false,

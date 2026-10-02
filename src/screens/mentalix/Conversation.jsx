@@ -47,6 +47,8 @@ export default function Conversation({
   sendError = '',
   dailyLimit = false,
   onRetry,
+  creationError = false,
+  onRetryCreation,
 }) {
   const meta = personaMeta || PERSONAS.find(item => item.key === persona) || PERSONAS[0]
 
@@ -130,7 +132,7 @@ export default function Conversation({
   }
 
   async function sendFromComposer() {
-    if (!input.trim() || sending) return
+    if (!input.trim() || sending || dailyLimit || creationError) return
 
     restoreComposerFocusRef.current = document.activeElement === inputRef.current
     await onSend()
@@ -370,6 +372,23 @@ export default function Conversation({
         ref={scrollRef}
         className={`${FULLSCREEN_SCROLL_CLASS} mx-conversation-scroll px-[var(--mx-screen-x)] pb-6`}
       >
+        {!loading && creationError && (
+          <div
+            role="alert"
+            data-testid="conversation-create-error"
+            className="mx-ai-meta rounded-2xl bg-cream/5 px-4 py-3 text-muted"
+          >
+            <p>Не удалось создать разговор.</p>
+            <button
+              type="button"
+              data-testid="conversation-create-retry"
+              onClick={onRetryCreation}
+              className="mx-w-control text-gold"
+            >
+              Повторить
+            </button>
+          </div>
+        )}
         {!loading && contextSlot}
 
         {loading && <p className="text-muted text-[14px] text-center pt-4">Загрузка...</p>}
@@ -454,13 +473,16 @@ export default function Conversation({
           {sendError && (
             <div
               role="alert"
+              data-testid="conversation-send-error"
               className="flex items-center justify-between gap-3 rounded-2xl bg-cream/5 px-4 py-3 text-[12px] text-muted"
             >
               <span>{sendError}</span>
               {onRetry && (
                 <button
                   type="button"
+                  data-testid="conversation-send-retry"
                   onClick={onRetry}
+                  disabled={sending || dailyLimit}
                   className="shrink-0 mx-w-control text-gold"
                 >
                   Повторить
@@ -516,7 +538,7 @@ export default function Conversation({
             ref={inputRef}
             value={input}
             data-testid="mentor-input"
-            disabled={dailyLimit}
+            disabled={dailyLimit || creationError}
 
             onFocus={() => {
               restoreComposerFocusRef.current = true
@@ -664,10 +686,14 @@ export default function Conversation({
                     },
                   })}
 
+              data-testid="mentor-send"
               disabled={
-                hasText && voiceState === 'idle'
+                dailyLimit ||
+                creationError ||
+                loading ||
+                (hasText && voiceState === 'idle'
                   ? sending || !hasText
-                  : sending || voiceState === 'transcribing'
+                  : sending || voiceState === 'transcribing')
               }
 
               className={[
