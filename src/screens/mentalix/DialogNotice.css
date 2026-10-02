@@ -2,9 +2,12 @@
  * Общий инлайн-баннер ошибки «Диалога»: текст muted, «Повторить» —
  * стеклянная кнопка-пилюля. Используется в чате, на входе «Диалога»
  * и в списках разговоров.
+ *
+ * Классы общие для всех трёх мест (`mx-conversation-notice` /
+ * `mx-conversation-retry`): файл подключается там, где баннер рендерится.
  */
 
-.mx-dialog-notice {
+.mx-conversation-notice {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -13,7 +16,7 @@
   text-align: center;
 }
 
-.mx-dialog-retry {
+.mx-conversation-retry {
   min-height: 32px;
   padding: 4px var(--mx-space-3);
   border: 1px solid rgb(var(--c-line) / 0.1);
@@ -25,6 +28,6 @@
   white-space: nowrap;
 }
 
-.mx-dialog-retry:active {
+.mx-conversation-retry:active {
   border-color: rgb(var(--c-gold) / 0.4);
 }

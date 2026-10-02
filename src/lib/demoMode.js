@@ -837,7 +837,8 @@ function daimonTestMode() {
  * Каждый сбой одноразовый (кроме sendError — дважды), чтобы проверить,
  * что «Повторить» действительно повторяет запрос и он проходит.
  *   historyError — не грузится история разговора
- *   listError    — падает список разговоров (и «Продолжить», и «Все»)
+ *   listError    — падает список разговоров: по одному разу на каждый запрос
+ *                  (и «Продолжить разговор», и «Все разговоры»)
  *   createError  — падает создание разговора
  *   sendError    — две неудачные отправки подряд
  *   dailyLimit   — первая отправка отдаёт 429 daily_limit
@@ -862,6 +863,7 @@ let dialogTestState = {
   mode: null,
   historyFailed: false,
   listFailed: false,
+  listFailedLimits: new Set(),
   createFailed: false,
   limitFailed: false,
   sendFailuresLeft: 0,
@@ -873,6 +875,7 @@ function dialogTestCounters(mode) {
       mode,
       historyFailed: false,
       listFailed: false,
+      listFailedLimits: new Set(),
       createFailed: false,
       limitFailed: false,
       sendFailuresLeft: mode === 'sendError' ? 2 : 0,
@@ -999,14 +1002,14 @@ function respond(path, options = {}) {
       counters.historyFailed = true
       throw fail(500)
     }
-    if (
-      dialogTest === 'listError' &&
-      pathname === '/mentalix/conversations' &&
-      method === 'GET' &&
-      !counters.listFailed
-    ) {
-      counters.listFailed = true
-      throw fail(500)
+    if (dialogTest === 'listError' && pathname === '/mentalix/conversations' && method === 'GET') {
+      // Сбой по одному разу на каждый запрос списка: «Продолжить разговор»
+      // (limit 4) и «Все разговоры» (limit 50) проверяются независимо.
+      const limitKey = url.searchParams.get('limit') || 'default'
+      if (!counters.listFailedLimits.has(limitKey)) {
+        counters.listFailedLimits.add(limitKey)
+        throw fail(500)
+      }
     }
     if (
       dialogTest === 'createError' &&

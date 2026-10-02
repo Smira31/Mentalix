@@ -57,12 +57,14 @@ export function mskDateParts(value) {
 
 export function mskDayKey(value) {
   const parts = mskDateParts(value)
-  return parts ? `${parts.year}-${parts.month}-${parts.day}` : null
+  if (!parts) return null
+  // Ключ всегда в ISO-виде (YYYY-MM-DD): день/месяц с ведущим нулём,
+  // иначе он не совпадает с датами бэкенда и не сортируется как строка.
+  return `${parts.year}-${String(parts.month).padStart(2, '0')}-${String(parts.day).padStart(2, '0')}`
 }
 
 function dayKeyOf(value) {
-  const parts = mskDateParts(value)
-  return parts ? `${parts.year}-${parts.month}-${parts.day}` : null
+  return mskDayKey(value)
 }
 
 /*
@@ -100,4 +102,31 @@ export function mskRelativeListLabel(value, now = new Date()) {
   if (key === dayKeyOf(yesterday)) return 'вчера'
 
   return `${parts.day} ${MONTHS_SHORT[parts.month - 1]}`
+}
+
+/*
+ * Миллисекунды до ближайшей полуночи по МСК. Москва — фиксированный UTC+3
+ * (без перехода на летнее время), поэтому достаточно досчитать остаток
+ * текущих суток по часам/минутам/секундам МСК. Используется, чтобы сбросить
+ * дневной лимит разговоров ровно в 00:00 по Москве, а не через интервал.
+ */
+export function msUntilNextMskMidnight(now = new Date()) {
+  const date = toDate(now)
+  if (!date) return 0
+
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/Moscow',
+    hourCycle: 'h23',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  }).formatToParts(date)
+
+  const map = Object.fromEntries(parts.map(({ type, value }) => [type, value]))
+  const hour = Number(map.hour)
+  const minute = Number(map.minute)
+  const second = Number(map.second)
+
+  const secondsLeft = (23 - hour) * 3600 + (59 - minute) * 60 + (60 - second)
+  return Math.max(0, secondsLeft) * 1000
 }

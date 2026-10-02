@@ -285,6 +285,8 @@ export default function Practices({
   onRegisterBack,
   onReturnToToday,
   onGuestLogin,
+  daimonFromMentor = false,
+  onReturnToMentor,
 }) {
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchKeyboardOpen, setSearchKeyboardOpen] = useState(false)
@@ -319,6 +321,13 @@ export default function Practices({
     }
     setSub(null)
   }, [enteredFromToday, onReturnToToday])
+
+  // Даймон, открытый из «Диалога» (карточка ролей), при закрытии возвращает
+  // в «Диалог», а не в каталог «практики.»: сбрасываем и вкладку каталога.
+  const closeDaimon = useCallback(() => {
+    setSub(null)
+    if (daimonFromMentor) onReturnToMentor?.()
+  }, [daimonFromMentor, onReturnToMentor])
 
   const [initialPracticesData] = useState(() => (user ? peekPracticesData(user.id) : null))
   const [initialThemesData] = useState(() => (user ? peekThemesData(user.id) : null))
@@ -520,7 +529,7 @@ export default function Practices({
   }
 
   if (sub === 'daimon') {
-    return <DaimonFlow userId={user.id} onClose={() => setSub(null)} onGuestLogin={onGuestLogin} />
+    return <DaimonFlow userId={user.id} onClose={closeDaimon} onGuestLogin={onGuestLogin} />
   }
 
   // Убранные практики (Настроение, Альтер-эго) — мягкий редирект на «Сегодня»

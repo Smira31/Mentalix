@@ -21,6 +21,7 @@ import { isGuestUser, resetGuestState, dispatchGuestMerged } from '../lib/guestA
 import PersonaPicker from './mentalix/PersonaPicker'
 import Conversation from './mentalix/Conversation'
 import AllConversationsScreen from './mentalix/AllConversationsScreen'
+import './mentalix/DialogNotice.css'
 
 // ============================================================
 // ЭКРАН ГОСТЯ ДЛЯ ИИ

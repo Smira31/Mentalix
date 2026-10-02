@@ -25,6 +25,7 @@ import {
   messageContent,
 } from '../../lib/journalPresentation'
 import './Conversation.css'
+import './DialogNotice.css'
 
 /*
  * Единый инлайн-баннер ошибки в стиле «Диалога»: текст muted,
