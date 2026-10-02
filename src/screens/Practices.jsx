@@ -182,6 +182,7 @@ import Rituals from './Rituals'
 import Ascezas from './Ascezas'
 import GuidedSelfDiscoveryFlow from './GuidedSelfDiscoveryFlow'
 import LilaDiscoverFlow from './LilaDiscoverFlow'
+import DaimonFlow from './Daimon/DaimonFlow'
 import ThemeCarouselScreen from './ThemeCarouselScreen'
 
 function PracticesCatalogLoading() {
@@ -260,7 +261,7 @@ export default function Practices({
   const [selectedThemeId, setSelectedThemeId] = useState(null)
   const [isLoading, setIsLoading] = useState(!initialPracticesData)
   const [loadError, setLoadError] = useState(null)
-  const focusedFlowOpen = ['journal', 'self-discovery', 'lila-discover'].includes(sub)
+  const focusedFlowOpen = ['journal', 'self-discovery', 'lila-discover', 'daimon'].includes(sub)
   const nestedFlowOpen = focusedFlowOpen || Boolean(selectedThemeId)
 
   useEffect(() => {
@@ -419,6 +420,10 @@ export default function Practices({
 
   if (sub === 'self-discovery') {
     return <GuidedSelfDiscoveryFlow userId={user.id} onClose={() => setSub(null)} />
+  }
+
+  if (sub === 'daimon') {
+    return <DaimonFlow userId={user.id} onClose={() => setSub(null)} />
   }
 
   if (sub === 'lila-discover') {
