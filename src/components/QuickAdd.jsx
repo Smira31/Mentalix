@@ -47,8 +47,8 @@ function Item({ Icon, label, hint, onClick, delay, open }) {
     >
       <Icon size={18} strokeWidth={2} className="shrink-0" />
       <span className="flex-1 text-left">
-        <span className="block text-[15px] font-bold leading-tight">{label}</span>
-        {hint && <span className="block text-[11.5px] font-semibold opacity-50">{hint}</span>}
+        <span className="block text-[15px] mx-w-heading leading-tight">{label}</span>
+        {hint && <span className="block text-[11.5px] mx-w-control opacity-50">{hint}</span>}
       </span>
     </button>
   )

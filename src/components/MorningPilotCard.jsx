@@ -90,7 +90,7 @@ export default function MorningPilotCard({
   if (todayFocusPicked) {
     return (
       <div className="rounded-[24px] bg-emerald px-5 py-4 mb-4 border border-cream/10 animate-fade-in">
-        <span className="block font-label text-[11px] font-bold uppercase tracking-wider text-gold mb-1">
+        <span className="block font-label text-[11px] mx-w-heading uppercase tracking-wider text-gold mb-1">
           Утро учтено
         </span>
 
@@ -106,7 +106,7 @@ export default function MorningPilotCard({
   if (resolution) {
     return (
       <div className="rounded-[24px] bg-emerald px-5 py-4 mb-4 border border-cream/10 animate-fade-in">
-        <span className="block font-label text-[11px] font-bold uppercase tracking-wider text-gold mb-1">
+        <span className="block font-label text-[11px] mx-w-heading uppercase tracking-wider text-gold mb-1">
           Утро учтено
         </span>
 
@@ -124,7 +124,7 @@ export default function MorningPilotCard({
 
               setDayState(clearMorningPilotDecision(userId, currentDate))
             }}
-            className="shrink-0 text-[12px] font-semibold text-muted bg-transparent border-0 px-2 py-2"
+            className="shrink-0 text-[12px] mx-w-control text-muted bg-transparent border-0 px-2 py-2"
           >
             вернуть
           </button>
@@ -149,7 +149,7 @@ export default function MorningPilotCard({
 
   return (
     <section className="rounded-[28px] bg-emerald px-5 py-5 mb-4 border border-cream/10 animate-fade-in">
-      <span className="block font-label text-[11px] font-bold uppercase tracking-wider text-gold mb-2">
+      <span className="block font-label text-[11px] mx-w-heading uppercase tracking-wider text-gold mb-2">
         Пилот · утро
       </span>
 
@@ -173,7 +173,7 @@ export default function MorningPilotCard({
             >
               <span
                 className={[
-                  'w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0',
+                  'w-6 h-6 rounded-full flex items-center justify-center text-[11px] mx-w-control shrink-0',
                   index === 0 ? 'bg-gold text-emerald-deep' : 'bg-cream/10 text-muted',
                 ].join(' ')}
               >
@@ -181,7 +181,7 @@ export default function MorningPilotCard({
               </span>
 
               <span className="flex-1 min-w-0 text-left">
-                <span className="block text-[13px] font-bold text-cream truncate">
+                <span className="block text-[13px] mx-w-heading text-cream truncate">
                   {ritual.name}
                 </span>
 
@@ -212,7 +212,7 @@ export default function MorningPilotCard({
       <button
         type="button"
         onClick={openRituals}
-        className="w-full rounded-full bg-cream/10 border border-cream/15 text-cream text-[13px] font-bold px-6 py-3.5 mt-4 flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+        className="w-full rounded-full bg-cream/10 border border-cream/15 text-cream text-[13px] mx-w-control px-6 py-3.5 mt-4 flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
       >
         {visibleRituals.length > 0
           ? 'Открыть первый шаг'
@@ -228,7 +228,7 @@ export default function MorningPilotCard({
           <button
             type="button"
             onClick={() => chooseOutcome('no_time')}
-            className="rounded-full bg-cream/5 border-0 text-muted text-[12px] font-semibold py-2.5 flex items-center justify-center gap-1.5 active:scale-[0.98]"
+            className="rounded-full bg-cream/5 border-0 text-muted text-[12px] mx-w-control py-2.5 flex items-center justify-center gap-1.5 active:scale-[0.98]"
           >
             <Clock3 size={14} />
             Не успеваю
@@ -237,7 +237,7 @@ export default function MorningPilotCard({
           <button
             type="button"
             onClick={() => chooseOutcome('low_energy')}
-            className="rounded-full bg-cream/5 border-0 text-muted text-[12px] font-semibold py-2.5 flex items-center justify-center gap-1.5 active:scale-[0.98]"
+            className="rounded-full bg-cream/5 border-0 text-muted text-[12px] mx-w-control py-2.5 flex items-center justify-center gap-1.5 active:scale-[0.98]"
           >
             <BatteryLow size={14} />
             Нет сил

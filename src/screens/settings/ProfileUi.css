@@ -159,7 +159,7 @@
   margin: var(--mx-profile-title-gap) 0 20px;
   padding-inline: 4px;
   font-size: var(--mx-type-page-size);
-  font-weight: 700;
+  font-weight: var(--mx-weight-title);
   line-height: 1.15;
   letter-spacing: -0.02em;
   text-transform: lowercase;
@@ -181,8 +181,8 @@
   padding-inline: 4px;
   color: rgb(var(--c-muted));
   font-family: 'Manrope', system-ui, sans-serif;
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: var(--mx-weight-heading);
   line-height: 13px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -280,7 +280,7 @@ button.mx-profile-row:active {
   white-space: nowrap;
   text-overflow: ellipsis;
   font-size: var(--mx-type-control-size);
-  font-weight: 700;
+  font-weight: var(--mx-weight-title);
   text-align: right;
 }
 
@@ -360,7 +360,7 @@ button.mx-profile-row:active {
   background: rgb(var(--c-card));
   color: rgb(var(--c-muted));
   font-size: var(--mx-type-caption-size);
-  font-weight: 700;
+  font-weight: var(--mx-weight-control);
 }
 
 .mx-profile-chip[aria-pressed='true'] {
@@ -521,7 +521,7 @@ button.mx-profile-row:active {
   background: rgb(var(--c-pill-light));
   color: rgb(var(--c-bg));
   font-size: var(--mx-type-segment-size);
-  font-weight: 700;
+  font-weight: var(--mx-weight-control);
   transition: transform 160ms ease;
 }
 
@@ -563,7 +563,7 @@ button.mx-profile-row:active {
   background: rgb(var(--c-card3));
   color: rgb(var(--c-muted));
   font-size: var(--mx-type-caption-size);
-  font-weight: 700;
+  font-weight: var(--mx-weight-control);
 }
 
 /* Вариант опроса — как у Stoic: plain-строка без плашки; выбранный — светлый текст. */
@@ -813,7 +813,7 @@ button.mx-profile-row:active {
   margin: 0 0 12px;
   color: rgb(var(--c-text));
   font-size: var(--mx-type-control-size);
-  font-weight: 700;
+  font-weight: var(--mx-weight-heading);
   line-height: 1.3;
 }
 
@@ -860,7 +860,7 @@ button.mx-profile-row:active {
 /* 1. Свёрнутый заголовок 17/700 по центру шапки; фон под шапкой глухой,
    чтобы подпись «НАСТРОЙ» не просвечивала сквозь полупрозрачный градиент. */
 .mx-profile-page:not(.mx-profile-page--sub) .mx-profile-page__bar-title {
-  font-weight: 700;
+  font-weight: var(--mx-weight-title);
 }
 
 /* 2. Подписи групп на корневом экране: отступ полей 16px (как у строк). */

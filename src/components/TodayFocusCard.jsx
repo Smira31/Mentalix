@@ -23,7 +23,7 @@ export default function TodayFocusCard({ focus, onOpenFlow, onClearFocus, readOn
 
           onOpenFlow()
         }}
-        className="w-full rounded-full bg-cream/5 border border-cream/10 text-cream text-[12px] font-semibold py-3 px-5 mb-4 flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+        className="w-full rounded-full bg-cream/5 border border-cream/10 text-cream text-[12px] mx-w-control py-3 px-5 mb-4 flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
       >
         <ListChecks size={16} className="text-gold" />
         Разгрузить голову
@@ -35,12 +35,12 @@ export default function TodayFocusCard({ focus, onOpenFlow, onClearFocus, readOn
 
   return (
     <section className="rounded-[28px] bg-emerald px-5 py-5 mb-4 border border-cream/10 animate-fade-in">
-      <span className="block font-label text-[11px] font-bold uppercase tracking-wider text-gold mb-2">
+      <span className="block font-label text-[11px] mx-w-heading uppercase tracking-wider text-gold mb-2">
         {focus.firstStep ? 'Первый шаг · до 5 минут' : 'Точка внимания · сегодня'}
       </span>
 
       <div className="rounded-2xl px-4 py-3.5 bg-gold/10 border border-gold/25">
-        <span className="block text-left text-[14px] font-bold text-cream leading-snug">
+        <span className="block text-left text-[14px] mx-w-heading text-cream leading-snug">
           {focus.firstStep || focus.picked}
         </span>
 
@@ -56,7 +56,7 @@ export default function TodayFocusCard({ focus, onOpenFlow, onClearFocus, readOn
           <button
             type="button"
             onClick={() => setExpanded(value => !value)}
-            className="text-[12px] font-semibold text-muted mt-3 active:opacity-60"
+            className="text-[12px] mx-w-control text-muted mt-3 active:opacity-60"
           >
             {expanded ? 'Свернуть' : `Остальное (${rest.length})`}
           </button>
@@ -81,7 +81,7 @@ export default function TodayFocusCard({ focus, onOpenFlow, onClearFocus, readOn
           <button
             type="button"
             onClick={onOpenFlow}
-            className="text-[12px] font-semibold text-muted -m-2 p-2 active:opacity-60"
+            className="text-[12px] mx-w-control text-muted -m-2 p-2 active:opacity-60"
           >
             выбрать другое
           </button>
@@ -93,7 +93,7 @@ export default function TodayFocusCard({ focus, onOpenFlow, onClearFocus, readOn
 
               onClearFocus?.()
             }}
-            className="text-[12px] font-semibold text-muted -m-2 p-2 active:opacity-60"
+            className="text-[12px] mx-w-control text-muted -m-2 p-2 active:opacity-60"
           >
             убрать фокус
           </button>

@@ -84,10 +84,10 @@
   margin: 10px 0 0;
   text-align: center;
   font-size: var(--mx-type-checkin-label-size);
-  font-weight: 600;
+  font-weight: var(--mx-weight-body);
   line-height: 1.35;
   letter-spacing: 0;
-  color: rgb(var(--c-text, 243 243 243) / 0.8);
+  color: rgb(var(--c-muted, 133 133 133));
 }
 
 .mx-progress-analytics__subtext-empty {
@@ -226,11 +226,11 @@
   padding: 0 24px;
   border: 0;
   border-radius: 999px;
-  background: rgb(var(--c-text, 243 243 243));
-  color: rgb(var(--c-bg, 5 4 3));
+  background: var(--mx-btn-light-bg, #D6D6D6);
+  color: #111;
   font: inherit;
   font-size: var(--mx-type-checkin-label-size);
-  font-weight: 600;
+  font-weight: var(--mx-weight-control);
   cursor: pointer;
   transition: transform 0.15s ease;
 }

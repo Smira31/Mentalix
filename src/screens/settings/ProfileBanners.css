@@ -64,7 +64,7 @@ button.mx-profile-banner:active {
   max-width: 200px;
   margin: 0;
   font-size: var(--mx-type-control-size);
-  font-weight: 700;
+  font-weight: var(--mx-weight-heading);
   line-height: 1.25;
   text-wrap: balance;
 }
@@ -90,10 +90,10 @@ button.mx-profile-banner:active {
   margin-top: 20px;
   border: 0;
   border-radius: 999px;
-  background: #d0d0d0;
-  color: rgb(var(--c-bg));
+  background: var(--mx-btn-light-bg, #D6D6D6);
+  color: #111;
   font-size: var(--mx-type-segment-size);
-  font-weight: 700;
+  font-weight: var(--mx-weight-control);
   transition: transform 160ms ease;
 }
 
@@ -121,7 +121,7 @@ button.mx-profile-banner:active {
 }
 
 .mx-profile-banner--support .mx-profile-banner__text strong {
-  font-weight: 700;
+  font-weight: var(--mx-weight-title);
 }
 
 .mx-profile-banner__panel {
@@ -186,7 +186,7 @@ button.mx-profile-banner:active {
 }
 
 .mx-profile-banner--web .mx-profile-banner__title strong {
-  font-weight: 700;
+  font-weight: var(--mx-weight-title);
 }
 
 .mx-profile-banner--web .mx-profile-banner__text {

@@ -169,7 +169,7 @@
 .mx-library-catalog__feature-card strong,
 .mx-library-catalog__collection strong {
   font-size: var(--mx-type-section-size);
-  font-weight: 650;
+  font-weight: var(--mx-weight-heading);
   line-height: 1.15;
   letter-spacing: -0.025em;
 }
@@ -292,7 +292,7 @@
   background: rgb(var(--c-text));
   color: rgb(var(--c-bg));
   font-size: var(--mx-type-caption-size);
-  font-weight: 650;
+  font-weight: var(--mx-weight-control);
 }
 
 .mx-library-catalog__status {
@@ -491,11 +491,11 @@
   padding: 0 13px;
   border: 0;
   border-radius: 999px;
-  background: rgb(var(--c-text));
-  color: rgb(var(--c-bg));
+  background: var(--mx-btn-light-bg, #D6D6D6);
+  color: #111;
   font-family: 'Manrope', sans-serif;
   font-size: var(--mx-type-caption-size);
-  font-weight: 700;
+  font-weight: var(--mx-weight-control);
   white-space: nowrap;
 }
 

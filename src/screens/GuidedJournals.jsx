@@ -66,7 +66,7 @@ function StepInput({ step, value, onChange }) {
             aria-checked={value === level}
             onClick={() => onChange(level)}
             className={[
-              'min-h-12 rounded-2xl text-[15px] font-bold',
+              'min-h-12 rounded-2xl text-[15px] mx-w-control',
               value === level ? 'bg-gold text-emerald-deep' : 'bg-emerald text-muted',
             ].join(' ')}
           >
@@ -153,7 +153,7 @@ function ReadOnlyAnswer({ step, value }) {
   }
 
   if (step.type === 'scale') {
-    return <p className="mt-3 text-[15px] font-semibold text-gold">Значение: {String(value)}</p>
+    return <p className="mt-3 text-[15px] mx-w-heading text-gold">Значение: {String(value)}</p>
   }
 
   return (
@@ -193,7 +193,7 @@ function CompletedSessionViewer({ completedSession, onClose }) {
       </header>
       <div className={FULLSCREEN_SCROLL_CLASS}>
         <div className="w-full max-w-md mx-auto px-[var(--mx-screen-x)] pb-8">
-          <p className="text-[12px] font-bold uppercase tracking-wide text-gold">Архив записи</p>
+          <p className="text-[12px] mx-w-heading uppercase tracking-wide text-gold">Архив записи</p>
           <h3 className="mt-3 font-display text-[28px] leading-tight text-cream">
             {template.title || 'Направленная запись'}
           </h3>
@@ -208,11 +208,11 @@ function CompletedSessionViewer({ completedSession, onClose }) {
           <div className="mt-6 space-y-3">
             {steps.map((step, index) => (
               <article key={step.id || index} className="rounded-3xl bg-emerald p-4">
-                <p className="text-[11px] font-bold uppercase tracking-wide text-gold">
+                <p className="text-[11px] mx-w-heading uppercase tracking-wide text-gold">
                   Шаг {index + 1} ·{' '}
                   {STEP_TYPES.find(([type]) => type === step.type)?.[1] || 'Ответ'}
                 </p>
-                <h4 className="mt-2 text-[15px] font-semibold leading-snug text-cream">
+                <h4 className="mt-2 text-[15px] mx-w-heading leading-snug text-cream">
                   {step.title}
                 </h4>
                 <ReadOnlyAnswer step={step} value={completedSession.answers?.[step.id]} />
@@ -324,7 +324,7 @@ function TemplateBuilder({ user, onBack, onSaved, initialTemplate = null }) {
           {draft.steps.map((step, index) => (
             <div key={step.id} className="rounded-3xl bg-emerald p-4">
               <div className="flex items-center gap-3">
-                <span className="text-[12px] font-bold text-gold">Шаг {index + 1}</span>
+                <span className="text-[12px] mx-w-control text-gold">Шаг {index + 1}</span>
                 {draft.steps.length > 1 && (
                   <button
                     type="button"
@@ -376,7 +376,7 @@ function TemplateBuilder({ user, onBack, onSaved, initialTemplate = null }) {
           type="button"
           onClick={addStep}
           disabled={draft.steps.length >= 12}
-          className="flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl border border-cream/15 text-[14px] font-semibold text-cream disabled:opacity-40"
+          className="flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl border border-cream/15 text-[14px] mx-w-control text-cream disabled:opacity-40"
         >
           <Plus size={17} /> Добавить шаг
         </button>
@@ -396,7 +396,7 @@ function TemplateBuilder({ user, onBack, onSaved, initialTemplate = null }) {
             draft.steps.some(step => !step.title.trim())
           }
           onClick={save}
-          className="min-h-14 w-full rounded-full bg-gold px-[var(--mx-screen-x)] text-[15px] font-semibold text-emerald-deep disabled:opacity-35"
+          className="min-h-14 w-full rounded-full bg-gold px-[var(--mx-screen-x)] text-[15px] mx-w-control text-emerald-deep disabled:opacity-35"
         >
           {saving ? 'Сохраняю…' : isEditing ? 'Сохранить новую версию' : 'Сохранить личный шаблон'}
         </button>
@@ -718,7 +718,7 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
             setStepIndex(0)
             setActiveDrafts(listJournalDrafts(user.id))
           }}
-          className="mt-7 min-h-12 rounded-full bg-gold px-6 text-[14px] font-semibold text-emerald-deep"
+          className="mt-7 min-h-12 rounded-full bg-gold px-6 text-[14px] mx-w-control text-emerald-deep"
         >
           Вернуться в журнал
         </button>
@@ -739,7 +739,7 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
             type="button"
             data-testid="journal-v3-mood-yes"
             onClick={() => setFlowStage('mood')}
-            className="min-h-12 rounded-full bg-gold px-6 text-[14px] font-semibold text-emerald-deep"
+            className="min-h-12 rounded-full bg-gold px-6 text-[14px] mx-w-control text-emerald-deep"
           >
             Отметить настроение
           </button>
@@ -747,7 +747,7 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
             type="button"
             data-testid="journal-v3-mood-skip"
             onClick={() => setFlowStage('result')}
-            className="min-h-12 rounded-full border border-cream/15 px-6 text-[14px] font-semibold text-cream"
+            className="min-h-12 rounded-full border border-cream/15 px-6 text-[14px] mx-w-control text-cream"
           >
             Пропустить
           </button>
@@ -780,7 +780,7 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
     return (
       <section className="animate-fade-in">
         <RoundBackButton registerSystemBack onClick={() => setFlowStage('writing')} label="Назад к записи" />
-        <p className="mt-5 text-[12px] font-bold uppercase tracking-wide text-gold">
+        <p className="mt-5 text-[12px] mx-w-heading uppercase tracking-wide text-gold">
           {selected?.title} · {stepIndex + 1} из {steps.length}
         </p>
         <h3 className="mt-3 font-display text-[27px] leading-tight text-cream">{step?.title}</h3>
@@ -796,7 +796,7 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
           data-testid="journal-v3-retry"
           disabled={!canContinue}
           onClick={submitComplete}
-          className="mt-7 min-h-14 w-full rounded-full bg-gold px-[var(--mx-screen-x)] text-[15px] font-semibold text-emerald-deep disabled:opacity-35"
+          className="mt-7 min-h-14 w-full rounded-full bg-gold px-[var(--mx-screen-x)] text-[15px] mx-w-control text-emerald-deep disabled:opacity-35"
         >
           Попробовать снова
         </button>
@@ -810,7 +810,7 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
     return (
       <section className="animate-fade-in">
         <RoundBackButton registerSystemBack onClick={() => {}} label="Завершаем…" />
-        <p className="mt-5 text-[12px] font-bold uppercase tracking-wide text-gold">
+        <p className="mt-5 text-[12px] mx-w-heading uppercase tracking-wide text-gold">
           {selected?.title} · {stepIndex + 1} из {steps.length}
         </p>
         <h3 className="mt-3 font-display text-[27px] leading-tight text-cream">{step?.title}</h3>
@@ -821,7 +821,7 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
         <button
           type="button"
           disabled
-          className="mt-7 min-h-14 w-full rounded-full bg-gold px-[var(--mx-screen-x)] text-[15px] font-semibold text-emerald-deep opacity-50"
+          className="mt-7 min-h-14 w-full rounded-full bg-gold px-[var(--mx-screen-x)] text-[15px] mx-w-control text-emerald-deep opacity-50"
         >
           Завершаем…
         </button>
@@ -846,7 +846,7 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
           }}
           label="Сохранить и выйти"
         />
-        <p className="mt-5 text-[12px] font-bold uppercase tracking-wide text-gold">
+        <p className="mt-5 text-[12px] mx-w-heading uppercase tracking-wide text-gold">
           {selected?.title} · {stepIndex + 1} из {steps.length}
         </p>
         <h3 className="mt-3 font-display text-[27px] leading-tight text-cream">{step?.title}</h3>
@@ -871,7 +871,7 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
               setStepIndex(index => Math.min(index + 1, steps.length - 1))
             }
           }}
-          className="mt-7 min-h-14 w-full rounded-full bg-gold px-[var(--mx-screen-x)] text-[15px] font-semibold text-emerald-deep disabled:opacity-35"
+          className="mt-7 min-h-14 w-full rounded-full bg-gold px-[var(--mx-screen-x)] text-[15px] mx-w-control text-emerald-deep disabled:opacity-35"
         >
           {isLast ? 'Завершить' : 'Сохранить и продолжить'}
         </button>
@@ -883,7 +883,7 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
     return (
       <section className="animate-fade-in">
         <RoundBackButton registerSystemBack onClick={() => setSelected(null)} label="К каталогу" />
-        <p className="mt-5 text-[12px] font-bold uppercase tracking-wide text-gold">
+        <p className="mt-5 text-[12px] mx-w-heading uppercase tracking-wide text-gold">
           {selected.category}
         </p>
         <h3 className="mt-3 font-display text-[28px] leading-tight text-cream">{selected.title}</h3>
@@ -891,8 +891,8 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
         <div className="mt-6 space-y-3">
           {(selected.steps || []).map((step, index) => (
             <div key={step.id} className="rounded-2xl bg-emerald p-4">
-              <span className="text-[11px] font-bold text-gold">{index + 1}</span>
-              <p className="mt-1 text-[14px] font-semibold text-cream">{step.title}</p>
+              <span className="text-[11px] mx-w-control text-gold">{index + 1}</span>
+              <p className="mt-1 text-[14px] mx-w-heading text-cream">{step.title}</p>
               {!step.required && <p className="mt-1 text-[12px] text-faint">Можно пропустить</p>}
             </div>
           ))}
@@ -902,7 +902,7 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
             <button
               type="button"
               onClick={openPrivateTemplateEditor}
-              className="min-h-10 rounded-full border border-cream/15 px-4 text-[13px] font-semibold text-cream active:text-gold"
+              className="min-h-10 rounded-full border border-cream/15 px-4 text-[13px] mx-w-control text-cream active:text-gold"
             >
               Редактировать шаблон
             </button>
@@ -910,7 +910,7 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
               type="button"
               disabled={deletingTemplate}
               onClick={deletePrivateTemplate}
-              className="min-h-10 rounded-full px-3 text-[13px] font-semibold text-red-300 disabled:opacity-50"
+              className="min-h-10 rounded-full px-3 text-[13px] mx-w-control text-red-300 disabled:opacity-50"
             >
               {deletingTemplate ? 'Удаляем…' : 'Удалить шаблон'}
             </button>
@@ -926,7 +926,7 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
           disabled={loading || deletingTemplate}
           onClick={startDraft}
           data-testid="journal-v3-start"
-          className="mt-7 min-h-14 w-full rounded-full bg-gold px-[var(--mx-screen-x)] text-[15px] font-semibold text-emerald-deep disabled:opacity-35"
+          className="mt-7 min-h-14 w-full rounded-full bg-gold px-[var(--mx-screen-x)] text-[15px] mx-w-control text-emerald-deep disabled:opacity-35"
         >
           {loading ? 'Открываю…' : 'Начать или продолжить'}
         </button>
@@ -966,7 +966,7 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
       </div>
       {activeDrafts.length > 0 && (
         <div className="mt-5 rounded-3xl border border-gold/25 bg-emerald p-4">
-          <p className="text-[12px] font-bold uppercase tracking-wide text-gold">Продолжить</p>
+          <p className="text-[12px] mx-w-heading uppercase tracking-wide text-gold">Продолжить</p>
           <div className="mt-3 space-y-2">
             {activeDrafts.slice(0, 3).map(item => (
               <button
@@ -976,7 +976,7 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
                 onClick={() => resumeDraft(item.templateId, item.templateTitle)}
                 className="flex min-h-12 w-full items-center justify-between rounded-2xl bg-emerald-light px-4 text-left"
               >
-                <span className="text-[14px] font-semibold text-cream">
+                <span className="text-[14px] mx-w-heading text-cream">
                   {item.templateTitle ||
                     templates?.find(t => t.id === Number(item.templateId))?.title ||
                     'Незавершённая запись'}
@@ -990,11 +990,11 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
       <div className="mt-5 rounded-3xl border border-cream/10 bg-emerald p-4">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-[12px] font-bold uppercase tracking-wide text-gold">Архив</p>
+            <p className="text-[12px] mx-w-heading uppercase tracking-wide text-gold">Архив</p>
             <p className="mt-1 text-[13px] text-muted">Завершённые направленные записи</p>
           </div>
           {completedSessions !== null && (
-            <span className="rounded-full bg-cream/5 px-2.5 py-1 text-[12px] font-semibold text-cream">
+            <span className="rounded-full bg-cream/5 px-2.5 py-1 text-[12px] mx-w-control text-cream">
               {completedSessions.length}
             </span>
           )}
@@ -1010,7 +1010,7 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
               type="button"
               disabled={completedSessionsLoading}
               onClick={loadCompletedSessions}
-              className="mt-3 min-h-10 rounded-full border border-cream/15 px-4 text-[13px] font-semibold text-cream active:text-gold disabled:opacity-50"
+              className="mt-3 min-h-10 rounded-full border border-cream/15 px-4 text-[13px] mx-w-control text-cream active:text-gold disabled:opacity-50"
             >
               {completedSessionsLoading ? 'Повторяем…' : 'Повторить'}
             </button>
@@ -1029,7 +1029,7 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
                 className="flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl bg-emerald-light px-4 text-left"
               >
                 <span className="min-w-0">
-                  <span className="block truncate text-[14px] font-semibold text-cream">
+                  <span className="block truncate text-[14px] mx-w-heading text-cream">
                     {item.template?.title || 'Направленная запись'}
                   </span>
                   <span className="mt-1 block text-[12px] text-faint">
@@ -1061,7 +1061,7 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
             onClick={() => setCategory('')}
             aria-pressed={!category}
             className={[
-              'min-h-9 rounded-full px-3 text-[12px] font-semibold',
+              'min-h-9 rounded-full px-3 text-[12px] mx-w-control',
               !category ? 'bg-gold text-emerald-deep' : 'bg-cream/5 text-muted',
             ].join(' ')}
           >
@@ -1074,7 +1074,7 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
               onClick={() => setCategory(item)}
               aria-pressed={category === item}
               className={[
-                'min-h-9 rounded-full px-3 text-[12px] font-semibold',
+                'min-h-9 rounded-full px-3 text-[12px] mx-w-control',
                 category === item ? 'bg-gold text-emerald-deep' : 'bg-cream/5 text-muted',
               ].join(' ')}
             >
@@ -1092,7 +1092,7 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
         <p className="mt-8 text-[14px] text-muted">Загружаем шаблоны…</p>
       ) : templates.length === 0 ? (
         <div className="mt-8 rounded-3xl bg-emerald p-5">
-          <p className="text-[15px] font-semibold text-cream">Ничего не найдено</p>
+          <p className="text-[15px] mx-w-heading text-cream">Ничего не найдено</p>
           <p className="mt-2 text-[13px] leading-relaxed text-muted">
             Попробуй другой запрос или создай личный шаблон.
           </p>
@@ -1107,14 +1107,14 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
               className="w-full rounded-3xl bg-emerald p-5 text-left active:scale-[0.99] transition-transform"
             >
               <div className="flex items-start gap-3">
-                <span className="mt-1 rounded-full bg-gold/10 px-2.5 py-1 text-[11px] font-bold text-gold">
+                <span className="mt-1 rounded-full bg-gold/10 px-2.5 py-1 text-[11px] mx-w-control text-gold">
                   {template.category}
                 </span>
                 {template.visibility === 'private' && (
-                  <span className="mt-1 text-[11px] font-semibold text-faint">личный</span>
+                  <span className="mt-1 text-[11px] mx-w-control text-faint">личный</span>
                 )}
               </div>
-              <p className="mt-3 text-[17px] font-semibold text-cream">{template.title}</p>
+              <p className="mt-3 text-[17px] mx-w-heading text-cream">{template.title}</p>
               <p className="mt-2 text-[13px] leading-relaxed text-muted">{template.description}</p>
               <p className="mt-3 text-[12px] text-faint">
                 {template.stepCount} шага · версия {template.version}

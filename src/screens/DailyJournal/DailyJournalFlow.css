@@ -117,7 +117,7 @@
   padding: 0;
   color: rgb(var(--c-text));
   font-size: 14px;
-  font-weight: 600;
+  font-weight: var(--mx-weight-heading);
   text-decoration: underline;
   cursor: pointer;
 }
@@ -323,7 +323,7 @@
 
 .mx-dj-today__question {
   font-size: 16px;
-  font-weight: 600;
+  font-weight: var(--mx-weight-heading);
   line-height: 1.4;
   color: rgb(var(--c-muted));
   margin: 0 0 var(--mx-space-2);
@@ -645,7 +645,7 @@
 
 .mx-dj-entries__item-date {
   font-size: 16px;
-  font-weight: 600;
+  font-weight: var(--mx-weight-heading);
   color: rgb(var(--c-text));
 }
 
@@ -703,7 +703,7 @@
 
 .mx-dj-entry-view__question {
   font-size: 16px;
-  font-weight: 600;
+  font-weight: var(--mx-weight-heading);
   line-height: 1.4;
   color: rgb(var(--c-muted));
   margin: 0 0 var(--mx-space-2);
