@@ -1549,11 +1549,11 @@ function CheckInCore({
             {!isEvening && (
               <div className="mt-6 w-full max-w-sm rounded-3xl bg-emerald p-4 text-left">
                 <div className="flex flex-wrap gap-2">
-                  <span className="rounded-full bg-gold/10 px-3 py-1 text-[12px] font-bold text-gold">
+                  <span className="rounded-full bg-gold/10 px-3 py-1 text-[12px] mx-w-control text-gold">
                     настроение: {SCALE_STEPS[0].labels[(values.mood || 3) - 1].toLowerCase()}
                   </span>
                   {emotion && (
-                    <span className="rounded-full bg-cream/5 px-3 py-1 text-[12px] font-semibold text-muted">
+                    <span className="rounded-full bg-cream/5 px-3 py-1 text-[12px] mx-w-control text-muted">
                       {emotion}
                     </span>
                   )}
@@ -1691,9 +1691,9 @@ function CheckInCore({
                   isMorningNoteStep
                     ? 'text-[30px] leading-[1.12]'
                     : isEmotionStep
-                      ? 'text-[24px] font-bold leading-[1.2]'
+                      ? 'text-[24px] mx-w-title leading-[1.2]'
                       : isEvening && isCard
-                        ? 'text-[24px] font-bold leading-[1.2]'
+                        ? 'text-[24px] mx-w-title leading-[1.2]'
                         : 'text-[26px] leading-tight',
                 ].join(' ')}
                 hintClassName={[
@@ -1846,14 +1846,14 @@ function CheckInCore({
                 type="button"
                 autoFocus
                 onClick={() => setCloseConfirmationOpen(false)}
-                className="min-h-12 rounded-full bg-cream px-4 text-[14px] font-semibold text-emerald-deep"
+                className="mx-w-control min-h-12 rounded-full bg-[var(--mx-btn-light-bg)] px-4 text-[14px] text-[#111]"
               >
                 Продолжить
               </button>
               <button
                 type="button"
                 onClick={closeWithDraft}
-                className="min-h-12 rounded-full border border-cream/15 px-4 text-[14px] font-semibold text-cream"
+                className="mx-w-control min-h-12 rounded-full border border-cream/15 px-4 text-[14px] text-cream"
               >
                 Закрыть
               </button>

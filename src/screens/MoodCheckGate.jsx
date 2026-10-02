@@ -59,7 +59,7 @@ export default function MoodCheckGate({ onDismiss }) {
         <button
           type="button"
           onClick={skip}
-          className="text-[13px] font-semibold text-muted bg-transparent border-0"
+          className="mx-w-control text-[13px] text-muted bg-transparent border-0"
         >
           Пропустить
         </button>
@@ -79,7 +79,7 @@ export default function MoodCheckGate({ onDismiss }) {
             >
               <Face level={level} active={pickedLevel === level} />
               <span
-                className={`text-[10px] font-semibold leading-tight text-center ${
+                className={`text-[10px] mx-w-control leading-tight text-center ${
                   pickedLevel === level ? 'text-gold' : 'text-faint'
                 }`}
               >
