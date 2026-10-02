@@ -8,7 +8,7 @@ import ScreenErrorBoundary from './components/ScreenErrorBoundary'
 import { lazyWithRetry } from './lib/lazyWithRetry'
 
 import { platform, platformName } from './platform'
-import { paintChrome, lockVerticalSwipes, useSettingsButton } from './platform/telegram.hooks'
+import { paintChrome, useSettingsButton } from './platform/telegram.hooks'
 
 import Today from './screens/Today'
 
@@ -696,10 +696,6 @@ function App() {
      прокручиваемых экранах это срабатывает случайно.
      ============================================================ */
 
-  useEffect(() => {
-    lockVerticalSwipes()
-  }, [])
-
   // На реальном телефоне в демо-режиме без фрейма document может
   // прокручиваться вместо scroll-root. Блокируем прокрутку html/body,
   // чтобы единственным скролл-контейнером оставался mx-app-scroll-root.
@@ -723,25 +719,41 @@ function App() {
 
   useEffect(() => {
     if (!user) return undefined
-    // Prefetch вкладок после первой отрисовки «Сегодня» —
-    // requestIdleCallback не блокирует отрисовку, setTimeout — fallback.
+    // Prefetch вкладок — после загрузки данных «Сегодня» (событие из Today.jsx)
+    // или через 3 с, что раньше: чтобы не конкурировать с запросами к API.
+    let started = false
+    let idleId = null
     const prefetch = () => {
+      if (started) return
+      started = true
+      window.removeEventListener('mentalix:today-loaded', schedule)
+      window.clearTimeout(fallbackId)
       // Профиль — грузим заранее (нужен чаще всего).
       loadSettings().catch(() => {})
-      // Остальные вкладки — prefetch после первой отрисовки «Сегодня»,
-      // чтобы первый тап по вкладке не ждал загрузки чанка.
+      // Остальные вкладки — чтобы первый тап по вкладке не ждал загрузки чанка.
       import('./screens/Practices').catch(() => {})
       import('./screens/History').catch(() => {})
       import('./screens/Library').catch(() => {})
       import('./screens/Analytics').catch(() => {})
       import('./screens/Mentalix').catch(() => {})
     }
-    if (typeof window.requestIdleCallback === 'function') {
-      const ricId = window.requestIdleCallback(prefetch, { timeout: 2000 })
-      return () => window.cancelIdleCallback?.(ricId)
+    // requestIdleCallback не блокирует отрисовку, setTimeout — fallback.
+    function schedule() {
+      window.removeEventListener('mentalix:today-loaded', schedule)
+      if (typeof window.requestIdleCallback === 'function') {
+        idleId = window.requestIdleCallback(prefetch, { timeout: 1000 })
+      } else {
+        window.setTimeout(prefetch, 0)
+      }
     }
-    const timeoutId = window.setTimeout(prefetch, 1500)
-    return () => window.clearTimeout(timeoutId)
+    window.addEventListener('mentalix:today-loaded', schedule)
+    const fallbackId = window.setTimeout(prefetch, 3000)
+    return () => {
+      started = true
+      window.removeEventListener('mentalix:today-loaded', schedule)
+      window.clearTimeout(fallbackId)
+      if (idleId != null) window.cancelIdleCallback?.(idleId)
+    }
   }, [user])
 
   /* ============================================================
