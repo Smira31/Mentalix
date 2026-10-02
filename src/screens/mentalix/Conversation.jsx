@@ -45,6 +45,7 @@ export default function Conversation({
   contextSlot = null,
   footerSlot = null,
   sendError = '',
+  dailyLimit = false,
   onRetry,
 }) {
   const meta = personaMeta || PERSONAS.find(item => item.key === persona) || PERSONAS[0]
@@ -409,8 +410,6 @@ export default function Conversation({
 
                 return (
                   <div key={messageKey} className="mx-imessage-row mx-imessage-row--assistant">
-                    <div className="mx-ai-meta text-gold mb-1.5">{meta.name}</div>
-
                     <div className="mx-imessage-bubble mx-imessage-bubble--assistant mx-ai-body text-cream break-words">
                       <MessageText content={messageContent(message)} />
                     </div>
@@ -456,12 +455,17 @@ export default function Conversation({
             </div>
           )}
 
+          {dailyLimit && (
+            <div
+              data-testid="daily-limit-notice"
+              className="text-center text-[13px] text-muted py-3"
+            >
+              На сегодня хватит — продолжим завтра.
+            </div>
+          )}
+
           {sending && (
             <div className="w-full py-2">
-              <div className="text-[11px] uppercase tracking-[0.16em] text-gold font-semibold mb-3">
-                {meta.name}
-              </div>
-
               <p className="text-[14px] text-muted">{meta.typing}</p>
             </div>
           )}
@@ -498,6 +502,7 @@ export default function Conversation({
             ref={inputRef}
             value={input}
             data-testid="mentor-input"
+            disabled={dailyLimit}
 
             onFocus={() => {
               restoreComposerFocusRef.current = true
