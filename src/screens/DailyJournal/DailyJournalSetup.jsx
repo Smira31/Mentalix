@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Plus, X } from 'lucide-react'
 
 import Screen from '../../components/Screen'
@@ -37,14 +37,15 @@ const SETUP_STEPS = [
   },
 ]
 
-const VISION_FIELDS = [
-  { key: 'scene', label: 'Где ты и что делаешь, когда всё получилось?' },
-  { key: 'obstacle', label: 'Что может помешать?' },
-  { key: 'plan', label: 'Что ты тогда сделаешь?' },
+const VISION_QUESTIONS = [
+  { key: 'scene', text: 'Где ты и что делаешь, когда всё получилось?' },
+  { key: 'obstacle', text: 'Что может помешать?' },
+  { key: 'plan', text: 'Что ты тогда сделаешь?' },
 ]
 
 export default function DailyJournalSetup({ userId, initialSetup, onComplete, onBack }) {
   const [stepIndex, setStepIndex] = useState(0)
+  const [visionSubStep, setVisionSubStep] = useState(0)
   const [goals, setGoals] = useState(() => {
     const g = initialSetup?.goals || []
     return [g[0] || '', g[1] || '', g[2] || '']
@@ -65,17 +66,43 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
 
   const step = SETUP_STEPS[stepIndex]
   const isLastStep = stepIndex === SETUP_STEPS.length - 1
+  const visionRef = useRef(null)
+
+  // Автофокус textarea на подэкранах «Картинка будущего»
+  useEffect(() => {
+    if (stepIndex !== 2) return
+    const focusField = () => visionRef.current?.focus({ preventScroll: true })
+    const frame = window.requestAnimationFrame(focusField)
+    const retry = window.setTimeout(focusField, 80)
+    return () => {
+      window.cancelAnimationFrame(frame)
+      window.clearTimeout(retry)
+    }
+  }, [stepIndex, visionSubStep])
 
   function hasContent() {
     if (stepIndex === 0) return goals.some(g => g.trim())
     if (stepIndex === 1) return reminders.some(r => r.trim())
-    if (stepIndex === 2)
-      return Boolean(vision.scene.trim() || vision.obstacle.trim() || vision.plan.trim())
+    if (stepIndex === 2) {
+      const fieldKey = VISION_QUESTIONS[visionSubStep].key
+      return Boolean(vision[fieldKey]?.trim())
+    }
     if (stepIndex === 3) return prompts.some(p => p.trim())
     return false
   }
 
   function goBack() {
+    if (stepIndex === 2 && visionSubStep > 0) {
+      platform.haptic('light')
+      setVisionSubStep(i => i - 1)
+      return
+    }
+    if (stepIndex === 3) {
+      platform.haptic('light')
+      setStepIndex(2)
+      setVisionSubStep(2)
+      return
+    }
     if (stepIndex > 0) {
       platform.haptic('light')
       setStepIndex(i => i - 1)
@@ -87,8 +114,14 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
   useBackButton(goBack)
 
   function proceed() {
+    if (stepIndex === 2 && visionSubStep < 2) {
+      platform.haptic('light')
+      setVisionSubStep(i => i + 1)
+      return
+    }
     if (!isLastStep) {
       platform.haptic('light')
+      if (stepIndex === 2) setVisionSubStep(0)
       setStepIndex(i => i + 1)
       return
     }
@@ -208,49 +241,41 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
     }
 
     if (stepIndex === 2) {
+      const vq = VISION_QUESTIONS[visionSubStep]
+      const subLabel = `${step.label} · ${visionSubStep + 1}/3`
       return (
         <>
-          <CapsLabel className="mx-dj-setup__step-label">{step.label}</CapsLabel>
-          <JournalField question={step.title} hint={step.hint} className="mx-dj-setup__field-group" />
-          {VISION_FIELDS.map(field => (
-            <div key={field.key} style={{ marginBottom: 'var(--mx-space-3)' }}>
-              <p
-                style={{
-                  fontSize: '14px',
-                  color: 'rgb(var(--c-muted))',
-                  marginBottom: 'var(--mx-space-2)',
-                }}
-              >
-                {field.label}
-              </p>
-              <textarea
-                className="mx-dj-setup__input"
-                value={vision[field.key]}
-                onChange={e => setVision(prev => ({ ...prev, [field.key]: e.target.value }))}
-                rows={2}
-                maxLength={1000}
-                data-testid={`dj-setup-vision-${field.key}`}
-              />
-            </div>
-          ))}
+          <CapsLabel className="mx-dj-setup__step-label" data-testid="dj-setup-vision-label">
+            {subLabel}
+          </CapsLabel>
+          <h2 className="mx-dj-setup__vision-title">{vq.text}</h2>
+          <textarea
+            ref={visionRef}
+            className="mx-dj-setup__vision-field"
+            value={vision[vq.key]}
+            onChange={e => setVision(prev => ({ ...prev, [vq.key]: e.target.value }))}
+            rows={3}
+            maxLength={1000}
+            data-testid={`dj-setup-vision-${vq.key}`}
+          />
         </>
       )
     }
 
-    // Step 3: Prompts
+    // Step 3: Prompts (textarea — текст переносится)
     return (
       <>
         <CapsLabel className="mx-dj-setup__step-label">{step.label}</CapsLabel>
         <JournalField question={step.title} hint={step.hint} className="mx-dj-setup__field-group" />
         {prompts.map((p, i) => (
           <div key={i} className="mx-dj-setup__input-row">
-            <input
-              type="text"
-              className="mx-dj-setup__input"
+            <textarea
+              className="mx-dj-setup__input mx-dj-setup__input--textarea"
               value={p}
               onChange={e => updatePrompt(i, e.target.value)}
               placeholder={`Вопрос ${i + 1}`}
               maxLength={500}
+              rows={2}
               data-testid={`dj-setup-prompt-${i}`}
             />
             {prompts.length > 1 && (
@@ -284,9 +309,9 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
       footer={
         <div className="mx-dj-footer-bar">
           <RoundNextButton
-            onClick={proceed}
+            onClick={content ? proceed : goBack}
             icon={content ? 'check' : 'close'}
-            label={isLastStep ? (content ? 'Сохранить' : 'Пропустить') : content ? 'Далее' : 'Пропустить'}
+            label={isLastStep ? (content ? 'Сохранить' : 'Назад') : (content ? 'Далее' : 'Назад')}
             disabled={saving}
             testId="dj-setup-next"
           />

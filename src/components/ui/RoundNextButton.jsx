@@ -1,10 +1,9 @@
 import { ArrowRight, Check, X } from 'lucide-react'
 
 /*
- * <RoundNextButton> — круглая кнопка «→» / «✓» / «✕».
+ * <RoundNextButton> — круглая белая кнопка «→» / «✓» / «✕».
  * 45px (--mx-btn-round-h), серая когда disabled.
- * icon='close' — вариант «пропустить»: прозрачный фон, рамка, бледная иконка.
- * Используется над клавиатурой и в шаговых потоках.
+ * ✕ и ✓ одинаково заметные (белый фон) — ✕ = назад, ✓ = дальше/сохранить.
  */
 export default function RoundNextButton({
   onClick,
@@ -15,7 +14,6 @@ export default function RoundNextButton({
   className = '',
   style,
 }) {
-  const skipClass = icon === 'close' ? 'mx-round-next-btn--skip' : ''
   return (
     <button
       type="button"
@@ -23,7 +21,7 @@ export default function RoundNextButton({
       data-testid={testId}
       onClick={onClick}
       disabled={disabled}
-      className={`mx-round-next-btn mx-tap-target ${skipClass} ${className}`}
+      className={`mx-round-next-btn mx-tap-target ${className}`}
       style={style}
     >
       {icon === 'check' ? (

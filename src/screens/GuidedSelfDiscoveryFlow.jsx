@@ -279,9 +279,9 @@ export default function GuidedSelfDiscoveryFlow({ userId, onClose }) {
       return (
         <div className="guided-self-discovery__footer-bar">
           <RoundNextButton
-            onClick={continueFlow}
+            onClick={answered(value) ? continueFlow : goBack}
             icon={answered(value) ? 'check' : 'close'}
-            label={isLastStep ? (answered(value) ? 'Сохранить' : 'Пропустить') : (answered(value) ? 'Далее' : 'Пропустить')}
+            label={isLastStep ? (answered(value) ? 'Сохранить' : 'Назад') : (answered(value) ? 'Далее' : 'Назад')}
             disabled={pendingComplete}
             testId="gsd-next"
           />

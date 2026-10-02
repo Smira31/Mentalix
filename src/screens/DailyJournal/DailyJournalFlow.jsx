@@ -63,7 +63,6 @@ export default function DailyJournalFlow({ userId, onClose }) {
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState(false)
   const [pendingComplete, setPendingComplete] = useState(false)
-  const [menuOpen, setMenuOpen] = useState(false)
   const streamRef = useRef(null)
   const answerRef = useRef(null)
 
@@ -120,7 +119,7 @@ export default function DailyJournalFlow({ userId, onClose }) {
         }
 
         if (!setupData?.updated_at) {
-          setStage('setup')
+          setStage('intro')
         } else {
           setStage('review')
         }
@@ -184,11 +183,6 @@ export default function DailyJournalFlow({ userId, onClose }) {
     }
   }, [pendingComplete])
 
-  // ── Close menu on stage change ──
-  useEffect(() => {
-    setMenuOpen(false)
-  }, [stage])
-
   // ── Back button ──
   const goBack = useCallback(() => {
     if (stage === 'setup') return
@@ -217,7 +211,7 @@ export default function DailyJournalFlow({ userId, onClose }) {
     if (setup?.updated_at) {
       setStage('review')
     } else {
-      onClose()
+      setStage('intro')
     }
   }
 
@@ -283,8 +277,6 @@ export default function DailyJournalFlow({ userId, onClose }) {
   const streamHasContent = streamWords > firstLineWords + 1
   const fillPercent = Math.min(100, (streamWords / 250) * 100)
   const answerHasContent = promptAnswer.trim().length > 0
-  const setupEmpty = !setupHasData(setup)
-
   // ── Loading ──
   if (stage === 'loading') {
     return (
@@ -319,7 +311,9 @@ export default function DailyJournalFlow({ userId, onClose }) {
 
   // ── Footer ──
   let footerContent = null
-  if (stage === 'review') {
+  if (stage === 'intro') {
+    footerContent = null
+  } else if (stage === 'review') {
     footerContent = (
       <div className="mx-dj-footer-bar">
         <RoundNextButton
@@ -339,10 +333,14 @@ export default function DailyJournalFlow({ userId, onClose }) {
         <RoundNextButton
           onClick={() => {
             platform.haptic('light')
-            setStage('question')
+            if (streamHasContent) {
+              setStage('question')
+            } else {
+              setStage('review')
+            }
           }}
           icon={streamHasContent ? 'check' : 'close'}
-          label={streamHasContent ? 'Далее' : 'Пропустить'}
+          label={streamHasContent ? 'Далее' : 'Назад'}
           testId="dj-stream-next"
         />
       </div>
@@ -351,9 +349,16 @@ export default function DailyJournalFlow({ userId, onClose }) {
     footerContent = (
       <div className="mx-dj-footer-bar">
         <RoundNextButton
-          onClick={saveAndComplete}
+          onClick={() => {
+            if (answerHasContent) {
+              saveAndComplete()
+            } else {
+              platform.haptic('light')
+              setStage('stream')
+            }
+          }}
           icon={answerHasContent ? 'check' : 'close'}
-          label={answerHasContent ? 'Сохранить' : 'Пропустить'}
+          label={answerHasContent ? 'Сохранить' : 'Назад'}
           disabled={saving}
           testId="dj-question-next"
         />
@@ -374,42 +379,48 @@ export default function DailyJournalFlow({ userId, onClose }) {
     )
   }
 
-  // ── Header slot (••• menu on review) ──
-  const headerSlot =
-    stage === 'review' ? (
-      <div className="mx-dj-menu-wrap">
-        <button
-          type="button"
-          className="mx-dj-menu-btn"
-          aria-label="Меню журнала"
-          onClick={() => setMenuOpen(prev => !prev)}
-        >
-          •••
-        </button>
-        {menuOpen && (
-          <>
-            <div
-              style={{ position: 'fixed', inset: 0, zIndex: 9 }}
-              onClick={() => setMenuOpen(false)}
-            />
-            <div className="mx-dj-menu">
-              <button
-                type="button"
-                onClick={() => {
-                  setMenuOpen(false)
-                  setStage('setup')
-                }}
-              >
-                Настроить журнал
-              </button>
-            </div>
-          </>
-        )}
-      </div>
-    ) : null
-
   // ── Render stage content ──
   function renderContent() {
+    if (stage === 'intro') {
+      const IntroArt = illustrations.journalIntro
+      return (
+        <div className="mx-dj-intro">
+          <div className="mx-dj-intro__art">
+            {IntroArt ? <IntroArt /> : <SemanticGlyph kind="journal" animated={false} />}
+          </div>
+          <h1 className="mx-dj-intro__title">Страница для себя</h1>
+          <p className="mx-dj-intro__text">
+            Каждый день: перечитай, кем становишься, выпиши всё из головы и ответь на один
+            вопрос. 5 минут.
+          </p>
+          <div className="mx-dj-intro__actions">
+            <button
+              type="button"
+              className="cta-pill mx-dj-intro__cta"
+              data-testid="dj-intro-setup"
+              onClick={() => {
+                platform.haptic('light')
+                setStage('setup')
+              }}
+            >
+              Настроить — 2 минуты
+            </button>
+            <button
+              type="button"
+              className="mx-dj-intro__skip"
+              data-testid="dj-intro-skip"
+              onClick={() => {
+                platform.haptic('light')
+                setStage('review')
+              }}
+            >
+              Начать без настройки
+            </button>
+          </div>
+        </div>
+      )
+    }
+
     if (stage === 'review') {
       const IntroArt = illustrations.journalIntro
       return (
@@ -417,14 +428,6 @@ export default function DailyJournalFlow({ userId, onClose }) {
           <div className="mx-dj-review__art">
             {IntroArt ? <IntroArt /> : <SemanticGlyph kind="journal" animated={false} />}
           </div>
-          {setupEmpty && (
-            <div className="mx-dj-review__empty">
-              Настрой журнал — 2 минуты.{' '}
-              <button type="button" onClick={() => setStage('setup')}>
-                Настроить
-              </button>
-            </div>
-          )}
           {setup?.goals?.filter(g => g.trim()).length > 0 && (
             <div className="mx-dj-review__section">
               <CapsLabel className="mx-dj-review__label">Цели</CapsLabel>
@@ -465,6 +468,14 @@ export default function DailyJournalFlow({ userId, onClose }) {
               )}
             </div>
           )}
+          <button
+            type="button"
+            className="mx-dj-review__edit-link"
+            data-testid="dj-review-edit"
+            onClick={() => setStage('setup')}
+          >
+            Изменить настройку
+          </button>
         </div>
       )
     }
@@ -497,6 +508,7 @@ export default function DailyJournalFlow({ userId, onClose }) {
     if (stage === 'question') {
       return (
         <div className="mx-dj-question">
+          <CapsLabel className="mx-dj-question__label">Вопрос дня</CapsLabel>
           <p className="mx-dj-question__text">{promptText}</p>
           <textarea
             ref={answerRef}
@@ -558,9 +570,8 @@ export default function DailyJournalFlow({ userId, onClose }) {
     <Screen
       onBack={goBack}
       registerSystemBack={false}
-      scroll={stage === 'review'}
-      fullFrame={stage !== 'review'}
-      headerSlot={headerSlot}
+      scroll={stage === 'intro' || stage === 'review'}
+      fullFrame={stage !== 'intro' && stage !== 'review'}
       footer={footerContent}
       footerClassName={stage === 'complete' ? 'mx-dj-footer--complete' : ''}
       bodyClassName={stage === 'complete' ? 'mx-dj-complete' : ''}

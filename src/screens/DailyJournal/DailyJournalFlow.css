@@ -1,5 +1,63 @@
 /* ── Журнал: визуал в стиле Mentalix / Stoic (как Запись/чек-ины) ── */
 
+/* ── Intro (первый экран до настройки) ── */
+.mx-dj-intro {
+  padding-top: var(--mx-space-2);
+}
+
+.mx-dj-intro__art {
+  display: flex;
+  min-height: clamp(120px, 20dvh, 180px);
+  align-items: center;
+  justify-content: center;
+  padding-top: var(--mx-space-2);
+}
+
+.mx-dj-intro__art svg {
+  width: auto;
+  height: 140px;
+  max-height: 100%;
+}
+
+.mx-dj-intro__title {
+  font-family: 'Manrope', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.15;
+  color: rgb(var(--c-text));
+  margin: var(--mx-space-4) 0 var(--mx-space-3);
+}
+
+.mx-dj-intro__text {
+  font-size: 16px;
+  line-height: 1.5;
+  color: rgb(var(--c-muted));
+  margin-bottom: var(--mx-space-6);
+}
+
+.mx-dj-intro__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--mx-space-3);
+}
+
+.mx-dj-intro__cta {
+  width: 100%;
+  text-align: center;
+}
+
+.mx-dj-intro__skip {
+  background: none;
+  border: 0;
+  padding: var(--mx-space-2) 0;
+  color: rgb(var(--c-faint));
+  font-size: 15px;
+  text-decoration: underline;
+  cursor: pointer;
+  text-align: center;
+}
+
 /* ── Review (Перечитай) ── */
 .mx-dj-review {
   padding-top: var(--mx-space-2);
@@ -64,6 +122,19 @@
   cursor: pointer;
 }
 
+/* ── Review: «Изменить настройку» ── */
+.mx-dj-review__edit-link {
+  display: block;
+  margin-top: var(--mx-space-6);
+  background: none;
+  border: 0;
+  padding: 0;
+  color: rgb(var(--c-faint));
+  font-size: 15px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 /* ── Setup ── */
 .mx-dj-setup {
   padding-top: var(--mx-space-2);
@@ -102,8 +173,11 @@
   color: rgb(var(--c-faint));
 }
 
-.mx-dj-setup__input:focus {
+.mx-dj-setup__input:focus,
+.mx-dj-setup__input:focus-visible {
   border-bottom-color: rgb(var(--c-text));
+  outline: none;
+  box-shadow: none;
 }
 
 .mx-dj-setup__input-row {
@@ -146,6 +220,50 @@
 .mx-dj-setup__add:disabled {
   color: rgb(var(--c-faint));
   cursor: default;
+}
+
+/* ── Setup: vision sub-step ── */
+.mx-dj-setup__vision-title {
+  font-family: 'Manrope', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: rgb(var(--c-text));
+  margin: 0 0 var(--mx-space-4);
+}
+
+.mx-dj-setup__vision-field {
+  width: 100%;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid rgb(var(--c-border) / 0.5);
+  outline: none;
+  box-shadow: none;
+  font-size: 16px;
+  line-height: 1.6;
+  color: rgb(var(--c-text));
+  padding: var(--mx-space-2) 0;
+  resize: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.mx-dj-setup__vision-field:focus,
+.mx-dj-setup__vision-field:focus-visible {
+  border-bottom-color: rgb(var(--c-text));
+  outline: none;
+  box-shadow: none;
+}
+
+.mx-dj-setup__vision-field::placeholder {
+  color: rgb(var(--c-faint));
+}
+
+/* ── Setup: prompts textarea ── */
+.mx-dj-setup__input--textarea {
+  resize: none;
+  line-height: 1.5;
+  padding: var(--mx-space-2) 0;
 }
 
 /* ── Stream (Поток) ── */
@@ -215,6 +333,11 @@
   min-height: 0;
 }
 
+.mx-dj-question__label {
+  display: block;
+  margin-bottom: var(--mx-space-2);
+}
+
 .mx-dj-question__text {
   font-family: 'Manrope', sans-serif;
   font-size: 24px;
@@ -222,6 +345,9 @@
   line-height: 1.2;
   color: rgb(var(--c-text));
   margin: 0 0 var(--mx-space-3);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .mx-dj-question__field {
