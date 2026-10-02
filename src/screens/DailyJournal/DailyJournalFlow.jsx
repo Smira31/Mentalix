@@ -10,7 +10,8 @@ import { useBackButton } from '../../platform/telegram.hooks'
 import { platform } from '../../platform'
 import { api } from '../../lib/api'
 import { now } from '../../lib/clock'
-import { toLocalCalendarDate } from '../../lib/dateTimezonePolicy'
+import { toLocalCalendarDate, toMoscowCalendarDate } from '../../lib/dateTimezonePolicy'
+import { isPreviewDemoMode } from '../../lib/demoMode'
 import { checkinFeedbackValue } from '../../lib/checkinFeedback'
 import {
   readDailyJournalDraft,
@@ -62,14 +63,22 @@ function setupHasData(setup) {
   )
 }
 
+const JOURNAL_TEXT_MAX = 4000
+const DRAFT_DEBOUNCE_MS = 400
+
+// День записи считает сервер по Москве; в демо — часы демо-клока на устройстве.
+function journalDate(date) {
+  return isPreviewDemoMode() ? toLocalCalendarDate(date) : toMoscowCalendarDate(date)
+}
+
 function stripLeadingTimestamp(text) {
   if (!text) return text
   return text.replace(/^\d{1,2}\s+\S+,\s\d{2}:\d{2}\.\s*/, '')
 }
 
 export default function DailyJournalFlow({ userId, onClose }) {
-  const [todayDate] = useState(() => now())
-  const dateStr = toLocalCalendarDate(todayDate)
+  const [todayDate, setTodayDate] = useState(() => now())
+  const dateStr = journalDate(todayDate)
 
   const [stage, setStage] = useState('loading')
   const [setup, setSetup] = useState(null)
@@ -89,25 +98,101 @@ export default function DailyJournalFlow({ userId, onClose }) {
   const streamRef = useRef(null)
   const answerRef = useRef(null)
   const appendCursorRef = useRef(false)
+  const savingRef = useRef(false)
+  const flushingRef = useRef(false)
+  const pendingRef = useRef(false)
+  const dateStrRef = useRef(dateStr)
+  const latestRef = useRef({})
+  dateStrRef.current = dateStr
+  latestRef.current = { stage, streamText, promptAnswer, promptText, userId, dateStr }
+
+  // Отправка записи; бросает ошибку при сбое. Дата — по Москве в момент отправки.
+  const postEntry = useCallback(
+    async ({ stream, answer, prompt, date, stampDate }) => {
+      const timestamp = `${formatRussianDateTime(stampDate)}.`
+      const result = await api.dailyJournal.createEntry(userId, {
+        date,
+        stream_text: stream.trim() ? `${timestamp} ${stream}` : '',
+        prompt_text: prompt,
+        prompt_answer: answer,
+        helpful: null,
+      })
+      setEntryId(result.id)
+      setDayNumber(result.day_number)
+      setSaveError(false)
+      pendingRef.current = false
+      clearDailyJournalDraft(userId, date)
+      if (date !== dateStrRef.current) clearDailyJournalDraft(userId, dateStrRef.current)
+      // Обновляем вкладку «Сегодня» после записи журнала —
+      // вместе с ACTIVITY_WRITE (mentalix:activity-saved) из api.js.
+      dispatchTabRefresh('today')
+      return result
+    },
+    [userId]
+  )
+
+  // Новый день по Москве / возврат на вкладку: пересчитать «сегодня».
+  useEffect(() => {
+    function onVisible() {
+      if (document.visibilityState !== 'visible') return
+      setTodayDate(prev => {
+        const next = now()
+        return journalDate(next) === journalDate(prev) ? prev : next
+      })
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
+  }, [])
+
+  // Автоповтор неотправленной записи: появилась связь или вернулись на вкладку.
+  const flushPending = useCallback(async () => {
+    if (flushingRef.current || savingRef.current || !pendingRef.current) return
+    const date = dateStrRef.current
+    const draft = readDailyJournalDraft(userId, date)
+    if (!draft?.pendingSave) return
+    flushingRef.current = true
+    try {
+      const entries = await api.dailyJournal.entries(userId, { limit: 50 })
+      if (entries.items?.some(e => e.date === date)) {
+        pendingRef.current = false
+        saveDailyJournalDraft(userId, date, { ...draft, pendingSave: false })
+        return
+      }
+      await postEntry({
+        stream: draft.streamText,
+        answer: draft.promptAnswer,
+        prompt: draft.promptText,
+        date,
+        stampDate: draft.updatedAt ? new Date(draft.updatedAt) : now(),
+      })
+    } catch (error) {
+      console.error('[dailyJournal] retry failed', error)
+    } finally {
+      flushingRef.current = false
+    }
+  }, [userId, postEntry])
+
+  useEffect(() => {
+    function onOnline() {
+      flushPending()
+    }
+    function onVisible() {
+      if (document.visibilityState === 'visible') flushPending()
+    }
+    window.addEventListener('online', onOnline)
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      window.removeEventListener('online', onOnline)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
+  }, [flushPending])
 
   // ── Init: fetch setup + entries, try pending draft ──
   useEffect(() => {
     let cancelled = false
 
-    // Background: try to send a pending draft from a previous session
     const draft = readDailyJournalDraft(userId, dateStr)
-    if (draft?.pendingSave) {
-      api.dailyJournal
-        .createEntry(userId, {
-          date: dateStr,
-          stream_text: draft.streamText,
-          prompt_text: draft.promptText,
-          prompt_answer: draft.promptAnswer,
-          helpful: null,
-        })
-        .then(() => clearDailyJournalDraft(userId, dateStr))
-        .catch(() => {})
-    }
+    pendingRef.current = Boolean(draft?.pendingSave)
 
     async function init() {
       try {
@@ -123,21 +208,14 @@ export default function DailyJournalFlow({ userId, onClose }) {
 
         const todayEntry = entriesData.items?.find(e => e.date === dateStr)
 
-        if (todayEntry) {
-          setHasTodayEntry(true)
-          setEntryId(todayEntry.id)
-          setStreamText(stripLeadingTimestamp(todayEntry.stream_text || ''))
-          setPromptAnswer(todayEntry.prompt_answer || '')
-          setPromptText(todayEntry.prompt_text || '')
-          setStage('today')
-        } else {
+        const restoreDraftAndStage = () => {
           const d = readDailyJournalDraft(userId, dateStr)
           if (d?.streamText) setStreamText(d.streamText)
           if (d?.promptAnswer) setPromptAnswer(d.promptAnswer)
           if (d?.promptText) setPromptText(d.promptText)
 
           // Default question (cycling by total_days)
-          if (!draft?.promptText) {
+          if (!d?.promptText) {
             const prompts = setupData?.prompts || []
             const qIndex = td % Math.max(1, prompts.length)
             setPromptText(prompts[qIndex] || '')
@@ -151,13 +229,65 @@ export default function DailyJournalFlow({ userId, onClose }) {
             setStage('stream')
           }
         }
+
+        if (todayEntry) {
+          const serverStream = stripLeadingTimestamp(todayEntry.stream_text || '')
+          const serverAnswer = todayEntry.prompt_answer || ''
+          setHasTodayEntry(true)
+          setEntryId(todayEntry.id)
+          setPromptText(todayEntry.prompt_text || '')
+          // «Дописать»: непустой локальный черновик не затираем серверным текстом
+          const local = readDailyJournalDraft(userId, dateStr)
+          const localStream = local?.streamText || ''
+          const localAnswer = local?.promptAnswer || ''
+          const hasUnsavedDraft =
+            (localStream.trim() && localStream.trim() !== serverStream.trim()) ||
+            (localAnswer.trim() && localAnswer.trim() !== serverAnswer.trim())
+          if (local?.pendingSave) pendingRef.current = false
+          if (hasUnsavedDraft) {
+            setStreamText(localStream.trim() ? localStream : serverStream)
+            setPromptAnswer(localAnswer.trim() ? localAnswer : serverAnswer)
+            appendCursorRef.current = true
+            setStage('stream')
+          } else {
+            setStreamText(serverStream)
+            setPromptAnswer(serverAnswer)
+            setStage('today')
+          }
+        } else if (draft?.pendingSave && (draft.streamText || draft.promptAnswer)) {
+          // Повтор черновика — только после загрузки и если записи за сегодня нет
+          try {
+            await postEntry({
+              stream: draft.streamText,
+              answer: draft.promptAnswer,
+              prompt: draft.promptText,
+              date: dateStr,
+              stampDate: draft.updatedAt ? new Date(draft.updatedAt) : todayDate,
+            })
+            if (cancelled) return
+            setHasTodayEntry(true)
+            setStreamText(draft.streamText)
+            setPromptAnswer(draft.promptAnswer)
+            setPromptText(draft.promptText)
+            setStage('today')
+            return
+          } catch (error) {
+            console.error('[dailyJournal] pending send failed', error)
+            if (cancelled) return
+          }
+          restoreDraftAndStage()
+        } else {
+          restoreDraftAndStage()
+        }
       } catch (error) {
         console.error('[dailyJournal] init failed', error)
         if (cancelled) return
-        // Сервер недоступен — покажем локально сохранённый черновик
+        // Сервер недоступен — покажем локально сохранённый черновик как «не отправлено»
         const d = readDailyJournalDraft(userId, dateStr)
         if (d?.streamText || d?.promptAnswer) {
           setHasTodayEntry(true)
+          setSaveError(true)
+          pendingRef.current = Boolean(d.pendingSave)
           setStreamText(d.streamText || '')
           setPromptAnswer(d.promptAnswer || '')
           setPromptText(d.promptText || '')
@@ -175,10 +305,36 @@ export default function DailyJournalFlow({ userId, onClose }) {
   }, [userId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Draft persistence ──
+  // Запись — с задержкой 400 мс; при сворачивании/закрытии — сразу.
+  const flushDraft = useCallback(() => {
+    const cur = latestRef.current
+    if (cur.stage !== 'stream' && cur.stage !== 'question') return
+    saveDailyJournalDraft(cur.userId, cur.dateStr, {
+      streamText: cur.streamText,
+      promptAnswer: cur.promptAnswer,
+      promptText: cur.promptText,
+      pendingSave: pendingRef.current,
+    })
+  }, [])
+
   useEffect(() => {
-    if (stage !== 'stream' && stage !== 'question') return
-    saveDailyJournalDraft(userId, dateStr, { streamText, promptAnswer, promptText })
-  }, [streamText, promptAnswer, stage, userId, dateStr, promptText])
+    if (stage !== 'stream' && stage !== 'question') return undefined
+    const timer = window.setTimeout(flushDraft, DRAFT_DEBOUNCE_MS)
+    return () => window.clearTimeout(timer)
+  }, [streamText, promptAnswer, stage, dateStr, promptText, flushDraft])
+
+  useEffect(() => {
+    function onHidden() {
+      if (document.visibilityState === 'hidden') flushDraft()
+    }
+    document.addEventListener('visibilitychange', onHidden)
+    window.addEventListener('pagehide', flushDraft)
+    return () => {
+      document.removeEventListener('visibilitychange', onHidden)
+      window.removeEventListener('pagehide', flushDraft)
+      flushDraft()
+    }
+  }, [flushDraft])
 
   // ── Auto-focus ──
   useEffect(() => {
@@ -323,6 +479,10 @@ export default function DailyJournalFlow({ userId, onClose }) {
 
   // ── Save entry ──
   async function saveAndComplete() {
+    // Замок от двойного тапа: setSaving асинхронный, ref — мгновенный
+    if (savingRef.current) return
+    savingRef.current = true
+
     const active = document.activeElement
     if (active && typeof active.blur === 'function') {
       active.blur()
@@ -330,32 +490,25 @@ export default function DailyJournalFlow({ userId, onClose }) {
 
     setSaving(true)
     try {
-      const timestamp = `${formatRussianDateTime(todayDate)}.`
-      const streamTextWithTs = streamText.trim() ? `${timestamp} ${streamText}` : ''
-      const result = await api.dailyJournal.createEntry(userId, {
-        date: dateStr,
-        stream_text: streamTextWithTs,
-        prompt_text: promptText,
-        prompt_answer: promptAnswer,
-        helpful: null,
+      await postEntry({
+        stream: streamText,
+        answer: promptAnswer,
+        prompt: promptText,
+        date: journalDate(now()),
+        stampDate: todayDate,
       })
-      setEntryId(result.id)
-      setDayNumber(result.day_number)
-      setSaveError(false)
-      clearDailyJournalDraft(userId, dateStr)
-      // Обновляем вкладку «Сегодня» после записи журнала —
-      // вместе с ACTIVITY_WRITE (mentalix:activity-saved) из api.js.
-      dispatchTabRefresh('today')
     } catch (error) {
       console.error('[dailyJournal] save failed', error)
       setSaveError(true)
-      saveDailyJournalDraft(userId, dateStr, {
+      pendingRef.current = true
+      saveDailyJournalDraft(userId, dateStrRef.current, {
         streamText,
         promptAnswer,
         promptText,
         pendingSave: true,
       })
     } finally {
+      savingRef.current = false
       setSaving(false)
     }
 
@@ -365,6 +518,28 @@ export default function DailyJournalFlow({ userId, onClose }) {
       return
     }
     setPendingComplete(true)
+  }
+
+  // ── Отправить неотправленный локальный черновик (экран «Запись сегодня») ──
+  async function sendUnsent() {
+    if (savingRef.current) return
+    savingRef.current = true
+    setSaving(true)
+    platform.haptic('light')
+    try {
+      await postEntry({
+        stream: streamText,
+        answer: promptAnswer,
+        prompt: promptText,
+        date: journalDate(now()),
+        stampDate: todayDate,
+      })
+    } catch (error) {
+      console.error('[dailyJournal] send failed', error)
+    } finally {
+      savingRef.current = false
+      setSaving(false)
+    }
   }
 
   // ── Feedback ──
@@ -436,6 +611,17 @@ export default function DailyJournalFlow({ userId, onClose }) {
         >
           Дописать
         </button>
+        {saveError && !entryId && (
+          <button
+            type="button"
+            className="mx-dj-today__review-link"
+            data-testid="dj-today-send"
+            disabled={saving}
+            onClick={sendUnsent}
+          >
+            Отправить
+          </button>
+        )}
         <div className="mx-dj-today__links">
           {setupHasData(setup) && (
             <button
@@ -535,7 +721,14 @@ export default function DailyJournalFlow({ userId, onClose }) {
           <CapsLabel className="mx-dj-today__label">
             СЕГОДНЯ · {formatRussianDate(todayDate)}
           </CapsLabel>
-          <h2 className="mx-dj-today__title">Запись сохранена</h2>
+          <h2 className="mx-dj-today__title">
+            {saveError && !entryId ? 'Запись не отправлена' : 'Запись сохранена'}
+          </h2>
+          {saveError && !entryId && (
+            <div className="mx-dj-save-error" data-testid="dj-today-unsent">
+              Не отправлено — отправим, когда появится связь
+            </div>
+          )}
           {streamText.trim() && (
             <div className="mx-dj-today__section" data-testid="dj-today-stream">
               <CapsLabel className="mx-dj-today__section-label">Поток</CapsLabel>
@@ -705,6 +898,7 @@ export default function DailyJournalFlow({ userId, onClose }) {
             placeholder="Я сейчас…"
             aria-label="Поток сознания"
             data-testid="dj-stream-input"
+            maxLength={JOURNAL_TEXT_MAX}
           />
         </div>
       )
@@ -723,6 +917,7 @@ export default function DailyJournalFlow({ userId, onClose }) {
             placeholder="Ответь коротко или развёрнуто — как хочется."
             aria-label={promptText}
             data-testid="dj-question-input"
+            maxLength={JOURNAL_TEXT_MAX}
           />
         </div>
       )
@@ -768,7 +963,9 @@ export default function DailyJournalFlow({ userId, onClose }) {
             feedbackQuestion="Помогло?"
             onFeedback={handleFeedback}
           />
-          {saveError && <div className="mx-dj-save-error">Сохраним, когда будет связь</div>}
+          {saveError && <div className="mx-dj-save-error" data-testid="dj-save-error">
+              Не отправлено — отправим, когда появится связь
+            </div>}
         </>
       )
     }
