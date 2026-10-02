@@ -30,7 +30,7 @@ const styles = await readFile(
 test('MXL-547: production rail содержит практику и две честные карточки «Скоро»', () => {
   assert.match(catalog, /Новое и рекомендованное/)
   assert.match(catalog, /Даймон/)
-  assert.match(catalog, /Импульс к действию со Львом/)
+  assert.match(catalog, /Импульс со Львом/)
   assert.match(catalog, /title: 'Фокус'/)
   assert.match(catalog, /disabled={!card\.active}/)
   assert.match(catalog, /onOpen\(card\.practice\)/)

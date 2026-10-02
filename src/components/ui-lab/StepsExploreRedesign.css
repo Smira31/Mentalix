@@ -20,26 +20,14 @@
   height: 235px;
   overflow: hidden;
   border-radius: 24px;
-  border: 1px solid var(--mx-steps-card-border);
-  background: var(--mx-steps-card-bg);
-}
-/* Нет иллюстрации — текст и кнопка на всю ширину. */
-.mx-steps-journal--no-art {
-  grid-template-columns: minmax(0, 1fr);
-}
-.mx-steps-journal--no-art .mx-steps-journal__title,
-.mx-steps-journal--no-art .mx-steps-journal__desc {
-  max-width: none;
-}
-.mx-steps-journal--no-art .mx-steps-journal__cta {
-  width: 100%;
+  background: #121212;
 }
 .mx-steps-journal__art {
   display: grid;
   width: 100%;
   height: 100%;
   place-items: center;
-  background: rgba(255, 255, 255, 0.03);
+  background: #1c1c1c;
 }
 .mx-steps-journal__art svg {
   width: 100%;
@@ -129,9 +117,9 @@
   padding-top: 88px;
   overflow: hidden;
   scroll-snap-align: start;
-  border: 1px solid var(--mx-steps-card-border);
+  border: 1px solid #1f1f1f;
   border-radius: 22px;
-  background: var(--mx-steps-card-bg);
+  background: #1a1a1a;
   color: #f3f3f3;
   text-align: center;
   cursor: pointer;
@@ -177,8 +165,7 @@
   z-index: 1;
 }
 .mx-steps-rail-card__badge--gold {
-  background: #f3f3f3; /* монохром: «белый» без pure-white (design-guard) */
-  color: #000;
+  background: #7b68ee;
 }
 .mx-steps-rail-card__category {
   width: 100%;
@@ -229,19 +216,14 @@
   width: calc(100% + 2 * var(--mx-screen-x, 16px));
   margin-inline: calc(-1 * var(--mx-screen-x, 16px));
   padding: 20px 0;
-  border: 1px solid var(--mx-steps-card-border);
   border-radius: 28px;
-  background: var(--mx-steps-card-bg);
+  background: #141414;
   justify-items: center;
   text-align: center;
   overflow: hidden;
 }
 .mx-steps-theme-panel .mx-tqc-track {
   --mx-tqc-extend: 0px;
-}
-.mx-steps-theme-panel .mx-tqc-card {
-  border-color: var(--mx-steps-card-inner-border);
-  background: var(--mx-steps-card-inner-bg);
 }
 
 /* Track extends beyond panel via its own default --mx-tqc-extend: 40px */
@@ -340,9 +322,9 @@
   gap: 6px;
   padding: 22px 16px;
   overflow: hidden;
-  border: 1px solid var(--mx-steps-card-border);
+  border: 1px solid #1f1f1f;
   border-radius: 24px;
-  background: var(--mx-steps-card-bg);
+  background: #1a1a1a;
   color: #f3f3f3;
   text-align: center;
   cursor: pointer;
