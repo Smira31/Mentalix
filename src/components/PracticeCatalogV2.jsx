@@ -39,6 +39,7 @@ function JournalBanner({ onOpen }) {
 
 /* ── 3. Новое и рекомендованное ── */
 function RailCard({ card, onOpen }) {
+  const CardArt = card.illustrationKey ? illustrations[card.illustrationKey] : null
   return (
     <button
       className="mx-steps-rail-card"
@@ -48,7 +49,11 @@ function RailCard({ card, onOpen }) {
       onClick={() => card.active && onOpen(card.practice)}
     >
       <span className="mx-steps-rail-card__icon" aria-hidden="true">
-        <PracticeGlyph kind={card.kind} highlighted={card.active} />
+        {CardArt ? (
+          <CardArt />
+        ) : (
+          <PracticeGlyph kind={card.kind} highlighted={card.active} />
+        )}
       </span>
       <span
         className={`mx-steps-rail-card__badge ${card.badgeColor === 'gold' ? 'mx-steps-rail-card__badge--gold' : ''}`}
@@ -63,24 +68,25 @@ function RailCard({ card, onOpen }) {
 }
 
 function PracticeRail({ practices, onOpen }) {
-  const lila = getPracticeByKey(practices, 'lila-discover') || {
-    key: 'lila-discover',
-    title: 'Разобраться со Следопытом',
-    subtitle: 'Карта, несколько вопросов и один рабочий шаг',
-    kind: 'journal',
-    sub: 'lila-discover',
+  const daimon = getPracticeByKey(practices, 'daimon') || {
+    key: 'daimon',
+    title: 'Даймон',
+    subtitle: 'Игра для самопознания: вопрос, кубик, разговор с внутренним голосом',
+    kind: 'daimon',
+    sub: 'daimon',
   }
   const railCards = [
     {
-      key: 'lila-discover',
-      title: 'Разобраться со Следопытом',
-      category: 'Следопыт',
-      description: 'Карта, несколько вопросов и один рабочий шаг',
+      key: 'daimon',
+      title: 'Даймон',
+      category: 'Самопознание',
+      description: 'Игра для самопознания: вопрос, кубик, разговор с внутренним голосом',
       status: 'НОВОЕ',
       badgeColor: 'gold',
-      kind: 'journal',
+      kind: 'daimon',
+      illustrationKey: 'daimonCard',
       active: true,
-      practice: lila,
+      practice: daimon,
     },
     {
       key: 'lion-action',

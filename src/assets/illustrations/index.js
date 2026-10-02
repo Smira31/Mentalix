@@ -1,12 +1,9 @@
 /*
- * Реестр иллюстраций для экранов Следопыта, «Записи» и профиля.
+ * Реестр иллюстраций для экранов Даймона и профиля.
  * Владелец заменяет картинки одним файлом — достаточно поменять
  * значение здесь, не трогая экраны.
  *
  * Ключи:
- *   trackerStart   — старт Следопыта (пока null, экран без картинки)
- *   recordIntro    — вступление «Записи» (пока null, экран без картинки)
- *   recordComplete — финал «Записи» (временно — арт финала вечернего разбора)
  *   profileSiteFeather — перо в карточке «Mentalix на сайте» (профиль)
  *
  * Значение — React-компонент иллюстрации или null.
@@ -17,8 +14,6 @@ import CompletionArtEvening from '../../components/CompletionArtEvening'
 import { ProfileFeatherArt } from '../../screens/settings/ProfileBannerArt'
 
 export const illustrations = {
-  trackerStart: null,
-  recordIntro: null,
   recordComplete: CompletionArtEvening,
   profileSiteFeather: ProfileFeatherArt,
   // Ключи для главного экрана «Шаги» (Stoic Explore-редизайн).
@@ -31,4 +26,14 @@ export const illustrations = {
   // Владелец заменит слоты на свои иллюстрации.
   journalIntro: null,
   journalComplete: null,
+  // Ключи для игры «Даймон».
+  // daimonCard — карточка в каталоге «Шаги» и рейле «Новое и рекомендованное».
+  //   Пока null — фолбэк на крупную залитую форму (SemanticGlyph 'daimon').
+  // daimonIntro — пустой слот на входе в игру (текст поднят к середине экрана).
+  // daimonHowTo — пустой слот сверху экрана «Как играть».
+  // daimonFinish — пустой слот сверху экрана финала игры.
+  daimonCard: null,
+  daimonIntro: null,
+  daimonHowTo: null,
+  daimonFinish: null,
 }

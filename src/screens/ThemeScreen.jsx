@@ -24,6 +24,11 @@ import {
   getKeyboardViewportHeight,
   isTelegramRuntime,
 } from '../lib/visualViewport'
+import {
+  readThemeDraft,
+  saveThemeDraft,
+  clearThemeDraft,
+} from '../lib/todayDrafts'
 
 /*
  * ТЕМА НЕДЕЛИ — семь дней размышлений, по дню за раз.
@@ -86,6 +91,7 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
   )
   const [text, setText] = useState('')
   const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState(false)
   const [view, setView] = useState(
     cachedDetail
       ? initialDay || cachedDetail.days.some(d => d.reflection)
@@ -129,7 +135,17 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
   if (data && (seenTextKey.day !== day || seenTextKey.data !== data)) {
     setSeenTextKey({ day, data })
     const current = data.days.find(x => x.day === day)
-    setText(current?.reflection || '')
+    const existingReflection = current?.reflection || ''
+    // Восстановление черновика темы, если нет сохранённого ответа (#6)
+    if (existingReflection) {
+      setText(existingReflection)
+    } else if (themeId != null && day != null) {
+      const draft = readThemeDraft({ userId: user?.id, themeId, day })
+      setText(draft || '')
+    } else {
+      setText('')
+    }
+    setSaveError(false)
   }
 
   useEffect(() => {
@@ -169,14 +185,27 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
     }
   }, [user, activeId])
 
+  // Debounced-сохранение черновика темы недели (#6)
+  useEffect(() => {
+    if (!text.trim() || themeId == null || day == null) return undefined
+    const timeoutId = window.setTimeout(() => {
+      saveThemeDraft({ userId: user?.id, themeId, day, text })
+    }, 500)
+    return () => clearTimeout(timeoutId)
+  }, [text, themeId, day, user?.id])
+
   async function persistReflection({ advance = true } = {}) {
     if (!data) return
 
     setSaving(true)
+    setSaveError(false)
 
     try {
       await api.themes.reflect(activeId, user.id, day, text)
       platform.haptic('success')
+
+      // Сохранено — очищаем черновик (#6)
+      clearThemeDraft({ userId: user?.id, themeId: activeId, day })
 
       invalidateThemeDetail(user.id, activeId)
       const fresh = await fetchThemeDetail(user.id, activeId, { force: true })
@@ -200,6 +229,7 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
       return true
     } catch (error) {
       console.error(error)
+      setSaveError(true)
       return false
     } finally {
       setSaving(false)
@@ -339,7 +369,12 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
 
   const webAction =
     mainVisible && !writingDay
-      ? { text: mainText, onClick: mainOnClick, disabled: !mainEnabled }
+      ? {
+          text: mainText,
+          onClick: mainOnClick,
+          disabled: !mainEnabled,
+          testId: view === 'intro' ? 'theme-start' : 'theme-close',
+        }
       : null
 
   if (!data) {
@@ -497,6 +532,7 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
         onChange={setText}
         placeholder="Записать мысль..."
         ariaLabel="Мысль по теме недели"
+        testId="theme-text-input"
         className="mt-6 flex-1"
         editorClassName="!text-[16px] font-normal pb-16"
         formatting={false}
@@ -505,9 +541,16 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
         autoFocus={!current?.reflection}
         onSubmit={save}
         submitLabel={current?.reflection ? 'Обновить мысль' : 'Сохранить мысль'}
+        submitTestId="theme-save"
         submitDisabled={!canSave}
         submitLoading={saving}
       />
+
+      {saveError && (
+        <p role="alert" className="text-[13px] text-red-300 mt-2" data-testid="theme-save-error">
+          Не удалось сохранить. Попробуй ещё раз.
+        </p>
+      )}
 
       <button
         type="button"

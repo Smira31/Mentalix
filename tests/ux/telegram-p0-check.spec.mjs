@@ -9,6 +9,10 @@ const DEMO_URL =
   process.env.MENTALIX_TELEGRAM_P0_URL ||
   'http://127.0.0.1:5173/?demo=1&toolbar=1&device=pro-max&tab=today&frame=0'
 
+// Порт dev-сервера задаёт конфиг (в CI это 4173), поэтому навигацию внутрь
+// игры строим от того же origin, а не от жёстко прописанного 5173.
+const DEMO_ORIGIN = new URL(DEMO_URL).origin
+
 async function openTelegramDemo(browser, viewport) {
   const context = await browser.newContext({
     viewport: { width: viewport.width, height: viewport.height },
@@ -136,38 +140,52 @@ for (const viewport of P0_VIEWPORTS) {
 
     test('native BackButton remains safe during Journal keyboard resize', async ({ browser }) => {
       const { context, page } = await openTelegramDemo(browser, viewport)
-      // Стабильный путь: Следопыт (LilaDiscoverFlow), поле ввода по data-testid.
+      // Стабильный путь: Даймон (DaimonFlow), поле ввода по data-testid.
       await page.getByRole('button', { name: 'Шаги' }).click()
-      await page.getByRole('button', { name: /Открыть Разобраться со Следопытом/ }).first().click()
-      await page.getByRole('button', { name: 'Описать ситуацию' }).click()
+      await page
+        .getByRole('button', { name: /Открыть Даймон/ })
+        .first()
+        .click()
+      await page.getByTestId('daimon-start').click()
       await expect.poll(() => page.evaluate(() => window.__telegramBackState.isVisible)).toBe(true)
 
-      const editor = page.getByTestId('lila-query-input')
+      const editor = page.getByTestId('daimon-request-input')
       await editor.fill('P0 keyboard draft')
       await editor.focus()
-      await page.setViewportSize({ width: viewport.width, height: Math.round(viewport.height * 0.58) })
+      await page.setViewportSize({
+        width: viewport.width,
+        height: Math.round(viewport.height * 0.58),
+      })
       // Ждём состояние после ресайза, а не фиксированный таймаут — на медленном CI re-render не успевает за 120 мс.
-      await expect.poll(() => page.evaluate(() => {
-        const shell = document.querySelector('[data-testid="lila-stage-shell"]')
-        return (shell?.getBoundingClientRect().bottom ?? Infinity) - window.innerHeight
-      }), { timeout: 5000 }).toBeLessThanOrEqual(1)
+      await expect
+        .poll(
+          () =>
+            page.evaluate(() => {
+              const shell = document.querySelector('[data-testid="mx-screen-shell"]')
+              return (shell?.getBoundingClientRect().bottom ?? Infinity) - window.innerHeight
+            }),
+          { timeout: 5000 }
+        )
+        .toBeLessThanOrEqual(1)
 
       const geometry = await page.evaluate(() => {
-        const shell = document.querySelector('[data-testid="lila-stage-shell"]')
+        const shell = document.querySelector('[data-testid="mx-screen-shell"]')
         return {
           shellBottom: shell?.getBoundingClientRect().bottom,
           viewportHeight: window.innerHeight,
           bodyOverflow: getComputedStyle(document.body).overflow,
-          focused: document.activeElement === document.querySelector('[data-testid="lila-query-input"]'),
+          focused:
+            document.activeElement ===
+            document.querySelector('[data-testid="daimon-request-input"]'),
         }
       })
 
       expect(geometry.shellBottom).toBeLessThanOrEqual(geometry.viewportHeight + 1)
       expect(geometry.bodyOverflow).toBe('hidden')
       expect(geometry.focused).toBe(true)
-      // Нативная «Назад» возвращает с поля ввода на интро Следопыта.
+      // Нативная «Назад» возвращает с поля ввода на интро Даймона.
       await nativeBack(page)
-      await expect(page.getByRole('button', { name: 'Описать ситуацию' })).toBeVisible()
+      await expect(page.getByTestId('daimon-start')).toBeVisible()
       await context.close()
     })
 
@@ -181,6 +199,54 @@ for (const viewport of P0_VIEWPORTS) {
       await expect(page.getByRole('heading', { name: 'твой профиль.' })).toBeVisible()
       await nativeBack(page)
       await expect(page.getByRole('heading', { name: 'Сегодня' })).toBeVisible()
+      await context.close()
+    })
+
+    test('Daimon chat and insight stay above the keyboard, native Back preserves pending cell', async ({
+      browser,
+    }) => {
+      const { context, page } = await openTelegramDemo(browser, viewport)
+      await page.goto(
+        `${DEMO_ORIGIN}/?demo=1&frame=0&tab=practices&sub=daimon&daimonTest=nearSnake`,
+        { waitUntil: 'networkidle' }
+      )
+      await page.getByTestId('daimon-roll').click()
+      await expect(page.getByTestId('daimon-chat-input')).toBeVisible()
+      await expect(page.getByTestId('daimon-thinking')).toBeHidden()
+      const shortHeight = Math.round(viewport.height * 0.58)
+      await page.getByTestId('daimon-chat-input').focus()
+      await page.setViewportSize({ width: viewport.width, height: shortHeight })
+      await expect
+        .poll(() =>
+          page
+            .getByTestId('daimon-chat-row')
+            .evaluate(el => el.getBoundingClientRect().bottom - window.innerHeight)
+        )
+        .toBeLessThanOrEqual(1)
+      for (let i = 0; i < 2; i++) {
+        await page.getByTestId('daimon-chat-input').fill(`Ответ ${i + 1}`)
+        await page.getByTestId('daimon-chat-send').click()
+        await expect(page.getByTestId('daimon-thinking')).toBeHidden()
+      }
+      await page.getByTestId('daimon-insight-input').fill('Мой вывод')
+      await page.getByTestId('daimon-insight-input').focus()
+      await expect
+        .poll(() =>
+          page
+            .getByTestId('daimon-insight-submit')
+            .evaluate(el => el.getBoundingClientRect().bottom - window.innerHeight)
+        )
+        .toBeLessThanOrEqual(1)
+      await expect
+        .poll(() =>
+          page
+            .getByTestId('daimon-insight-input')
+            .evaluate(el => el.getBoundingClientRect().bottom - window.innerHeight)
+        )
+        .toBeLessThanOrEqual(1)
+      expect(await page.evaluate(() => getComputedStyle(document.body).overflow)).toBe('hidden')
+      await nativeBack(page)
+      await expect(page.getByTestId('daimon-continue-cell')).toContainText('Продолжить клетку 11 ·')
       await context.close()
     })
 
@@ -207,8 +273,10 @@ for (const viewport of P0_VIEWPORTS) {
         localStorage.setItem('mx-journal-v2:user:900001', JSON.stringify(store('user-a')))
         localStorage.setItem('mx-journal-v2:user:900002', JSON.stringify(store('user-b')))
         return {
-          a: JSON.parse(localStorage.getItem('mx-journal-v2:user:900001')).entries['2026-09-14'].cycle.idea.text,
-          b: JSON.parse(localStorage.getItem('mx-journal-v2:user:900002')).entries['2026-09-14'].cycle.idea.text,
+          a: JSON.parse(localStorage.getItem('mx-journal-v2:user:900001')).entries['2026-09-14']
+            .cycle.idea.text,
+          b: JSON.parse(localStorage.getItem('mx-journal-v2:user:900002')).entries['2026-09-14']
+            .cycle.idea.text,
           legacy: localStorage.getItem('mx-journal-v2'),
         }
       })

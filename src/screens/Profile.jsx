@@ -204,7 +204,7 @@ export default function Profile({ user, stats, loading, error, retryProfile }) {
       {stats && (
         <ProfileGroup label="Статистика">
           <ProfileCard>
-            <ProfileRow title="Дней в системе" value={daysInSystem ?? '—'} />
+            <ProfileRow title="Дней в системе" value={daysInSystem ?? 'Первый день'} />
             <ProfileRow title="Всего чек-инов" value={stats.total_checkins || 0} />
             {bestStreak != null && (
               <ProfileRow

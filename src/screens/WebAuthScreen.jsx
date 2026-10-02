@@ -46,6 +46,14 @@ function TelegramLogin({ onSuccess, onError }) {
   return <div id="mentalix-telegram-login" className="mx-web-auth-telegram" />
 }
 
+const RESEND_COOLDOWN_MS = 60_000
+
+// Поле поднимается над экранной клавиатурой: даём ей время открыться и прокручиваем.
+function keepFieldVisible(event) {
+  const field = event.currentTarget
+  window.setTimeout(() => field.scrollIntoView?.({ block: 'center', behavior: 'smooth' }), 300)
+}
+
 export default function WebAuthScreen({ onAuthed }) {
   const [email, setEmail] = useState('')
   const [code, setCode] = useState('')
@@ -53,8 +61,52 @@ export default function WebAuthScreen({ onAuthed }) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
+  // Повторная отправка кода: отсчёт от метки времени, а не от тиков таймера.
+  const [resendAt, setResendAt] = useState(0)
+  const [clock, setClock] = useState(() => Date.now())
+  const resendLeft = Math.max(0, Math.ceil((resendAt - clock) / 1000))
   const directWebVisit = !window.Telegram?.WebApp?.initData
   const emailValid = useMemo(() => /^(?=.{5,254}$)[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email), [email])
+
+  useEffect(() => {
+    if (resendAt <= Date.now()) return undefined
+    const id = window.setInterval(() => {
+      const current = Date.now()
+      setClock(current)
+      if (current >= resendAt) window.clearInterval(id)
+    }, 1000)
+    return () => window.clearInterval(id)
+  }, [resendAt])
+
+  async function sendCode() {
+    await api.auth.requestEmailCode(email.trim().toLowerCase())
+    const sentAt = Date.now()
+    setClock(sentAt)
+    setResendAt(sentAt + RESEND_COOLDOWN_MS)
+  }
+
+  async function resendCode() {
+    if (busy || resendLeft > 0) return
+    setError('')
+    setNotice('')
+    setBusy(true)
+    try {
+      await sendCode()
+      setNotice('Новый код отправлен. Он действует 10 минут.')
+    } catch {
+      setError('Не удалось отправить код. Попробуй ещё раз.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  function changeEmail() {
+    setStep('email')
+    setCode('')
+    setError('')
+    setNotice('')
+    setResendAt(0)
+  }
 
   async function requestCode(event) {
     event.preventDefault()
@@ -63,7 +115,7 @@ export default function WebAuthScreen({ onAuthed }) {
     if (!emailValid) return setError('Укажи корректный email.')
     setBusy(true)
     try {
-      await api.auth.requestEmailCode(email.trim().toLowerCase())
+      await sendCode()
       setStep('code')
       setNotice('Код отправлен на почту. Он действует 10 минут.')
     } catch {
@@ -151,6 +203,7 @@ export default function WebAuthScreen({ onAuthed }) {
                 type="email"
                 autoComplete="email"
                 value={email}
+                onFocus={keepFieldVisible}
                 onChange={event => setEmail(event.target.value)}
                 placeholder="Введи свой email"
               />
@@ -170,6 +223,7 @@ export default function WebAuthScreen({ onAuthed }) {
                 inputMode="numeric"
                 autoComplete="one-time-code"
                 value={code}
+                onFocus={keepFieldVisible}
                 onChange={event => setCode(event.target.value)}
                 placeholder="Код из письма"
               />
@@ -183,7 +237,16 @@ export default function WebAuthScreen({ onAuthed }) {
             >
               {busy ? 'Проверяю…' : 'Войти'}
             </button>
-            <button type="button" onClick={() => setStep('email')} className="mx-web-auth-change">
+            <button
+              type="button"
+              onClick={resendCode}
+              disabled={busy || resendLeft > 0}
+              className="mx-web-auth-change"
+              data-testid="web-auth-resend"
+            >
+              {resendLeft > 0 ? `Отправить код ещё раз (${resendLeft} с)` : 'Отправить код ещё раз'}
+            </button>
+            <button type="button" onClick={changeEmail} className="mx-web-auth-change">
               Изменить email
             </button>
           </form>

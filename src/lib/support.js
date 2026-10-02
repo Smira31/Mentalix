@@ -8,6 +8,8 @@ export const SUPPORT_TELEGRAM = 'smira31'
 
 export const SUPPORT_TELEGRAM_URL = `https://t.me/${SUPPORT_TELEGRAM}`
 
+export const MENTALIX_BOT_URL = 'https://t.me/Mentalix_club_bot'
+
 // В Telegram — нативно через openTelegramLink, в вебе — новая вкладка.
 export function openSupportChat(event) {
   event?.preventDefault?.()

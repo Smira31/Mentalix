@@ -1,6 +1,7 @@
 import { devices, expect, test } from '@playwright/test'
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
+import { DAIMON_CELLS, DAIMON_LEVELS } from '../../src/lib/daimonBoard.js'
 
 const ARTIFACT_ROOT = path.resolve('artifacts/ux-check')
 
@@ -258,6 +259,13 @@ function fixtureFor(request) {
     ])
   }
 
+  // Даймон: поле из статических данных, пустое состояние → интро новой игры.
+  if (pathname === '/api/daimon/board') {
+    return jsonResponse({ levels: DAIMON_LEVELS, cells: DAIMON_CELLS })
+  }
+  if (pathname === '/api/daimon/state') return jsonResponse({ game: null })
+  if (pathname === '/api/daimon/games') return jsonResponse([])
+
   // Daily Journal: setup без updated_at → intro, entries — stateful.
   if (pathname === '/api/daily-journal/setup') {
     return jsonResponse({ prompts: ['Что ты откладываешь, хотя знаешь, что это важно?'] })
@@ -426,7 +434,7 @@ async function assertBottomNavigationLabelsFit(page) {
 }
 
 async function assertSoonControls(page) {
-  await assertClickable(page.getByRole('button', { name: 'Открыть Разобраться со Следопытом' }))
+  await assertClickable(page.getByRole('button', { name: 'Открыть Даймон' }))
   // Каталог владельца показывает будущие практики как неактивные карточки.
   await expect(page.getByRole('button', { name: /Импульс к действию/ })).toBeDisabled()
   await expect(page.getByRole('button', { name: /Фокус, скоро/ })).toBeDisabled()
@@ -737,7 +745,7 @@ test('локальный UX smoke по основному маршруту', asy
           const catalog = document.querySelector('.mx-steps-explore-catalog')
           const rail = catalog?.querySelector('.mx-steps-rail')
           const practiceTitle = [...(rail?.querySelectorAll('strong') || [])].find(title =>
-            title.textContent?.includes('Разобраться со Следопытом')
+            title.textContent?.includes('Даймон')
           )
           const practiceCopy = rail?.querySelector('small')
           const collectionCopy = catalog?.querySelector('.mx-steps-collection__desc')
@@ -822,8 +830,8 @@ test('локальный UX smoke по основному маршруту', asy
     // Выход обратно в практики
     await page.getByTestId('back-button').click()
     await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
-    await page.getByRole('button', { name: 'Открыть Разобраться со Следопытом' }).click()
-    await expect(page.getByRole('heading', { name: 'Когда неясно, с чего начать' })).toBeVisible()
+    await page.getByRole('button', { name: 'Открыть Даймон' }).click()
+    await expect(page.getByRole('heading', { name: 'Даймон' })).toBeVisible()
     await page.getByRole('button', { name: 'Назад' }).click()
     await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
 

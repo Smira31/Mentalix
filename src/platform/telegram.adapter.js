@@ -139,6 +139,15 @@ export const telegramAdapter = {
     }
   },
 
+  // Внешние https/mailto-ссылки: нативно через Telegram, иначе — новая вкладка.
+  openLink(url) {
+    if (WebApp.openLink) {
+      WebApp.openLink(url)
+    } else {
+      window.open(url, '_blank', 'noopener,noreferrer')
+    }
+  },
+
   showConfirm(message) {
     if (WebApp.showConfirm) {
       return new Promise(resolve => {

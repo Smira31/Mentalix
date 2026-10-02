@@ -1,5 +1,11 @@
 import { now } from './clock.js'
 import { DEFAULT_REVIEW_HOUR } from './todayCardState.js'
+import {
+  DAIMON_CELLS,
+  DAIMON_LEVELS,
+  DAIMON_INSIGHT_PROMPT,
+  getCell as getDaimonCell,
+} from './daimonBoard.js'
 import { DEFAULT_JOURNAL_PROMPTS } from './dailyJournalConstants.js'
 
 const DEMO_STATE_KEY = 'mentalix_preview_demo_state_v6'
@@ -564,7 +570,7 @@ function seedState(todayState = null) {
     notes: { 900401: [] },
     messages: [],
     pinnedPractices: [
-      { practice_id: 'lila-discover' },
+      { practice_id: 'daimon' },
       { practice_id: 'rituals' },
       { practice_id: 'ascezas' },
     ],
@@ -692,6 +698,7 @@ function seedState(todayState = null) {
     dailyJournalSetup: null,
     dailyJournalEntries: [],
     moodPractices: empty ? [] : moodPractices,
+    daimon: { game: null, games: [] },
     // В прерванной серии вчера нет ни одной активности.
     practiceDays: empty
       ? []
@@ -709,7 +716,7 @@ function seedState(todayState = null) {
 
 function readState() {
   const todayState = previewTodayState()
-  const stateKey = todayState ? `${DEMO_STATE_KEY}:${todayState}` : DEMO_STATE_KEY
+  const stateKey = `${DEMO_STATE_KEY}${todayState ? `:${todayState}` : ''}${daimonTestMode() ? `:daimon:${daimonTestMode()}` : ''}`
 
   try {
     const raw = localStorage.getItem(stateKey)
@@ -721,7 +728,7 @@ function readState() {
 
 function writeState(state) {
   const todayState = previewTodayState()
-  const stateKey = todayState ? `${DEMO_STATE_KEY}:${todayState}` : DEMO_STATE_KEY
+  const stateKey = `${DEMO_STATE_KEY}${todayState ? `:${todayState}` : ''}${daimonTestMode() ? `:daimon:${daimonTestMode()}` : ''}`
   localStorage.setItem(stateKey, JSON.stringify(state))
   return state
 }
@@ -743,6 +750,108 @@ function json(value) {
 function numericId(pathname) {
   const match = pathname.match(/\/(\d+)(?:\/|$)/)
   return match ? Number(match[1]) : null
+}
+
+function buildDaimonBoardResponse() {
+  return {
+    levels: DAIMON_LEVELS,
+    cells: DAIMON_CELLS,
+  }
+}
+
+const DAIMON_TEST_MODES = ['chatError', 'crisis', 'slow', 'nearSnake', 'nearFinish', 'bounce']
+
+// ?daimonTest= — только в превью-демо (demoRequest работает лишь в demo-режиме).
+function daimonTestMode() {
+  if (typeof window === 'undefined' || !isPreviewDemoMode()) return null
+  const value = new URLSearchParams(window.location.search).get('daimonTest')
+  return DAIMON_TEST_MODES.includes(value) ? value : null
+}
+
+// Детерминированный бросок для сценариев у клеток 11 / 36 / отскока.
+function daimonTestRoll(mode) {
+  if (mode === 'nearSnake') return 1
+  if (mode === 'nearFinish') return 3
+  if (mode === 'bounce') return 4
+  return null
+}
+
+/*
+ * Стартовое поле для сценариев проверки крайних случаев:
+ *   nearSnake  — фишка на 10, следующий бросок 1 → клетка 11 (змея ↓ 2)
+ *   nearFinish — фишка на 33, бросок 3 → точное попадание на 36
+ *   bounce     — фишка на 34, бросок 4 → перебор и отскок
+ *   chatError  — первый /chat отвечает 502
+ *   crisis     — ответ Даймона приходит с crisis:true
+ */
+function buildDaimonTestGame(mode) {
+  const base = {
+    id: `daimon-test-${mode}`,
+    request: 'Проверка крайних случаев',
+    position: 0,
+    status: 'active',
+    throws_today: 0,
+    throws_limit: 3,
+    free_until_cell: 12,
+    paywall_enabled: false,
+    pending_move_id: null,
+    moves: [],
+    summary: null,
+    chat_asked_count: 0,
+    chat_ask_insight: false,
+    created_at: now().toISOString(),
+  }
+
+  if (mode === 'nearSnake') return { ...base, position: 10 }
+  if (mode === 'nearFinish') return { ...base, position: 33 }
+  if (mode === 'bounce') return { ...base, position: 34 }
+
+  if (mode === 'chatError' || mode === 'crisis') {
+    const move = {
+      id: 'move-test-1',
+      n: 1,
+      roll: 3,
+      from: 0,
+      to: 3,
+      cell: 3,
+      via: null,
+      via_to: null,
+      insight: null,
+      skipped: false,
+      created_at: now().toISOString(),
+    }
+    return { ...base, position: 3, pending_move_id: move.id, moves: [move] }
+  }
+
+  if (mode === 'slow') return base
+  return null
+}
+
+function buildDaimonStateResponse(state, _userId) {
+  const daimon = state.daimon || { game: null, games: [] }
+  const game = daimon.game
+  if (!game) return { game: null }
+  // Убираем внутренние поля чата из ответа
+  const { chat_asked_count, chat_ask_insight, ...cleanGame } = game
+  return {
+    game: {
+      ...cleanGame,
+      moves: game.moves.map(m => ({
+        id: m.id,
+        n: m.n,
+        roll: m.roll,
+        from: m.from,
+        to: m.to,
+        cell: m.cell,
+        via: m.via,
+        via_to: m.via_to,
+        insight: m.insight,
+        skipped: m.skipped,
+        created_at: m.created_at,
+      })),
+      summary: game.summary,
+    },
+  }
 }
 
 function respond(path, options = {}) {
@@ -867,6 +976,7 @@ function respond(path, options = {}) {
       longest_streak: state.profile.best_streak ?? 0,
       total_active_days: state.profile.days_active ?? 0,
       is_active_today:
+        state.daimon?.game?.last_activity_at?.slice(0, 10) === today ||
         state.checkins.some(item => item?.date === today) ||
         state.rituals.some(item => item.today_level) ||
         state.ascezas.some(item => item.today_status) ||
@@ -1185,6 +1295,11 @@ function respond(path, options = {}) {
   }
 
   if (pathname === '/mentalix/messages' && method === 'GET') {
+    // Разговор клетки Даймона: реплики хранятся по move_id.
+    if (url.searchParams.get('persona') === 'daimon') {
+      const threads = state.daimonMessages || {}
+      return json(threads[url.searchParams.get('move_id')] || [])
+    }
     return json(state.messages || [])
   }
   if (pathname === '/mentalix/messages' && method === 'POST') {
@@ -1257,6 +1372,294 @@ function respond(path, options = {}) {
     const status = url.searchParams.get('status')
     if (status === 'completed') return json(state.journalCompletedSessions || [])
     return json([])
+  }
+
+  // ── Daimon (demo) ──
+
+  if (pathname === '/daimon/board' && method === 'GET') {
+    return json(buildDaimonBoardResponse())
+  }
+
+  if (pathname === '/daimon/state' && method === 'GET') {
+    // Режим проверки: каждый вход в игру поднимает сценарий заново.
+    const seeded = buildDaimonTestGame(daimonTestMode())
+    if (seeded && !state.daimonTest?.seeded) {
+      const next = {
+        ...state,
+        daimon: { ...(state.daimon || {}), game: seeded, games: state.daimon?.games || [] },
+        daimonTest: { seeded: true },
+      }
+      writeState(next)
+      return json(buildDaimonStateResponse(next, url.searchParams.get('user_id')))
+    }
+    return json(buildDaimonStateResponse(state, url.searchParams.get('user_id')))
+  }
+
+  if (pathname === '/daimon/games' && method === 'POST') {
+    const req = (body.request || '').trim()
+    if (req.length < 3 || req.length > 500) {
+      const error = new Error('Запрос слишком короткий или слишком длинный')
+      error.status = 422
+      throw error
+    }
+    const game = {
+      id: `daimon-${Date.now()}`,
+      request: req,
+      position: 0,
+      status: 'active',
+      throws_today: 0,
+      throws_limit: 3,
+      free_until_cell: 12,
+      paywall_enabled: false,
+      pending_move_id: null,
+      moves: [],
+      summary: null,
+      chat_asked_count: 0,
+      chat_ask_insight: false,
+      created_at: now().toISOString(),
+    }
+    const previous = state.daimon?.game
+    const games = [...(state.daimon?.games || [])]
+    if (previous && !games.some(item => item.id === previous.id)) games.unshift(previous)
+    writeState({ ...state, daimon: { ...state.daimon, game, games } })
+    return json(
+      buildDaimonStateResponse({ ...state, daimon: { ...state.daimon, game } }, body.user_id)
+    )
+  }
+
+  if (pathname === '/daimon/roll' && method === 'POST') {
+    const daimon = state.daimon || { game: null, games: [] }
+    const game = daimon.game
+    if (!game) {
+      const error = new Error('Нет активной игры')
+      error.status = 404
+      throw error
+    }
+    if (game.pending_move_id) {
+      const error = new Error('Есть незакрытая клетка')
+      error.status = 409
+      throw error
+    }
+    if (game.throws_today >= game.throws_limit) {
+      const error = new Error('На сегодня всё')
+      error.status = 429
+      throw error
+    }
+    const roll = daimonTestRoll(daimonTestMode()) || Math.floor(Math.random() * 6) + 1
+    const from = game.position
+    let to = from + roll
+    if (to > 36) to = 36 - (to - 36) // перебор: отскок назад от последней клетки
+    const cellData = to > 0 ? getDaimonCell(to) : null
+    let via = null
+    let viaTo = null
+    let finalCell = to
+    if (cellData) {
+      if (cellData.snake_to) {
+        via = 'snake'
+        viaTo = cellData.snake_to
+        finalCell = cellData.snake_to
+      } else if (cellData.arrow_to) {
+        via = 'arrow'
+        viaTo = cellData.arrow_to
+        finalCell = cellData.arrow_to
+      }
+    }
+    const move = {
+      id: `move-${Date.now()}`,
+      n: game.moves.length + 1,
+      roll,
+      from,
+      to,
+      cell: finalCell,
+      via,
+      via_to: viaTo,
+      insight: null,
+      skipped: false,
+      created_at: now().toISOString(),
+    }
+    const updatedGame = {
+      ...game,
+      position: to, // позиция — клетка приземления, не финальная
+      throws_today: game.throws_today + 1,
+      last_activity_at: now().toISOString(),
+      pending_move_id: move.id, // клетка всегда требует разговора
+      status: 'active', // финиш — после вывода на клетке 36
+      moves: [...game.moves, move],
+      chat_asked_count: 0,
+      chat_ask_insight: false,
+    }
+    writeState({ ...state, daimon: { ...daimon, game: updatedGame } })
+    return json(
+      buildDaimonStateResponse({ ...state, daimon: { ...daimon, game: updatedGame } }, body.user_id)
+    )
+  }
+
+  if (pathname === '/daimon/chat' && method === 'POST') {
+    // Гость в вебе не получает ИИ — тот же отказ, что и у сервера.
+    if (isDemoGuestMode()) {
+      const error = new Error('guest_ai_forbidden')
+      error.status = 403
+      throw error
+    }
+
+    const daimon = state.daimon || { game: null, games: [] }
+    const game = daimon.game
+    if (!game || !game.pending_move_id) {
+      const error = new Error('Нет активной клетки')
+      error.status = 409
+      throw error
+    }
+
+    const testMode = daimonTestMode()
+
+    // ?daimonTest=chatError: первый ответ нейросети падает, повтор проходит.
+    if (testMode === 'chatError' && !state.daimonTest?.chatErrorShown) {
+      writeState({ ...state, daimonTest: { ...(state.daimonTest || {}), chatErrorShown: true } })
+      const error = new Error('Демо: нейросеть не ответила')
+      error.status = 502
+      throw error
+    }
+
+    // ?daimonTest=crisis: ответ Даймона просит не игру, а поддержку.
+    if (testMode === 'crisis') {
+      const reply =
+        'Слышу тебя. Спасибо, что сказал это здесь. Сейчас важнее не клетка — важно, чтобы ты не оставался с этим один.'
+      const crisisThreads = state.daimonMessages || {}
+      const crisisThread = [...(crisisThreads[game.pending_move_id] || [])]
+      if (body.message?.trim()) crisisThread.push({ role: 'user', content: body.message.trim() })
+      crisisThread.push({ role: 'assistant', content: reply, crisis: true })
+      writeState({
+        ...state,
+        daimonMessages: { ...crisisThreads, [game.pending_move_id]: crisisThread },
+      })
+      return json({
+        reply,
+        asked_count: 1,
+        ask_insight: false,
+        crisis: true,
+      })
+    }
+
+    const move = game.moves.find(m => m.id === game.pending_move_id)
+    const cellData = move ? getDaimonCell(move.to) : null
+    const askedCount = (game.chat_asked_count || 0) + 1
+    const askInsight = askedCount >= 3
+    let reply
+    if (askInsight) {
+      reply = DAIMON_INSIGHT_PROMPT
+    } else if (askedCount === 1 && cellData) {
+      // Первая реплика Даймона — про конкретную клетку и запрос игрока.
+      reply = `Клетка «${cellData.title}». Как это связано с тем, с чем ты пришёл: «${game.request}»?`
+    } else if (cellData) {
+      reply = cellData.questions[askedCount - 1] || cellData.questions[0]
+    } else {
+      reply = 'Что ты здесь ощущаешь?'
+    }
+    const updatedGame = {
+      ...game,
+      chat_asked_count: askedCount,
+      ...(body.message?.trim() ? { last_activity_at: now().toISOString() } : {}),
+      chat_ask_insight: askInsight,
+    }
+    // Разговор клетки хранится по move_id — «Продолжить клетку» показывает историю целиком.
+    const threads = state.daimonMessages || {}
+    const thread = move ? [...(threads[move.id] || [])] : null
+    if (thread) {
+      if (body.message?.trim()) thread.push({ role: 'user', content: body.message.trim() })
+      thread.push({ role: 'assistant', content: reply })
+    }
+    writeState({
+      ...state,
+      daimon: { ...daimon, game: updatedGame },
+      ...(thread ? { daimonMessages: { ...threads, [move.id]: thread } } : {}),
+    })
+    return json({ reply, asked_count: askedCount, ask_insight: askInsight })
+  }
+
+  if (pathname === '/daimon/insight' && method === 'POST') {
+    const daimon = state.daimon || { game: null, games: [] }
+    const game = daimon.game
+    if (!game || !game.pending_move_id) {
+      const error = new Error('Нет активной клетки')
+      error.status = 409
+      throw error
+    }
+    if (!body.skip && (body.text || '').length > 300) {
+      const error = new Error('Вывод не должен превышать 300 символов')
+      error.status = 422
+      throw error
+    }
+    const moveId = game.pending_move_id
+    const moves = game.moves.map(m =>
+      m.id === moveId
+        ? {
+            ...m,
+            insight: body.skip ? null : (body.text || '').trim(),
+            skipped: Boolean(body.skip),
+          }
+        : m
+    )
+    const closedMove = moves.find(m => m.id === moveId)
+    let position = game.position
+    let via = null
+    let viaTo = null
+    // После закрытия клетки — применяем змею/стрелу, если она есть
+    if (closedMove && closedMove.to) {
+      const cellData = getDaimonCell(closedMove.to)
+      if (cellData?.snake_to) {
+        via = 'snake'
+        viaTo = cellData.snake_to
+        position = cellData.snake_to
+      } else if (cellData?.arrow_to) {
+        via = 'arrow'
+        viaTo = cellData.arrow_to
+        position = cellData.arrow_to
+      }
+    }
+    const updatedGame = {
+      ...game,
+      moves,
+      pending_move_id: null,
+      chat_asked_count: 0,
+      chat_ask_insight: false,
+      position,
+      status: position === 36 ? 'finished' : 'active',
+      last_activity_at: now().toISOString(),
+    }
+    writeState({ ...state, daimon: { ...daimon, game: updatedGame } })
+    return json(
+      buildDaimonStateResponse({ ...state, daimon: { ...daimon, game: updatedGame } }, body.user_id)
+    )
+  }
+
+  if (pathname === '/daimon/summary' && method === 'POST') {
+    const daimon = state.daimon || { game: null, games: [] }
+    const game = daimon.game
+    if (!game) {
+      const error = new Error('Нет активной игры')
+      error.status = 404
+      throw error
+    }
+    const cellInsights = game.moves
+      .filter(m => m.insight)
+      .map(m => `${getDaimonCell(m.cell)?.title || m.cell}: ${m.insight}`)
+    const summary =
+      cellInsights.length > 0
+        ? `Твой путь: ${cellInsights.join('; ')}.`
+        : 'Ты прошёл поле, не останавливаясь. В следующий раз замедли на клетках.'
+    const updatedGame = { ...game, summary }
+    writeState({ ...state, daimon: { ...daimon, game: updatedGame } })
+    return json({ summary })
+  }
+
+  if (pathname === '/daimon/games' && method === 'GET') {
+    const daimon = state.daimon || { game: null, games: [] }
+    const game = daimon.game
+    const gamesList = [...(daimon.games || [])]
+    if (game && game.status === 'finished' && !gamesList.some(g => g.id === game.id)) {
+      gamesList.unshift(game)
+    }
+    return json(gamesList)
   }
 
   // ── Daily Journal (demo) ──
@@ -1352,6 +1755,34 @@ function respond(path, options = {}) {
     return json({ items, total_days: uniqueDates.size })
   }
 
+  if (pathname === '/privacy/export/send-to-telegram') {
+    // Строгий мок контракта сервера: только POST {user_id}, до 3 отправок в день.
+    const fail = (status, payload) => {
+      const error = new Error(`Демо: HTTP ${status}`)
+      error.status = status
+      error.body = payload
+      return Promise.reject(error)
+    }
+    if (method !== 'POST') return fail(405, { detail: 'method_not_allowed' })
+    const keys = Object.keys(body)
+    if (keys.length !== 1 || keys[0] !== 'user_id' || !Number.isSafeInteger(body.user_id)) {
+      return fail(422, { detail: 'invalid_body' })
+    }
+    if (body.user_id <= 0) return fail(422, { detail: 'invalid_body' })
+    const mock = new URLSearchParams(window.location.search).get('export_mock')
+    if (mock === 'bot_blocked') return fail(403, { ok: false, reason: 'bot_blocked' })
+    if (mock === 'identity_required') {
+      return fail(403, { detail: 'verified_telegram_identity_required' })
+    }
+    if (mock === 'telegram_send_failed') return fail(502, { detail: 'telegram_send_failed' })
+    if (mock === 'user_not_found') return fail(404, { detail: 'user_not_found' })
+    const today = now().toISOString().slice(0, 10)
+    const sent = (state.exportSends || []).filter(date => date === today)
+    if (sent.length >= 3) return fail(429, { detail: 'export_send_rate_limited' })
+    writeState({ ...state, exportSends: [...sent, today] })
+    return json({ ok: true })
+  }
+
   if (pathname === '/health' && method === 'GET') return json({ status: 'ok' })
 
   if (pathname === '/mentalix/transcribe' && method === 'POST') {
@@ -1364,6 +1795,10 @@ function respond(path, options = {}) {
 }
 
 export async function demoRequest(path, options = {}) {
+  // ?daimonTest=slow: искусственная задержка Даймона для проверки состояний загрузки.
+  if (daimonTestMode() === 'slow' && path.startsWith('/daimon')) {
+    await new Promise(resolve => setTimeout(resolve, 3000))
+  }
   const network = demoNetwork()
   if (network === 'Медленно') await new Promise(resolve => setTimeout(resolve, 4000))
   if (network === 'Нет сети') throw new Error('Нет сети')

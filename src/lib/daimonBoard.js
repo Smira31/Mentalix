@@ -1,0 +1,161 @@
+/*
+ * Доска Даймона — 36 клеток, 6 уровней, змеи и стрелы.
+ *
+ * Статические данные поля. Используется демо-моком и API-клиентом.
+ * Сетка: 6×6, змейкой (boustrophedon) снизу вверх:
+ *   ряд 1 (низ) — клетки 1–6 слева направо,
+ *   ряд 2 — 7–12 справа налево, и т.д.
+ */
+
+export const DAIMON_LEVELS = [
+  { n: 1, title: 'Автопилот' },
+  { n: 2, title: 'Желание' },
+  { n: 3, title: 'Воля' },
+  { n: 4, title: 'Люди' },
+  { n: 5, title: 'Правда' },
+  { n: 6, title: 'Ясность' },
+]
+
+const SNAKES = {
+  11: 2,
+  14: 6,
+  16: 5,
+  20: 10,
+  26: 13,
+  29: 17,
+  33: 25,
+}
+
+const ARROWS = {
+  12: 18,
+  15: 21,
+  22: 31,
+  25: 32,
+  30: 35,
+}
+
+const CELL_DATA = [
+  [1, 'Запрос', 'С чего всё начинается'],
+  [2, 'Автопилот', 'Действия по инерции, без вопроса «зачем»'],
+  [3, 'Лента', 'Бесконечный поток чужого'],
+  [4, 'Тело', 'Что говорит тело, пока ум молчит'],
+  [5, 'Страх', 'Что пугает, когда никто не смотрит'],
+  [6, 'Привычка', 'Что делаешь на автомате'],
+  [7, 'Желание', 'Чего хочется на самом деле'],
+  [8, 'Зависть', 'Чьей жизнью ты заглядываешься'],
+  [9, 'Удовольствие', 'Что приносит радость без вины'],
+  [10, 'Чужая жизнь', 'Где живёшь чужим сценарием'],
+  [11, 'Самообман', 'Где обманываешь себя мягче всего'],
+  [12, 'Мечта', 'Что хочется, но страшно назвать'],
+  [13, 'Выбор', 'Развилка, которую откладываешь'],
+  [14, 'Лень', 'Где остановка прикрывается усталостью'],
+  [15, 'Дисциплина', 'Какую опору строишь сам'],
+  [16, 'Гнев', 'Что вспыхивает и сжигает'],
+  [17, 'Цена', 'Чем готов заплатить за своё'],
+  [18, 'Порог', 'Что отделяет намерение от действия'],
+  [19, 'Близкие', 'Кто рядом и как это меняет'],
+  [20, 'Обида', 'Что носишь и не отпускаешь'],
+  [21, 'Граница', 'Где заканчиваешься ты'],
+  [22, 'Благодарность', 'За что благодарен без условий'],
+  [23, 'Одиночество', 'Что слышишь в тишине'],
+  [24, 'Прощение', 'Кого отпускаешь — включая себя'],
+  [25, 'Честность', 'Где правда без оговорок'],
+  [26, 'Жалость к себе', 'Где сострадание становится клеткой'],
+  [27, 'Слово', 'Что обещаешь и держишь'],
+  [28, 'Мементо мори', 'Что изменится, если помнить о конце'],
+  [29, 'Гордыня', 'Где правота дороже связи'],
+  [30, 'Ответственность', 'Что действительно зависит от тебя'],
+  [31, 'Взгляд сверху', 'Как это видно с высоты'],
+  [32, 'Принятие', 'Что принимаешь без борьбы'],
+  [33, 'Сомнение', 'Что колеблется, когда кажется ясным'],
+  [34, 'Тишина', 'Где нет нужды объяснять'],
+  [35, 'Смысл', 'Ради чего всё это'],
+  [36, 'Даймон', 'Внутренний голос, с которым говоришь'],
+]
+
+export const DAIMON_CELLS = CELL_DATA.map(([n, title, meaning]) => ({
+  n,
+  title,
+  meaning,
+  questions: [
+    'Что приходит, когда ты здесь?',
+    'Что это напоминает тебе в жизни сейчас?',
+    'Какая одна мысль остаётся?',
+  ],
+  snake_to: SNAKES[n] || null,
+  arrow_to: ARROWS[n] || null,
+  level: Math.ceil(n / 6),
+}))
+
+export const DAIMON_SNAKES = SNAKES
+export const DAIMON_ARROWS = ARROWS
+
+export const DAIMON_INSIGHT_PROMPT = 'Что ты увидел на этой клетке? Одной фразой.'
+
+export const DAIMON_FINAL_CELL = 36
+
+/**
+ * Позиция клетки в CSS-сетке 6×6 (boustrophedon).
+ * Возвращает { row, col } где row=0 — верхний ряд, col=0 — левый.
+ */
+export function cellGridPosition(n) {
+  const boardRow = Math.floor((n - 1) / 6)
+  const inRow = (n - 1) % 6
+  const leftToRight = boardRow % 2 === 0
+  const col = leftToRight ? inRow : 5 - inRow
+  const cssRow = 5 - boardRow
+  return { row: cssRow, col }
+}
+
+/**
+ * Клетка по позиции в CSS-сетке.
+ */
+export function cellByGridPosition(row, col) {
+  const boardRow = 5 - row
+  const leftToRight = boardRow % 2 === 0
+  const inRow = leftToRight ? col : 5 - col
+  return boardRow * 6 + inRow + 1
+}
+
+export function getCell(n) {
+  return DAIMON_CELLS.find(cell => cell.n === n) || null
+}
+
+/**
+ * Поиск клетки в данных, полученных с сервера (GET /api/daimon/board).
+ * Если board отсутствует (загрузка), fallback на статические данные.
+ */
+export function findCell(board, n) {
+  if (board?.cells) {
+    return board.cells.find(c => c.n === n) || null
+  }
+  return getCell(n)
+}
+
+/**
+ * Змеи из данных сервера. Fallback на статические, если board отсутствует.
+ */
+export function getBoardSnakes(board) {
+  if (!board?.cells) return DAIMON_SNAKES
+  const snakes = {}
+  for (const cell of board.cells) {
+    if (cell.snake_to) snakes[cell.n] = cell.snake_to
+  }
+  return snakes
+}
+
+/**
+ * Стрелы из данных сервера. Fallback на статические, если board отсутствует.
+ */
+export function getBoardArrows(board) {
+  if (!board?.cells) return DAIMON_ARROWS
+  const arrows = {}
+  for (const cell of board.cells) {
+    if (cell.arrow_to) arrows[cell.n] = cell.arrow_to
+  }
+  return arrows
+}
+
+export function getLevel(levelN) {
+  return DAIMON_LEVELS.find(level => level.n === levelN) || null
+}

@@ -126,6 +126,10 @@ export const webAdapter = {
     window.open(url, '_blank', 'noopener,noreferrer')
   },
 
+  openLink(url) {
+    window.open(url, '_blank', 'noopener,noreferrer')
+  },
+
   showConfirm(message) {
     return Promise.resolve(window.confirm(message))
   },

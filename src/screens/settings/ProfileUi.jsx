@@ -177,6 +177,7 @@ export function ProfileRow({
   danger = false,
   testId,
   valueHeading = false,
+  disabled = false,
 }) {
   const Component = onClick ? 'button' : 'div'
   const showChevron = Boolean(onClick) && !right
@@ -187,7 +188,7 @@ export function ProfileRow({
 
   return (
     <Component
-      {...(onClick ? { type: 'button', onClick } : {})}
+      {...(onClick ? { type: 'button', onClick, disabled } : {})}
       data-testid={testId}
       className={`mx-profile-row${danger ? ' mx-profile-row--danger' : ''}`}
     >

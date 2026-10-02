@@ -8,7 +8,7 @@ import {
   invalidateTodayData,
   peekTodaySnapshot,
 } from '../lib/todayDataCache'
-import { useTabRefresh } from '../lib/tabRefresh'
+import { useTabRefresh, useTabReset } from '../lib/tabRefresh'
 import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
 import { ChevronRight, ArrowUpRight, Lightbulb, X } from 'lucide-react'
 
@@ -46,6 +46,7 @@ import {
   DEFAULT_REVIEW_HOUR,
 } from '../lib/todayCardState'
 import { now as clockNow } from '../lib/clock'
+import { toLocalCalendarDate } from '../lib/dateTimezonePolicy'
 import { demoScenario, demoReviewNow, previewPinnedPracticesAction } from '../lib/demoMode'
 import { pickVisibleTodayHint } from '../lib/todayHints'
 
@@ -285,14 +286,31 @@ export default function Today({
 
   const [reloadToken, setReloadToken] = useState(0)
 
+  // Тихий тост «Не удалось обновить» при ошибке refreshCheckin (#12)
+  const [refreshToast, setRefreshToast] = useState(false)
+  const refreshToastTimer = useRef(null)
+
+  // Дата загрузки данных «Сегодня» — для детектора смены дня (#4)
+  const loadedDateRef = useRef(null)
+
   // Тихое фоновое обновление при возврате на вкладку из фона или
   // другой вкладки: инвалидируем кеш и перезапускаем основной эффект.
   // Скелетон и loading не показываются — эффект не ставит loading
   // в true, только обновляет state по готовности свежих данных.
   useTabRefresh('today', () => {
     if (!user) return
+    // Смена дня: если дата загрузки не совпадает с текущей — перезагружаем
+    if (loadedDateRef.current && loadedDateRef.current !== toLocalCalendarDate()) {
+      loadedDateRef.current = toLocalCalendarDate()
+    }
     invalidateTodayData(user.id)
     setReloadToken(token => token + 1)
+  })
+
+  // Сброс подэкранов при повторном тапе по вкладке «Сегодня»
+  useTabReset('today', () => {
+    setSub(null)
+    setNewBadge(null)
   })
 
   const [recovery, setRecovery] = useState(null)
@@ -556,14 +574,24 @@ export default function Today({
     }, duration)
   }, [])
 
+  // Защита от параллельных запросов: двойной тап «Повторить» не запускает
+  // повторную загрузку, пока первая ещё не завершилась (#12)
+  const retryingRef = useRef(false)
+
   function retryTodayData() {
-    if (!user) return
+    if (!user || retryingRef.current) return
+    retryingRef.current = true
 
     invalidateTodayData(user.id)
     setLoadError(false)
     setLoading(true)
     setConnecting(false)
     setReloadToken(token => token + 1)
+
+    // Снимаем блокировку после того, как основной эффект отработает
+    setTimeout(() => {
+      retryingRef.current = false
+    }, 1000)
   }
 
   useEffect(() => {
@@ -650,6 +678,10 @@ export default function Today({
       return { history: safeHistory, newBadge: serverBadge }
     } catch (error) {
       console.error(error)
+      // Тихий тост, не блокирующий экран (#12)
+      setRefreshToast(true)
+      clearTimeout(refreshToastTimer.current)
+      refreshToastTimer.current = setTimeout(() => setRefreshToast(false), 3000)
     }
   }
 
@@ -674,6 +706,27 @@ export default function Today({
     return () => clearTimeout(timer)
   }, [loading, previewFixture, initialTodaySnapshot, initialSub])
 
+  // Таймер на ближайшую полночь — перезагрузить данные при смене дня (#4)
+  useEffect(() => {
+    if (!user) return undefined
+
+    function scheduleMidnight() {
+      const now = new Date()
+      const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0)
+      const delay = midnight.getTime() - now.getTime()
+
+      return setTimeout(() => {
+        loadedDateRef.current = toLocalCalendarDate()
+        invalidateTodayData(user.id)
+        setReloadToken(token => token + 1)
+        scheduleMidnight()
+      }, delay + 500)
+    }
+
+    const timer = scheduleMidnight()
+    return () => clearTimeout(timer)
+  }, [user])
+
   useEffect(() => {
     if (previewFixture) return undefined
     if (!user || (sub !== null && !initialSub)) {
@@ -681,6 +734,8 @@ export default function Today({
     }
 
     let active = true
+
+    loadedDateRef.current = toLocalCalendarDate()
 
     // Будим сервер заранее, не дожидаясь остального (Render free tier
     // спит: первый запрос после сна отвечает до 50 с).
@@ -1394,6 +1449,15 @@ export default function Today({
           data-testid="today-connecting"
         >
           Подключаемся…
+        </p>
+      )}
+      {refreshToast && (
+        <p
+          className="mx-today-connecting mx-type-meta text-muted"
+          role="status"
+          data-testid="today-refresh-toast"
+        >
+          Не удалось обновить
         </p>
       )}
       {visibleHint === 'series' && (

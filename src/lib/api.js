@@ -44,9 +44,10 @@ function normalizeJourneyTagIds(tagIds) {
 }
 
 export class ApiError extends Error {
-  constructor(message, { path, status = null, kind = 'unknown', cause = null } = {}) {
+  constructor(message, { path, status = null, kind = 'unknown', cause = null, body = null } = {}) {
     super(message, { cause })
     this.name = 'ApiError'
+    this.body = body
     this.path = path
     this.status = status
     this.kind = kind
@@ -117,11 +118,34 @@ function authHeader() {
   }
 }
 
+const EXPORT_DOWNLOAD_TIMEOUT_MS = 30_000
+
 async function download(path, filename) {
-  const response = await fetch(`${BASE}${path}`, { credentials: 'include', headers: authHeader() })
-  if (response.status === 401) platform.clearSessionToken?.()
-  if (!response.ok) throw new Error(`Export ${path} failed: ${response.status}`)
-  const blob = await response.blob()
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), EXPORT_DOWNLOAD_TIMEOUT_MS)
+  let response
+  let blob
+  try {
+    response = await fetch(`${BASE}${path}`, {
+      credentials: 'include',
+      headers: authHeader(),
+      signal: controller.signal,
+    })
+    if (response.status === 401) platform.clearSessionToken?.()
+    if (!response.ok) throw new Error(`Export ${path} failed: ${response.status}`)
+    blob = await response.blob()
+  } catch (error) {
+    if (error?.name === 'AbortError') {
+      throw new ApiError(`Export ${path} timed out after ${EXPORT_DOWNLOAD_TIMEOUT_MS}ms`, {
+        path,
+        kind: 'timeout',
+        cause: error,
+      })
+    }
+    throw error
+  } finally {
+    clearTimeout(timeoutId)
+  }
   const href = URL.createObjectURL(blob)
   const anchor = document.createElement('a')
   anchor.href = href
@@ -142,13 +166,26 @@ const ACTIVITY_WRITE = [
   /^\/daily-journal\/entries$/,
   /^\/quotes$/,
   /^\/themes\/\d+\/reflect$/,
+  // Даймон: бросок кубика и ответ на клетке — тоже активность дня.
+  /^\/daimon\/roll$/,
+  /^\/daimon\/insight$/,
+  /^\/daimon\/chat$/,
 ]
 
 function notifyActivity(path, options) {
   const method = (options.method || 'GET').toUpperCase()
-  if (!['POST', 'PUT', 'PATCH'].includes(method) || !ACTIVITY_WRITE.some(pattern => pattern.test(path))) return
+  if (
+    !['POST', 'PUT', 'PATCH'].includes(method) ||
+    !ACTIVITY_WRITE.some(pattern => pattern.test(path))
+  )
+    return
+  if (path === '/daimon/chat' && !JSON.parse(options.body || '{}').message?.trim()) return
   let userId = null
-  try { userId = JSON.parse(options.body)?.user_id ?? null } catch { /* empty body */ }
+  try {
+    userId = JSON.parse(options.body)?.user_id ?? null
+  } catch {
+    /* empty body */
+  }
   window.dispatchEvent(new CustomEvent('mentalix:activity-saved', { detail: { userId } }))
 }
 
@@ -201,10 +238,13 @@ async function request(path, options = {}) {
             kind: 'http',
           })
         }
+        let errorBody = null
+        try { errorBody = JSON.parse(raw) } catch { /* не JSON */ }
         const error = new ApiError(`API ${path} failed: ${res.status}`, {
           path,
           status: res.status,
           kind: 'http',
+          body: errorBody,
         })
         if (canRetry && attempt < API_MAX_RETRIES && isRetryableStatus(res.status)) {
           await new Promise(resolve => setTimeout(resolve, backoffMs(attempt)))
@@ -829,7 +869,11 @@ export const api = {
         } else {
           const lines = ['# Mentalix Journal Export']
           for (const c of checkins || []) {
-            lines.push(`\n## ${c.date ?? ''}`, `Mood: ${c.mood ?? '—'}, Energy: ${c.energy ?? '—'}`, c.note || '')
+            lines.push(
+              `\n## ${c.date ?? ''}`,
+              `Mood: ${c.mood ?? '—'}, Energy: ${c.energy ?? '—'}`,
+              c.note || ''
+            )
           }
           content = lines.join('\n')
         }
@@ -860,6 +904,36 @@ export const api = {
       request(withQuery(`/privacy/checkins/${checkinId}`, { user_id: userId, confirmed: true }), {
         method: 'DELETE',
       }),
+
+    // Бот присылает файл экспорта в личный чат (только Telegram; в вебе — обычное
+    // скачивание). Авторизация как у /privacy/export. Результат:
+    //   {ok:true} | {ok:false, reason: 'bot_blocked'|'rate_limited'|'identity_required'|'failed'}
+    // 200 {ok:true}; 403 {ok:false,reason:'bot_blocked'}; 403 detail
+    // verified_telegram_identity_required; 429 export_send_rate_limited;
+    // 502 telegram_send_failed, 404 user_not_found, сеть/таймаут — 'failed'.
+    sendExportToTelegram: async userId => {
+      try {
+        const result = await request('/privacy/export/send-to-telegram', {
+          method: 'POST',
+          body: JSON.stringify({ user_id: userId }),
+          timeoutMs: 30_000,
+        })
+        return result?.ok === true ? { ok: true } : { ok: false, reason: 'failed' }
+      } catch (error) {
+        const body = error?.body
+        const detail = body?.detail
+        if (error?.status === 403) {
+          if (body?.reason === 'bot_blocked') return { ok: false, reason: 'bot_blocked' }
+          if (detail === 'verified_telegram_identity_required') {
+            return { ok: false, reason: 'identity_required' }
+          }
+        }
+        if (error?.status === 429 && detail === 'export_send_rate_limited') {
+          return { ok: false, reason: 'rate_limited' }
+        }
+        return { ok: false, reason: 'failed' }
+      }
+    },
 
     eraseAccount: userId =>
       request('/privacy/account-erasure', {
@@ -1043,6 +1117,46 @@ export const api = {
           occurred_at: occurredAt,
         }),
       }),
+  },
+
+  daimon: {
+    board: () => request('/daimon/board'),
+    state: userId => request(withQuery('/daimon/state', { user_id: userId })),
+    createGame: (userId, gameRequest) =>
+      request('/daimon/games', {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId, request: gameRequest }),
+      }),
+    roll: userId =>
+      request('/daimon/roll', {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId }),
+      }),
+    chat: (userId, message) =>
+      request('/daimon/chat', {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId, message }),
+      }),
+    // Разговор клетки: сервер хранит реплики Даймона с move_id.
+    history: (userId, moveId) =>
+      request(
+        withQuery('/mentalix/messages', {
+          user_id: userId,
+          persona: 'daimon',
+          ...(moveId ? { move_id: moveId } : {}),
+        })
+      ),
+    insight: (userId, text, skip = false) =>
+      request('/daimon/insight', {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId, text, skip }),
+      }),
+    summary: (userId, gameId) =>
+      request('/daimon/summary', {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId, game_id: gameId }),
+      }),
+    games: userId => request(withQuery('/daimon/games', { user_id: userId })),
   },
 
   health: {

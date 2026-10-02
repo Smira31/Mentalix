@@ -1,9 +1,11 @@
 import { platform } from '../platform'
+import { MENTALIX_BOT_URL } from '../lib/support'
+import { openExternal } from '../lib/externalLinks'
 import { PRODUCTION_WEB_HOST } from '../lib/demoMode'
 import { ProfileBody, ProfilePage } from './settings/ProfileUi'
 import './LinkWebAccount.css'
 
-const BOT_LINK_DEEPLINK = 'https://t.me/Mentalix_club_bot?start=link_web'
+const BOT_LINK_DEEPLINK = `${MENTALIX_BOT_URL}?start=link_web`
 
 // DESIGN_SYSTEM.md §5.4: крупный строчный заголовок, шаги, белая главная кнопка.
 const STEPS = [
@@ -15,11 +17,7 @@ const STEPS = [
 export default function LinkWebAccount({ onBack }) {
   function openBot() {
     platform.haptic('light')
-    if (window.Telegram?.WebApp?.openTelegramLink) {
-      window.Telegram.WebApp.openTelegramLink(BOT_LINK_DEEPLINK)
-    } else {
-      window.open(BOT_LINK_DEEPLINK, '_blank')
-    }
+    openExternal(BOT_LINK_DEEPLINK)
   }
 
   return (
