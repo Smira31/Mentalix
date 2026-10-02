@@ -44,9 +44,10 @@ function normalizeJourneyTagIds(tagIds) {
 }
 
 export class ApiError extends Error {
-  constructor(message, { path, status = null, kind = 'unknown', cause = null } = {}) {
+  constructor(message, { path, status = null, kind = 'unknown', cause = null, body = null } = {}) {
     super(message, { cause })
     this.name = 'ApiError'
+    this.body = body
     this.path = path
     this.status = status
     this.kind = kind
@@ -222,10 +223,13 @@ async function request(path, options = {}) {
             kind: 'http',
           })
         }
+        let errorBody = null
+        try { errorBody = JSON.parse(raw) } catch { /* не JSON */ }
         const error = new ApiError(`API ${path} failed: ${res.status}`, {
           path,
           status: res.status,
           kind: 'http',
+          body: errorBody,
         })
         if (canRetry && attempt < API_MAX_RETRIES && isRetryableStatus(res.status)) {
           await new Promise(resolve => setTimeout(resolve, backoffMs(attempt)))
@@ -882,14 +886,35 @@ export const api = {
         method: 'DELETE',
       }),
 
-    // Бот присылает файл экспорта в личный чат. Ответ: {ok:true} или
-    // {ok:false, reason:'bot_blocked'}; 429 — лимит 3 раза в день.
-    sendExportToTelegram: userId =>
-      request('/export/send-to-telegram', {
-        method: 'POST',
-        body: JSON.stringify({ user_id: userId }),
-        timeoutMs: 30_000,
-      }),
+    // Бот присылает файл экспорта в личный чат (только Telegram; в вебе — обычное
+    // скачивание). Авторизация как у /privacy/export. Результат:
+    //   {ok:true} | {ok:false, reason: 'bot_blocked'|'rate_limited'|'identity_required'|'failed'}
+    // 200 {ok:true}; 403 {ok:false,reason:'bot_blocked'}; 403 detail
+    // verified_telegram_identity_required; 429 export_send_rate_limited;
+    // 502 telegram_send_failed, 404 user_not_found, сеть/таймаут — 'failed'.
+    sendExportToTelegram: async userId => {
+      try {
+        const result = await request('/privacy/export/send-to-telegram', {
+          method: 'POST',
+          body: JSON.stringify({ user_id: userId }),
+          timeoutMs: 30_000,
+        })
+        return result?.ok === true ? { ok: true } : { ok: false, reason: 'failed' }
+      } catch (error) {
+        const body = error?.body
+        const detail = body?.detail
+        if (error?.status === 403) {
+          if (body?.reason === 'bot_blocked') return { ok: false, reason: 'bot_blocked' }
+          if (detail === 'verified_telegram_identity_required') {
+            return { ok: false, reason: 'identity_required' }
+          }
+        }
+        if (error?.status === 429 && detail === 'export_send_rate_limited') {
+          return { ok: false, reason: 'rate_limited' }
+        }
+        return { ok: false, reason: 'failed' }
+      }
+    },
 
     eraseAccount: userId =>
       request('/privacy/account-erasure', {

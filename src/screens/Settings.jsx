@@ -345,10 +345,11 @@ export default function Settings({
 
   const [exportChatReady, setExportChatReady] = useState(false)
 
-  function exportErrorMessage(error) {
-    if (error?.status === 429) return 'Можно 3 раза в день, попробуй завтра'
-    return 'Не удалось подготовить файл. Проверь соединение и попробуй ещё раз.'
+  const EXPORT_SEND_MESSAGES = {
+    bot_blocked: 'Разблокируй бота Mentalix и попробуй снова',
+    rate_limited: 'Можно 3 раза в день, попробуй завтра',
   }
+  const EXPORT_SEND_FAILED = 'Не получилось отправить. Попробуй ещё раз'
 
   // Telegram: бот присылает файл в личный чат. Web: прежнее скачивание (таймаут 30 с в api.js).
   async function exportPersonalData(format = 'json') {
@@ -366,20 +367,22 @@ export default function Settings({
     try {
       if (viaTelegram) {
         const result = await api.privacy.sendExportToTelegram(user.id)
-        if (result?.ok === true) {
+        if (result.ok) {
           setExportStatus('Отправили файл в чат с Mentalix')
           setExportChatReady(true)
-        } else if (result?.reason === 'bot_blocked') {
-          setExportStatus('Разблокируй бота Mentalix и попробуй снова')
         } else {
-          setExportStatus(exportErrorMessage())
+          setExportStatus(EXPORT_SEND_MESSAGES[result.reason] || EXPORT_SEND_FAILED)
         }
       } else {
         await api.privacy.downloadExport(user.id, { format })
         setExportStatus('Файл подготовлен для скачивания на этом устройстве.')
       }
-    } catch (error) {
-      setExportStatus(exportErrorMessage(error))
+    } catch {
+      setExportStatus(
+        viaTelegram
+          ? EXPORT_SEND_FAILED
+          : 'Не удалось подготовить файл. Проверь соединение и попробуй ещё раз.'
+      )
     } finally {
       setExporting(false)
     }

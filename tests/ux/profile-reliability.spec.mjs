@@ -156,6 +156,33 @@ test('экспорт в Telegram-режиме показывает «Отпра�
   await context.close()
 })
 
+test('экспорт в Telegram: ошибки контракта и путь запроса', async ({ browser, baseURL }) => {
+  const cases = [
+    ['bot_blocked', 'Разблокируй бота Mentalix и попробуй снова'],
+    ['identity_required', 'Не получилось отправить. Попробуй ещё раз'],
+    ['telegram_send_failed', 'Не получилось отправить. Попробуй ещё раз'],
+    ['user_not_found', 'Не получилось отправить. Попробуй ещё раз'],
+  ]
+  for (const [mock, message] of cases) {
+    const { context, page } = await openTelegramProfile(browser, baseURL)
+    await page.evaluate(m => history.replaceState(null, '', `/?demo=1&export_mock=${m}`), mock)
+    await page.getByTestId('profile-row-data').click()
+    await page.getByTestId('profile-row-export-json').click()
+    await expect(page.getByText(message)).toBeVisible()
+    await expect(page.getByTestId('profile-export-open-chat')).toHaveCount(0)
+    await context.close()
+  }
+})
+
+test('экспорт в вебе не вызывает send-to-telegram', async ({ browser, baseURL }) => {
+  const { context, page } = await openTelegramProfile(browser, baseURL, { telegram: false })
+  const calls = []
+  page.on('request', r => r.url().includes('send-to-telegram') && calls.push(r.url()))
+  await page.getByTestId('profile-row-data').click()
+  expect(calls).toEqual([])
+  await context.close()
+})
+
 test('«Назад» демо-шапки работает на подэкранах профиля', async ({ browser, baseURL }) => {
   const { context, page } = await openTelegramProfile(browser, baseURL, { telegram: false })
   await page.getByTestId('profile-row-data').click()

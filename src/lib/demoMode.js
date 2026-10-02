@@ -1352,25 +1352,30 @@ function respond(path, options = {}) {
     return json({ items, total_days: uniqueDates.size })
   }
 
-  if (pathname === '/export/send-to-telegram') {
-    // Строгий мок контракта бота: только POST {user_id}, до 3 отправок в день.
-    const fail = (status, message) => {
-      const error = new Error(message)
+  if (pathname === '/privacy/export/send-to-telegram') {
+    // Строгий мок контракта сервера: только POST {user_id}, до 3 отправок в день.
+    const fail = (status, payload) => {
+      const error = new Error(`Демо: HTTP ${status}`)
       error.status = status
+      error.body = payload
       return Promise.reject(error)
     }
-    if (method !== 'POST') return fail(405, 'Демо: метод не поддерживается')
+    if (method !== 'POST') return fail(405, { detail: 'method_not_allowed' })
     const keys = Object.keys(body)
     if (keys.length !== 1 || keys[0] !== 'user_id' || !Number.isSafeInteger(body.user_id)) {
-      return fail(422, 'Демо: ожидается только {user_id: число}')
+      return fail(422, { detail: 'invalid_body' })
     }
-    if (body.user_id <= 0) return fail(422, 'Демо: user_id должен быть положительным')
+    if (body.user_id <= 0) return fail(422, { detail: 'invalid_body' })
+    const mock = new URLSearchParams(window.location.search).get('export_mock')
+    if (mock === 'bot_blocked') return fail(403, { ok: false, reason: 'bot_blocked' })
+    if (mock === 'identity_required') {
+      return fail(403, { detail: 'verified_telegram_identity_required' })
+    }
+    if (mock === 'telegram_send_failed') return fail(502, { detail: 'telegram_send_failed' })
+    if (mock === 'user_not_found') return fail(404, { detail: 'user_not_found' })
     const today = now().toISOString().slice(0, 10)
     const sent = (state.exportSends || []).filter(date => date === today)
-    if (sent.length >= 3) return fail(429, 'Демо: лимит 3 отправки в день')
-    if (new URLSearchParams(window.location.search).get('export_mock') === 'bot_blocked') {
-      return json({ ok: false, reason: 'bot_blocked' })
-    }
+    if (sent.length >= 3) return fail(429, { detail: 'export_send_rate_limited' })
     writeState({ ...state, exportSends: [...sent, today] })
     return json({ ok: true })
   }
