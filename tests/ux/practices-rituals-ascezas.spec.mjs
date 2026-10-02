@@ -200,3 +200,21 @@ test('экран аскезы: «Сорвался сегодня», строки
     '+ Чем заменишь?'
   )
 })
+
+test('поиск в «Шагах»: чипс-подсказка подставляет запрос и показывает результат, ✕ закрывает', async ({
+  page,
+}) => {
+  await page.goto('/?demo=1&tab=practices')
+  await page.getByRole('button', { name: 'Открыть поиск' }).click()
+
+  await expect(page.getByTestId('steps-search-start')).toBeVisible()
+  await expect(page.getByTestId('steps-search-chip')).toHaveCount(5)
+
+  await page.getByTestId('steps-search-chip').filter({ hasText: 'Даймон' }).click()
+  await expect(page.locator('.mx-steps-search-input')).toHaveValue('Даймон')
+  await expect(page.locator('.mx-steps-search-result').first()).toBeVisible()
+  await expect(page.getByTestId('steps-search-start')).toHaveCount(0)
+
+  await page.getByTestId('steps-search-close').click()
+  await expect(page.locator('.mx-steps-search-overlay')).toHaveCount(0)
+})
