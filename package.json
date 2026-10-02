@@ -39,6 +39,7 @@
     "ux:telegram-react-depth": "playwright test --config=playwright.telegram-react-depth.config.mjs",
     "ux:react-185-checkin": "playwright test --config=playwright.react-185-checkin.config.mjs",
     "ux:tap-areas": "playwright test --config=playwright.tap-areas.config.mjs",
+    "ux:profile-reliability": "playwright test --config=playwright.profile-reliability.config.mjs",
     "ux:telegram-p0": "playwright test --config=playwright.telegram-p0.config.mjs",
     "ux:daimon": "playwright test --config=playwright.daimon.config.mjs",
     "ux:today-drafts": "playwright test --config=playwright.today-drafts.config.mjs",

@@ -12,14 +12,15 @@ const policy = await readFile(
 )
 const policyText = policy.replace(/\\n/g, ' ').replace(/\s+/g, ' ')
 
-test('JSON export entry honestly names completed guided sessions', () => {
-  assert.match(settings, /title="Экспорт JSON"/)
-  assert.match(settings, /Часть данных: профиль, чек-ины, завершённые направленные записи/)
+test('single export entry honestly names JSON and completed guided sessions', () => {
+  assert.match(settings, /'Отправить мои данные в чат'/)
+  assert.match(settings, /Файл JSON: профиль, чек-ины, завершённые направленные записи/)
+  assert.doesNotMatch(settings, /Экспорт Markdown|Экспорт CSV/)
 })
 
 test('privacy policy export section covers supported data honestly', () => {
-  assert.match(policyText, /JSON — расширенный экспорт поддерживаемого scope данных Mentalix/)
-  assert.match(policyText, /Markdown\/CSV — данные чек-инов/)
+  assert.match(policyText, /Файл с твоими данными в формате JSON приходит в чат с ботом/)
+  assert.match(policyText, /расширенный экспорт поддерживаемого scope данных Mentalix/)
   assert.match(policyText, /Экспорт покрывает поддерживаемые данные Mentalix/)
   assert.match(policyText, /Не утверждается, что абсолютно все возможные данные.*входят в экспорт/)
 })
