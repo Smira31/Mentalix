@@ -41,6 +41,7 @@
     "ux:tap-areas": "playwright test --config=playwright.tap-areas.config.mjs",
     "ux:telegram-p0": "playwright test --config=playwright.telegram-p0.config.mjs",
     "ux:daimon": "playwright test --config=playwright.daimon.config.mjs",
+    "ux:today-drafts": "playwright test --config=playwright.today-drafts.config.mjs",
     "test:gate": "npm run lint && npm run test:unit && npm run build && npm run ux:check",
     "test:visual:update": "playwright test --config=playwright.ux.config.mjs --update-snapshots",
     "ux:progress-visual": "playwright test --config=playwright.progress-visual.config.mjs",

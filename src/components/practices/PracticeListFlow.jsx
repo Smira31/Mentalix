@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Check } from 'lucide-react'
 import { platform } from '../../platform'
+import { useBackButton } from '../../platform/telegram.hooks'
 import { RoundBackButton } from '../NestedScreenHeader'
 import SemanticGlyph, { semanticKindForRitual, semanticKindForAsceza } from '../SemanticGlyph'
 import PracticeDetail from '../PracticeDetail'
@@ -57,7 +58,6 @@ function ListScreen({
       <div className="mx-practice-flow-screen__header">
         <RoundBackButton
           onClick={onBack}
-          registerSystemBack
           className="mx-practice-flow-screen__back"
         />
         <h1 className="mx-practice-flow-screen__title">{wording.title}</h1>
@@ -148,7 +148,6 @@ function ReadyScreen({ wording, items, onAddPreset, onOpenOwn, onBack }) {
       <div className="mx-practice-flow-screen__header">
         <RoundBackButton
           onClick={onBack}
-          registerSystemBack
           className="mx-practice-flow-screen__back"
         />
         <h1 className="mx-practice-flow-screen__title">{wording.readyTitle}</h1>
@@ -207,6 +206,7 @@ function OwnScreen({ wording, onCreate, onCancel, onCreated }) {
       label={wording.ownLabel}
       steps={wording.ownSteps}
       onCancel={onCancel}
+      systemBack={false}
       onSubmit={values =>
         onCreate(buildOwnDraft(wording.kind, values[0], values[1])).then(result => {
           if (result) onCreated()
@@ -239,6 +239,20 @@ export default function PracticeListFlow({
   const [milestone, setMilestone] = useState(null)
   const [restoring, setRestoring] = useState(null)
   const toastTimer = useRef(null)
+
+  // Единый обработчик системной «Назад» на уровне каркаса — исключает
+  // гонку регистраций useBackButton при переходах между видами.
+  useBackButton(() => {
+    if (selected) {
+      setSelected(null)
+    } else if (view === 'own') {
+      setView('ready')
+    } else if (view === 'ready' && items.length > 0) {
+      setView('list')
+    } else {
+      onBack()
+    }
+  })
 
   function showToast(message) {
     setToast(message)
@@ -344,6 +358,7 @@ export default function PracticeListFlow({
           onBreak={onBreak}
           onDelete={onDelete}
           onRestore={practice => setRestoring(practice)}
+          systemBack={false}
         />
         {restoring && (
           <StreakRestoreSheet
