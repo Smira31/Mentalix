@@ -124,20 +124,44 @@ function BreakContextSheet({ asceza, onSave, onClose }) {
   )
 }
 
+const WRITE_FAILED_NOTICE = 'Не получилось сохранить. Проверь соединение и попробуй ещё раз.'
+
 export default function Ascezas({ user, onBack }) {
   const [ascezas, setAscezas] = useState([])
   const [loading, setLoading] = useState(true)
   const [breakTarget, setBreakTarget] = useState(null)
   const [writeError, setWriteError] = useState(null)
 
+  const [loadError, setLoadError] = useState(false)
+  const [retryToken, setRetryToken] = useState(0)
+
   useEffect(() => {
-    if (!user) return
+    if (!user) return undefined
+    let alive = true
     api.ascezas
       .list(user.id)
-      .then(setAscezas)
-      .catch(error => console.error(error))
-      .finally(() => setLoading(false))
-  }, [user])
+      .then(list => {
+        if (!alive) return
+        setAscezas(list)
+        setLoadError(false)
+      })
+      .catch(error => {
+        console.error(error)
+        if (alive) setLoadError(true)
+      })
+      .finally(() => {
+        if (alive) setLoading(false)
+      })
+    return () => {
+      alive = false
+    }
+  }, [user, retryToken])
+
+  function retryLoad() {
+    setLoadError(false)
+    setLoading(true)
+    setRetryToken(n => n + 1)
+  }
 
 
 
@@ -189,6 +213,7 @@ export default function Ascezas({ user, onBack }) {
         setWriteError(LINKED_WEB_WRITE_NOTICE)
         return { error: 'linked_web_blocked' }
       }
+      setWriteError(WRITE_FAILED_NOTICE)
       throw error
     }
   }
@@ -205,10 +230,7 @@ export default function Ascezas({ user, onBack }) {
       return asceza
     } catch (error) {
       console.error(error)
-      if (isLinkedWebWriteBlocked(user, error)) {
-        setWriteError(LINKED_WEB_WRITE_NOTICE)
-        return null
-      }
+      setWriteError(isLinkedWebWriteBlocked(user, error) ? LINKED_WEB_WRITE_NOTICE : WRITE_FAILED_NOTICE)
       return null
     }
   }
@@ -223,7 +245,7 @@ export default function Ascezas({ user, onBack }) {
       return updated
     } catch (error) {
       console.error(error)
-      if (isLinkedWebWriteBlocked(user, error)) setWriteError(LINKED_WEB_WRITE_NOTICE)
+      setWriteError(isLinkedWebWriteBlocked(user, error) ? LINKED_WEB_WRITE_NOTICE : WRITE_FAILED_NOTICE)
       return null
     }
   }
@@ -235,7 +257,7 @@ export default function Ascezas({ user, onBack }) {
       setWriteError(null)
     } catch (error) {
       console.error(error)
-      if (isLinkedWebWriteBlocked(user, error)) setWriteError(LINKED_WEB_WRITE_NOTICE)
+      setWriteError(isLinkedWebWriteBlocked(user, error) ? LINKED_WEB_WRITE_NOTICE : WRITE_FAILED_NOTICE)
     }
   }
 
@@ -244,6 +266,8 @@ export default function Ascezas({ user, onBack }) {
       kind="asceza"
       items={ascezas}
       loading={loading}
+      loadError={loadError}
+      onRetry={retryLoad}
       onLog={logAsceza}
       onCreate={createAsceza}
       onUpdate={updateAsceza}
