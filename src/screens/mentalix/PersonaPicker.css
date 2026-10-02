@@ -529,9 +529,7 @@
 .mx-dialog-chip {
   min-height: 36px;
   padding: 0 var(--mx-space-3);
-  border: 1px solid var(--mx-steps-card-border);
   border-radius: var(--mx-radius-pill);
-  background: var(--mx-steps-card-bg);
   color: rgb(var(--c-text));
   font-size: 0.85rem;
   line-height: 1.2;
