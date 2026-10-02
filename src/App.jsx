@@ -1054,7 +1054,7 @@ function App() {
 
       scrollAppToTop()
 
-    dispatchTabRefresh('practices')
+      dispatchTabRefresh('practices')
     },
     [scrollAppToTop]
   )
@@ -1437,6 +1437,7 @@ function App() {
                         : 'mx-tab-panel mx-tab-panel--hidden'
                     }
                     aria-hidden={tab !== 'today'}
+                    inert={tab !== 'today' ? '' : undefined}
                   >
                     <ScreenErrorBoundary resetKey={`today-${errorResetKey}`} onHome={goHome}>
                       <Suspense fallback={<ScreenLoading />}>
@@ -1469,6 +1470,7 @@ function App() {
                         : 'mx-tab-panel mx-tab-panel--hidden'
                     }
                     aria-hidden={tab !== 'practices'}
+                    inert={tab !== 'practices' ? '' : undefined}
                   >
                     <ScreenErrorBoundary resetKey={`practices-${errorResetKey}`} onHome={goHome}>
                       <Suspense fallback={<ScreenLoading />}>
@@ -1492,6 +1494,7 @@ function App() {
                         : 'mx-tab-panel mx-tab-panel--hidden'
                     }
                     aria-hidden={tab !== 'mentor'}
+                    inert={tab !== 'mentor' ? '' : undefined}
                   >
                     <ScreenErrorBoundary resetKey={`mentor-${errorResetKey}`} onHome={goHome}>
                       <Suspense fallback={<ScreenLoading />}>
@@ -1513,6 +1516,7 @@ function App() {
                         : 'mx-tab-panel mx-tab-panel--hidden'
                     }
                     aria-hidden={tab !== 'library'}
+                    inert={tab !== 'library' ? '' : undefined}
                   >
                     <ScreenErrorBoundary resetKey={`library-${errorResetKey}`} onHome={goHome}>
                       <Suspense fallback={<ScreenLoading />}>
@@ -1530,6 +1534,7 @@ function App() {
                         : 'mx-tab-panel mx-tab-panel--hidden'
                     }
                     aria-hidden={tab !== 'trends'}
+                    inert={tab !== 'trends' ? '' : undefined}
                   >
                     <ScreenErrorBoundary resetKey={`trends-${errorResetKey}`} onHome={goHome}>
                       <Suspense fallback={<ScreenLoading />}>
