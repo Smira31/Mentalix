@@ -26,7 +26,7 @@
 .mx-today-primary-card[data-complete='true'] .mx-type-hero {
   font-size: var(--mx-type-card-size);
   line-height: 1.2;
-  font-weight: 700;
+  font-weight: var(--mx-weight-body);
 }
 
 .mx-today-hero-breath {
@@ -196,7 +196,7 @@
 .mx-demo-today-greeting {
   justify-self: center;
   font-size: var(--mx-type-section-size);
-  font-weight: 700;
+  font-weight: var(--mx-weight-title);
   letter-spacing: -0.02em;
   text-align: center;
 }
@@ -271,7 +271,7 @@
   background: rgb(var(--c-card2));
   color: rgb(var(--c-text));
   text-align: left;
-  font-weight: 600;
+  font-weight: var(--mx-weight-body);
 }
 
 @media (max-width: 359px) {
@@ -337,7 +337,7 @@
 .mx-demo-today-streak strong {
   color: rgb(var(--c-gold));
   font-size: var(--mx-type-tile-size);
-  font-weight: 700;
+  font-weight: var(--mx-weight-heading);
 }
 
 .mx-pinned-practices {
@@ -592,7 +592,7 @@
 
 .mx-pinned-undo-toast__action {
   font-size: var(--mx-type-body-size);
-  font-weight: 600;
+  font-weight: var(--mx-weight-control);
   color: rgb(var(--c-gold));
   background: transparent;
   border: 0;
@@ -723,7 +723,7 @@
   color: rgb(var(--c-muted));
   font-family: 'JetBrains Mono', monospace;
   font-size: var(--mx-type-meta-size);
-  font-weight: 600;
+  font-weight: var(--mx-weight-heading);
   letter-spacing: 0.3em;
 }
 
@@ -732,7 +732,7 @@
   color: rgb(var(--c-text));
   font-family: 'Onest', sans-serif;
   font-size: var(--mx-type-page-size);
-  font-weight: 700;
+  font-weight: var(--mx-weight-title);
   letter-spacing: -0.035em;
 }
 
@@ -810,7 +810,7 @@
 
 .mx-today-action strong {
   font-size: var(--mx-type-caption-size);
-  font-weight: 650;
+  font-weight: var(--mx-weight-control);
   line-height: 1.15;
 }
 
@@ -880,7 +880,7 @@
   padding: 8px 2px;
   color: rgb(var(--c-muted));
   font-size: var(--mx-type-meta-size);
-  font-weight: 600;
+  font-weight: var(--mx-weight-control);
   background: transparent;
   border: 0;
 }
@@ -941,7 +941,7 @@
   margin-bottom: 0;
   color: rgb(var(--c-text) / 0.42);
   font-size: var(--mx-type-checkin-label-size);
-  font-weight: 500;
+  font-weight: var(--mx-weight-heading);
 }
 
 .mx-today-primary-card[data-demo-checkin-complete='true'] {
@@ -972,7 +972,7 @@
 .mx-demo-today-streak strong {
   color: rgb(var(--c-text));
   font-size: var(--mx-type-control-size);
-  font-weight: 600;
+  font-weight: var(--mx-weight-heading);
 }
 
 .mx-demo-today-streak--empty {
@@ -1106,14 +1106,14 @@
 .mx-demo-today-streak strong {
   color: rgb(var(--c-text));
   font-size: var(--mx-type-section-size);
-  font-weight: 700;
+  font-weight: var(--mx-weight-heading);
   line-height: 1;
 }
 
 .mx-demo-today-greeting {
   justify-self: auto;
   font-size: var(--mx-type-greeting-size);
-  font-weight: 700;
+  font-weight: var(--mx-weight-title);
   letter-spacing: -0.02em;
   line-height: 1.1;
   text-align: center;
@@ -1290,7 +1290,7 @@
   width: 100%;
   font-size: var(--mx-type-tile-size);
   line-height: 1.3;
-  font-weight: 500;
+  font-weight: var(--mx-weight-control);
   text-align: center;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -1348,7 +1348,7 @@
   margin: 0;
 }
 .mx-today-series-tooltip strong {
-  font-weight: 700;
+  font-weight: var(--mx-weight-heading);
 }
 .mx-today-series-tooltip button {
   position: absolute;
@@ -1429,7 +1429,7 @@
   background: var(--btn-bg);
   color: var(--btn-text);
   font-size: var(--mx-type-control-size);
-  font-weight: 600;
+  font-weight: var(--mx-weight-control);
 }
 
 .mx-today-day-card[data-complete='true'] {
@@ -1472,9 +1472,9 @@
 
 .mx-today-pulse {
   margin-top: 16px;
-  color: rgb(var(--c-muted));
+  color: rgb(var(--c-faint));
   font-size: var(--mx-type-caption-size);
-  font-weight: 500;
+  font-weight: var(--mx-weight-body);
   line-height: 1.2;
   text-align: center;
 }
@@ -1566,7 +1566,7 @@
   margin-top: 8px;
   color: rgb(var(--c-text));
   font-size: var(--mx-type-card-size);
-  font-weight: 700;
+  font-weight: var(--mx-weight-body);
   line-height: 1.25;
   overflow: hidden;
   -webkit-box-orient: vertical;
@@ -1622,7 +1622,7 @@
   + .mx-today-week
   .mx-today-week-day[data-today='true']
   .mx-type-calendar-date {
-  font-weight: 700;
+  font-weight: var(--mx-weight-heading);
 }
 
 /* 2. Шапка по §5.1: чип серии 57×38, огонёк-контур 16 px, число 17 px/600 70% */
@@ -1644,7 +1644,7 @@
 .mx-demo-today-streak strong {
   color: rgb(var(--c-text) / 0.7);
   font-size: var(--mx-type-control-size);
-  font-weight: 600;
+  font-weight: var(--mx-weight-heading);
 }
 
 /* 3. Плитка практики — иконка и название по центру по вертикали */
@@ -1712,7 +1712,7 @@
 .mx-demo-today-streak strong {
   color: rgb(var(--c-header-muted));
   font-size: var(--mx-type-control-size);
-  font-weight: 700;
+  font-weight: var(--mx-weight-heading);
 }
 
 .mx-demo-today-streak--empty {
@@ -1804,7 +1804,7 @@
 .mx-today-pulse {
   display: block;
   margin-top: 16px;
-  color: rgb(var(--c-muted));
+  color: rgb(var(--c-faint));
   font-size: var(--mx-type-caption-size);
   font-weight: 400;
   line-height: 1.3;
@@ -1829,8 +1829,8 @@
 
 /* Кнопка «Начать» на главной карточке — белая залитая, чёрный текст */
 .mx-today-day-card[data-primary='true'] .mx-today-day-card__start {
-  background: rgb(var(--c-text));
-  color: rgb(var(--c-bg));
+  background: var(--mx-btn-light-bg);
+  color: #111;
   border: 0;
 }
 
@@ -2109,7 +2109,7 @@
   padding: 0;
   font-family: 'Onest', system-ui, sans-serif;
   font-size: var(--mx-type-row-size);
-  font-weight: 600;
+  font-weight: var(--mx-weight-control);
   line-height: 1.2;
   color: rgb(var(--c-muted));
   cursor: pointer;
@@ -2149,7 +2149,7 @@
   text-align: center;
   font-family: 'Onest', system-ui, sans-serif;
   font-size: var(--mx-type-meta-size);
-  font-weight: 600;
+  font-weight: var(--mx-weight-heading);
   line-height: 1.2;
   color: rgb(var(--c-muted));
 }
@@ -2162,10 +2162,10 @@
   text-align: center;
   font-family: 'Onest', system-ui, sans-serif;
   font-size: var(--mx-type-section-size);
-  font-weight: 700;
+  font-weight: var(--mx-weight-control);
   line-height: 1.2;
   letter-spacing: -0.02em;
-  color: #d6d6d6;
+  color: rgb(var(--c-text));
   text-transform: lowercase;
 }
 
@@ -2179,10 +2179,10 @@
   text-align: center;
   font-family: 'Onest', system-ui, sans-serif;
   font-size: var(--mx-type-section-size);
-  font-weight: 600;
+  font-weight: var(--mx-weight-body);
   line-height: 1.2;
   letter-spacing: -0.01em;
-  color: #d6d6d6;
+  color: rgb(var(--c-muted));
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
@@ -2226,7 +2226,7 @@
 .mx-today-progress__label {
   font-family: 'Manrope', sans-serif;
   font-size: var(--mx-type-meta-size);
-  font-weight: 600;
+  font-weight: var(--mx-weight-heading);
   letter-spacing: 0.3em;
   text-transform: uppercase;
   color: rgb(var(--c-muted));
