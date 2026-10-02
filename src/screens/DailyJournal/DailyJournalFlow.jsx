@@ -17,6 +17,7 @@ import {
   saveDailyJournalDraft,
   clearDailyJournalDraft,
 } from '../../lib/dailyJournalDraft'
+import { dispatchTabRefresh } from '../../lib/tabRefresh'
 import DailyJournalSetup from './DailyJournalSetup'
 import './DailyJournalFlow.css'
 
@@ -240,6 +241,9 @@ export default function DailyJournalFlow({ userId, onClose }) {
       setDayNumber(result.day_number)
       setSaveError(false)
       clearDailyJournalDraft(userId, dateStr)
+      // Обновляем вкладку «Сегодня» после записи журнала —
+      // вместе с ACTIVITY_WRITE (mentalix:activity-saved) из api.js.
+      dispatchTabRefresh('today')
     } catch (error) {
       console.error('[dailyJournal] save failed', error)
       setSaveError(true)
