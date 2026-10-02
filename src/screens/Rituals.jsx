@@ -5,19 +5,43 @@ import { invalidatePracticesData } from '../lib/practicesDataCache'
 import { isLinkedWebWriteBlocked, LINKED_WEB_WRITE_NOTICE } from '../lib/webAuthLimits'
 import PracticeListFlow from '../components/practices/PracticeListFlow'
 
+const WRITE_FAILED_NOTICE = 'Не получилось сохранить. Проверь соединение и попробуй ещё раз.'
+
 export default function Rituals({ user, onBack }) {
   const [rituals, setRituals] = useState([])
   const [loading, setLoading] = useState(true)
   const [writeError, setWriteError] = useState(null)
 
+  const [loadError, setLoadError] = useState(false)
+  const [retryToken, setRetryToken] = useState(0)
+
   useEffect(() => {
-    if (!user) return
+    if (!user) return undefined
+    let alive = true
     api.rituals
       .list(user.id)
-      .then(setRituals)
-      .catch(error => console.error(error))
-      .finally(() => setLoading(false))
-  }, [user])
+      .then(list => {
+        if (!alive) return
+        setRituals(list)
+        setLoadError(false)
+      })
+      .catch(error => {
+        console.error(error)
+        if (alive) setLoadError(true)
+      })
+      .finally(() => {
+        if (alive) setLoading(false)
+      })
+    return () => {
+      alive = false
+    }
+  }, [user, retryToken])
+
+  function retryLoad() {
+    setLoadError(false)
+    setLoading(true)
+    setRetryToken(n => n + 1)
+  }
 
   async function logRitual(ritualId, level, restoreDaysAgo = null) {
     try {
@@ -42,7 +66,7 @@ export default function Rituals({ user, onBack }) {
       return updated
     } catch (error) {
       console.error(error)
-      if (isLinkedWebWriteBlocked(user, error)) setWriteError(LINKED_WEB_WRITE_NOTICE)
+      setWriteError(isLinkedWebWriteBlocked(user, error) ? LINKED_WEB_WRITE_NOTICE : WRITE_FAILED_NOTICE)
       return null
     }
   }
@@ -59,10 +83,7 @@ export default function Rituals({ user, onBack }) {
       return ritual
     } catch (error) {
       console.error(error)
-      if (isLinkedWebWriteBlocked(user, error)) {
-        setWriteError(LINKED_WEB_WRITE_NOTICE)
-        return null
-      }
+      setWriteError(isLinkedWebWriteBlocked(user, error) ? LINKED_WEB_WRITE_NOTICE : WRITE_FAILED_NOTICE)
       return null
     }
   }
@@ -77,7 +98,7 @@ export default function Rituals({ user, onBack }) {
       return updated
     } catch (error) {
       console.error(error)
-      if (isLinkedWebWriteBlocked(user, error)) setWriteError(LINKED_WEB_WRITE_NOTICE)
+      setWriteError(isLinkedWebWriteBlocked(user, error) ? LINKED_WEB_WRITE_NOTICE : WRITE_FAILED_NOTICE)
       return null
     }
   }
@@ -89,7 +110,7 @@ export default function Rituals({ user, onBack }) {
       setWriteError(null)
     } catch (error) {
       console.error(error)
-      if (isLinkedWebWriteBlocked(user, error)) setWriteError(LINKED_WEB_WRITE_NOTICE)
+      setWriteError(isLinkedWebWriteBlocked(user, error) ? LINKED_WEB_WRITE_NOTICE : WRITE_FAILED_NOTICE)
     }
   }
 
@@ -98,6 +119,8 @@ export default function Rituals({ user, onBack }) {
       kind="ritual"
       items={rituals}
       loading={loading}
+      loadError={loadError}
+      onRetry={retryLoad}
       onLog={logRitual}
       onCreate={createRitual}
       onUpdate={updateRitual}

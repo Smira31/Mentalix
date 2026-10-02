@@ -41,7 +41,7 @@ test('MXL-547: отдельная коллекция скрыта только �
   assert.match(catalog, /PRACTICE_COLLECTIONS\.filter\(collection => collection\.key !== 'lila'\)/)
   assert.match(catalog, /VISIBLE_COLLECTIONS\.length/)
   // Живая коллекция не открывает свой экран: она ведёт в единый список практик.
-  assert.match(catalog, /<CollectionGrid onOpen=\{onOpenCollection\} \/>/)
+  assert.match(catalog, /<CollectionGrid\s+onOpen=\{onOpenCollection\}/)
   assert.doesNotMatch(catalog, /selectedCollectionKey/)
 })
 
