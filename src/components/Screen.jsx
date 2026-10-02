@@ -66,6 +66,7 @@ export default function Screen({
     <div
       className={`${FULLSCREEN_SHELL_CLASS} mx-screen ${fullFrame ? 'mx-screen--full-frame' : ''} ${className}`}
       style={surfaceStyle}
+      data-testid="mx-screen-shell"
     >
       {demoChrome && <DemoTelegramChrome />}
 

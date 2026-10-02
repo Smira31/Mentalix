@@ -564,7 +564,7 @@ function seedState(todayState = null) {
     notes: { 900401: [] },
     messages: [],
     pinnedPractices: [
-      { practice_id: 'lila-discover' },
+      { practice_id: 'daimon' },
       { practice_id: 'rituals' },
       { practice_id: 'ascezas' },
     ],

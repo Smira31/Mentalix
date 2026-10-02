@@ -388,7 +388,7 @@ async function assertBottomNavigationLabelsFit(page) {
 }
 
 async function assertSoonControls(page) {
-  await assertClickable(page.getByRole('button', { name: 'Открыть Разобраться со Следопытом' }))
+  await assertClickable(page.getByRole('button', { name: 'Открыть Даймон' }))
   // Каталог владельца показывает будущие практики как неактивные карточки.
   await expect(page.getByRole('button', { name: /Импульс к действию/ })).toBeDisabled()
   await expect(page.getByRole('button', { name: /Фокус, скоро/ })).toBeDisabled()
@@ -697,7 +697,7 @@ test('локальный UX smoke по основному маршруту', asy
           const catalog = document.querySelector('.mx-steps-explore-catalog')
           const rail = catalog?.querySelector('.mx-steps-rail')
           const practiceTitle = [...(rail?.querySelectorAll('strong') || [])].find(title =>
-            title.textContent?.includes('Разобраться со Следопытом')
+            title.textContent?.includes('Даймон')
           )
           const practiceCopy = rail?.querySelector('small')
           const collectionCopy = catalog?.querySelector('.mx-steps-collection__desc')
@@ -808,8 +808,8 @@ test('локальный UX smoke по основному маршруту', asy
     await expect(page.getByRole('heading', { name: 'Продолжи разбирать ситуацию' })).toBeVisible()
     await page.getByRole('button', { name: 'Назад' }).click()
     await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
-    await page.getByRole('button', { name: 'Открыть Разобраться со Следопытом' }).click()
-    await expect(page.getByRole('heading', { name: 'Когда неясно, с чего начать' })).toBeVisible()
+    await page.getByRole('button', { name: 'Открыть Даймон' }).click()
+    await expect(page.getByRole('heading', { name: 'Даймон' })).toBeVisible()
     await page.getByRole('button', { name: 'Назад' }).click()
     await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
 

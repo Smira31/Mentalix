@@ -63,24 +63,24 @@ function RailCard({ card, onOpen }) {
 }
 
 function PracticeRail({ practices, onOpen }) {
-  const lila = getPracticeByKey(practices, 'lila-discover') || {
-    key: 'lila-discover',
-    title: 'Разобраться со Следопытом',
-    subtitle: 'Карта, несколько вопросов и один рабочий шаг',
+  const daimon = getPracticeByKey(practices, 'daimon') || {
+    key: 'daimon',
+    title: 'Даймон',
+    subtitle: 'Игра для самопознания: вопрос, кубик, разговор с внутренним голосом',
     kind: 'journal',
-    sub: 'lila-discover',
+    sub: 'daimon',
   }
   const railCards = [
     {
-      key: 'lila-discover',
-      title: 'Разобраться со Следопытом',
-      category: 'Следопыт',
-      description: 'Карта, несколько вопросов и один рабочий шаг',
+      key: 'daimon',
+      title: 'Даймон',
+      category: 'Даймон',
+      description: 'Игра для самопознания: вопрос, кубик, разговор с внутренним голосом',
       status: 'НОВОЕ',
       badgeColor: 'gold',
       kind: 'journal',
       active: true,
-      practice: lila,
+      practice: daimon,
     },
     {
       key: 'lion-action',

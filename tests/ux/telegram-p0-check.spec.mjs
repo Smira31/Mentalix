@@ -130,38 +130,38 @@ for (const viewport of P0_VIEWPORTS) {
 
     test('native BackButton remains safe during Journal keyboard resize', async ({ browser }) => {
       const { context, page } = await openTelegramDemo(browser, viewport)
-      // Стабильный путь: Следопыт (LilaDiscoverFlow), поле ввода по data-testid.
+      // Стабильный путь: Даймон (DaimonFlow), поле ввода по data-testid.
       await page.getByRole('button', { name: 'Шаги' }).click()
-      await page.getByRole('button', { name: /Открыть Разобраться со Следопытом/ }).first().click()
-      await page.getByRole('button', { name: 'Описать ситуацию' }).click()
+      await page.getByRole('button', { name: /Открыть Даймон/ }).first().click()
+      await page.getByTestId('daimon-start').click()
       await expect.poll(() => page.evaluate(() => window.__telegramBackState.isVisible)).toBe(true)
 
-      const editor = page.getByTestId('lila-query-input')
+      const editor = page.getByTestId('daimon-request-input')
       await editor.fill('P0 keyboard draft')
       await editor.focus()
       await page.setViewportSize({ width: viewport.width, height: Math.round(viewport.height * 0.58) })
       // Ждём состояние после ресайза, а не фиксированный таймаут — на медленном CI re-render не успевает за 120 мс.
       await expect.poll(() => page.evaluate(() => {
-        const shell = document.querySelector('[data-testid="lila-stage-shell"]')
+        const shell = document.querySelector('[data-testid="mx-screen-shell"]')
         return (shell?.getBoundingClientRect().bottom ?? Infinity) - window.innerHeight
       }), { timeout: 5000 }).toBeLessThanOrEqual(1)
 
       const geometry = await page.evaluate(() => {
-        const shell = document.querySelector('[data-testid="lila-stage-shell"]')
+        const shell = document.querySelector('[data-testid="mx-screen-shell"]')
         return {
           shellBottom: shell?.getBoundingClientRect().bottom,
           viewportHeight: window.innerHeight,
           bodyOverflow: getComputedStyle(document.body).overflow,
-          focused: document.activeElement === document.querySelector('[data-testid="lila-query-input"]'),
+          focused: document.activeElement === document.querySelector('[data-testid="daimon-request-input"]'),
         }
       })
 
       expect(geometry.shellBottom).toBeLessThanOrEqual(geometry.viewportHeight + 1)
       expect(geometry.bodyOverflow).toBe('hidden')
       expect(geometry.focused).toBe(true)
-      // Нативная «Назад» возвращает с поля ввода на интро Следопыта.
+      // Нативная «Назад» возвращает с поля ввода на интро Даймона.
       await nativeBack(page)
-      await expect(page.getByRole('button', { name: 'Описать ситуацию' })).toBeVisible()
+      await expect(page.getByTestId('daimon-start')).toBeVisible()
       await context.close()
     })
 
