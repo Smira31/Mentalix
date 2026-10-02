@@ -4,7 +4,7 @@ import { platform } from '../../platform'
 import { api } from '../../lib/api'
 import { PERSONAS } from './personas'
 import { relativeConversationDate } from './conversationDate'
-import { PERSONA_STARTER_CHIP_LABELS } from '../../data/prompts'
+import { DIALOG_STARTER_CHIPS, PERSONA_STARTER_CHIP_LABELS } from '../../data/prompts'
 import heroReference from '../../assets/dialog-hero-reference.png'
 
 import './PersonaPicker.css'
@@ -15,6 +15,8 @@ const DEFAULT_INDEX = 1
 const DISPLAY_PERSONAS = [PERSONAS[1], PERSONAS[0], PERSONAS[2]]
 
 const PERSONA_NAMES = Object.fromEntries(PERSONAS.map(p => [p.key, p.name]))
+
+const PERSONA_BY_KEY = Object.fromEntries(PERSONAS.map(p => [p.key, p]))
 
 const PROMISES = {
   mayak: 'Выслушает, когда нужно выговориться.',
@@ -48,6 +50,8 @@ export default function PersonaPicker({
   const [conversations, setConversations] = useState([])
   const [creating, setCreating] = useState(false)
   const trackRef = useRef(null)
+  const cardHeightRef = useRef(0)
+  const scaleFrameRef = useRef(null)
   const userId = user?.id
 
   useEffect(() => {
@@ -62,6 +66,26 @@ export default function PersonaPicker({
       syncActive()
     })
     return () => cancelAnimationFrame(frame)
+  }, [])
+
+  // Поворот телефона или ресайз: полная высота карточки считается от clamp(),
+  // поэтому базовую высоту и масштаб собираем заново.
+  useEffect(() => {
+    const onResize = () => {
+      const track = trackRef.current
+      if (!track) return
+      cardHeightRef.current = 0
+      Array.from(track.children).forEach(card => {
+        card.style.height = ''
+      })
+      syncActive()
+    }
+    window.addEventListener('resize', onResize)
+    return () => {
+      window.removeEventListener('resize', onResize)
+      if (scaleFrameRef.current) cancelAnimationFrame(scaleFrameRef.current)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Загружаем последние разговоры для блока «Продолжить разговор».
@@ -95,9 +119,35 @@ export default function PersonaPicker({
     }
   }, [])
 
+  // Полная высота карточки — читается один раз, до первой установки высот.
+  function fullCardHeight() {
+    const card = trackRef.current?.children?.[0]
+    if (!card) return 0
+    if (!cardHeightRef.current) {
+      card.style.height = ''
+      cardHeightRef.current = card.getBoundingClientRect().height
+    }
+    return cardHeightRef.current
+  }
+
+  // Масштаб карусели — как у «Темы недели» (ThemeQuestionCarousel):
+  // активная карточка полного размера, сосед — 243 из 322 (~0.75) от неё.
+  function applyScale() {
+    const track = trackRef.current
+    const full = fullCardHeight()
+    if (!track || !full) return
+    const center = track.scrollLeft + track.clientWidth / 2
+    Array.from(track.children).forEach(card => {
+      const cardCenter = card.offsetLeft + card.offsetWidth / 2
+      const t = Math.min(Math.abs(cardCenter - center) / card.offsetWidth, 1)
+      card.style.height = `${Math.round(full - full * (79 / 322) * t)}px`
+    })
+  }
+
   function syncActive() {
     const track = trackRef.current
     if (!track) return
+    applyScale()
     const center = track.scrollLeft + track.clientWidth / 2
     let closest = 0
     let distance = Infinity
@@ -109,6 +159,15 @@ export default function PersonaPicker({
       }
     })
     setActive(closest)
+  }
+
+  // Свайп: масштаб и активная карточка пересчитываются кадром, не на каждый scroll.
+  function handleCarouselScroll() {
+    if (scaleFrameRef.current) return
+    scaleFrameRef.current = requestAnimationFrame(() => {
+      scaleFrameRef.current = null
+      syncActive()
+    })
   }
 
   function selectRole(index) {
@@ -154,7 +213,6 @@ export default function PersonaPicker({
     }
   }
 
-  const activePersona = DISPLAY_PERSONAS[active] || DISPLAY_PERSONAS[0]
   const recentConversations = conversations.slice(0, 3)
   const hasMore = conversations.length > 3
 
@@ -186,7 +244,7 @@ export default function PersonaPicker({
           data-testid="mentor-persona-track"
           role="region"
           aria-label="Выбор роли для разговора"
-          onScroll={syncActive}
+          onScroll={handleCarouselScroll}
         >
           {allCards.map((persona, index) => {
             const isActive = active === index
@@ -279,21 +337,21 @@ export default function PersonaPicker({
         </div>
       )}
 
-      {/* ── «Не знаешь, с чего начать?» — чипсы стартера активной роли ── */}
+      {/* ── «Не знаешь, с чего начать?» — один набор чипсов при любой карточке ── */}
 
       <div className="mx-dialog-chips">
         <p className="mx-dialog-section-title">Не знаешь, с чего начать?</p>
         <div className="mx-dialog-chips__list">
-          {(activePersona?.starters || []).map((starter, i) => (
+          {DIALOG_STARTER_CHIPS.map(chip => (
             <button
               type="button"
               data-testid="dialog-starter-chip"
-              key={`${activePersona.key}-${i}`}
+              key={chip.starter}
               className="mx-dialog-chip mx-glass"
               disabled={creating}
-              onClick={() => void startWithChip(activePersona, starter)}
+              onClick={() => void startWithChip(PERSONA_BY_KEY[chip.persona], chip.starter)}
             >
-              {PERSONA_STARTER_CHIP_LABELS[starter] || starter}
+              {PERSONA_STARTER_CHIP_LABELS[chip.starter] || chip.starter}
             </button>
           ))}
         </div>
