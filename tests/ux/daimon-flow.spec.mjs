@@ -46,6 +46,7 @@ test.describe('Даймон — флоу игры', () => {
     await page.getByTestId('daimon-cell-3').click()
     await expect(page.getByTestId('daimon-cell-sheet')).toBeVisible()
     await expect(page.getByTestId('daimon-cell-sheet')).toContainText('Клетка 3')
+    await expect(page.getByTestId('daimon-sheet-handle')).toBeVisible()
     await page.getByTestId('daimon-cell-sheet').click({ position: { x: 8, y: 8 } })
     await expect(page.getByTestId('daimon-cell-sheet')).toBeHidden()
 
@@ -86,6 +87,12 @@ test.describe('Даймон — флоу игры', () => {
     // Вывод — отдельный экран «Что ты увидел на этой клетке?»
     await expect(page.getByTestId('daimon-insight')).toBeVisible({ timeout: 5000 })
     await expect(page.getByTestId('daimon-skip')).toBeVisible()
+    // Верхняя строка: «Клетка N · Название»
+    await expect(page.getByTestId('daimon-insight-top')).toContainText('·')
+    await expect(page.getByTestId('daimon-insight-input')).toHaveAttribute(
+      'placeholder',
+      'Например: я боюсь не провала, а что скажут'
+    )
     await page.getByTestId('daimon-insight-input').fill('Я увидел, что стою на месте')
     await page.getByTestId('daimon-insight-submit').click()
 
@@ -96,6 +103,14 @@ test.describe('Даймон — флоу игры', () => {
     await expect(
       page.getByTestId('daimon-board').or(page.getByTestId('daimon-transition'))
     ).toBeVisible({ timeout: 5000 })
+
+    // «Твой путь · N клеток» — тихая ссылка под счётчиком бросков
+    await expect(page.getByTestId('daimon-board')).toBeVisible({ timeout: 5000 })
+    await expect(page.getByTestId('daimon-path-link')).toBeVisible()
+    await page.getByTestId('daimon-path-link').click()
+    await expect(page.getByTestId('daimon-path-view')).toBeVisible()
+    await expect(page.getByTestId('daimon-path-view')).toContainText('Твой запрос')
+    await expect(page.getByTestId('daimon-path-view')).toContainText('Я увидел, что стою на месте')
 
     await context.close()
   })

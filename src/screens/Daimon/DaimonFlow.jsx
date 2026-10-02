@@ -182,11 +182,29 @@ function RequestView({ request, setRequest, onSubmit, onBack }) {
 }
 
 /* ── Шторка клетки ── */
-function CellSheet({ n, board, onClose }) {
+function CellSheet({ n, board, game, onClose }) {
+  const touchStartRef = useRef(null)
   const cell = findCell(board, n)
   if (!cell) return null
   const snakeTo = cell.snake_to ? findCell(board, cell.snake_to) : null
   const arrowTo = cell.arrow_to ? findCell(board, cell.arrow_to) : null
+  const passedMove = game?.moves?.find(m => m.to === n && (m.insight || m.skipped))
+
+  function onTouchStart(e) {
+    const t = e.touches[0]
+    touchStartRef.current = { x: t.clientX, y: t.clientY }
+  }
+
+  // Закрытие свайпом вниз по шторке (обработчик на самой панели, не на документе).
+  function onTouchEnd(e) {
+    const start = touchStartRef.current
+    touchStartRef.current = null
+    if (!start) return
+    const t = e.changedTouches[0]
+    const dx = t.clientX - start.x
+    const dy = t.clientY - start.y
+    if (dy > 64 && Math.abs(dy) > Math.abs(dx)) onClose()
+  }
 
   return (
     <div className="mx-daimon-sheet" data-testid="daimon-cell-sheet" onClick={onClose}>
@@ -195,7 +213,10 @@ function CellSheet({ n, board, onClose }) {
         role="dialog"
         aria-label={`Клетка ${cell.n}: ${cell.title}`}
         onClick={e => e.stopPropagation()}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
       >
+        <span className="mx-daimon-sheet__handle" aria-hidden="true" data-testid="daimon-sheet-handle" />
         <span className="mx-daimon-sheet__num">Клетка {cell.n}</span>
         <h3 className="mx-daimon-sheet__title">{cell.title}</h3>
         <p className="mx-daimon-sheet__meaning">{cell.meaning}</p>
@@ -209,6 +230,16 @@ function CellSheet({ n, board, onClose }) {
             Стрела ↑ {arrowTo.n} · {arrowTo.title}
           </p>
         )}
+        {passedMove && (
+          <div className="mx-daimon-sheet__insight" data-testid="daimon-sheet-insight">
+            <span className="mx-daimon-sheet__insight-label">Ты увидел:</span>
+            {passedMove.skipped ? (
+              <p className="mx-daimon-sheet__insight-skip">Клетка пропущена</p>
+            ) : (
+              <blockquote className="mx-daimon-sheet__insight-quote">{passedMove.insight}</blockquote>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )
@@ -221,6 +252,7 @@ function BoardView({
   onRoll,
   onContinueCell,
   onHelp,
+  onOpenPath,
   throwsLeft,
   paywallMessage,
   walking = false,
@@ -231,6 +263,7 @@ function BoardView({
   const passedCells = new Set(
     game.moves.filter(m => m.insight || m.skipped || m.via).map(m => m.cell)
   )
+  const passedCount = game.moves.filter(m => m.insight || m.skipped).length
   const pendingMove = game.moves.find(m => m.id === game.pending_move_id)
   const pendingCellNum = pendingMove?.to
   const pos = piecePosition ?? game.position
@@ -283,14 +316,28 @@ function BoardView({
             </PillButton>
           )}
           {!paywallMessage && !pendingMove && (
-            <p className="mx-daimon-board__throws" data-testid="daimon-throws-left">
-              Осталось бросков сегодня: {throwsLeft}
-            </p>
+            <>
+              <p className="mx-daimon-board__throws" data-testid="daimon-throws-left">
+                Осталось бросков сегодня: {throwsLeft}
+              </p>
+              {passedCount > 0 && (
+                <button
+                  type="button"
+                  className="mx-daimon-board__path-link"
+                  onClick={onOpenPath}
+                  data-testid="daimon-path-link"
+                >
+                  Твой путь · {passedCount} клеток
+                </button>
+              )}
+            </>
           )}
         </div>
       )}
 
-      {sheetCell && <CellSheet n={sheetCell} board={board} onClose={() => setSheetCell(null)} />}
+      {sheetCell && (
+        <CellSheet n={sheetCell} board={board} game={game} onClose={() => setSheetCell(null)} />
+      )}
     </div>
   )
 }
@@ -415,7 +462,9 @@ function CellView({ game, board, userId, onInsight }) {
     return (
       <div className="mx-daimon-insight" data-testid="daimon-insight">
         <div className="mx-daimon-insight__top">
-          <span className="mx-daimon-insight__cell">Клетка {cellNum}</span>
+          <span className="mx-daimon-insight__cell" data-testid="daimon-insight-top">
+            Клетка {cellNum} · {cell.title}
+          </span>
           <button
             type="button"
             className="mx-daimon-insight__skip"
@@ -433,7 +482,7 @@ function CellView({ game, board, userId, onInsight }) {
           className="mx-daimon-insight__field"
           value={insightText}
           onChange={e => setInsightText(e.target.value)}
-          placeholder="Одной фразой"
+          placeholder="Например: я боюсь не провала, а что скажут"
           aria-label="Что ты увидел на этой клетке"
           data-testid="daimon-insight-input"
           rows={1}
@@ -506,6 +555,11 @@ function CellView({ game, board, userId, onInsight }) {
             {msg.content}
           </div>
         ))}
+        {sending && !askInsight && (
+          <p className="mx-daimon-chat__thinking" data-testid="daimon-thinking">
+            Даймон думает…
+          </p>
+        )}
         <div ref={chatEndRef} />
       </div>
 
@@ -614,19 +668,16 @@ function TransitionView({ via, fromTitle, toTitle, position }) {
   )
 }
 
-/* ── Финиш ── */
-function FinishView({ game, board, onSummary, onNewGame, onClose, summary }) {
+/* ── Твой путь: запрос и список пройденных клеток (общий для поля и финала) ── */
+function DaimonPath({ game, board }) {
   const moves = game.moves.filter(m => m.insight || m.skipped)
 
   return (
-    <div className="mx-daimon-finish" data-testid="daimon-finish">
-      <div className="mx-daimon-finish__art" aria-hidden="true" data-testid="daimon-finish-art" />
-      <h1 className="mx-daimon-finish__title">Ты дошёл до Даймона</h1>
-      {summary && (
-        <p className="mx-daimon-finish__summary" data-testid="daimon-summary">
-          {summary}
-        </p>
-      )}
+    <>
+      <div className="mx-daimon-path__request">
+        <span className="mx-daimon-path__request-label">Твой запрос</span>
+        <p className="mx-daimon-path__request-text">{game.request}</p>
+      </div>
       <div className="mx-daimon-finish__path-heading">Твой путь</div>
       <div className="mx-daimon-finish__path" data-testid="daimon-path">
         {moves.map((m, i) => {
@@ -635,7 +686,14 @@ function FinishView({ game, board, onSummary, onNewGame, onClose, summary }) {
             <div key={i} className="mx-daimon-finish__path-item">
               <span className="mx-daimon-finish__path-num">{m.to}</span>
               <div className="mx-daimon-finish__path-body">
-                <span className="mx-daimon-finish__path-title">{cell?.title || `Клетка ${m.to}`}</span>
+                <span className="mx-daimon-finish__path-title">
+                  {cell?.title || `Клетка ${m.to}`}
+                  {m.via && (
+                    <span className="mx-daimon-finish__path-via">
+                      {m.via === 'snake' ? `↓ ${m.via_to}` : `↑ ${m.via_to}`}
+                    </span>
+                  )}
+                </span>
                 {m.skipped ? (
                   <span className="mx-daimon-finish__path-skipped">Пропущено</span>
                 ) : (
@@ -646,6 +704,22 @@ function FinishView({ game, board, onSummary, onNewGame, onClose, summary }) {
           )
         })}
       </div>
+    </>
+  )
+}
+
+/* ── Финиш ── */
+function FinishView({ game, board, onSummary, onNewGame, onClose, summary }) {
+  return (
+    <div className="mx-daimon-finish" data-testid="daimon-finish">
+      <div className="mx-daimon-finish__art" aria-hidden="true" data-testid="daimon-finish-art" />
+      <h1 className="mx-daimon-finish__title">Ты дошёл до Даймона</h1>
+      {summary && (
+        <p className="mx-daimon-finish__summary" data-testid="daimon-summary">
+          {summary}
+        </p>
+      )}
+      <DaimonPath game={game} board={board} />
       <div className="mx-daimon-finish__actions">
         {!summary && (
           <PillButton variant="light" onClick={onSummary} testId="daimon-summary-btn">
@@ -700,28 +774,9 @@ function GamesView({ games, onOpen }) {
 
 /* ── Просмотр пути (только чтение) ── */
 function PathView({ game, board }) {
-  const moves = game.moves.filter(m => m.insight || m.skipped)
   return (
     <div className="mx-daimon-finish" data-testid="daimon-path-view">
-      <div className="mx-daimon-finish__path-heading">Твой путь</div>
-      <div className="mx-daimon-finish__path">
-        {moves.map((m, i) => {
-          const cell = findCell(board, m.to)
-          return (
-            <div key={i} className="mx-daimon-finish__path-item">
-              <span className="mx-daimon-finish__path-num">{m.to}</span>
-              <div className="mx-daimon-finish__path-body">
-                <span className="mx-daimon-finish__path-title">{cell?.title || `Клетка ${m.to}`}</span>
-                {m.skipped ? (
-                  <span className="mx-daimon-finish__path-skipped">Пропущено</span>
-                ) : (
-                  <p className="mx-daimon-finish__path-insight">{m.insight}</p>
-                )}
-              </div>
-            </div>
-          )
-        })}
-      </div>
+      <DaimonPath game={game} board={board} />
     </div>
   )
 }
@@ -740,6 +795,7 @@ export default function DaimonFlow({ userId, onClose }) {
   const [savedQuote, setSavedQuote] = useState('')
   const [walk, setWalk] = useState(null)
   const [viewedGame, setViewedGame] = useState(null)
+  const [pathSource, setPathSource] = useState('games')
 
   const helpShownRef = useRef(false)
   const timersRef = useRef([])
@@ -821,12 +877,12 @@ export default function DaimonFlow({ userId, onClose }) {
     } else if (stage === 'games') {
       setStage('intro')
     } else if (stage === 'pathView') {
-      setStage('games')
+      setStage(pathSource === 'board' ? 'board' : 'games')
     } else {
       onClose()
     }
     platform.haptic('light')
-  }, [stage, gameState, onClose])
+  }, [stage, gameState, pathSource, onClose])
 
   useBackButton(goBack)
 
@@ -951,7 +1007,16 @@ export default function DaimonFlow({ userId, onClose }) {
 
   async function handleOpenGames() {
     await fetchGames()
+    setPathSource('games')
     setStage('games')
+  }
+
+  function handleOpenPath() {
+    if (!gameState?.game) return
+    setViewedGame(gameState.game)
+    setPathSource('board')
+    setStage('pathView')
+    platform.haptic('light')
   }
 
   const throwsLeft = gameState?.game ? gameState.game.throws_limit - gameState.game.throws_today : 0
@@ -1002,6 +1067,7 @@ export default function DaimonFlow({ userId, onClose }) {
           onRoll={handleRoll}
           onContinueCell={() => setStage('cell')}
           onHelp={() => setStage('help')}
+          onOpenPath={handleOpenPath}
           throwsLeft={throwsLeft}
           paywallMessage={
             showPaywall ? 'Mentalix Pro' : error?.includes('На сегодня') ? error : null

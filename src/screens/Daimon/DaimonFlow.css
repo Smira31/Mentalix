@@ -122,6 +122,8 @@
 }
 
 .mx-daimon-help__actions {
+  display: flex;
+  flex-direction: column;
   margin-top: auto;
   padding-top: var(--mx-space-6);
 }
@@ -227,8 +229,11 @@
 }
 
 .mx-daimon-board__request {
-  font-size: 15px;
+  font-size: 16px;
+  font-weight: 400;
   line-height: 1.35;
+  letter-spacing: normal;
+  text-transform: none;
   color: rgb(var(--c-text));
   margin: 0;
   display: -webkit-box;
@@ -237,23 +242,27 @@
   overflow: hidden;
 }
 
+/* Круглая стеклянная кнопка «?» — та же, что кнопка поиска на «Шагах». */
 .mx-daimon-board__help {
   flex-shrink: 0;
-  width: 32px;
-  height: 32px;
   display: grid;
+  width: 43px;
+  height: 43px;
   place-items: center;
-  border: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 50%;
-  background: transparent;
-  color: rgb(var(--c-faint));
+  background: var(--mx-glass-bg);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+  color: rgb(var(--c-text));
   font-size: 18px;
   font-weight: 600;
   cursor: pointer;
+  transition: transform 140ms var(--mx-ease-out);
 }
 
 .mx-daimon-board__help:active {
-  color: rgb(var(--c-text));
+  transform: scale(0.94);
 }
 
 .mx-daimon-board__grid-wrap {
@@ -314,16 +323,16 @@
   transition: transform 0.15s ease;
 }
 
-/* Значок змеи/стрелы: монохром, тонко, в углу клетки. */
+/* Значок змеи/стрелы: монохром, в углу клетки; читается на маленьком экране. */
 .mx-daimon-cell__marker {
   position: absolute;
   right: 3px;
   bottom: 2px;
-  font-size: 10px;
-  font-weight: 500;
+  font-size: 11px;
+  font-weight: 600;
   line-height: 1;
   letter-spacing: -0.02em;
-  color: rgb(var(--c-muted));
+  color: rgb(var(--c-text) / 0.6);
 }
 
 .mx-daimon-board__position {
@@ -349,7 +358,17 @@
   max-width: 480px;
   background: rgb(var(--c-card2));
   border-radius: var(--mx-radius-card) var(--mx-radius-card) 0 0;
-  padding: var(--mx-space-6) var(--mx-space-4) calc(var(--app-safe-bottom) + var(--mx-space-6));
+  padding: var(--mx-space-4) var(--mx-space-4) calc(var(--app-safe-bottom) + var(--mx-space-6));
+}
+
+/* Ручка-полоска сверху: по ней понятно, что шторку можно смахнуть вниз. */
+.mx-daimon-sheet__handle {
+  display: block;
+  width: 40px;
+  height: 4px;
+  border-radius: var(--mx-radius-pill);
+  background: rgb(var(--c-text) / 0.25);
+  margin: 0 auto var(--mx-space-4);
 }
 
 .mx-daimon-sheet__num {
@@ -379,6 +398,34 @@
   margin: var(--mx-space-3) 0 0;
 }
 
+/* Пройденная клетка: вывод игрока цитатой. */
+.mx-daimon-sheet__insight {
+  margin-top: var(--mx-space-4);
+  padding-top: var(--mx-space-4);
+  border-top: 1px solid rgb(var(--c-border) / 0.5);
+}
+
+.mx-daimon-sheet__insight-label {
+  display: block;
+  font-size: 12px;
+  color: rgb(var(--c-faint));
+  margin-bottom: var(--mx-space-1);
+}
+
+.mx-daimon-sheet__insight-quote {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+  color: rgb(var(--c-text));
+}
+
+.mx-daimon-sheet__insight-skip {
+  margin: 0;
+  font-size: 14px;
+  font-style: italic;
+  color: rgb(var(--c-muted));
+}
+
 /* ── Действия под полем ── */
 .mx-daimon-board__actions {
   display: flex;
@@ -391,6 +438,23 @@
   font-size: 13px;
   color: rgb(var(--c-faint));
   text-align: center;
+}
+
+/* Тихая текстовая ссылка «Твой путь · N клеток» под счётчиком бросков. */
+.mx-daimon-board__path-link {
+  align-self: center;
+  background: transparent;
+  border: 0;
+  padding: var(--mx-space-1) 0;
+  font-size: 13px;
+  color: rgb(var(--c-muted));
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.mx-daimon-board__path-link:active {
+  color: rgb(var(--c-text));
 }
 
 .mx-daimon-board__paywall {
@@ -512,35 +576,38 @@
   border: 1px solid rgb(var(--c-gold) / 0.3);
 }
 
-/* ── Чат ── */
+/* ── Разговор на клетке: без «пузырей» — реплики как текст страницы ── */
 .mx-daimon-chat {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: var(--mx-space-2);
+  gap: var(--mx-space-5);
   padding-bottom: var(--mx-space-2);
 }
 
 .mx-daimon-chat__msg {
-  max-width: 85%;
-  padding: var(--mx-space-2) var(--mx-space-3);
-  border-radius: var(--mx-radius-control);
-  font-size: 15px;
-  line-height: 1.45;
+  font-size: 17px;
+  line-height: 1.5;
 }
 
+/* Реплика Даймона — обычный белый текст на странице. */
 .mx-daimon-chat__msg--assistant {
-  background: rgb(var(--c-card2));
   color: rgb(var(--c-text));
-  align-self: flex-start;
 }
 
+/* Ответ игрока — тише и с отступом, тоже без фона. */
 .mx-daimon-chat__msg--user {
-  background: rgb(var(--c-text) / 0.08);
-  color: rgb(var(--c-text));
-  align-self: flex-end;
+  font-size: 15px;
+  color: rgb(var(--c-text) / 0.6);
+  padding-left: var(--mx-space-6);
+}
+
+.mx-daimon-chat__thinking {
+  font-size: 15px;
+  font-style: italic;
+  color: rgb(var(--c-muted));
 }
 
 .mx-daimon-chat__input-row {
@@ -893,6 +960,33 @@
   font-size: 12px;
   color: rgb(var(--c-faint));
   font-style: italic;
+}
+
+/* Пометка перехода на «Твоём пути»: змея вниз ↓ / стрела вверх ↑. */
+.mx-daimon-finish__path-via {
+  margin-left: var(--mx-space-2);
+  font-size: 13px;
+  font-weight: 500;
+  color: rgb(var(--c-faint));
+}
+
+/* Запрос игрока сверху экрана «Твой путь». */
+.mx-daimon-path__request {
+  margin-bottom: var(--mx-space-4);
+}
+
+.mx-daimon-path__request-label {
+  display: block;
+  font-size: 12px;
+  color: rgb(var(--c-faint));
+  margin-bottom: 2px;
+}
+
+.mx-daimon-path__request-text {
+  font-size: 16px;
+  line-height: 1.4;
+  color: rgb(var(--c-text));
+  margin: 0;
 }
 
 .mx-daimon-finish__actions {

@@ -26,7 +26,7 @@ export const PRACTICE_CATALOG_REGISTRY = [
     title: 'Даймон',
     subtitle: 'игра для самопознания: вопрос, кубик, разговор с внутренним голосом',
     description: 'Игра для самопознания: задай вопрос, брось кубик, поговори с внутренним голосом.',
-    section: 'Даймон',
+    section: 'Самопознание',
     kind: 'daimon',
     completionSource: 'none',
     sub: 'daimon',
