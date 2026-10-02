@@ -369,7 +369,12 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
 
   const webAction =
     mainVisible && !writingDay
-      ? { text: mainText, onClick: mainOnClick, disabled: !mainEnabled }
+      ? {
+          text: mainText,
+          onClick: mainOnClick,
+          disabled: !mainEnabled,
+          testId: view === 'intro' ? 'theme-start' : 'theme-close',
+        }
       : null
 
   if (!data) {
@@ -527,6 +532,7 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
         onChange={setText}
         placeholder="Записать мысль..."
         ariaLabel="Мысль по теме недели"
+        testId="theme-text-input"
         className="mt-6 flex-1"
         editorClassName="!text-[16px] font-normal pb-16"
         formatting={false}
@@ -535,6 +541,7 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
         autoFocus={!current?.reflection}
         onSubmit={save}
         submitLabel={current?.reflection ? 'Обновить мысль' : 'Сохранить мысль'}
+        submitTestId="theme-save"
         submitDisabled={!canSave}
         submitLoading={saving}
       />
