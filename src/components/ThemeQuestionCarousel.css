@@ -119,8 +119,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 155px;
-  height: 40px;
+  min-height: 40px;
+  padding-inline: 18px;
   border-radius: 999px;
   border: none;
   background: #d9d9d9;

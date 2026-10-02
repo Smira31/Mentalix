@@ -60,6 +60,7 @@ const Path = lazyWithRetry(() => import('./Path'))
 const YearPath = lazyWithRetry(() => import('./YearPath'))
 const CheckIn = lazyWithRetry(() => import('./CheckIn'))
 const ThemeCarouselScreen = lazyWithRetry(() => import('./ThemeCarouselScreen'))
+const ThemeScreen = lazyWithRetry(() => import('./ThemeScreen'))
 const History = lazyWithRetry(() => import('./History'))
 const QuoteView = lazyWithRetry(() => import('./QuoteView'))
 const DailyThoughtScreen = lazyWithRetry(() => import('./DailyThoughtScreen'))
@@ -408,6 +409,7 @@ export default function Today({
   )
 
   // День, на который переходит прямой тап по карточке («Записать»).
+  const [themeWriteDay, setThemeWriteDay] = useState(1)
 
   // activeToday показывается сразу из sessionStorage (если уже был),
   // обновляется в фоне. Резерв высоты исключает сдвиг контента.
@@ -978,6 +980,21 @@ export default function Today({
     )
   }
 
+  // Прямой переход из карточки «Тема недели» на «Сегодня» → экран записи
+  // ответа на следующий непройденный вопрос (ThemeScreen с initialDay).
+  if (sub === 'themeWrite' && theme) {
+    return (
+      <SubScreenBoundary resetKey="themeWrite" onExit={() => changeSub(null)}>
+        <ThemeScreen
+          user={user}
+          themeId={theme.id}
+          initialDay={themeWriteDay}
+          onBack={() => changeSub(null)}
+        />
+      </SubScreenBoundary>
+    )
+  }
+
   // ============================================================
   // ЦИТАТЫ
   // ============================================================
@@ -1309,7 +1326,15 @@ export default function Today({
 
   function handleThemeCardTap() {
     platform.haptic('light')
-    changeSub('theme')
+    // Все пройдены — смотрим запись последнего вопроса; иначе пишем следующий.
+    const targetDay =
+      themeWaitingDay?.day ?? (themeAllAnswered ? themeDays[themeDays.length - 1]?.day : null)
+    if (!targetDay) {
+      changeSub('theme')
+      return
+    }
+    setThemeWriteDay(targetDay)
+    changeSub('themeWrite')
   }
 
   return (

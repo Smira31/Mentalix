@@ -149,7 +149,7 @@ export default function ThemeQuestionCarousel({
     ctaLabel = 'Посмотреть запись'
   } else if (!currentIsOpen) {
     const prevDay = cards[safeIndex - 1]?.day ?? safeIndex
-    ctaLabel = `Откроется после вопроса ${prevDay}`
+    ctaLabel = `После вопроса ${prevDay}`
     ctaDisabled = true
   }
 
