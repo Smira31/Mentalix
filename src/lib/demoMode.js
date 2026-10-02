@@ -832,6 +832,55 @@ function daimonTestMode() {
   return DAIMON_TEST_MODES.includes(value) ? value : null
 }
 
+/*
+ * ?dialogTest= — детерминированные сбои «Диалога» для UX-тестов аудита.
+ * Каждый сбой одноразовый (кроме sendError — дважды), чтобы проверить,
+ * что «Повторить» действительно повторяет запрос и он проходит.
+ *   historyError — не грузится история разговора
+ *   listError    — падает список разговоров (и «Продолжить», и «Все»)
+ *   createError  — падает создание разговора
+ *   sendError    — две неудачные отправки подряд
+ *   dailyLimit   — первая отправка отдаёт 429 daily_limit
+ *   slowCreate   — медленное создание разговора (индикатор в чате)
+ */
+const DIALOG_TEST_MODES = [
+  'historyError',
+  'listError',
+  'createError',
+  'sendError',
+  'dailyLimit',
+  'slowCreate',
+]
+
+function dialogTestMode() {
+  if (typeof window === 'undefined' || !isPreviewDemoMode()) return null
+  const value = new URLSearchParams(window.location.search).get('dialogTest')
+  return DIALOG_TEST_MODES.includes(value) ? value : null
+}
+
+let dialogTestState = {
+  mode: null,
+  historyFailed: false,
+  listFailed: false,
+  createFailed: false,
+  limitFailed: false,
+  sendFailuresLeft: 0,
+}
+
+function dialogTestCounters(mode) {
+  if (dialogTestState.mode !== mode) {
+    dialogTestState = {
+      mode,
+      historyFailed: false,
+      listFailed: false,
+      createFailed: false,
+      limitFailed: false,
+      sendFailuresLeft: mode === 'sendError' ? 2 : 0,
+    }
+  }
+  return dialogTestState
+}
+
 // Детерминированный бросок для сценариев у клеток 11 / 36 / отскока.
 function daimonTestRoll(mode) {
   if (mode === 'nearSnake') return 1
@@ -924,6 +973,61 @@ function respond(path, options = {}) {
   const method = (options.method || 'GET').toUpperCase()
   const body = bodyOf(options)
   const state = readState()
+
+  // Считаем попытки отправки — UX-тест проверяет «0 лишних POST» при лимите.
+  if (pathname === '/mentalix/messages' && method === 'POST' && typeof window !== 'undefined') {
+    window.__mxDemoMessagePosts = (window.__mxDemoMessagePosts || 0) + 1
+  }
+
+  // ── ?dialogTest= — одноразовые сбои «Диалога» для UX-тестов ──
+  const dialogTest = dialogTestMode()
+  if (dialogTest) {
+    const counters = dialogTestCounters(dialogTest)
+    const fail = (status, detail) => {
+      const error = new Error(`Демо: HTTP ${status}`)
+      error.status = status
+      if (detail) error.body = { detail }
+      return error
+    }
+    const isMessagesGet =
+      method === 'GET' &&
+      (pathname === '/mentalix/messages' ||
+        /^\/mentalix\/conversations\/[^/]+\/messages$/.test(pathname)) &&
+      url.searchParams.get('persona') !== 'daimon'
+
+    if (dialogTest === 'historyError' && isMessagesGet && !counters.historyFailed) {
+      counters.historyFailed = true
+      throw fail(500)
+    }
+    if (
+      dialogTest === 'listError' &&
+      pathname === '/mentalix/conversations' &&
+      method === 'GET' &&
+      !counters.listFailed
+    ) {
+      counters.listFailed = true
+      throw fail(500)
+    }
+    if (
+      dialogTest === 'createError' &&
+      pathname === '/mentalix/conversations' &&
+      method === 'POST' &&
+      !counters.createFailed
+    ) {
+      counters.createFailed = true
+      throw fail(500)
+    }
+    if (pathname === '/mentalix/messages' && method === 'POST') {
+      if (dialogTest === 'dailyLimit' && !counters.limitFailed) {
+        counters.limitFailed = true
+        throw fail(429, 'daily_limit')
+      }
+      if (dialogTest === 'sendError' && counters.sendFailuresLeft > 0) {
+        counters.sendFailuresLeft -= 1
+        throw fail(500)
+      }
+    }
+  }
 
   if (pathname === '/rituals' && method === 'GET') return json(state.rituals)
   if (pathname === '/rituals' && method === 'POST') {
@@ -1929,6 +2033,15 @@ export async function demoRequest(path, options = {}) {
   // ?daimonTest=slow: искусственная задержка Даймона для проверки состояний загрузки.
   if (daimonTestMode() === 'slow' && path.startsWith('/daimon')) {
     await new Promise(resolve => setTimeout(resolve, 3000))
+  }
+  // ?dialogTest=slowCreate: медленное создание разговора — чат остаётся
+  // смонтированным и показывает индикатор загрузки внутри себя.
+  if (
+    dialogTestMode() === 'slowCreate' &&
+    path === '/mentalix/conversations' &&
+    (options.method || 'GET').toUpperCase() === 'POST'
+  ) {
+    await new Promise(resolve => setTimeout(resolve, 1500))
   }
   const network = demoNetwork()
   if (network === 'Медленно') await new Promise(resolve => setTimeout(resolve, 4000))

@@ -21,11 +21,32 @@ import { PERSONAS } from './personas'
 import MessageText from './MessageText'
 import {
   groupJournalMessages,
-  isLongJournalMessage,
   journalMessageKey,
   messageContent,
 } from '../../lib/journalPresentation'
 import './Conversation.css'
+
+/*
+ * Единый инлайн-баннер ошибки в стиле «Диалога»: текст muted,
+ * «Повторить» — стеклянная кнопка-пилюля.
+ */
+function ConversationNotice({ testId, text, retryTestId, onRetry }) {
+  return (
+    <div role="alert" data-testid={testId} className="mx-conversation-notice">
+      <span className="text-muted text-[13px] leading-snug">{text}</span>
+      {onRetry && (
+        <button
+          type="button"
+          data-testid={retryTestId}
+          className="mx-glass mx-conversation-retry"
+          onClick={onRetry}
+        >
+          Повторить
+        </button>
+      )}
+    </div>
+  )
+}
 
 const VOICE_HINT_KEY = 'mx-voice-hint-v1'
 const VOICE_HINT_TIMEOUT = 4500
@@ -44,9 +65,13 @@ export default function Conversation({
   onNewConversation = null,
   contextSlot = null,
   footerSlot = null,
-  sendError = '',
+  historyError = false,
+  onRetryHistory = null,
+  creatingConversation = false,
+  creationError = '',
+  onRetryCreate = null,
+  onRetryMessage = null,
   dailyLimit = false,
-  onRetry,
 }) {
   const meta = personaMeta || PERSONAS.find(item => item.key === persona) || PERSONAS[0]
 
@@ -68,7 +93,6 @@ export default function Conversation({
   const [voiceState, setVoiceState] = useState('idle')
   const [voiceSeconds, setVoiceSeconds] = useState(0)
   const [voiceError, setVoiceError] = useState('')
-  const [expandedMessages, setExpandedMessages] = useState(() => new Set())
   const demoVoice = isPreviewDemoMode()
 
   const voiceSupported =
@@ -130,7 +154,7 @@ export default function Conversation({
   }
 
   async function sendFromComposer() {
-    if (!input.trim() || sending) return
+    if (!input.trim() || sending || dailyLimit || creatingConversation || creationError) return
 
     restoreComposerFocusRef.current = document.activeElement === inputRef.current
     await onSend()
@@ -332,6 +356,9 @@ export default function Conversation({
         background: 'rgb(var(--c-bg))',
         paddingBottom: '0px',
       }}
+      // Подсказку про голос гасит и тап по чату — слой не перехватывает
+      // нажатие, оно проходит дальше по элементу под пальцем.
+      onPointerDown={showVoiceHint ? dismissVoiceHint : undefined}
     >
       {/* ── шапка ── */}
 
@@ -357,6 +384,7 @@ export default function Conversation({
             type="button"
             data-testid="conversation-new-pill"
             className="mx-conversation-new-pill mx-glass"
+            disabled={creatingConversation}
             onClick={onNewConversation}
           >
             Новый разговор
@@ -369,12 +397,22 @@ export default function Conversation({
       <div
         ref={scrollRef}
         className={`${FULLSCREEN_SCROLL_CLASS} mx-conversation-scroll px-[var(--mx-screen-x)] pb-6`}
+        onWheel={showVoiceHint ? dismissVoiceHint : undefined}
       >
         {!loading && contextSlot}
 
         {loading && <p className="text-muted text-[14px] text-center pt-4">Загрузка...</p>}
 
-        {!loading && messages.length === 0 && (
+        {!loading && historyError && (
+          <ConversationNotice
+            testId="conversation-history-error"
+            text="Не удалось загрузить разговор"
+            retryTestId="conversation-history-retry"
+            onRetry={onRetryHistory}
+          />
+        )}
+
+        {!loading && !historyError && messages.length === 0 && (
           <p className="text-muted text-[14px] text-center pt-10 leading-[1.6]">
             {meta.desc}
             <br />
@@ -395,8 +433,6 @@ export default function Conversation({
               {group.messages.map(({ message, index }) => {
                 const isUser = message.role === 'user'
                 const messageKey = journalMessageKey(message, index)
-                const isLong = !isUser && isLongJournalMessage(message)
-                const isExpanded = expandedMessages.has(messageKey)
 
                 if (isUser) {
                   return (
@@ -411,6 +447,24 @@ export default function Conversation({
                       >
                         {messageContent(message)}
                       </div>
+
+                      {/* Неудачная отправка: статус и «Повторить» у своего пузыря. */}
+                      {message.status === 'failed' && (
+                        <div data-testid="chat-message-failed" className="mx-imessage-failed">
+                          <span className="text-muted text-[12px]">Не отправлено</span>
+                          <span aria-hidden="true" className="text-faint text-[12px]">
+                            ·
+                          </span>
+                          <button
+                            type="button"
+                            data-testid="chat-message-retry"
+                            className="mx-glass mx-conversation-retry"
+                            onClick={() => onRetryMessage?.(message)}
+                          >
+                            Повторить
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )
                 }
@@ -427,46 +481,29 @@ export default function Conversation({
                     >
                       <MessageText content={messageContent(message)} />
                     </div>
-
-                    {isLong && (
-                      <button
-                        type="button"
-                        data-testid="ai-expand-reply"
-                        className="mx-ai-meta mt-3 text-gold"
-                        onClick={() => {
-                          setExpandedMessages(previous => {
-                            const next = new Set(previous)
-                            if (next.has(messageKey)) next.delete(messageKey)
-                            else next.add(messageKey)
-                            return next
-                          })
-                        }}
-                      >
-                        {isExpanded ? 'Свернуть ответ' : 'Читать полностью'}
-                      </button>
-                    )}
                   </div>
                 )
               })}
             </div>
           ))}
 
-          {sendError && (
+          {creatingConversation && (
             <div
-              role="alert"
-              className="flex items-center justify-between gap-3 rounded-2xl bg-cream/5 px-4 py-3 text-[12px] text-muted"
+              data-testid="conversation-creating"
+              className="w-full py-2 flex items-center justify-center gap-2"
             >
-              <span>{sendError}</span>
-              {onRetry && (
-                <button
-                  type="button"
-                  onClick={onRetry}
-                  className="shrink-0 font-semibold text-gold"
-                >
-                  Повторить
-                </button>
-              )}
+              <LoaderCircle size={16} className="animate-spin text-muted" />
+              <p className="text-[14px] text-muted">Новый разговор…</p>
             </div>
+          )}
+
+          {creationError && (
+            <ConversationNotice
+              testId="conversation-create-error"
+              text="Не удалось начать разговор"
+              retryTestId="conversation-create-retry"
+              onRetry={onRetryCreate}
+            />
           )}
 
           {dailyLimit && (
@@ -543,6 +580,7 @@ export default function Conversation({
             onKeyDown={event => {
               if (event.key === 'Enter') {
                 event.preventDefault()
+                if (dailyLimit || creatingConversation || creationError) return
                 void sendFromComposer()
               }
             }}
@@ -559,24 +597,22 @@ export default function Conversation({
 
           <div className="relative shrink-0">
             {showVoiceHint && (
-              <>
-                {/*
-                 * Полноэкранный невидимый слой — тап в любом месте
-                 * экрана гасит подсказку и не даёт её больше
-                 * показывать. Сама подсказка decorative-only
-                 * (pointer-events-none), чтобы тап по ней тоже
-                 * попадал на этот слой.
-                 */}
-                <div className="fixed inset-0 z-[75]" onClick={dismissVoiceHint} />
-
-                <div className="absolute bottom-full right-0 mb-3 z-[76] pointer-events-none animate-fade-in">
-                  <div className="w-[168px] rounded-2xl bg-cream text-emerald-deep text-[12px] font-semibold leading-snug px-4 py-2.5 text-center shadow-lg">
-                    Нажми и удерживай, чтобы записать голосовое
-                  </div>
-
-                  <div className="absolute -bottom-[5px] right-6 w-3 h-3 bg-cream rotate-45" />
+              /*
+               * Подсказка decorative-only (pointer-events-none) — без
+               * полноэкранного слоя: тап по ней уходит дальше, на элемент
+               * под пальцем. Гасится по таймауту, скроллу чата или любому
+               * тапу по поверхности «Диалога».
+               */
+              <div
+                data-testid="voice-hint"
+                className="absolute bottom-full right-0 mb-3 z-[76] pointer-events-none animate-fade-in"
+              >
+                <div className="w-[168px] rounded-2xl bg-cream text-emerald-deep text-[12px] font-semibold leading-snug px-4 py-2.5 text-center shadow-lg">
+                  Нажми и удерживай, чтобы записать голосовое
                 </div>
-              </>
+
+                <div className="absolute -bottom-[5px] right-6 w-3 h-3 bg-cream rotate-45" />
+              </div>
             )}
 
             <button
@@ -664,10 +700,15 @@ export default function Conversation({
                     },
                   })}
 
+              data-testid="mentor-composer-action"
+
               disabled={
-                hasText && voiceState === 'idle'
+                dailyLimit ||
+                creatingConversation ||
+                Boolean(creationError) ||
+                (hasText && voiceState === 'idle'
                   ? sending || !hasText
-                  : sending || voiceState === 'transcribing'
+                  : sending || voiceState === 'transcribing')
               }
 
               className={[
