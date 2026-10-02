@@ -108,6 +108,12 @@ async function openSeries(page) {
   await expect(page.getByTestId('series-tab-badges')).toBeVisible()
 }
 
+async function openRitualsList(page) {
+  await page.getByRole('button', { name: 'Шаги' }).click()
+  await page.locator('[data-collection-key="rituals"]').click()
+  await expect(page.getByTestId('practice-grid')).toBeVisible()
+}
+
 for (const viewport of P0_VIEWPORTS) {
   test.describe(`Telegram P0 — ${viewport.name}`, () => {
     test('Mentor conversation → native BackButton returns to picker', async ({ browser }) => {
@@ -210,6 +216,46 @@ for (const viewport of P0_VIEWPORTS) {
       expect(result.a).toBe('user-a')
       expect(result.b).toBe('user-b')
       expect(result.legacy).toBeNull()
+      await context.close()
+    })
+
+    test('Today → manage sheet → tap Ритуалы → sheet gone, rituals list visible', async ({ browser }) => {
+      const { context, page } = await openTelegramDemo(browser, viewport)
+      // Шестерёнка «Твои практики» → шторка управления
+      await page.getByTestId('pinned-practices-manage').click()
+      await expect(page.getByRole('heading', { name: 'твои практики.' })).toBeVisible()
+      // Тап «Ритуалы» в шторке — закрывает её и открывает экран ритуалов
+      await page.getByTestId('practice-manage-open').filter({ hasText: 'Ритуалы' }).click()
+      // Шторки нет: карточки управления демонтированы
+      await expect(page.getByTestId('practice-manage-open')).toHaveCount(0)
+      // Экран ритуалов видим
+      await expect(page.getByTestId('practice-grid')).toBeVisible()
+      await context.close()
+    })
+
+    test('Rituals ready screen → native Back → list', async ({ browser }) => {
+      const { context, page } = await openTelegramDemo(browser, viewport)
+      await openRitualsList(page)
+      // «+ Новый ритуал» → экран «готовые» (пресеты)
+      await page.getByTestId('practice-new-pill').click()
+      await expect(page.getByTestId('practice-preset-card').first()).toBeVisible()
+      await expect.poll(() => page.evaluate(() => window.__telegramBackState.isVisible)).toBe(true)
+      // Сразу «Назад» — возврат к списку без промежуточных действий
+      await nativeBack(page)
+      await expect(page.getByTestId('practice-grid')).toBeVisible()
+      await context.close()
+    })
+
+    test('Ritual detail → native Back → list', async ({ browser }) => {
+      const { context, page } = await openTelegramDemo(browser, viewport)
+      await openRitualsList(page)
+      // Тап по плитке ритуала → экран ритуала
+      await page.getByTestId('practice-grid').getByTestId('practice-tile').first().click()
+      await expect(page.getByTestId('practice-detail-week')).toBeVisible()
+      await expect.poll(() => page.evaluate(() => window.__telegramBackState.isVisible)).toBe(true)
+      // Сразу «Назад» — возврат к списку
+      await nativeBack(page)
+      await expect(page.getByTestId('practice-grid')).toBeVisible()
       await context.close()
     })
   })

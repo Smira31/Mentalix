@@ -22,6 +22,7 @@ export default function PracticeFieldFlow({
   initialValues = [],
   onSubmit,
   onCancel,
+  systemBack = true,
 }) {
   const [step, setStep] = useState(0)
   const [values, setValues] = useState(() => steps.map((_, index) => initialValues[index] || ''))
@@ -32,7 +33,7 @@ export default function PracticeFieldFlow({
   // Системный «назад» совпадает с круглой кнопкой: шаг 1 → назад к списку,
   // шаг 2 → назад к первому шагу. Регистрируется здесь, а не в <Screen>
   // (registerSystemBack={false}), чтобы обработчик зависел от step.
-  useBackButton(step === 0 ? onCancel : () => setStep(0))
+  useBackButton(step === 0 ? onCancel : () => setStep(0), systemBack)
 
   const current = steps[step]
   const value = values[step]
