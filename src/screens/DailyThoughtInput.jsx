@@ -12,6 +12,11 @@ import {
 import { readCachedDailyThought, saveDailyThought } from '../lib/dailyThoughtStorage'
 import { todayKey } from '../lib/journalStorage'
 import { getDailyThoughtForDate } from '../data/dailyThoughts'
+import {
+  readThoughtDraft,
+  saveThoughtDraft,
+  clearThoughtDraft,
+} from '../lib/todayDrafts'
 
 /*
  * ЭКРАН ВВОДА «ТВОЯ МЫСЛЬ» — как день темы в «Теме недели»:
@@ -27,6 +32,7 @@ import { getDailyThoughtForDate } from '../data/dailyThoughts'
 export default function DailyThoughtInput({ date, user, onClose, onSaved }) {
   const [text, setText] = useState('')
   const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState(false)
   const loadedRef = useRef(false)
 
   const viewportGeometry = useVisualViewportGeometry()
@@ -38,9 +44,26 @@ export default function DailyThoughtInput({ date, user, onClose, onSaved }) {
   useEffect(() => {
     if (loadedRef.current) return
     loadedRef.current = true
-    const existing = readCachedDailyThought(date || todayKey(), user?.id)
-    if (existing?.text) setText(existing.text)
+    const thoughtDate = date || todayKey()
+    const existing = readCachedDailyThought(thoughtDate, user?.id)
+    if (existing?.text) {
+      setText(existing.text)
+    } else {
+      // Восстановление черновика мысли дня (#7)
+      const draft = readThoughtDraft({ userId: user?.id, date: thoughtDate })
+      if (draft) setText(draft)
+    }
   }, [date, user?.id])
+
+  // Debounced-сохранение черновика мысли дня (#7)
+  useEffect(() => {
+    if (!text.trim()) return undefined
+    const thoughtDate = date || todayKey()
+    const timeoutId = window.setTimeout(() => {
+      saveThoughtDraft({ userId: user?.id, date: thoughtDate, text })
+    }, 500)
+    return () => clearTimeout(timeoutId)
+  }, [text, date, user?.id])
 
   const hasText = text.trim().length > 0
   const quoteOfDay = date ? getDailyThoughtForDate(date) : null
@@ -48,16 +71,21 @@ export default function DailyThoughtInput({ date, user, onClose, onSaved }) {
   async function handleSave() {
     if (!hasText || saving) return
     setSaving(true)
+    setSaveError(false)
     try {
+      const thoughtDate = date || todayKey()
       await saveDailyThought({
-        date: date || todayKey(),
+        date: thoughtDate,
         text: text.trim(),
         userId: user?.id,
       })
       platform.haptic('success')
+      // Сохранено — очищаем черновик (#7)
+      clearThoughtDraft({ userId: user?.id, date: thoughtDate })
       onSaved?.()
     } catch {
       platform.haptic('error')
+      setSaveError(true)
     } finally {
       setSaving(false)
     }
@@ -126,6 +154,12 @@ export default function DailyThoughtInput({ date, user, onClose, onSaved }) {
         submitDisabled={!hasText}
         submitLoading={saving}
       />
+
+      {saveError && (
+        <p role="alert" className="text-[13px] text-red-300 mt-2" data-testid="thought-save-error">
+          Не удалось сохранить. Попробуй ещё раз.
+        </p>
+      )}
 
       <button
         type="button"

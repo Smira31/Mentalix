@@ -48,6 +48,13 @@ import {
   saveCheckinDraft,
 } from '../lib/checkinDraft'
 import { isPreviewDemoMode, previewDemoAction, previewStreakCelebrationDays } from '../lib/demoMode'
+import {
+  readEveningDraft,
+  saveEveningDraft,
+  clearEveningDraft,
+  eveningDraftHasContent,
+} from '../lib/todayDrafts'
+import { toLocalCalendarDate } from '../lib/dateTimezonePolicy'
 import { readCanonicalCurrentStreak, readCanonicalStreakStats } from '../lib/canonicalStreak'
 import { buildStreakDays, shouldCelebrateStreak } from '../lib/streakCelebration'
 import { useStreakBaseline } from '../lib/useStreakBaseline'
@@ -875,9 +882,14 @@ function CheckInCore({
 
   const [scoutError, setScoutError] = useState('')
 
-  const [lessons, setLessons] = useState(() =>
-    isEvening ? existingLessons(fieldSource?.lessons) : {}
-  )
+  const [lessons, setLessons] = useState(() => {
+    if (!isEvening) return {}
+    const fromExisting = existingLessons(fieldSource?.lessons)
+    if (eveningDraftHasContent(fromExisting)) return fromExisting
+    // Восстановление черновика вечернего разбора (#3)
+    const draft = readEveningDraft({ userId: user.id })
+    return draft || {}
+  })
 
   const [morningDraft, setMorningDraft] = useState(() =>
     isEvening ? null : readCheckinDraft({ userId: user.id })
@@ -989,6 +1001,18 @@ function CheckInCore({
     }))
   }
 
+  // Debounced-сохранение черновика вечернего разбора (#3)
+  useEffect(() => {
+    if (!isEvening) return undefined
+    if (!eveningDraftHasContent(lessons)) return undefined
+
+    const timeoutId = window.setTimeout(() => {
+      saveEveningDraft({ userId: user.id, lessons })
+    }, 500)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [isEvening, lessons, user.id])
+
   function requestClose() {
     if (!isEvening && draftHasContent(morningDraft)) {
       setCloseConfirmationOpen(true)
@@ -1084,6 +1108,9 @@ function CheckInCore({
           free: '',
         })
         setDraftStatus('idle')
+      } else {
+        // Вечерний разбор сохранён — очищаем черновик (#3)
+        clearEveningDraft({ userId: user.id })
       }
 
       platform.haptic('success')
