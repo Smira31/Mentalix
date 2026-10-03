@@ -31,6 +31,8 @@
 
 ### Ссылки и готовый PR
 
+Повторная попытка create_pull_request в этом продолжении вернула «Failed to create the pull request» без причины. Создание PR не подтверждено; CI и deployment кандидата не проверены. Ниже готовые Title/Description и ссылка compare для ручного открытия.
+
 - Демо текущего sandbox: `/?demo=1&tab=library&frame=0&tgshell=0`; полный адрес дан в чате, он меняется при пересоздании sandbox. Это временный dev-preview, не production/Cloudflare deployment кандидата.
 - [Создать PR main…stoic-library-v2](https://github.com/Smira31/Mentalix/compare/main...stoic-library-v2).
 
