@@ -241,6 +241,11 @@ screens, and keep article cards unchanged unless the owner explicitly approves t
 - Для задачи календарной темы достаточно `check:core` и `npx playwright test --config=playwright.ux.config.mjs steps-reliability.spec.mjs theme-daily-questions.spec.mjs`; ставить только Chromium, не WebKit. iPhone/Telegram остаётся ручным gate.
 - Демо `/themes/{id}/reflect` сохраняет ответ, не двигая `current_day`; календарь темы — `started_on`/`server_date`. Арифметика дат централизована в `src/lib/mskDate.js`.
 
+### Проверка «Пути героя» в Base44
+
+- Локальные ключи курса используют `:<userId>`, но CloudStorage Telegram не допускает двоеточия: облачный scoped-ключ заменяет их на `_`. Legacy-миграция выполняется до очистки пользовательского scope.
+- Для этой задачи владелец разрешил только `check:core` и целевой Playwright-файл `hero-journey-reliability.spec.mjs` (Chromium); полный `ux:check` и WebKit оставлены CI. Команды выполняются в `docker compose -f docker-compose.base44.yml exec -T web`.
+
 ## Context economy
 
 - Читай только файлы из порядка чтения (AGENTS.md → PROJECT_STATE.md → PRODUCT.md →
