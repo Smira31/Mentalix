@@ -201,7 +201,7 @@
 
 .mx-demo-today-greeting {
   justify-self: center;
-  font-size: 34px;
+  font-size: var(--mx-type-greeting-size);
   font-weight: 700;
   letter-spacing: -0.02em;
   text-align: center;
@@ -1114,7 +1114,7 @@
 
 .mx-demo-today-greeting {
   justify-self: auto;
-  font-size: 34px;
+  font-size: var(--mx-type-greeting-size);
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.1;
