@@ -1,7 +1,11 @@
 .mx-library-stoic {
-  gap: var(--mx-space-6);
+  gap: 0;
   padding: var(--mx-space-1) var(--mx-screen-x) var(--app-content-bottom);
   font-family: inherit;
+}
+/* Подпись прижата к своему разделу: 32px от предыдущего, 12px до плиток. */
+.mx-library-stoic .mx-library-topic + .mx-library-topic {
+  margin-top: var(--mx-space-8);
 }
 .mx-library-stoic .mx-library-catalog__header {
   min-height: var(--mx-btn-round-h);
@@ -51,11 +55,11 @@
 }
 .mx-library-topic {
   display: grid;
-  gap: var(--mx-space-5);
+  gap: var(--mx-space-3);
 }
 .mx-library-caps {
   margin: 0;
-  padding-block: var(--mx-space-3);
+  padding-block: 0;
   color: rgb(var(--c-muted));
   font-family: inherit;
   font-size: var(--mx-type-meta-size);
@@ -75,26 +79,36 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--mx-space-3);
+  gap: 0;
   min-width: 0;
   min-height: var(--mx-btn-round-h);
   border: 0;
-  padding: var(--mx-space-5) var(--mx-space-3);
-  background: var(--mx-steps-card-bg);
-  border: 1px solid var(--mx-steps-card-border);
+  padding: var(--mx-space-4);
+  background: rgb(var(--c-card));
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: var(--mx-radius-card);
   color: rgb(var(--c-text));
   text-align: center;
   transition: transform 180ms ease;
+  box-shadow: none;
 }
 .mx-library-art-slot {
+  position: relative;
   display: block;
-  width: calc(var(--mx-space-8) * 2);
-  height: calc(var(--mx-space-10) * 2 + var(--mx-space-6));
+  width: 56px;
+  height: 92px;
+  margin-bottom: var(--mx-space-3);
   flex-shrink: 0;
   overflow: hidden;
-  border-radius: var(--mx-radius-pill);
-  background: rgb(var(--c-card2));
+  border-radius: var(--mx-radius-xs);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: linear-gradient(
+    to bottom,
+    rgb(var(--c-card2)) 0%,
+    rgb(var(--c-card2)) 42%,
+    rgb(var(--c-card-raised2)) 42%,
+    rgb(var(--c-card-raised)) 100%
+  );
 }
 .mx-library-excerpt {
   min-height: 2.9em;
@@ -125,6 +139,9 @@
   background: rgb(var(--c-bg) / 0.72);
   border: 0;
 }
+.mx-library-sheet-surface .mx-screen__body {
+  padding-bottom: 0;
+}
 .mx-library-sheet {
   position: relative;
   display: grid;
@@ -137,7 +154,7 @@
   max-width: 28rem;
   border-radius: var(--mx-radius-hero) var(--mx-radius-hero) 0 0;
   border: 1px solid rgb(var(--c-border));
-  padding: var(--mx-space-3) var(--mx-screen-x) calc(var(--mx-space-8) + var(--app-safe-bottom));
+  padding: var(--mx-space-3) var(--mx-screen-x) var(--app-safe-bottom);
   color: rgb(var(--c-text));
   text-align: center;
   overscroll-behavior: contain;
@@ -229,8 +246,39 @@
   height: 100%;
   object-fit: cover;
 }
+/* Картинка стоит на светлом «дне» капсулы, верх остаётся тёмной нишей. */
+.mx-library-art-slot img {
+  position: absolute;
+  bottom: 4%;
+  left: 6%;
+  width: 88%;
+  height: 56%;
+  border-radius: 6px;
+}
+/* Заголовок плитки: мельче и легче, максимум 2 строки. */
+.mx-library-tile .mx-type-card {
+  font-size: calc(15px * var(--mx-type-scale));
+  font-weight: 600;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  margin: 0;
+}
+/* Описание: ~12px, серое, 2 строки. */
+.mx-library-excerpt {
+  margin-top: var(--mx-space-1);
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
+  line-height: 1.35;
+  min-height: 0;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
 .mx-library-topic > h2 {
-  padding-block: var(--mx-space-3);
+  padding-block: 0;
 }
 .mx-library-course-list {
   display: grid;

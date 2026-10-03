@@ -819,9 +819,9 @@
   font-size: calc(15px * var(--mx-type-scale));
 }
 .mx-hj-empty-course {
-  margin: var(--mx-space-10) var(--mx-space-5);
-  text-align: center;
+  margin: 12px 0 0;
+  text-align: left;
   color: rgb(var(--c-muted));
-  font-size: var(--mx-type-body-size);
-  line-height: 1.5;
+  font-size: calc(15px * var(--mx-type-scale));
+  line-height: 1.45;
 }

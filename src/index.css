@@ -1745,7 +1745,7 @@ button.mx-demo-telegram-chrome__pill:focus:not(:focus-visible) {
 }
 
 [data-mentalix-demo-frame='true'][data-demo-tab='library'] .mx-library-catalog {
-  gap: 4px;
+  gap: 0;
   /* Как у «практики.»: заголовок библиотеки начинается на том же отступе от кнопок. */
   padding-top: 4px;
 }

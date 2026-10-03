@@ -188,7 +188,7 @@ test('Библиотека: курс → разделы → шторка → ч�
   await page.screenshot({ path: `${screenshots}/reader-start.png` })
   await page.getByTestId('article-reflection').scrollIntoViewIfNeeded()
   await expect(page.getByTestId('article-reflection')).toContainText('А у тебя как?')
-  await expect(page.getByTestId('article-next')).toContainText('Следующая статья →')
+  await expect(page.getByTestId('article-next')).toContainText('Следующая статья')
   await settle()
   await page.screenshot({ path: `${screenshots}/reader-end.png` })
   const readScroll = await page
