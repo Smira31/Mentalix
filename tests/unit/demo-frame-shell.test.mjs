@@ -8,6 +8,10 @@ const surfaceSource = await readFile(
 )
 const appSource = await readFile(new URL('../../src/App.jsx', import.meta.url), 'utf8')
 const cssSource = await readFile(new URL('../../src/index.css', import.meta.url), 'utf8')
+const screenSource = await readFile(
+  new URL('../../src/components/Screen.jsx', import.meta.url),
+  'utf8'
+)
 
 test('в demo-рамке высота fullscreen-shell берётся от рамки, а не от окна браузера', () => {
   // портал в demo указывает на рамку устройства
@@ -30,10 +34,10 @@ test('корневой layout в demo-рамке даёт верх = safe-top + 
     appSource,
     /previewDemoMode && !realPhone && deviceFrameMode\s*\?\s*'calc\(var\(--app-safe-top\) \+ 56px\)'/
   )
-  assert.match(
-    appSource,
-    /previewDemoMode && tab === 'library' && platformName !== 'telegram'\s*\?\s*'calc\(max\(var\(--app-safe-top\), var\(--demo-statusbar-h, 62px\)\) \+ 56px\)'/
-  )
+  // Библиотека не получает отдельную компенсацию демо-шапки.
+  assert.doesNotMatch(appSource, /calc\(max\(var\(--app-safe-top\), var\(--demo-statusbar-h/)
+  assert.match(screenSource, /style=\{surfaceStyle\}/)
+  assert.doesNotMatch(screenSource, /calc\(max\(var\(--app-safe-top\)/)
 })
 
 test('CSS demo-рамки эмулирует геометрию iPhone: статус-бар 62/59, низ 34', () => {

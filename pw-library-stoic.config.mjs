@@ -12,8 +12,9 @@ export default defineConfig({
     baseURL: process.env.LIBRARY_BASE_URL || 'http://127.0.0.1:5173',
     browserName: 'chromium',
     viewport: { width: 430, height: 932 },
-    isMobile: true,
-    hasTouch: true,
+    // Обычный браузер владельца: рамка App, а не определение настоящего телефона.
+    isMobile: false,
+    hasTouch: false,
     reducedMotion: 'reduce',
     serviceWorkers: 'block',
   },

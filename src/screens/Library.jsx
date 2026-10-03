@@ -136,7 +136,7 @@ export default function Library({ user, onInputModeChange }) {
   return (
     <>
       <div
-        className="mx-library-catalog mx-library-stoic w-full max-w-md"
+        className="mx-screen-shell mx-library-catalog mx-library-stoic"
         data-testid="library-home"
         inert={focused ? '' : undefined}
         aria-hidden={focused ? true : undefined}

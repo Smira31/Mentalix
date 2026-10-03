@@ -28,6 +28,6 @@ test('эмуляция Telegram рендерится в demo-режиме: ст�
   assert.match(app, /import DemoTelegramChrome from '\.\/components\/DemoTelegramChrome'/)
   assert.match(
     app,
-    /!libraryInputMode\s*&&[\s\S]*?shouldRenderDemoTelegramChrome\(\{\s*previewDemoMode,\s*platformName,\s*realPhone,\s*deviceFrameMode,\s*\}\)\)\s*&&\s*<DemoTelegramChrome \/>/
+    /!libraryInputMode\s*&&\s*shouldRenderDemoTelegramChrome\(\{\s*previewDemoMode,\s*platformName,\s*realPhone,\s*deviceFrameMode,\s*\}\)\s*&&\s*<DemoTelegramChrome \/>/
   )
 })

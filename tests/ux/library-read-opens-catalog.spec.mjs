@@ -5,15 +5,94 @@ import { mkdir } from 'node:fs/promises'
 test('Библиотека: курс → разделы → шторка → чтение → журнал → следующая → назад', async ({
   page,
 }) => {
+  const screenshots = '/tmp/mentalix-library-screens'
+  await mkdir(screenshots, { recursive: true })
+  const geometry = async selector =>
+    page.locator(selector).evaluate(el => {
+      const frame = document.querySelector('[data-mentalix-demo-frame="true"]')
+      const rect = el.getBoundingClientRect()
+      const box = frame.getBoundingClientRect()
+      const style = getComputedStyle(el)
+      return {
+        x: rect.x - box.x - frame.clientLeft,
+        y: rect.y - box.y - frame.clientTop,
+        width: rect.width,
+        paddingLeft: style.paddingLeft,
+        paddingRight: style.paddingRight,
+        shellTop: getComputedStyle(frame).paddingTop,
+      }
+    })
+  // Рамка 393/440 и демо-шапка обязательны: прежний frame=0 скрывал регрессию.
+  await page.setViewportSize({ width: 1000, height: 1100 })
+  for (const [device, width, safeTop] of [['standard', 393, 59], ['max', 440, 62]]) {
+    const open = tab => page.goto(`/?demo=1&device=${device}&tab=${tab}`)
+    await open('today')
+    await expect(page.getByTestId('today-card-morning')).toBeVisible()
+    const today = await geometry('.mx-tab-panel--active .mx-screen-shell')
+    expect(today.x).toBe(0)
+    expect(today.width).toBe(width - 16) // две стороны рамки по 8, не поля контента
+    expect(today.paddingLeft).toBe('16px')
+    expect(today.paddingRight).toBe('16px')
+    expect(today.shellTop).toBe(`${safeTop + 56}px`)
+    await open('practices')
+    await expect(page.getByTestId('steps-search-open')).toBeVisible()
+    const steps = await geometry('.mx-tab-panel--active .mx-practices-catalog-shell')
+    expect(steps.width).toBe(today.width)
+    expect(steps.x).toBe(today.x)
+    expect(steps.shellTop).toBe(today.shellTop)
+    const stepsTitle = await geometry('.mx-tab-panel--active h1')
+    await open('library')
+    await expect(page.getByTestId('library-home')).toBeVisible()
+    const library = await geometry('[data-testid="library-home"]')
+    expect(library).toMatchObject({ ...today, y: today.y })
+    const title = await geometry('[data-testid="library-home"] h1')
+    expect(title.x).toBe(16)
+    // Высота строки заголовка отличается не больше одного токена (8).
+    expect(Math.abs(title.y - stepsTitle.y)).toBeLessThanOrEqual(8)
+    const chrome = await page.locator('.mx-demo-telegram-chrome__controls').boundingBox()
+    const titleBox = await page.getByTestId('library-home').locator('h1').boundingBox()
+    expect(titleBox.y).toBeGreaterThanOrEqual(chrome.y + chrome.height)
+    await page.screenshot({ path: `${screenshots}/frame-${width}-home.png` })
+    await page.getByTestId('library-hero').click()
+    await expect(page.getByTestId('hero-journey-map')).toBeVisible()
+    const course = await geometry('.mx-hero-journey .mx-screen__content')
+    expect(course).toMatchObject({ x: 0, width: today.width, paddingLeft: '16px', paddingRight: '16px' })
+    await page.screenshot({ path: `${screenshots}/frame-${width}-course.png` })
+    await page.getByTestId('demo-chrome-back').click()
+    await expect(page.getByTestId('library-home')).toBeVisible()
+    await page.getByTestId('library-article-tile').first().click()
+    await expect(page.getByTestId('article-sheet')).toBeVisible()
+    const sheet = await geometry('[data-testid="article-sheet"]')
+    expect(sheet.x).toBe(0)
+    expect(sheet.width).toBe(today.width)
+    expect(sheet.paddingLeft).toBe('16px')
+    await page.screenshot({ path: `${screenshots}/frame-${width}-sheet.png` })
+    await page.getByTestId('article-sheet-read').click()
+    await expect(page.getByTestId('article-reader')).toBeVisible()
+    const reader = await geometry('.mx-library-reader-surface .mx-screen__content')
+    expect(reader).toMatchObject({ x: 0, width: today.width, paddingLeft: '16px', paddingRight: '16px' })
+    const readerTitle = await geometry('[data-testid="article-title"]')
+    expect(readerTitle.x).toBe(16)
+    await page.screenshot({ path: `${screenshots}/frame-${width}-reader.png` })
+    await page.getByTestId('demo-chrome-back').click()
+    await expect(page.getByTestId('article-sheet')).toBeVisible()
+    await page.getByTestId('demo-chrome-back').click()
+    await expect(page.getByTestId('library-home')).toBeVisible()
+    await open('today')
+    await expect(page.getByTestId('today-card-morning')).toBeVisible()
+    expect(await geometry('.mx-tab-panel--active .mx-screen-shell')).toEqual(today)
+    await open('practices')
+    await expect(page.getByTestId('steps-search-open')).toBeVisible()
+    expect(await geometry('.mx-tab-panel--active .mx-practices-catalog-shell')).toEqual(steps)
+  }
   await page.setViewportSize({ width: 430, height: 932 })
   const errors = []
   page.on('pageerror', error => errors.push(error.message))
-  await page.goto('/?demo=1&tab=library&frame=0&tgshell=0&demo_courses=0')
+  await page.goto('/?demo=1&tab=library&demo_courses=0')
   await expect(page.getByTestId('library-hero')).toContainText('путь героя.')
   await expect(page.getByTestId('library-topic')).toHaveCount(3)
   await expect(page.getByText('Программы', { exact: true })).toHaveCount(0)
   await expect(page.getByText('Направленные записи', { exact: true })).toHaveCount(0)
-  const screenshots = '/tmp/mentalix-library-screens'
   const settle = () =>
     page.evaluate(async () => {
       await document.fonts.ready
@@ -51,7 +130,7 @@ test('Библиотека: курс → разделы → шторка → ч�
   await page.getByTestId('demo-chrome-back').click()
   await expect(page.getByTestId('library-home')).toBeVisible()
   await expect(page.getByTestId('library-course-carousel')).toHaveCount(0)
-  await page.goto('/?demo=1&tab=library&frame=0&tgshell=0')
+  await page.goto('/?demo=1&tab=library')
   await expect(page.getByTestId('library-course-carousel')).toBeVisible()
   await expect(page.getByTestId('library-course-card')).toHaveCount(1)
   await expect(page.getByTestId('library-all-courses-open')).toHaveCount(0)
@@ -119,7 +198,7 @@ test('Библиотека: курс → разделы → шторка → ч�
   // В демо новый журнал открывается сразу в настройке.
   await expect(page.getByTestId('article-reader')).toHaveCount(0)
   await expect(page.getByTestId('dj-setup-goal-0')).toBeVisible()
-  await page.getByTestId('back-button').click()
+  await page.getByTestId('demo-chrome-back').click()
   await expect(page.getByTestId('article-reader')).toBeVisible()
   await expect
     .poll(() =>
@@ -154,7 +233,7 @@ test('Библиотека: курс → разделы → шторка → ч�
       .evaluateAll(els => els.map(el => ({ width: el.offsetWidth, height: el.offsetHeight })))
     expect(areas.every(area => area.width >= 44 && area.height >= 44)).toBe(true)
   }
-  await page.goto('/?demo=1&tab=library&frame=0&tgshell=0&demo_courses=0')
+  await page.goto('/?demo=1&tab=library&demo_courses=0')
   await page.getByTestId('library-hero').click()
   await page.getByTestId('hero-continue').click()
   await page.getByTestId('hero-step-start').click()

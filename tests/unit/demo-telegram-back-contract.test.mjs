@@ -19,7 +19,7 @@ test('Demo Telegram chrome — эмуляция без пропсов, лева�
   // Вложенная Библиотека владеет своей шапкой; остальные вкладки как раньше.
   assert.match(
     app,
-    /!libraryInputMode\s*&&[\s\S]*?shouldRenderDemoTelegramChrome\(\{\s*previewDemoMode,\s*platformName,\s*realPhone,\s*deviceFrameMode,\s*\}\)\)\s*&&\s*<DemoTelegramChrome \/>/
+    /!libraryInputMode\s*&&\s*shouldRenderDemoTelegramChrome\(\{\s*previewDemoMode,\s*platformName,\s*realPhone,\s*deviceFrameMode,\s*\}\)\s*&&\s*<DemoTelegramChrome \/>/
   )
 })
 

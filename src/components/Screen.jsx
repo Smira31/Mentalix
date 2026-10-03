@@ -68,15 +68,7 @@ export default function Screen({
   return createPortal(
     <div
       className={`${FULLSCREEN_SHELL_CLASS} mx-screen ${fullFrame ? 'mx-screen--full-frame' : ''} ${className}`}
-      style={
-        telegramChrome && isPreviewDemoMode() && platformName !== 'telegram'
-          ? {
-              ...surfaceStyle,
-              paddingTop:
-                'calc(max(var(--app-safe-top), var(--demo-statusbar-h, 62px)) + 56px)',
-            }
-          : surfaceStyle
-      }
+      style={surfaceStyle}
       data-testid="mx-screen-shell"
     >
       {demoChrome && <DemoTelegramChrome />}

@@ -1278,11 +1278,9 @@ function App() {
   // В demo-рамке с эмуляцией Telegram все экраны получают отступы как в
   // Telegram fullscreen: верх = safe-top (статус-бар iOS) + 56 (пилюли Telegram).
   const shellTopPadding =
-    previewDemoMode && tab === 'library' && platformName !== 'telegram'
-      ? 'calc(max(var(--app-safe-top), var(--demo-statusbar-h, 62px)) + 56px)'
-      : previewDemoMode && !realPhone && deviceFrameMode
-        ? 'calc(var(--app-safe-top) + 56px)'
-        : topSafeArea
+    previewDemoMode && !realPhone && deviceFrameMode
+      ? 'calc(var(--app-safe-top) + 56px)'
+      : topSafeArea
 
   /* ============================================================
      UI
@@ -1365,13 +1363,12 @@ function App() {
         }}
       >
         {!libraryInputMode &&
-          ((previewDemoMode && tab === 'library' && platformName !== 'telegram') ||
-            shouldRenderDemoTelegramChrome({
-              previewDemoMode,
-              platformName,
-              realPhone,
-              deviceFrameMode,
-            })) && <DemoTelegramChrome />}
+          shouldRenderDemoTelegramChrome({
+            previewDemoMode,
+            platformName,
+            realPhone,
+            deviceFrameMode,
+          }) && <DemoTelegramChrome />}
 
         {/* ========================================================
           MENTALIX WORDMARK
