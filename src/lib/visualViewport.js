@@ -115,13 +115,21 @@ export function useVisualViewportHeight() {
 }
 
 /**
- * Стабильная высота оболочки для App — БЕЗ подписки на visualViewport.scroll.
+ * Стабильная высота оболочки для App — БЕЗ постоянной подписки на
+ * visualViewport.scroll.
  *
  * useVisualViewportGeometry подписан на visualViewport.scroll, который на
  * iOS/Telegram стреляет при каждом кадре прокрутки (offsetTop меняется),
- * вызывая 8–14 ре-рендеров App за один жест. Эта подписка нужна только
- * fullscreen-оверлеям (useVisualViewportGeometry); оболочке нужен лишь
- * resize (клавиатура, поворот) и viewportChanged из Telegram.
+ * вызывая 8–14 ре-рендеров App за один жест. Ожидается 0 (не замерено).
+ * Эта подписка нужна только fullscreen-оверлеям (useVisualViewportGeometry);
+ * оболочке нужен лишь resize (клавиатура, поворот) и viewportChanged из Telegram.
+ *
+ * Подписка на visualViewport.scroll включается только при фокусе поля ввода
+ * (focusin на input/textarea/[contenteditable] → подписаться, focusout →
+ * отписаться и пересчитать высоту один раз). При обычной прокрутке без
+ * клавиатуры — 0 setState. При открытой клавиатуре — поведение как в старом
+ * хуке (те же значения/CSS-переменные). Финальная проверка — на iPhone после
+ * мёржа.
  */
 export function useStableViewportHeight() {
   const [height, setHeight] = useState(() => {
@@ -141,14 +149,53 @@ export function useStableViewportHeight() {
       setHeight(prev => (prev === next ? prev : next))
     }
 
+    // visualViewport.scroll на iOS/Telegram меняет offsetTop при открытии
+    // клавиатуры. Подписка включается только при фокусе поля ввода и
+    // снимается на focusout с одним финальным пересчётом высоты.
+    let scrollSubscribed = false
+
+    const subscribeScroll = () => {
+      if (scrollSubscribed || !viewport) return
+      scrollSubscribed = true
+      viewport.addEventListener('scroll', update, { passive: true })
+    }
+
+    const unsubscribeScroll = () => {
+      if (!scrollSubscribed || !viewport) return
+      scrollSubscribed = false
+      viewport.removeEventListener('scroll', update)
+    }
+
+    const isEditableTarget = target => {
+      if (!target) return false
+      const tag = target.tagName
+      return tag === 'INPUT' || tag === 'TEXTAREA' || target.isContentEditable === true
+    }
+
+    const onFocusIn = e => {
+      if (isEditableTarget(e.target)) subscribeScroll()
+    }
+
+    const onFocusOut = e => {
+      if (isEditableTarget(e.target)) {
+        unsubscribeScroll()
+        update()
+      }
+    }
+
     update()
     viewport?.addEventListener('resize', update, { passive: true })
     window.addEventListener('resize', update, { passive: true })
+    window.addEventListener('focusin', onFocusIn, { passive: true })
+    window.addEventListener('focusout', onFocusOut, { passive: true })
     webApp?.onEvent?.('viewportChanged', update)
 
     return () => {
       viewport?.removeEventListener('resize', update)
+      unsubscribeScroll()
       window.removeEventListener('resize', update)
+      window.removeEventListener('focusin', onFocusIn)
+      window.removeEventListener('focusout', onFocusOut)
       webApp?.offEvent?.('viewportChanged', update)
     }
   }, [])
