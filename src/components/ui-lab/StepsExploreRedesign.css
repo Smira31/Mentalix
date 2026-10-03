@@ -243,16 +243,16 @@
 }
 .mx-steps-theme-heading__label {
   font-family: var(--font-serif);
-  font-size: 26px;
-  font-weight: var(--mx-weight-control);
-  line-height: 1.1;
+  font-size: var(--mx-type-serif-theme-size);
+  font-weight: var(--mx-serif-normal);
+  line-height: 1.15;
   color: rgb(var(--c-text));
 }
 .mx-steps-theme-heading__name {
-  font-family: 'Onest', sans-serif;
-  font-size: 26px;
-  font-weight: var(--mx-weight-heading);
-  line-height: 1.1;
+  font-family: var(--font-serif);
+  font-size: var(--mx-type-serif-theme-size);
+  font-weight: var(--mx-serif-strong);
+  line-height: 1.15;
   color: rgb(var(--c-text));
 }
 /* ── Pills ── */

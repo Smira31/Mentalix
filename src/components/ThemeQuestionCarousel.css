@@ -55,30 +55,30 @@
 /* --- Number (serif) --- */
 .mx-tqc-card__num {
   font-family: var(--font-serif);
-  font-size: 30px;
-  font-weight: var(--mx-weight-body);
+  font-size: var(--mx-type-serif-number-size);
+  font-weight: var(--mx-serif-normal);
   line-height: 1;
   color: #999;
 }
 
-/* --- Question text --- */
+/* --- Question text — гротеск 18/600 --- */
 .mx-tqc-card__question {
   max-width: 220px;
   font-family: 'Onest', system-ui, sans-serif;
-  font-size: 17px;
+  font-size: 18px;
   font-weight: var(--mx-weight-heading);
   line-height: 1.3;
   color: #f3f3f3;
 }
 
-/* --- Prompt / description --- */
+/* --- Prompt / description — 16/normal, приглушённый --- */
 .mx-tqc-card__prompt {
   max-width: 220px;
   font-family: 'Onest', system-ui, sans-serif;
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.4;
   font-weight: var(--mx-weight-body);
-  color: #888;
+  color: rgb(var(--c-muted));
 }
 
 /* --- Closed card: question visible at ~35%, fades left-to-right; prompt hidden --- */

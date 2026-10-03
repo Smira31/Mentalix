@@ -41,6 +41,31 @@
 @import '@fontsource/lora/latin-600.css';
 @import '@fontsource/lora/latin-700.css';
 
+/* Гарнитуры с засечками «премиального прохода» — самохостинг @fontsource,
+   без Google Fonts CDN, подмножества cyrillic + latin, font-display: swap.
+   Выбор владельца переключается ?serif= (playfair | cormorant | prata),
+   см. --font-serif в блоке токенов ниже. */
+@import '@fontsource/playfair-display/cyrillic-400.css';
+@import '@fontsource/playfair-display/latin-400.css';
+@import '@fontsource/playfair-display/cyrillic-600.css';
+@import '@fontsource/playfair-display/latin-600.css';
+@import '@fontsource/playfair-display/cyrillic-700.css';
+@import '@fontsource/playfair-display/latin-700.css';
+
+/* Cormorant Garamond: 400 слишком тонкий на тёмном, поэтому «обычный» вес —
+   500; 600/700 берём для акцентных строк. */
+@import '@fontsource/cormorant-garamond/cyrillic-500.css';
+@import '@fontsource/cormorant-garamond/latin-500.css';
+@import '@fontsource/cormorant-garamond/cyrillic-600.css';
+@import '@fontsource/cormorant-garamond/latin-600.css';
+@import '@fontsource/cormorant-garamond/cyrillic-700.css';
+@import '@fontsource/cormorant-garamond/latin-700.css';
+
+/* Prata: единственный вес — 400. «Жирные» места рисуются тем же 400,
+   без искусственного утолщения. */
+@import '@fontsource/prata/cyrillic-400.css';
+@import '@fontsource/prata/latin-400.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -83,8 +108,9 @@
    ширина кириллицы Georgia больше на ~6% — отсюда size-adjust 105.77%. */
 @font-face {
   font-family: 'Lora Fallback';
-  src: local('Georgia'), local('Times New Roman'), local('Noto Serif'),
-    local('DejaVu Serif'), local('Liberation Serif'), local('PT Serif');
+  src:
+    local('Georgia'), local('Times New Roman'), local('Noto Serif'), local('DejaVu Serif'),
+    local('Liberation Serif'), local('PT Serif');
   size-adjust: 105.77%;
   ascent-override: 95.11%;
   descent-override: 25.9%;
@@ -329,10 +355,24 @@
   --mx-steps-card-inner-border: rgba(255, 255, 255, 0.08);
   --mx-steps-fade-h: 28px;
 
-  /* Шрифт с засечками — только для заголовков разделов экрана «Шаги»
-     («Тема недели: …», «Другие темы», «Все темы»), референс Stoic Explore.
-     Lora с кириллицей, загружается через @fontsource/lora. */
-  --font-serif: 'Lora', 'Lora Fallback', 'PT Serif', Georgia, serif;
+  /* Гарнитура с засечками — голос Mentalix. Единственная точка правды для
+     всех засечек в приложении: ни один селектор не называет гарнитуру
+     напрямую. Переключается ?serif= (playfair | cormorant | prata, см.
+     src/lib/serifFont.js + [data-serif] ниже), по умолчанию — Playfair
+     Display. «Премиальный проход»: засечки почти всегда обычного веса,
+     крупно, с воздухом. */
+  --font-serif: 'Playfair Display', 'Lora Fallback', 'PT Serif', Georgia, serif;
+  --mx-serif-normal: 400;
+  --mx-serif-strong: 600;
+
+  /* Роли засечек «премиального прохода». */
+  --mx-type-serif-quote-size: 1.375rem; /* 22 — «Мысль дня», тема, «Продолжить разговор» */
+  --mx-type-serif-theme-size: 1.8125rem; /* 29 — «Тема недели:» на «Шагах» */
+  --mx-type-serif-number-size: 1.875rem; /* 30 — номер вопроса в карусели */
+
+  /* Caps-подписи («МЫСЛЬ ДНЯ», «СЕГОДНЯ», роли): один токен на всё
+     приложение — 11/600, разрядка 0.14em, приглушённый серый. */
+  --mx-caps-tracking: 0.14em;
 
   --mx-motion-fast: 160ms;
   --mx-motion-base: 220ms;
@@ -350,6 +390,27 @@
 
 /* Legacy-варианты акцента теперь различаются только оттенком серого.
    Цветовые значения не используются для обычного UI-хрома. */
+
+/* Варианты гарнитуры с засечками (?serif=, см. src/lib/serifFont.js).
+   Cormorant Garamond: 400 слишком тонкий на тёмном, поэтому обычный вес — 500.
+   Prata существует только в 400 — «жирные» места рисуются тем же весом. */
+[data-serif='playfair'] {
+  --font-serif: 'Playfair Display', 'Lora Fallback', 'PT Serif', Georgia, serif;
+  --mx-serif-normal: 400;
+  --mx-serif-strong: 600;
+}
+
+[data-serif='cormorant'] {
+  --font-serif: 'Cormorant Garamond', 'Lora Fallback', 'PT Serif', Georgia, serif;
+  --mx-serif-normal: 500;
+  --mx-serif-strong: 600;
+}
+
+[data-serif='prata'] {
+  --font-serif: 'Prata', 'Lora Fallback', 'PT Serif', Georgia, serif;
+  --mx-serif-normal: 400;
+  --mx-serif-strong: 400;
+}
 
 [data-accent='ice'] {
   --c-gold: 200 200 200;
@@ -759,7 +820,7 @@ svg .animate-celebrate-pop {
   color: rgb(var(--c-muted));
   font-size: var(--mx-type-meta-size);
   font-weight: var(--mx-weight-heading);
-  letter-spacing: 0.3em;
+  letter-spacing: var(--mx-caps-tracking);
   line-height: 1.2;
   text-transform: uppercase;
 }
@@ -1148,7 +1209,7 @@ button {
   --mx-weight-heading: 600;
   --mx-weight-control: 500;
   --mx-weight-body: 400;
-  --mx-btn-light-bg: #D6D6D6;
+  --mx-btn-light-bg: #d6d6d6;
 }
 
 .mx-type-page {
@@ -1275,12 +1336,56 @@ button {
   font-weight: var(--mx-weight-control);
 }
 
+/* Caps-подписи всего приложения: 11/600, разрядка 0.14em (раньше буквы
+   разлетались на 0.3em). Один токен — одна подпись. */
 .mx-type-meta {
   font-size: var(--mx-type-meta-size);
   line-height: 1.2;
   font-weight: var(--mx-weight-heading);
-  letter-spacing: 0.3em;
+  letter-spacing: var(--mx-caps-tracking);
   text-transform: uppercase;
+}
+
+/* Роли засечек «премиального прохода»: крупный текст обычного веса,
+   засечки — только как голос Mentalix (см. --font-serif). */
+
+/* Цитата: 22/normal, межстрочный 1.3, по центру, ширина ≤300. */
+.mx-serif-quote {
+  font-family: var(--font-serif);
+  font-size: var(--mx-type-serif-quote-size);
+  font-weight: var(--mx-serif-normal);
+  line-height: 1.3;
+  letter-spacing: 0;
+  text-align: center;
+  max-width: 300px;
+  margin-inline: auto;
+}
+
+/* «Тема недели:» на «Шагах» — 29, плотный межстрочный 1.15. */
+.mx-serif-theme {
+  font-family: var(--font-serif);
+  font-size: var(--mx-type-serif-theme-size);
+  font-weight: var(--mx-serif-normal);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+/* Название темы — тот же кегль 29, акцентный вес (у Prata остаётся 400). */
+.mx-serif-theme-strong {
+  font-family: var(--font-serif);
+  font-size: var(--mx-type-serif-theme-size);
+  font-weight: var(--mx-serif-strong);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+/* Номер вопроса в карусели — 30/normal. */
+.mx-serif-number {
+  font-family: var(--font-serif);
+  font-size: var(--mx-type-serif-number-size);
+  font-weight: var(--mx-serif-normal);
+  line-height: 1;
+  letter-spacing: 0;
 }
 
 .mx-type-checkin-title {
@@ -1318,12 +1423,19 @@ button {
 
 /* AI-экраны: единая шкала, проверяемая на 320px и 390px viewport. */
 
-
 /* Утилиты иерархии весов для JSX-классов (вместо font-bold/semibold). */
-.mx-w-title { font-weight: var(--mx-weight-title); }
-.mx-w-heading { font-weight: var(--mx-weight-heading); }
-.mx-w-control { font-weight: var(--mx-weight-control); }
-.mx-w-body { font-weight: var(--mx-weight-body); }
+.mx-w-title {
+  font-weight: var(--mx-weight-title);
+}
+.mx-w-heading {
+  font-weight: var(--mx-weight-heading);
+}
+.mx-w-control {
+  font-weight: var(--mx-weight-control);
+}
+.mx-w-body {
+  font-weight: var(--mx-weight-body);
+}
 
 /* v5: compact roles for secondary user journeys. Inputs retain 16px separately. */
 .mx-type-flow-title {

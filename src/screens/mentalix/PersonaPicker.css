@@ -83,8 +83,7 @@
  * Поднимаем экран на этот запас (26px), чтобы шапка «Диалога» шла сразу
  * под кнопками, а не под пустой полосой.
  */
-[data-mentalix-demo-frame='true'][data-demo-mode='true']
-  .mx-app-scroll-root:has(.mx-dialog-entry) {
+[data-mentalix-demo-frame='true'][data-demo-mode='true'] .mx-app-scroll-root:has(.mx-dialog-entry) {
   margin-top: -26px;
 }
 
@@ -431,21 +430,26 @@
   margin: 0 0 var(--mx-space-3);
   color: rgb(var(--c-text));
   font-family: var(--font-serif);
-  font-size: var(--mx-type-section-size);
-  font-weight: var(--mx-weight-heading);
-  line-height: 1.25;
+  font-size: var(--mx-type-serif-quote-size);
+  font-weight: var(--mx-serif-normal);
+  line-height: 1.3;
   text-align: center;
 }
 
+/* «Все разговоры» — контурная пилюля как «Все темы» в «Шагах» (16/500). */
 .mx-dialog-continue__all {
-  display: block;
-  width: 100%;
-  margin-top: var(--mx-space-2);
-  padding: var(--mx-space-1) 0;
+  display: flex;
+  width: fit-content;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  margin: var(--mx-space-4) auto 0;
+  padding: 0 var(--mx-space-6);
+  border: 1px solid #ffffff;
+  border-radius: var(--mx-radius-pill);
   background: transparent;
-  border: 0;
-  color: rgb(var(--c-gold));
-  font-size: var(--mx-type-meta-size);
+  color: rgb(var(--c-text));
+  font-size: 1rem;
   font-weight: var(--mx-weight-control);
   text-align: center;
   cursor: pointer;
@@ -460,11 +464,11 @@
 }
 
 .mx-conversation-list li {
-  border-top: 1px solid var(--mx-steps-card-border);
+  border-top: 0.5px solid rgba(255, 255, 255, 0.08);
 }
 
 .mx-conversation-list li:last-child {
-  border-bottom: 1px solid var(--mx-steps-card-border);
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.08);
 }
 
 .mx-conversation-row {
@@ -474,7 +478,7 @@
   align-content: center;
   column-gap: var(--mx-space-2);
   width: 100%;
-  min-height: 50px;
+  min-height: 60px;
   padding: var(--mx-space-2) 0;
   background: transparent;
   border: 0;
@@ -487,7 +491,7 @@
   background: rgb(var(--c-text) / 0.04);
 }
 
-/* Имя роли — капсом мелким лейблом; под ним заголовок разговора Onest 16px. */
+/* Имя роли — caps-подпись по общему токену; под ней название 17/normal белым. */
 .mx-conversation-row__persona {
   grid-column: 1;
   grid-row: 1;
@@ -495,7 +499,7 @@
   font-family: 'Manrope', sans-serif;
   font-size: var(--mx-type-meta-size);
   font-weight: var(--mx-weight-heading);
-  letter-spacing: 0.12em;
+  letter-spacing: var(--mx-caps-tracking);
   line-height: 1.3;
   text-transform: uppercase;
 }
@@ -504,20 +508,22 @@
   grid-column: 1;
   grid-row: 2;
   color: rgb(var(--c-text));
-  font-size: var(--mx-type-card-size);
+  font-size: 17px;
+  font-weight: var(--mx-weight-body);
   line-height: 1.35;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* Дата — на одной линии с основным текстом строки, а не у разделителя. */
+/* Дата — 13/normal, приглушённая; на одной линии с названием строки. */
 .mx-conversation-row__date {
   grid-column: 2;
   grid-row: 2;
   align-self: center;
-  color: rgb(var(--c-faint));
-  font-size: var(--mx-type-meta-size);
+  color: rgb(var(--c-muted));
+  font-size: var(--mx-type-caption-size);
+  font-weight: var(--mx-weight-body);
   white-space: nowrap;
 }
 
@@ -538,11 +544,18 @@
 .mx-dialog-chip {
   display: inline-flex;
   align-items: center;
-  min-height: 36px;
-  padding: var(--mx-space-1) var(--mx-space-3);
+  height: 36px;
+  padding: 0 var(--mx-space-3);
+  border: 0.5px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--mx-radius-pill);
+  /* Чипсы «премиального прохода»: ровная полупрозрачная плашка вместо
+     стекла — фон 6%, граница 10%, 15/normal. */
+  background: rgba(255, 255, 255, 0.06);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
   color: rgb(var(--c-text));
-  font-size: 0.85rem;
+  font-size: 15px;
+  font-weight: var(--mx-weight-body);
   line-height: 1.2;
   white-space: nowrap;
   cursor: pointer;
@@ -566,7 +579,8 @@
   margin: 0;
   padding: var(--mx-space-10) var(--mx-space-6) var(--mx-space-6);
   color: rgb(var(--c-faint));
-  font-size: var(--mx-type-meta-size);
+  font-size: 12px;
+  font-weight: var(--mx-weight-body);
   text-align: center;
   line-height: 1.4;
 }

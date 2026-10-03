@@ -10,6 +10,7 @@ import { findCell, DAIMON_FINAL_CELL, DAIMON_INSIGHT_PROMPT } from '../../lib/da
 import { formatCount } from '../../lib/pluralize'
 import { GuestAiGate } from '../Mentalix'
 import { useVoiceRecorder } from '../../lib/useVoiceRecorder'
+import { resolveSerif, SERIF_FAMILIES, SERIF_WEIGHTS } from '../../lib/serifFont'
 import { Mic, Square, LoaderCircle } from 'lucide-react'
 import {
   useVisualViewportGeometry,
@@ -1100,11 +1101,12 @@ function PathView({ game, board }) {
 }
 
 /*
- * Заголовки Даймона набраны Lora. Кириллические начертания предзагружены в
- * index.html, а запасной сериф подогнан по метрикам Lora (@font-face
- * 'Lora Fallback' в index.css), поэтому подмена шрифта текст не двигает.
- * Этот гейт — только страховка на случай медленной сети: ждём загрузку
- * максимум 300 мс и дальше рендерим в любом случае.
+ * Заголовки Даймона набраны гарнитурой с засечками (--font-serif).
+ * Предзагружаем начертания выбранной гарнитуры (?serif=, по умолчанию
+ * Playfair Display), а запасной сериф подогнан по метрикам засечек
+ * (@font-face 'Lora Fallback' в index.css), поэтому подмена шрифта текст
+ * не двигает. Этот гейт — только страховка на случай медленной сети:
+ * ждём загрузку максимум 300 мс и дальше рендерим в любом случае.
  */
 const SERIF_GATE_MS = 300
 
@@ -1122,11 +1124,13 @@ function useSerifReady() {
       return undefined
     }
     const guard = window.setTimeout(done, SERIF_GATE_MS)
-    Promise.all([
-      fonts.load('500 1rem Lora', 'Даймон'),
-      fonts.load('600 1rem Lora', 'Даймон'),
-      fonts.load('700 1rem Lora', 'Даймон'),
-    ]).then(done, done)
+    const serif = resolveSerif()
+    const family = SERIF_FAMILIES[serif] || SERIF_FAMILIES.playfair
+    const weights = SERIF_WEIGHTS[serif] || SERIF_WEIGHTS.playfair
+    Promise.all(weights.map(weight => fonts.load(`${weight} 1rem ${family}`, 'Даймон'))).then(
+      done,
+      done
+    )
     return () => {
       cancelled = true
       window.clearTimeout(guard)

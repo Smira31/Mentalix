@@ -2148,25 +2148,26 @@
   right: 0;
   text-align: center;
   font-family: 'Onest', system-ui, sans-serif;
-  font-size: var(--mx-type-meta-size);
-  font-weight: var(--mx-weight-heading);
+  font-size: 12px;
+  font-weight: var(--mx-weight-body);
   line-height: 1.2;
   color: rgb(var(--c-muted));
 }
 
+/* Название темы — засечки 22/normal, регистр как в «Шагах»
+   («Фокус без перегруза.»), без искусственного lower-case. */
 .mx-today-weekly-theme__name {
   position: absolute;
   top: 42px;
   left: 0;
   right: 0;
   text-align: center;
-  font-family: 'Onest', system-ui, sans-serif;
-  font-size: var(--mx-type-section-size);
-  font-weight: var(--mx-weight-control);
+  font-family: var(--font-serif);
+  font-size: var(--mx-type-serif-quote-size);
+  font-weight: var(--mx-serif-normal);
   line-height: 1.2;
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
   color: rgb(var(--c-text));
-  text-transform: lowercase;
 }
 
 .mx-today-weekly-theme__question {
@@ -2215,7 +2216,10 @@
 /* Light-preview: карточка остаётся тёмной (как --c-card), текст #d6d6d6
    читается на тёмном фоне без корректировки. */
 
-/* «Сегодня» — сколько практик отмечено: «N из M» */
+/* «Сегодня» — сколько практик отмечено: «N из M».
+   Тихая строка: подпись по общему caps-токену, линия 2px на треке
+   rgba(255,255,255,0.10) с заполнением rgba(255,255,255,0.55),
+   края строки совпадают с краями карточек (тот же контейнер). */
 .mx-today-progress {
   display: flex;
   align-items: center;
@@ -2227,7 +2231,7 @@
   font-family: 'Manrope', sans-serif;
   font-size: var(--mx-type-meta-size);
   font-weight: var(--mx-weight-heading);
-  letter-spacing: 0.3em;
+  letter-spacing: var(--mx-caps-tracking);
   text-transform: uppercase;
   color: rgb(var(--c-muted));
   white-space: nowrap;
@@ -2235,16 +2239,16 @@
 
 .mx-today-progress__track {
   flex: 1;
-  height: 3px;
+  height: 2px;
   border-radius: 9999px;
-  background: rgb(var(--c-line) / 0.12);
+  background: rgba(255, 255, 255, 0.1);
   overflow: hidden;
 }
 
 .mx-today-progress__fill {
   width: 100%;
   height: 100%;
-  background: rgb(var(--c-gold));
+  background: rgba(255, 255, 255, 0.55);
   transform-origin: left center;
   transition: transform 400ms ease;
 }
@@ -2257,20 +2261,24 @@
 
 .mx-today-progress__count {
   font-size: var(--mx-type-caption-size);
-  font-weight: 400;
-  color: rgb(var(--c-text));
+  font-weight: var(--mx-weight-control);
+  color: rgb(var(--c-muted));
   white-space: nowrap;
 }
 
-/* «Мысль дня» — 17/500/1.35, eyebrow faint (иерархия Stoic). */
+/* «Мысль дня» — засечки 22/normal, межстрочный 1.3, по центру, ширина ≤300.
+   Подпись «МЫСЛЬ ДНЯ» — общий caps-токен, цвет приглушённый. */
 .mx-today-quote-card__eyebrow {
-  color: rgb(var(--c-faint));
+  color: rgb(var(--c-muted));
 }
 
 .mx-today-quote-card__text {
   color: rgb(var(--c-text));
-  font-family: 'Onest', sans-serif;
-  font-size: 17px;
-  font-weight: var(--mx-weight-control);
-  line-height: 1.35;
+  font-family: var(--font-serif);
+  font-size: var(--mx-type-serif-quote-size);
+  font-weight: var(--mx-serif-normal);
+  line-height: 1.3;
+  text-align: center;
+  max-width: 300px;
+  margin-inline: auto;
 }

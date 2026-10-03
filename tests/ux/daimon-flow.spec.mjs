@@ -6,8 +6,7 @@ import { expect, test } from '@playwright/test'
  */
 
 const DEMO_URL =
-  process.env.DAIMON_FLOW_URL ||
-  'http://127.0.0.1:5173/?demo=1&tab=practices&sub=daimon'
+  process.env.DAIMON_FLOW_URL || 'http://127.0.0.1:5173/?demo=1&tab=practices&sub=daimon'
 
 test.describe('Даймон — флоу игры', () => {
   test('вход → запрос → «Как играть» → поле → бросок → клетка → вывод', async ({ browser }) => {
@@ -136,7 +135,7 @@ test.describe('Даймон — флоу игры', () => {
     await context.close()
   })
 
-  test('заголовки Даймона набраны Lora с первого кадра — без сдвига через 1 с', async ({
+  test('заголовки Даймона набраны засечками с первого кадра — без сдвига через 1 с', async ({
     browser,
   }) => {
     const context = await browser.newContext({
@@ -149,18 +148,26 @@ test.describe('Даймон — флоу игры', () => {
     await page.goto(DEMO_URL, { waitUntil: 'domcontentloaded' })
 
     const measure = locator =>
-      locator.evaluate(el => ({
-        width: el.getBoundingClientRect().width,
-        fontFamily: getComputedStyle(el).fontFamily,
-        loraReady: document.fonts.check('600 1rem Lora', el.textContent.trim()),
-      }))
+      locator.evaluate(el => {
+        const style = getComputedStyle(el)
+        const family = style.fontFamily.split(',')[0].replace(/["']/g, '').trim()
+        return {
+          width: el.getBoundingClientRect().width,
+          fontFamily: style.fontFamily,
+          serifReady: document.fonts.check(
+            `${style.fontWeight} 1rem ${family}`,
+            el.textContent.trim()
+          ),
+        }
+      })
 
-    // Первый кадр экрана входа: заголовок уже рисуется Lora, без подмены серифом.
+    // Первый кадр экрана входа: заголовок уже рисуется финальной гарнитурой
+    // с засечками (--font-serif, по умолчанию Playfair Display), без подмены.
     const introTitle = page.getByRole('heading', { name: 'Даймон' })
     await introTitle.waitFor({ state: 'visible' })
     const introFirst = await measure(introTitle)
-    expect(introFirst.fontFamily).toContain('Lora')
-    expect(introFirst.loraReady).toBe(true)
+    expect(introFirst.fontFamily).toContain('Playfair Display')
+    expect(introFirst.serifReady).toBe(true)
 
     // Через секунду ширина не «прыгает»: подмена шрифта не двигает заголовок.
     await page.waitForTimeout(1000)
@@ -175,8 +182,8 @@ test.describe('Даймон — флоу игры', () => {
     const requestTitle = page.getByRole('heading', { name: 'С чем ты приходишь?' })
     await requestTitle.waitFor({ state: 'visible' })
     const requestFont = await measure(requestTitle)
-    expect(requestFont.fontFamily).toContain('Lora')
-    expect(requestFont.loraReady).toBe(true)
+    expect(requestFont.fontFamily).toContain('Playfair Display')
+    expect(requestFont.serifReady).toBe(true)
 
     await context.close()
   })

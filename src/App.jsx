@@ -21,6 +21,7 @@ import TabSkeleton from './components/TabSkeleton'
 import { useSynced } from './lib/store'
 import { hasPinRecord, APP_LOCK_ENABLED_KEY } from './lib/appLock'
 import { ACCENT_COLOR_KEY, DEFAULT_ACCENT, parseAccent } from './lib/accentColor'
+import { applySerif } from './lib/serifFont'
 import { DEFAULT_THEME, parseTheme, THEME_KEY } from './lib/theme'
 import { api } from './lib/api'
 import {
@@ -563,6 +564,13 @@ function App() {
   useEffect(() => {
     document.documentElement.setAttribute('data-accent', accent)
   }, [accent])
+
+  // ?serif=playfair | cormorant | prata — временный переключатель гарнитуры
+  // с засечками. Выбор хранится в localStorage и применяется и в ?demo=1,
+  // и в Telegram; по умолчанию — Playfair Display (см. src/lib/serifFont.js).
+  useEffect(() => {
+    applySerif()
+  }, [])
 
   /* ============================================================
      TELEGRAM FULLSCREEN

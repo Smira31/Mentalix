@@ -1578,7 +1578,7 @@ export default function Today({
             changeSub('dailyThought')
           }}
           data-testid="today-quote-card"
-          className="mx-today-affirmation-card w-full px-[var(--mx-screen-x)] py-6 text-center animate-fade-in border-0 active:scale-[0.99] transition-transform"
+          className="mx-today-affirmation-card w-full px-[var(--mx-screen-x)] py-7 text-center animate-fade-in border-0 active:scale-[0.99] transition-transform"
         >
           <span className="block mx-type-meta mx-today-quote-card__eyebrow mb-3">Мысль дня</span>
 
@@ -1707,7 +1707,10 @@ export default function Today({
         <div className="mx-today-progress" role="status" data-testid="today-progress">
           <span className="mx-today-progress__label">Сегодня</span>
           <div className="mx-today-progress__track" aria-hidden="true">
-            <div className="mx-today-progress__fill" style={{ transform: `scaleX(${Math.min(100, Math.max(0, pct)) / 100})` }} />
+            <div
+              className="mx-today-progress__fill"
+              style={{ transform: `scaleX(${Math.min(100, Math.max(0, pct)) / 100})` }}
+            />
           </div>
           <span className="mx-today-progress__count" data-testid="today-progress-count">
             {done} из {total}
