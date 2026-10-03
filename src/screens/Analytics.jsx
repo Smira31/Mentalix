@@ -261,8 +261,7 @@ function MoodCard({ onStartMood }) {
         Как ты себя чувствуешь?
       </h2>
       <p className="mx-progress-mood-card__hint">
-        Отметь настроение — пройди короткую практику
-        <br />и добавь точку в прогресс
+        Отметь настроение — пройди короткую практику и добавь точку в прогресс
       </p>
       <div className="mx-progress-mood-card__faces" role="group" aria-label="Выбери настроение">
         {MOOD_LABELS.map((label, level) => (
@@ -1003,9 +1002,9 @@ export default function Analytics({
     practices: <PracticesCard analyticsData={safeData} isCurrentPeriod={isCurrentPeriod} />,
   }
 
-  // Нижний отступ: пилюля (42) + панель + 16.
-  // При свёрнутой навигации пилюля в одну линию с кнопкой — отступ 42 + 16.
-  const bottomSpacerHeight = navCollapsed ? 42 + 16 : 42 + 8 + 53 + 16
+  // Нижний отступ: пилюля (42) + панель вкладок + 16.
+  // При свёрнутой навигации пилюля в одну линию с кнопкой — отступ 42 + 50 + 16.
+  const bottomSpacerHeight = navCollapsed ? 42 + 50 + 16 : 42 + 53 + 16
 
   return (
     <div

@@ -51,7 +51,7 @@
 /* ── Вкладка «История»: список по дням ── */
 
 .mx-progress-history {
-  padding-top: 8px;
+  padding-top: var(--mx-space-1);
 }
 
 .mx-progress-history__title {
@@ -80,6 +80,7 @@
   justify-content: space-between;
   margin-bottom: 10px;
   padding-left: 14px; /* x = 29 pt от края экрана при полях 15 */
+  padding-right: 16px; /* отступ стрелки «›» от правого края, как у карточек */
   font-size: 15px;
   font-weight: 500;
   letter-spacing: 0;
@@ -101,7 +102,7 @@
   justify-content: center;
   min-height: 47px;
   margin-bottom: 8px;
-  padding: 0 16px 0 14px;
+  padding: 12px 16px 12px 14px;
   border: 0;
   border-radius: 14px;
   background: rgb(var(--c-card2, 17 17 17));

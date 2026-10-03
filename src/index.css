@@ -1751,7 +1751,7 @@ button.mx-demo-telegram-chrome__pill:focus:not(:focus-visible) {
 }
 
 [data-mentalix-demo-frame='true'][data-demo-tab='library'] .mx-library-catalog__header {
-  margin-bottom: 4px;
+  margin-bottom: 16px;
 }
 
 [data-mentalix-demo-frame='true'][data-demo-tab='library'] .mx-library-v2__section {
