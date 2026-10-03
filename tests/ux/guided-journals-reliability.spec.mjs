@@ -13,7 +13,7 @@ const DRAFT_KEY = `mx-journal-draft-v3:user:${DEMO_USER_ID}`
 async function openJournals(page, query = '') {
   await page.goto(`/?demo=1&tab=library${query}`)
   await page
-    .getByRole('button', { name: /Направленные записи|Все записи|Открыть/ })
+    .getByRole('button', { name: /Вернуться к записи/ })
     .first()
     .click()
 }
