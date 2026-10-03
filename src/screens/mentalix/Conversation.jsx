@@ -21,6 +21,7 @@ import { PERSONAS } from './personas'
 import MessageText from './MessageText'
 import {
   groupJournalMessages,
+  isLongJournalMessage,
   journalMessageKey,
   messageContent,
 } from '../../lib/journalPresentation'
@@ -94,6 +95,7 @@ export default function Conversation({
   const [voiceState, setVoiceState] = useState('idle')
   const [voiceSeconds, setVoiceSeconds] = useState(0)
   const [voiceError, setVoiceError] = useState('')
+  const [expandedMessages, setExpandedMessages] = useState(() => new Set())
   const demoVoice = isPreviewDemoMode()
 
   const voiceSupported =
@@ -434,6 +436,8 @@ export default function Conversation({
               {group.messages.map(({ message, index }) => {
                 const isUser = message.role === 'user'
                 const messageKey = journalMessageKey(message, index)
+                const isLong = !isUser && isLongJournalMessage(message)
+                const isExpanded = expandedMessages.has(messageKey)
 
                 if (isUser) {
                   return (
@@ -482,6 +486,24 @@ export default function Conversation({
                     >
                       <MessageText content={messageContent(message)} />
                     </div>
+
+                    {isLong && (
+                      <button
+                        type="button"
+                        data-testid="ai-expand-reply"
+                        className="mx-ai-meta mt-3 text-gold"
+                        onClick={() => {
+                          setExpandedMessages(previous => {
+                            const next = new Set(previous)
+                            if (next.has(messageKey)) next.delete(messageKey)
+                            else next.add(messageKey)
+                            return next
+                          })
+                        }}
+                      >
+                        {isExpanded ? 'Свернуть ответ' : 'Читать полностью'}
+                      </button>
+                    )}
                   </div>
                 )
               })}
