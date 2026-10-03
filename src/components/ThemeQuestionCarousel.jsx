@@ -1,28 +1,18 @@
 import { useState, useRef, useLayoutEffect, useEffect, useMemo } from 'react'
-import { platform } from '../platform'
+import { themeOpeningLabel } from '../lib/mskDate'
 import './ThemeQuestionCarousel.css'
 
-/**
- * Determine if a card at the given index is "open" (accessible).
- * Card 0 is always open. Card N is open if card N-1 has a reflection.
- */
-export function isCardOpen(questions, index) {
-  if (index === 0) return true
-  return !!questions[index - 1]?.reflection
+/** Доступность задаётся календарным днём из ответа сервера. */
+export function isCardOpen(day, currentDay) {
+  return day <= currentDay
 }
 
-/**
- * Shared Stoic-style question carousel for weekly themes.
- *
- * Used by PracticeCatalogV2 (Steps) and ThemeCarouselScreen (fullscreen).
- * Sequential opening:
- * card N is open only when card N-1 has a recorded reflection.
- *
- * Callbacks receive the question object (with .day, .text, .prompt,
- * .reflection) and the card index.
- */
+/** Общая карусель вопросов; callbacks получают выбранный вопрос и индекс. */
 export default function ThemeQuestionCarousel({
   questions,
+  currentDay = 1,
+  startedOn,
+  serverDate,
   onWrite,
   onViewAnswer,
   maxCards,
@@ -39,13 +29,6 @@ export default function ThemeQuestionCarousel({
     () => (Array.isArray(questions) ? questions.slice(0, maxCards ?? questions.length) : []),
     [questions, maxCards]
   )
-
-  // First unanswered card — initial scroll target (fallback: first card)
-  const firstUnanswered = useMemo(() => {
-    if (!cards.length) return 0
-    const idx = cards.findIndex(q => !q.reflection)
-    return idx === -1 ? 0 : Math.min(idx, cards.length - 1)
-  }, [cards])
 
   function applyScale() {
     const track = trackRef.current
@@ -88,7 +71,7 @@ export default function ThemeQuestionCarousel({
     })
   }
 
-  // Initial scroll to first unanswered card + apply scale.
+  // Initial scroll to selected day + apply scale.
   // useLayoutEffect runs before paint to avoid a flash of wrong position.
   useLayoutEffect(() => {
     if (!trackRef.current || !cards.length) return
@@ -97,7 +80,7 @@ export default function ThemeQuestionCarousel({
       initialScrollDone.current = true
       const track = trackRef.current
       const cardEls = [...track.querySelectorAll('.mx-tqc-card')]
-      const idx = Math.min(firstUnanswered, cardEls.length - 1)
+      const idx = Math.min(initialIndex, cardEls.length - 1)
       const card = cardEls[idx]
       if (card) {
         track.scrollTo({
@@ -122,20 +105,19 @@ export default function ThemeQuestionCarousel({
 
   const safeIndex = Math.min(activeIndex, Math.max(0, cards.length - 1))
   const currentCard = cards[safeIndex]
-  const currentIsOpen = currentCard ? isCardOpen(cards, safeIndex) : false
+  const currentIsOpen = currentCard
+    ? isCardOpen(currentCard.day ?? safeIndex + 1, currentDay)
+    : false
   const currentIsAnswered = !!currentCard?.reflection
 
   // Одно действие для кнопки под каруселью и для тапа по самой карточке.
   function activateCard(index) {
     const card = cards[index]
-    if (!card) return
+    if (!card || !isCardOpen(card.day ?? index + 1, currentDay)) return
     if (card.reflection) {
       onViewAnswer?.(card, index)
-    } else if (isCardOpen(cards, index)) {
-      onWrite?.(card, index)
     } else {
-      // Закрытая карточка: только лёгкая вибрация, без перехода
-      platform.haptic('light')
+      onWrite?.(card, index)
     }
   }
 
@@ -145,12 +127,11 @@ export default function ThemeQuestionCarousel({
 
   let ctaLabel = 'Начать запись'
   let ctaDisabled = false
-  if (currentIsAnswered) {
-    ctaLabel = 'Посмотреть запись'
-  } else if (!currentIsOpen) {
-    const prevDay = cards[safeIndex - 1]?.day ?? safeIndex
-    ctaLabel = `После вопроса ${prevDay}`
+  if (!currentIsOpen) {
+    ctaLabel = themeOpeningLabel(currentCard?.day ?? safeIndex + 1, startedOn, serverDate)
     ctaDisabled = true
+  } else if (currentIsAnswered) {
+    ctaLabel = 'Посмотреть запись'
   }
 
   if (!cards.length) return null
@@ -165,12 +146,13 @@ export default function ThemeQuestionCarousel({
         aria-label="Вопросы темы"
       >
         {cards.map((q, i) => {
-          const open = isCardOpen(cards, i)
+          const open = isCardOpen(q.day ?? i + 1, currentDay)
           const answered = !!q.reflection
           return (
             <article
               className="mx-tqc-card"
               key={q.day ?? i}
+              data-day={q.day ?? i + 1}
               data-open={open ? 'true' : 'false'}
               data-answered={answered ? 'true' : 'false'}
               data-active={i === safeIndex ? 'true' : 'false'}
@@ -190,6 +172,11 @@ export default function ThemeQuestionCarousel({
               <span className="mx-tqc-card__num">{q.day ?? i + 1}</span>
               <strong className="mx-tqc-card__question">{q.text}</strong>
               {open && q.prompt && <span className="mx-tqc-card__prompt">{q.prompt}</span>}
+              {!open && (
+                <span className="mx-tqc-card__prompt" data-testid="theme-opening-label">
+                  {themeOpeningLabel(q.day ?? i + 1, startedOn, serverDate)}
+                </span>
+              )}
             </article>
           )
         })}

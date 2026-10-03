@@ -136,7 +136,7 @@ test('Тема недели: ошибка загрузки показывает 
     failDetail = false
     await page.getByTestId('theme-load-retry').click()
     await expect(page.getByTestId('theme-load-error')).toHaveCount(0)
-    await expect(page.getByTestId('theme-carousel-card').first()).toBeVisible()
+    await expect(page.getByTestId('theme-day-label')).toContainText('День 1 из 3')
   } finally {
     await context.close()
   }

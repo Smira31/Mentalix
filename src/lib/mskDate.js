@@ -63,6 +63,34 @@ export function mskDayKey(value) {
   return `${parts.year}-${String(parts.month).padStart(2, '0')}-${String(parts.day).padStart(2, '0')}`
 }
 
+// Арифметика календарных дат без зависимости от часового пояса устройства.
+export function shiftMskDay(value, days) {
+  const key = mskDayKey(value)
+  if (!key) return null
+  const date = new Date(`${key}T00:00:00Z`)
+  date.setUTCDate(date.getUTCDate() + days)
+  return date.toISOString().slice(0, 10)
+}
+
+export function mskDaysBetween(from, to) {
+  const start = mskDayKey(from)
+  const end = mskDayKey(to)
+  if (!start || !end) return null
+  return Math.round((Date.parse(end) - Date.parse(start)) / 86400000)
+}
+
+export function themeOpeningLabel(day, startedOn, serverDate) {
+  const opensOn = shiftMskDay(startedOn, day - 1)
+  const remaining = opensOn && mskDaysBetween(serverDate, opensOn)
+  if (remaining == null) return ''
+  return remaining <= 1 ? 'Откроется завтра' : `Откроется через ${remaining} дн.`
+}
+
+export function mskCalendarLabel(value) {
+  const parts = mskDateParts(value)
+  return parts ? `${parts.day} ${MONTHS_GENITIVE[parts.month - 1]}` : ''
+}
+
 function dayKeyOf(value) {
   return mskDayKey(value)
 }

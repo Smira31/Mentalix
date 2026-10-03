@@ -81,15 +81,8 @@
   color: #888;
 }
 
-/* --- Closed card: question visible at ~35%, fades left-to-right; prompt hidden --- */
-.mx-tqc-card[data-open='false'] .mx-tqc-card__question {
-  opacity: 0.35;
-  -webkit-mask-image: linear-gradient(to right, #000 30%, transparent 75%);
-  mask-image: linear-gradient(to right, #000 30%, transparent 75%);
-}
-
-/* --- Closed card: dimmed number (~45% opacity) --- */
-.mx-tqc-card[data-open='false'] .mx-tqc-card__num {
+/* Будущие карточки приглушены целиком, без изменения геометрии и шрифтов. */
+.mx-tqc-card[data-open='false'] {
   opacity: 0.45;
 }
 

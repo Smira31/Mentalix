@@ -1049,7 +1049,7 @@ export default function Today({
   }
 
   // Прямой переход из карточки «Тема недели» на «Сегодня» → экран записи
-  // ответа на следующий непройденный вопрос (ThemeScreen с initialDay).
+  // ответа на сегодняшний вопрос (ThemeScreen с initialDay).
   if (sub === 'themeWrite' && theme) {
     return (
       <SubScreenBoundary resetKey="themeWrite" onExit={() => changeSub(null)}>
@@ -1381,27 +1381,14 @@ export default function Today({
   // отдельного запроса; theme.days — из демо-данных todayDataCache.
   const themeDays = themeDetail?.days || theme?.days || []
   const themeCurrentDay = themeDetail?.current_day ?? theme?.current_day ?? 1
-  const themeWaitingDay = (() => {
-    if (!themeDays.length) return null
-    const today = themeDays.find(d => d.day === themeCurrentDay)
-    if (today && !today.reflection) return today
-    return themeDays.find(d => !d.reflection) || null
-  })()
-  const themeAllAnswered = themeDays.length > 0 && themeDays.every(d => d.reflection)
-  const themeDayLabel = `День ${themeWaitingDay?.day || themeCurrentDay} из ${theme?.total_days || 7}`
-  const themeQuestionText = themeWaitingDay?.text || ''
-  const themeCtaLabel = themeAllAnswered ? 'Смотреть в пути' : 'Записать'
+  const themeTodayQuestion = themeDays.find(d => d.day === themeCurrentDay)
+  const themeDayLabel = `День ${themeCurrentDay} из ${theme?.total_days || 7}`
+  const themeQuestionText = themeTodayQuestion?.text || ''
+  const themeCtaLabel = themeTodayQuestion?.reflection ? 'Ответ' : 'Записать'
 
   function handleThemeCardTap() {
     platform.haptic('light')
-    // Все пройдены — смотрим запись последнего вопроса; иначе пишем следующий.
-    const targetDay =
-      themeWaitingDay?.day ?? (themeAllAnswered ? themeDays[themeDays.length - 1]?.day : null)
-    if (!targetDay) {
-      changeSub('theme')
-      return
-    }
-    setThemeWriteDay(targetDay)
+    setThemeWriteDay(themeCurrentDay)
     changeSub('themeWrite')
   }
 
