@@ -108,7 +108,7 @@
   background: transparent;
   color: rgb(var(--c-muted, 133 133 133));
   font: inherit;
-  font-size: 13px;
+  font-size: calc(13px * var(--mx-type-scale));
   font-weight: 600;
 }
 
@@ -171,7 +171,7 @@
 .mx-path-all-group h2 {
   margin-bottom: 16px;
   color: rgb(var(--c-muted, 133 133 133));
-  font-size: 12px;
+  font-size: calc(12px * var(--mx-type-scale));
   text-align: center;
 }
 .mx-path-badge-grid {
@@ -277,7 +277,7 @@
   position: relative;
   z-index: 1;
   margin-top: 18px;
-  font-size: 12px;
+  font-size: calc(12px * var(--mx-type-scale));
   font-weight: 600;
 }
 .mx-path-featured-copy {
@@ -356,7 +356,7 @@
   margin: 0 0 12px;
   text-align: center;
   font-family: 'Manrope', sans-serif;
-  font-size: 12px;
+  font-size: calc(12px * var(--mx-type-scale));
   font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -419,7 +419,7 @@
   align-items: flex-end;
   gap: 6px;
   color: rgb(var(--c-muted, 133 133 133));
-  font-size: 12px;
+  font-size: calc(12px * var(--mx-type-scale));
   font-weight: 600;
 }
 .mx-path-row-value strong {
@@ -518,13 +518,13 @@
   scroll-snap-align: start;
 }
 .mx-path-tile strong {
-  font-size: 29px;
+  font-size: calc(29px * var(--mx-type-scale));
   font-weight: 700;
   line-height: 1;
   color: rgb(var(--c-text, 243 243 243));
 }
 .mx-path-tile span {
-  font-size: 12px;
+  font-size: calc(12px * var(--mx-type-scale));
   font-weight: 400;
   line-height: 1.2;
   color: rgb(var(--c-muted, 133 133 133));
@@ -613,7 +613,7 @@
 }
 .mx-badge-sheet__body h2 {
   margin: 7px 0 0;
-  font-size: 29px;
+  font-size: calc(29px * var(--mx-type-scale));
   font-weight: 700;
 }
 .mx-badge-sheet__body p {

@@ -74,7 +74,7 @@
 
 /* Цитата «Мысли дня» — Stoic-шкала размеров: 17/1.3. */
 .mx-today-affirmation-card .mx-type-card {
-  font-size: 17px;
+  font-size: calc(17px * var(--mx-type-scale));
   line-height: 1.3;
 }
 
@@ -196,7 +196,7 @@
 }
 
 .mx-demo-today-streak strong {
-  font-size: 13px;
+  font-size: calc(13px * var(--mx-type-scale));
 }
 
 .mx-demo-today-greeting {
@@ -318,7 +318,7 @@
 
 .mx-demo-today-streak strong {
   color: #f4f4f4;
-  font-size: 19px;
+  font-size: calc(19px * var(--mx-type-scale));
   font-weight: 750;
 }
 
@@ -342,7 +342,7 @@
 
 .mx-demo-today-streak strong {
   color: rgb(var(--c-gold));
-  font-size: 13px;
+  font-size: calc(13px * var(--mx-type-scale));
   font-weight: 700;
 }
 
@@ -524,7 +524,7 @@
 
 .mx-pinned-sheet__subtitle {
   max-width: 18rem;
-  font-size: 11px;
+  font-size: calc(11px * var(--mx-type-scale));
   line-height: 1.3;
   text-align: center;
 }
@@ -592,12 +592,12 @@
 }
 
 .mx-pinned-undo-toast__text {
-  font-size: 12px;
+  font-size: calc(12px * var(--mx-type-scale));
   color: rgb(var(--c-muted));
 }
 
 .mx-pinned-undo-toast__action {
-  font-size: 13px;
+  font-size: calc(13px * var(--mx-type-scale));
   font-weight: 600;
   color: rgb(var(--c-gold));
   background: transparent;
@@ -676,7 +676,7 @@
   height: 1.9rem;
   flex: 0 0 auto;
   color: rgb(var(--c-muted));
-  font-size: 22px;
+  font-size: calc(22px * var(--mx-type-scale));
   line-height: 1;
   border: 1px solid rgb(var(--c-muted) / 0.35);
   border-radius: 999px;
@@ -728,7 +728,7 @@
   display: block;
   color: rgb(var(--c-muted));
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
+  font-size: calc(11px * var(--mx-type-scale));
   font-weight: 500;
   letter-spacing: 0.16em;
 }
@@ -737,7 +737,7 @@
   margin: 5px 0 0;
   color: rgb(var(--c-text));
   font-family: 'Onest', sans-serif;
-  font-size: 34px;
+  font-size: calc(34px * var(--mx-type-scale));
   font-weight: 700;
   letter-spacing: -0.04em;
 }
@@ -803,7 +803,7 @@
   height: 28px;
   place-items: center;
   color: rgb(var(--c-text));
-  font-size: 19px;
+  font-size: calc(19px * var(--mx-type-scale));
   line-height: 1;
   background: rgb(var(--c-text) / 0.08);
   border-radius: 9px;
@@ -822,7 +822,7 @@
 
 .mx-today-action small {
   color: rgb(var(--c-muted));
-  font-size: 11px;
+  font-size: calc(11px * var(--mx-type-scale));
   line-height: 1.2;
 }
 
@@ -1008,7 +1008,7 @@
 
 .mx-demo-today-header + .mx-today-week .mx-today-week-day .mx-type-weekday,
 .mx-demo-today-header + .mx-today-week .mx-today-week-day .mx-type-calendar-date {
-  font-size: 16px;
+  font-size: calc(16px * var(--mx-type-scale));
   line-height: 1.1;
 }
 
@@ -1107,7 +1107,7 @@
 
 .mx-demo-today-streak strong {
   color: rgb(var(--c-text));
-  font-size: 19px;
+  font-size: calc(19px * var(--mx-type-scale));
   font-weight: 700;
   line-height: 1;
 }
@@ -1290,7 +1290,7 @@
   display: -webkit-box;
   overflow: hidden;
   width: 100%;
-  font-size: 13px;
+  font-size: calc(13px * var(--mx-type-scale));
   line-height: 1.3;
   font-weight: 600;
   text-align: center;
@@ -1558,7 +1558,7 @@
   display: block;
   margin-top: 14px;
   color: rgb(var(--c-muted));
-  font-size: 15px;
+  font-size: calc(15px * var(--mx-type-scale));
   font-weight: 500;
   line-height: 1.2;
   white-space: nowrap;
@@ -1567,7 +1567,7 @@
   display: -webkit-box;
   margin-top: 8px;
   color: rgb(var(--c-text));
-  font-size: 20px;
+  font-size: calc(20px * var(--mx-type-scale));
   font-weight: 700;
   line-height: 1.25;
   overflow: hidden;
@@ -1905,7 +1905,7 @@
 
 .mx-today-day-card[data-state='active'] .mx-today-day-card__title {
   margin-top: 14px;
-  font-size: 20px;
+  font-size: calc(20px * var(--mx-type-scale));
   font-weight: 400;
   line-height: 1.25;
   -webkit-line-clamp: 3;
@@ -1926,7 +1926,7 @@
 .mx-today-day-card[data-state='done'] .mx-today-day-card__done {
   margin: 12px 0 0;
   color: rgb(var(--c-text) / 0.35);
-  font-size: 20px;
+  font-size: calc(20px * var(--mx-type-scale));
   font-weight: 400;
   line-height: 1.25;
 }
@@ -1981,7 +1981,7 @@
   border-radius: 20px;
   background: rgb(var(--c-card2));
   color: rgb(var(--c-muted));
-  font-size: 12px;
+  font-size: calc(12px * var(--mx-type-scale));
   line-height: 1.35;
 }
 
@@ -2004,7 +2004,7 @@
   border: 0;
   background: transparent;
   color: rgb(var(--c-muted));
-  font-size: 19px;
+  font-size: calc(19px * var(--mx-type-scale));
   line-height: 1;
   cursor: pointer;
 }
@@ -2095,7 +2095,7 @@
 
 .mx-today-weekly-theme__heading {
   font-family: 'Onest', system-ui, sans-serif;
-  font-size: 19px;
+  font-size: calc(19px * var(--mx-type-scale));
   font-weight: 600;
   line-height: 1.2;
   letter-spacing: -0.02em;
@@ -2129,7 +2129,8 @@
 .mx-today-weekly-theme__card {
   position: relative;
   width: 100%;
-  height: 168px;
+  /* 190px: вопрос в две строки + кнопка «Записать» с отступом, как в карточке чек-ина */
+  height: 190px;
   border-radius: 26px;
   background: rgb(var(--c-card));
   border: 0;
@@ -2150,7 +2151,7 @@
   right: 0;
   text-align: center;
   font-family: 'Onest', system-ui, sans-serif;
-  font-size: 12px;
+  font-size: calc(12px * var(--mx-type-scale));
   font-weight: 600;
   line-height: 1.2;
   color: rgb(var(--c-muted));
@@ -2163,12 +2164,11 @@
   right: 0;
   text-align: center;
   font-family: 'Onest', system-ui, sans-serif;
-  font-size: 17px;
+  font-size: calc(17px * var(--mx-type-scale));
   font-weight: 700;
   line-height: 1.2;
   letter-spacing: -0.02em;
   color: #d6d6d6;
-  text-transform: lowercase;
 }
 
 .mx-today-weekly-theme__question {
@@ -2180,7 +2180,7 @@
   width: 100%;
   text-align: center;
   font-family: 'Onest', system-ui, sans-serif;
-  font-size: 19px;
+  font-size: calc(19px * var(--mx-type-scale));
   font-weight: 600;
   line-height: 1.2;
   letter-spacing: -0.01em;
@@ -2194,7 +2194,7 @@
 
 .mx-today-weekly-theme__cta {
   position: absolute;
-  top: 116px;
+  bottom: 12px;
   left: 50%;
   transform: translateX(-50%);
   min-width: 88px;
@@ -2258,7 +2258,7 @@
 }
 
 .mx-today-progress__count {
-  font-size: 12px;
+  font-size: calc(12px * var(--mx-type-scale));
   font-weight: 600;
   color: rgb(var(--c-text));
   white-space: nowrap;

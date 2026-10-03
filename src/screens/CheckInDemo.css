@@ -44,7 +44,7 @@
 .mx-checkin-question__hint {
   margin: 14px 0 0;
   color: #777;
-  font-size: 13px;
+  font-size: calc(13px * var(--mx-type-scale));
 }
 .mx-checkin-scale {
   position: relative;
@@ -127,7 +127,7 @@
   border-radius: 999px;
   background: var(--mx-checkin-neutral-gradient);
   color: #a9aaa3;
-  font-size: 13px;
+  font-size: calc(13px * var(--mx-type-scale));
   font-weight: 600;
 }
 .mx-checkin-chips button.is-selected {
@@ -303,7 +303,7 @@
 .mx-demo-checkin__moods span {
   display: block;
   margin-top: 7px;
-  font-size: 11px;
+  font-size: calc(11px * var(--mx-type-scale));
 }
 .mx-demo-checkin__moods .mx-demo-checkin__mood-circle {
   display: grid;
@@ -372,12 +372,12 @@
 .mx-demo-checkin__focus-grid span {
   display: block;
   margin-bottom: 6px;
-  font-size: 20px;
+  font-size: calc(20px * var(--mx-type-scale));
   font-weight: 700;
 }
 .mx-demo-checkin__focus-grid b {
   display: block;
-  font-size: 11px;
+  font-size: calc(11px * var(--mx-type-scale));
   font-weight: 500;
 }
 .mx-demo-checkin__text-action {
@@ -388,7 +388,7 @@
   border: 0;
   background: transparent;
   color: #a4a4a4;
-  font-size: 12px;
+  font-size: calc(12px * var(--mx-type-scale));
 }
 .mx-demo-checkin__editor-scene {
   flex: 1 1 auto;
@@ -413,7 +413,7 @@
 .mx-demo-checkin__hint {
   margin: 16px 0 0;
   color: #777;
-  font-size: 13px;
+  font-size: calc(13px * var(--mx-type-scale));
 }
 .mx-demo-checkin__editor {
   min-height: 300px;
@@ -443,7 +443,7 @@
   gap: 12px;
   margin: 26px 0;
   color: #c8c8c8;
-  font-size: 13px;
+  font-size: calc(13px * var(--mx-type-scale));
   text-align: left;
 }
 .mx-demo-checkin__trial {
@@ -755,7 +755,7 @@
 
 .mx-checkin-scale__label {
   color: rgb(var(--c-muted));
-  font-size: 15px;
+  font-size: calc(15px * var(--mx-type-scale));
   font-weight: 500;
   /* «Через край» и другие крайние подписи — в одну строку:
      перенос на две строки ломает нижнюю линию шага. */
@@ -790,7 +790,7 @@
   display: flex;
   flex-direction: column;
   gap: 0;
-  font-size: 29px;
+  font-size: calc(29px * var(--mx-type-scale));
   line-height: 1.2;
   font-weight: 400;
 }
@@ -820,7 +820,7 @@
   background: rgb(var(--c-card2));
   border-color: rgb(var(--c-border));
   color: rgb(var(--c-text));
-  font-size: 13px;
+  font-size: calc(13px * var(--mx-type-scale));
   font-weight: 500;
 }
 
@@ -939,7 +939,7 @@
   flex-direction: column;
   gap: 0;
   color: rgb(var(--c-text));
-  font-size: 29px;
+  font-size: calc(29px * var(--mx-type-scale));
   font-weight: 400;
   line-height: 1.2;
   text-align: center;
@@ -1056,7 +1056,7 @@
 .mx-demo-checkin .mx-checkin-question > h1,
 .mx-fullscreen-surface .mx-checkin-question > h1 {
   font-family: 'Onest', sans-serif;
-  font-size: 29px;
+  font-size: calc(29px * var(--mx-type-scale));
   font-weight: 600;
   letter-spacing: -0.025em;
   line-height: 1.15;

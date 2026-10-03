@@ -52,7 +52,7 @@
   margin: 0;
   max-width: 220px;
   color: #f3f3f3;
-  font-size: 18px;
+  font-size: calc(18px * var(--mx-type-scale));
   font-weight: 700;
   line-height: 1.15;
   letter-spacing: -0.02em;
@@ -243,14 +243,14 @@
 }
 .mx-steps-theme-heading__label {
   font-family: var(--font-serif);
-  font-size: 29px;
+  font-size: calc(29px * var(--mx-type-scale));
   font-weight: 500;
   line-height: 1.15;
   color: #f3f3f3;
 }
 .mx-steps-theme-heading__name {
   font-family: 'Onest', sans-serif;
-  font-size: 29px;
+  font-size: calc(29px * var(--mx-type-scale));
   font-weight: 700;
   line-height: 1.15;
   color: #f3f3f3;
@@ -323,18 +323,18 @@
 .mx-steps-collection {
   position: relative;
   display: grid;
-  aspect-ratio: 178 / 235;
   min-height: 0;
   align-content: start;
-  justify-items: center;
+  justify-items: start;
   gap: 6px;
-  padding: 22px 16px;
+  /* Высота — по содержимому; справа оставлено место под стрелку. */
+  padding: 22px 44px 22px 16px;
   overflow: hidden;
   border: 1px solid #1f1f1f;
   border-radius: 24px;
   background: #1a1a1a;
   color: #f3f3f3;
-  text-align: center;
+  text-align: left;
   cursor: pointer;
 }
 .mx-steps-collection:disabled {
@@ -342,24 +342,25 @@
   opacity: 1;
 }
 .mx-steps-collection__title {
-  margin-inline: auto;
-  max-width: 90%;
+  margin-inline: 0;
+  max-width: 100%;
   font-size: 20px;
   font-weight: 700;
   line-height: 1.15;
   color: #f3f3f3;
 }
 .mx-steps-collection__desc {
-  margin-inline: auto;
-  max-width: 90%;
+  margin-inline: 0;
+  max-width: 100%;
   color: #a0a0a0;
   font-size: 13px;
   line-height: 1.4;
 }
 .mx-steps-collection__chevron {
   position: absolute;
-  right: 12px;
-  bottom: 12px;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
   color: #a0a0a0;
 }
 
