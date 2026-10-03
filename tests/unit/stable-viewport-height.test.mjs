@@ -1,18 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { mock } from 'node:test'
 
-// --- Мок React: перехват useState/useEffect ---
-let setHeightCalls = 0
-let effectCallback = null
-
-await mock.module('react', () => ({
-  useState: init => {
-    const value = typeof init === 'function' ? init() : init
-    return [value, () => { setHeightCalls++ }]
-  },
-  useEffect: cb => { effectCallback = cb },
-}))
+import { setupStableViewportListeners } from '../../src/lib/visualViewport.js'
 
 // --- Мок window + visualViewport ---
 function setupWindow(vvHeight = 800) {
@@ -40,14 +29,21 @@ function makeInput() {
   return { tagName: 'INPUT', isContentEditable: false }
 }
 
-// Импорт после установки моков
-const { useStableViewportHeight } = await import('../../src/lib/visualViewport.js')
+function makeDiv() {
+  return { tagName: 'DIV', isContentEditable: false }
+}
 
-function runHook() {
-  setHeightCalls = 0
-  effectCallback = null
-  useStableViewportHeight()
-  return effectCallback()
+function makeContentEditable() {
+  return { tagName: 'DIV', isContentEditable: true }
+}
+
+function runSetup(setHeight) {
+  return setupStableViewportListeners({
+    viewport: globalThis.window.visualViewport,
+    window: globalThis.window,
+    webApp: null,
+    setHeight,
+  })
 }
 
 test.afterEach(() => {
@@ -56,23 +52,29 @@ test.afterEach(() => {
 
 test('без фокуса: visualViewport.scroll не вызывает обновление', () => {
   const { vvListeners } = setupWindow()
-  const cleanup = runHook()
-  const callsAfterSetup = setHeightCalls
+  let calls = 0
+  const setHeight = () => { calls++ }
+
+  const cleanup = runSetup(setHeight)
+  const callsAfterSetup = calls
 
   // scroll-слушатель не зарегистрирован
   assert.equal(vvListeners.scroll, undefined, 'scroll listener should not be registered without focus')
 
   // попытка вызвать scroll ничего не делает
   vvListeners.scroll?.()
-  assert.equal(setHeightCalls, callsAfterSetup, 'setHeight should not be called by scroll without focus')
+  assert.equal(calls, callsAfterSetup, 'setHeight should not be called by scroll without focus')
 
   cleanup()
 })
 
 test('с фокусом: visualViewport.scroll вызывает обновление', () => {
   const { vvListeners, winListeners } = setupWindow()
-  const cleanup = runHook()
-  const callsAfterSetup = setHeightCalls
+  let calls = 0
+  const setHeight = () => { calls++ }
+
+  const cleanup = runSetup(setHeight)
+  const callsAfterSetup = calls
 
   // focusin на input → подписка на scroll
   winListeners.focusin({ target: makeInput() })
@@ -80,41 +82,43 @@ test('с фокусом: visualViewport.scroll вызывает обновлен
 
   // scroll → обновление
   vvListeners.scroll()
-  assert.equal(setHeightCalls, callsAfterSetup + 1, 'setHeight should be called by scroll when focused')
+  assert.equal(calls, callsAfterSetup + 1, 'setHeight should be called by scroll when focused')
 
   cleanup()
 })
 
 test('после focusout: отписка от visualViewport.scroll', () => {
   const { vvListeners, winListeners } = setupWindow()
-  const cleanup = runHook()
-  const callsAfterSetup = setHeightCalls
+  let calls = 0
+  const setHeight = () => { calls++ }
+
+  const cleanup = runSetup(setHeight)
 
   // focusin → подписка
   winListeners.focusin({ target: makeInput() })
-  const callsAfterFocus = setHeightCalls
+  const callsAfterFocus = calls
 
   // scroll работает
   vvListeners.scroll()
-  assert.equal(setHeightCalls, callsAfterFocus + 1, 'scroll should update while focused')
+  assert.equal(calls, callsAfterFocus + 1, 'scroll should update while focused')
 
   // focusout → отписка + один update
   winListeners.focusout({ target: makeInput() })
   assert.equal(vvListeners.scroll, undefined, 'scroll listener should be removed after focusout')
-  const callsAfterFocusOut = setHeightCalls
+  const callsAfterFocusOut = calls
 
   // scroll больше не вызывает обновление
   vvListeners.scroll?.()
-  assert.equal(setHeightCalls, callsAfterFocusOut, 'scroll should not update after focusout')
+  assert.equal(calls, callsAfterFocusOut, 'scroll should not update after focusout')
 
   cleanup()
 })
 
 test('focusin на не-поле ввода не включает подписку на scroll', () => {
   const { vvListeners, winListeners } = setupWindow()
-  const cleanup = runHook()
+  const cleanup = runSetup(() => {})
 
-  winListeners.focusin({ target: { tagName: 'DIV', isContentEditable: false } })
+  winListeners.focusin({ target: makeDiv() })
   assert.equal(vvListeners.scroll, undefined, 'scroll listener should not be registered for non-editable element')
 
   cleanup()
@@ -122,9 +126,9 @@ test('focusin на не-поле ввода не включает подписк
 
 test('contenteditable элемент включает подписку на scroll', () => {
   const { vvListeners, winListeners } = setupWindow()
-  const cleanup = runHook()
+  const cleanup = runSetup(() => {})
 
-  winListeners.focusin({ target: { tagName: 'DIV', isContentEditable: true } })
+  winListeners.focusin({ target: makeContentEditable() })
   assert.equal(typeof vvListeners.scroll, 'function', 'scroll listener should be registered for contenteditable')
 
   cleanup()
