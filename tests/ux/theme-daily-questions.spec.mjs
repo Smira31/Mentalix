@@ -93,7 +93,27 @@ test('Будущая карточка не открывается; пропущ�
     await expect(card(page, 4)).toHaveAttribute('data-open', 'false')
     await expect(card(page, 4)).toContainText('Откроется завтра')
     await expect(card(page, 7)).toContainText('Откроется через 4 дн.')
-    await expect(card(page, 4)).toHaveCSS('opacity', '0.45')
+    const future = card(page, 4)
+    await expect(future).toHaveCSS('opacity', '1')
+    for (const property of ['background-color', 'border-top-color', 'border-top-width']) {
+      await expect(future).toHaveCSS(
+        property,
+        await card(page, 3).evaluate((el, name) => getComputedStyle(el).getPropertyValue(name), property)
+      )
+    }
+    for (const testId of ['theme-card-question', 'theme-card-prompt']) {
+      await expect(future.getByTestId(testId)).toHaveCSS('filter', 'blur(5px)')
+      await expect(future.getByTestId(testId)).toHaveAttribute('aria-hidden', 'true')
+      await expect(card(page, 3).getByTestId(testId)).toHaveCSS('filter', 'none')
+      await expect(card(page, 3).getByTestId(testId)).not.toHaveAttribute('aria-hidden', 'true')
+    }
+    for (const testId of ['theme-card-day', 'theme-opening-label']) {
+      await expect(future.getByTestId(testId)).toHaveCSS('filter', 'none')
+      await expect(future.getByTestId(testId)).toHaveCSS('opacity', '1')
+    }
+    await expect(future).toHaveAccessibleName('Вопрос 4. Откроется завтра')
+    expect(await future.ariaSnapshot()).not.toContain('Вопрос дня 4')
+    expect(await future.ariaSnapshot()).not.toContain('Одно наблюдение')
     await card(page, 4).click({ force: true })
     await expect(page.getByTestId('theme-day-label')).toHaveCount(0)
     await card(page, 4).focus()

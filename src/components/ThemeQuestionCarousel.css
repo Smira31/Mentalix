@@ -81,9 +81,11 @@
   color: #888;
 }
 
-/* Будущие карточки приглушены целиком, без изменения геометрии и шрифтов. */
-.mx-tqc-card[data-open='false'] {
-  opacity: 0.45;
+/* Закрыт только текст: фон, рамка, номер и дата открытия не приглушаются. */
+.mx-tqc-card[data-open='false'] .mx-tqc-card__question,
+.mx-tqc-card[data-open='false'] .mx-tqc-card__prompt[aria-hidden='true'] {
+  filter: blur(5px);
+  user-select: none;
 }
 
 /* --- Dots --- */

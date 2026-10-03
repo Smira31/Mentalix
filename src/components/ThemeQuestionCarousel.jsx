@@ -148,6 +148,9 @@ export default function ThemeQuestionCarousel({
         {cards.map((q, i) => {
           const open = isCardOpen(q.day ?? i + 1, currentDay)
           const answered = !!q.reflection
+          const openingLabel = open
+            ? null
+            : themeOpeningLabel(q.day ?? i + 1, startedOn, serverDate)
           return (
             <article
               className="mx-tqc-card"
@@ -156,7 +159,7 @@ export default function ThemeQuestionCarousel({
               data-open={open ? 'true' : 'false'}
               data-answered={answered ? 'true' : 'false'}
               data-active={i === safeIndex ? 'true' : 'false'}
-              aria-label={`Вопрос ${q.day ?? i + 1}`}
+              aria-label={`Вопрос ${q.day ?? i + 1}${openingLabel ? `. ${openingLabel}` : ''}`}
               role="button"
               tabIndex={0}
               aria-disabled={open ? undefined : 'true'}
@@ -169,12 +172,28 @@ export default function ThemeQuestionCarousel({
                 }
               }}
             >
-              <span className="mx-tqc-card__num">{q.day ?? i + 1}</span>
-              <strong className="mx-tqc-card__question">{q.text}</strong>
-              {open && q.prompt && <span className="mx-tqc-card__prompt">{q.prompt}</span>}
+              <span className="mx-tqc-card__num" data-testid="theme-card-day">
+                {q.day ?? i + 1}
+              </span>
+              <strong
+                className="mx-tqc-card__question"
+                data-testid="theme-card-question"
+                aria-hidden={open ? undefined : 'true'}
+              >
+                {q.text}
+              </strong>
+              {q.prompt && (
+                <span
+                  className="mx-tqc-card__prompt"
+                  data-testid="theme-card-prompt"
+                  aria-hidden={open ? undefined : 'true'}
+                >
+                  {q.prompt}
+                </span>
+              )}
               {!open && (
                 <span className="mx-tqc-card__prompt" data-testid="theme-opening-label">
-                  {themeOpeningLabel(q.day ?? i + 1, startedOn, serverDate)}
+                  {openingLabel}
                 </span>
               )}
             </article>
