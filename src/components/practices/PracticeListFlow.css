@@ -219,8 +219,6 @@
   font-weight: 600;
   color: rgb(var(--c-text));
   background: rgb(var(--c-card) / 0.72);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgb(var(--c-line) / 0.12);
   border-radius: 9999px;
   cursor: pointer;

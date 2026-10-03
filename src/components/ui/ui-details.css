@@ -76,8 +76,6 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--mx-radius-pill);
   background: var(--mx-glass-bg);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  backdrop-filter: blur(20px) saturate(160%);
   color: rgb(var(--c-text));
   font-size: var(--mx-type-control-size);
   font-weight: 700;

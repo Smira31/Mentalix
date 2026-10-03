@@ -51,6 +51,7 @@ import { clearTrendsDataCache } from './lib/trendsDataCache'
 import { GUEST_MERGED_EVENT, loginAsGuest } from './lib/guestAuth'
 
 import { getFullscreenSnapshot, initFullscreen } from './lib/tgFullscreen'
+import { initIdleMotionPause } from './lib/idleMotion'
 import { useVisualViewportHeight } from './lib/visualViewport'
 import { useGlobalEdgeSwipeBack } from './lib/gestures/useGlobalEdgeSwipeBack'
 
@@ -241,7 +242,12 @@ function App() {
 
   const [fullscreen, setFullscreen] = useState(false)
 
-  const [navCollapsed, setNavCollapsed] = useState(false)
+  /*
+   * Сворачивание панели вкладок живёт внутри BottomNavigation (скролл не
+   * ре-рендерит App и вкладки). App держит только императивный reset —
+   * вызывается после программного восстановления позиции скролла.
+   */
+  const navRef = useRef(null)
 
   const viewportHeight = useVisualViewportHeight()
 
@@ -307,26 +313,6 @@ function App() {
 
     return installDemoPressFeedback(document)
   }, [])
-
-  /*
-   * Последняя реальная позиция скролла.
-   */
-  const lastScrollY = useRef(0)
-
-  /*
-   * Направление текущего жеста.
-   */
-  const scrollDirection = useRef(null)
-
-  /*
-   * Накопленная дистанция движения.
-   */
-  const scrollDistance = useRef(0)
-
-  /*
-   * requestAnimationFrame скролла.
-   */
-  const scrollFrame = useRef(null)
 
   /* Единый scroll-root обычных вкладок, ограниченный видимым viewport. */
   const scrollRootRef = useRef(null)
@@ -455,9 +441,8 @@ function App() {
       const savedPos = scrollPositions.current[tab] ?? 0
       scrollRootRef.current.scrollTop = savedPos
     }
-    lastScrollY.current = scrollRootRef.current.scrollTop
-    scrollDirection.current = null
-    scrollDistance.current = 0
+    /* Панель вкладок сама перечитывает позицию скролла (reset). */
+    navRef.current?.reset()
   }, [tab, openedTabs])
 
   // ?tab=history → заменяем на ?tab=trends (история теперь сегмент внутри Прогресса)
@@ -573,6 +558,9 @@ function App() {
       setFullscreen(fs)
     })
   }, [])
+
+  /* Пауза бесконечных анимаций на время прокрутки (MXL-PERF-SCROLL). */
+  useEffect(() => initIdleMotionPause(), [])
 
   /* ============================================================
      AUTH
@@ -809,152 +797,13 @@ function App() {
      ============================================================ */
 
   /* ============================================================
-     COLLAPSIBLE NAVIGATION
-     ============================================================ */
-
-  useEffect(() => {
-    const COLLAPSE_DISTANCE = 20
-    const EXPAND_DISTANCE = 14
-    const COLLAPSE_AFTER_Y = 96
-    const TOP_ZONE = 32
-
-    const resetGesture = () => {
-      scrollDirection.current = null
-      scrollDistance.current = 0
-    }
-
-    const processScroll = () => {
-      scrollFrame.current = null
-
-      /*
-       * Пока открыта AI-персона,
-       * BottomNavigation вообще не рендерится,
-       * поэтому скролл не должен пытаться
-       * управлять его состоянием.
-       */
-      if (bottomNavigationHidden) {
-        return
-      }
-
-      /*
-       * «Шаги» — нижняя навигация не сворачивается: у Stoic
-       * нет плавающей лампочки, и свёрнутая кнопка с иконкой
-       * Lightbulk здесь лишняя. На остальных вкладках — как было.
-       */
-      if (tabRef.current === 'practices') {
-        setNavCollapsed(false)
-        resetGesture()
-        return
-      }
-
-      const currentY = Math.max(scrollRootRef.current?.scrollTop || 0, window.scrollY || 0)
-
-      // Сохраняем позицию скролла текущей вкладки для восстановления
-      if (scrollRootRef.current && tabRef.current) {
-        scrollPositions.current[tabRef.current] = scrollRootRef.current.scrollTop
-      }
-
-      const previousY = lastScrollY.current
-
-      const difference = currentY - previousY
-
-      lastScrollY.current = currentY
-
-      /*
-       * Наверху страницы navbar
-       * всегда раскрыт.
-       */
-      if (currentY <= TOP_ZONE) {
-        resetGesture()
-
-        setNavCollapsed(false)
-
-        return
-      }
-
-      /*
-       * Игнорируем микродвижения.
-       */
-      if (Math.abs(difference) < 1) {
-        return
-      }
-
-      const direction = difference > 0 ? 'down' : 'up'
-
-      /*
-       * При смене направления
-       * начинаем считать дистанцию заново.
-       */
-      if (scrollDirection.current !== direction) {
-        scrollDirection.current = direction
-
-        scrollDistance.current = 0
-      }
-
-      scrollDistance.current += Math.abs(difference)
-
-      /*
-       * Сворачивание.
-       */
-      if (
-        direction === 'down' &&
-        currentY > COLLAPSE_AFTER_Y &&
-        scrollDistance.current >= COLLAPSE_DISTANCE
-      ) {
-        setNavCollapsed(true)
-
-        scrollDistance.current = 0
-
-        return
-      }
-
-      /*
-       * Раскрытие.
-       */
-      if (direction === 'up' && scrollDistance.current >= EXPAND_DISTANCE) {
-        setNavCollapsed(false)
-
-        scrollDistance.current = 0
-      }
-    }
-
-    const handleScroll = () => {
-      if (scrollFrame.current !== null) {
-        return
-      }
-
-      scrollFrame.current = window.requestAnimationFrame(processScroll)
-    }
-
-    lastScrollY.current = Math.max(scrollRootRef.current?.scrollTop || 0, window.scrollY || 0)
-
-    resetGesture()
-
-    const scrollRoot = scrollRootRef.current
-
-    if (!scrollRoot) return
-
-    scrollRoot.addEventListener('scroll', handleScroll, { passive: true })
-
-    // На реальном телефоне без фрейма document может прокручиваться вместо
-    // scroll-root. Слушаем оба источника — currentY берёт максимум.
-    window.addEventListener('scroll', handleScroll, { passive: true })
-
-    return () => {
-      scrollRoot.removeEventListener('scroll', handleScroll)
-      window.removeEventListener('scroll', handleScroll)
-
-      if (scrollFrame.current !== null) {
-        window.cancelAnimationFrame(scrollFrame.current)
-
-        scrollFrame.current = null
-      }
-    }
-  }, [authChecked, bottomNavigationHidden, locked, onboarded, user])
-
-  /* ============================================================
      NAVIGATION
+
+     Логика сворачивания панели живёт внутри BottomNavigation
+     (passive-слушатели + rAF, без ре-рендеров App). App держит
+     только императивный navRef.reset() для программных переходов.
      ============================================================ */
+
 
   const scrollAppToTop = useCallback((behavior = 'auto') => {
     scrollRootRef.current?.scrollTo({
@@ -963,13 +812,6 @@ function App() {
       behavior,
     })
   }, [])
-
-  function resetNavigationGesture() {
-    lastScrollY.current = Math.max(scrollRootRef.current?.scrollTop || 0, 0)
-
-    scrollDirection.current = null
-    scrollDistance.current = 0
-  }
 
   function syncTabUrl(nextTab) {
     const url = new URL(window.location.href)
@@ -1002,10 +844,7 @@ function App() {
     if (key === tab) {
       scrollAppToTop('smooth')
 
-      setNavCollapsed(false)
-
-      scrollDirection.current = null
-      scrollDistance.current = 0
+      navRef.current?.reset()
 
       dispatchTabRefresh(key)
       dispatchTabReset(key)
@@ -1027,11 +866,7 @@ function App() {
     setOpenedTabs(prev => (prev.has(key) ? prev : new Set([...prev, key])))
     setTab(key)
 
-    setNavCollapsed(false)
-
-    lastScrollY.current = 0
-    scrollDirection.current = null
-    scrollDistance.current = 0
+    navRef.current?.reset()
 
     // Сброс подэкранов старой вкладки: портал в document.body
     // не удаляется при display:none, поэтому сбрасываем явно (#1)
@@ -1049,9 +884,8 @@ function App() {
     shouldScrollToTop.current = true
     setOpenedTabs(prev => (prev.has('today') ? prev : new Set([...prev, 'today'])))
     setTab('today')
-    setNavCollapsed(false)
-    resetNavigationGesture()
     scrollAppToTop()
+    navRef.current?.reset()
 
     dispatchTabRefresh('today')
   }, [scrollAppToTop])
@@ -1084,13 +918,8 @@ function App() {
       setOpenedTabs(prev => (prev.has('practices') ? prev : new Set([...prev, 'practices'])))
       setTab('practices')
 
-      setNavCollapsed(false)
-
-      lastScrollY.current = 0
-      scrollDirection.current = null
-      scrollDistance.current = 0
-
       scrollAppToTop()
+      navRef.current?.reset()
 
       dispatchTabRefresh('practices')
     },
@@ -1107,13 +936,8 @@ function App() {
     setOpenedTabs(prev => (prev.has('mentor') ? prev : new Set([...prev, 'mentor'])))
     setTab('mentor')
 
-    setNavCollapsed(false)
-
-    lastScrollY.current = 0
-    scrollDirection.current = null
-    scrollDistance.current = 0
-
     scrollAppToTop()
+    navRef.current?.reset()
 
     dispatchTabRefresh('mentor')
   }, [scrollAppToTop])
@@ -1232,12 +1056,12 @@ function App() {
   const showTodayHeader =
     !previewDemoMode && !overlay && tab === 'today' && !todayFlowOpen && !todaySeriesOpen
 
-  const topSafeArea =
-    tab === 'mentor' && !overlay
-      ? 'var(--app-safe-top)'
-      : fullscreen
-        ? 'calc(var(--app-safe-top) + 56px)'
-        : 'var(--app-safe-top)'
+  // «Диалог» считает верхний отступ по той же формуле, что «Сегодня» и
+  // «Шаги»: safe area + компенсация контролов Telegram в fullscreen.
+  // Спец-кейс mentor (без +56px) давал несоосность шапки на iOS.
+  const topSafeArea = fullscreen
+    ? 'calc(var(--app-safe-top) + 56px)'
+    : 'var(--app-safe-top)'
 
   /*
    * КОНТРАКТ ОТСТУПОВ ЭКРАНА
@@ -1593,7 +1417,6 @@ function App() {
                         <Analytics
                           user={user}
                           historyTrigger={progressHistoryTrigger}
-                          navCollapsed={navCollapsed}
                           onOpenHistory={() => {
                             platform.haptic('light')
                             setProgressHistoryTrigger(n => n + 1)
@@ -1628,10 +1451,10 @@ function App() {
 
         {user && !overlay && !bottomNavigationHidden && (
           <BottomNavigation
+            ref={navRef}
             tab={tab}
-            collapsed={navCollapsed}
-            onCollapseChange={setNavCollapsed}
             onTabChange={switchTab}
+            scrollRootRef={scrollRootRef}
           />
         )}
 

@@ -13,8 +13,12 @@ test('профиль: строки опроса, мультивыбор и со�
     const box = await back.boundingBox()
     expect(Math.round(box.width)).toBe(43)
     expect(Math.round(box.height)).toBe(43)
-    await expect(back).toHaveCSS('background-color', 'rgba(38, 38, 38, 0.55)')
-    await expect(back).toHaveCSS('backdrop-filter', /blur\(20px\) saturate\(1\.6\)/)
+    // MXL-PERF-SCROLL: blur убран со всех прокручиваемых поверхностей (джанк
+    // скролла на iOS) — кнопка «Назад» теперь сплошной фон --mx-glass-bg
+    // (rgba(38, 38, 38, 0.92)) без backdrop-filter. Поведение (размер, тап)
+    // не изменилось, обновлено только устаревшее ожидание стиля.
+    await expect(back).toHaveCSS('background-color', 'rgba(38, 38, 38, 0.92)')
+    await expect(back).toHaveCSS('backdrop-filter', 'none')
     await expect(page.getByTestId('profile-page-title')).toHaveCSS('font-size', '29.24px')
     const rows = page.locator('.mx-wtp-option')
     await expect(rows).toHaveCount(3)

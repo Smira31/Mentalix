@@ -199,8 +199,13 @@
   overflow-x: auto;
   overflow-y: hidden;
   overscroll-behavior-x: contain;
-  overscroll-behavior-y: none;
-  touch-action: pan-x;
+  /*
+   * Вертикальный жест над каруселью уходит странице (MXL-PERF-SCROLL):
+   * pan-x блокировал прокрутку «Диалога», если жест начинался
+   * на карточке персоны.
+   */
+  overscroll-behavior-y: auto;
+  touch-action: pan-x pan-y;
   scroll-padding-inline: var(--mx-dialog-carousel-gutter);
   scroll-snap-type: x mandatory;
   scrollbar-width: none;
@@ -430,7 +435,8 @@
 .mx-dialog-section-title {
   margin: 0 0 var(--mx-space-3);
   color: rgb(var(--c-text));
-  font-family: var(--font-serif);
+  /* Onest (наследуется от .mx-dialog-entry), не Lora: в настоящем Telegram
+     заголовок «Продолжить разговор» без засечек. */
   font-size: calc(17px * var(--mx-type-scale));
   font-weight: 600;
   line-height: 1.3;

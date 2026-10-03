@@ -100,8 +100,6 @@
   justify-content: space-between;
   padding: 0 24px;
   background: rgb(var(--c-bg) / 0.88);
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
   color: rgb(var(--c-faint));
 }
 
@@ -536,8 +534,6 @@
   border-radius: 34px;
   background: rgb(var(--c-card2) / 0.92);
   box-shadow: 0 16px 38px rgb(0 0 0 / 0.4);
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
 }
 
 .mx-library-lab__bottom-nav > span {

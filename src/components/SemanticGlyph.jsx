@@ -1,4 +1,7 @@
+import { useRef } from 'react'
+
 import './SemanticGlyph.css'
+import { usePauseOffscreenMotion } from '../lib/idleMotion'
 
 const normalize = value => String(value || '').toLowerCase()
 
@@ -787,8 +790,13 @@ export default function SemanticGlyph({
   accent,
   debugSource,
 }) {
+  /* Вне экрана бесконечные анимации глифа ставятся на паузу (MXL-PERF-SCROLL). */
+  const rootRef = useRef(null)
+  usePauseOffscreenMotion(rootRef)
+
   return (
     <svg
+      ref={rootRef}
       viewBox="0 0 160 112"
       className={`mx-semantic-glyph mx-semantic-glyph--${kind} ${className}`}
       data-animated={animated}
