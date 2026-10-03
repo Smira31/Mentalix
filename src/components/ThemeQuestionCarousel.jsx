@@ -182,7 +182,7 @@ export default function ThemeQuestionCarousel({
               >
                 {q.text}
               </strong>
-              {q.prompt && (
+              {open && q.prompt && (
                 <span
                   className="mx-tqc-card__prompt"
                   data-testid="theme-card-prompt"

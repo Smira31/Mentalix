@@ -101,16 +101,27 @@ test('Будущая карточка не открывается; пропущ�
         await card(page, 3).evaluate((el, name) => getComputedStyle(el).getPropertyValue(name), property)
       )
     }
+    const question = future.getByTestId('theme-card-question')
+    const mask = 'linear-gradient(to right, rgb(0, 0, 0) 30%, rgba(0, 0, 0, 0) 75%)'
+    await expect(question).toHaveCSS('filter', 'none')
+    await expect(question).toHaveCSS('opacity', '0.35')
+    await expect(question).toHaveCSS('mask-image', mask)
+    await expect(question).toHaveCSS('-webkit-mask-image', mask)
+    await expect(question).toHaveAttribute('aria-hidden', 'true')
+    await expect(future.getByTestId('theme-card-prompt')).toHaveCount(0)
     for (const testId of ['theme-card-question', 'theme-card-prompt']) {
-      await expect(future.getByTestId(testId)).toHaveCSS('filter', 'blur(5px)')
-      await expect(future.getByTestId(testId)).toHaveAttribute('aria-hidden', 'true')
       await expect(card(page, 3).getByTestId(testId)).toHaveCSS('filter', 'none')
+      await expect(card(page, 3).getByTestId(testId)).toHaveCSS('opacity', '1')
+      await expect(card(page, 3).getByTestId(testId)).toHaveCSS('mask-image', 'none')
       await expect(card(page, 3).getByTestId(testId)).not.toHaveAttribute('aria-hidden', 'true')
     }
     for (const testId of ['theme-card-day', 'theme-opening-label']) {
       await expect(future.getByTestId(testId)).toHaveCSS('filter', 'none')
+      await expect(future.getByTestId(testId)).toHaveCSS('mask-image', 'none')
       await expect(future.getByTestId(testId)).toHaveCSS('opacity', '1')
     }
+    await expect(future.getByTestId('theme-card-day')).toHaveCSS('color', 'rgb(153, 153, 153)')
+    await expect(future.getByTestId('theme-opening-label')).toHaveCSS('color', 'rgb(136, 136, 136)')
     await expect(future).toHaveAccessibleName('Вопрос 4. Откроется завтра')
     expect(await future.ariaSnapshot()).not.toContain('Вопрос дня 4')
     expect(await future.ariaSnapshot()).not.toContain('Одно наблюдение')

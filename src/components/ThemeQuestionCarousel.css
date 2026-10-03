@@ -81,11 +81,11 @@
   color: #888;
 }
 
-/* Закрыт только текст: фон, рамка, номер и дата открытия не приглушаются. */
-.mx-tqc-card[data-open='false'] .mx-tqc-card__question,
-.mx-tqc-card[data-open='false'] .mx-tqc-card__prompt[aria-hidden='true'] {
-  filter: blur(5px);
-  user-select: none;
+/* --- Closed card: question visible at ~35%, fades left-to-right; prompt hidden --- */
+.mx-tqc-card[data-open='false'] .mx-tqc-card__question {
+  opacity: 0.35;
+  -webkit-mask-image: linear-gradient(to right, #000 30%, transparent 75%);
+  mask-image: linear-gradient(to right, #000 30%, transparent 75%);
 }
 
 /* --- Dots --- */
