@@ -731,6 +731,31 @@ function CustomizeLayer({ preferences, onToggle, onClose }) {
   )
 }
 
+/*
+ * Состояние сворачивания нижней навигации живёт внутри BottomNavigation и
+ * публикуется классом mx-nav-collapsed на <html> (без setState в App).
+ * Здесь только читаем его — для отступа пилюли периода.
+ */
+function useNavCollapsed() {
+  const [collapsed, setCollapsed] = useState(
+    () => document.documentElement.classList.contains('mx-nav-collapsed')
+  )
+
+  useEffect(() => {
+    const root = document.documentElement
+
+    const observer = new MutationObserver(() => {
+      setCollapsed(root.classList.contains('mx-nav-collapsed'))
+    })
+
+    observer.observe(root, { attributes: true, attributeFilter: ['class'] })
+
+    return () => observer.disconnect()
+  }, [])
+
+  return collapsed
+}
+
 /* ── Нижняя пилюля периода ── */
 
 function BottomPeriodPill({ granularity, offset, onPrev, onNext, canNext, hidden, collapsed }) {
@@ -779,8 +804,8 @@ export default function Analytics({
   onStartMood,
   onOpenNotifications,
   historyTrigger = 0,
-  navCollapsed = false,
 }) {
+  const navCollapsed = useNavCollapsed()
   const rootRef = useRef(null)
   const scrollPositions = useRef({ analytics: 0, history: 0 })
   const skipScrollRestore = useRef(true)
