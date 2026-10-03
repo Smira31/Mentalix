@@ -621,7 +621,7 @@ test('MXL-001 сохраняет Stoic-inspired AI flow без backend изме�
   assert.match(indicator, /Цикл разговора: идея, действие, анализ, новый шаг/)
   assert.doesNotMatch(picker, /AiFlowIndicator/)
   assert.doesNotMatch(conversation, /AiFlowIndicator|flowPhase/)
-  assert.match(container, /api\.mentalix\.send\(user\.id, text, persona[,\)]/)
+  assert.match(container, /api\.mentalix\.send\(\s*user\.id,\s*text,\s*persona\s*[,)]/)
   assert.doesNotMatch(container, /api\.mentalix\.send\([^\n]*flow/)
 })
 

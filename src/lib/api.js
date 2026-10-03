@@ -170,6 +170,8 @@ const ACTIVITY_WRITE = [
   /^\/daimon\/roll$/,
   /^\/daimon\/insight$/,
   /^\/daimon\/chat$/,
+  // «Диалог»: реплика пользователя — тоже активность дня для огонька.
+  /^\/mentalix\/messages$/,
 ]
 
 function notifyActivity(path, options) {
@@ -179,14 +181,21 @@ function notifyActivity(path, options) {
     !ACTIVITY_WRITE.some(pattern => pattern.test(path))
   )
     return
-  if (path === '/daimon/chat' && !JSON.parse(options.body || '{}').message?.trim()) return
-  let userId = null
+
+  let body = {}
   try {
-    userId = JSON.parse(options.body)?.user_id ?? null
+    body = JSON.parse(options.body || '{}')
   } catch {
-    /* empty body */
+    /* empty or non-JSON body */
   }
-  window.dispatchEvent(new CustomEvent('mentalix:activity-saved', { detail: { userId } }))
+
+  // Пустые реплики активностью дня не считаются.
+  if (path === '/daimon/chat' && !body.message?.trim()) return
+  if (path === '/mentalix/messages' && !body.content?.trim()) return
+
+  window.dispatchEvent(
+    new CustomEvent('mentalix:activity-saved', { detail: { userId: body.user_id ?? null } })
+  )
 }
 
 async function request(path, options = {}) {
@@ -813,10 +822,13 @@ export const api = {
         { silentDiagnostics: true }
       ),
 
-    createConversation: (userId, persona) =>
+    // timeoutMs — чтобы «Новый разговор» на медленной сети не висел вечно:
+    // по таймауту чат показывает ошибку с «Повторить», не размонтируясь.
+    createConversation: (userId, persona, { timeoutMs } = {}) =>
       request('/mentalix/conversations', {
         method: 'POST',
         body: JSON.stringify({ user_id: userId, persona }),
+        ...(timeoutMs ? { timeoutMs } : {}),
       }),
 
     conversationMessages: (conversationId, userId) =>
