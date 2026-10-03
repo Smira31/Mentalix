@@ -1,6 +1,5 @@
 import { createPortal } from 'react-dom'
 
-import DemoTelegramChrome from './DemoTelegramChrome'
 import { RoundBackButton } from './NestedScreenHeader'
 import {
   useFullscreenSurface,
@@ -10,10 +9,6 @@ import {
   FULLSCREEN_SCROLL_CLASS,
 } from '../lib/fullscreenSurface'
 import { isDemoEmulationActive } from '../lib/demoChrome'
-import { shouldRenderDemoTelegramChrome } from '../lib/demoChrome'
-import { isPreviewDemoMode } from '../lib/demoMode'
-import { platformName } from '../platform'
-import { isRealPhone } from '../lib/demoMode'
 
 import './Screen.css'
 import './ui/ui-details.css'
@@ -40,7 +35,6 @@ export default function Screen({
   scroll = true,
   fullFrame = false,
   showHeader = true,
-  telegramChrome = false,
   headerSlot,
   footer,
   footerClassName = '',
@@ -49,15 +43,6 @@ export default function Screen({
 }) {
   const { style: surfaceStyle } = useFullscreenSurface()
   const portalTarget = getFullscreenPortalTarget()
-
-  const demoChrome =
-    (telegramChrome && isPreviewDemoMode() && platformName !== 'telegram') ||
-    shouldRenderDemoTelegramChrome({
-      previewDemoMode: isPreviewDemoMode(),
-      platformName,
-      realPhone: isRealPhone(),
-      deviceFrameMode: Boolean(portalTarget?.getAttribute?.('data-mentalix-demo-frame')),
-    })
 
   const demoHidden = isDemoEmulationActive()
 
@@ -71,8 +56,6 @@ export default function Screen({
       style={surfaceStyle}
       data-testid="mx-screen-shell"
     >
-      {demoChrome && <DemoTelegramChrome />}
-
       {showHeader && (
         <div
           className={
