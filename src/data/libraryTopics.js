@@ -3,7 +3,7 @@ const mask = new URL('../assets/library/placeholder-mask.svg', import.meta.url).
 const book = new URL('../assets/library/placeholder-book.svg', import.meta.url).href
 
 export const LIBRARY_TOPICS = {
-  'путь-героя': { title: 'Путь героя', image: mountain },
+  'путь-героя': { title: 'Кризис и рост', image: mountain },
   юнг: { title: 'Юнг', image: mask },
   кризис: { title: 'Кризис', image: book },
   ии: { title: 'ИИ', image: book },

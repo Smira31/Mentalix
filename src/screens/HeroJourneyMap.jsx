@@ -167,6 +167,19 @@ function CourseMap({ progress, onOpenStep }) {
     return HERO_JOURNEY_TRIALS.find(t => !isStepCompleted(t.id, progress))
   }, [progress])
 
+  if (HERO_JOURNEY_TRIALS.length === 0)
+    return (
+      <Shell testId="hero-journey-map">
+        <div className="mx-hj-map__head">
+          <h1 className="mx-hj-map__title">{appHeading(HERO_JOURNEY_COURSE.title)}</h1>
+          <p className="mx-hj-map__desc">{HERO_JOURNEY_COURSE.description}</p>
+        </div>
+        <p className="mx-hj-empty-course" data-testid="hero-empty-course">
+          Курс готовится. Скоро здесь появятся шаги.
+        </p>
+      </Shell>
+    )
+
   return (
     <Shell testId="hero-journey-map">
       <div className="mx-hj-map__head">

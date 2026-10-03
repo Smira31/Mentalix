@@ -1,4 +1,5 @@
 import Screen from '../components/Screen'
+import { ArrowRight } from 'lucide-react'
 import { useBackButton } from '../platform/telegram.hooks'
 import { libraryTopic } from '../data/libraryTopics'
 
@@ -35,7 +36,7 @@ export default function LibraryArticleReader({ article, next, onBack, onJournal,
             target="_blank"
             rel="noopener noreferrer"
           >
-            Первоисточник →
+            Первоисточник <ArrowRight size={14} />
           </a>
         )}
         <section className="mx-library-reflection" data-testid="article-reflection">
@@ -57,7 +58,7 @@ export default function LibraryArticleReader({ article, next, onBack, onJournal,
             data-testid="article-next"
             onClick={onNext}
           >
-            Следующая статья →<span className="mx-type-body text-muted">{next.title}</span>
+            Следующая статья <ArrowRight size={16} /> <span className="mx-type-body text-muted">{next.title}</span>
           </button>
         )}
       </article>

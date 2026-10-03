@@ -34,10 +34,23 @@ export default function ThemeQuestionCarousel({
 
   function applyScale() {
     const track = trackRef.current
-    if (renderCard || !track || !track.clientWidth) return
+    if (!track || !track.clientWidth) return
     const cardEls = [...track.querySelectorAll('.mx-tqc-card')]
     if (!cardEls.length) return
     const center = track.scrollLeft + track.clientWidth / 2
+    if (renderCard) {
+      // Custom cards (course carousel): scale + opacity, not height
+      cardEls.forEach(card => {
+        const cardCenter = card.offsetLeft + card.offsetWidth / 2
+        const distance = Math.abs(cardCenter - center)
+        const t = Math.min(distance / card.offsetWidth, 1)
+        const scale = 1 - 0.12 * t
+        const opacity = 1 - 0.5 * t
+        card.style.transform = `scale(${scale})`
+        card.style.opacity = String(opacity)
+      })
+      return
+    }
     cardEls.forEach(card => {
       const cardCenter = card.offsetLeft + card.offsetWidth / 2
       const distance = Math.abs(cardCenter - center)

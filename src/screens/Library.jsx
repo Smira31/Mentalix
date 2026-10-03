@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { ArrowRight } from 'lucide-react'
 import CourseCatalog, { CourseCards } from '../components/CourseCatalog'
 import { HERO_COURSE, libraryCourses } from '../data/courses'
 import { isPreviewDemoMode } from '../lib/demoMode'
@@ -156,7 +157,7 @@ export default function Library({ user, onInputModeChange }) {
               className="mx-library-next mx-type-control"
               onClick={() => setScreen('courses')}
             >
-              Все курсы →
+              Все курсы <ArrowRight size={16} />
             </button>
           )}
         </section>

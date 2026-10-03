@@ -19,7 +19,7 @@ test('Разделы минимум по две статьи, маленькие
   const sections = articleSections()
   assert.deepEqual(
     sections.map(s => s.topic),
-    ['Путь героя', 'Юнг', 'Ещё почитать']
+    ['Кризис и рост', 'Юнг', 'Ещё почитать']
   )
   assert.deepEqual(
     sections.map(s => s.articles.length),
@@ -49,7 +49,7 @@ test('Шторка использует Screen, общий свайп и зат�
   assert.match(sheet, /useSheetSwipeDown/)
   assert.match(sheet, /article-sheet-backdrop/)
   assert.match(reader, /А у тебя как\?/)
-  assert.match(reader, /Следующая статья →/)
+  assert.match(reader, /Следующая статья/)
   assert.doesNotMatch(reader, /ArticleCover|SemanticGlyph|Поделиться|Избранное/)
   assert.doesNotMatch(source('src/screens/LibraryStoic.css'), /font-serif|transition:\s*all/)
 })

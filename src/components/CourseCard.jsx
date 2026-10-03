@@ -1,10 +1,28 @@
+import { ArrowRight } from 'lucide-react'
 import StepsJournalBanner from './StepsJournalBanner'
 import { useHeroJourneyProgress, isStepCompleted } from '../lib/heroJourneyProgress'
 
 export default function CourseCard({ course, userId, onOpen }) {
   const { progress } = useHeroJourneyProgress(userId, course.id)
   const total = course.steps.length
-  const completed = course.steps.filter(step => isStepCompleted(step.id, progress)).length
+  const isEmpty = total === 0
+  const completed = isEmpty ? 0 : course.steps.filter(step => isStepCompleted(step.id, progress)).length
+
+  if (isEmpty)
+    return (
+      <StepsJournalBanner
+        course
+        label="КУРС · СКОРО"
+        title={`${course.title.toLowerCase()}.`}
+        description={course.description}
+        art={<img src={course.image} alt="" />}
+        action="Скоро"
+        muted
+        testId={course.id === 'hero-journey' ? 'library-hero' : 'library-course-card'}
+        onOpen={() => onOpen(course)}
+      />
+    )
+
   return (
     <StepsJournalBanner
       course
@@ -12,7 +30,8 @@ export default function CourseCard({ course, userId, onOpen }) {
       title={`${course.title.toLowerCase()}.`}
       description={course.description}
       art={<img src={course.image} alt="" />}
-      action={completed ? 'Продолжить →' : 'Начать →'}
+      action={completed ? 'Продолжить' : 'Начать'}
+      actionIcon={<ArrowRight size={16} />}
       testId={course.id === 'hero-journey' ? 'library-hero' : 'library-course-card'}
       onOpen={() => onOpen(course)}
       meta={

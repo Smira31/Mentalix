@@ -818,3 +818,10 @@
   width: 100%;
   font-size: calc(15px * var(--mx-type-scale));
 }
+.mx-hj-empty-course {
+  margin: var(--mx-space-10) var(--mx-space-5);
+  text-align: center;
+  color: rgb(var(--c-muted));
+  font-size: var(--mx-type-body-size);
+  line-height: 1.5;
+}

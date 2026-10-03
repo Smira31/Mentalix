@@ -6,6 +6,8 @@ export default function StepsJournalBanner({
   title,
   description,
   action,
+  actionIcon = null,
+  muted = false,
   art = null,
   onOpen,
   testId,
@@ -22,7 +24,10 @@ export default function StepsJournalBanner({
       <p className="mx-steps-journal__desc">{description}</p>
       {meta}
       {course ? (
-        <span className="mx-steps-journal__cta">{action}</span>
+        <span className={`mx-steps-journal__cta${muted ? ' mx-steps-journal__cta--muted' : ''}`}>
+          {action}
+          {actionIcon}
+        </span>
       ) : (
         <button
           type="button"
@@ -31,6 +36,7 @@ export default function StepsJournalBanner({
           onClick={onOpen}
         >
           {action}
+          {actionIcon}
         </button>
       )}
     </>

@@ -40,7 +40,7 @@ test('Курс подаётся данными; реестр автоматич�
 })
 
 test('Темы имеют человеческие названия и заменяемые placeholder SVG', () => {
-  assert.equal(libraryTopic('путь-героя').title, 'Путь героя')
+  assert.equal(libraryTopic('путь-героя').title, 'Кризис и рост')
   assert.equal(libraryTopic('юнг').title, 'Юнг')
   for (const tag of ['путь-героя', 'юнг', 'rest']) {
     assert.match(libraryTopic(tag).image, /placeholder-.*\.svg$/)
