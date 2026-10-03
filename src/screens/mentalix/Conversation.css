@@ -237,3 +237,16 @@
   line-height: 1.2;
   white-space: nowrap;
 }
+
+.mx-conversation-new-pill:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Статус неудачной отправки — под своим пузырём. */
+.mx-imessage-failed {
+  display: flex;
+  align-items: center;
+  gap: var(--mx-space-1);
+  margin-top: var(--mx-space-1);
+}

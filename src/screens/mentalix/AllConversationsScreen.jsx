@@ -6,12 +6,15 @@ import { PERSONAS } from './personas'
 import { relativeConversationDate } from './conversationDate'
 
 import './AllConversationsScreen.css'
+import './DialogNotice.css'
 
 const PERSONA_NAMES = Object.fromEntries(PERSONAS.map(p => [p.key, p.name]))
 
 export default function AllConversationsScreen({ user, onSelect, onBack }) {
   const [conversations, setConversations] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
+  const [attempt, setAttempt] = useState(0)
 
   useEffect(() => {
     if (!user?.id) return
@@ -19,16 +22,22 @@ export default function AllConversationsScreen({ user, onSelect, onBack }) {
     api.mentalix
       .listConversations(user.id, { limit: 50 })
       .then(data => {
-        if (!cancelled) setConversations(Array.isArray(data) ? data : [])
+        if (cancelled) return
+        setConversations(Array.isArray(data) ? data : [])
+        setError(false)
       })
-      .catch(() => {})
+      .catch(() => {
+        // Сбой загрузки — отдельное состояние с «Повторить», а не пустой
+        // список: иначе ошибка выглядит как «нет сохранённых разговоров».
+        if (!cancelled) setError(true)
+      })
       .finally(() => {
         if (!cancelled) setLoading(false)
       })
     return () => {
       cancelled = true
     }
-  }, [user?.id])
+  }, [user?.id, attempt])
 
   return (
     <Screen onBack={onBack} backTestId="all-conversations-back">
@@ -37,11 +46,32 @@ export default function AllConversationsScreen({ user, onSelect, onBack }) {
 
         {loading && <p className="text-muted text-[14px] text-center pt-4">Загрузка...</p>}
 
-        {!loading && conversations.length === 0 && (
+        {!loading && error && (
+          <div
+            role="alert"
+            data-testid="all-conversations-error"
+            className="mx-conversation-notice"
+          >
+            <span className="text-muted mx-type-body">Не удалось загрузить разговоры</span>
+            <button
+              type="button"
+              data-testid="all-conversations-retry"
+              className="mx-glass mx-conversation-retry"
+              onClick={() => {
+                setLoading(true)
+                setAttempt(value => value + 1)
+              }}
+            >
+              Повторить
+            </button>
+          </div>
+        )}
+
+        {!loading && !error && conversations.length === 0 && (
           <p className="text-muted text-[14px] text-center pt-10">Пока нет сохранённых разговоров.</p>
         )}
 
-        {!loading && conversations.length > 0 && (
+        {!loading && !error && conversations.length > 0 && (
           <ul className="mx-conversation-list" data-testid="all-conversations-list">
             {conversations.map(conv => (
               <li key={conv.id}>

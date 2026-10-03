@@ -8,6 +8,7 @@ import { DIALOG_STARTER_CHIPS, PERSONA_STARTER_CHIP_LABELS } from '../../data/pr
 import heroReference from '../../assets/dialog-hero-reference.png'
 
 import './PersonaPicker.css'
+import './DialogNotice.css'
 
 const DEFAULT_INDEX = 1
 
@@ -51,6 +52,8 @@ export default function PersonaPicker({
 }) {
   const [active, setActive] = useState(DEFAULT_INDEX)
   const [conversations, setConversations] = useState([])
+  const [conversationsError, setConversationsError] = useState(false)
+  const [conversationsAttempt, setConversationsAttempt] = useState(0)
   const [creating, setCreating] = useState(false)
   const trackRef = useRef(null)
   const scaleFrameRef = useRef(null)
@@ -92,13 +95,18 @@ export default function PersonaPicker({
     api.mentalix
       .listConversations(userId, { limit: 4 })
       .then(data => {
-        if (!cancelled) setConversations(Array.isArray(data) ? data : [])
+        if (cancelled) return
+        setConversations(Array.isArray(data) ? data : [])
+        setConversationsError(false)
       })
-      .catch(() => {})
+      .catch(() => {
+        // Сбой списка — не молчим: показываем баннер с «Повторить».
+        if (!cancelled) setConversationsError(true)
+      })
     return () => {
       cancelled = true
     }
-  }, [userId])
+  }, [userId, conversationsAttempt])
 
   // Мягкое затухание под шапкой Telegram — тот же механизм, что у «Шагов»
   // (PR #987): контент уходит под «Закрыть» с переходом, а не обрезается.
@@ -287,7 +295,28 @@ export default function PersonaPicker({
 
       {/* ── «Продолжить разговор» — до 3 последних разговоров ── */}
 
-      {recentConversations.length > 0 && (
+      {conversationsError && (
+        <div className="mx-dialog-continue">
+          <h3 className="mx-dialog-section-title">Продолжить разговор</h3>
+          <div
+            role="alert"
+            data-testid="continue-conversation-error"
+            className="mx-conversation-notice"
+          >
+            <span className="text-muted mx-type-body">Не удалось загрузить разговоры</span>
+            <button
+              type="button"
+              data-testid="continue-conversation-retry"
+              className="mx-glass mx-conversation-retry"
+              onClick={() => setConversationsAttempt(value => value + 1)}
+            >
+              Повторить
+            </button>
+          </div>
+        </div>
+      )}
+
+      {!conversationsError && recentConversations.length > 0 && (
         <div className="mx-dialog-continue" data-testid="continue-conversation-block">
           <h3 className="mx-dialog-section-title">Продолжить разговор</h3>
           <ul className="mx-conversation-list">

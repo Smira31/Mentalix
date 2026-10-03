@@ -1,4 +1,5 @@
 import { now } from './clock.js'
+import { mskDateParts } from './mskDate.js'
 import { DEFAULT_REVIEW_HOUR } from './todayCardState.js'
 import {
   DAIMON_CELLS,
@@ -343,20 +344,35 @@ function offsetDate(date, amount) {
 }
 
 /*
+ * Времена демо-разговоров ставим явно по МСК (+03:00): метка в списке
+ * («вчера»/«3 окт») считается по МСК, а не по часовому поясу окружения.
+ * Раньше `new Date('YYYY-MM-DDT…')` парсился в локальной зоне контейнера,
+ * и в CI (TZ=UTC) вечером по UTC — когда в Москве уже наступил следующий
+ * день — «вчера» уезжало ещё на день назад и показывалось как «1 окт».
+ */
+function mskShiftedIso(dayOffset, time) {
+  const parts = mskDateParts(new Date())
+  const day = new Date(Date.UTC(parts.year, parts.month - 1, parts.day + dayOffset))
+  const key = [
+    day.getUTCFullYear(),
+    String(day.getUTCMonth() + 1).padStart(2, '0'),
+    String(day.getUTCDate()).padStart(2, '0'),
+  ].join('-')
+  return new Date(`${key}T${time}:00+03:00`).toISOString()
+}
+
+/*
  * Демо-разговоры для блока «Продолжить разговор»: 2–3 разговора разных
  * ролей с историей сообщений, чтобы превью показывало блок сразу.
  */
 function buildDemoConversations() {
-  const today = now()
-  const yesterday = offsetDate(today, -1)
-  const daysAgo3 = offsetDate(today, -3)
   return [
     {
       id: 'demo-conv-1',
       persona: 'mayak',
       title: 'Сегодня было тяжело',
       last_message: 'Спутник рядом. Давай разберём это спокойно.',
-      updated_at: new Date(`${yesterday}T20:30:00`).toISOString(),
+      updated_at: mskShiftedIso(-1, '20:30'),
       messages: [
         { id: 'm1', role: 'user', content: 'Сегодня было тяжело' },
         {
@@ -377,7 +393,7 @@ function buildDemoConversations() {
       persona: 'kompas',
       title: 'Разложи цель на шаги',
       last_message: 'Наставник: начнём с одного маленького шага.',
-      updated_at: new Date(`${daysAgo3}T10:15:00`).toISOString(),
+      updated_at: mskShiftedIso(-3, '10:15'),
       messages: [
         { id: 'm5', role: 'user', content: 'Разложи цель на шаги' },
         {
@@ -392,13 +408,30 @@ function buildDemoConversations() {
       persona: 'dnevnik',
       title: 'Подведи итоги дня',
       last_message: 'Наблюдатель: я заметил один повторяющийся паттерн.',
-      updated_at: new Date(`${daysAgo3}T22:00:00`).toISOString(),
+      updated_at: mskShiftedIso(-3, '22:00'),
       messages: [
         { id: 'm7', role: 'user', content: 'Подведи итоги дня' },
         {
           id: 'm8',
           role: 'assistant',
           content: 'Наблюдатель: я заметил один повторяющийся паттерн.',
+        },
+      ],
+    },
+    // Четвёртый разговор — чтобы в демо был доступен вход «Все разговоры»
+    // (ссылка появляется, когда разговоров больше трёх).
+    {
+      id: 'demo-conv-4',
+      persona: 'kompas',
+      title: 'С чего начать неделю',
+      last_message: 'Наставник: выбери один шаг и сделай его сегодня.',
+      updated_at: mskShiftedIso(-6, '09:00'),
+      messages: [
+        { id: 'm9', role: 'user', content: 'С чего начать неделю' },
+        {
+          id: 'm10',
+          role: 'assistant',
+          content: 'Наставник: выбери один шаг и сделай его сегодня.',
         },
       ],
     },
@@ -832,6 +865,65 @@ function daimonTestMode() {
   return DAIMON_TEST_MODES.includes(value) ? value : null
 }
 
+/*
+ * ?dialogTest= — детерминированные сбои «Диалога» для UX-тестов аудита.
+ * Сбой держится ровно на время первой загрузки, а «Повторить» проходит,
+ * чтобы проверить, что кнопка действительно повторяет запрос.
+ *   historyError — не грузится история разговора
+ *   listError    — падает список разговоров: независимо на каждый запрос
+ *                  (и «Продолжить разговор», и «Все разговоры»)
+ *   createError  — падает создание разговора
+ *   sendError    — две неудачные отправки подряд
+ *   dailyLimit   — первая отправка отдаёт 429 daily_limit
+ *   slowCreate   — медленное создание разговора (индикатор в чате)
+ */
+const DIALOG_TEST_MODES = [
+  'historyError',
+  'listError',
+  'createError',
+  'sendError',
+  'dailyLimit',
+  'slowCreate',
+]
+
+function dialogTestMode() {
+  if (typeof window === 'undefined' || !isPreviewDemoMode()) return null
+  const value = new URLSearchParams(window.location.search).get('dialogTest')
+  return DIALOG_TEST_MODES.includes(value) ? value : null
+}
+
+/*
+ * В dev React StrictMode вызывает эффекты дважды, поэтому первая загрузка
+ * истории/списка уходит минимум двумя запросами. Одноразовый сбой съел бы
+ * второй (успешный) запрос, и баннер ошибки не появился бы вовсе. Поэтому
+ * сбой удерживается на всех попытках первой загрузки, а «Повторить»
+ * пользователя (следующий запрос) уже проходит.
+ */
+const DIALOG_TEST_GET_FAILURES = 2
+
+let dialogTestState = {
+  mode: null,
+  historyFailuresLeft: 0,
+  listFailuresLeft: new Map(),
+  createFailuresLeft: 0,
+  limitFailuresLeft: 0,
+  sendFailuresLeft: 0,
+}
+
+function dialogTestCounters(mode) {
+  if (dialogTestState.mode !== mode) {
+    dialogTestState = {
+      mode,
+      historyFailuresLeft: mode === 'historyError' ? DIALOG_TEST_GET_FAILURES : 0,
+      listFailuresLeft: new Map(),
+      createFailuresLeft: mode === 'createError' ? 1 : 0,
+      limitFailuresLeft: mode === 'dailyLimit' ? 1 : 0,
+      sendFailuresLeft: mode === 'sendError' ? 2 : 0,
+    }
+  }
+  return dialogTestState
+}
+
 // Детерминированный бросок для сценариев у клеток 11 / 36 / отскока.
 function daimonTestRoll(mode) {
   if (mode === 'nearSnake') return 1
@@ -924,6 +1016,62 @@ function respond(path, options = {}) {
   const method = (options.method || 'GET').toUpperCase()
   const body = bodyOf(options)
   const state = readState()
+
+  // Считаем попытки отправки — UX-тест проверяет «0 лишних POST» при лимите.
+  if (pathname === '/mentalix/messages' && method === 'POST' && typeof window !== 'undefined') {
+    window.__mxDemoMessagePosts = (window.__mxDemoMessagePosts || 0) + 1
+  }
+
+  // ── ?dialogTest= — одноразовые сбои «Диалога» для UX-тестов ──
+  const dialogTest = dialogTestMode()
+  if (dialogTest) {
+    const counters = dialogTestCounters(dialogTest)
+    const fail = (status, detail) => {
+      const error = new Error(`Демо: HTTP ${status}`)
+      error.status = status
+      if (detail) error.body = { detail }
+      return error
+    }
+    const isMessagesGet =
+      method === 'GET' &&
+      (pathname === '/mentalix/messages' ||
+        /^\/mentalix\/conversations\/[^/]+\/messages$/.test(pathname)) &&
+      url.searchParams.get('persona') !== 'daimon'
+
+    if (dialogTest === 'historyError' && isMessagesGet && counters.historyFailuresLeft > 0) {
+      counters.historyFailuresLeft -= 1
+      throw fail(500)
+    }
+    if (dialogTest === 'listError' && pathname === '/mentalix/conversations' && method === 'GET') {
+      // Сбой независимо на каждый запрос списка: «Продолжить разговор»
+      // (limit 4) и «Все разговоры» (limit 50) проверяются отдельно.
+      const limitKey = url.searchParams.get('limit') || 'default'
+      const left = counters.listFailuresLeft.get(limitKey) ?? DIALOG_TEST_GET_FAILURES
+      if (left > 0) {
+        counters.listFailuresLeft.set(limitKey, left - 1)
+        throw fail(500)
+      }
+    }
+    if (
+      dialogTest === 'createError' &&
+      pathname === '/mentalix/conversations' &&
+      method === 'POST' &&
+      counters.createFailuresLeft > 0
+    ) {
+      counters.createFailuresLeft -= 1
+      throw fail(500)
+    }
+    if (pathname === '/mentalix/messages' && method === 'POST') {
+      if (dialogTest === 'dailyLimit' && counters.limitFailuresLeft > 0) {
+        counters.limitFailuresLeft -= 1
+        throw fail(429, 'daily_limit')
+      }
+      if (dialogTest === 'sendError' && counters.sendFailuresLeft > 0) {
+        counters.sendFailuresLeft -= 1
+        throw fail(500)
+      }
+    }
+  }
 
   if (pathname === '/rituals' && method === 'GET') return json(state.rituals)
   if (pathname === '/rituals' && method === 'POST') {
@@ -1933,6 +2081,15 @@ export async function demoRequest(path, options = {}) {
   // ?daimonTest=slow: искусственная задержка Даймона для проверки состояний загрузки.
   if (daimonTestMode() === 'slow' && path.startsWith('/daimon')) {
     await new Promise(resolve => setTimeout(resolve, 3000))
+  }
+  // ?dialogTest=slowCreate: медленное создание разговора — чат остаётся
+  // смонтированным и показывает индикатор загрузки внутри себя.
+  if (
+    dialogTestMode() === 'slowCreate' &&
+    path === '/mentalix/conversations' &&
+    (options.method || 'GET').toUpperCase() === 'POST'
+  ) {
+    await new Promise(resolve => setTimeout(resolve, 1500))
   }
   const network = demoNetwork()
   if (network === 'Медленно') await new Promise(resolve => setTimeout(resolve, 4000))

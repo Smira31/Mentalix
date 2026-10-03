@@ -33,6 +33,7 @@ function buildFixtureRouter() {
   let reviewHour = 24
   const savedCheckins = []
   const sentMessages = []
+  const conversations = []
   const sentFeedback = []
   const streakRequests = []
   let streakResponse = {
@@ -76,16 +77,50 @@ function buildFixtureRouter() {
         return route.fulfill(jsonResponse(checkin))
       }
 
+      // Отдельные разговоры (контракт mentalix-bot): POST /conversations
+      // создаёт разговор и возвращает его id — чат открывается только после
+      // успешного создания; сообщение не уходит без conversation_id.
+      if (pathname === '/api/mentalix/conversations' && request.method() === 'POST') {
+        const payload = request.postDataJSON()
+        const conv = {
+          id: `fixture-conv-${conversations.length + 1}`,
+          persona: payload.persona || 'mayak',
+          title: '',
+          last_message: '',
+          created_at: '2026-09-23T19:00:00.000Z',
+          updated_at: '2026-09-23T19:00:00.000Z',
+          messages: [],
+        }
+        conversations.push(conv)
+        return route.fulfill(
+          jsonResponse({
+            id: conv.id,
+            persona: conv.persona,
+            title: conv.title,
+            created_at: conv.created_at,
+            updated_at: conv.updated_at,
+          })
+        )
+      }
+
       if (pathname === '/api/mentalix/messages' && request.method() === 'POST') {
         const payload = request.postDataJSON()
         sentMessages.push(payload)
-        return route.fulfill(
-          jsonResponse({
-            id: `fixture-reply-${sentMessages.length}`,
-            role: 'assistant',
-            content: LONG_AI_REPLY,
-          })
-        )
+        const reply = {
+          id: `fixture-reply-${sentMessages.length}`,
+          role: 'assistant',
+          content: LONG_AI_REPLY,
+        }
+        const conv = conversations.find(item => item.id === payload.conversation_id)
+        if (conv) {
+          conv.messages.push(
+            { id: `fixture-user-${sentMessages.length}`, role: 'user', content: payload.content },
+            reply
+          )
+          conv.last_message = payload.content.slice(0, 80)
+          conv.updated_at = '2026-09-23T19:10:00.000Z'
+        }
+        return route.fulfill(jsonResponse({ ...reply, conversationId: conv?.id || null }))
       }
 
       if (pathname.match(/^\/api\/checkins\/\d+\/feedback$/) && request.method() === 'POST') {
@@ -139,6 +174,34 @@ function buildFixtureRouter() {
             { id: 'fixture-history-1', role: 'assistant', content: 'История fixture.' },
           ])
         )
+      }
+
+      // Список разговоров («Продолжить разговор» в пикере) — массив
+      // сводок: id, persona, title, last_message, updated_at.
+      if (pathname === '/api/mentalix/conversations') {
+        const limit = Number(url.searchParams.get('limit') || 5)
+        const persona = url.searchParams.get('persona')
+        return route.fulfill(
+          jsonResponse(
+            conversations
+              .filter(conv => !persona || conv.persona === persona)
+              .slice(0, Number.isFinite(limit) ? limit : 5)
+              .map(conv => ({
+                id: conv.id,
+                persona: conv.persona,
+                title: conv.title,
+                last_message: conv.last_message,
+                updated_at: conv.updated_at,
+              }))
+          )
+        )
+      }
+
+      // История конкретного разговора.
+      const conversationMatch = pathname.match(/^\/api\/mentalix\/conversations\/([^/]+)\/messages$/)
+      if (conversationMatch) {
+        const conv = conversations.find(item => item.id === conversationMatch[1])
+        return route.fulfill(jsonResponse(conv?.messages || []))
       }
 
       return route.fulfill(jsonResponse({}))
