@@ -24,10 +24,10 @@ test('эмуляция Telegram рендерится в demo-режиме: ст�
   // Home Indicator убран полностью.
   assert.doesNotMatch(chrome, /mx-demo-telegram-chrome__home/)
 
-  // Компонент подключён в App; вложенная Библиотека рисует его через Screen.
+  // Компонент подключён один раз в App shell; вложенные Screen не дублируют его.
   assert.match(app, /import DemoTelegramChrome from '\.\/components\/DemoTelegramChrome'/)
   assert.match(
     app,
-    /!libraryInputMode\s*&&\s*shouldRenderDemoTelegramChrome\(\{\s*previewDemoMode,\s*platformName,\s*realPhone,\s*deviceFrameMode,\s*\}\)\s*&&\s*<DemoTelegramChrome \/>/
+    /shouldRenderDemoTelegramChrome\(\{\s*previewDemoMode,\s*platformName,\s*realPhone,\s*deviceFrameMode,\s*\}\)\s*&&\s*<DemoTelegramChrome \/>/
   )
 })
