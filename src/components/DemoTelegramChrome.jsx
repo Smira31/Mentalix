@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useLayoutEffect, useState } from 'react'
 import { ChevronDown, ChevronLeft, Ellipsis, X } from 'lucide-react'
 import { demoTelegramPillState } from '../lib/demoChrome'
 import {
@@ -25,7 +25,12 @@ export default function DemoTelegramChrome() {
 
   const [hasBackAction, setHasBackAction] = useState(() => Boolean(getCurrentBackAction()))
 
-  useEffect(() => subscribeBackStack(() => setHasBackAction(Boolean(getCurrentBackAction()))), [])
+  useLayoutEffect(() => {
+    const update = () => setHasBackAction(Boolean(getCurrentBackAction()))
+    const unsubscribe = subscribeBackStack(update)
+    update()
+    return unsubscribe
+  }, [])
 
   const pill = demoTelegramPillState(hasBackAction)
 

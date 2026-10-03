@@ -1,0 +1,355 @@
+.mx-library-stoic {
+  gap: 0;
+  padding: var(--mx-space-1) var(--mx-screen-x) var(--app-content-bottom);
+  font-family: inherit;
+}
+/* Подпись прижата к своему разделу: 32px от предыдущего, 12px до плиток. */
+.mx-library-stoic .mx-library-topic + .mx-library-topic {
+  margin-top: var(--mx-space-8);
+}
+.mx-library-stoic .mx-library-catalog__header {
+  min-height: var(--mx-btn-round-h);
+  margin: 0;
+}
+.mx-library-stoic .mx-library-hero {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  height: auto;
+  min-height: calc(var(--mx-space-10) * 6);
+  border-radius: var(--mx-radius-card);
+  background: var(--mx-steps-card-bg);
+  border: 1px solid var(--mx-steps-card-border);
+  text-align: left;
+  transition: transform 180ms ease;
+}
+.mx-library-hero .mx-steps-journal__body {
+  padding: var(--mx-space-5);
+  gap: var(--mx-space-2);
+}
+.mx-library-hero .mx-steps-journal__art {
+  background: rgb(var(--c-card2));
+}
+.mx-library-hero .mx-steps-journal__label {
+  color: rgb(var(--c-muted));
+  letter-spacing: 0.14em;
+}
+.mx-library-hero .mx-steps-journal__title {
+  color: rgb(var(--c-text));
+}
+.mx-library-hero .mx-steps-journal__desc {
+  color: rgb(var(--c-muted));
+}
+.mx-library-hero .mx-steps-journal__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--mx-space-2);
+  min-width: 0;
+  min-height: var(--mx-btn-round-h);
+  padding-inline: var(--mx-space-5);
+  border-radius: var(--mx-radius-pill);
+  background: var(--btn-bg);
+  color: var(--btn-text);
+}
+.mx-library-hero .mx-steps-journal__cta--muted {
+  background: rgb(var(--c-border));
+  color: rgb(var(--c-muted));
+}
+.mx-library-topic {
+  display: grid;
+  gap: var(--mx-space-3);
+}
+.mx-library-caps {
+  margin: 0;
+  padding-block: 0;
+  color: rgb(var(--c-muted));
+  font-family: inherit;
+  font-size: var(--mx-type-meta-size);
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.mx-library-topic > h2 {
+  text-align: center;
+}
+.mx-library-tiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--mx-space-6) var(--mx-space-3);
+}
+.mx-library-stoic .mx-library-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  min-width: 0;
+  min-height: var(--mx-btn-round-h);
+  border: 0;
+  padding: var(--mx-space-4);
+  background: rgb(var(--c-card));
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--mx-radius-card);
+  color: rgb(var(--c-text));
+  text-align: center;
+  transition: transform 180ms ease;
+  box-shadow: none;
+}
+.mx-library-art-slot {
+  position: relative;
+  display: block;
+  width: 56px;
+  height: 92px;
+  margin-bottom: var(--mx-space-3);
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: var(--mx-radius-xs);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: linear-gradient(
+    to bottom,
+    rgb(var(--c-card2)) 0%,
+    rgb(var(--c-card2)) 42%,
+    rgb(var(--c-card-raised2)) 42%,
+    rgb(var(--c-card-raised)) 100%
+  );
+}
+.mx-library-excerpt {
+  min-height: 2.9em;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+.mx-library-hero:active,
+.mx-library-tile:active {
+  transform: scale(0.97);
+}
+.mx-library-sheet-surface.mx-screen {
+  background: transparent;
+  /* Глобальная demo-шапка имеет z-index: 100 и должна принимать Back
+     поверх любой библиотечной шторки. Сама шторка остаётся выше обычных
+     fullscreen-экранов (z-index: 60). */
+  z-index: 99;
+  /* Шторка и затемнение поверх всего экрана до самого низа:
+     убираем safe-area отступы оболочки, safe area живёт внутри шторки. */
+  padding-bottom: 0 !important;
+}
+.mx-library-sheet-surface .mx-screen__content {
+  position: relative;
+  justify-content: flex-end;
+  padding: 0;
+  max-width: none;
+}
+.mx-library-sheet-backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: rgb(var(--c-bg) / 0.72);
+  border: 0;
+}
+.mx-library-sheet-surface .mx-screen__body {
+  padding-bottom: 0;
+}
+.mx-library-sheet {
+  position: relative;
+  display: grid;
+  gap: var(--mx-space-6);
+  justify-items: center;
+  max-height: 85%;
+  overflow-y: auto;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 28rem;
+  border-radius: var(--mx-radius-hero) var(--mx-radius-hero) 0 0;
+  border: 1px solid rgb(var(--c-border));
+  padding: var(--mx-space-3) var(--mx-screen-x) var(--app-safe-bottom);
+  color: rgb(var(--c-text));
+  text-align: center;
+  overscroll-behavior: contain;
+  animation: mx-sheet-enter 270ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+.mx-library-sheet h2,
+.mx-library-sheet p {
+  margin: 0;
+}
+.mx-library-sheet-handle {
+  width: var(--mx-space-10);
+  height: var(--mx-space-1);
+  border-radius: var(--mx-radius-pill);
+  background: rgb(var(--c-muted));
+}
+.mx-library-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-width: var(--mx-btn-round-h);
+  min-height: var(--mx-btn-pill-h);
+  padding: var(--mx-space-3) var(--mx-space-5);
+  border: 0;
+  border-radius: var(--mx-radius-pill);
+  background: var(--btn-bg);
+  color: var(--btn-text);
+}
+/* Белая рамка фокуса только для клавиатуры (:focus-visible),
+   при касании/мыши — без обводки. */
+.mx-library-action:focus:not(:focus-visible) {
+  outline: 0;
+}
+.mx-library-reader {
+  display: grid;
+  gap: var(--mx-space-8);
+  padding-bottom: var(--mx-space-8);
+}
+.mx-library-reader header {
+  display: grid;
+  gap: var(--mx-space-4);
+}
+.mx-library-reader h1,
+.mx-library-reader p,
+.mx-library-reader h2 {
+  margin: 0;
+}
+.mx-library-reader-text {
+  display: grid;
+  gap: var(--mx-space-6);
+  max-width: 60ch;
+}
+.mx-library-reader-text p {
+  font-weight: 400;
+  line-height: 1.8;
+}
+.mx-library-reflection {
+  display: grid;
+  gap: var(--mx-space-5);
+  padding-block: var(--mx-space-6);
+  border-top: 1px solid rgb(var(--c-border));
+}
+.mx-library-next {
+  display: grid;
+  gap: var(--mx-space-2);
+  width: 100%;
+  min-height: var(--mx-btn-pill-h);
+  padding-block: var(--mx-space-4);
+  text-align: left;
+  color: rgb(var(--c-text));
+}
+.mx-library-source {
+  display: flex;
+  align-items: center;
+  min-height: var(--mx-btn-round-h);
+}
+.mx-library-reader-surface .mx-nested-screen-back {
+  min-width: var(--mx-btn-round-h);
+  min-height: var(--mx-btn-round-h);
+}
+@media (prefers-reduced-motion: reduce) {
+  .mx-library-hero,
+  .mx-library-tile,
+  .mx-library-sheet {
+    animation: none;
+    transition: none;
+  }
+}
+
+.mx-library-art-slot img,
+.mx-library-hero .mx-steps-journal__art img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* Картинка стоит на светлом «дне» капсулы, верх остаётся тёмной нишей. */
+.mx-library-art-slot img {
+  position: absolute;
+  bottom: 4%;
+  left: 6%;
+  width: 88%;
+  height: 56%;
+  border-radius: 6px;
+}
+/* Заголовок плитки: мельче и легче, максимум 2 строки. */
+.mx-library-tile .mx-type-card {
+  font-size: calc(15px * var(--mx-type-scale));
+  font-weight: 600;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  margin: 0;
+}
+/* Описание: ~12px, серое, 2 строки. */
+.mx-library-excerpt {
+  margin-top: var(--mx-space-1);
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
+  line-height: 1.35;
+  min-height: 0;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+.mx-library-topic > h2 {
+  padding-block: 0;
+}
+.mx-library-course-list {
+  display: grid;
+  gap: var(--mx-space-5);
+  min-width: 0;
+}
+.mx-library-course-carousel {
+  min-width: 0;
+}
+.mx-library-course-carousel .mx-tqc-track {
+  --mx-tqc-extend: var(--mx-screen-x);
+  height: auto;
+  gap: var(--mx-space-3);
+  padding: 0 var(--mx-screen-x);
+  scroll-padding-inline: var(--mx-screen-x);
+  align-items: stretch;
+}
+.mx-library-course-carousel .mx-tqc-card {
+  flex: 0 0 90%;
+  width: 90%;
+  height: auto;
+  padding: 0;
+  border: 0;
+  border-radius: var(--mx-radius-card);
+  scroll-snap-align: center;
+  transition:
+    transform 180ms var(--mx-ease-out),
+    opacity 180ms ease;
+  will-change: transform, opacity;
+  transform-origin: center;
+}
+.mx-library-course-carousel .mx-library-hero {
+  height: 100%;
+}
+.mx-library-course-progress {
+  display: grid;
+  gap: var(--mx-space-1);
+  width: 100%;
+  color: rgb(var(--c-muted));
+  font-size: var(--mx-type-meta-size);
+}
+.mx-library-course-progress progress {
+  width: 100%;
+  height: var(--mx-space-1);
+  border: 0;
+  border-radius: var(--mx-radius-pill);
+  overflow: hidden;
+  background: rgb(var(--c-border));
+}
+.mx-library-course-progress progress::-webkit-progress-bar {
+  background: rgb(var(--c-border));
+}
+.mx-library-course-progress progress::-webkit-progress-value {
+  background: rgb(var(--c-text));
+}
+.mx-library-course-progress progress::-moz-progress-bar {
+  background: rgb(var(--c-text));
+}
+.mx-hj-fit .mx-screen__content {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}

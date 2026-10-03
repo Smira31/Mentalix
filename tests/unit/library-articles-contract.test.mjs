@@ -1,24 +1,34 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { readFile } from 'node:fs/promises'
+import { ARTICLES } from '../../src/data/articles.js'
+import {
+  fetchArticles,
+  peekArticles,
+  peekArticlesSnapshot,
+  invalidateArticles,
+} from '../../src/lib/libraryDataCache.js'
 
-const cacheSource = await readFile(
-  new URL('../../src/lib/libraryDataCache.js', import.meta.url),
-  'utf8'
-)
-const articlesSource = await readFile(
-  new URL('../../src/screens/Articles.jsx', import.meta.url),
-  'utf8'
-)
-
-test('MXL-526: кеш статей сохраняет body и source для Reader', () => {
-  assert.match(cacheSource, /body: typeof article\?\.body === 'string' \? article\.body : ''/)
-  assert.match(cacheSource, /source: typeof article\?\.source === 'string' \? article\.source : null/)
+test('Все потребители читают единый ARTICLES, включая старый адаптер', async () => {
+  assert.equal(peekArticles(), ARTICLES)
+  assert.equal(peekArticlesSnapshot(), ARTICLES)
+  assert.equal(await fetchArticles({ force: true }), ARTICLES)
+  invalidateArticles()
+  assert.equal(await fetchArticles(), ARTICLES)
+  const cache = await readFile(
+    new URL('../../src/lib/libraryDataCache.js', import.meta.url),
+    'utf8'
+  )
+  assert.doesNotMatch(cache, /api\.articles|sessionStorage/)
 })
 
-test('MXL-526: ошибка загрузки статей отделена от пустого состояния, есть retry', () => {
-  assert.match(articlesSource, /setError\(true\)/)
-  assert.match(articlesSource, /Не удалось загрузить статьи\. Проверь соединение\./)
-  assert.match(articlesSource, /retryLoad/)
-  assert.match(articlesSource, /Повторить/)
+test('Статья доступна целиком и без сети: текст, источник и вопрос не теряются', () => {
+  for (const article of peekArticles()) {
+    assert.ok(article.id && article.title && article.body && article.question)
+    assert.ok(article.minutes > 0)
+  }
+  assert.equal(
+    peekArticles().find(a => a.id === 'son-kak-uborka').source,
+    'https://www.nature.com/articles/s41593-024-01638-y'
+  )
 })

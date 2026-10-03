@@ -11,6 +11,7 @@ const USER_DATA_PREFIXES = [
   'mx-guided-',
   'mx-mood-check-',
   'mx-hero-journey-',
+  'mx-course-',
 ]
 
 let activeUserId = null
@@ -26,9 +27,10 @@ function clearStorageExcept(storage, userId) {
       if (!key || !isUserDataKey(key)) continue
       // User-scoped records are retained only for the user entering this scope.
       // Unscoped legacy keys are always removed during the first switch.
-      const belongsToUser = key.startsWith('mx-hero-journey-')
-        ? key.split(':')[1] === String(userId)
-        : key.includes(`:${userId}`)
+      const belongsToUser =
+        key.startsWith('mx-hero-journey-') || key.startsWith('mx-course-')
+          ? key.split(':')[1] === String(userId)
+          : key.includes(`:${userId}`)
       if (!belongsToUser) storage.removeItem(key)
     }
   } catch {

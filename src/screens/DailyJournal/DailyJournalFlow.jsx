@@ -76,7 +76,7 @@ function stripLeadingTimestamp(text) {
   return text.replace(/^\d{1,2}\s+\S+,\s\d{2}:\d{2}\.\s*/, '')
 }
 
-export default function DailyJournalFlow({ userId, onClose }) {
+export default function DailyJournalFlow({ userId, onClose, reflectionPrompt = null }) {
   const [todayDate, setTodayDate] = useState(() => now())
   const dateStr = journalDate(todayDate)
 
@@ -220,11 +220,11 @@ export default function DailyJournalFlow({ userId, onClose }) {
           if (!d?.promptText) {
             const prompts = setupData?.prompts || []
             const qIndex = td % Math.max(1, prompts.length)
-            setPromptText(prompts[qIndex] || '')
+            setPromptText(reflectionPrompt || prompts[qIndex] || '')
           }
 
           if (!setupData?.updated_at) {
-            setStage('intro')
+            setStage(reflectionPrompt ? 'setup' : 'intro')
           } else if (setupHasData(setupData)) {
             setStage('review')
           } else {
@@ -395,6 +395,11 @@ export default function DailyJournalFlow({ userId, onClose }) {
       onClose()
       return
     }
+    if (reflectionPrompt && (stage === 'stream' || stage === 'review')) {
+      flushDraft()
+      onClose()
+      return
+    }
     if (stage === 'stream') {
       platform.haptic('light')
       if (hasTodayEntry) {
@@ -414,7 +419,7 @@ export default function DailyJournalFlow({ userId, onClose }) {
       return
     }
     onClose()
-  }, [stage, onClose, setup, hasTodayEntry])
+  }, [stage, onClose, setup, hasTodayEntry, reflectionPrompt, flushDraft])
 
   useBackButton(goBack)
 
@@ -425,6 +430,10 @@ export default function DailyJournalFlow({ userId, onClose }) {
   }
 
   function handleSetupBack() {
+    if (reflectionPrompt && !setup?.updated_at) {
+      onClose()
+      return
+    }
     if (setup?.updated_at) {
       setStage('review')
     } else {
@@ -840,9 +849,7 @@ export default function DailyJournalFlow({ userId, onClose }) {
             <div className="mx-dj-review__section">
               <CapsLabel className="mx-dj-review__label">Напоминание</CapsLabel>
               <p className="mx-dj-review__reminder">
-                {setup.reminder.enabled
-                  ? `Каждый день в ${setup.reminder.time}`
-                  : 'Выключено'}
+                {setup.reminder.enabled ? `Каждый день в ${setup.reminder.time}` : 'Выключено'}
               </p>
             </div>
           )}
@@ -965,9 +972,11 @@ export default function DailyJournalFlow({ userId, onClose }) {
             feedbackQuestion="Помогло?"
             onFeedback={handleFeedback}
           />
-          {saveError && <div className="mx-dj-save-error" data-testid="dj-save-error">
+          {saveError && (
+            <div className="mx-dj-save-error" data-testid="dj-save-error">
               Не отправлено — отправим, когда появится связь
-            </div>}
+            </div>
+          )}
         </>
       )
     }

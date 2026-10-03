@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { ChevronRight } from 'lucide-react'
 
 import SemanticGlyph from './SemanticGlyph'
+import StepsJournalBanner from './StepsJournalBanner'
 import ThemeQuestionCarousel from './ThemeQuestionCarousel'
 import { getPracticeByKey, PRACTICE_COLLECTIONS } from '../lib/practiceCatalogRegistry'
 import { illustrations } from '../assets/illustrations'
@@ -15,25 +16,21 @@ function PracticeGlyph({ kind, highlighted = false }) {
 
 /* ── 2. Большая карточка журнала ── */
 function JournalBanner({ onOpen }) {
+  const HeroArt = illustrations.stepsHero
   return (
-    <article className="mx-steps-journal">
-      <div className="mx-steps-journal__art" aria-hidden="true">
-        {illustrations.stepsHero
-          ? (() => {
-              const HeroArt = illustrations.stepsHero
-              return <HeroArt />
-            })()
-          : null}
-      </div>
-      <div className="mx-steps-journal__body">
-        <span className="mx-steps-journal__label">Журнал · сегодня</span>
-        <h2 className="mx-steps-journal__title">Страница для себя</h2>
-        <p className="mx-steps-journal__desc">Перечитай, кем становишься, и выпиши всё из головы. 5 минут.</p>
-        <button type="button" className="mx-steps-journal__cta" data-testid="journal-open-cta" onClick={onOpen}>
+    <StepsJournalBanner
+      label="Журнал · сегодня"
+      title="Страница для себя"
+      description="Перечитай, кем становишься, и выпиши всё из головы. 5 минут."
+      action={
+        <>
           Открыть журнал <ChevronRight size={15} />
-        </button>
-      </div>
-    </article>
+        </>
+      }
+      art={HeroArt ? <HeroArt /> : null}
+      testId="journal-open-cta"
+      onOpen={onOpen}
+    />
   )
 }
 
@@ -49,11 +46,7 @@ function RailCard({ card, onOpen }) {
       onClick={() => card.active && onOpen(card.practice)}
     >
       <span className="mx-steps-rail-card__icon" aria-hidden="true">
-        {CardArt ? (
-          <CardArt />
-        ) : (
-          <PracticeGlyph kind={card.kind} highlighted={card.active} />
-        )}
+        {CardArt ? <CardArt /> : <PracticeGlyph kind={card.kind} highlighted={card.active} />}
       </span>
       <span
         className={`mx-steps-rail-card__badge ${card.badgeColor === 'gold' ? 'mx-steps-rail-card__badge--gold' : ''}`}
@@ -128,7 +121,13 @@ function ThemeCarousel({
   onRetry,
   onOpenAllThemes,
 }) {
-  if (themeLoading || themeError || !theme || !Array.isArray(theme.days) || theme.days.length === 0) {
+  if (
+    themeLoading ||
+    themeError ||
+    !theme ||
+    !Array.isArray(theme.days) ||
+    theme.days.length === 0
+  ) {
     return (
       <section className="mx-steps-theme-section" aria-label="Тема недели" aria-live="polite">
         <div className="mx-steps-theme-panel">
@@ -179,7 +178,10 @@ function ThemeCarousel({
           currentDay={theme.current_day ?? 1}
           startedOn={theme.started_on}
           serverDate={theme.server_date}
-          initialIndex={Math.max(0, theme.days.findIndex(q => q.day === theme.current_day))}
+          initialIndex={Math.max(
+            0,
+            theme.days.findIndex(q => q.day === theme.current_day)
+          )}
           onWrite={question => onOpen(theme, question.day)}
           onViewAnswer={question => onOpen(theme, question.day)}
         />
