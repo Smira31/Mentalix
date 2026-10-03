@@ -20,7 +20,11 @@ export function useScrollFade(attrName, active = true) {
     if (!root) return undefined
 
     const sync = () => {
-      const next = root.scrollTop > 2 ? '1' : '0'
+      // На iPhone в Telegram document может прокручиваться вместо
+      // scroll-root (overflow: hidden на shell не всегда работает на iOS).
+      // Берём максимум из обоих источников — как BottomNavigation.
+      const scrolled = Math.max(root.scrollTop, window.scrollY || 0)
+      const next = scrolled > 2 ? '1' : '0'
       if (lastValueRef.current === next) return
       lastValueRef.current = next
       root.dataset[attrName] = next
@@ -28,8 +32,10 @@ export function useScrollFade(attrName, active = true) {
 
     sync()
     root.addEventListener('scroll', sync, { passive: true })
+    window.addEventListener('scroll', sync, { passive: true })
     return () => {
       root.removeEventListener('scroll', sync)
+      window.removeEventListener('scroll', sync)
       delete root.dataset[attrName]
       lastValueRef.current = null
     }
