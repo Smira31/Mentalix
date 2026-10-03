@@ -1354,8 +1354,14 @@
 }
 .mx-today-series-tooltip button {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: -3px;
+  right: -7px;
+  /* Область нажатия 44×44; крестик остаётся на прежнем месте и того же размера. */
+  display: grid;
+  place-items: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
   border: 0;
   background: transparent;
   color: rgb(var(--c-text));
