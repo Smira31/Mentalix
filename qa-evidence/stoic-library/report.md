@@ -1,5 +1,25 @@
 # Библиотека в стиле Stoic — отчёт
 
+## Финальная сверка stoic-library-v2 — 03.10.2026 (продолжение)
+
+**Шаг 0:** `git fetch origin` выполнен. HEAD `077319d905`, `origin/main` `c82fad014a`, `git merge-base` = `c82fad014a` (= origin/main). Ветка на 5 коммитов впереди, отставания нет — merge не требуется. Незакоммиченных правок нет. История не переписывалась: reset/rebase/force-push/переключение ветки не выполнялись.
+
+**Проверено:** последние правки (App, Screen, Library — отступы) на месте (коммит `077319d9`). Приложение открывается без ошибок: dev-server на 3000 healthy, `curl /` → 200.
+
+**check:core:** PASS внутри контейнера (`docker compose exec web npm run check:core`): unit 859 passed, 0 failed, 2 прежних skipped; ESLint 0 errors; Vite build PASS; docs:check PASS (273 файла, 0 ошибок). На хосте 3 unit-теста падают с `Cannot find package 'react'` — это отсутствие `node_modules` на хосте (volume в контейнере), не регрессия; в контейнере все 859 зелёные.
+
+**UX-тест библиотеки:** `npx playwright test --config=pw-library-stoic.config.mjs` — 1 сценарий, Chromium, PASS (10.6 с). Проверены рамки 393 и 440 с демо-шапкой Telegram: «Библиотека» на всю ширину с полями 16px, заголовок «библиотека.» на одной линии слева с «✕ Закрыть» (как «Сегодня»), курс/шторка/читалка без наложений шапки, навигация, свайпы, сохранение прогресса после reload.
+
+**Живой превью:** `?demo=1&tab=library` (без `frame=0`/`tgshell=0`) — после полной перезагрузки `library-home` и `mx-demo-telegram-chrome__controls` видны, ошибок рендеринга нет. (Предварительный client-side navigate показывал онбординг — `useState` инициализируется один раз на маунте; полный reload с `?demo=1` активирует demo-режим корректно.)
+
+**Скрины 430×932 с демо-шапкой** (обновлены, Playwright Chromium, dev-исходники):
+
+[Главная, один курс](home.png) · [Главная, два демо-курса](home-demo.png) · [Курс с «‹ Назад»](course.png) · [Шторка](sheet.png) · [Начало статьи](reader-start.png) · [Конец статьи](reader-end.png)
+
+**Ограничения:** полный `ux:check` и WebKit не запускались/не устанавливались — оставлены CI. Ручной iPhone/Telegram gate остаётся.
+
+---
+
 ## Продолжение stoic-library-v2 — 03.10.2026
 
 **Сверка:** на старте HEAD `5ebd255b13`, ветка `stoic-library-v2`, рабочее дерево с сохранёнными правками. Проверены движок курсов, CourseCard/CourseCatalog, placeholder-road/mountain/mask/book.svg, плитки, словарь тем и Telegram «Назад». Ничего не откатывалось; reset/rebase/force-push, ручные commit/push и переключение ветки не выполнялись. `git fetch --all --prune` выполнен.
