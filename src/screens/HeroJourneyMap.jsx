@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { ArrowRight, Check, Lock, X } from 'lucide-react'
 
@@ -18,7 +18,11 @@ import {
   useHeroJourneyProgress,
   isStepAvailable,
   isStepCompleted,
+  readHeroDraft,
+  clearHeroDraft,
 } from '../lib/heroJourneyProgress'
+import { heroDraftKey } from '../lib/heroJourneyState'
+import { writeLocal } from '../lib/store'
 import {
   HERO_JOURNEY_TRIALS,
   HERO_JOURNEY_CHAPTERS,
@@ -26,6 +30,7 @@ import {
   HERO_JOURNEY_FINALE,
   HERO_JOURNEY_TOTAL_STEPS,
   findTrial,
+  previousTrial,
   chapterForTrial,
   trialsForChapter,
 } from '../data/heroJourney'
@@ -67,11 +72,11 @@ function headerScreens(trial) {
 /* Колонка на всю высоту без скролла — для вступления шага (контент обязан влезать) */
 const FULLSCREEN_FIT_CLASS = 'w-full flex-1 min-h-0 flex flex-col overflow-hidden'
 
-function Shell({ children, footer, bodyClassName = '', fit = false }) {
+function Shell({ children, footer, bodyClassName = '', fit = false, testId }) {
   const { style } = useFullscreenSurface()
 
   return createPortal(
-    <div className={FULLSCREEN_SHELL_CLASS} style={style}>
+    <div className={FULLSCREEN_SHELL_CLASS} style={style} data-testid={testId}>
       <div className={`${fit ? FULLSCREEN_FIT_CLASS : FULLSCREEN_SCROLL_CLASS} mx-hero-journey`}>
         <div
           className={`mx-auto flex w-full max-w-md flex-col px-[var(--mx-screen-x)] pb-6 ${fit ? 'flex-1 min-h-0' : ''} ${bodyClassName}`}
@@ -124,13 +129,15 @@ function ChapterSection({ chapter, progress, onOpenStep, currentStepId }) {
         <div className="mx-hj-chapter__path">
           {trials.map((trial, i) => {
             const completed = isStepCompleted(trial.id, progress)
-            const prevTrial = i > 0 ? trials[i - 1] : null
+            const prevTrial = previousTrial(trial.id)
             const available = isStepAvailable(trial.number, prevTrial?.id, progress, DEMO)
             const status = completed ? 'completed' : available ? 'current' : 'locked'
 
             return (
               <button
                 key={trial.id}
+                data-testid={`hero-step-${trial.id}`}
+                data-state={completed ? 'done' : available ? 'open' : 'locked'}
                 type="button"
                 disabled={status === 'locked'}
                 onClick={() => onOpenStep(trial.id)}
@@ -167,8 +174,8 @@ function CourseMap({ progress, onOpenStep, onBack }) {
   }, [progress])
 
   return (
-    <Shell>
-      <RoundBackButton onClick={onBack} />
+    <Shell testId="hero-journey-map">
+      <RoundBackButton testId="hero-map-back" onClick={onBack} />
 
       <div className="mx-hj-map__head">
         <span className="mx-hj-eyebrow">Курс · 16 шагов · 4 главы</span>
@@ -189,7 +196,12 @@ function CourseMap({ progress, onOpenStep, onBack }) {
       </div>
 
       {nextTrial && (
-        <button type="button" onClick={() => onOpenStep(nextTrial.id)} className="mx-hj-next-card">
+        <button
+          type="button"
+          data-testid="hero-continue"
+          onClick={() => onOpenStep(nextTrial.id)}
+          className="mx-hj-next-card"
+        >
           <span className="mx-hj-next-card__label">Следующий шаг · {nextTrial.number}</span>
           <span className="mx-hj-next-card__title">{appHeading(nextTrial.title)}</span>
           <span className="mx-hj-next-card__sub">{nextTrial.subtitle}</span>
@@ -232,13 +244,13 @@ function StepIntro({ trial, onBack, onStart }) {
       {enterImage ? (
         <div className="mx-hj-hero-image">
           <div className="mx-hj-hero-image__back">
-            <RoundBackButton onClick={onBack} />
+            <RoundBackButton testId="hero-step-back" onClick={onBack} />
           </div>
           <img src={enterImage} alt="" />
         </div>
       ) : (
         <>
-          <RoundBackButton onClick={onBack} />
+          <RoundBackButton testId="hero-step-back" onClick={onBack} />
 
           <div className="mx-hj-step-intro__image">
             <div className="mx-hj-step-intro__glyph">
@@ -259,7 +271,12 @@ function StepIntro({ trial, onBack, onStart }) {
         <p className="mx-hj-step-intro__flow">2 шага: запись и одно действие</p>
       </div>
 
-      <button type="button" onClick={onStart} className="cta-pill mx-hj-step-intro__cta">
+      <button
+        type="button"
+        data-testid="hero-step-start"
+        onClick={onStart}
+        className="cta-pill mx-hj-step-intro__cta"
+      >
         Начать шаг
       </button>
     </Shell>
@@ -285,7 +302,7 @@ function StepHeader({ trial, onBack, view }) {
 
   return (
     <div className="mx-hj-step-header">
-      <RoundBackButton onClick={onBack} />
+      <RoundBackButton testId="hero-step-back" onClick={onBack} />
       <div className="mx-hj-step-header__row">
         <span className="mx-hj-step-header__label">
           {trial.title} · {HEADER_VIEW_LABELS[view]}
@@ -341,7 +358,12 @@ function SignsScreen({ trial, markedSigns, onToggleSign, onNext, onBack }) {
         <span className="mx-hj-signs__count">
           Отмечено {markedCount} из {signs.length}
         </span>
-        <button type="button" onClick={onNext} className="cta-pill mx-hj-signs__cta">
+        <button
+          type="button"
+          data-testid="hero-signs-next"
+          onClick={onNext}
+          className="cta-pill mx-hj-signs__cta"
+        >
           Дальше
         </button>
       </div>
@@ -386,7 +408,12 @@ function PathsScreen({ trial, onNext, onBack }) {
         </blockquote>
       )}
 
-      <button type="button" onClick={onNext} className="cta-pill mx-hj-paths__cta">
+      <button
+        type="button"
+        data-testid="hero-paths-next"
+        onClick={onNext}
+        className="cta-pill mx-hj-paths__cta"
+      >
         Дальше
       </button>
     </Shell>
@@ -427,6 +454,8 @@ function WriteScreen({
       </div>
 
       <JournalTextarea
+        testId={`hero-${view}-input`}
+        submitTestId={`hero-${view}-next`}
         value={value}
         onChange={onChange}
         placeholder={placeholder}
@@ -464,7 +493,12 @@ function StepComplete({ trial, progress, onBackToMap, onBack }) {
     <Shell
       footer={
         <div className="mx-hj-complete__footer mx-auto w-full max-w-md px-[var(--mx-screen-x)]">
-          <button type="button" onClick={onBackToMap} className="cta-pill mx-hj-complete__cta">
+          <button
+            type="button"
+            data-testid="hero-complete-map"
+            onClick={onBackToMap}
+            className="cta-pill mx-hj-complete__cta"
+          >
             К карте пути
           </button>
         </div>
@@ -473,12 +507,12 @@ function StepComplete({ trial, progress, onBackToMap, onBack }) {
       {doneImage ? (
         <div className="mx-hj-hero-image">
           <div className="mx-hj-hero-image__back">
-            <RoundBackButton onClick={onBack} />
+            <RoundBackButton testId="hero-step-back" onClick={onBack} />
           </div>
           <img src={doneImage} alt="" />
         </div>
       ) : (
-        <RoundBackButton onClick={onBack} />
+        <RoundBackButton testId="hero-step-back" onClick={onBack} />
       )}
 
       <div className="mx-hj-complete">
@@ -529,13 +563,47 @@ function StepComplete({ trial, progress, onBackToMap, onBack }) {
 
 /* ── главный компонент ── */
 
-export default function HeroJourneyMap({ onBack }) {
-  const { progress, completeStep, setSigns } = useHeroJourneyProgress()
+export default function HeroJourneyMap({ onBack, user }) {
+  const { progress, completeStep, setSigns } = useHeroJourneyProgress(user.id)
   const [view, setView] = useState('map')
   const [activeStepId, setActiveStepId] = useState(null)
   const [markedSigns, setMarkedSigns] = useState([])
   const [reflection, setReflection] = useState('')
   const [action, setAction] = useState('')
+  const pendingDraft = useRef(null)
+  const draftTimer = useRef(null)
+
+  const flushDraft = useCallback(() => {
+    clearTimeout(draftTimer.current)
+    const draft = pendingDraft.current
+    if (draft) writeLocal(draft.key, JSON.stringify(draft.value))
+  }, [])
+
+  useEffect(() => {
+    const saveOnHide = () => {
+      if (document.hidden) flushDraft()
+    }
+    window.addEventListener('pagehide', flushDraft)
+    document.addEventListener('visibilitychange', saveOnHide)
+    return () => {
+      flushDraft()
+      window.removeEventListener('pagehide', flushDraft)
+      document.removeEventListener('visibilitychange', saveOnHide)
+    }
+  }, [flushDraft])
+
+  function changeDraft(field, value) {
+    if (!activeStepId) return
+    const key = heroDraftKey(user.id, activeStepId)
+    pendingDraft.current = {
+      key,
+      value: { reflection, action, [field]: value },
+    }
+    if (field === 'reflection') setReflection(value)
+    else setAction(value)
+    clearTimeout(draftTimer.current)
+    draftTimer.current = setTimeout(flushDraft, 300)
+  }
 
   const trial = useMemo(() => (activeStepId ? findTrial(activeStepId) : null), [activeStepId])
 
@@ -548,15 +616,27 @@ export default function HeroJourneyMap({ onBack }) {
       onBack()
       return
     }
-    setView('map')
+    flushDraft()
+    const seq = screenSequence(trial)
+    setView(seq[seq.indexOf(view) - 1] || 'map')
   }
 
   function openStep(stepId) {
+    const selected = findTrial(stepId)
+    if (!selected) return
+    if (
+      !isStepCompleted(stepId, progress) &&
+      !isStepAvailable(selected.number, previousTrial(stepId)?.id, progress, DEMO)
+    )
+      return
+    flushDraft()
+    pendingDraft.current = null
+    const draft = readHeroDraft(heroDraftKey(user.id, stepId))
     platform.haptic('light')
     setActiveStepId(stepId)
     setMarkedSigns(progress.signs[stepId] || [])
-    setReflection(progress.reflections[stepId] || '')
-    setAction(progress.actions[stepId] || '')
+    setReflection(draft?.reflection ?? progress.reflections[stepId] ?? '')
+    setAction(draft?.action ?? progress.actions[stepId] ?? '')
     setView('step-intro')
   }
 
@@ -596,6 +676,9 @@ export default function HeroJourneyMap({ onBack }) {
       reflection: reflection.trim(),
       action: action.trim(),
     })
+    clearTimeout(draftTimer.current)
+    pendingDraft.current = null
+    clearHeroDraft(heroDraftKey(user.id, trial.id))
     platform.haptic('success')
     setView('complete')
   }
@@ -632,7 +715,7 @@ export default function HeroJourneyMap({ onBack }) {
         hint={trial.hint || 'Не оценивай — просто назови, как есть.'}
         placeholder="Начни писать…"
         value={reflection}
-        onChange={setReflection}
+        onChange={value => changeDraft('reflection', value)}
         onSubmit={submitWrite}
         allowEmpty={false}
         onBack={handleBack}
@@ -650,7 +733,7 @@ export default function HeroJourneyMap({ onBack }) {
         hint="Напиши, какое. Оно сохранится вместе с ответом в дневнике."
         placeholder={trial.actionPlaceholder || 'Моё действие…'}
         value={action}
-        onChange={setAction}
+        onChange={value => changeDraft('action', value)}
         onSubmit={submitAction}
         allowEmpty
         onBack={handleBack}

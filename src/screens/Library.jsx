@@ -115,8 +115,8 @@ function LibraryV2JournalLanding({ onOpen }) {
   )
 }
 
-function LibraryV2HeroJourneyLanding({ onOpen }) {
-  const { progress } = useHeroJourneyProgress()
+function LibraryV2HeroJourneyLanding({ onOpen, user }) {
+  const { progress } = useHeroJourneyProgress(user.id)
   const completedTotal = HERO_JOURNEY_TRIALS.filter(t => isStepCompleted(t.id, progress)).length
   const hasProgress = completedTotal > 0
 
@@ -139,7 +139,7 @@ function LibraryV2HeroJourneyLanding({ onOpen }) {
             16 испытаний современного человека. Каждый шаг — 6 минут: понять, узнать себя, записать,
             сделать одно действие.
           </p>
-          {hasProgress && <span className="mx-hj-library__progress">1 из 16</span>}
+          {hasProgress && <span className="mx-hj-library__progress">{completedTotal} из 16</span>}
           <button type="button" className="mx-library-v2__pill" onClick={() => onOpen()}>
             {hasProgress ? 'Продолжить' : 'Начать'} <ArrowRight size={15} />
           </button>
@@ -283,6 +283,7 @@ function CollectionCard({ title, description, kind, soon = false, onClick }) {
 }
 
 function LibraryHome({
+  user,
   onOpenArticles,
   onOpenJournals,
   onOpenArticle,
@@ -345,7 +346,7 @@ function LibraryHome({
 
       {LIBRARY_V2_ENABLED && (
         <section className="mx-library-v2__section" aria-label="Библиотека v2">
-          <LibraryV2HeroJourneyLanding onOpen={onOpenHeroJourney} />
+          <LibraryV2HeroJourneyLanding user={user} onOpen={onOpenHeroJourney} />
           <LibraryV2ProgramLanding onOpen={onOpenV2Programs} />
           <LibraryV2ArticleLanding onOpen={onOpenV2Articles} />
           <LibraryV2JournalLanding onOpen={onOpenJournals} />
@@ -543,7 +544,7 @@ export default function Library({ user, onInputModeChange }) {
   }
 
   if (screen === 'hero-journey') {
-    return <HeroJourneyMap onBack={() => setScreen('home')} />
+    return <HeroJourneyMap key={user.id} user={user} onBack={() => setScreen('home')} />
   }
 
   if (screen === 'articles') {
@@ -575,6 +576,7 @@ export default function Library({ user, onInputModeChange }) {
   return (
     <div className="w-full max-w-md">
       <LibraryHome
+        user={user}
         onOpenArticles={() => setScreen('articles')}
         onOpenJournals={() => setScreen('journals')}
         onOpenV2Programs={() => setScreen('library-v2-programs')}
