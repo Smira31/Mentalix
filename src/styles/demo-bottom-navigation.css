@@ -80,7 +80,7 @@
 
 .mx-bottom-nav > div nav button span {
   color: rgb(var(--c-line)) !important;
-  font-size: 11px;
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   font-weight: 500;
   letter-spacing: normal;
 }
@@ -92,7 +92,7 @@
 
 @media (max-width: 374px) {
   .mx-bottom-nav > div nav button span {
-    font-size: 10.5px;
+    font-size: calc(10.5px * var(--mx-type-scale));
   }
 }
 

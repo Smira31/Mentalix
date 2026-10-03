@@ -15,7 +15,7 @@ test('профиль: строки опроса, мультивыбор и со�
     expect(Math.round(box.height)).toBe(43)
     await expect(back).toHaveCSS('background-color', 'rgba(38, 38, 38, 0.55)')
     await expect(back).toHaveCSS('backdrop-filter', /blur\(20px\) saturate\(1\.6\)/)
-    await expect(page.getByTestId('profile-page-title')).toHaveCSS('font-size', '34px')
+    await expect(page.getByTestId('profile-page-title')).toHaveCSS('font-size', '29.24px')
     const rows = page.locator('.mx-wtp-option')
     await expect(rows).toHaveCount(3)
     const first = await rows.first().boundingBox()

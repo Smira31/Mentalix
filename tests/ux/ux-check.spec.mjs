@@ -773,8 +773,8 @@ test('локальный UX smoke по основному маршруту', asy
           productionCardTypography.catalogRight + 1
         )
         expect(productionCardTypography.titleClipped).toBe(false)
-        expect(productionCardTypography.practiceCopySize).toBeGreaterThanOrEqual(12)
-        expect(productionCardTypography.collectionCopySize).toBeGreaterThanOrEqual(12)
+        expect(productionCardTypography.practiceCopySize).toBeGreaterThanOrEqual(11)
+        expect(productionCardTypography.collectionCopySize).toBeGreaterThanOrEqual(11)
       },
     })
 

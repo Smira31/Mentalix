@@ -21,7 +21,7 @@
 .mx-library-lab__eyebrow {
   color: rgb(var(--c-gold));
   font-family: 'Manrope', sans-serif;
-  font-size: 10px;
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -33,7 +33,7 @@
 }
 
 .mx-library-lab__intro h2 {
-  font-size: clamp(24px, 4vw, 36px);
+  font-size: clamp(calc(24px * var(--mx-type-scale)), calc(4vw * var(--mx-type-scale)), calc(36px * var(--mx-type-scale)));
   line-height: 1.08;
   letter-spacing: -0.035em;
 }
@@ -41,7 +41,7 @@
 .mx-library-lab__intro p {
   max-width: 680px;
   color: rgb(var(--c-muted));
-  font-size: 14px;
+  font-size: calc(14px * var(--mx-type-scale));
   line-height: 1.55;
 }
 
@@ -65,7 +65,7 @@
   border-radius: 999px;
   background: rgb(var(--c-card));
   color: rgb(var(--c-muted));
-  font-size: 12px;
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   font-weight: 600;
   white-space: nowrap;
 }
@@ -106,7 +106,7 @@
 }
 
 .mx-library-lab__top-safe span {
-  font-size: 9px;
+  font-size: max(11px, calc(9px * var(--mx-type-scale)));
   font-weight: 700;
   letter-spacing: 0.18em;
 }
@@ -135,7 +135,7 @@
 .mx-library-lab__reader h2 {
   margin: 0;
   font-family: 'Onest', sans-serif;
-  font-size: 34px;
+  font-size: calc(34px * var(--mx-type-scale));
   line-height: 1;
   letter-spacing: -0.055em;
 }
@@ -173,7 +173,7 @@
   outline: 0;
   background: transparent;
   color: rgb(var(--c-text));
-  font-size: 16px;
+  font-size: calc(16px * var(--mx-type-scale));
 }
 
 .mx-library-lab__search button {
@@ -206,7 +206,7 @@
 
 .mx-library-lab__section-head h3 {
   margin: 0;
-  font-size: 22px;
+  font-size: calc(22px * var(--mx-type-scale));
   font-weight: 500;
   line-height: 1.15;
   letter-spacing: -0.035em;
@@ -215,7 +215,7 @@
 .mx-library-lab__section-head > small {
   color: rgb(var(--c-faint));
   font:
-    11px 'JetBrains Mono',
+    max(11px, calc(11px * var(--mx-type-scale))) 'JetBrains Mono',
     monospace;
 }
 
@@ -269,7 +269,7 @@
 .mx-library-lab__feature-card strong,
 .mx-library-lab__catalog-card strong,
 .mx-library-lab__collection strong {
-  font-size: 18px;
+  font-size: calc(18px * var(--mx-type-scale));
   font-weight: 650;
   line-height: 1.15;
   letter-spacing: -0.025em;
@@ -284,7 +284,7 @@
 .mx-library-lab__collection small {
   margin-top: 7px;
   color: rgb(var(--c-muted));
-  font-size: 12px;
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   line-height: 1.42;
 }
 
@@ -349,7 +349,7 @@
   border-radius: 999px;
   color: rgb(var(--c-faint));
   font:
-    600 9px 'Manrope',
+    600 calc(9px * var(--mx-type-scale)) 'Manrope',
     sans-serif;
   letter-spacing: 0.12em;
 }
@@ -368,14 +368,14 @@
 .mx-library-lab__collection-header h2 {
   max-width: 330px;
   margin-top: 8px;
-  font-size: 29px;
+  font-size: calc(29px * var(--mx-type-scale));
 }
 
 .mx-library-lab__collection-header p {
   max-width: 330px;
   margin: 14px 0 0;
   color: rgb(var(--c-muted));
-  font-size: 13px;
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.5;
 }
 
@@ -430,14 +430,14 @@
 .mx-library-lab__reader h2 {
   max-width: 330px;
   margin-top: 12px;
-  font-size: 32px;
+  font-size: calc(32px * var(--mx-type-scale));
   line-height: 1.08;
 }
 
 .mx-library-lab__reader-lead,
 .mx-library-lab__reader > p:not(.mx-library-lab__reader-lead) {
   color: rgb(var(--c-muted));
-  font-size: 14px;
+  font-size: calc(14px * var(--mx-type-scale));
   line-height: 1.65;
 }
 
@@ -477,14 +477,14 @@
 }
 
 .mx-library-lab__message strong {
-  font-size: 18px;
+  font-size: calc(18px * var(--mx-type-scale));
 }
 
 .mx-library-lab__message p {
   max-width: 270px;
   margin: 8px 0 0;
   color: rgb(var(--c-muted));
-  font-size: 13px;
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.5;
 }
 
@@ -496,7 +496,7 @@
   border-radius: 999px;
   background: rgb(var(--c-text));
   color: rgb(var(--c-bg));
-  font-size: 13px;
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   font-weight: 650;
 }
 
@@ -558,7 +558,7 @@
 .mx-library-lab__bottom-nav small {
   max-width: 100%;
   overflow: hidden;
-  font-size: 8px;
+  font-size: max(11px, calc(8px * var(--mx-type-scale)));
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -608,7 +608,7 @@
 
   .mx-library-lab__collection strong,
   .mx-library-lab__catalog-card strong {
-    font-size: 16px;
+    font-size: calc(16px * var(--mx-type-scale));
   }
 }
 

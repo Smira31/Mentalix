@@ -3,7 +3,7 @@
 .mx-practice-sign__title {
   margin: 0 0 6px;
   font-family: 'Manrope', sans-serif;
-  font-size: 28px;
+  font-size: calc(28px * var(--mx-type-scale));
   font-weight: 700;
   line-height: 1.1;
   color: rgb(var(--c-text));
@@ -12,7 +12,7 @@
 
 .mx-practice-sign__subtitle {
   margin: 0 0 20px;
-  font-size: 15px;
+  font-size: calc(15px * var(--mx-type-scale));
   line-height: 1.4;
   color: rgb(var(--c-muted));
 }

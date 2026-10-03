@@ -98,13 +98,6 @@ function LibraryV2JournalLanding({ onOpen }) {
       <div className="mx-library-programs__guided-list" aria-label="Другие направленные записи">
         <button type="button" className="mx-library-programs__guided-list-row" onClick={onOpen}>
           <span>
-            <strong>Новая запись</strong>
-            <small>4 вопроса · 5–7 минут</small>
-          </span>
-          <span aria-hidden="true">→</span>
-        </button>
-        <button type="button" className="mx-library-programs__guided-list-row" onClick={onOpen}>
-          <span>
             <strong>Вернуться к записи</strong>
             <small>Сохранённые ответы и следующий шаг</small>
           </span>

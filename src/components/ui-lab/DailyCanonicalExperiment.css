@@ -13,14 +13,14 @@
 .mx-daily__head > span {
   color: rgb(var(--c-gold));
   font-family: 'Manrope', system-ui, sans-serif;
-  font-size: 10px;
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 .mx-daily__head h2 {
   margin: 0;
-  font-size: clamp(24px, 5vw, 32px);
+  font-size: clamp(calc(24px * var(--mx-type-scale)), calc(5vw * var(--mx-type-scale)), calc(32px * var(--mx-type-scale)));
   font-weight: 700;
   letter-spacing: -0.04em;
 }
@@ -28,7 +28,7 @@
   max-width: 560px;
   margin: 0;
   color: rgb(var(--c-muted));
-  font-size: 13px;
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.5;
 }
 
@@ -49,7 +49,7 @@
   background: transparent;
   color: rgb(var(--c-faint));
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   letter-spacing: 0.06em;
   text-transform: uppercase;
   cursor: pointer;
@@ -108,7 +108,7 @@
   border-radius: var(--mx-radius-pill);
   background: rgb(var(--c-text));
   color: rgb(var(--c-bg));
-  font-size: 15px;
+  font-size: calc(15px * var(--mx-type-scale));
   font-weight: 700;
   cursor: pointer;
   touch-action: manipulation;
@@ -139,7 +139,7 @@
 .mx-daily__welcome h2 {
   max-width: 360px;
   margin: 0;
-  font-size: clamp(26px, 7vw, 36px);
+  font-size: clamp(calc(26px * var(--mx-type-scale)), calc(7vw * var(--mx-type-scale)), calc(36px * var(--mx-type-scale)));
   letter-spacing: -0.04em;
   line-height: 1.08;
 }
@@ -147,7 +147,7 @@
   max-width: 340px;
   margin: 0;
   color: rgb(var(--c-muted));
-  font-size: 13px;
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.5;
 }
 .mx-daily__welcome .mx-daily__primary {
@@ -179,7 +179,7 @@
 }
 .mx-daily__eyebrow {
   color: rgb(var(--c-gold));
-  font-size: 10px;
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -187,14 +187,14 @@
 .mx-daily__completion h2 {
   max-width: 340px;
   margin: 0;
-  font-size: clamp(24px, 6vw, 32px);
+  font-size: clamp(calc(24px * var(--mx-type-scale)), calc(6vw * var(--mx-type-scale)), calc(32px * var(--mx-type-scale)));
   letter-spacing: -0.04em;
 }
 .mx-daily__completion p {
   max-width: 320px;
   margin: 0;
   color: rgb(var(--c-muted));
-  font-size: 13px;
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.5;
 }
 .mx-daily__completion .mx-daily__primary {
@@ -205,7 +205,7 @@
   padding-top: 10px;
   border-top: 1px solid rgb(var(--c-border));
   color: rgb(var(--c-faint));
-  font-size: 11px;
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   line-height: 1.5;
 }
 

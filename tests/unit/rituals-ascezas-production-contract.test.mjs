@@ -181,7 +181,7 @@ test('streak milestone — круг, «3 дня.» 34/700, капс-назван
   // Неделя вехи — те же 7 кружков, что на экране практики, а не точки.
   assert.match(milestone, /<PracticeWeek streak=\{streak\} \/>/)
   assert.doesNotMatch(milestone, /__dot/)
-  assert.match(milestoneCss, /\.mx-practice-milestone-screen__days \{[\s\S]*font-size: 34px[\s\S]*font-weight: 700/)
+  assert.match(milestoneCss, /\.mx-practice-milestone-screen__days \{[\s\S]*font-size: calc\(34px \* var\(--mx-type-scale\)\)[\s\S]*font-weight: 700/)
   assert.match(
     milestoneCss,
     /\.mx-practice-milestone-screen__name \{[\s\S]*text-transform: uppercase/

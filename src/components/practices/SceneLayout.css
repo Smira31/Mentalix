@@ -19,7 +19,7 @@
 .mx-practice-flow .practice-scene__description {
   max-width: 30rem;
   margin-top: var(--mx-space-4);
-  font-size: 0.875rem;
+  font-size: calc(14px * var(--mx-type-scale));
   line-height: 1.55;
 }
 

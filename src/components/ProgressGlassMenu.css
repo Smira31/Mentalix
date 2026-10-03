@@ -24,7 +24,7 @@
   background: transparent;
   color: rgb(var(--c-text, 243 243 243));
   font: inherit;
-  font-size: 15px;
+  font-size: calc(15px * var(--mx-type-scale));
   font-weight: 400;
   text-align: left;
   cursor: pointer;
@@ -51,5 +51,5 @@
 .mx-progress-glass-menu__check {
   flex-shrink: 0;
   color: rgb(var(--c-text, 243 243 243));
-  font-size: 16px;
+  font-size: calc(16px * var(--mx-type-scale));
 }

@@ -648,7 +648,7 @@ svg .animate-celebrate-pop {
   border-radius: 999px;
   background: rgb(var(--c-card2));
   color: rgb(var(--c-muted));
-  font-size: 1rem;
+  font-size: calc(16px * var(--mx-type-scale));
   font-weight: 700;
   transition:
     border-color 220ms ease,
@@ -665,7 +665,7 @@ svg .animate-celebrate-pop {
 .mx-scale-rail__label {
   max-width: 4.3rem;
   text-align: center;
-  font-size: 0.625rem;
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   font-weight: 600;
   line-height: 1.2;
 }
@@ -757,7 +757,7 @@ svg .animate-celebrate-pop {
 
 .mx-section-label {
   color: rgb(var(--c-muted));
-  font-size: 0.6875rem;
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   font-weight: 700;
   letter-spacing: 0.12em;
   line-height: 1.2;
@@ -1118,20 +1118,28 @@ button {
  * контрактом для пяти основных вкладок на узких Telegram viewport.
  */
 :root {
-  --mx-type-page-size: 1.875rem;
-  --mx-type-greeting-size: 1.125rem;
-  --mx-type-hero-size: 1.75rem;
-  --mx-type-section-size: 1.125rem;
-  --mx-type-card-size: 1rem;
-  --mx-type-body-size: 0.875rem;
-  --mx-type-control-size: 1rem;
-  --mx-type-segment-size: 0.875rem;
-  --mx-type-meta-size: 0.6875rem;
+  /*
+   * Общий масштаб типографики — зафиксирован владельцем (iPhone, 0.86).
+   * Масштабируется только шрифт: все font-size выражены через
+   * calc(N * var(--mx-type-scale)) или токены --mx-type-*-size.
+   * Отступы, размеры карточек и кнопок не зависят от --mx-type-scale.
+   * Мелкий текст (≤13px / ≤0.8125rem) — не меньше 11px: max(11px, calc(...)).
+   */
+  --mx-type-scale: 0.86;
+  --mx-type-page-size: calc(2.125rem * var(--mx-type-scale));
+  --mx-type-greeting-size: calc(1.25rem * var(--mx-type-scale));
+  --mx-type-hero-size: calc(1.375rem * var(--mx-type-scale));
+  --mx-type-section-size: calc(1.1875rem * var(--mx-type-scale));
+  --mx-type-card-size: calc(1.25rem * var(--mx-type-scale));
+  --mx-type-body-size: max(11px, calc(0.8125rem * var(--mx-type-scale)));
+  --mx-type-control-size: calc(1.0625rem * var(--mx-type-scale));
+  --mx-type-segment-size: calc(1rem * var(--mx-type-scale));
+  --mx-type-meta-size: max(11px, calc(0.6875rem * var(--mx-type-scale)));
 }
 
 .mx-type-page {
   font-size: var(--mx-type-page-size);
-  line-height: 1;
+  line-height: 1.1;
   font-weight: 700;
   letter-spacing: -0.035em;
 }
@@ -1145,28 +1153,28 @@ button {
 
 .mx-type-hero {
   font-size: var(--mx-type-hero-size);
-  line-height: 1.12;
+  line-height: 1.2;
   font-weight: 800;
   letter-spacing: -0.025em;
 }
 
 /* Today header: a quiet orientation cue, not a second hero. */
 .mx-type-weekday {
-  font-size: 0.625rem;
+  font-size: max(11px, calc(0.75rem * var(--mx-type-scale)));
   line-height: 1.15;
   font-weight: 600;
   letter-spacing: 0.01em;
 }
 
 .mx-type-calendar-date {
-  font-size: 0.8125rem;
+  font-size: calc(1rem * var(--mx-type-scale));
   line-height: 1.1;
   font-weight: 600;
   letter-spacing: -0.01em;
 }
 
 .mx-type-insight {
-  font-size: 1.1875rem;
+  font-size: calc(19px * var(--mx-type-scale));
   line-height: 1.3;
   font-weight: 600;
   letter-spacing: -0.02em;
@@ -1176,7 +1184,7 @@ button {
 .mx-type-list-title,
 .mx-type-persona-title,
 .mx-type-analytics-heading {
-  font-size: 0.9375rem;
+  font-size: calc(15px * var(--mx-type-scale));
   line-height: 1.25;
   font-weight: 600;
   letter-spacing: -0.01em;
@@ -1184,38 +1192,38 @@ button {
 
 .mx-type-list-body,
 .mx-type-persona-body {
-  font-size: 0.8125rem;
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.4;
   font-weight: 400;
 }
 
 .mx-type-persona-title {
-  font-size: 1.125rem;
+  font-size: calc(18px * var(--mx-type-scale));
   line-height: 1.2;
   letter-spacing: -0.015em;
 }
 
 .mx-type-article-title {
-  font-size: 1rem;
+  font-size: calc(16px * var(--mx-type-scale));
   line-height: 1.25;
   font-weight: 600;
   letter-spacing: -0.015em;
 }
 
 .mx-type-article-body {
-  font-size: 0.75rem;
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   line-height: 1.4;
   font-weight: 400;
 }
 
 .mx-type-article-action {
-  font-size: 0.75rem;
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   line-height: 1.2;
   font-weight: 600;
 }
 
 .mx-type-article-meta {
-  font-size: 0.625rem;
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   line-height: 1.2;
   font-weight: 500;
 }
@@ -1229,14 +1237,14 @@ button {
 
 .mx-type-card {
   font-size: var(--mx-type-card-size);
-  line-height: 1.28;
+  line-height: 1.25;
   font-weight: 600;
   letter-spacing: -0.015em;
 }
 
 .mx-type-body {
   font-size: var(--mx-type-body-size);
-  line-height: 1.45;
+  line-height: 1.35;
   font-weight: 400;
 }
 
@@ -1260,20 +1268,20 @@ button {
 }
 
 .mx-type-checkin-title {
-  font-size: 1.5rem;
+  font-size: calc(24px * var(--mx-type-scale));
   line-height: 1.3;
   font-weight: 700;
 }
 
 .mx-type-checkin-label {
-  font-size: 0.8125rem;
+  font-size: calc(0.9375rem * var(--mx-type-scale));
   line-height: 1.25;
   font-weight: 400;
 }
 
 .mx-type-tab {
   display: block;
-  font-size: 11px;
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   line-height: 1.2;
   font-weight: 500;
 }
@@ -1288,7 +1296,7 @@ button {
   }
 
   .mx-type-tab {
-    font-size: 10.5px;
+    font-size: calc(10.5px * var(--mx-type-scale));
   }
 }
 
@@ -1296,41 +1304,41 @@ button {
 
 /* v5: compact roles for secondary user journeys. Inputs retain 16px separately. */
 .mx-type-flow-title {
-  font-size: 1.375rem;
+  font-size: calc(22px * var(--mx-type-scale));
   line-height: 1.15;
   font-weight: 600;
   letter-spacing: -0.02em;
 }
 
 .mx-type-flow-body {
-  font-size: 0.8125rem;
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.45;
   font-weight: 400;
 }
 
 .mx-type-flow-action {
-  font-size: 0.875rem;
+  font-size: calc(14px * var(--mx-type-scale));
   line-height: 1.2;
   font-weight: 600;
   letter-spacing: -0.01em;
 }
 
 .mx-ai-title {
-  font-size: clamp(1.5rem, 6vw, 1.75rem);
+  font-size: clamp(calc(24px * var(--mx-type-scale)), calc(6vw * var(--mx-type-scale)), calc(28px * var(--mx-type-scale)));
   line-height: 1.15;
   font-weight: 400;
   letter-spacing: -0.025em;
 }
 
 .mx-ai-body {
-  font-size: 0.875rem;
+  font-size: calc(14px * var(--mx-type-scale));
   line-height: 1.55;
   font-weight: 400;
   letter-spacing: -0.01em;
 }
 
 .mx-ai-meta {
-  font-size: 0.6875rem;
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   line-height: 1.2;
   font-weight: 600;
   letter-spacing: 0.14em;
@@ -1338,13 +1346,13 @@ button {
 }
 
 .mx-ai-caption {
-  font-size: 0.75rem;
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   line-height: 1.45;
   font-weight: 400;
 }
 
 .mx-ai-input {
-  font-size: 1rem;
+  font-size: calc(16px * var(--mx-type-scale));
   line-height: 1.4;
 }
 
@@ -1655,7 +1663,7 @@ button {
 .mx-demo-telegram-chrome__time {
   color: rgb(255 255 255);
   font-family: -apple-system, 'Onest', sans-serif;
-  font-size: 17px;
+  font-size: calc(17px * var(--mx-type-scale));
   font-weight: 600;
   letter-spacing: 0.01em;
 }
@@ -1693,7 +1701,7 @@ button {
   border-radius: 15px;
   background: rgba(44, 44, 46, 0.92);
   color: rgb(255 255 255);
-  font-size: 15px;
+  font-size: calc(15px * var(--mx-type-scale));
   font-weight: 600;
   white-space: nowrap;
 }
@@ -1738,11 +1746,12 @@ button.mx-demo-telegram-chrome__pill:focus:not(:focus-visible) {
 
 [data-mentalix-demo-frame='true'][data-demo-tab='library'] .mx-library-catalog {
   gap: 4px;
-  padding-top: 0;
+  /* Как у «практики.»: заголовок библиотеки начинается на том же отступе от кнопок. */
+  padding-top: 4px;
 }
 
 [data-mentalix-demo-frame='true'][data-demo-tab='library'] .mx-library-catalog__header {
-  margin-bottom: 4px;
+  margin-bottom: 16px;
 }
 
 [data-mentalix-demo-frame='true'][data-demo-tab='library'] .mx-library-v2__section {
@@ -1781,7 +1790,7 @@ button.mx-demo-telegram-chrome__pill:focus:not(:focus-visible) {
   align-self: center;
   padding: 0 8px;
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -1801,12 +1810,12 @@ button.mx-demo-telegram-chrome__pill:focus:not(:focus-visible) {
 }
 .mx-preview-device-switcher button strong {
   color: inherit;
-  font-size: 12px;
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   line-height: 1.2;
 }
 .mx-preview-device-switcher button small {
   color: rgb(var(--c-faint));
-  font-size: 10px;
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
 }
 .mx-preview-device-switcher button.is-active {
   border-color: rgb(var(--c-gold) / 0.65);
@@ -1819,7 +1828,7 @@ button.mx-demo-telegram-chrome__pill:focus:not(:focus-visible) {
   border-radius: 999px;
   background: rgb(var(--c-card2) / 0.92);
   color: rgb(var(--c-gold));
-  font-size: 10px;
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   font-weight: 600;
   letter-spacing: 0.04em;
   box-shadow: 0 8px 22px rgb(0 0 0 / 0.2);

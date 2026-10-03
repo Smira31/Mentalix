@@ -45,7 +45,7 @@
   max-width: min(82%, 340px);
   padding: 11px 16px;
   border-radius: 21px;
-  font-size: 16px;
+  font-size: calc(16px * var(--mx-type-scale));
   line-height: 1.45;
   overflow-wrap: anywhere;
   white-space: pre-wrap;
@@ -109,7 +109,7 @@
 
 .mx-ai-input {
   min-width: 0;
-  font-size: 16px;
+  font-size: calc(16px * var(--mx-type-scale));
   color: rgb(var(--c-cream));
   accent-color: rgb(var(--c-gold));
 }
@@ -136,7 +136,7 @@
   margin: 0 0 10px;
   color: rgb(var(--c-cream));
   font-family: var(--font-display);
-  font-size: 20px;
+  font-size: calc(20px * var(--mx-type-scale));
   line-height: 1.15;
 }
 
@@ -144,7 +144,7 @@
 .mx-mentor-result__note {
   margin: 8px 0 0;
   color: rgb(var(--c-cream) / 0.82);
-  font-size: 13px;
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.5;
   overflow-wrap: anywhere;
 }
@@ -177,7 +177,7 @@
   padding: 0 12px;
   border-radius: 999px;
   color: rgb(var(--c-cream) / 0.68);
-  font-size: 12px;
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
 }
 
 .mx-mentor-result__secondary:hover,
@@ -190,7 +190,7 @@
   display: flex;
   flex-direction: column;
   gap: 5px;
-  font-size: 13px;
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.45;
 }
 

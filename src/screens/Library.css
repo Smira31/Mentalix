@@ -15,6 +15,9 @@
 
 .mx-library-catalog__header {
   display: flex;
+  /* Та же строка высотой 44px, что у «практики.» (.mx-steps-header-row):
+     заголовок вкладки начинается на одном отступе от кнопок Telegram. */
+  min-height: 44px;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 16px;
@@ -57,7 +60,7 @@
   outline: 0;
   background: transparent;
   color: rgb(var(--c-text));
-  font-size: 16px;
+  font-size: calc(16px * var(--mx-type-scale));
 }
 
 .mx-library-catalog__search button {
@@ -93,7 +96,7 @@
 .mx-library-collection-header > span {
   color: rgb(var(--c-gold));
   font-family: 'Manrope', sans-serif;
-  font-size: 10px;
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -111,7 +114,7 @@
 .mx-library-catalog__section-head > small {
   color: rgb(var(--c-muted));
   font:
-    11px 'JetBrains Mono',
+    max(11px, calc(11px * var(--mx-type-scale))) 'JetBrains Mono',
     monospace;
 }
 
@@ -168,7 +171,7 @@
 
 .mx-library-catalog__feature-card strong,
 .mx-library-catalog__collection strong {
-  font-size: 18px;
+  font-size: calc(19px * var(--mx-type-scale));
   font-weight: 650;
   line-height: 1.15;
   letter-spacing: -0.025em;
@@ -182,7 +185,7 @@
 .mx-library-catalog__collection small {
   margin-top: 7px;
   color: rgb(var(--c-muted));
-  font-size: 12px;
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   line-height: 1.42;
 }
 
@@ -254,7 +257,7 @@
   border-radius: 999px;
   color: rgb(var(--c-muted));
   font:
-    600 9px 'Manrope',
+    600 calc(9px * var(--mx-type-scale)) 'Manrope',
     sans-serif;
   letter-spacing: 0.12em;
 }
@@ -272,14 +275,14 @@
 }
 
 .mx-library-catalog__message strong {
-  font-size: 18px;
+  font-size: calc(19px * var(--mx-type-scale));
 }
 
 .mx-library-catalog__message p {
   max-width: 270px;
   margin: 8px 0 0;
   color: rgb(var(--c-muted));
-  font-size: 13px;
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   line-height: 1.5;
 }
 
@@ -291,7 +294,7 @@
   border-radius: 999px;
   background: rgb(var(--c-text));
   color: rgb(var(--c-bg));
-  font-size: 13px;
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   font-weight: 650;
 }
 
@@ -328,7 +331,7 @@
   max-width: 330px;
   margin: 8px 0 0;
   font-family: 'Onest', sans-serif;
-  font-size: 29px;
+  font-size: calc(29px * var(--mx-type-scale));
   line-height: 1;
   letter-spacing: -0.055em;
 }
@@ -337,7 +340,7 @@
   max-width: 330px;
   margin: 14px 0 0;
   color: rgb(var(--c-muted));
-  font-size: 13px;
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   line-height: 1.5;
 }
 
@@ -377,7 +380,7 @@
   }
 
   .mx-library-catalog__collection strong {
-    font-size: 16px;
+    font-size: calc(16px * var(--mx-type-scale));
   }
 }
 
@@ -436,7 +439,7 @@
 .mx-library-v2__featured-copy h3 {
   max-width: 275px;
   margin: 0;
-  font-size: 18px;
+  font-size: calc(18px * var(--mx-type-scale));
   font-weight: 600;
   line-height: 1.2;
   letter-spacing: -0.02em;
@@ -445,7 +448,7 @@
 .mx-hj-library__eyebrow {
   display: block;
   margin-bottom: 6px;
-  font-size: 11px;
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -456,7 +459,7 @@
   max-width: 300px;
   margin: 0;
   color: rgb(var(--c-muted));
-  font-size: 12px;
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   font-weight: 400;
   line-height: 1.45;
 }
@@ -499,13 +502,20 @@
   white-space: nowrap;
 }
 
+/* Только font-size пилюли масштабируется; font-family и font-weight
+   остаются наследованными из .mx-library-catalog button { font: inherit },
+   как в main (Onest, 400). Специфичность (0,2,0) > (0,1,1). */
+.mx-library-catalog .mx-library-v2__pill {
+  font-size: calc(17px * var(--mx-type-scale));
+}
+
 /* Прогресс курса отдельной мелкой строкой: кнопка-пилюля остаётся
    в одну строку («Продолжить») и не переносится на две. */
 .mx-hj-library__progress {
   display: block;
   margin-top: 4px;
   white-space: nowrap;
-  font-size: 11px;
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -536,7 +546,7 @@
 
 .mx-library-v2__program-detail h1 {
   margin: 0;
-  font-size: 30px;
+  font-size: calc(30px * var(--mx-type-scale));
   line-height: 1.05;
   letter-spacing: -0.05em;
 }
@@ -545,13 +555,13 @@
   max-width: 360px;
   margin: 0;
   color: rgb(var(--c-muted));
-  font-size: 13px;
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   line-height: 1.5;
 }
 
 .mx-library-v2__program-detail > strong {
   color: rgb(var(--c-gold));
-  font-size: 13px;
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
 }
 
 .mx-library-v2__section-title h2 {
@@ -586,16 +596,16 @@
   gap: 4px;
 }
 .mx-library-programs__guided-list-row strong {
-  font-size: 14px;
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   font-weight: 500;
 }
 .mx-library-programs__guided-list-row small {
   color: rgb(var(--c-muted));
-  font-size: 11px;
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
 }
 .mx-library-programs__guided-list-row > span:last-child {
   color: rgb(var(--c-gold));
-  font-size: 18px;
+  font-size: calc(17px * var(--mx-type-scale));
 }
 
 .mx-library-v2__catalog {
@@ -649,14 +659,14 @@
 
 .mx-library-v2__catalog-card strong {
   margin-top: 14px;
-  font-size: 15px;
+  font-size: calc(15px * var(--mx-type-scale));
   line-height: 1.2;
 }
 
 .mx-library-v2__catalog-card small {
   margin-top: 6px;
   color: rgb(var(--c-muted));
-  font-size: 11px;
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   line-height: 1.35;
 }
 
@@ -667,7 +677,7 @@
   border: 1px solid rgb(var(--c-gold) / 0.25);
   border-radius: 999px;
   color: rgb(var(--c-gold));
-  font-size: 10px;
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   white-space: nowrap;
 }
 
@@ -679,7 +689,7 @@
   margin: 0;
   color: rgb(var(--c-text));
   font-family: 'Onest', sans-serif;
-  font-size: 22px;
+  font-size: calc(22px * var(--mx-type-scale));
   line-height: 1.15;
   letter-spacing: -0.035em;
 }
@@ -689,7 +699,7 @@
   gap: 8px;
   margin: 12px 0 24px;
   color: rgb(var(--c-faint));
-  font-size: 11px;
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
 }
 
 .mx-library-v2__reader-meta span:first-child {
@@ -704,7 +714,7 @@
 .mx-library-v2__reader-body p {
   margin: 0;
   color: rgb(var(--c-text));
-  font-size: 14px;
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.65;
 }
 
@@ -717,5 +727,5 @@
   border-radius: 24px;
   background: rgb(var(--c-card) / 0.6);
   color: rgb(var(--c-gold));
-  font-size: 12px;
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
 }

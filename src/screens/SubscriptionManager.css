@@ -18,7 +18,7 @@
   margin: 0 0 var(--mx-space-2);
   padding-inline: 4px;
   color: rgb(var(--c-text));
-  font-size: 20px;
+  font-size: calc(20px * var(--mx-type-scale));
   font-weight: 700;
   line-height: 1.2;
   letter-spacing: -0.01em;
@@ -28,7 +28,7 @@
   margin: 0 0 var(--mx-space-3);
   padding-inline: 4px;
   color: rgb(var(--c-muted));
-  font-size: 14px;
+  font-size: calc(14px * var(--mx-type-scale));
   line-height: 1.4;
 }
 
@@ -37,7 +37,7 @@
   margin: 0 0 var(--mx-space-3);
   padding-inline: 4px;
   color: rgb(var(--c-text));
-  font-size: 26px;
+  font-size: calc(26px * var(--mx-type-scale));
   font-weight: 700;
   line-height: 1.2;
   letter-spacing: -0.02em;
@@ -45,7 +45,7 @@
 
 .mx-subscription-price span {
   color: rgb(var(--c-muted));
-  font-size: 15px;
+  font-size: calc(15px * var(--mx-type-scale));
   font-weight: 600;
 }
 
@@ -85,14 +85,14 @@
 
 .mx-subscription-feature__text strong {
   color: rgb(var(--c-text));
-  font-size: 15px;
+  font-size: calc(15px * var(--mx-type-scale));
   font-weight: 600;
   line-height: 1.25;
 }
 
 .mx-subscription-feature__text span {
   color: rgb(var(--c-muted));
-  font-size: 13px;
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.3;
 }
 
@@ -101,6 +101,6 @@
   margin: 0 0 var(--mx-space-2);
   padding-inline: 4px;
   color: rgb(var(--c-faint));
-  font-size: 13px;
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.35;
 }

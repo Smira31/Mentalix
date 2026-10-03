@@ -13,7 +13,7 @@
 .mx-morning__eyebrow {
   color: rgb(var(--c-gold));
   font-family: 'Manrope', system-ui, sans-serif;
-  font-size: 10px;
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -21,7 +21,7 @@
 .mx-morning__experiment-head h2,
 .mx-morning__today h2 {
   margin: 0;
-  font-size: clamp(27px, 6vw, 36px);
+  font-size: clamp(calc(27px * var(--mx-type-scale)), calc(6vw * var(--mx-type-scale)), calc(36px * var(--mx-type-scale)));
   font-weight: 700;
   letter-spacing: -0.04em;
   line-height: 1.04;
@@ -33,7 +33,7 @@
   max-width: 520px;
   margin: 0;
   color: rgb(var(--c-muted));
-  font-size: 13px;
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.5;
 }
 .mx-morning__overlay {
@@ -58,7 +58,7 @@
   align-items: center;
   color: rgb(var(--c-faint));
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -95,7 +95,7 @@
 .mx-morning__screen h2 {
   max-width: 420px;
   margin: 0;
-  font-size: clamp(29px, 8vw, 44px);
+  font-size: clamp(calc(29px * var(--mx-type-scale)), calc(8vw * var(--mx-type-scale)), calc(44px * var(--mx-type-scale)));
   letter-spacing: -0.05em;
   line-height: 1.02;
 }
@@ -116,12 +116,12 @@
   justify-content: space-between;
   gap: 12px;
   color: rgb(var(--c-muted));
-  font-size: 12px;
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
 }
 .mx-morning__metric-head strong {
   color: rgb(var(--c-text));
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   font-weight: 500;
 }
 .mx-morning__metric-buttons {
@@ -137,7 +137,7 @@
   background: transparent;
   color: rgb(var(--c-muted));
   font: inherit;
-  font-size: 12px;
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
 }
 .mx-morning__metric-buttons button[data-selected='true'] {
   border-color: rgb(var(--c-gold));
@@ -157,7 +157,7 @@
   background: rgb(var(--c-text));
   color: rgb(var(--c-bg));
   cursor: pointer;
-  font-size: 15px;
+  font-size: calc(15px * var(--mx-type-scale));
   font-weight: 700;
   touch-action: manipulation;
 }
@@ -181,7 +181,7 @@
   background: rgb(var(--c-card));
   color: rgb(var(--c-muted));
   font: inherit;
-  font-size: 13px;
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   text-align: left;
 }
 .mx-morning__choices button[data-selected='true'] {
@@ -194,7 +194,7 @@
   gap: 7px;
   margin-top: 5px;
   color: rgb(var(--c-faint));
-  font-size: 10px;
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -209,7 +209,7 @@
   background: rgb(var(--c-card));
   color: rgb(var(--c-text));
   font: inherit;
-  font-size: 16px;
+  font-size: calc(16px * var(--mx-type-scale));
   line-height: 1.4;
   resize: vertical;
   text-transform: none;
@@ -229,7 +229,7 @@
 }
 .mx-morning__result h2 {
   margin: 0;
-  font-size: clamp(30px, 8vw, 44px);
+  font-size: clamp(calc(30px * var(--mx-type-scale)), calc(8vw * var(--mx-type-scale)), calc(44px * var(--mx-type-scale)));
   letter-spacing: -0.05em;
 }
 .mx-morning__result-art {
@@ -257,14 +257,14 @@
 }
 .mx-morning__result dt {
   color: rgb(var(--c-faint));
-  font-size: 10px;
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 .mx-morning__result dd {
   margin: 5px 0 0;
   color: rgb(var(--c-text));
-  font-size: 14px;
+  font-size: calc(14px * var(--mx-type-scale));
   line-height: 1.4;
   overflow-wrap: anywhere;
 }
@@ -292,12 +292,12 @@
 .mx-morning__action span,
 .mx-morning__action small {
   color: rgb(var(--c-faint));
-  font-size: 10px;
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   letter-spacing: 0.07em;
   text-transform: uppercase;
 }
 .mx-morning__action strong {
-  font-size: 18px;
+  font-size: calc(18px * var(--mx-type-scale));
   line-height: 1.25;
   overflow-wrap: anywhere;
 }
@@ -308,7 +308,7 @@
   background: transparent;
   color: rgb(var(--c-muted));
   font: inherit;
-  font-size: 13px;
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
 }
 @media (prefers-reduced-motion: reduce) {
   .mx-morning__progress span {
@@ -323,6 +323,6 @@
     padding-inline: 16px;
   }
   .mx-morning__screen h2 {
-    font-size: 28px;
+    font-size: calc(28px * var(--mx-type-scale));
   }
 }

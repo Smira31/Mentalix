@@ -40,7 +40,7 @@
 }
 
 .mx-keyboard-format {
-  font-size: 18px !important;
+  font-size: calc(18px * var(--mx-type-scale)) !important;
   font-style: italic;
   font-weight: 700;
 }
@@ -61,7 +61,7 @@
   border-radius: 28px !important;
   background: rgb(var(--c-emerald)) !important;
   color: rgb(var(--c-cream)) !important;
-  font-size: 14px !important;
+  font-size: calc(14px * var(--mx-type-scale)) !important;
   font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -102,7 +102,7 @@
   padding-right: 20px !important;
   padding-left: 20px !important;
   background: rgb(var(--c-card2)) !important;
-  font-size: 17px !important;
+  font-size: calc(17px * var(--mx-type-scale)) !important;
   font-weight: 500;
 }
 

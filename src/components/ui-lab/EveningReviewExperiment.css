@@ -14,7 +14,7 @@
 .mx-evening-review__eyebrow {
   color: rgb(var(--c-gold));
   font-family: 'Manrope', system-ui, sans-serif;
-  font-size: 10px;
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -22,7 +22,7 @@
 
 .mx-evening-review__experiment-head h2 {
   margin: 0;
-  font-size: clamp(27px, 5vw, 36px);
+  font-size: clamp(calc(27px * var(--mx-type-scale)), calc(5vw * var(--mx-type-scale)), calc(36px * var(--mx-type-scale)));
   font-weight: 700;
   letter-spacing: -0.04em;
   line-height: 1.04;
@@ -34,7 +34,7 @@
   max-width: 520px;
   margin: 0;
   color: rgb(var(--c-muted));
-  font-size: 13px;
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.5;
 }
 
@@ -58,7 +58,7 @@
 .mx-evening-review__entry h2,
 .mx-evening-review__closed h2 {
   margin: 0;
-  font-size: clamp(28px, 8vw, 40px);
+  font-size: clamp(calc(28px * var(--mx-type-scale)), calc(8vw * var(--mx-type-scale)), calc(40px * var(--mx-type-scale)));
   font-weight: 700;
   letter-spacing: -0.05em;
   line-height: 1;
@@ -85,7 +85,7 @@
 .mx-evening-review__duration {
   color: rgb(var(--c-faint));
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -105,7 +105,7 @@
   color: rgb(var(--c-bg));
   cursor: pointer;
   touch-action: manipulation;
-  font-size: 15px;
+  font-size: calc(15px * var(--mx-type-scale));
   font-weight: 700;
   transition:
     opacity 180ms ease,
@@ -122,7 +122,7 @@
 }
 
 .mx-evening-review__primary span {
-  font-size: 18px;
+  font-size: calc(18px * var(--mx-type-scale));
 }
 
 .mx-evening-review__overlay {
@@ -156,7 +156,7 @@
   align-items: center;
   color: rgb(var(--c-faint));
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -201,7 +201,7 @@
 
 .mx-evening-review__step-center h2 {
   max-width: 360px;
-  font-size: clamp(28px, 8vw, 42px);
+  font-size: clamp(calc(28px * var(--mx-type-scale)), calc(8vw * var(--mx-type-scale)), calc(42px * var(--mx-type-scale)));
 }
 
 .mx-evening-review__choices {
@@ -218,7 +218,7 @@
   border-radius: 18px;
   background: rgb(var(--c-card));
   color: rgb(var(--c-muted));
-  font-size: 13px;
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   text-align: left;
   transition:
     border-color 180ms ease,
