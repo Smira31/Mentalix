@@ -1,5 +1,5 @@
 import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Check, Plus, Search, Trash2 } from 'lucide-react'
 import BackButton from '../components/BackButton'
@@ -19,9 +19,19 @@ import {
   saveJournalDraft,
   clearJournalDraft,
   listJournalDrafts,
-  generateIdempotencyKey,
-  isKeyValid,
+  contentSignature,
+  newAttemptKey,
+  normalizeTemplateId,
+  sameTemplateId,
+  buildQuestionSnapshot,
 } from '../lib/journalDraftV3'
+import {
+  cleanOptions,
+  ensureStepIds,
+  newStepId,
+  normalizeStepsForSave,
+  validateBuilderSteps,
+} from '../lib/guidedJournalBuilder'
 import MoodPractice from './MoodPractice'
 
 const STEP_TYPES = [
@@ -39,7 +49,7 @@ function emptyBuilder() {
     category: 'личное',
     steps: [
       {
-        id: 'step-1',
+        id: newStepId(),
         type: 'free_text',
         title: 'Что хочешь заметить?',
         required: false,
@@ -243,12 +253,13 @@ function TemplateBuilder({ user, onBack, onSaved, initialTemplate = null }) {
           title: initialTemplate.title || '',
           description: initialTemplate.description || '',
           category: initialTemplate.category || 'личное',
-          steps: initialTemplate.steps || emptyBuilder().steps,
+          steps: ensureStepIds(initialTemplate.steps || emptyBuilder().steps),
         }
       : emptyBuilder()
   )
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const stepValidation = useMemo(() => validateBuilderSteps(draft.steps), [draft.steps])
 
   function updateStep(index, patch) {
     setDraft(current => ({
@@ -265,7 +276,7 @@ function TemplateBuilder({ user, onBack, onSaved, initialTemplate = null }) {
       steps: [
         ...current.steps,
         {
-          id: `step-${current.steps.length + 1}`,
+          id: newStepId(current.steps.map(step => step.id)),
           type: 'free_text',
           title: `Шаг ${current.steps.length + 1}`,
           required: false,
@@ -275,12 +286,14 @@ function TemplateBuilder({ user, onBack, onSaved, initialTemplate = null }) {
   }
 
   async function save() {
+    if (!stepValidation.ok) return
     setSaving(true)
     setError('')
+    const payload = { ...draft, steps: normalizeStepsForSave(draft.steps) }
     try {
       const saved = isEditing
-        ? await api.journalTemplates.update(initialTemplate.id, user.id, draft)
-        : await api.journalTemplates.create(user.id, draft)
+        ? await api.journalTemplates.update(initialTemplate.id, user.id, payload)
+        : await api.journalTemplates.create(user.id, payload)
       platform.haptic('success')
       onSaved(saved)
     } catch {
@@ -328,6 +341,7 @@ function TemplateBuilder({ user, onBack, onSaved, initialTemplate = null }) {
                 {draft.steps.length > 1 && (
                   <button
                     type="button"
+                    data-testid={`journal-builder-remove-step-${index}`}
                     onClick={() =>
                       setDraft(current => ({
                         ...current,
@@ -351,6 +365,7 @@ function TemplateBuilder({ user, onBack, onSaved, initialTemplate = null }) {
                 value={step.type}
                 onChange={event => updateStep(index, { type: event.target.value })}
                 aria-label={`Тип шага ${index + 1}`}
+                data-testid={`journal-builder-step-type-${index}`}
                 className="mt-2 min-h-11 w-full rounded-xl bg-emerald-light px-3 text-[15px] text-cream"
               >
                 {STEP_TYPES.map(([value, label]) => (
@@ -359,6 +374,28 @@ function TemplateBuilder({ user, onBack, onSaved, initialTemplate = null }) {
                   </option>
                 ))}
               </select>
+              {step.type === 'checklist' && (
+                <div className="mt-2">
+                  <textarea
+                    value={(step.options || []).join('\n')}
+                    onChange={event => updateStep(index, { options: event.target.value.split('\n') })}
+                    placeholder="Варианты ответа — по одному в строке"
+                    aria-label={`Варианты ответа шага ${index + 1}`}
+                    data-testid={`journal-builder-step-options-${index}`}
+                    rows={3}
+                    className="w-full rounded-xl bg-emerald-light px-3 py-2 text-[15px] text-cream outline-none placeholder:text-muted"
+                  />
+                  {stepValidation.errors[step.id] && step.title.trim() && (
+                    <p
+                      role="status"
+                      data-testid={`journal-builder-step-hint-${index}`}
+                      className="mt-1 text-[12px] text-muted"
+                    >
+                      {stepValidation.errors[step.id]}
+                    </p>
+                  )}
+                </div>
+              )}
               <label className="mt-3 flex items-center gap-2 text-[13px] text-muted">
                 <input
                   type="checkbox"
@@ -375,6 +412,7 @@ function TemplateBuilder({ user, onBack, onSaved, initialTemplate = null }) {
         <button
           type="button"
           onClick={addStep}
+          data-testid="journal-builder-add-step"
           disabled={draft.steps.length >= 12}
           className="flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl border border-cream/15 text-[14px] font-semibold text-cream disabled:opacity-40"
         >
@@ -393,8 +431,9 @@ function TemplateBuilder({ user, onBack, onSaved, initialTemplate = null }) {
             !draft.title.trim() ||
             !draft.description.trim() ||
             !draft.category.trim() ||
-            draft.steps.some(step => !step.title.trim())
+            !stepValidation.ok
           }
+          data-testid="journal-builder-save"
           onClick={save}
           className="min-h-14 w-full rounded-full bg-gold px-[var(--mx-screen-x)] text-[15px] font-semibold text-emerald-deep disabled:opacity-35"
         >
