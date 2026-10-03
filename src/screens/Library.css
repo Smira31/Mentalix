@@ -484,7 +484,10 @@
   background: rgb(var(--c-card));
 }
 
-.mx-library-v2__pill {
+/* Специфичность .mx-library-catalog .mx-library-v2__pill (0,2,0) нужна,
+   чтобы перебить .mx-library-catalog button { font: inherit } (0,1,1),
+   который иначе сбрасывает font-family/font-size/font-weight пилюли. */
+.mx-library-catalog .mx-library-v2__pill {
   display: inline-flex;
   align-items: center;
   gap: 7px;
