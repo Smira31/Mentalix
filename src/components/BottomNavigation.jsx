@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react'
 import { BookOpen, ChartNoAxesColumn, Compass, House, Lightbulb } from 'lucide-react'
 
 import { platform } from '../platform'
@@ -45,7 +45,10 @@ function TabIcon({ item, size = 21 }) {
   return <Icon size={size} strokeWidth={1.5} className="mx-bottom-nav__icon" aria-hidden="true" />
 }
 
-export default function BottomNavigation({ tab, collapsed, onCollapseChange, onTabChange }) {
+const BottomNavigation = forwardRef(function BottomNavigation(
+  { tab, onTabChange, scrollRootRef },
+  ref
+) {
   const demoMode = isPreviewDemoMode()
 
   /*
@@ -56,6 +59,188 @@ export default function BottomNavigation({ tab, collapsed, onCollapseChange, onT
    */
   const pillRef = useRef(null)
   const [collapseScale, setCollapseScale] = useState(null)
+
+  /*
+   * Состояние сворачивания живёт здесь, а не в App: скролл управляет панелью
+   * напрямую, App и вкладки при жесте не ре-рендерятся. Потребители вне
+   * панели (спейсер и пилюля «Прогресса») читают состояние через класс
+   * mx-nav-collapsed на html — без единого setState в App.
+   */
+  const [collapsed, setCollapsed] = useState(false)
+  const collapsedRef = useRef(false)
+  const tabRef = useRef(tab)
+  const scrollFrame = useRef(null)
+  const lastScrollY = useRef(0)
+  const scrollDirection = useRef(null)
+  const scrollDistance = useRef(0)
+
+  const applyCollapsed = (next) => {
+    if (collapsedRef.current === next) return
+    collapsedRef.current = next
+    document.documentElement.classList.toggle('mx-nav-collapsed', next)
+    setCollapsed(next)
+  }
+
+  useEffect(() => {
+    tabRef.current = tab
+
+    /* Смена вкладки — панель всегда раскрывается, жест начинается заново. */
+    applyCollapsed(false)
+
+    const root = scrollRootRef?.current
+    lastScrollY.current = Math.max(root?.scrollTop || 0, window.scrollY || 0)
+    scrollDirection.current = null
+    scrollDistance.current = 0
+  }, [tab, scrollRootRef])
+
+  /*
+   * App вызывает reset() после программного восстановления позиции скролла
+   * (переключение вкладок): событие scroll придёт уже с новой позицией,
+   * и ложное сворачивание исключено.
+   */
+  useImperativeHandle(ref, () => ({
+    reset: () => {
+      applyCollapsed(false)
+
+      const root = scrollRootRef?.current
+      lastScrollY.current = Math.max(root?.scrollTop || 0, window.scrollY || 0)
+      scrollDirection.current = null
+      scrollDistance.current = 0
+    },
+  }))
+
+  /*
+   * Скролл-логика сворачивания — та же, что раньше жила в App, но теперь она
+   * меняет только состояние самой панели. Слушатели passive, обработчик
+   * выровнен по requestAnimationFrame.
+   */
+  useEffect(() => {
+    const COLLAPSE_DISTANCE = 20
+    const EXPAND_DISTANCE = 14
+    const COLLAPSE_AFTER_Y = 96
+    const TOP_ZONE = 32
+
+    const resetGesture = () => {
+      scrollDirection.current = null
+      scrollDistance.current = 0
+    }
+
+    const processScroll = () => {
+      scrollFrame.current = null
+
+      /*
+       * «Шаги» — нижняя навигация не сворачивается: у Stoic
+       * нет плавающей лампочки, и свёрнутая кнопка с иконкой
+       * Lightbulb здесь лишняя. На остальных вкладках — как было.
+       */
+      if (tabRef.current === 'practices') {
+        applyCollapsed(false)
+        resetGesture()
+        return
+      }
+
+      const currentY = Math.max(scrollRootRef?.current?.scrollTop || 0, window.scrollY || 0)
+
+      const previousY = lastScrollY.current
+
+      const difference = currentY - previousY
+
+      lastScrollY.current = currentY
+
+      /*
+       * Наверху страницы navbar
+       * всегда раскрыт.
+       */
+      if (currentY <= TOP_ZONE) {
+        resetGesture()
+
+        applyCollapsed(false)
+
+        return
+      }
+
+      /*
+       * Игнорируем микродвижения.
+       */
+      if (Math.abs(difference) < 1) {
+        return
+      }
+
+      const direction = difference > 0 ? 'down' : 'up'
+
+      /*
+       * При смене направления
+       * начинаем считать дистанцию заново.
+       */
+      if (scrollDirection.current !== direction) {
+        scrollDirection.current = direction
+
+        scrollDistance.current = 0
+      }
+
+      scrollDistance.current += Math.abs(difference)
+
+      /*
+       * Сворачивание.
+       */
+      if (
+        direction === 'down' &&
+        currentY > COLLAPSE_AFTER_Y &&
+        scrollDistance.current >= COLLAPSE_DISTANCE
+      ) {
+        applyCollapsed(true)
+
+        scrollDistance.current = 0
+
+        return
+      }
+
+      /*
+       * Раскрытие.
+       */
+      if (direction === 'up' && scrollDistance.current >= EXPAND_DISTANCE) {
+        applyCollapsed(false)
+
+        scrollDistance.current = 0
+      }
+    }
+
+    const handleScroll = () => {
+      if (scrollFrame.current !== null) {
+        return
+      }
+
+      scrollFrame.current = window.requestAnimationFrame(processScroll)
+    }
+
+    lastScrollY.current = Math.max(scrollRootRef?.current?.scrollTop || 0, window.scrollY || 0)
+
+    resetGesture()
+
+    const scrollRoot = scrollRootRef?.current
+
+    if (!scrollRoot) return undefined
+
+    scrollRoot.addEventListener('scroll', handleScroll, { passive: true })
+
+    // На реальном телефоне без фрейма document может прокручиваться вместо
+    // scroll-root. Слушаем оба источника — currentY берёт максимум.
+    window.addEventListener('scroll', handleScroll, { passive: true })
+
+    return () => {
+      scrollRoot.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('scroll', handleScroll)
+
+      if (scrollFrame.current !== null) {
+        window.cancelAnimationFrame(scrollFrame.current)
+
+        scrollFrame.current = null
+      }
+
+      /* Панель уходит (оверлей) — класс состояния сбрасываем. */
+      document.documentElement.classList.remove('mx-nav-collapsed')
+    }
+  }, [scrollRootRef])
 
   useLayoutEffect(() => {
     const el = pillRef.current
@@ -219,7 +404,7 @@ export default function BottomNavigation({ tab, collapsed, onCollapseChange, onT
           aria-hidden={!collapsed}
           onClick={() => {
             platform.haptic('light')
-            onCollapseChange(false)
+            applyCollapsed(false)
           }}
           style={{
             opacity: collapsed ? 1 : 0,
@@ -237,4 +422,6 @@ export default function BottomNavigation({ tab, collapsed, onCollapseChange, onT
       </div>
     </div>
   )
-}
+})
+
+export default BottomNavigation

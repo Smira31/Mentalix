@@ -241,7 +241,12 @@ function App() {
 
   const [fullscreen, setFullscreen] = useState(false)
 
-  const [navCollapsed, setNavCollapsed] = useState(false)
+  /*
+   * Сворачивание панели вкладок живёт внутри BottomNavigation (скролл не
+   * ре-рендерит App и вкладки). App держит только императивный reset —
+   * вызывается после программного восстановления позиции скролла.
+   */
+  const navRef = useRef(null)
 
   const viewportHeight = useVisualViewportHeight()
 
@@ -307,26 +312,6 @@ function App() {
 
     return installDemoPressFeedback(document)
   }, [])
-
-  /*
-   * Последняя реальная позиция скролла.
-   */
-  const lastScrollY = useRef(0)
-
-  /*
-   * Направление текущего жеста.
-   */
-  const scrollDirection = useRef(null)
-
-  /*
-   * Накопленная дистанция движения.
-   */
-  const scrollDistance = useRef(0)
-
-  /*
-   * requestAnimationFrame скролла.
-   */
-  const scrollFrame = useRef(null)
 
   /* Единый scroll-root обычных вкладок, ограниченный видимым viewport. */
   const scrollRootRef = useRef(null)
