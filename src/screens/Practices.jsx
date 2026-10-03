@@ -328,6 +328,8 @@ export default function Practices({
   onGameChange,
   onReturnToToday,
   onGuestLogin,
+  daimonFromMentor = false,
+  onReturnToMentor,
 }) {
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchKeyboardOpen, setSearchKeyboardOpen] = useState(false)
@@ -370,6 +372,18 @@ export default function Practices({
     }
     setSub(null)
   }, [enteredFromToday, onReturnToToday])
+
+  // Даймон, открытый из «Диалога» (карточка ролей), при закрытии возвращает
+  // в «Диалог», а не в каталог «практики.». Открытый из «Шагов» — как в #993:
+  // backToList() (в каталог или в «Сегодня», если пришли оттуда).
+  const closeDaimon = useCallback(() => {
+    if (daimonFromMentor) {
+      setSub(null)
+      onReturnToMentor?.()
+      return
+    }
+    backToList()
+  }, [backToList, daimonFromMentor, onReturnToMentor])
 
   const [initialPracticesData] = useState(() => (user ? peekPracticesData(user.id) : null))
   const [initialThemesData] = useState(() => (user ? peekThemesData(user.id) : null))
@@ -600,8 +614,10 @@ export default function Practices({
     return <DailyJournalFlow userId={user.id} onClose={backToList} />
   }
 
+  // Даймон: «Назад» возвращает туда, откуда пришли — в «Диалог»
+  // (карточка ролей) или в каталог «практики.» (см. closeDaimon).
   if (sub === 'daimon' && user) {
-    return <DaimonFlow userId={user.id} onClose={backToList} onGuestLogin={onGuestLogin} />
+    return <DaimonFlow userId={user.id} onClose={closeDaimon} onGuestLogin={onGuestLogin} />
   }
 
   // Убранные практики (Настроение, Альтер-эго) — мягкий редирект на «Сегодня»

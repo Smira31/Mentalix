@@ -1,3 +1,5 @@
+import { mskDayKey, mskDayLabel } from './mskDate.js'
+
 export const LONG_MESSAGE_CHAR_LIMIT = 720
 
 export function messageContent(message) {
@@ -24,22 +26,20 @@ export function messageTimestamp(message) {
   return Number.isNaN(date.getTime()) ? null : date
 }
 
+// Граница суток — по МСК, как в списке разговоров.
 export function messageDayKey(message) {
   const date = messageTimestamp(message)
   if (!date) return null
 
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+  return mskDayKey(date)
 }
 
-export function formatJournalDate(message, locale = 'ru-RU') {
+// «Сегодня» / «Вчера» / «2 октября» (год — только вне текущего).
+export function formatJournalDate(message, now = new Date()) {
   const date = messageTimestamp(message)
   if (!date) return null
 
-  return new Intl.DateTimeFormat(locale, {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  }).format(date)
+  return mskDayLabel(date, now)
 }
 
 export function isLongJournalMessage(message, limit = LONG_MESSAGE_CHAR_LIMIT) {

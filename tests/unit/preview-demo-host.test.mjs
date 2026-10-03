@@ -5,6 +5,8 @@ import test from 'node:test'
 // Vite injects import.meta.env at build time; supply the preview build values in Node.
 const source = (await readFile(new URL('../../src/lib/demoMode.js', import.meta.url), 'utf8'))
   .replace("import { now } from './clock.js'", 'const now = () => new Date()')
+  // mskShiftedIso в этом тесте не вызывается — стаб, чтобы data: URL резолвился.
+  .replace("import { mskDateParts } from './mskDate.js'", 'const mskDateParts = () => null')
   .replace("import { DEFAULT_REVIEW_HOUR } from './todayCardState.js'", 'const DEFAULT_REVIEW_HOUR = 19')
   .replace(/import \{[^}]*\} from '\.\/daimonBoard\.js'/, 'const DAIMON_CELLS=[];const DAIMON_LEVELS=[];const DAIMON_INSIGHT_PROMPT="";const getCell=()=>null')
   .replace("import { DEFAULT_JOURNAL_PROMPTS } from './dailyJournalConstants.js'", 'const DEFAULT_JOURNAL_PROMPTS = []')

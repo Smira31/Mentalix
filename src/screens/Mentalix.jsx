@@ -4,6 +4,7 @@ import { api } from '../lib/api'
 import { fetchHistory, invalidateHistory } from '../lib/mentalixHistoryCache'
 import { useTabRefresh } from '../lib/tabRefresh'
 import { mergeConversationMessages } from '../lib/mentalixConversationUtils'
+import { mskDayKey, msUntilNextMskMidnight } from '../lib/mskDate'
 
 import {
   MENTOR_DRAFT_KEY,
@@ -20,6 +21,7 @@ import { isGuestUser, resetGuestState, dispatchGuestMerged } from '../lib/guestA
 import PersonaPicker from './mentalix/PersonaPicker'
 import Conversation from './mentalix/Conversation'
 import AllConversationsScreen from './mentalix/AllConversationsScreen'
+import './mentalix/DialogNotice.css'
 
 // ============================================================
 // ЭКРАН ГОСТЯ ДЛЯ ИИ
@@ -59,6 +61,37 @@ function handleGuestLogin() {
   dispatchGuestMerged()
 }
 
+/*
+ * Черновик поля ввода — по conversation_id, чтобы при возврате
+ * в разговор текст не терялся. sessionStorage переживает перезагрузку
+ * в пределах сессии вкладки и не утекает между разговорами.
+ */
+const CHAT_DRAFT_PREFIX = 'mx-mentor-chat-draft-v1'
+
+function readChatDraft(conversationId) {
+  if (!conversationId) return null
+  try {
+    return sessionStorage.getItem(`${CHAT_DRAFT_PREFIX}:${conversationId}`)
+  } catch {
+    return null
+  }
+}
+
+function writeChatDraft(conversationId, value) {
+  if (!conversationId) return
+  try {
+    const key = `${CHAT_DRAFT_PREFIX}:${conversationId}`
+    if (value) sessionStorage.setItem(key, value)
+    else sessionStorage.removeItem(key)
+  } catch {
+    /* Черновик не критичен — чат работает и без sessionStorage. */
+  }
+}
+
+// Создание разговора не должно висеть вечно: по таймауту чат
+// показывает ошибку с «Повторить», оставаясь смонтированным.
+const CONVERSATION_CREATE_TIMEOUT_MS = 12_000
+
 // ============================================================
 // ЧАТ
 // ============================================================
@@ -81,26 +114,43 @@ export function ConversationChat({
   onBack,
   onGuestForbidden,
   onNewConversation,
+  creatingConversation = false,
+  creationError = '',
+  onRetryCreate = null,
 }) {
   const [messages, setMessages] = useState([])
-  const [input, setInput] = useState(initialText)
+  const [input, setInput] = useState(() => readChatDraft(conversationId) ?? initialText)
   const [loading, setLoading] = useState(true)
+  const [historyError, setHistoryError] = useState(false)
+  const [historyAttempt, setHistoryAttempt] = useState(0)
   const [sending, setSending] = useState(false)
-  const [sendError, setSendError] = useState('')
   const [dailyLimit, setDailyLimit] = useState(false)
-  const lastFailedSend = useRef(null)
   const initialPromptSent = useRef(false)
   const handoffRef = useRef(initialHandoff)
   const localMessageSequence = useRef(0)
   // conversationId из ответа send — используется для последующих отправок,
   // не вызывает ре-рендер (хранится в ref).
   const conversationIdRef = useRef(conversationId)
+  // День МСК, в который упёрлись в дневной лимит, — чтобы сбросить его
+  // в полночь по Москве, а не через произвольный интервал.
+  const dailyLimitDayRef = useRef(null)
   const userId = user?.id
+
+  const setDraftInput = useCallback(
+    value => {
+      setInput(value)
+      writeChatDraft(conversationIdRef.current, value)
+    },
+    [setInput]
+  )
 
   useEffect(() => {
     if (!userId) return
 
     let cancelled = false
+
+    setLoading(true)
+    setHistoryError(false)
 
     // Конкретный разговор — через /conversations/{id}/messages;
     // без conversation_id — последний разговор роли (как раньше).
@@ -143,7 +193,13 @@ export function ConversationChat({
       })
       .catch(error => {
         console.error(error)
-        if (!cancelled && isGuestAiForbidden(error)) onGuestForbidden?.()
+        if (cancelled) return
+        if (isGuestAiForbidden(error)) {
+          onGuestForbidden?.()
+          return
+        }
+        // Ошибка загрузки — отдельное состояние, не пустая история.
+        setHistoryError(true)
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
@@ -154,33 +210,71 @@ export function ConversationChat({
     }
     // The request is scoped to stable userId/persona inputs, not the mutable user object.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId, persona, viaHandoff, withSafetyNotice, refreshSignal, conversationId])
+  }, [
+    userId,
+    persona,
+    viaHandoff,
+    withSafetyNotice,
+    refreshSignal,
+    conversationId,
+    historyAttempt,
+  ])
 
-  async function send(overrideText, displayText = overrideText, { appendUser = true } = {}) {
-    const isVoiceMessage = typeof overrideText === 'string'
-    const text = (isVoiceMessage ? overrideText : input).trim()
-    const visibleText = (typeof displayText === 'string' ? displayText : text).trim() || text
+  /*
+   * Доставка одной реплики. Пузырь пользователя держит текст для повтора,
+   * поэтому неудача помечает конкретный пузырь, а не весь чат.
+   */
+  async function deliver(text, visibleText, { appendUser = true } = {}) {
+    setSending(true)
+    platform.haptic('light')
 
-    if (!text || sending) return
-
-    if (!isVoiceMessage) setInput('')
-    setSendError('')
-    setDailyLimit(false)
-
+    let userMessageId = null
     if (appendUser) {
       localMessageSequence.current += 1
+      userMessageId = `local-user-${localMessageSequence.current}`
       setMessages(previous => [
         ...previous,
         {
-          id: `local-user-${localMessageSequence.current}`,
+          id: userMessageId,
           role: 'user',
           content: visibleText,
+          retryText: text,
+          retryVisibleText: visibleText,
         },
       ])
     }
 
-    setSending(true)
-    platform.haptic('light')
+    /*
+     * Сообщение никогда не уходит без conversation_id: без него непонятно,
+     * в какой разговор его писать. Если разговор не создался на входе
+     * (сбой POST /conversations), создаём его здесь; при повторной неудаче
+     * помечаем пузырь «Не отправлено» — реплика не теряется молча.
+     */
+    if (!conversationIdRef.current) {
+      try {
+        const created = user?.id
+          ? await api.mentalix.createConversation(user.id, persona, {
+              timeoutMs: CONVERSATION_CREATE_TIMEOUT_MS,
+            })
+          : null
+        conversationIdRef.current = created?.id || null
+      } catch {
+        conversationIdRef.current = null
+      }
+
+      if (!conversationIdRef.current) {
+        if (userMessageId) {
+          setMessages(previous =>
+            previous.map(message =>
+              message.id === userMessageId ? { ...message, status: 'failed' } : message
+            )
+          )
+        }
+        setSending(false)
+        return false
+      }
+    }
+
     const handoff = handoffRef.current
     handoffRef.current = null
     if (handoff) {
@@ -192,9 +286,13 @@ export function ConversationChat({
     }
 
     try {
-      const reply = handoff
-        ? await api.mentalix.send(user.id, text, persona, handoff, conversationIdRef.current)
-        : await api.mentalix.send(user.id, text, persona, null, conversationIdRef.current)
+      const reply = await api.mentalix.send(
+        user.id,
+        text,
+        persona,
+        handoff || null,
+        conversationIdRef.current
+      )
 
       // Сохраняем conversationId из ответа для последующих отправок.
       if (reply?.conversationId) conversationIdRef.current = reply.conversationId
@@ -207,28 +305,90 @@ export function ConversationChat({
 
       setMessages(previous => [...previous, safeReply])
       invalidateHistory(user.id, persona)
-      lastFailedSend.current = null
+      // Успешная отправка — черновик больше не нужен.
+      writeChatDraft(conversationIdRef.current, '')
+      return true
     } catch (error) {
       console.error(error)
       if (isGuestAiForbidden(error)) {
         onGuestForbidden?.()
-        return
+        return false
       }
-      // 429 daily_limit: спокойная строка, поле неактивно, набранный текст не теряется
+
+      // 429 daily_limit: пузырь снимаем (сообщение не ушло), текст возвращаем
+      // в поле, отправку гасим до смены суток МСК.
       if (
         error?.status === 429 &&
         String(error?.body?.detail || error?.message || '').includes('daily_limit')
       ) {
-        if (!isVoiceMessage) setInput(text)
+        if (userMessageId) {
+          setMessages(previous => previous.filter(message => message.id !== userMessageId))
+        }
+        setDraftInput(text)
+        dailyLimitDayRef.current = mskDayKey(new Date())
         setDailyLimit(true)
-        return
+        return false
       }
-      lastFailedSend.current = { text, visibleText }
-      setSendError('Не удалось получить ответ. Попробуй ещё раз.')
+
+      // Обычная неудача: статус и «Повторить» — у этого конкретного пузыря.
+      if (userMessageId) {
+        setMessages(previous =>
+          previous.map(message =>
+            message.id === userMessageId ? { ...message, status: 'failed' } : message
+          )
+        )
+      }
+      return false
     } finally {
       setSending(false)
     }
   }
+
+  async function send(overrideText, displayText = overrideText, { appendUser = true } = {}) {
+    const isVoiceMessage = typeof overrideText === 'string'
+    const text = (isVoiceMessage ? overrideText : input).trim()
+    const visibleText = (typeof displayText === 'string' ? displayText : text).trim() || text
+
+    if (!text || sending) return
+
+    if (!isVoiceMessage) setDraftInput('')
+    setDailyLimit(false)
+
+    await deliver(text, visibleText, { appendUser })
+  }
+
+  // «Повторить» у конкретного пузыря: убираем неудачную реплику и шлём её снова.
+  function retryMessage(message) {
+    if (!message || message.status !== 'failed' || sending) return
+    const text = message.retryText ?? messageContent(message)
+    const visibleText = message.retryVisibleText ?? text
+    setMessages(previous => previous.filter(item => item.id !== message.id))
+    void deliver(text, visibleText, { appendUser: true })
+  }
+
+  // Сброс дневного лимита при смене суток МСК: проверка при возврате
+  // на вкладку, в фокусе окна и по таймеру до ближайшей полуночи Москвы.
+  useEffect(() => {
+    if (!dailyLimit) return undefined
+
+    const checkDay = () => {
+      if (!dailyLimitDayRef.current) return
+      if (mskDayKey(new Date()) === dailyLimitDayRef.current) return
+      dailyLimitDayRef.current = null
+      setDailyLimit(false)
+    }
+
+    const midnightTimer = window.setTimeout(checkDay, msUntilNextMskMidnight() + 1000)
+
+    window.addEventListener('focus', checkDay)
+    document.addEventListener('visibilitychange', checkDay)
+
+    return () => {
+      window.clearTimeout(midnightTimer)
+      window.removeEventListener('focus', checkDay)
+      document.removeEventListener('visibilitychange', checkDay)
+    }
+  }, [dailyLimit, refreshSignal])
 
   useEffect(() => {
     if (loading || !initialPrompt || initialPromptSent.current) return
@@ -238,12 +398,6 @@ export function ConversationChat({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, initialPrompt, initialDisplayText])
 
-  function retryLastSend() {
-    const failed = lastFailedSend.current
-    if (!failed) return
-    void send(failed.text, failed.visibleText, { appendUser: false })
-  }
-
   return (
     <Conversation
       userId={user.id}
@@ -251,7 +405,7 @@ export function ConversationChat({
       personaMeta={conversationMeta}
       messages={messages}
       input={input}
-      setInput={setInput}
+      setInput={setDraftInput}
       loading={loading}
       sending={sending}
       onSend={send}
@@ -259,9 +413,13 @@ export function ConversationChat({
       onNewConversation={onNewConversation}
       contextSlot={contextSlot}
       footerSlot={footerSlot}
-      sendError={sendError}
+      historyError={historyError}
+      onRetryHistory={() => setHistoryAttempt(attempt => attempt + 1)}
+      onRetryMessage={retryMessage}
+      creatingConversation={creatingConversation}
+      creationError={creationError}
+      onRetryCreate={onRetryCreate}
       dailyLimit={dailyLimit}
-      onRetry={retryLastSend}
     />
   )
 }
@@ -281,6 +439,8 @@ export default function MentalixChat({ user, onPersonaChange, onRegisterBack, on
   const [refreshSignal, setRefreshSignal] = useState(0)
   const [conversationId, setConversationId] = useState(null)
   const [creatingConversation, setCreatingConversation] = useState(false)
+  const [conversationError, setConversationError] = useState('')
+  const [handoffAttempt, setHandoffAttempt] = useState(0)
   const [showAllConversations, setShowAllConversations] = useState(false)
 
   // Тихий фоновый рефетч истории диалога при возврате на вкладку или из фона
@@ -292,26 +452,30 @@ export default function MentalixChat({ user, onPersonaChange, onRegisterBack, on
   })
 
   // Хендофф (вечерний разбор, «Обсудить с AI» и др.): создаём НОВЫЙ разговор,
-  // чтобы старые темы не смешивались. Создание упало — чат без conversation_id.
-  const handoffConversationCreated = useRef(false)
+  // чтобы старые темы не смешивались. Пока разговор не создан, чат не открываем:
+  // сообщение не должно уйти без conversation_id. Ошибка — экран с «Повторить».
   useEffect(() => {
-    if (!pending.persona || handoffConversationCreated.current || !user?.id) return
-    handoffConversationCreated.current = true
+    if (!pending.persona || !user?.id) return undefined
     let cancelled = false
     setCreatingConversation(true)
+    setConversationError('')
     api.mentalix
-      .createConversation(user.id, pending.persona)
+      .createConversation(user.id, pending.persona, { timeoutMs: CONVERSATION_CREATE_TIMEOUT_MS })
       .then(conv => {
-        if (!cancelled && conv?.id) setConversationId(conv.id)
+        if (cancelled) return
+        if (conv?.id) setConversationId(conv.id)
+        else setConversationError('Не удалось начать разговор')
       })
-      .catch(() => {})
+      .catch(() => {
+        if (!cancelled) setConversationError('Не удалось начать разговор')
+      })
       .finally(() => {
         if (!cancelled) setCreatingConversation(false)
       })
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [pending.persona, user?.id, handoffAttempt])
 
   useEffect(() => {
     // Read without side effects during render: StrictMode repeats state initializers.
@@ -334,30 +498,37 @@ export default function MentalixChat({ user, onPersonaChange, onRegisterBack, on
     setDraft('')
     setPersona(null)
     setConversationId(null)
+    setConversationError('')
     setPending({ persona: null, draft: '', safety: false, handoff: null })
   }, [])
 
   // «Новый разговор» из чата: создаём новый разговор той же роли.
+  // Чат не размонтируем — шапка и «Назад» живые, индикатор внутри чата;
+  // по ошибке/таймауту показываем «Не удалось начать разговор» + «Повторить».
   const handleNewConversation = useCallback(() => {
-    if (!user?.id || !persona) return
+    if (!user?.id || !persona || creatingConversation) return
     platform.haptic('light')
     setCreatingConversation(true)
+    setConversationError('')
     api.mentalix
-      .createConversation(user.id, persona)
+      .createConversation(user.id, persona, { timeoutMs: CONVERSATION_CREATE_TIMEOUT_MS })
       .then(conv => {
         if (conv?.id) {
           setConversationId(conv.id)
           setDraft('')
+        } else {
+          setConversationError('Не удалось начать разговор')
         }
       })
-      .catch(() => {})
+      .catch(() => setConversationError('Не удалось начать разговор'))
       .finally(() => setCreatingConversation(false))
-  }, [user?.id, persona])
+  }, [user?.id, persona, creatingConversation])
 
   // «Продолжить разговор»: открыть существующий разговор с историей.
   const handleContinueConversation = useCallback(conv => {
     setPersona(conv.persona)
     setDraft('')
+    setConversationError('')
     setConversationId(conv.id)
     setShowAllConversations(false)
   }, [])
@@ -401,6 +572,7 @@ export default function MentalixChat({ user, onPersonaChange, onRegisterBack, on
         onPick={(key, text, convId) => {
           setDraft(text || '')
           setPersona(key)
+          setConversationError('')
           setConversationId(convId || null)
         }}
         onContinueConversation={handleContinueConversation}
@@ -410,10 +582,31 @@ export default function MentalixChat({ user, onPersonaChange, onRegisterBack, on
     )
   }
 
-  if (creatingConversation) {
+  // Создание при входе/хендоффе: чат ещё не открыт. Ошибка — не открываем чат
+  // без conversation_id, а показываем «Не удалось начать разговор» + «Повторить».
+  if ((creatingConversation || conversationError) && !conversationId) {
     return (
-      <div className="flex items-center justify-center" style={{ minHeight: '60vh' }}>
-        <p className="text-muted text-[14px]">Загрузка...</p>
+      <div
+        className="flex flex-col items-center justify-center gap-3"
+        style={{ minHeight: '60vh' }}
+      >
+        {creatingConversation ? (
+          <p className="text-muted text-[14px]">Загрузка...</p>
+        ) : (
+          <>
+            <p className="text-muted text-[14px] text-center px-6" data-testid="conversation-start-error">
+              Не удалось начать разговор
+            </p>
+            <button
+              type="button"
+              data-testid="conversation-start-retry"
+              className="mx-glass mx-conversation-retry"
+              onClick={() => setHandoffAttempt(attempt => attempt + 1)}
+            >
+              Повторить
+            </button>
+          </>
+        )}
       </div>
     )
   }
@@ -435,6 +628,9 @@ export default function MentalixChat({ user, onPersonaChange, onRegisterBack, on
       onBack={exitConversation}
       onGuestForbidden={() => setGuestForbidden(true)}
       onNewConversation={handleNewConversation}
+      creatingConversation={creatingConversation}
+      creationError={conversationError}
+      onRetryCreate={handleNewConversation}
     />
   )
 }

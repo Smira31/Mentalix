@@ -45,19 +45,25 @@ test('toolbar оборачивает выделение и повторным д
   )
 })
 
-test('journal presentation группирует сообщения по последовательным календарным датам', async () => {
+test('journal presentation группирует сообщения по последовательным датам МСК', async () => {
   const { groupJournalMessages } = await import('../../src/lib/journalPresentation.js')
 
+  // Даты — только относительно текущего дня: разделитель считает границу
+  // суток по МСК и называет сегодняшний/вчерашний день словами.
+  const today = new Date()
+  const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000)
+
   const groups = groupJournalMessages([
-    { role: 'user', content: 'Первый', created_at: '2026-08-26T08:00:00Z' },
-    { role: 'assistant', content: 'Ответ', created_at: '2026-08-26T08:01:00Z' },
-    { role: 'user', content: 'Следующий день', created_at: '2026-08-27T08:00:00Z' },
+    { role: 'user', content: 'Первый', created_at: yesterday.toISOString() },
+    { role: 'assistant', content: 'Ответ', created_at: yesterday.toISOString() },
+    { role: 'user', content: 'Следующий день', created_at: today.toISOString() },
   ])
 
   assert.equal(groups.length, 2)
   assert.equal(groups[0].messages.length, 2)
   assert.equal(groups[1].messages.length, 1)
-  assert.match(groups[0].label, /2026/)
+  assert.equal(groups[0].label, 'Вчера')
+  assert.equal(groups[1].label, 'Сегодня')
 })
 
 test('journal presentation сохраняет сообщения без даты в одном fallback-разделе', async () => {
