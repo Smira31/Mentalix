@@ -521,7 +521,7 @@
   color: rgb(var(--c-muted));
   font-size: max(11px, calc(13px * var(--mx-type-scale)));
   font-weight: 600;
-  transition: all 160ms ease;
+  transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease;
 }
 
 .mx-steps-chip.is-active {

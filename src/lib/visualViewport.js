@@ -113,3 +113,45 @@ export function useVisualViewportHeight() {
   const geometry = useVisualViewportGeometry()
   return geometry?.stableHeight ?? geometry?.height ?? null
 }
+
+/**
+ * Стабильная высота оболочки для App — БЕЗ подписки на visualViewport.scroll.
+ *
+ * useVisualViewportGeometry подписан на visualViewport.scroll, который на
+ * iOS/Telegram стреляет при каждом кадре прокрутки (offsetTop меняется),
+ * вызывая 8–14 ре-рендеров App за один жест. Эта подписка нужна только
+ * fullscreen-оверлеям (useVisualViewportGeometry); оболочке нужен лишь
+ * resize (клавиатура, поворот) и viewportChanged из Telegram.
+ */
+export function useStableViewportHeight() {
+  const [height, setHeight] = useState(() => {
+    const stable = readTelegramViewportStableHeight()
+    if (stable) return stable
+    if (typeof window === 'undefined' || !window.visualViewport) return null
+    return Math.round(window.visualViewport.height)
+  })
+
+  useEffect(() => {
+    const viewport = window.visualViewport
+    const webApp = window.Telegram?.WebApp
+
+    const update = () => {
+      const stable = readTelegramViewportStableHeight()
+      const next = stable ?? (viewport ? Math.round(viewport.height) : null)
+      setHeight(prev => (prev === next ? prev : next))
+    }
+
+    update()
+    viewport?.addEventListener('resize', update, { passive: true })
+    window.addEventListener('resize', update, { passive: true })
+    webApp?.onEvent?.('viewportChanged', update)
+
+    return () => {
+      viewport?.removeEventListener('resize', update)
+      window.removeEventListener('resize', update)
+      webApp?.offEvent?.('viewportChanged', update)
+    }
+  }, [])
+
+  return height
+}

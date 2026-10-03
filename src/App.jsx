@@ -52,7 +52,7 @@ import { GUEST_MERGED_EVENT, loginAsGuest } from './lib/guestAuth'
 
 import { getFullscreenSnapshot, initFullscreen } from './lib/tgFullscreen'
 import { initIdleMotionPause } from './lib/idleMotion'
-import { useVisualViewportHeight } from './lib/visualViewport'
+import { useStableViewportHeight } from './lib/visualViewport'
 import { useGlobalEdgeSwipeBack } from './lib/gestures/useGlobalEdgeSwipeBack'
 
 /* ============================================================
@@ -249,7 +249,7 @@ function App() {
    */
   const navRef = useRef(null)
 
-  const viewportHeight = useVisualViewportHeight()
+  const viewportHeight = useStableViewportHeight()
 
   /*
    * Отдельное состояние:
@@ -1444,6 +1444,12 @@ function App() {
             )}
           </div>
         </div>
+
+        {/* Неподвижный слой затухания под шапкой Telegram.
+            Заменяет mask-image на scroll-root: WebKit не перерисовывает
+            весь контент на каждом кадре. opacity управляется CSS
+            через data-атрибуты на scroll-root (useScrollFade). */}
+        <div className="mx-scroll-fade-top" aria-hidden="true" />
 
         {/* ========================================================
           COLLAPSIBLE NAVIGATION

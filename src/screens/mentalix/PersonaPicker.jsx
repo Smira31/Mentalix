@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 
 import { platform } from '../../platform'
 import { api } from '../../lib/api'
+import { useScrollFade } from '../../lib/useScrollFade'
 import { PERSONAS } from './personas'
 import { relativeConversationDate } from './conversationDate'
 import { DIALOG_STARTER_CHIPS, PERSONA_STARTER_CHIP_LABELS } from '../../data/prompts'
@@ -68,16 +69,19 @@ export default function PersonaPicker({
         left: card.offsetLeft - (track.clientWidth - card.offsetWidth) / 2,
         behavior: 'auto',
       })
+      measurePositions()
       syncActive()
     })
     return () => cancelAnimationFrame(frame)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Поворот телефона или ресайз: масштаб карточки считается от её ширины,
-  // поэтому после смены размера собираем карусель заново.
+  // поэтому после смены размера пересчитываем кэш позиций и собираем карусель заново.
   useEffect(() => {
     const onResize = () => {
       if (!trackRef.current) return
+      measurePositions()
       syncActive()
     }
     window.addEventListener('resize', onResize)
@@ -108,21 +112,22 @@ export default function PersonaPicker({
     }
   }, [userId, conversationsAttempt])
 
-  // Мягкое затухание под шапкой Telegram — тот же механизм, что у «Шагов»
-  // (PR #987): контент уходит под «Закрыть» с переходом, а не обрезается.
-  useEffect(() => {
-    const root = document.querySelector('.mx-app-scroll-root')
-    if (!root) return undefined
-    const sync = () => {
-      root.dataset.mxDialogScrolled = root.scrollTop > 2 ? '1' : '0'
-    }
-    sync()
-    root.addEventListener('scroll', sync, { passive: true })
-    return () => {
-      root.removeEventListener('scroll', sync)
-      delete root.dataset.mxDialogScrolled
-    }
-  }, [])
+  // Мягкое затухание под шапкой Telegram — общий хук ставит data-атрибут
+  // только на границе «прокручено/нет», не на каждом событии scroll.
+  useScrollFade('mxDialogScrolled', true)
+
+  // Кэш позиций карточек: offsetLeft/offsetWidth читаются один раз
+  // (и при resize), а в rAF только scrollLeft → transform.
+  const positionsRef = useRef([])
+
+  function measurePositions() {
+    const track = trackRef.current
+    if (!track || !track.clientWidth) return
+    positionsRef.current = Array.from(track.children).map(card => ({
+      center: card.offsetLeft + card.offsetWidth / 2,
+      width: card.offsetWidth,
+    }))
+  }
 
   // Масштаб карусели — как у «Темы недели» (ThemeQuestionCarousel):
   // активная карточка полного размера, сосед — NEIGHBOR_SCALE от неё.
@@ -132,10 +137,14 @@ export default function PersonaPicker({
   function applyScale() {
     const track = trackRef.current
     if (!track || !track.clientWidth) return
+    const positions = positionsRef.current
+    if (!positions.length) return
     const center = track.scrollLeft + track.clientWidth / 2
-    Array.from(track.children).forEach(card => {
-      const cardCenter = card.offsetLeft + card.offsetWidth / 2
-      const t = Math.min(Math.abs(cardCenter - center) / card.offsetWidth, 1)
+    const cards = track.children
+    positions.forEach((pos, i) => {
+      const card = cards[i]
+      if (!card) return
+      const t = Math.min(Math.abs(pos.center - center) / pos.width, 1)
       card.style.transform = `scale(${(1 - (1 - NEIGHBOR_SCALE) * t).toFixed(4)})`
     })
   }
@@ -143,15 +152,16 @@ export default function PersonaPicker({
   function syncActive() {
     const track = trackRef.current
     if (!track) return
+    if (!positionsRef.current.length) measurePositions()
     applyScale()
     const center = track.scrollLeft + track.clientWidth / 2
     let closest = 0
     let distance = Infinity
-    Array.from(track.children).forEach((card, index) => {
-      const cardCenter = card.offsetLeft + card.offsetWidth / 2
-      if (Math.abs(cardCenter - center) < distance) {
+    positionsRef.current.forEach((pos, index) => {
+      const d = Math.abs(pos.center - center)
+      if (d < distance) {
         closest = index
-        distance = Math.abs(cardCenter - center)
+        distance = d
       }
     })
     setActive(closest)

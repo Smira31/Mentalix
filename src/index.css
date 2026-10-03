@@ -2208,9 +2208,26 @@ button.mx-demo-telegram-chrome__pill:focus:not(:focus-visible) {
   }
 }
 
-/* «Шаги»: мягкое затухание контента под шапкой Telegram вместо жёсткого среза.
-   Класс data-mx-steps-scrolled ставит Practices, когда лента прокручена. */
-.mx-app-scroll-root[data-mx-steps-scrolled='1']:has(.mx-steps-explore-catalog) {
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 var(--mx-steps-fade-h));
-  mask-image: linear-gradient(to bottom, transparent 0, #000 var(--mx-steps-fade-h));
+/* «Шаги»/«Диалог»: мягкое затухание контента под шапкой Telegram.
+   Вместо mask-image на прокручиваемом контейнере (WebKit перерисовывал
+   весь контент на каждом кадре) — неподвижный fixed-слой с градиентом
+   цвета фона → transparent. Слой показывается через opacity (transition
+   только opacity), без :has() на scroll-root. Атрибуты data-mx-steps-scrolled
+   и data-mx-dialog-scrolled ставит хук useScrollFade только на границе
+   «прокручено/нет», не на каждом событии scroll. */
+.mx-scroll-fade-top {
+  position: fixed;
+  top: var(--mx-progress-overlay-top, var(--mx-screen-top, 72px));
+  left: 0;
+  right: 0;
+  height: var(--mx-steps-fade-h, 28px);
+  background: linear-gradient(to bottom, rgb(var(--c-bg)) 0%, transparent 100%);
+  pointer-events: none;
+  z-index: 30;
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+.mx-app-scroll-root[data-mx-steps-scrolled='1'] ~ .mx-scroll-fade-top,
+.mx-app-scroll-root[data-mx-dialog-scrolled='1'] ~ .mx-scroll-fade-top {
+  opacity: 1;
 }

@@ -13,15 +13,9 @@
   padding-bottom: 0 !important;
 }
 
-/*
- * Мягкое затухание контента под шапкой Telegram — тот же механизм, что у
- * «Шагов» (PR #987). Класс data-mx-dialog-scrolled ставит PersonaPicker,
- * когда страница «Диалога» прокручена.
- */
-.mx-app-scroll-root[data-mx-dialog-scrolled='1']:has(.mx-dialog-entry) {
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 var(--mx-steps-fade-h));
-  mask-image: linear-gradient(to bottom, transparent 0, #000 var(--mx-steps-fade-h));
-}
+/* Затухание под шапкой Telegram теперь делает общий fixed-слой .mx-scroll-fade-top
+   (index.css), управляемый атрибутом data-mx-dialog-scrolled на scroll-root.
+   mask-image и :has() убраны — они заставляли WebKit перерисовывать весь контент. */
 
 .mx-dialog-entry {
   --mx-dialog-card-width: 204px;

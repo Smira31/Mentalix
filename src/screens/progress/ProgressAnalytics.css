@@ -977,7 +977,27 @@
 }
 
 .mx-progress-analytics__bottom-spacer {
-  /* Высота задаётся инлайн (пилюля 50 + панель 53 + offset 8 + 16) */
+  /* Пилюля (42) + панель вкладок (53) + 16 = 111px.
+     Высота через CSS, не инлайн: не зависит от React state. */
+  height: 111px;
+}
+
+/* Свёрнутая навигация: пилюля в одну линию с круглой кнопкой — отступ 42 + 50 + 16 = 108px.
+   Управляется классом mx-nav-collapsed на <html> (ставит BottomNavigation), без setState. */
+html.mx-nav-collapsed .mx-progress-analytics__bottom-spacer {
+  height: 108px;
+}
+
+/* Свёрнутая навигация: пилюля скрыта и позиционирована для свёрнутого состояния.
+   Раньше классы добавлялись через React props (hidden/collapsed из useNavCollapsed +
+   MutationObserver), теперь — чистый CSS от html.mx-nav-collapsed. */
+html.mx-nav-collapsed .mx-progress-bottom-pill-wrapper {
+  transform: translateY(120%);
+  opacity: 0;
+  pointer-events: none;
+  bottom: calc(var(--app-safe-bottom, 0px) + 19px);
+  left: 75px;
+  right: 25px;
 }
 
 /* ── Полный календарь настроения ── */
