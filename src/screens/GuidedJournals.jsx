@@ -1,5 +1,5 @@
 import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Check, Plus, Search, Trash2 } from 'lucide-react'
 import BackButton from '../components/BackButton'
@@ -19,9 +19,18 @@ import {
   saveJournalDraft,
   clearJournalDraft,
   listJournalDrafts,
-  generateIdempotencyKey,
-  isKeyValid,
+  contentSignature,
+  newAttemptKey,
+  normalizeTemplateId,
+  sameTemplateId,
+  buildQuestionSnapshot,
 } from '../lib/journalDraftV3'
+import {
+  ensureStepIds,
+  newStepId,
+  normalizeStepsForSave,
+  validateBuilderSteps,
+} from '../lib/guidedJournalBuilder'
 import MoodPractice from './MoodPractice'
 
 const STEP_TYPES = [
@@ -39,7 +48,7 @@ function emptyBuilder() {
     category: 'личное',
     steps: [
       {
-        id: 'step-1',
+        id: newStepId(),
         type: 'free_text',
         title: 'Что хочешь заметить?',
         required: false,
@@ -243,12 +252,13 @@ function TemplateBuilder({ user, onBack, onSaved, initialTemplate = null }) {
           title: initialTemplate.title || '',
           description: initialTemplate.description || '',
           category: initialTemplate.category || 'личное',
-          steps: initialTemplate.steps || emptyBuilder().steps,
+          steps: ensureStepIds(initialTemplate.steps || emptyBuilder().steps),
         }
       : emptyBuilder()
   )
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const stepValidation = useMemo(() => validateBuilderSteps(draft.steps), [draft.steps])
 
   function updateStep(index, patch) {
     setDraft(current => ({
@@ -265,7 +275,7 @@ function TemplateBuilder({ user, onBack, onSaved, initialTemplate = null }) {
       steps: [
         ...current.steps,
         {
-          id: `step-${current.steps.length + 1}`,
+          id: newStepId(current.steps.map(step => step.id)),
           type: 'free_text',
           title: `Шаг ${current.steps.length + 1}`,
           required: false,
@@ -275,12 +285,14 @@ function TemplateBuilder({ user, onBack, onSaved, initialTemplate = null }) {
   }
 
   async function save() {
+    if (!stepValidation.ok) return
     setSaving(true)
     setError('')
+    const payload = { ...draft, steps: normalizeStepsForSave(draft.steps) }
     try {
       const saved = isEditing
-        ? await api.journalTemplates.update(initialTemplate.id, user.id, draft)
-        : await api.journalTemplates.create(user.id, draft)
+        ? await api.journalTemplates.update(initialTemplate.id, user.id, payload)
+        : await api.journalTemplates.create(user.id, payload)
       platform.haptic('success')
       onSaved(saved)
     } catch {
@@ -328,6 +340,7 @@ function TemplateBuilder({ user, onBack, onSaved, initialTemplate = null }) {
                 {draft.steps.length > 1 && (
                   <button
                     type="button"
+                    data-testid={`journal-builder-remove-step-${index}`}
                     onClick={() =>
                       setDraft(current => ({
                         ...current,
@@ -351,6 +364,7 @@ function TemplateBuilder({ user, onBack, onSaved, initialTemplate = null }) {
                 value={step.type}
                 onChange={event => updateStep(index, { type: event.target.value })}
                 aria-label={`Тип шага ${index + 1}`}
+                data-testid={`journal-builder-step-type-${index}`}
                 className="mt-2 min-h-11 w-full rounded-xl bg-emerald-light px-3 text-[15px] text-cream"
               >
                 {STEP_TYPES.map(([value, label]) => (
@@ -359,6 +373,30 @@ function TemplateBuilder({ user, onBack, onSaved, initialTemplate = null }) {
                   </option>
                 ))}
               </select>
+              {step.type === 'checklist' && (
+                <div className="mt-2">
+                  <textarea
+                    value={(step.options || []).join('\n')}
+                    onChange={event =>
+                      updateStep(index, { options: event.target.value.split('\n') })
+                    }
+                    placeholder="Варианты ответа — по одному в строке"
+                    aria-label={`Варианты ответа шага ${index + 1}`}
+                    data-testid={`journal-builder-step-options-${index}`}
+                    rows={3}
+                    className="w-full rounded-xl bg-emerald-light px-3 py-2 text-[15px] text-cream outline-none placeholder:text-muted"
+                  />
+                  {stepValidation.errors[step.id] && step.title.trim() && (
+                    <p
+                      role="status"
+                      data-testid={`journal-builder-step-hint-${index}`}
+                      className="mt-1 text-[12px] text-muted"
+                    >
+                      {stepValidation.errors[step.id]}
+                    </p>
+                  )}
+                </div>
+              )}
               <label className="mt-3 flex items-center gap-2 text-[13px] text-muted">
                 <input
                   type="checkbox"
@@ -375,6 +413,7 @@ function TemplateBuilder({ user, onBack, onSaved, initialTemplate = null }) {
         <button
           type="button"
           onClick={addStep}
+          data-testid="journal-builder-add-step"
           disabled={draft.steps.length >= 12}
           className="flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl border border-cream/15 text-[14px] font-semibold text-cream disabled:opacity-40"
         >
@@ -393,8 +432,9 @@ function TemplateBuilder({ user, onBack, onSaved, initialTemplate = null }) {
             !draft.title.trim() ||
             !draft.description.trim() ||
             !draft.category.trim() ||
-            draft.steps.some(step => !step.title.trim())
+            !stepValidation.ok
           }
+          data-testid="journal-builder-save"
           onClick={save}
           className="min-h-14 w-full rounded-full bg-gold px-[var(--mx-screen-x)] text-[15px] font-semibold text-emerald-deep disabled:opacity-35"
         >
@@ -436,24 +476,37 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
   const [deletingTemplate, setDeletingTemplate] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [catalogError, setCatalogError] = useState('')
+  const [catalogReload, setCatalogReload] = useState(0)
+  const [resuming, setResuming] = useState(false)
+  const [resumeError, setResumeError] = useState('')
+  const [saveWarning, setSaveWarning] = useState('')
+  // Номер последнего запроса открытия шаблона: ответы устаревших запросов игнорируются
+  const openSeq = useRef(0)
 
   const categories = useMemo(() => allCategories, [allCategories])
 
+  // Один запрос каталога: категории берутся из того же ответа (если фильтры не заданы)
   useEffect(() => {
     if (!canUseGuidedJournals) return undefined
     let active = true
     const timeoutId = window.setTimeout(async () => {
-      if (active) setError('')
       try {
         const list = await api.journalTemplates.list(user.id, {
           q: query || undefined,
           category: category || undefined,
         })
-        if (active) setTemplates(list)
+        if (!active) return
+        const items = Array.isArray(list) ? list : []
+        setTemplates(items)
+        setCatalogError('')
+        if (!query && !category) {
+          setAllCategories([...new Set(items.map(item => item.category).filter(Boolean))])
+        }
       } catch {
+        // Прежние данные не стираем: только показываем ошибку и «Повторить»
         if (active) {
-          setTemplates([])
-          setError('Не удалось загрузить шаблоны. Попробуй ещё раз, когда появится связь.')
+          setCatalogError('Не удалось загрузить шаблоны. Попробуй ещё раз, когда появится связь.')
         }
       }
     }, 250)
@@ -462,24 +515,12 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
       active = false
       window.clearTimeout(timeoutId)
     }
-  }, [canUseGuidedJournals, query, category, user.id])
+  }, [canUseGuidedJournals, query, category, user.id, catalogReload])
 
-  useEffect(() => {
-    if (!canUseGuidedJournals) return undefined
-    let active = true
-    api.journalTemplates
-      .list(user.id)
-      .then(items => {
-        if (active)
-          setAllCategories([...new Set((items || []).map(item => item.category).filter(Boolean))])
-      })
-      .catch(() => {
-        if (active) setAllCategories([])
-      })
-    return () => {
-      active = false
-    }
-  }, [canUseGuidedJournals, user.id])
+  function retryCatalog() {
+    setCatalogError('')
+    setCatalogReload(value => value + 1)
+  }
 
   useEffect(() => {
     if (!canUseGuidedJournals) return
@@ -513,64 +554,112 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
 
   async function openTemplate(template) {
     if (!canUseGuidedJournals) return
+    const seq = ++openSeq.current
     setLoading(true)
     setError('')
     try {
       const detail = await api.journalTemplates.get(template.id, user.id)
-      setSelected(detail)
+      if (seq === openSeq.current) setSelected(detail)
     } catch {
-      setError('Не удалось открыть этот шаблон.')
+      if (seq === openSeq.current) setError('Не удалось открыть этот шаблон.')
     } finally {
-      setLoading(false)
+      if (seq === openSeq.current) setLoading(false)
     }
   }
 
-  function resumeDraft(templateId, templateTitle) {
-    const existing = readJournalDraft(user.id, templateId)
+  // Шаблон для продолжения: снимок вопросов из черновика важнее текущей версии шаблона
+  function templateWithSnapshot(template, existing) {
+    if (!existing?.snapshot?.length) return template
+    return {
+      ...template,
+      id: template?.id ?? existing.template_id,
+      title: existing.templateTitle || template?.title,
+      version: existing.templateVersion ?? template?.version,
+      steps: existing.snapshot,
+    }
+  }
+
+  function enterWriting(template, existing) {
     const answers = existing?.answers || {}
-    // Найти шаблон в загруженном списке, если есть
-    const template = templates?.find(t => t.id === templateId) || null
-    setSelected(template)
-    const steps = template?.steps || []
+    const steps = template.steps || []
     const firstUnanswered = steps.findIndex(step => !stepAnswerIsPresent(answers[step.id]))
+    setSelected(template)
     setStepIndex(firstUnanswered === -1 ? Math.max(steps.length - 1, 0) : firstUnanswered)
     setDraft({
       answers,
-      template_id: templateId,
-      idempotency_key: existing?.idempotency_key || null,
+      template_id: normalizeTemplateId(template.id),
+      // Ключ попытки создаётся при начале записи и дальше хранится в черновике
+      idempotency_key: existing?.idempotency_key || newAttemptKey(),
+      attempt_sig: existing?.attempt_sig || null,
     })
     setFlowStage('writing')
     setSubmitError(null)
+    setSaveWarning('')
+  }
+
+  async function resumeDraft(templateId) {
+    const id = normalizeTemplateId(templateId)
+    if (!canUseGuidedJournals || id === null) return
+    const seq = ++openSeq.current
+    setError('')
+    setResumeError('')
+    const existing = readJournalDraft(user.id, id)
+    if (!existing) {
+      setActiveDrafts(listJournalDrafts(user.id))
+      return
+    }
+    let template = existing.snapshot?.length
+      ? templateWithSnapshot({ id }, existing)
+      : (templates || []).find(
+          item => sameTemplateId(item.id, id) && Array.isArray(item.steps) && item.steps.length
+        ) || null
+    if (!template) {
+      // В списке шаблона нет (или без вопросов) — загружаем отдельно; редактор пока закрыт
+      setResuming(true)
+      try {
+        template = await api.journalTemplates.get(id, user.id)
+      } catch {
+        template = null
+      }
+      if (seq !== openSeq.current) return
+      setResuming(false)
+    }
+    if (!template || !Array.isArray(template.steps) || template.steps.length === 0) {
+      // Черновик НЕ удаляем: шаблон может вернуться
+      setResumeError('Не удалось найти шаблон этой записи. Черновик остался на устройстве.')
+      return
+    }
+    enterWriting(template, existing)
   }
 
   function startDraft() {
     if (!canUseGuidedJournals || !selected) return
     const existing = readJournalDraft(user.id, selected.id)
-    const answers = existing?.answers || {}
-    const steps = selected.steps || []
-    const firstUnanswered = steps.findIndex(step => !stepAnswerIsPresent(answers[step.id]))
-    setStepIndex(firstUnanswered === -1 ? Math.max(steps.length - 1, 0) : firstUnanswered)
-    setDraft({
-      answers,
-      template_id: selected.id,
-      idempotency_key: existing?.idempotency_key || null,
+    enterWriting(templateWithSnapshot(selected, existing), existing)
+  }
+
+  function leaveDraft() {
+    setFlowStage(null)
+    setDraft(null)
+    setStepIndex(0)
+    setSaveWarning('')
+    setActiveDrafts(listJournalDrafts(user.id))
+  }
+
+  function persistDraft(answers, key, attemptSig) {
+    const result = saveJournalDraft(user.id, selected.id, answers, key, selected.title, {
+      snapshot: buildQuestionSnapshot(selected.steps),
+      templateVersion: selected.version,
+      ...(attemptSig !== undefined ? { attemptSig } : {}),
     })
-    setFlowStage('writing')
-    setSubmitError(null)
+    setSaveWarning(result.ok ? '' : 'Не удалось сохранить черновик на устройстве')
+    return result.ok
   }
 
   function updateAnswer(stepId, value) {
     const nextAnswers = { ...(draft?.answers || {}), [stepId]: value }
-    const updatedDraft = { ...draft, answers: nextAnswers }
-    setDraft(updatedDraft)
-    // Debounced autosave to localStorage (no server call)
-    saveJournalDraft(
-      user.id,
-      selected.id,
-      nextAnswers,
-      updatedDraft.idempotency_key,
-      selected.title
-    )
+    setDraft({ ...draft, answers: nextAnswers })
+    persistDraft(nextAnswers, draft?.idempotency_key)
   }
 
   async function submitComplete() {
@@ -579,19 +668,21 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
     setFlowStage('submitting')
     setSubmitError(null)
 
-    // Idempotency: reuse key if content unchanged, generate new if changed
+    // Ключ попытки переиспользуется при повторах. Новый — только если после
+    // неудачной попытки содержимое ответов изменилось.
+    const signature = contentSignature(draft.answers)
     let key = draft.idempotency_key
-    if (!key || !isKeyValid(key, draft.answers)) {
-      key = generateIdempotencyKey(draft.answers)
-      saveJournalDraft(user.id, selected.id, draft.answers, key, selected.title)
-      setDraft(prev => ({ ...prev, idempotency_key: key }))
-    }
+    if (!key || (draft.attempt_sig && draft.attempt_sig !== signature)) key = newAttemptKey()
+    persistDraft(draft.answers, key, signature)
+    setDraft(prev => ({ ...prev, idempotency_key: key, attempt_sig: signature }))
 
     try {
       await api.journalTemplates.completeSession(user.id, selected.id, draft.answers, key)
       // Success: clear local draft + key
       clearJournalDraft(user.id, selected.id)
-      setActiveDrafts(items => items.filter(item => item.templateId !== String(selected.id)))
+      setActiveDrafts(listJournalDrafts(user.id))
+      setSaveWarning('')
+      void loadCompletedSessions() // обновить архив
       platform.haptic('success')
 
       // Blur active field to close keyboard before transition
@@ -658,12 +749,7 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
   if (!canUseGuidedJournals) {
     return (
       <section className="mt-8 animate-fade-in">
-        {onExit && (
-          <NestedScreenHeader
-            title="направленные записи."
-            onBack={onExit}
-              />
-        )}
+        {onExit && <NestedScreenHeader title="направленные записи." onBack={onExit} />}
         <div className="rounded-3xl bg-emerald p-5">
           <h2 className="font-display text-[25px] text-cream">Направленные записи</h2>
           <p className="mt-3 text-[14px] leading-relaxed text-muted">
@@ -774,12 +860,20 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
       : isClientError
         ? 'Не удалось завершить запись. Проверь шаблон и попробуй ещё раз.'
         : isNetworkError
-          ? 'Нет связи. Черновик сохранён на устройстве — попробуй ещё раз, когда появится сеть.'
-          : 'Не удалось завершить запись. Черновик сохранён.'
+          ? saveWarning
+            ? 'Нет связи. Попробуй ещё раз, когда появится сеть.'
+            : 'Нет связи. Черновик сохранён на устройстве — попробуй ещё раз, когда появится сеть.'
+          : saveWarning
+            ? 'Не удалось завершить запись.'
+            : 'Не удалось завершить запись. Черновик сохранён.'
 
     return (
       <section className="animate-fade-in">
-        <RoundBackButton registerSystemBack onClick={() => setFlowStage('writing')} label="Назад к записи" />
+        <RoundBackButton
+          registerSystemBack
+          onClick={() => setFlowStage('writing')}
+          label="Назад к записи"
+        />
         <p className="mt-5 text-[12px] font-bold uppercase tracking-wide text-gold">
           {selected?.title} · {stepIndex + 1} из {steps.length}
         </p>
@@ -791,6 +885,15 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
         <p role="alert" data-testid="journal-v3-error" className="mt-4 text-[13px] text-muted">
           {errorMessage}
         </p>
+        {saveWarning && (
+          <p
+            role="status"
+            data-testid="journal-v3-save-warning"
+            className="mt-2 text-[12px] text-faint"
+          >
+            {saveWarning}
+          </p>
+        )}
         <button
           type="button"
           data-testid="journal-v3-retry"
@@ -838,12 +941,10 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
 
     return (
       <section className="animate-fade-in">
-        <RoundBackButton registerSystemBack
-          onClick={() => {
-            setFlowStage(null)
-            setDraft(null)
-            setStepIndex(0)
-          }}
+        <RoundBackButton
+          registerSystemBack
+          testId="journal-v3-exit"
+          onClick={leaveDraft}
           label="Сохранить и выйти"
         />
         <p className="mt-5 text-[12px] font-bold uppercase tracking-wide text-gold">
@@ -854,6 +955,15 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
           <p className="mt-3 text-[14px] leading-relaxed text-muted">{step.helper}</p>
         )}
         <StepInput step={step} value={answer} onChange={value => updateAnswer(step.id, value)} />
+        {saveWarning && (
+          <p
+            role="status"
+            data-testid="journal-v3-save-warning"
+            className="mt-3 text-[12px] text-faint"
+          >
+            {saveWarning}
+          </p>
+        )}
         {error && (
           <p role="alert" className="mt-4 text-[13px] text-muted">
             {error}
@@ -938,10 +1048,7 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
     <section className="animate-fade-in">
       {onExit && (
         <>
-          <NestedScreenHeader
-            title="направленные записи."
-            onBack={onExit}
-              />
+          <NestedScreenHeader title="направленные записи." onBack={onExit} />
           <p className="text-[13px] leading-relaxed text-muted -mt-2 mb-5">
             Готовые вопросы и личные шаблоны для спокойной рефлексии.
           </p>
@@ -959,6 +1066,7 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
             setBuilderOpen(true)
           }}
           aria-label="Создать личный шаблон"
+          data-testid="journal-builder-open"
           className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gold text-emerald-deep"
         >
           <Plus size={20} />
@@ -973,18 +1081,37 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
                 key={item.templateId}
                 type="button"
                 data-testid="journal-v3-resume"
-                onClick={() => resumeDraft(item.templateId, item.templateTitle)}
+                disabled={resuming}
+                onClick={() => resumeDraft(item.templateId)}
                 className="flex min-h-12 w-full items-center justify-between rounded-2xl bg-emerald-light px-4 text-left"
               >
                 <span className="text-[14px] font-semibold text-cream">
                   {item.templateTitle ||
-                    templates?.find(t => t.id === Number(item.templateId))?.title ||
+                    templates?.find(t => sameTemplateId(t.id, item.templateId))?.title ||
                     'Незавершённая запись'}
                 </span>
                 <span className="text-[12px] text-gold">Открыть</span>
               </button>
             ))}
           </div>
+          {resuming && (
+            <p
+              role="status"
+              data-testid="journal-v3-resuming"
+              className="mt-3 text-[13px] text-muted"
+            >
+              Открываю запись…
+            </p>
+          )}
+          {resumeError && (
+            <p
+              role="alert"
+              data-testid="journal-v3-resume-error"
+              className="mt-3 text-[13px] text-muted"
+            >
+              {resumeError}
+            </p>
+          )}
         </div>
       )}
       <div className="mt-5 rounded-3xl border border-cream/10 bg-emerald p-4">
@@ -1088,10 +1215,29 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
           {error}
         </p>
       )}
+      {catalogError && (
+        <div className="mt-4" data-testid="journal-v3-catalog-error">
+          <p role="alert" className="text-[13px] leading-relaxed text-muted">
+            {catalogError}
+          </p>
+          <button
+            type="button"
+            data-testid="journal-v3-catalog-retry"
+            onClick={retryCatalog}
+            className="mt-3 min-h-10 rounded-full border border-cream/15 px-4 text-[13px] font-semibold text-cream active:text-gold"
+          >
+            Повторить
+          </button>
+        </div>
+      )}
       {templates === null ? (
-        <p className="mt-8 text-[14px] text-muted">Загружаем шаблоны…</p>
+        !catalogError && (
+          <p data-testid="journal-v3-catalog-loading" className="mt-8 text-[14px] text-muted">
+            Загружаем шаблоны…
+          </p>
+        )
       ) : templates.length === 0 ? (
-        <div className="mt-8 rounded-3xl bg-emerald p-5">
+        <div data-testid="journal-v3-catalog-empty" className="mt-8 rounded-3xl bg-emerald p-5">
           <p className="text-[15px] font-semibold text-cream">Ничего не найдено</p>
           <p className="mt-2 text-[13px] leading-relaxed text-muted">
             Попробуй другой запрос или создай личный шаблон.
@@ -1103,6 +1249,8 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
             <button
               key={template.id}
               type="button"
+              data-testid="journal-v3-template-card"
+              data-template-id={template.id}
               onClick={() => openTemplate(template)}
               className="w-full rounded-3xl bg-emerald p-5 text-left active:scale-[0.99] transition-transform"
             >

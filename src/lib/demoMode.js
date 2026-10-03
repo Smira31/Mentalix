@@ -902,6 +902,16 @@ const DIALOG_TEST_MODES = [
   'slowCreate',
 ]
 
+let guidedCatalogFailuresLeft = 1
+
+function guidedCatalogShouldFail() {
+  if (typeof window === 'undefined') return false
+  if (new URLSearchParams(window.location.search).get('guidedTest') !== 'catalogError') return false
+  if (guidedCatalogFailuresLeft <= 0) return false
+  guidedCatalogFailuresLeft -= 1
+  return true
+}
+
 function dialogTestMode() {
   if (typeof window === 'undefined' || !isPreviewDemoMode()) return null
   const value = new URLSearchParams(window.location.search).get('dialogTest')
@@ -1650,6 +1660,12 @@ function respond(path, options = {}) {
   // ── Journal templates (demo) ──
 
   if (pathname === '/journal/templates' && method === 'GET') {
+    // ?guidedTest=catalogError — первый запрос каталога падает (для UX-теста «Повторить»)
+    if (guidedCatalogShouldFail()) {
+      const error = new Error('Демо: HTTP 500')
+      error.status = 500
+      throw error
+    }
     return json(DEMO_JOURNAL_TEMPLATES)
   }
   if (pathname.match(/^\/journal\/templates\/(\d+)$/) && method === 'GET') {

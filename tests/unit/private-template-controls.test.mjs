@@ -25,7 +25,7 @@ test('Guided Journals доступен в web-режиме с валидным u
 })
 
 test('private template builder использует update contract и объясняет versioning', () => {
-  assert.match(source, /api\.journalTemplates\.update\(initialTemplate\.id, user\.id, draft\)/)
+  assert.match(source, /api\.journalTemplates\.update\(initialTemplate\.id, user\.id, payload\)/)
   assert.match(source, /Сохранить новую версию/)
   assert.match(source, /начатые сессии\s+сохраняют прежний набор вопросов/)
   assert.match(apiSource, /update: \(templateId, userId, template\)/)
