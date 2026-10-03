@@ -19,17 +19,17 @@ last_verified: 2026-09-27
 
 ## Каноническое состояние
 
-| Область             | Факт                                                                                 | Доказательство                                                                                                       |
-| ------------------- | ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
-| Card System v2    | Нормативная спецификация в `DESIGN_SYSTEM.md` §5.1, решение владельца от 22.09.2026 | [`DESIGN_SYSTEM.md`](DESIGN_SYSTEM.md) §5.1 |
-| Card System v1      | [`docs/archive/CARD_SYSTEM_V1_2026-09-22.md`](docs/archive/CARD_SYSTEM_V1_2026-09-22.md), статус `archived` | Архив; не текущий источник истины |
-| Frontend            | `Smira31/Mentalix`, default branch `main`                                            | [GitHub](https://github.com/Smira31/Mentalix)                                                                        |
-| Frontend `main`     | commit `1daa58b0ffe8fc742c936d6b226e74c72f52e53a` после мержа PR #905 (на момент сверки); #904 — предыдущий snapshot | [commit](https://github.com/Smira31/Mentalix/commit/1daa58b0ffe8fc742c936d6b226e74c72f52e53a) |
+| Область             | Факт                                                                                                                                           | Доказательство                                                                                                                                         |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Card System v2      | Нормативная спецификация в `DESIGN_SYSTEM.md` §5.1, решение владельца от 22.09.2026                                                            | [`DESIGN_SYSTEM.md`](DESIGN_SYSTEM.md) §5.1                                                                                                            |
+| Card System v1      | [`docs/archive/CARD_SYSTEM_V1_2026-09-22.md`](docs/archive/CARD_SYSTEM_V1_2026-09-22.md), статус `archived`                                    | Архив; не текущий источник истины                                                                                                                      |
+| Frontend            | `Smira31/Mentalix`, default branch `main`                                                                                                      | [GitHub](https://github.com/Smira31/Mentalix)                                                                                                          |
+| Frontend `main`     | commit `1daa58b0ffe8fc742c936d6b226e74c72f52e53a` после мержа PR #905 (на момент сверки); #904 — предыдущий snapshot                           | [commit](https://github.com/Smira31/Mentalix/commit/1daa58b0ffe8fc742c936d6b226e74c72f52e53a)                                                          |
 | Production frontend | Policy: `main → Firebase Hosting Live channel → https://mentalix-production.web.app`; exact deployed SHA для #904 в этой сверке не подтверждён | [Firebase workflow](https://github.com/Smira31/Mentalix/actions/workflows/firebase-hosting.yml); run 35119350799 подтверждал прежний snapshot, не #904 |
-| `Demo Preview`        | Cloudflare Pages project `mentalix-owner-qa` → `https://mentalix-owner-qa.pages.dev` | workflow [Cloudflare Owner QA](https://github.com/Smira31/Mentalix/actions/workflows/cloudflare-owner-qa.yml)        |
-| Backend             | `Smira31/mentalix-bot`, `main`                                                       | [GitHub](https://github.com/Smira31/mentalix-bot)                                                                    |
-| Backend runtime     | Исторический адрес health: `https://mentalix-bot.onrender.com/api/health`; текущий статус backend не проверялся в этой docs-сверке | Приватный `mentalix-bot` и отдельная runtime-проверка обязательны для актуального статуса |
-| Vercel              | Git integration отключена у проектов `mentalix` и `mentalix-preview`                 | Vercel git context: linked projects отсутствуют                                                                      |
+| `Demo Preview`      | Cloudflare Pages project `mentalix-owner-qa` → `https://mentalix-owner-qa.pages.dev`                                                           | workflow [Cloudflare Owner QA](https://github.com/Smira31/Mentalix/actions/workflows/cloudflare-owner-qa.yml)                                          |
+| Backend             | `Smira31/mentalix-bot`, `main`                                                                                                                 | [GitHub](https://github.com/Smira31/mentalix-bot)                                                                                                      |
+| Backend runtime     | Исторический адрес health: `https://mentalix-bot.onrender.com/api/health`; текущий статус backend не проверялся в этой docs-сверке             | Приватный `mentalix-bot` и отдельная runtime-проверка обязательны для актуального статуса                                                              |
+| Vercel              | Git integration отключена у проектов `mentalix` и `mentalix-preview`                                                                           | Vercel git context: linked projects отсутствуют                                                                                                        |
 
 ## Канонический словарь окружений
 
@@ -70,6 +70,10 @@ Frontend использует `GET /api/streak?user_id=<id>` для числа �
 ## Календарная тема недели — ветка stoic-daily-questions (03.10.2026)
 
 Фронт открывает дни 1…`current_day` из серверного ответа независимо от пропусков. «Сегодня» ведёт на текущий вопрос/ответ, «Шаги» — на выбранный день текущей `is_current` темы; сохранение не переключает день. `409 day_locked` показывает дату без потери текста. Даты и подписи открытия считаются через `mskDate.js` от `server_date`. Контракт backend #127 предоставлен владельцем, production-релиз этого фронта не подтверждён. Проверки и снимки 393×852: [evidence](qa-evidence/stoic-daily/report.md). Ручной iPhone/Telegram gate остаётся отдельным.
+
+## Путь героя — рабочая ветка (03.10.2026)
+
+В `hero-journey-reliability` прогресс и ответы курса изолированы по ID, сериализуются в JSON; legacy-ключ переносится до очистки scope, повреждённый JSON безопасно восстанавливается из облачной копии либо становится пустым прогрессом. Черновики текста хранятся локально по пользователю и шагу. Доступность считается по всему курсу и границе суток МСК, включая карточку продолжения; «Назад» следует подэкранам шага. Это состояние рабочей ветки, не факт production-релиза. Целевые проверки: `tests/unit/hero-journey-reliability.test.mjs`, `tests/unit/api-response-body-timeout.test.mjs` и `tests/ux/hero-journey-reliability.spec.mjs`.
 
 ## Ограничения подтверждения
 

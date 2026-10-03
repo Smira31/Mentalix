@@ -366,6 +366,11 @@ export function findTrial(id) {
   return HERO_JOURNEY_TRIALS.find(trial => trial.id === id) || null
 }
 
+export function previousTrial(id) {
+  const index = HERO_JOURNEY_TRIALS.findIndex(trial => trial.id === id)
+  return index > 0 ? HERO_JOURNEY_TRIALS[index - 1] : null
+}
+
 export function trialByNumber(number) {
   return HERO_JOURNEY_TRIALS.find(trial => trial.number === number) || null
 }

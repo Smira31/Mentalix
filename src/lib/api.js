@@ -73,10 +73,14 @@ async function fetchWithTimeout(url, options, timeoutMs) {
     else callerSignal.addEventListener('abort', abortFromCaller, { once: true })
   }
 
+  let receivedHeaders = false
   try {
-    return await fetch(url, { ...options, signal: controller.signal })
+    const res = await fetch(url, { ...options, signal: controller.signal })
+    receivedHeaders = true
+    const raw = await res.text()
+    return { res, raw }
   } catch (error) {
-    if (error?.name === 'AbortError') {
+    if (controller.signal.aborted || error?.name === 'AbortError') {
       const abortedByCaller = callerSignal?.aborted
       throw new ApiError(
         abortedByCaller
@@ -89,6 +93,8 @@ async function fetchWithTimeout(url, options, timeoutMs) {
         }
       )
     }
+    // Не меняем прежнюю обработку обычных ошибок чтения тела в request().
+    if (receivedHeaders) throw error
     throw new ApiError('API network request failed', { path: url, kind: 'network', cause: error })
   } finally {
     clearTimeout(timeoutId)
@@ -216,7 +222,7 @@ async function request(path, options = {}) {
 
   for (let attempt = 0; ; attempt += 1) {
     try {
-      const res = await fetchWithTimeout(
+      const { res, raw } = await fetchWithTimeout(
         `${BASE}${path}`,
         {
           ...fetchOptions,
@@ -229,7 +235,6 @@ async function request(path, options = {}) {
         },
         timeoutMs
       )
-      const raw = await res.text()
 
       if (!res.ok) {
         if (res.status === 401) platform.clearSessionToken?.()
@@ -248,7 +253,11 @@ async function request(path, options = {}) {
           })
         }
         let errorBody = null
-        try { errorBody = JSON.parse(raw) } catch { /* не JSON */ }
+        try {
+          errorBody = JSON.parse(raw)
+        } catch {
+          /* не JSON */
+        }
         const error = new ApiError(`API ${path} failed: ${res.status}`, {
           path,
           status: res.status,

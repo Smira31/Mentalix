@@ -27,6 +27,7 @@ export default defineConfig({
     'dialog-screen.spec.mjs',
     'dialog-errors.spec.mjs',
     'guided-journals-reliability.spec.mjs',
+    'hero-journey-reliability.spec.mjs',
   ],
   outputDir: 'artifacts/ux-check/playwright-output',
   fullyParallel: false,

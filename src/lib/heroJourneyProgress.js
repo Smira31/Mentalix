@@ -1,78 +1,66 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
-import { useSynced } from './store'
-import { toLocalCalendarDate } from './dateTimezonePolicy'
+import { cloud } from '../platform/telegram.hooks'
+import { readLocal, writeLocal, dropLocal } from './store'
+import { getUserDataScope, migrateHeroJourneyProgress } from './userDataScope'
+import {
+  HERO_PROGRESS_KEY,
+  heroProgressKey,
+  emptyProgress,
+  parseProgress,
+  mergeProgress,
+} from './heroJourneyState'
 
-/*
- * ПРОГРЕСС «ПУТЯ ГЕРОЯ» — облако Telegram + localStorage.
- *
- * Тот же механизм, что другие практики (useSynced): читаем локально
- * (мгновенно), подтягиваем облако, пишем в оба. Облако переезжает
- * вместе с человеком на другое устройство.
- *
- * Структура:
- *   {
- *     completed: { [stepId]: ISODateString },
- *     signs:      { [stepId]: number[] },
- *     reflections: { [stepId]: string },
- *     actions:     { [stepId]: string }
- *   }
- *
- * Следующий шаг открывается строго после прохождения предыдущего:
- * в проде — не раньше следующего календарного дня,
- * в ?demo=1 — сразу, без ожидания.
+export { isStepAvailable, isStepCompleted } from './heroJourneyState'
+
+/* JSON в обоих хранилищах; локальные ключи изолированы по пользователю.
+ * Telegram допускает в CloudStorage только буквы, цифры, _ и -.
+ * Старый облачный ключ уже изолирован самим Telegram-аккаунтом.
  */
+export function useHeroJourneyProgress(userId = getUserDataScope()) {
+  const key = heroProgressKey(userId)
+  const cloudKey = key.replaceAll(':', '_')
+  const [snapshot, setSnapshot] = useState(() => {
+    migrateHeroJourneyProgress(userId)
+    return { key, raw: readLocal(key, JSON.stringify(emptyProgress())) }
+  })
 
-const PROGRESS_KEY = 'mx-hero-journey-progress'
+  useEffect(() => {
+    let alive = true
+    migrateHeroJourneyProgress(userId)
+    const local = mergeProgress(readLocal(key), null)
+    writeLocal(key, local)
 
-function emptyProgress() {
-  return { completed: {}, signs: {}, reflections: {}, actions: {} }
-}
-
-function isObject(value) {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-}
-
-function parseProgress(raw) {
-  if (!raw) return emptyProgress()
-  if (typeof raw === 'string') {
-    try {
-      return parseProgress(JSON.parse(raw))
-    } catch {
-      return emptyProgress()
+    async function restore() {
+      let remote = await cloud.get(cloudKey)
+      let legacy = false
+      if (remote == null) {
+        remote = await cloud.get(HERO_PROGRESS_KEY)
+        legacy = remote != null
+      }
+      if (!alive || remote == null) return
+      const merged = mergeProgress(readLocal(key), remote)
+      writeLocal(key, merged)
+      setSnapshot({ key, raw: merged })
+      const saved = await cloud.set(cloudKey, merged)
+      if (alive && legacy && saved) await cloud.remove(HERO_PROGRESS_KEY)
     }
-  }
-  if (!isObject(raw)) return emptyProgress()
-  return {
-    completed: isObject(raw.completed) ? raw.completed : {},
-    signs: isObject(raw.signs) ? raw.signs : {},
-    reflections: isObject(raw.reflections) ? raw.reflections : {},
-    actions: isObject(raw.actions) ? raw.actions : {},
-  }
-}
+    restore()
+    return () => {
+      alive = false
+    }
+  }, [cloudKey, key, userId])
 
-function mergeProgress(local, remote) {
-  const a = parseProgress(local)
-  const b = parseProgress(remote)
-  return {
-    completed: { ...a.completed, ...b.completed },
-    signs: { ...a.signs, ...b.signs },
-    reflections: { ...a.reflections, ...b.reflections },
-    actions: { ...a.actions, ...b.actions },
-  }
-}
-
-export function useHeroJourneyProgress() {
-  const [raw, setRaw] = useSynced(PROGRESS_KEY, JSON.stringify(emptyProgress()), mergeProgress)
-
-  const progress = parseProgress(raw)
+  const progress = parseProgress(snapshot.key === key ? snapshot.raw : readLocal(key))
 
   const update = useCallback(
     fn => {
-      const next = fn(parseProgress(raw))
-      setRaw(typeof next === 'string' ? next : JSON.stringify(next))
+      const next = JSON.stringify(fn(parseProgress(readLocal(key))))
+      writeLocal(key, next)
+      setSnapshot({ key, raw: next })
+      cloud.set(cloudKey, next)
     },
-    [raw, setRaw]
+    [cloudKey, key]
   )
 
   const completeStep = useCallback(
@@ -81,7 +69,9 @@ export function useHeroJourneyProgress() {
         ...p,
         completed: { ...p.completed, [stepId]: new Date().toISOString() },
         ...(markedSigns ? { signs: { ...p.signs, [stepId]: markedSigns } } : {}),
-        ...(reflection !== undefined ? { reflections: { ...p.reflections, [stepId]: reflection } } : {}),
+        ...(reflection !== undefined
+          ? { reflections: { ...p.reflections, [stepId]: reflection } }
+          : {}),
         ...(action !== undefined ? { actions: { ...p.actions, [stepId]: action } } : {}),
       }))
     },
@@ -98,28 +88,20 @@ export function useHeroJourneyProgress() {
   return { progress, completeStep, setSigns }
 }
 
-/*
- * Доступность шага.
- *
- * Шаг 1 всегда доступен.
- * Шаг N доступен, если шаг N-1 пройден и прошёл хотя бы один
- * календарный день с момента его прохождения.
- */
-export function isStepAvailable(stepNumber, prevStepId, progress, demo = false) {
-  if (stepNumber === 1) return true
-
-  const prevCompletedAt = progress.completed[prevStepId]
-  if (!prevCompletedAt) return false
-
-  // demo: следующий шаг открывается сразу после прохождения предыдущего
-  if (demo) return true
-
-  // прод: не раньше следующего календарного дня
-  const prevDate = toLocalCalendarDate(new Date(prevCompletedAt))
-  const today = toLocalCalendarDate()
-  return prevDate < today
+export function readHeroDraft(key) {
+  try {
+    const raw = readLocal(key)
+    if (raw === null) return null
+    const value = JSON.parse(raw)
+    return {
+      reflection: typeof value?.reflection === 'string' ? value.reflection : '',
+      action: typeof value?.action === 'string' ? value.action : '',
+    }
+  } catch {
+    return { reflection: '', action: '' }
+  }
 }
 
-export function isStepCompleted(stepId, progress) {
-  return Boolean(progress.completed[stepId])
+export function clearHeroDraft(key) {
+  dropLocal(key)
 }
