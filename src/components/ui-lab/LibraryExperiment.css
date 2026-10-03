@@ -106,7 +106,7 @@
 }
 
 .mx-library-lab__top-safe span {
-  font-size: calc(9px * var(--mx-type-scale));
+  font-size: max(11px, calc(9px * var(--mx-type-scale)));
   font-weight: 700;
   letter-spacing: 0.18em;
 }
@@ -558,7 +558,7 @@
 .mx-library-lab__bottom-nav small {
   max-width: 100%;
   overflow: hidden;
-  font-size: calc(8px * var(--mx-type-scale));
+  font-size: max(11px, calc(8px * var(--mx-type-scale)));
   text-overflow: ellipsis;
   white-space: nowrap;
 }

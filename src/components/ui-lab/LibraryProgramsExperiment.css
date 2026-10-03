@@ -63,7 +63,7 @@
   color: rgb(var(--c-faint));
 }
 .mx-library-programs__safe span {
-  font-size: calc(9px * var(--mx-type-scale));
+  font-size: max(11px, calc(9px * var(--mx-type-scale)));
   font-weight: 700;
   letter-spacing: 0.18em;
 }
@@ -272,7 +272,7 @@
 .mx-library-programs__bottom span {
   min-height: 44px;
   color: rgb(var(--c-faint));
-  font-size: calc(9px * var(--mx-type-scale));
+  font-size: max(11px, calc(9px * var(--mx-type-scale)));
   text-align: center;
 }
 .mx-library-programs__bottom span[aria-current='page'] {

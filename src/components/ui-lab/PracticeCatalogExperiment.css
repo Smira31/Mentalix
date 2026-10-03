@@ -117,7 +117,7 @@
 .mx-practice-catalog__meta {
   color: rgb(var(--c-faint));
   font-family: 'JetBrains Mono', monospace;
-  font-size: calc(9px * var(--mx-type-scale));
+  font-size: max(11px, calc(9px * var(--mx-type-scale)));
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -153,7 +153,7 @@
   place-items: center;
   border-radius: 22px;
   color: rgb(var(--c-faint));
-  font-size: calc(9px * var(--mx-type-scale));
+  font-size: max(11px, calc(9px * var(--mx-type-scale)));
   font-weight: 600;
   line-height: 1;
   text-align: center;

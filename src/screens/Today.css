@@ -872,7 +872,7 @@
   }
 
   .mx-today-action small {
-    font-size: calc(9px * var(--mx-type-scale));
+    font-size: max(11px, calc(9px * var(--mx-type-scale)));
   }
 }
 

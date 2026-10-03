@@ -181,7 +181,7 @@
   padding: 3px 7px;
   border: 1px solid currentColor;
   border-radius: 999px;
-  font-size: calc(9px * var(--mx-type-scale));
+  font-size: max(11px, calc(9px * var(--mx-type-scale)));
   font-weight: 800;
   letter-spacing: 0.06em;
   line-height: 1;

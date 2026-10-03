@@ -2280,7 +2280,7 @@
   overflow: hidden;
   max-width: 100%;
   color: rgb(var(--c-muted));
-  font-size: calc(9px * var(--mx-type-scale));
+  font-size: max(11px, calc(9px * var(--mx-type-scale)));
   font-weight: 700;
   letter-spacing: 0.08em;
   text-overflow: ellipsis;
@@ -2461,7 +2461,7 @@
 .mx-lab-ritual-card__copy small {
   overflow: hidden;
   color: rgb(var(--c-muted));
-  font-size: calc(9px * var(--mx-type-scale));
+  font-size: max(11px, calc(9px * var(--mx-type-scale)));
   font-weight: 700;
   letter-spacing: 0.07em;
   text-overflow: ellipsis;
@@ -2644,7 +2644,7 @@
 .mx-lab-asceza-card__copy small {
   overflow: hidden;
   color: rgb(var(--c-muted));
-  font-size: calc(9px * var(--mx-type-scale));
+  font-size: max(11px, calc(9px * var(--mx-type-scale)));
   font-weight: 700;
   letter-spacing: 0.07em;
   text-overflow: ellipsis;
@@ -2917,7 +2917,7 @@
 .mx-lab-system-card__copy small {
   overflow: hidden;
   color: rgb(var(--c-muted));
-  font-size: calc(8px * var(--mx-type-scale));
+  font-size: max(11px, calc(8px * var(--mx-type-scale)));
   font-weight: 700;
   letter-spacing: 0.07em;
   text-overflow: ellipsis;

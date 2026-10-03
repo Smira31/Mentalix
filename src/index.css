@@ -1131,10 +1131,10 @@ button {
   --mx-type-hero-size: calc(1.375rem * var(--mx-type-scale));
   --mx-type-section-size: calc(1.1875rem * var(--mx-type-scale));
   --mx-type-card-size: calc(1.25rem * var(--mx-type-scale));
-  --mx-type-body-size: calc(0.8125rem * var(--mx-type-scale));
+  --mx-type-body-size: max(11px, calc(0.8125rem * var(--mx-type-scale)));
   --mx-type-control-size: calc(1.0625rem * var(--mx-type-scale));
   --mx-type-segment-size: calc(1rem * var(--mx-type-scale));
-  --mx-type-meta-size: calc(0.6875rem * var(--mx-type-scale));
+  --mx-type-meta-size: max(11px, calc(0.6875rem * var(--mx-type-scale)));
 }
 
 .mx-type-page {
@@ -1160,7 +1160,7 @@ button {
 
 /* Today header: a quiet orientation cue, not a second hero. */
 .mx-type-weekday {
-  font-size: calc(0.75rem * var(--mx-type-scale));
+  font-size: max(11px, calc(0.75rem * var(--mx-type-scale)));
   line-height: 1.15;
   font-weight: 600;
   letter-spacing: 0.01em;

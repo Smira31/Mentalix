@@ -106,7 +106,7 @@
   padding: 0 24px;
   color: rgb(var(--c-faint));
   font-family: 'Manrope', sans-serif;
-  font-size: calc(9px * var(--mx-type-scale));
+  font-size: max(11px, calc(9px * var(--mx-type-scale)));
   font-weight: 700;
   letter-spacing: 0.18em;
 }
@@ -469,7 +469,7 @@
 .mx-progress-redesign__emotion-ring small {
   margin-top: 4px;
   color: rgb(var(--c-muted));
-  font-size: calc(9px * var(--mx-type-scale));
+  font-size: max(11px, calc(9px * var(--mx-type-scale)));
 }
 
 .mx-progress-redesign__emotion-list {
@@ -655,7 +655,7 @@
   left: 50%;
   color: rgb(var(--c-faint));
   content: attr(data-day);
-  font-size: calc(7px * var(--mx-type-scale));
+  font-size: max(11px, calc(7px * var(--mx-type-scale)));
   transform: translateX(-50%);
 }
 
@@ -670,7 +670,7 @@
 
 .mx-progress-redesign--live .mx-progress-redesign__calendar i[data-day]::after {
   color: rgb(var(--c-muted));
-  font-size: calc(9px * var(--mx-type-scale));
+  font-size: max(11px, calc(9px * var(--mx-type-scale)));
 }
 
 .mx-progress-redesign--live .mx-progress-redesign__calendar-card > p {
@@ -780,7 +780,7 @@
 
 .mx-progress-redesign__bottom-nav small {
   overflow: hidden;
-  font-size: calc(8px * var(--mx-type-scale));
+  font-size: max(11px, calc(8px * var(--mx-type-scale)));
   text-overflow: ellipsis;
   white-space: nowrap;
 }

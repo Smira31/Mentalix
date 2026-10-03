@@ -268,7 +268,7 @@
   gap: 3px;
   margin-top: -1px;
   color: rgb(var(--c-muted));
-  font-size: calc(8px * var(--mx-type-scale));
+  font-size: max(11px, calc(8px * var(--mx-type-scale)));
   font-weight: 600;
   line-height: 1.2;
   text-align: center;
@@ -305,7 +305,7 @@
 .mx-today-focus-mark > span {
   margin-top: -5px;
   color: rgb(var(--c-faint));
-  font-size: calc(9px * var(--mx-type-scale));
+  font-size: max(11px, calc(9px * var(--mx-type-scale)));
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;

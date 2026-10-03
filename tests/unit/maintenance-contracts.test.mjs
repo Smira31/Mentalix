@@ -838,7 +838,7 @@ test('MXL-TYPE-CONSISTENCY-001 задаёт единый Onest typography scale 
   assert.match(styles, /\.mx-type-body\s*\{[\s\S]*font-size:\s*var\(--mx-type-body-size\)/)
   assert.match(styles, /\.mx-type-control\s*\{[\s\S]*font-size:\s*var\(--mx-type-control-size\)/)
   assert.match(styles, /\.mx-type-insight\s*\{[\s\S]*font-size:\s*calc\(19px \* var\(--mx-type-scale\)\)/)
-  assert.match(styles, /\.mx-type-weekday\s*\{[\s\S]*font-size:\s*calc\(0\.75rem/)
+  assert.match(styles, /\.mx-type-weekday\s*\{[\s\S]*font-size:\s*max\(11px, calc\(0\.75rem/)
   assert.match(styles, /\.mx-type-calendar-date\s*\{[\s\S]*font-size:\s*calc\(1rem/)
   assert.match(styles, /\.mx-type-list-title\s*,[\s\S]*font-size:\s*calc\(15px \* var\(--mx-type-scale\)\)/)
   assert.match(styles, /\.mx-type-list-body\s*,[\s\S]*font-size:\s*max\(11px, calc\(13px \* var\(--mx-type-scale\)\)\)/)

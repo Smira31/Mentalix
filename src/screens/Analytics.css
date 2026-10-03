@@ -328,7 +328,7 @@
 }
 
 .mx-progress-layout-v2 .mx-progress-redesign__section-head > .font-label {
-  font-size: calc(9px * var(--mx-type-scale));
+  font-size: max(11px, calc(9px * var(--mx-type-scale)));
   letter-spacing: 1.7px;
 }
 
@@ -381,7 +381,7 @@
 }
 
 .mx-progress-layout-v2 .mx-progress-redesign__activity-card > span {
-  font-size: calc(9px * var(--mx-type-scale));
+  font-size: max(11px, calc(9px * var(--mx-type-scale)));
   letter-spacing: 1.2px;
 }
 
@@ -548,7 +548,7 @@
 .mx-progress-layout-v2 .mx-progress-redesign__activities article > span {
   color: var(--progress-muted);
   font-family: 'Manrope', 'Onest', sans-serif;
-  font-size: calc(9px * var(--mx-type-scale));
+  font-size: max(11px, calc(9px * var(--mx-type-scale)));
   font-weight: 600;
   letter-spacing: 1.55px;
 }

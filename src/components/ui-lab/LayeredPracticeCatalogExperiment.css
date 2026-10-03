@@ -351,7 +351,7 @@
   width: 100%;
   overflow: hidden;
   color: rgb(var(--c-faint));
-  font-size: calc(9px * var(--mx-type-scale));
+  font-size: max(11px, calc(9px * var(--mx-type-scale)));
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1478,7 +1478,7 @@
   border: 1px solid rgb(var(--c-border));
   background: rgb(var(--c-card));
   color: rgb(var(--c-text));
-  font-size: calc(9px * var(--mx-type-scale));
+  font-size: max(11px, calc(9px * var(--mx-type-scale)));
   letter-spacing: 0.1em;
 }
 .mx-layered-catalog--mxl-547-preview
@@ -1490,7 +1490,7 @@
 .mx-layered-catalog--mxl-547-preview .mx-layered-catalog__rail-category {
   margin-top: 3px;
   color: rgb(var(--c-faint));
-  font-size: calc(9px * var(--mx-type-scale));
+  font-size: max(11px, calc(9px * var(--mx-type-scale)));
 }
 .mx-layered-catalog--mxl-547-preview .mx-layered-catalog__rail-card strong {
   margin-top: 2px;

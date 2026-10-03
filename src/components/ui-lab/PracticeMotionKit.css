@@ -231,7 +231,7 @@
   right: 14px;
   z-index: 2;
   color: rgb(var(--c-faint));
-  font-size: calc(8px * var(--mx-type-scale));
+  font-size: max(11px, calc(8px * var(--mx-type-scale)));
   letter-spacing: 0.05em;
 }
 
