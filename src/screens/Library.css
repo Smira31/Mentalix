@@ -484,10 +484,7 @@
   background: rgb(var(--c-card));
 }
 
-/* Специфичность .mx-library-catalog .mx-library-v2__pill (0,2,0) нужна,
-   чтобы перебить .mx-library-catalog button { font: inherit } (0,1,1),
-   который иначе сбрасывает font-family/font-size/font-weight пилюли. */
-.mx-library-catalog .mx-library-v2__pill {
+.mx-library-v2__pill {
   display: inline-flex;
   align-items: center;
   gap: 7px;
@@ -500,9 +497,16 @@
   background: rgb(var(--c-text));
   color: rgb(var(--c-bg));
   font-family: 'Manrope', sans-serif;
-  font-size: max(11px, calc(12px * var(--mx-type-scale)));
+  font-size: 13px;
   font-weight: 700;
   white-space: nowrap;
+}
+
+/* Только font-size пилюли масштабируется; font-family и font-weight
+   остаются наследованными из .mx-library-catalog button { font: inherit },
+   как в main (Onest, 400). Специфичность (0,2,0) > (0,1,1). */
+.mx-library-catalog .mx-library-v2__pill {
+  font-size: calc(17px * var(--mx-type-scale));
 }
 
 /* Прогресс курса отдельной мелкой строкой: кнопка-пилюля остаётся
