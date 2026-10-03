@@ -15,7 +15,7 @@
 .mx-progress-observation__label,
 .mx-progress-observation__action > div > span {
   color: rgb(var(--c-muted));
-  font-size: calc(10px * var(--mx-type-scale));
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -38,7 +38,7 @@
 .mx-progress-observation__action p {
   margin: 0;
   color: rgb(var(--c-muted));
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.55;
 }
 
@@ -58,7 +58,7 @@
   background: rgb(var(--c-card));
   color: rgb(var(--c-muted));
   font: inherit;
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   font-weight: 600;
   transition:
     color 180ms ease,
@@ -122,7 +122,7 @@
 .mx-progress-observation__evidence span,
 .mx-progress-observation__evidence summary {
   color: rgb(var(--c-faint));
-  font-size: calc(10px * var(--mx-type-scale));
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -132,7 +132,7 @@
 .mx-progress-observation__evidence p {
   margin: 0;
   color: rgb(var(--c-text));
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.35;
 }
 
@@ -147,7 +147,7 @@
 
 .mx-progress-observation__caveat {
   color: rgb(var(--c-faint));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
 }
 
 .mx-progress-observation__action {
@@ -166,7 +166,7 @@
 
 .mx-progress-observation__action p {
   max-width: 340px;
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
 }
 
 .mx-progress-observation__primary {
@@ -193,7 +193,7 @@
   min-height: 18px;
   margin: -10px 0 0;
   color: rgb(var(--c-text));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
 }
 
 .mx-progress-observation__skeleton {

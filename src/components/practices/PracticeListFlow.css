@@ -45,7 +45,7 @@
 .mx-practice-flow-screen__today {
   margin: 0 0 14px;
   font-family: 'Manrope', sans-serif;
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -128,7 +128,7 @@
 }
 
 .mx-practice-flow-tile__minimum {
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   line-height: 1.35;
   color: rgb(var(--c-muted));
   max-width: 100%;
@@ -147,7 +147,7 @@
 .mx-practice-flow-tile__status {
   margin-top: auto;
   font-family: 'Manrope', sans-serif;
-  font-size: calc(10px * var(--mx-type-scale));
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -316,7 +316,7 @@
 }
 
 .mx-practice-ready-card__minimum {
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.35;
   color: rgb(var(--c-muted));
   overflow-wrap: anywhere;
@@ -345,7 +345,7 @@
 
 .mx-practice-own-step-label {
   font-family: 'Manrope', sans-serif;
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -461,7 +461,7 @@
 .mx-practice-own-chip {
   flex-shrink: 0;
   padding: 8px 14px;
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   font-weight: 500;
   color: rgb(var(--c-muted));
   background: rgb(var(--c-card2));

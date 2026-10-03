@@ -99,7 +99,7 @@
   padding: 8px 16px;
   border-radius: 999px;
   color: rgb(var(--c-muted));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   font-weight: 600;
   letter-spacing: 0.02em;
   text-decoration: none;
@@ -117,7 +117,7 @@
 .mx-showcase-kicker {
   margin: 0;
   color: rgb(var(--c-muted));
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   font-weight: 700;
   line-height: 1.3;
   letter-spacing: 0.13em;
@@ -164,14 +164,14 @@
   padding-top: 4px;
   color: rgb(var(--c-faint));
   font-family: 'JetBrains Mono', monospace;
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
 }
 
 .mx-showcase-card__path {
   margin: 0;
   color: rgb(var(--c-gold));
   font-family: 'JetBrains Mono', monospace;
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   font-weight: 700;
   letter-spacing: 0.04em;
 }
@@ -187,7 +187,7 @@
 .mx-showcase-card__note {
   margin: 8px 0 0;
   color: rgb(var(--c-muted));
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.55;
 }
 
@@ -269,7 +269,7 @@
   max-width: 380px;
   margin: 8px 0 20px;
   color: rgb(var(--c-muted));
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.5;
 }
 
@@ -284,7 +284,7 @@
 .mx-showcase-excluded li {
   padding-top: 14px;
   border-top: 1px solid rgb(var(--c-border));
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.5;
 }
 
@@ -305,7 +305,7 @@
   display: block;
   color: rgb(var(--c-faint));
   font-family: 'JetBrains Mono', monospace;
-  font-size: calc(10px * var(--mx-type-scale));
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   letter-spacing: 0.02em;
 }
 
@@ -320,7 +320,7 @@
   gap: 12px;
   margin-top: 42px;
   color: rgb(var(--c-faint));
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   font-weight: 600;
   text-align: center;
 }

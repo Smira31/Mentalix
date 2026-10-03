@@ -155,7 +155,7 @@
   display: -webkit-box;
   overflow: hidden;
   width: 100%;
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   font-weight: 400;
   line-height: 13px;
   text-align: center;

@@ -19,7 +19,7 @@
 .mx-progress-redesign__observation > span {
   color: rgb(var(--c-text));
   font-family: 'Manrope', sans-serif;
-  font-size: calc(10px * var(--mx-type-scale));
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   font-weight: 700;
   letter-spacing: 0.13em;
   text-transform: uppercase;
@@ -40,7 +40,7 @@
 
 .mx-progress-redesign__intro p {
   color: rgb(var(--c-muted));
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.55;
 }
 
@@ -72,7 +72,7 @@
   min-height: 36px;
   padding: 8px 13px;
   border-radius: 999px;
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   font-weight: 600;
   transition:
     color 180ms ease,
@@ -140,7 +140,7 @@
 
 .mx-progress-redesign__header > span {
   color: rgb(var(--c-muted));
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
 }
 
 .mx-progress-redesign__periods {
@@ -160,7 +160,7 @@
   border-color: transparent;
   border-radius: 999px;
   background: transparent;
-  font-size: calc(10px * var(--mx-type-scale));
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   white-space: nowrap;
 }
 
@@ -187,7 +187,7 @@
 
 .mx-progress-redesign__hero-copy > span {
   color: rgb(var(--c-muted));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
 }
 
 .mx-progress-redesign__hero-copy > div {
@@ -206,7 +206,7 @@
 
 .mx-progress-redesign__hero-copy small {
   color: rgb(var(--c-muted));
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
 }
 
 .mx-progress-redesign__hero-copy p {
@@ -256,7 +256,7 @@
   justify-content: space-between;
   padding-top: 8px;
   color: rgb(var(--c-muted));
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
 }
 
 .mx-progress-redesign__chart-message,
@@ -277,7 +277,7 @@
 
 .mx-progress-redesign__chart-message span {
   color: rgb(var(--c-muted));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   line-height: 1.45;
 }
 
@@ -287,7 +287,7 @@
   padding: 8px 15px;
   border-radius: 999px;
   color: rgb(var(--c-text));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
 }
 
 .mx-progress-redesign__chart-skeleton {
@@ -321,7 +321,7 @@
 
 .mx-progress-redesign__section-head > small {
   color: rgb(var(--c-muted));
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
 }
 
 .mx-progress-redesign__rail {
@@ -355,7 +355,7 @@
 .mx-progress-redesign__caveat {
   margin: 0;
   color: rgb(var(--c-muted));
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   line-height: 1.5;
 }
 
@@ -381,7 +381,7 @@
 .mx-progress-redesign__month-nav small {
   min-width: 58px;
   color: rgb(var(--c-muted));
-  font-size: calc(10px * var(--mx-type-scale));
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   text-align: center;
 }
 
@@ -403,7 +403,7 @@
 .mx-progress-redesign__weekdays {
   margin-bottom: 13px;
   color: rgb(var(--c-muted));
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   text-align: center;
 }
 
@@ -432,7 +432,7 @@
 .mx-progress-redesign__calendar-card > p {
   margin: 18px 0 0;
   color: rgb(var(--c-muted));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   text-align: center;
 }
 
@@ -483,7 +483,7 @@
   align-items: center;
   gap: 8px;
   color: rgb(var(--c-muted));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
 }
 
 .mx-progress-redesign__emotion-list i {
@@ -519,7 +519,7 @@
 
 .mx-progress-redesign__activities article > span {
   color: rgb(var(--c-muted));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
 }
 
 .mx-progress-redesign__activities strong {
@@ -531,7 +531,7 @@
 
 .mx-progress-redesign__activities small {
   color: rgb(var(--c-faint));
-  font-size: calc(10px * var(--mx-type-scale));
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
 }
 
 .mx-progress-redesign__activities article > i {
@@ -605,18 +605,18 @@
 .mx-progress-redesign--live .mx-progress-redesign__observation details {
   margin-top: 8px;
   color: rgb(var(--c-muted));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   line-height: 1.5;
 }
 
 .mx-progress-redesign--live .mx-progress-redesign__observation > span {
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
 }
 
 .mx-progress-redesign--live .mx-progress-redesign__observation p,
 .mx-progress-redesign--live .mx-progress-redesign__observation .mx-progress-redesign__caveat {
   color: rgb(var(--c-muted));
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.55;
 }
 
@@ -632,7 +632,7 @@
 .mx-progress-redesign__status-note {
   margin: 10px 0 0;
   color: rgb(var(--c-muted));
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   line-height: 1.5;
 }
 
@@ -665,7 +665,7 @@
 
 .mx-progress-redesign--live .mx-progress-redesign__weekdays {
   color: rgb(var(--c-muted));
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
 }
 
 .mx-progress-redesign--live .mx-progress-redesign__calendar i[data-day]::after {
@@ -674,7 +674,7 @@
 }
 
 .mx-progress-redesign--live .mx-progress-redesign__calendar-card > p {
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.5;
 }
 
@@ -688,17 +688,17 @@
 
 .mx-progress-redesign--live .mx-progress-redesign__emotion-list > div {
   grid-template-columns: 8px minmax(0, 1fr) auto;
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
 }
 
 .mx-progress-redesign--live .mx-progress-redesign__emotion-ring small {
   color: rgb(var(--c-muted));
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
 }
 
 .mx-progress-redesign--live .mx-progress-redesign__emotion-list small {
   color: rgb(var(--c-muted));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
 }
 
 .mx-progress-redesign--live .mx-progress-redesign__activities article {
@@ -706,19 +706,19 @@
 }
 
 .mx-progress-redesign--live .mx-progress-redesign__activities article > span {
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
 }
 
 .mx-progress-redesign--live .mx-progress-redesign__activities small {
   color: rgb(var(--c-muted));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   line-height: 1.45;
 }
 
 .mx-progress-redesign--live .mx-progress-redesign__activities details {
   margin-top: 14px;
   color: rgb(var(--c-muted));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
 }
 
 .mx-progress-redesign--live .mx-progress-redesign__activities summary {

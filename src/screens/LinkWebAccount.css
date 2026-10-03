@@ -7,6 +7,6 @@
 .mx-link-web-soon p {
   margin: 0;
   color: rgb(var(--c-muted));
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.45;
 }

@@ -25,7 +25,7 @@
 .mx-history-trends__intro > span,
 .mx-history-trends__heading > span {
   color: var(--quiet-label);
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -73,7 +73,7 @@
   border: 0;
   background: transparent;
   color: var(--quiet-tab);
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   font-weight: 500;
 }
 .mx-history-trends__toolbar button:hover,
@@ -93,11 +93,11 @@
   align-items: center;
   gap: 8px;
   color: var(--quiet-label);
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
 }
 .mx-history-trends__date strong {
   color: var(--quiet-title);
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
 }
 .mx-history-trends__date span {
   margin-right: auto;
@@ -129,18 +129,18 @@
 .mx-history-trends__entry time {
   color: var(--quiet-label);
   font-family: monospace;
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
 }
 .mx-history-trends__entry em {
   color: var(--quiet-sub);
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   font-style: normal;
   line-height: 1.5;
 }
 .mx-history-trends__entry small {
   width: max-content;
   color: var(--quiet-label);
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
 }
 .mx-history-trends__milestone {
   display: grid;
@@ -159,11 +159,11 @@
   gap: 4px;
 }
 .mx-history-trends__milestone strong {
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
 }
 .mx-history-trends__milestone span {
   color: var(--quiet-sub);
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   line-height: 1.4;
 }
 .mx-history-trends__milestone > svg:last-child {
@@ -186,12 +186,12 @@
   border: 0;
   background: transparent;
   color: var(--quiet-sub);
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
 }
 .mx-history-trends__detail > span {
   color: var(--quiet-label);
   font-family: monospace;
-  font-size: calc(10px * var(--mx-type-scale));
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   letter-spacing: 0.08em;
 }
 .mx-history-trends__detail h3 {
@@ -201,7 +201,7 @@
 .mx-history-trends__detail p {
   margin: 0;
   color: var(--quiet-sub);
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.6;
 }
 .mx-history-trends__detail .question {
@@ -216,7 +216,7 @@
 }
 .mx-history-trends__hero > span {
   color: var(--quiet-label);
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -232,7 +232,7 @@
   max-width: 480px;
   margin: 0;
   color: var(--quiet-sub);
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.55;
 }
 .mx-history-trends__hero-value {
@@ -248,7 +248,7 @@
 }
 .mx-history-trends__hero-value span {
   color: var(--quiet-sub);
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
 }
 .mx-history-trends__month {
   display: grid;
@@ -275,7 +275,7 @@
   border: 0;
   background: transparent;
   color: var(--quiet-tab);
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   font-weight: 500;
 }
 .mx-history-trends__month-toggle button[aria-pressed='true'] {
@@ -306,7 +306,7 @@
   top: 0;
   color: var(--quiet-label);
   font-family: monospace;
-  font-size: calc(10px * var(--mx-type-scale));
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   transform: translateX(-50%);
 }
 .mx-history-trends__states {
@@ -341,7 +341,7 @@
 }
 .mx-history-trends__activation span {
   color: var(--quiet-sub);
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   line-height: 1.4;
 }
 .mx-history-trends__primary {
@@ -355,7 +355,7 @@
   border-radius: 0 !important;
   background: transparent !important;
   color: var(--quiet-gold) !important;
-  font-size: calc(12px * var(--mx-type-scale)) !important;
+  font-size: max(11px, calc(12px * var(--mx-type-scale))) !important;
   font-weight: 700;
 }
 .mx-history-trends__insights {
@@ -384,7 +384,7 @@
 }
 .mx-history-trends__insights header span {
   color: var(--quiet-label);
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
 }
 .mx-history-trends__insights header button {
   padding: 2px;
@@ -485,7 +485,7 @@
 .mx-history-trends__mood-col span {
   color: var(--quiet-label);
   font-family: monospace;
-  font-size: calc(10px * var(--mx-type-scale));
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
 }
 .mx-history-trends__calendar {
   display: grid;
@@ -499,7 +499,7 @@
 }
 .mx-history-trends__weekdays span {
   color: var(--quiet-label);
-  font-size: calc(10px * var(--mx-type-scale));
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   text-align: center;
 }
 .mx-history-trends__chart--heatmap {
@@ -548,13 +548,13 @@
 }
 .mx-history-trends__ring-copy span {
   color: var(--quiet-label);
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
 }
 .mx-history-trends__empty {
   display: grid;
   gap: 7px;
   color: var(--quiet-sub);
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
 }
 .mx-history-trends__empty strong {
   color: var(--quiet-title);
@@ -584,7 +584,7 @@
 }
 .mx-history-trends__emotions-heading span {
   color: var(--quiet-sub);
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   line-height: 1.5;
 }
 .mx-history-trends__emotions-top {
@@ -599,7 +599,7 @@
 }
 .mx-history-trends__emotions-top > div > strong {
   color: var(--quiet-label);
-  font-size: calc(10px * var(--mx-type-scale));
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   font-weight: 600;
   letter-spacing: 0.06em;
   text-align: center;
@@ -643,12 +643,12 @@
 .mx-history-trends__emotions-list span {
   flex: 1;
   color: var(--quiet-title);
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
 }
 .mx-history-trends__emotions-list em {
   color: var(--quiet-label);
   font-family: monospace;
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   font-style: normal;
 }
 .mx-history-trends__emotions-cards {
@@ -661,7 +661,7 @@
   gap: 8px;
 }
 .mx-history-trends__emotions-cards strong {
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
 }
 .mx-history-trends__emotions-cards ul {
   display: grid;
@@ -672,11 +672,11 @@
 }
 .mx-history-trends__emotions-cards li {
   color: var(--quiet-sub);
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
 }
 .mx-history-trends__emotions-empty {
   color: var(--quiet-label);
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
 }
 .mx-history-trends__restore {
   width: max-content;
@@ -684,7 +684,7 @@
   border: 0;
   background: transparent;
   color: var(--quiet-sub);
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
 }
 .mx-history-trends__journal {
   display: grid;
@@ -733,7 +733,7 @@
   justify-content: space-between;
   gap: 10px;
   color: var(--quiet-label);
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
 }
 @keyframes mx-history-rise {
   from {

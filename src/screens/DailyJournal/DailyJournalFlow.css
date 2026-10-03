@@ -157,7 +157,7 @@
   background: rgb(var(--c-card2));
   border: 1px solid rgb(var(--c-border) / 0.5);
   color: rgb(var(--c-muted));
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   z-index: 50;
   white-space: nowrap;
 }
@@ -589,7 +589,7 @@
   background: rgb(var(--c-card2));
   border: 1px solid rgb(var(--c-border) / 0.5);
   color: rgb(var(--c-muted));
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   z-index: 50;
   white-space: nowrap;
 }
@@ -650,7 +650,7 @@
 }
 
 .mx-dj-entries__item-day {
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   color: rgb(var(--c-faint));
 }
 

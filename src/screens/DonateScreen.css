@@ -52,6 +52,6 @@
   margin-top: 6px;
   padding-inline: 4px;
   color: rgb(var(--c-muted));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   line-height: 1.4;
 }

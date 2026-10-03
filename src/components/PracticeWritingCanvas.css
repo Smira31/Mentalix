@@ -187,11 +187,11 @@
 }
 .practice-writing-canvas__demo-key--wide {
   flex: 0 1 18%;
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
 }
 .practice-writing-canvas__demo-key--space {
   flex: 1 1 50%;
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
 }
 .practice-writing-canvas.is-keyboard-open .practice-writing-canvas__dock {
   position: fixed;
@@ -259,7 +259,7 @@
     gap: 7px;
   }
   .practice-writing-canvas__deepen {
-    font-size: calc(13px * var(--mx-type-scale));
+    font-size: max(11px, calc(13px * var(--mx-type-scale)));
   }
   .practice-writing-canvas__demo-key {
     height: 34px;

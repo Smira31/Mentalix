@@ -9,7 +9,7 @@
 
 .mx-daily-thought__label {
   font-family: 'Manrope', sans-serif;
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.2em;
@@ -46,7 +46,7 @@
 .mx-daily-thought__my-thought-author {
   display: block;
   margin-top: 8px;
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   color: rgb(var(--c-muted));
 }
 
@@ -119,7 +119,7 @@
   padding: 0 8px;
   border: 0;
   background: transparent;
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   font-weight: 500;
   color: rgb(var(--c-muted));
   cursor: pointer;

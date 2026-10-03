@@ -33,7 +33,7 @@
 
 .mx-journal-day-header__meta,
 .mx-journal-step-note {
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   line-height: 1.35;
   letter-spacing: 0.08em;
   text-transform: uppercase;

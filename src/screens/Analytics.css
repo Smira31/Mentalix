@@ -220,7 +220,7 @@
 
 .mx-progress-layout-v2 .mx-progress-redesign__activity-card > small {
   grid-column: 2;
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
 }
 
 .mx-progress-layout-v2 .mx-progress-redesign__activity-card > i {
@@ -285,7 +285,7 @@
 .mx-progress-layout-v2__period-trigger {
   min-height: 44px;
   padding-inline: 12px;
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
 }
 
 .mx-progress-layout-v2__period-menu {
@@ -296,7 +296,7 @@
 
 .mx-progress-layout-v2__period-menu button {
   min-height: 30px;
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
 }
 
 .mx-progress-layout-v2 .mx-progress-redesign__hero {
@@ -312,7 +312,7 @@
 
 .mx-progress-layout-v2 .mx-progress-redesign__hero-copy p {
   max-width: 280px;
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
 }
 
 .mx-progress-layout-v2 .mx-progress-redesign__chart {
@@ -347,7 +347,7 @@
 
 .mx-progress-layout-v2 .mx-progress-redesign__caveat,
 .mx-progress-layout-v2 .mx-progress-redesign__observation p {
-  font-size: calc(10px * var(--mx-type-scale));
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
 }
 
 .mx-progress-layout-v2 .mx-progress-redesign__calendar-card,
@@ -387,7 +387,7 @@
 
 .mx-progress-layout-v2 .mx-progress-redesign__activity-card > small,
 .mx-progress-layout-v2 .mx-progress-redesign__activity-card summary {
-  font-size: calc(10px * var(--mx-type-scale));
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
 }
 
 @media (min-width: 420px) {
@@ -451,7 +451,7 @@
   display: block;
   margin-top: 4px;
   color: rgb(var(--c-muted));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
 }
 
 .mx-progress-layout-v2 .mx-progress-redesign__mood-prompt {
@@ -478,7 +478,7 @@
   margin: 6px auto 16px;
   color: rgb(var(--c-muted));
   font-family: 'Onest', sans-serif;
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.3;
 }
 
@@ -556,7 +556,7 @@
 .mx-progress-layout-v2 .mx-progress-redesign__section-head > small,
 .mx-progress-layout-v2 .mx-progress-redesign__month-nav small {
   color: var(--progress-soft);
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   font-weight: 500;
   letter-spacing: -0.01em;
 }
@@ -589,28 +589,28 @@
 .mx-progress-layout-v2 .mx-progress-redesign__caveat,
 .mx-progress-layout-v2 .mx-progress-redesign__calendar-card > p {
   color: var(--progress-soft);
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   font-weight: 500;
   line-height: 1.42;
 }
 
 .mx-progress-layout-v2 .mx-progress-redesign__emotion-list > div {
   color: var(--progress-soft);
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   font-weight: 500;
 }
 
 .mx-progress-layout-v2 .mx-progress-redesign__activity-card > small,
 .mx-progress-layout-v2 .mx-progress-redesign__activity-card summary {
   color: var(--progress-soft);
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   font-weight: 500;
   line-height: 1.35;
 }
 
 .mx-progress-layout-v2 .mx-progress-redesign__weekdays {
   color: var(--progress-muted);
-  font-size: calc(10px * var(--mx-type-scale));
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   font-weight: 600;
 }
 
@@ -626,7 +626,7 @@
   border: 1px solid var(--progress-border);
   background: var(--progress-card-secondary);
   color: var(--progress-soft);
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   font-style: normal;
   font-weight: 500;
 }

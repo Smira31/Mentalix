@@ -9,7 +9,7 @@
 .mx-lab-route-heading > span,
 .mx-lab-today-route small {
   color: rgb(var(--c-muted));
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -23,7 +23,7 @@
   max-width: 600px;
   margin: 0;
   color: rgb(var(--c-muted));
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.5;
 }
 .mx-lab-state-picker {
@@ -82,7 +82,7 @@
 }
 .mx-lab-baseline-head span {
   color: rgb(var(--c-faint));
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
 }
 .mx-lab-baseline-settings {
   width: 24px;
@@ -109,12 +109,12 @@
   color: rgb(var(--c-text));
 }
 .mx-lab-baseline-week small {
-  font-size: calc(10px * var(--mx-type-scale));
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   letter-spacing: 0;
   text-transform: none;
 }
 .mx-lab-baseline-week strong {
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
 }
 .mx-lab-baseline-streak {
   display: flex;
@@ -149,7 +149,7 @@
   max-width: 340px;
   margin: 9px 0 0;
   color: rgb(var(--c-muted));
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.45;
 }
 .mx-lab-baseline-cta,
@@ -187,7 +187,7 @@
 .mx-lab-today-experiment > span {
   margin-top: 12px;
   color: rgb(var(--c-faint));
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
 }
 .mx-lab-compare-grid {
   display: grid;
@@ -209,7 +209,7 @@
 }
 .mx-lab-compare-grid article > header span {
   color: rgb(var(--c-muted));
-  font-size: calc(10px * var(--mx-type-scale));
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
 }
 .mx-lab-compare-mode {
   display: inline-grid;
@@ -239,7 +239,7 @@
 .mx-lab-compare-mode-help {
   margin: -10px 0 0;
   color: rgb(var(--c-muted));
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
 }
 .mx-lab-compare-grid .mx-lab-today-baseline,
 .mx-lab-compare-grid .mx-lab-today-experiment {

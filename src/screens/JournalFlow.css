@@ -66,7 +66,7 @@
   max-width: 25rem;
   margin-top: 16px;
   color: rgb(var(--c-faint));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   line-height: 1.5;
 }
 
@@ -82,7 +82,7 @@
 .mx-practice-flow--journal .journal-flow__legacy p {
   margin: 0;
   color: rgb(var(--c-text));
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   font-weight: 600;
 }
 
@@ -90,7 +90,7 @@
   display: block;
   margin-top: 6px;
   color: rgb(var(--c-muted));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   line-height: 1.4;
 }
 
@@ -98,7 +98,7 @@
   display: flex;
   gap: 18px;
   margin-top: 12px;
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   font-weight: 600;
 }
 
@@ -116,7 +116,7 @@
   padding: 10px 14px;
   background: rgb(248 113 113 / 0.1);
   color: rgb(var(--c-text));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   line-height: 1.35;
 }
 
@@ -146,7 +146,7 @@
   margin-top: 12px;
   padding: 0;
   color: rgb(var(--c-text) / 0.72);
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   font-weight: 600;
 }
 
@@ -174,7 +174,7 @@
   padding-left: 0;
   border-left: 0;
   color: rgb(var(--c-muted) / 0.82);
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   line-height: 1.3;
 }
 
@@ -273,7 +273,7 @@
   max-width: 24rem;
   margin: 12px auto 0;
   color: rgb(var(--c-muted));
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.5;
 }
 .mx-practice-flow--journal .journal-flow__completion-actions {
@@ -294,7 +294,7 @@
   justify-self: center;
   padding: 0 12px;
   color: rgb(var(--c-muted));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   font-weight: 600;
 }
 

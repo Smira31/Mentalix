@@ -67,7 +67,7 @@
 
 .mx-theme-directory__info small {
   color: rgb(var(--c-muted));
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   font-weight: 400;
   line-height: 1.3;
   display: -webkit-box;

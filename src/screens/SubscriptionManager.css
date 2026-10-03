@@ -92,7 +92,7 @@
 
 .mx-subscription-feature__text span {
   color: rgb(var(--c-muted));
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.3;
 }
 
@@ -101,6 +101,6 @@
   margin: 0 0 var(--mx-space-2);
   padding-inline: 4px;
   color: rgb(var(--c-faint));
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.35;
 }

@@ -169,7 +169,7 @@
   max-width: 190px;
   margin: 9px 0 0;
   color: rgb(var(--c-muted));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   line-height: 1.35;
 }
 .mx-library-programs__program-glyph {
@@ -254,7 +254,7 @@
   grid-column: 2;
   margin-top: 4px;
   color: rgb(var(--c-muted));
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
 }
 .mx-library-programs__bottom {
   position: absolute;
@@ -304,7 +304,7 @@
 .mx-library-programs__detail-status {
   margin: 0;
   color: rgb(var(--c-gold));
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
 }
 .mx-library-programs__articles-list {
   display: grid;
@@ -345,7 +345,7 @@
   color: rgb(var(--c-text));
 }
 .mx-library-programs__reader-head > span:not(.mx-library-programs__reader-progress) {
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   text-align: center;
 }
 .mx-library-programs__reader-back {
@@ -413,7 +413,7 @@
 }
 .mx-library-programs__reader-slide > small {
   color: rgb(var(--c-muted));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
 }
 .mx-library-programs__reader-slide > p,
 .mx-library-programs__reader-slide section p {
@@ -462,7 +462,7 @@
 .mx-library-programs__reader-read {
   margin-top: 28px;
   color: rgb(var(--c-gold)) !important;
-  font-size: calc(13px * var(--mx-type-scale)) !important;
+  font-size: max(11px, calc(13px * var(--mx-type-scale))) !important;
 }
 .mx-library-programs__reader-next {
   display: grid;
@@ -473,7 +473,7 @@
 }
 .mx-library-programs__reader-next span {
   color: rgb(var(--c-gold));
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
 }
 .mx-library-programs__reader-next strong {
   font-size: calc(16px * var(--mx-type-scale));
@@ -482,7 +482,7 @@
 .mx-library-programs__reader-swipe {
   text-align: center;
   color: rgb(var(--c-faint));
-  font-size: calc(10px * var(--mx-type-scale));
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   padding: 7px 24px 14px;
 }
 .mx-library-programs__reader-hidden-next {
@@ -551,7 +551,7 @@
 }
 .mx-library-programs__guided-template small {
   color: rgb(var(--c-muted));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   line-height: 1.35;
 }
 .mx-library-programs__guided-catalog,
@@ -602,7 +602,7 @@
   gap: 7px;
   padding: 0 12px 0 8px;
   border-radius: 22px;
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
 }
 .mx-library-programs__guided-flow {
   min-height: calc(100% - 4px);
@@ -635,11 +635,11 @@
 }
 .mx-library-programs__flow-header span {
   color: rgb(var(--c-muted));
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
 }
 .mx-library-programs__flow-header strong {
   color: rgb(var(--c-gold));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   font-weight: 600;
 }
 .mx-library-programs__guided-flow-center {
@@ -670,7 +670,7 @@
 .mx-library-programs__guided-hint {
   margin: 0;
   color: rgb(var(--c-muted));
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.5;
 }
 .mx-library-programs__guided-writing {
@@ -704,7 +704,7 @@
 .mx-library-programs__secondary {
   border-radius: 22px;
   padding: 10px 16px;
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   font-weight: 600;
 }
 .mx-library-programs__primary {
@@ -734,7 +734,7 @@
 }
 .mx-library-programs__answer-list small {
   color: rgb(var(--c-gold));
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
 }
 .mx-library-programs__answer-list h2 {
   margin: 8px 0;
@@ -793,7 +793,7 @@
 }
 .mx-library-programs__reader-header > span {
   color: rgb(var(--c-muted));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
 }
 @media (prefers-reduced-motion: reduce) {
   .mx-library-programs__guided-template,
@@ -854,7 +854,7 @@
   border-radius: 18px;
   background: rgb(var(--c-card2) / 0.98);
   color: rgb(var(--c-text));
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.3;
   text-align: center;
   box-shadow: 0 12px 28px rgb(0 0 0 / 0.28);
@@ -987,7 +987,7 @@
     height: 164px;
   }
   .mx-library-programs--review .mx-library-programs__featured-copy p {
-    font-size: calc(13px * var(--mx-type-scale));
+    font-size: max(11px, calc(13px * var(--mx-type-scale)));
   }
 }
 
@@ -1085,7 +1085,7 @@
   margin-top: 8px;
   overflow: hidden;
   color: rgb(var(--c-muted));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   line-height: 1.35;
 }
 .mx-library-programs--review
@@ -1094,14 +1094,14 @@
   max-width: none;
   margin-top: 8px;
   color: rgb(var(--c-muted));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   line-height: 1.35;
 }
 .mx-library-programs--review .mx-library-programs__featured-copy > small {
   max-width: none;
   margin-top: 8px;
   color: rgb(var(--c-gold));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   line-height: 1.35;
 }
 .mx-library-programs--review .mx-library-programs__program-rail {
@@ -1156,7 +1156,7 @@
 }
 .mx-library-programs__guided-list-row small {
   color: rgb(var(--c-muted));
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
 }
 .mx-library-programs__guided-list-row > span:last-child {
   color: rgb(var(--c-gold));
@@ -1257,7 +1257,7 @@
   margin-top: 3px;
   overflow: hidden;
   color: rgb(var(--c-muted));
-  font-size: calc(10px * var(--mx-type-scale));
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   line-height: 1.35;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;

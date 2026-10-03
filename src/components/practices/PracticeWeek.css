@@ -32,7 +32,7 @@
 
 .mx-practice-week__label {
   font-family: 'Manrope', sans-serif;
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   line-height: 1;
   color: rgb(var(--c-muted));
 }

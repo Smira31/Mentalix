@@ -92,7 +92,7 @@
   padding: 8px 16px;
   border-radius: 999px;
   color: rgb(var(--c-muted));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   font-weight: 600;
   letter-spacing: 0.02em;
   text-decoration: none;
@@ -113,7 +113,7 @@
 .mx-lab small {
   margin: 0;
   color: rgb(var(--c-muted));
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   font-weight: 700;
   line-height: 1.3;
   letter-spacing: 0.13em;
@@ -175,7 +175,7 @@
   border-radius: 999px;
   background: transparent;
   color: rgb(var(--c-muted));
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   font-weight: 600;
 }
 
@@ -187,7 +187,7 @@
   min-height: 38px;
   margin: 12px 16px 0;
   color: rgb(var(--c-faint));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   font-weight: 600;
   line-height: 1.45;
 }
@@ -210,7 +210,7 @@
 
 .mx-lab-today-context__head > span {
   color: rgb(var(--c-gold));
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -226,7 +226,7 @@
 .mx-lab-today-context__head p {
   margin: 7px 0 0;
   color: rgb(var(--c-muted));
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.5;
 }
 
@@ -264,7 +264,7 @@
   fill: currentColor;
 }
 .mx-lab-today__streak strong {
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
 }
 .mx-lab-today__greeting {
   justify-self: center;
@@ -299,7 +299,7 @@
 .mx-lab-today__tagline {
   margin: 5px 0 14px;
   color: rgb(var(--c-faint));
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   font-weight: 600;
   text-align: center;
 }
@@ -334,7 +334,7 @@
 }
 
 .mx-lab-today__week span {
-  font-size: calc(10px * var(--mx-type-scale));
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   font-weight: 600;
 }
 
@@ -372,7 +372,7 @@
 
 .mx-lab-today__before-action small {
   color: rgb(var(--c-muted));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   font-weight: 600;
 }
 
@@ -385,7 +385,7 @@
 .mx-lab-today__before-action > span {
   margin-top: 7px;
   color: rgb(var(--c-muted));
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
 }
 
 .mx-lab-today__before-action button {
@@ -403,7 +403,7 @@
 .mx-lab-today__before-action p {
   margin: 14px 0 0;
   color: rgb(var(--c-faint));
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   font-weight: 600;
 }
 
@@ -475,7 +475,7 @@
 .mx-lab-experiment__purpose {
   margin: 8px 0 0;
   color: rgb(var(--c-muted));
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.55;
 }
 
@@ -621,7 +621,7 @@
 .mx-lab-expand__copy > span {
   overflow: hidden;
   color: rgb(var(--c-muted));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -690,7 +690,7 @@
 .mx-lab-expand__dialog > p {
   margin: 10px 0 0;
   color: rgb(var(--c-muted));
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.55;
 }
 
@@ -699,7 +699,7 @@
   padding: 12px 14px;
   border-left: 1px solid rgb(var(--c-gold));
   color: rgb(var(--c-text));
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.45;
 }
 
@@ -805,7 +805,7 @@
   width: 150px;
   margin-top: 7px;
   color: rgb(var(--c-muted));
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   text-align: center;
 }
 
@@ -899,7 +899,7 @@
   min-height: 38px;
   margin: 7px 0 0;
   color: rgb(var(--c-muted));
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.45;
 }
 
@@ -1256,7 +1256,7 @@
 .mx-lab-phi__copy small {
   color: rgb(var(--c-gold));
   font-family: 'JetBrains Mono', monospace;
-  font-size: calc(10px * var(--mx-type-scale));
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   letter-spacing: 0.04em;
 }
 
@@ -1620,7 +1620,7 @@
 
 .mx-lab-vessel__copy span {
   color: rgb(var(--c-muted));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
 }
 
 .mx-lab-vessel .mx-lab-complete-button {
@@ -1778,7 +1778,7 @@
 .mx-lab-ref__copy small {
   color: rgb(var(--c-gold));
   font-family: 'JetBrains Mono', monospace;
-  font-size: calc(10px * var(--mx-type-scale));
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
@@ -2292,7 +2292,7 @@
   overflow: hidden;
   max-width: 100%;
   margin-top: 4px;
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -2300,7 +2300,7 @@
 .mx-lab-atlas__note {
   margin: 16px 0 0;
   color: rgb(var(--c-muted));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   text-align: center;
 }
 
@@ -2476,7 +2476,7 @@
 
 .mx-lab-ritual-card__copy > span {
   color: rgb(var(--c-muted));
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   line-height: 1.35;
 }
 
@@ -2659,7 +2659,7 @@
 
 .mx-lab-asceza-card__copy > span {
   color: rgb(var(--c-muted));
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   line-height: 1.35;
 }
 
@@ -2932,7 +2932,7 @@
 
 .mx-lab-system-card__copy > span {
   color: rgb(var(--c-muted));
-  font-size: calc(10px * var(--mx-type-scale));
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   line-height: 1.35;
 }
 
@@ -2947,7 +2947,7 @@
   gap: 12px;
   margin-top: 42px;
   color: rgb(var(--c-faint));
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   font-weight: 600;
   text-align: center;
 }
@@ -2989,7 +2989,7 @@
 
 .mx-lab-my-path__copy span {
   color: rgb(var(--c-muted));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
 }
 
 .mx-lab-my-path .mx-lab-primary {

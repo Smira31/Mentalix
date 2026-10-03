@@ -82,7 +82,7 @@
 
 .mx-streak-celebration__day-label {
   color: rgb(var(--c-muted));
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   font-weight: 500;
   line-height: 16px;
 }

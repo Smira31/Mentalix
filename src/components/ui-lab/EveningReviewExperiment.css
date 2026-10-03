@@ -14,7 +14,7 @@
 .mx-evening-review__eyebrow {
   color: rgb(var(--c-gold));
   font-family: 'Manrope', system-ui, sans-serif;
-  font-size: calc(10px * var(--mx-type-scale));
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -34,7 +34,7 @@
   max-width: 520px;
   margin: 0;
   color: rgb(var(--c-muted));
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.5;
 }
 
@@ -85,7 +85,7 @@
 .mx-evening-review__duration {
   color: rgb(var(--c-faint));
   font-family: 'JetBrains Mono', monospace;
-  font-size: calc(10px * var(--mx-type-scale));
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -156,7 +156,7 @@
   align-items: center;
   color: rgb(var(--c-faint));
   font-family: 'JetBrains Mono', monospace;
-  font-size: calc(10px * var(--mx-type-scale));
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -218,7 +218,7 @@
   border-radius: 18px;
   background: rgb(var(--c-card));
   color: rgb(var(--c-muted));
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   text-align: left;
   transition:
     border-color 180ms ease,

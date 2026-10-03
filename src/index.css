@@ -665,7 +665,7 @@ svg .animate-celebrate-pop {
 .mx-scale-rail__label {
   max-width: 4.3rem;
   text-align: center;
-  font-size: calc(10px * var(--mx-type-scale));
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   font-weight: 600;
   line-height: 1.2;
 }
@@ -757,7 +757,7 @@ svg .animate-celebrate-pop {
 
 .mx-section-label {
   color: rgb(var(--c-muted));
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   font-weight: 700;
   letter-spacing: 0.12em;
   line-height: 1.2;
@@ -1192,7 +1192,7 @@ button {
 
 .mx-type-list-body,
 .mx-type-persona-body {
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.4;
   font-weight: 400;
 }
@@ -1211,19 +1211,19 @@ button {
 }
 
 .mx-type-article-body {
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   line-height: 1.4;
   font-weight: 400;
 }
 
 .mx-type-article-action {
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   line-height: 1.2;
   font-weight: 600;
 }
 
 .mx-type-article-meta {
-  font-size: calc(10px * var(--mx-type-scale));
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   line-height: 1.2;
   font-weight: 500;
 }
@@ -1281,7 +1281,7 @@ button {
 
 .mx-type-tab {
   display: block;
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   line-height: 1.2;
   font-weight: 500;
 }
@@ -1311,7 +1311,7 @@ button {
 }
 
 .mx-type-flow-body {
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.45;
   font-weight: 400;
 }
@@ -1338,7 +1338,7 @@ button {
 }
 
 .mx-ai-meta {
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   line-height: 1.2;
   font-weight: 600;
   letter-spacing: 0.14em;
@@ -1346,7 +1346,7 @@ button {
 }
 
 .mx-ai-caption {
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   line-height: 1.45;
   font-weight: 400;
 }
@@ -1790,7 +1790,7 @@ button.mx-demo-telegram-chrome__pill:focus:not(:focus-visible) {
   align-self: center;
   padding: 0 8px;
   font-family: var(--font-mono);
-  font-size: calc(10px * var(--mx-type-scale));
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -1810,12 +1810,12 @@ button.mx-demo-telegram-chrome__pill:focus:not(:focus-visible) {
 }
 .mx-preview-device-switcher button strong {
   color: inherit;
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   line-height: 1.2;
 }
 .mx-preview-device-switcher button small {
   color: rgb(var(--c-faint));
-  font-size: calc(10px * var(--mx-type-scale));
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
 }
 .mx-preview-device-switcher button.is-active {
   border-color: rgb(var(--c-gold) / 0.65);
@@ -1828,7 +1828,7 @@ button.mx-demo-telegram-chrome__pill:focus:not(:focus-visible) {
   border-radius: 999px;
   background: rgb(var(--c-card2) / 0.92);
   color: rgb(var(--c-gold));
-  font-size: calc(10px * var(--mx-type-scale));
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   font-weight: 600;
   letter-spacing: 0.04em;
   box-shadow: 0 8px 22px rgb(0 0 0 / 0.2);

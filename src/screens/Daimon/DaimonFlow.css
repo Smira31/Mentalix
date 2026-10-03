@@ -36,7 +36,7 @@
 }
 
 .mx-daimon-intro__note {
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.45;
   color: rgb(var(--c-faint));
   margin-top: var(--mx-space-5);
@@ -244,7 +244,7 @@
 
 .mx-daimon-board__request-label {
   display: block;
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   color: rgb(var(--c-faint));
   margin-bottom: 2px;
 }
@@ -318,7 +318,7 @@
   border-radius: var(--mx-radius-xs);
   background: rgb(var(--c-card));
   font: inherit;
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   font-weight: 600;
   color: rgb(var(--c-faint));
   cursor: pointer;
@@ -351,7 +351,7 @@
   position: absolute;
   right: 3px;
   bottom: 2px;
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   font-weight: 600;
   line-height: 1;
   letter-spacing: -0.02em;
@@ -359,7 +359,7 @@
 }
 
 .mx-daimon-board__position {
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   color: rgb(var(--c-muted));
   text-align: center;
   padding-top: var(--mx-space-3);
@@ -395,7 +395,7 @@
 }
 
 .mx-daimon-sheet__num {
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   color: rgb(var(--c-faint));
 }
 
@@ -430,7 +430,7 @@
 
 .mx-daimon-sheet__insight-label {
   display: block;
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   color: rgb(var(--c-faint));
   margin-bottom: var(--mx-space-1);
 }
@@ -458,7 +458,7 @@
 }
 
 .mx-daimon-board__throws {
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   color: rgb(var(--c-faint));
   text-align: center;
 }
@@ -469,7 +469,7 @@
   background: transparent;
   border: 0;
   padding: var(--mx-space-1) 0;
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   color: rgb(var(--c-muted));
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -481,7 +481,7 @@
 }
 
 .mx-daimon-board__paywall {
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   color: rgb(var(--c-muted));
   text-align: center;
   padding-top: var(--mx-space-2);
@@ -558,7 +558,7 @@
 }
 
 .mx-daimon-cell__number {
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   color: rgb(var(--c-faint));
   font-weight: 600;
 }
@@ -581,7 +581,7 @@
 
 .mx-daimon-cell__tag {
   display: inline-block;
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   font-weight: 600;
   letter-spacing: 0.05em;
   margin-top: var(--mx-space-2);
@@ -685,7 +685,7 @@
 }
 
 .mx-daimon-insight__cell {
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   color: rgb(var(--c-faint));
   font-weight: 600;
 }
@@ -789,7 +789,7 @@
 /* ── Статус голоса ── */
 .mx-daimon-voice-status {
   text-align: center;
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   padding-bottom: var(--mx-space-1);
   min-height: 18px;
 }
@@ -902,7 +902,7 @@
 }
 
 .mx-daimon-transition__label {
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   letter-spacing: 0.02em;
   color: rgb(var(--c-faint));
 }
@@ -957,7 +957,7 @@
 }
 
 .mx-daimon-finish__meta {
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   color: rgb(var(--c-faint));
   margin: var(--mx-space-2) 0 0;
 }
@@ -987,7 +987,7 @@
 }
 
 .mx-daimon-finish__path-heading {
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   font-weight: 600;
   color: rgb(var(--c-faint));
   margin-top: var(--mx-space-4);
@@ -1011,7 +1011,7 @@
 }
 
 .mx-daimon-finish__path-num {
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   font-weight: 700;
   color: rgb(var(--c-faint));
   min-width: 24px;
@@ -1028,14 +1028,14 @@
 }
 
 .mx-daimon-finish__path-insight {
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.4;
   color: rgb(var(--c-muted));
   margin-top: 2px;
 }
 
 .mx-daimon-finish__path-skipped {
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   color: rgb(var(--c-faint));
   font-style: italic;
 }
@@ -1043,7 +1043,7 @@
 /* Пометка перехода на «Твоём пути»: змея вниз ↓ / стрела вверх ↑. */
 .mx-daimon-finish__path-via {
   margin-left: var(--mx-space-2);
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   font-weight: 500;
   color: rgb(var(--c-faint));
 }
@@ -1055,7 +1055,7 @@
 
 .mx-daimon-path__request-label {
   display: block;
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   color: rgb(var(--c-faint));
   margin-bottom: 2px;
 }
@@ -1137,7 +1137,7 @@
 }
 
 .mx-daimon-games__item-meta {
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   color: rgb(var(--c-faint));
   display: flex;
   gap: var(--mx-space-2);
@@ -1179,7 +1179,7 @@
 .mx-daimon-counter {
   display: block;
   margin-top: var(--mx-space-2);
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   color: rgb(var(--c-faint));
   text-align: right;
 }

@@ -96,7 +96,7 @@
 .mx-library-collection-header > span {
   color: rgb(var(--c-gold));
   font-family: 'Manrope', sans-serif;
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -114,7 +114,7 @@
 .mx-library-catalog__section-head > small {
   color: rgb(var(--c-muted));
   font:
-    calc(11px * var(--mx-type-scale)) 'JetBrains Mono',
+    max(11px, calc(11px * var(--mx-type-scale))) 'JetBrains Mono',
     monospace;
 }
 
@@ -185,7 +185,7 @@
 .mx-library-catalog__collection small {
   margin-top: 7px;
   color: rgb(var(--c-muted));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   line-height: 1.42;
 }
 
@@ -282,7 +282,7 @@
   max-width: 270px;
   margin: 8px 0 0;
   color: rgb(var(--c-muted));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   line-height: 1.5;
 }
 
@@ -294,7 +294,7 @@
   border-radius: 999px;
   background: rgb(var(--c-text));
   color: rgb(var(--c-bg));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   font-weight: 650;
 }
 
@@ -340,7 +340,7 @@
   max-width: 330px;
   margin: 14px 0 0;
   color: rgb(var(--c-muted));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   line-height: 1.5;
 }
 
@@ -448,7 +448,7 @@
 .mx-hj-library__eyebrow {
   display: block;
   margin-bottom: 6px;
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -459,7 +459,7 @@
   max-width: 300px;
   margin: 0;
   color: rgb(var(--c-muted));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   font-weight: 400;
   line-height: 1.45;
 }
@@ -497,7 +497,7 @@
   background: rgb(var(--c-text));
   color: rgb(var(--c-bg));
   font-family: 'Manrope', sans-serif;
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   font-weight: 700;
   white-space: nowrap;
 }
@@ -508,7 +508,7 @@
   display: block;
   margin-top: 4px;
   white-space: nowrap;
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -548,13 +548,13 @@
   max-width: 360px;
   margin: 0;
   color: rgb(var(--c-muted));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   line-height: 1.5;
 }
 
 .mx-library-v2__program-detail > strong {
   color: rgb(var(--c-gold));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
 }
 
 .mx-library-v2__section-title h2 {
@@ -589,12 +589,12 @@
   gap: 4px;
 }
 .mx-library-programs__guided-list-row strong {
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   font-weight: 500;
 }
 .mx-library-programs__guided-list-row small {
   color: rgb(var(--c-muted));
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
 }
 .mx-library-programs__guided-list-row > span:last-child {
   color: rgb(var(--c-gold));
@@ -659,7 +659,7 @@
 .mx-library-v2__catalog-card small {
   margin-top: 6px;
   color: rgb(var(--c-muted));
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   line-height: 1.35;
 }
 
@@ -670,7 +670,7 @@
   border: 1px solid rgb(var(--c-gold) / 0.25);
   border-radius: 999px;
   color: rgb(var(--c-gold));
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   white-space: nowrap;
 }
 
@@ -692,7 +692,7 @@
   gap: 8px;
   margin: 12px 0 24px;
   color: rgb(var(--c-faint));
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
 }
 
 .mx-library-v2__reader-meta span:first-child {
@@ -707,7 +707,7 @@
 .mx-library-v2__reader-body p {
   margin: 0;
   color: rgb(var(--c-text));
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.65;
 }
 
@@ -720,5 +720,5 @@
   border-radius: 24px;
   background: rgb(var(--c-card) / 0.6);
   color: rgb(var(--c-gold));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
 }

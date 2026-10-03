@@ -43,7 +43,7 @@
 }
 .mx-steps-journal__label {
   color: #a0a0a0;
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   font-weight: 400;
   letter-spacing: 0;
   text-transform: none;
@@ -61,7 +61,7 @@
   margin: 0;
   max-width: 220px;
   color: #a0a0a0;
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.4;
 }
 .mx-steps-journal__cta {
@@ -179,7 +179,7 @@
   width: 100%;
   overflow: hidden;
   color: #a0a0a0;
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   font-weight: 400;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -200,7 +200,7 @@
   width: 100%;
   overflow: hidden;
   color: #707070;
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   line-height: 1.35;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
@@ -298,7 +298,7 @@
   max-width: 280px;
   margin: 0;
   color: #808080;
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.45;
 }
 
@@ -353,7 +353,7 @@
   margin-inline: auto;
   max-width: 90%;
   color: #a0a0a0;
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.4;
 }
 .mx-steps-collection__chevron {

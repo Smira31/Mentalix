@@ -55,7 +55,7 @@
   grid-template-columns: repeat(3, 1fr);
   margin: 0 auto 46px;
   color: #c7c7c7;
-  font-size: clamp(calc(13px * var(--mx-type-scale)), calc(2.8vw * var(--mx-type-scale)), calc(18px * var(--mx-type-scale)));
+  font-size: clamp(max(11px, calc(13px * var(--mx-type-scale))), calc(2.8vw * var(--mx-type-scale)), calc(18px * var(--mx-type-scale)));
   line-height: 1.45;
   text-align: center;
 }
@@ -156,7 +156,7 @@
 .mx-web-auth-error {
   margin: 18px auto 0;
   color: #888;
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   text-align: center;
 }
 .mx-web-auth-error {

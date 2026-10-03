@@ -41,7 +41,7 @@
 .mx-practice-milestone-screen__name {
   margin: 0 0 10px;
   font-family: 'Manrope', sans-serif;
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;

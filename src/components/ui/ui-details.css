@@ -12,7 +12,7 @@
 .mx-caps-label {
   display: inline-block;
   font-family: 'Manrope', sans-serif;
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;

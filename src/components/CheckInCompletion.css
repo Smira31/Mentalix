@@ -113,7 +113,7 @@
   border-radius: 20px;
   background: #111;
   color: rgb(var(--c-text));
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   font-weight: 500;
 }
 

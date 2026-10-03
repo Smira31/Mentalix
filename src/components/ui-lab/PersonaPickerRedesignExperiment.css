@@ -18,7 +18,7 @@
 .mx-persona-redesign__intro > span,
 .mx-persona-redesign__variant-header > span {
   color: rgb(var(--c-gold));
-  font-size: calc(10px * var(--mx-type-scale));
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -46,7 +46,7 @@
 .mx-persona-redesign__feedback,
 .mx-persona-redesign__note {
   color: rgb(var(--c-muted));
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.55;
 }
 
@@ -134,7 +134,7 @@
 
 .mx-persona-redesign__identity span {
   color: rgb(var(--c-gold));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   font-weight: 700;
 }
 
@@ -148,7 +148,7 @@
 .mx-persona-redesign__description {
   margin: 0;
   color: rgb(var(--c-muted));
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.5;
 }
 
@@ -177,7 +177,7 @@
   border: 1px solid rgb(var(--c-border));
   background: rgb(var(--c-card-raised));
   color: rgb(var(--c-muted));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   text-align: left;
 }
 
@@ -188,14 +188,14 @@
   border-radius: 999px;
   background: rgb(var(--c-gold));
   color: rgb(var(--c-bg));
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   font-weight: 800;
 }
 
 .mx-persona-redesign__helper {
   margin: 0;
   color: rgb(var(--c-muted));
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   line-height: 1.45;
 }
 

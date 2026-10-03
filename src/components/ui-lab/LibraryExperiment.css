@@ -21,7 +21,7 @@
 .mx-library-lab__eyebrow {
   color: rgb(var(--c-gold));
   font-family: 'Manrope', sans-serif;
-  font-size: calc(10px * var(--mx-type-scale));
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -65,7 +65,7 @@
   border-radius: 999px;
   background: rgb(var(--c-card));
   color: rgb(var(--c-muted));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   font-weight: 600;
   white-space: nowrap;
 }
@@ -215,7 +215,7 @@
 .mx-library-lab__section-head > small {
   color: rgb(var(--c-faint));
   font:
-    calc(11px * var(--mx-type-scale)) 'JetBrains Mono',
+    max(11px, calc(11px * var(--mx-type-scale))) 'JetBrains Mono',
     monospace;
 }
 
@@ -284,7 +284,7 @@
 .mx-library-lab__collection small {
   margin-top: 7px;
   color: rgb(var(--c-muted));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   line-height: 1.42;
 }
 
@@ -375,7 +375,7 @@
   max-width: 330px;
   margin: 14px 0 0;
   color: rgb(var(--c-muted));
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.5;
 }
 
@@ -484,7 +484,7 @@
   max-width: 270px;
   margin: 8px 0 0;
   color: rgb(var(--c-muted));
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.5;
 }
 
@@ -496,7 +496,7 @@
   border-radius: 999px;
   background: rgb(var(--c-text));
   color: rgb(var(--c-bg));
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   font-weight: 650;
 }
 

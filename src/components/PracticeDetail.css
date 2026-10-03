@@ -5,7 +5,7 @@
 .mx-practice-list-screen__intro {
   margin: 0 0 1.25rem;
   color: rgb(var(--c-muted));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
 }
 
 .mx-practice-grid {
@@ -153,7 +153,7 @@
 .mx-practice-detail__accordion-content {
   padding: 0 0 0.9rem;
   color: rgb(var(--c-muted));
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.55;
 }
 
@@ -181,7 +181,7 @@
 
 .mx-practice-detail__field-value {
   color: rgb(var(--c-muted));
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.4;
 }
 
@@ -191,7 +191,7 @@
   margin: 0.75rem auto 0;
   padding: 0.5rem;
   color: rgb(var(--c-muted));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   background: transparent;
   border: 0;
   cursor: pointer;
@@ -202,7 +202,7 @@
   margin: 1rem auto 0;
   padding: 0.5rem;
   color: rgb(var(--c-muted));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   background: transparent;
   border: 0;
 }
@@ -297,7 +297,7 @@
 .mx-practice-detail__streak-label {
   margin: 0 0 6px;
   font-family: 'Manrope', sans-serif;
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -338,7 +338,7 @@
 .mx-practice-detail__week-title {
   margin: 0;
   font-family: 'Manrope', sans-serif;
-  font-size: calc(11px * var(--mx-type-scale));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -347,7 +347,7 @@
 
 .mx-practice-detail__week-hint {
   margin: 0;
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   line-height: 1.4;
   color: rgb(var(--c-muted));
   text-align: center;
@@ -379,7 +379,7 @@
 
 .mx-practice-detail__level-caption {
   font-family: 'Manrope', sans-serif;
-  font-size: calc(10px * var(--mx-type-scale));
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -387,7 +387,7 @@
 }
 
 .mx-practice-detail__level-text {
-  font-size: calc(13px * var(--mx-type-scale));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.35;
 }
 

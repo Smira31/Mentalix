@@ -517,7 +517,7 @@
   grid-row: 2;
   align-self: center;
   color: rgb(var(--c-faint));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   white-space: nowrap;
 }
 
@@ -566,7 +566,7 @@
   margin: 0;
   padding: var(--mx-space-10) var(--mx-space-6) var(--mx-space-6);
   color: rgb(var(--c-faint));
-  font-size: calc(12px * var(--mx-type-scale));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
   text-align: center;
   line-height: 1.4;
 }
