@@ -115,13 +115,11 @@ function contentSignature(answers) {
  */
 function newAttemptKey() {
   const cryptoApi = globalThis.crypto
-  let random = ''
-  if (cryptoApi?.getRandomValues) {
-    const bytes = cryptoApi.getRandomValues(new Uint8Array(8))
-    random = Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('')
-  } else {
-    random = `${Math.random().toString(16).slice(2)}${Math.random().toString(16).slice(2)}`.slice(0, 16)
-  }
+  const random = cryptoApi?.getRandomValues
+    ? Array.from(cryptoApi.getRandomValues(new Uint8Array(8)), byte =>
+        byte.toString(16).padStart(2, '0')
+      ).join('')
+    : `${Math.random().toString(16).slice(2)}0000000000000000`.slice(0, 16)
   return `jd3-${Date.now().toString(36)}-${random}`
 }
 

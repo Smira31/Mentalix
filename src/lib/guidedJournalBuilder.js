@@ -8,7 +8,7 @@
  */
 export function newStepId(existingIds = []) {
   const taken = new Set(existingIds.map(String))
-  let id = ''
+  let id
   do {
     const random = Math.random().toString(36).slice(2, 8).padEnd(6, '0')
     id = `step-${Date.now().toString(36)}-${random}`

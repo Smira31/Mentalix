@@ -26,7 +26,6 @@ import {
   buildQuestionSnapshot,
 } from '../lib/journalDraftV3'
 import {
-  cleanOptions,
   ensureStepIds,
   newStepId,
   normalizeStepsForSave,
@@ -378,7 +377,9 @@ function TemplateBuilder({ user, onBack, onSaved, initialTemplate = null }) {
                 <div className="mt-2">
                   <textarea
                     value={(step.options || []).join('\n')}
-                    onChange={event => updateStep(index, { options: event.target.value.split('\n') })}
+                    onChange={event =>
+                      updateStep(index, { options: event.target.value.split('\n') })
+                    }
                     placeholder="Варианты ответа — по одному в строке"
                     aria-label={`Варианты ответа шага ${index + 1}`}
                     data-testid={`journal-builder-step-options-${index}`}
@@ -748,12 +749,7 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
   if (!canUseGuidedJournals) {
     return (
       <section className="mt-8 animate-fade-in">
-        {onExit && (
-          <NestedScreenHeader
-            title="направленные записи."
-            onBack={onExit}
-              />
-        )}
+        {onExit && <NestedScreenHeader title="направленные записи." onBack={onExit} />}
         <div className="rounded-3xl bg-emerald p-5">
           <h2 className="font-display text-[25px] text-cream">Направленные записи</h2>
           <p className="mt-3 text-[14px] leading-relaxed text-muted">
@@ -865,15 +861,19 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
         ? 'Не удалось завершить запись. Проверь шаблон и попробуй ещё раз.'
         : isNetworkError
           ? saveWarning
-          ? 'Нет связи. Попробуй ещё раз, когда появится сеть.'
-          : 'Нет связи. Черновик сохранён на устройстве — попробуй ещё раз, когда появится сеть.'
+            ? 'Нет связи. Попробуй ещё раз, когда появится сеть.'
+            : 'Нет связи. Черновик сохранён на устройстве — попробуй ещё раз, когда появится сеть.'
           : saveWarning
             ? 'Не удалось завершить запись.'
             : 'Не удалось завершить запись. Черновик сохранён.'
 
     return (
       <section className="animate-fade-in">
-        <RoundBackButton registerSystemBack onClick={() => setFlowStage('writing')} label="Назад к записи" />
+        <RoundBackButton
+          registerSystemBack
+          onClick={() => setFlowStage('writing')}
+          label="Назад к записи"
+        />
         <p className="mt-5 text-[12px] font-bold uppercase tracking-wide text-gold">
           {selected?.title} · {stepIndex + 1} из {steps.length}
         </p>
@@ -886,7 +886,11 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
           {errorMessage}
         </p>
         {saveWarning && (
-          <p role="status" data-testid="journal-v3-save-warning" className="mt-2 text-[12px] text-faint">
+          <p
+            role="status"
+            data-testid="journal-v3-save-warning"
+            className="mt-2 text-[12px] text-faint"
+          >
             {saveWarning}
           </p>
         )}
@@ -952,7 +956,11 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
         )}
         <StepInput step={step} value={answer} onChange={value => updateAnswer(step.id, value)} />
         {saveWarning && (
-          <p role="status" data-testid="journal-v3-save-warning" className="mt-3 text-[12px] text-faint">
+          <p
+            role="status"
+            data-testid="journal-v3-save-warning"
+            className="mt-3 text-[12px] text-faint"
+          >
             {saveWarning}
           </p>
         )}
@@ -1040,10 +1048,7 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
     <section className="animate-fade-in">
       {onExit && (
         <>
-          <NestedScreenHeader
-            title="направленные записи."
-            onBack={onExit}
-              />
+          <NestedScreenHeader title="направленные записи." onBack={onExit} />
           <p className="text-[13px] leading-relaxed text-muted -mt-2 mb-5">
             Готовые вопросы и личные шаблоны для спокойной рефлексии.
           </p>
@@ -1090,12 +1095,20 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
             ))}
           </div>
           {resuming && (
-            <p role="status" data-testid="journal-v3-resuming" className="mt-3 text-[13px] text-muted">
+            <p
+              role="status"
+              data-testid="journal-v3-resuming"
+              className="mt-3 text-[13px] text-muted"
+            >
               Открываю запись…
             </p>
           )}
           {resumeError && (
-            <p role="alert" data-testid="journal-v3-resume-error" className="mt-3 text-[13px] text-muted">
+            <p
+              role="alert"
+              data-testid="journal-v3-resume-error"
+              className="mt-3 text-[13px] text-muted"
+            >
               {resumeError}
             </p>
           )}

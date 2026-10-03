@@ -161,10 +161,7 @@ test('MXL-JOURNAL-V3-015: saveJournalDraft сохраняет существую
 })
 
 test('MXL-JOURNAL-V3-016: contentSignature однозначна — разделители в тексте не склеивают ответы', () => {
-  assert.notEqual(
-    contentSignature({ a: 'x|b:y' }),
-    contentSignature({ a: 'x', b: 'y' })
-  )
+  assert.notEqual(contentSignature({ a: 'x|b:y' }), contentSignature({ a: 'x', b: 'y' }))
   assert.notEqual(contentSignature({ a: ['x,y'] }), contentSignature({ a: ['x', 'y'] }))
 })
 
