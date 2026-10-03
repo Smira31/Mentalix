@@ -1,4 +1,5 @@
 import { now } from './clock.js'
+import { mskDateParts } from './mskDate.js'
 import { DEFAULT_REVIEW_HOUR } from './todayCardState.js'
 import {
   DAIMON_CELLS,
@@ -343,21 +344,35 @@ function offsetDate(date, amount) {
 }
 
 /*
+ * Времена демо-разговоров ставим явно по МСК (+03:00): метка в списке
+ * («вчера»/«3 окт») считается по МСК, а не по часовому поясу окружения.
+ * Раньше `new Date('YYYY-MM-DDT…')` парсился в локальной зоне контейнера,
+ * и в CI (TZ=UTC) вечером по UTC — когда в Москве уже наступил следующий
+ * день — «вчера» уезжало ещё на день назад и показывалось как «1 окт».
+ */
+function mskShiftedIso(dayOffset, time) {
+  const parts = mskDateParts(new Date())
+  const day = new Date(Date.UTC(parts.year, parts.month - 1, parts.day + dayOffset))
+  const key = [
+    day.getUTCFullYear(),
+    String(day.getUTCMonth() + 1).padStart(2, '0'),
+    String(day.getUTCDate()).padStart(2, '0'),
+  ].join('-')
+  return new Date(`${key}T${time}:00+03:00`).toISOString()
+}
+
+/*
  * Демо-разговоры для блока «Продолжить разговор»: 2–3 разговора разных
  * ролей с историей сообщений, чтобы превью показывало блок сразу.
  */
 function buildDemoConversations() {
-  const today = now()
-  const yesterday = offsetDate(today, -1)
-  const daysAgo3 = offsetDate(today, -3)
-  const daysAgo6 = offsetDate(today, -6)
   return [
     {
       id: 'demo-conv-1',
       persona: 'mayak',
       title: 'Сегодня было тяжело',
       last_message: 'Спутник рядом. Давай разберём это спокойно.',
-      updated_at: new Date(`${yesterday}T20:30:00`).toISOString(),
+      updated_at: mskShiftedIso(-1, '20:30'),
       messages: [
         { id: 'm1', role: 'user', content: 'Сегодня было тяжело' },
         {
@@ -378,7 +393,7 @@ function buildDemoConversations() {
       persona: 'kompas',
       title: 'Разложи цель на шаги',
       last_message: 'Наставник: начнём с одного маленького шага.',
-      updated_at: new Date(`${daysAgo3}T10:15:00`).toISOString(),
+      updated_at: mskShiftedIso(-3, '10:15'),
       messages: [
         { id: 'm5', role: 'user', content: 'Разложи цель на шаги' },
         {
@@ -393,7 +408,7 @@ function buildDemoConversations() {
       persona: 'dnevnik',
       title: 'Подведи итоги дня',
       last_message: 'Наблюдатель: я заметил один повторяющийся паттерн.',
-      updated_at: new Date(`${daysAgo3}T22:00:00`).toISOString(),
+      updated_at: mskShiftedIso(-3, '22:00'),
       messages: [
         { id: 'm7', role: 'user', content: 'Подведи итоги дня' },
         {
@@ -410,7 +425,7 @@ function buildDemoConversations() {
       persona: 'kompas',
       title: 'С чего начать неделю',
       last_message: 'Наставник: выбери один шаг и сделай его сегодня.',
-      updated_at: new Date(`${daysAgo6}T09:00:00`).toISOString(),
+      updated_at: mskShiftedIso(-6, '09:00'),
       messages: [
         { id: 'm9', role: 'user', content: 'С чего начать неделю' },
         {

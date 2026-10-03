@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-import { PERSONA_STARTER_PROMPTS, pickByDay } from '../../src/data/prompts.js'
+import { DIALOG_STARTER_CHIPS } from '../../src/data/prompts.js'
 
 /*
  * Экран «Диалог» (вкладка Наставник): карусель ролей, блок «Продолжить
@@ -70,7 +70,9 @@ test.describe('Диалог — экран выбора роли', () => {
     const chipLabel = (await chip.innerText()).trim()
     expect(chipLabel.length).toBeGreaterThan(0)
     expect(chipLabel.split(/\s+/).length).toBeLessThanOrEqual(4)
-    const expectedDraft = pickByDay(PERSONA_STARTER_PROMPTS.mayak, 0)
+    // MXL-DIALOG-CHIPS-002: у чипса закреплён свой фиксированный длинный
+    // стартер (не дневная ротация pickByDay), он и уходит в поле ввода.
+    const expectedDraft = DIALOG_STARTER_CHIPS[0].starter
 
     await chip.click()
 
