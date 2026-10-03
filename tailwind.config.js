@@ -36,10 +36,10 @@ export default {
         // над заголовками карточек и секционных caps-подписей.
         // Заголовки и текст кнопок остаются на Onest.
         label: ['Manrope', 'sans-serif'],
-        // Гарнитуры с засечками — голос Mentalix. Стек целиком задаётся
-        // токеном --font-serif (переключается ?serif=, см. src/lib/serifFont.js);
-        // ни один селектор не называет гарнитуру напрямую. См. DESIGN_SYSTEM.md §3.
-        serif: ['var(--font-serif)'],
+        // Lora — шрифт с засечками, только для заголовков разделов
+        // экрана «Шаги» («Тема недели: …», «Другие темы», «Все темы»),
+        // референс Stoic Explore. См. DESIGN_SYSTEM.md §3.
+        serif: ['Lora', 'Lora Fallback', 'PT Serif', 'Georgia', 'serif'],
       },
       keyframes: {
         // Появление без сдвига layout: движение целого экрана дёргается в WKWebView.

@@ -32,7 +32,7 @@ const PRACTICE_SEARCH_STYLES = `
   background: rgba(255,255,255,0.04);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  color: rgb(var(--c-text));
+  color: #f3f3f3;
   cursor: pointer;
 }
 .mx-steps-search-overlay {
@@ -57,7 +57,7 @@ const PRACTICE_SEARCH_STYLES = `
   border: 0;
   border-radius: 999px;
   background: #1a1a1a;
-  color: rgb(var(--c-text));
+  color: #f3f3f3;
   font-size: 16px;
   outline: none;
   box-shadow: none;
@@ -71,7 +71,7 @@ input.mx-steps-search-input:focus-visible {
   box-shadow: none;
 }
 .mx-steps-search-input::-webkit-search-cancel-button { display: none; }
-.mx-steps-search-input::placeholder { color: rgb(var(--c-faint)); }
+.mx-steps-search-input::placeholder { color: #666; }
 .mx-steps-search-close {
   display: grid;
   width: 44px;
@@ -83,7 +83,7 @@ input.mx-steps-search-input:focus-visible {
   background: rgba(255,255,255,0.04);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  color: rgb(var(--c-text));
+  color: #f3f3f3;
   cursor: pointer;
 }
 .mx-steps-search-results {
@@ -99,7 +99,7 @@ input.mx-steps-search-input:focus-visible {
   padding: 14px 0;
   border-bottom: 1px solid #1a1a1a;
   background: transparent;
-  color: rgb(var(--c-text));
+  color: #f3f3f3;
   text-align: left;
   cursor: pointer;
 }
@@ -113,8 +113,8 @@ input.mx-steps-search-input:focus-visible {
   flex-shrink: 0;
 }
 .mx-steps-search-result span .mx-semantic-glyph { width: 80%; height: 80%; }
-.mx-steps-search-result strong { font-size: 16px; font-weight: var(--mx-weight-control); }
-.mx-steps-search-empty { padding: 40px 16px; text-align: center; color: rgb(var(--c-faint)); font-size: 14px; }
+.mx-steps-search-result strong { font-size: 16px; font-weight: 500; }
+.mx-steps-search-empty { padding: 40px 16px; text-align: center; color: #666; font-size: 14px; }
 .mx-steps-search-start {
   display: flex;
   min-height: 40vh;
@@ -124,9 +124,9 @@ input.mx-steps-search-input:focus-visible {
   gap: 8px;
   text-align: center;
 }
-.mx-steps-search-start svg { color: rgb(var(--c-faint)); }
-.mx-steps-search-start h2 { margin: 4px 0 0; color: rgb(var(--c-text)); font-size: 17px; font-weight: var(--mx-weight-heading); }
-.mx-steps-search-start p { margin: 0; color: rgb(var(--c-muted)); font-size: 14px; }
+.mx-steps-search-start svg { color: #707070; }
+.mx-steps-search-start h2 { margin: 4px 0 0; color: #f3f3f3; font-size: 17px; font-weight: 700; }
+.mx-steps-search-start p { margin: 0; color: #707070; font-size: 14px; }
 .mx-steps-search-chips {
   display: flex;
   flex-wrap: wrap;
@@ -142,9 +142,9 @@ input.mx-steps-search-input:focus-visible {
   background: rgba(255,255,255,0.04);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  color: rgb(var(--c-text));
+  color: #f3f3f3;
   font-size: 14px;
-  font-weight: var(--mx-weight-control);
+  font-weight: 500;
   cursor: pointer;
 }
 `
@@ -365,19 +365,13 @@ export default function Practices({
   const [enteredFromToday, setEnteredFromToday] = useState(() => initialSub != null)
 
   const backToList = useCallback(() => {
-    if (daimonFromMentor) {
-      setSub(null)
-      setEnteredFromToday(false)
-      onReturnToMentor?.()
-      return
-    }
     if (enteredFromToday) {
       setEnteredFromToday(false)
       onReturnToToday?.()
       return
     }
     setSub(null)
-  }, [daimonFromMentor, enteredFromToday, onReturnToMentor, onReturnToToday])
+  }, [enteredFromToday, onReturnToToday])
 
   // Даймон, открытый из «Диалога» (карточка ролей), при закрытии возвращает
   // в «Диалог», а не в каталог «практики.». Открытый из «Шагов» — как в #993:

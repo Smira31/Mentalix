@@ -188,7 +188,7 @@ export default function PersonaPicker({
       const conv = userId ? await api.mentalix.createConversation(userId, persona.key) : null
       onPick(persona.key, '', conv?.id || null)
     } catch {
-      onPick(persona.key, '', null, true)
+      onPick(persona.key, '')
     } finally {
       setCreating(false)
     }
@@ -203,7 +203,7 @@ export default function PersonaPicker({
       const conv = userId ? await api.mentalix.createConversation(userId, persona.key) : null
       onPick(persona.key, chipText, conv?.id || null)
     } catch {
-      onPick(persona.key, chipText, null, true)
+      onPick(persona.key, chipText)
     } finally {
       setCreating(false)
     }
@@ -303,7 +303,9 @@ export default function PersonaPicker({
             data-testid="continue-conversation-error"
             className="mx-conversation-notice"
           >
-            <span className="text-muted mx-type-body">Не удалось загрузить разговоры</span>
+            <span className="text-muted text-[13px] leading-snug">
+              Не удалось загрузить разговоры
+            </span>
             <button
               type="button"
               data-testid="continue-conversation-retry"

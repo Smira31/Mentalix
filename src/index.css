@@ -31,46 +31,60 @@
 @import '@fontsource/manrope/cyrillic-700.css';
 @import '@fontsource/manrope/latin-700.css';
 
-/* Гарнитуры с засечками «премиального прохода» — самохостинг @fontsource,
-   без Google Fonts CDN, подмножества cyrillic + latin, font-display: swap.
-   Выбор владельца переключается ?serif= (playfair | cormorant | prata),
-   см. --font-serif в блоке токенов ниже. */
-@import '@fontsource/playfair-display/cyrillic-400.css';
-@import '@fontsource/playfair-display/latin-400.css';
-@import '@fontsource/playfair-display/cyrillic-600.css';
-@import '@fontsource/playfair-display/latin-600.css';
-@import '@fontsource/playfair-display/cyrillic-700.css';
-@import '@fontsource/playfair-display/latin-700.css';
-
-/* Cormorant Garamond: 400 слишком тонкий на тёмном, поэтому «обычный» вес —
-   500; 600/700 берём для акцентных строк. */
-@import '@fontsource/cormorant-garamond/cyrillic-500.css';
-@import '@fontsource/cormorant-garamond/latin-500.css';
-@import '@fontsource/cormorant-garamond/cyrillic-600.css';
-@import '@fontsource/cormorant-garamond/latin-600.css';
-@import '@fontsource/cormorant-garamond/cyrillic-700.css';
-@import '@fontsource/cormorant-garamond/latin-700.css';
-
-/* Prata: единственный вес — 400. «Жирные» места рисуются тем же 400,
-   без искусственного утолщения. */
-@import '@fontsource/prata/cyrillic-400.css';
-@import '@fontsource/prata/latin-400.css';
+/* Lora — шрифт с засечками для заголовков разделов экрана «Шаги»
+   («Тема недели: …», «Другие темы», «Все темы») и экранов Даймона,
+   референс Stoic Explore. Самостоятельный хостинг (npm-пакет @fontsource/lora,
+   без Google Fonts CDN). Латиница берётся из пакета (хэшированные ассеты Vite),
+   кириллица лежит в public/fonts/lora с постоянным URL — её предзагружает
+   index.html, см. @font-face ниже. */
+@import '@fontsource/lora/latin-500.css';
+@import '@fontsource/lora/latin-600.css';
+@import '@fontsource/lora/latin-700.css';
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Запасной сериф с подобранными метриками: пока гарнитура с засечками грузится,
-   браузер рисует системный сериф Georgia, подогнанный по ширине (size-adjust)
-   и по высоте строки (ascent/descent-override), поэтому подмена шрифта не
-   двигает текст — ни в Даймоне, ни в «Сегодня»/журнале/«Теме недели».
-   Метрики сняты замерами в браузере: ascent 101%, descent 27% от кегля;
+/* Кириллические начертания Lora: те же файлы, что и в пакете, но с постоянным
+   URL из public/ — только такие пути можно предзагрузить в index.html.
+   unicode-range оставляет латиницу файлам @fontsource, объявленным выше. */
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: url('/fonts/lora/lora-cyrillic-500-normal.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 600;
+  src: url('/fonts/lora/lora-cyrillic-600-normal.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url('/fonts/lora/lora-cyrillic-700-normal.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+
+/* Запасной сериф с метриками Lora: пока Lora грузится, браузер рисует системный
+   сериф Georgia, подогнанный по ширине (size-adjust) и по высоте строки
+   (ascent/descent-override), поэтому подмена шрифта не двигает текст —
+   ни в Даймоне, ни в «Сегодня»/журнале/«Теме недели».
+   Метрики Lora, снятые замерами в браузере: ascent 101%, descent 27% от кегля;
    ширина кириллицы Georgia больше на ~6% — отсюда size-adjust 105.77%. */
 @font-face {
   font-family: 'Lora Fallback';
-  src:
-    local('Georgia'), local('Times New Roman'), local('Noto Serif'), local('DejaVu Serif'),
-    local('Liberation Serif'), local('PT Serif');
+  src: local('Georgia'), local('Times New Roman'), local('Noto Serif'),
+    local('DejaVu Serif'), local('Liberation Serif'), local('PT Serif');
   size-adjust: 105.77%;
   ascent-override: 95.11%;
   descent-override: 25.9%;
@@ -315,24 +329,10 @@
   --mx-steps-card-inner-border: rgba(255, 255, 255, 0.08);
   --mx-steps-fade-h: 28px;
 
-  /* Гарнитура с засечками — голос Mentalix. Единственная точка правды для
-     всех засечек в приложении: ни один селектор не называет гарнитуру
-     напрямую. Переключается ?serif= (playfair | cormorant | prata, см.
-     src/lib/serifFont.js + [data-serif] ниже), по умолчанию — Playfair
-     Display. «Премиальный проход»: засечки почти всегда обычного веса,
-     крупно, с воздухом. */
-  --font-serif: 'Playfair Display', 'Lora Fallback', 'PT Serif', Georgia, serif;
-  --mx-serif-normal: 400;
-  --mx-serif-strong: 600;
-
-  /* Роли засечек «премиального прохода». */
-  --mx-type-serif-quote-size: 1.375rem; /* 22 — «Мысль дня», тема, «Продолжить разговор» */
-  --mx-type-serif-theme-size: 1.8125rem; /* 29 — «Тема недели:» на «Шагах» */
-  --mx-type-serif-number-size: 1.875rem; /* 30 — номер вопроса в карусели */
-
-  /* Caps-подписи («МЫСЛЬ ДНЯ», «СЕГОДНЯ», роли): один токен на всё
-     приложение — 11/600, разрядка 0.14em, приглушённый серый. */
-  --mx-caps-tracking: 0.14em;
+  /* Шрифт с засечками — только для заголовков разделов экрана «Шаги»
+     («Тема недели: …», «Другие темы», «Все темы»), референс Stoic Explore.
+     Lora с кириллицей, загружается через @fontsource/lora. */
+  --font-serif: 'Lora', 'Lora Fallback', 'PT Serif', Georgia, serif;
 
   --mx-motion-fast: 160ms;
   --mx-motion-base: 220ms;
@@ -350,27 +350,6 @@
 
 /* Legacy-варианты акцента теперь различаются только оттенком серого.
    Цветовые значения не используются для обычного UI-хрома. */
-
-/* Варианты гарнитуры с засечками (?serif=, см. src/lib/serifFont.js).
-   Cormorant Garamond: 400 слишком тонкий на тёмном, поэтому обычный вес — 500.
-   Prata существует только в 400 — «жирные» места рисуются тем же весом. */
-[data-serif='playfair'] {
-  --font-serif: 'Playfair Display', 'Lora Fallback', 'PT Serif', Georgia, serif;
-  --mx-serif-normal: 400;
-  --mx-serif-strong: 600;
-}
-
-[data-serif='cormorant'] {
-  --font-serif: 'Cormorant Garamond', 'Lora Fallback', 'PT Serif', Georgia, serif;
-  --mx-serif-normal: 500;
-  --mx-serif-strong: 600;
-}
-
-[data-serif='prata'] {
-  --font-serif: 'Prata', 'Lora Fallback', 'PT Serif', Georgia, serif;
-  --mx-serif-normal: 400;
-  --mx-serif-strong: 400;
-}
 
 [data-accent='ice'] {
   --c-gold: 200 200 200;
@@ -670,7 +649,7 @@ svg .animate-celebrate-pop {
   background: rgb(var(--c-card2));
   color: rgb(var(--c-muted));
   font-size: 1rem;
-  font-weight: var(--mx-weight-body);
+  font-weight: 700;
   transition:
     border-color 220ms ease,
     background-color 220ms ease,
@@ -778,9 +757,9 @@ svg .animate-celebrate-pop {
 
 .mx-section-label {
   color: rgb(var(--c-muted));
-  font-size: var(--mx-type-meta-size);
-  font-weight: var(--mx-weight-heading);
-  letter-spacing: var(--mx-caps-tracking);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
   line-height: 1.2;
   text-transform: uppercase;
 }
@@ -791,7 +770,7 @@ svg .animate-celebrate-pop {
   border-radius: var(--mx-radius-pill);
   padding-inline: var(--mx-space-6);
   font-size: var(--mx-type-control-size);
-  font-weight: var(--mx-weight-control);
+  font-weight: 700;
   line-height: 1;
 }
 
@@ -1127,7 +1106,7 @@ button {
    ============================================================ */
 
 .font-display {
-  font-weight: var(--mx-weight-title);
+  font-weight: 700;
 
   letter-spacing: -0.02em;
 }
@@ -1142,76 +1121,54 @@ button {
   --mx-type-page-size: 2.125rem;
   --mx-type-greeting-size: 1.25rem;
   --mx-type-hero-size: 1.375rem;
-  --mx-type-section-size: 1.125rem;
+  --mx-type-section-size: 1.1875rem;
   --mx-type-card-size: 1.25rem;
   --mx-type-body-size: 0.8125rem;
   --mx-type-control-size: 1.0625rem;
   --mx-type-segment-size: 1rem;
   --mx-type-meta-size: 0.6875rem;
-  --mx-type-caption-size: 0.8125rem;
-  --mx-type-row-size: 1.0625rem;
-  --mx-type-tile-size: 0.8125rem;
-  --mx-type-checkin-label-size: 0.9375rem;
-  --mx-type-theme-size: 1.8125rem;
-  --mx-type-theme-number-size: 1.875rem;
-  --mx-type-subquestion-size: 1rem;
-  --mx-type-weekday-size: 0.75rem;
-  --mx-type-calendar-date-size: 1rem;
-
-  /*
-   * MXL-TYPE-HIERARCHY-002 — иерархия весов и мягкая светлая кнопка как у Stoic.
-   * 700 — только крупный заголовок экрана и одно акцентное слово;
-   * 600 — заголовки разделов/карточек и caps-eyebrow;
-   * 500 — текст кнопок, подписи плиток, «Мысль дня»;
-   * 400 — весь остальной текст.
-   */
-  --mx-weight-title: 700;
-  --mx-weight-heading: 600;
-  --mx-weight-control: 500;
-  --mx-weight-body: 400;
-  --mx-btn-light-bg: #d6d6d6;
 }
 
 .mx-type-page {
   font-size: var(--mx-type-page-size);
   line-height: 1.1;
-  font-weight: var(--mx-weight-title);
+  font-weight: 700;
   letter-spacing: -0.035em;
 }
 
 .mx-type-greeting {
   font-size: var(--mx-type-greeting-size);
   line-height: 1.05;
-  font-weight: var(--mx-weight-title);
+  font-weight: 700;
   letter-spacing: -0.025em;
 }
 
 .mx-type-hero {
   font-size: var(--mx-type-hero-size);
   line-height: 1.2;
-  font-weight: var(--mx-weight-title);
-  letter-spacing: -0.02em;
+  font-weight: 800;
+  letter-spacing: -0.025em;
 }
 
 /* Today header: a quiet orientation cue, not a second hero. */
 .mx-type-weekday {
-  font-size: var(--mx-type-weekday-size);
+  font-size: 0.75rem;
   line-height: 1.15;
-  font-weight: 400;
-  letter-spacing: 0;
+  font-weight: 600;
+  letter-spacing: 0.01em;
 }
 
 .mx-type-calendar-date {
-  font-size: var(--mx-type-calendar-date-size);
+  font-size: 1rem;
   line-height: 1.1;
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: -0.01em;
 }
 
 .mx-type-insight {
   font-size: 1.1875rem;
   line-height: 1.3;
-  font-weight: var(--mx-weight-heading);
+  font-weight: 600;
   letter-spacing: -0.02em;
 }
 
@@ -1221,7 +1178,7 @@ button {
 .mx-type-analytics-heading {
   font-size: 0.9375rem;
   line-height: 1.25;
-  font-weight: var(--mx-weight-heading);
+  font-weight: 600;
   letter-spacing: -0.01em;
 }
 
@@ -1241,7 +1198,7 @@ button {
 .mx-type-article-title {
   font-size: 1rem;
   line-height: 1.25;
-  font-weight: var(--mx-weight-heading);
+  font-weight: 600;
   letter-spacing: -0.015em;
 }
 
@@ -1254,108 +1211,62 @@ button {
 .mx-type-article-action {
   font-size: 0.75rem;
   line-height: 1.2;
-  font-weight: var(--mx-weight-heading);
+  font-weight: 600;
 }
 
 .mx-type-article-meta {
   font-size: 0.625rem;
   line-height: 1.2;
-  font-weight: var(--mx-weight-control);
+  font-weight: 500;
 }
 
 .mx-type-section {
   font-size: var(--mx-type-section-size);
   line-height: 1.2;
-  font-weight: var(--mx-weight-heading);
+  font-weight: 600;
   letter-spacing: -0.02em;
 }
 
 .mx-type-card {
   font-size: var(--mx-type-card-size);
   line-height: 1.25;
-  font-weight: var(--mx-weight-body);
+  font-weight: 600;
   letter-spacing: -0.015em;
 }
 
 .mx-type-body {
   font-size: var(--mx-type-body-size);
   line-height: 1.35;
-  font-weight: var(--mx-weight-body);
+  font-weight: 400;
 }
 
 .mx-type-control {
   font-size: var(--mx-type-control-size);
   line-height: 1.2;
-  font-weight: var(--mx-weight-control);
+  font-weight: 600;
   letter-spacing: -0.01em;
 }
 
 .mx-type-segment {
   font-size: var(--mx-type-segment-size);
   line-height: 1.2;
-  font-weight: var(--mx-weight-control);
+  font-weight: 600;
 }
 
-/* Caps-подписи всего приложения: 11/600, разрядка 0.14em (раньше буквы
-   разлетались на 0.3em). Один токен — одна подпись. */
 .mx-type-meta {
   font-size: var(--mx-type-meta-size);
   line-height: 1.2;
-  font-weight: var(--mx-weight-heading);
-  letter-spacing: var(--mx-caps-tracking);
-  text-transform: uppercase;
-}
-
-/* Роли засечек «премиального прохода»: крупный текст обычного веса,
-   засечки — только как голос Mentalix (см. --font-serif). */
-
-/* Цитата: 22/normal, межстрочный 1.3, по центру, ширина ≤300. */
-.mx-serif-quote {
-  font-family: var(--font-serif);
-  font-size: var(--mx-type-serif-quote-size);
-  font-weight: var(--mx-serif-normal);
-  line-height: 1.3;
-  letter-spacing: 0;
-  text-align: center;
-  max-width: 300px;
-  margin-inline: auto;
-}
-
-/* «Тема недели:» на «Шагах» — 29, плотный межстрочный 1.15. */
-.mx-serif-theme {
-  font-family: var(--font-serif);
-  font-size: var(--mx-type-serif-theme-size);
-  font-weight: var(--mx-serif-normal);
-  line-height: 1.15;
-  letter-spacing: -0.01em;
-}
-
-/* Название темы — тот же кегль 29, акцентный вес (у Prata остаётся 400). */
-.mx-serif-theme-strong {
-  font-family: var(--font-serif);
-  font-size: var(--mx-type-serif-theme-size);
-  font-weight: var(--mx-serif-strong);
-  line-height: 1.15;
-  letter-spacing: -0.01em;
-}
-
-/* Номер вопроса в карусели — 30/normal. */
-.mx-serif-number {
-  font-family: var(--font-serif);
-  font-size: var(--mx-type-serif-number-size);
-  font-weight: var(--mx-serif-normal);
-  line-height: 1;
-  letter-spacing: 0;
+  font-weight: 600;
 }
 
 .mx-type-checkin-title {
   font-size: 1.5rem;
   line-height: 1.3;
-  font-weight: var(--mx-weight-title);
+  font-weight: 700;
 }
 
 .mx-type-checkin-label {
-  font-size: var(--mx-type-checkin-label-size);
+  font-size: 0.9375rem;
   line-height: 1.25;
   font-weight: 400;
 }
@@ -1364,7 +1275,7 @@ button {
   display: block;
   font-size: 11px;
   line-height: 1.2;
-  font-weight: var(--mx-weight-control);
+  font-weight: 500;
 }
 
 .mx-bottom-nav-library {
@@ -1383,25 +1294,11 @@ button {
 
 /* AI-экраны: единая шкала, проверяемая на 320px и 390px viewport. */
 
-/* Утилиты иерархии весов для JSX-классов (вместо font-bold/semibold). */
-.mx-w-title {
-  font-weight: var(--mx-weight-title);
-}
-.mx-w-heading {
-  font-weight: var(--mx-weight-heading);
-}
-.mx-w-control {
-  font-weight: var(--mx-weight-control);
-}
-.mx-w-body {
-  font-weight: var(--mx-weight-body);
-}
-
 /* v5: compact roles for secondary user journeys. Inputs retain 16px separately. */
 .mx-type-flow-title {
   font-size: 1.375rem;
   line-height: 1.15;
-  font-weight: var(--mx-weight-heading);
+  font-weight: 600;
   letter-spacing: -0.02em;
 }
 
@@ -1466,7 +1363,7 @@ button {
 
   border-radius: var(--mx-radius-pill);
 
-  font-weight: 500;
+  font-weight: 700;
 
   transition:
     transform var(--mx-motion-fast) var(--mx-ease-out),

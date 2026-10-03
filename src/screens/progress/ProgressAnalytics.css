@@ -47,7 +47,7 @@
   backdrop-filter: blur(20px) saturate(160%);
   color: rgb(var(--c-text, 243 243 243));
   font: inherit;
-  font-size: var(--mx-type-body-size);
+  font-size: 13px;
   font-weight: 600;
   line-height: 1.2;
   cursor: pointer;
@@ -59,7 +59,7 @@
 }
 
 .mx-progress-period-trigger__chevron {
-  font-size: var(--mx-type-body-size);
+  font-size: 13px;
   font-weight: 400;
   line-height: 1;
   color: rgb(var(--c-muted, 133 133 133));
@@ -73,8 +73,8 @@
 .mx-progress-analytics__title {
   margin: 0;
   text-align: center;
-  font-size: var(--mx-type-page-size);
-  font-weight: var(--mx-weight-title);
+  font-size: 34px;
+  font-weight: 800;
   line-height: 1;
   letter-spacing: -0.01em;
   color: rgb(var(--c-text, 243 243 243));
@@ -83,16 +83,16 @@
 .mx-progress-analytics__subtext {
   margin: 10px 0 0;
   text-align: center;
-  font-size: var(--mx-type-checkin-label-size);
-  font-weight: var(--mx-weight-body);
+  font-size: 15px;
+  font-weight: 600;
   line-height: 1.35;
   letter-spacing: 0;
-  color: rgb(var(--c-muted, 133 133 133));
+  color: rgb(var(--c-text, 243 243 243) / 0.8);
 }
 
 .mx-progress-analytics__subtext-empty {
   margin-top: 4px;
-  font-size: var(--mx-type-checkin-label-size);
+  font-size: 15px;
   font-weight: 400;
   color: rgb(var(--c-muted, 133 133 133));
 }
@@ -113,8 +113,8 @@
 .mx-progress-mood-card__title {
   margin: 0;
   text-align: center;
-  font-size: var(--mx-type-card-size);
-  font-weight: var(--mx-weight-heading);
+  font-size: 20px;
+  font-weight: 700;
   letter-spacing: 0;
   color: rgb(var(--c-text, 243 243 243));
 }
@@ -122,7 +122,7 @@
 .mx-progress-mood-card__hint {
   margin: 6px 0 0;
   text-align: center;
-  font-size: var(--mx-type-checkin-label-size);
+  font-size: 15px;
   font-weight: 400;
   line-height: 1.35;
   letter-spacing: 0;
@@ -190,7 +190,7 @@
 
 .mx-progress-need-data__title {
   margin: 0;
-  font-size: var(--mx-type-checkin-label-size);
+  font-size: 15px;
   font-weight: 500;
   line-height: 1.35;
   color: rgb(var(--c-muted, 133 133 133));
@@ -210,7 +210,7 @@
   border-radius: 999px;
   border: 1.5px solid rgb(var(--c-border, 41 41 41));
   color: rgb(var(--c-muted, 133 133 133));
-  font-size: var(--mx-type-meta-size);
+  font-size: 11px;
   font-weight: 600;
 }
 
@@ -226,11 +226,11 @@
   padding: 0 24px;
   border: 0;
   border-radius: 999px;
-  background: var(--mx-btn-light-bg, #D6D6D6);
-  color: #111;
+  background: rgb(var(--c-text, 243 243 243));
+  color: rgb(var(--c-bg, 5 4 3));
   font: inherit;
-  font-size: var(--mx-type-checkin-label-size);
-  font-weight: var(--mx-weight-control);
+  font-size: 15px;
+  font-weight: 600;
   cursor: pointer;
   transition: transform 0.15s ease;
 }
@@ -244,7 +244,7 @@
   margin: 48px 0 16px;
   text-align: center;
   font-family: 'Manrope', system-ui, sans-serif;
-  font-size: var(--mx-type-caption-size);
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.3em;
   text-transform: uppercase;
@@ -271,15 +271,15 @@
 
 .mx-progress-card__title {
   margin: 0;
-  font-size: var(--mx-type-card-size);
-  font-weight: var(--mx-weight-title);
+  font-size: 20px;
+  font-weight: 700;
   letter-spacing: 0;
   color: rgb(var(--c-text, 243 243 243));
 }
 
 .mx-progress-card__subtitle {
   margin: 4px 0 0;
-  font-size: var(--mx-type-checkin-label-size);
+  font-size: 15px;
   font-weight: 400;
   letter-spacing: 0;
   color: rgb(var(--c-muted, 133 133 133));
@@ -297,7 +297,7 @@
   border-radius: 999px;
   background: transparent;
   color: rgb(var(--c-muted, 133 133 133));
-  font-size: var(--mx-type-card-size);
+  font-size: 20px;
   cursor: pointer;
 }
 
@@ -316,7 +316,7 @@
   box-shadow: var(--shadow-float, 0 8px 32px rgba(0, 0, 0, 0.35));
   color: rgb(var(--c-text, 243 243 243));
   font: inherit;
-  font-size: var(--mx-type-body-size);
+  font-size: 13px;
   white-space: nowrap;
   cursor: pointer;
 }
@@ -339,14 +339,14 @@
 
 .mx-progress-card__empty-title {
   margin-top: 14px;
-  font-size: var(--mx-type-caption-size);
+  font-size: 12px;
   font-weight: 600;
   color: rgb(var(--c-text, 243 243 243));
 }
 
 .mx-progress-card__empty-hint {
   margin-top: 4px;
-  font-size: var(--mx-type-meta-size);
+  font-size: 11px;
   font-weight: 400;
   line-height: 1.35;
   color: rgb(var(--c-muted, 133 133 133));
@@ -385,7 +385,7 @@
 }
 
 .mx-progress-practices__empty-title {
-  font-size: var(--mx-type-control-size);
+  font-size: 17px;
   font-weight: 600;
   letter-spacing: 0;
   color: rgb(var(--c-text, 243 243 243));
@@ -393,7 +393,7 @@
 
 .mx-progress-practices__empty-hint {
   width: 100%;
-  font-size: var(--mx-type-caption-size);
+  font-size: 12px;
   font-weight: 400;
   line-height: 1.35;
   letter-spacing: 0;
@@ -410,14 +410,14 @@
 }
 
 .mx-progress-influences__empty-title {
-  font-size: var(--mx-type-control-size);
+  font-size: 17px;
   font-weight: 600;
   color: rgb(var(--c-muted, 133 133 133));
 }
 
 .mx-progress-influences__empty-hint {
   margin-top: 4px;
-  font-size: var(--mx-type-checkin-label-size);
+  font-size: 15px;
   font-weight: 400;
   line-height: 1.35;
   color: rgb(var(--c-muted, 133 133 133));
@@ -449,8 +449,8 @@
   inset: 0;
   display: grid;
   place-items: center;
-  font-size: var(--mx-type-card-size);
-  font-weight: var(--mx-weight-control);
+  font-size: 20px;
+  font-weight: 700;
   color: rgb(var(--c-text, 243 243 243));
 }
 
@@ -482,14 +482,14 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: var(--mx-type-body-size);
+  font-size: 13px;
   font-weight: 500;
   color: rgb(var(--c-text, 243 243 243));
 }
 
 .mx-progress-practices__count {
   flex-shrink: 0;
-  font-size: var(--mx-type-body-size);
+  font-size: 13px;
   font-weight: 600;
   color: rgb(var(--c-muted, 133 133 133));
 }
@@ -523,8 +523,8 @@
 
 .mx-progress-mood-calendar__wd {
   margin-top: 16px;
-  font-size: var(--mx-type-caption-size);
-  font-weight: var(--mx-weight-title);
+  font-size: 12px;
+  font-weight: 700;
   letter-spacing: 0;
   color: rgb(var(--c-muted, 133 133 133));
 }
@@ -561,7 +561,7 @@
   background: transparent;
   color: rgb(var(--c-text, 243 243 243));
   font: inherit;
-  font-size: var(--mx-type-control-size);
+  font-size: 17px;
   font-weight: 600;
   letter-spacing: 0;
   cursor: pointer;
@@ -580,7 +580,7 @@
   display: flex;
   justify-content: space-between;
   margin-top: 6px;
-  font-size: var(--mx-type-meta-size);
+  font-size: 11px;
   font-weight: 500;
   color: rgb(var(--c-muted, 133 133 133));
 }
@@ -610,8 +610,8 @@
   inset: 0;
   display: grid;
   place-items: center;
-  font-size: var(--mx-type-card-size);
-  font-weight: var(--mx-weight-title);
+  font-size: 20px;
+  font-weight: 700;
   color: rgb(var(--c-text, 243 243 243));
 }
 
@@ -643,14 +643,14 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: var(--mx-type-body-size);
+  font-size: 13px;
   font-weight: 500;
   color: rgb(var(--c-text, 243 243 243));
 }
 
 .mx-progress-emotions__count {
   flex-shrink: 0;
-  font-size: var(--mx-type-body-size);
+  font-size: 13px;
   font-weight: 600;
   color: rgb(var(--c-muted, 133 133 133));
 }
@@ -664,7 +664,7 @@
 
 .mx-progress-conclusion__text {
   margin: 0;
-  font-size: var(--mx-type-checkin-label-size);
+  font-size: 15px;
   font-weight: 600;
   line-height: 1.35;
   color: rgb(var(--c-text, 243 243 243));
@@ -672,7 +672,7 @@
 
 .mx-progress-conclusion__hint {
   margin: 4px 0 0;
-  font-size: var(--mx-type-caption-size);
+  font-size: 12px;
   font-weight: 400;
   color: rgb(var(--c-muted, 133 133 133));
 }
@@ -691,7 +691,7 @@
   background: transparent;
   color: rgb(var(--c-muted, 133 133 133));
   font: inherit;
-  font-size: var(--mx-type-meta-size);
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -746,7 +746,7 @@
 
 .mx-progress-mood-distribution__label {
   margin-top: 6px;
-  font-size: var(--mx-type-meta-size);
+  font-size: 11px;
   font-weight: 600;
   color: rgb(var(--c-muted, 133 133 133));
 }
@@ -767,7 +767,7 @@
   backdrop-filter: blur(20px) saturate(160%);
   color: rgb(var(--c-text, 243 243 243));
   font: inherit;
-  font-size: var(--mx-type-checkin-label-size);
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
   transition: transform 0.15s ease;
@@ -806,14 +806,14 @@
   backdrop-filter: blur(20px) saturate(160%);
   color: rgb(var(--c-text, 243 243 243));
   font: inherit;
-  font-size: var(--mx-type-section-size);
+  font-size: 19px;
   cursor: pointer;
 }
 
 .mx-progress-customize__title {
   margin: 0;
-  font-size: var(--mx-type-page-size);
-  font-weight: var(--mx-weight-title);
+  font-size: 34px;
+  font-weight: 800;
   line-height: 1;
   letter-spacing: -0.01em;
   color: rgb(var(--c-text, 243 243 243));
@@ -821,7 +821,7 @@
 
 .mx-progress-customize__subtext {
   margin: 10px 0 24px;
-  font-size: var(--mx-type-checkin-label-size);
+  font-size: 15px;
   font-weight: 500;
   color: rgb(var(--c-muted, 133 133 133));
 }
@@ -839,7 +839,7 @@
   border-radius: 14px;
   background: rgb(var(--c-card2, 17 17 17));
   color: rgb(var(--c-text, 243 243 243));
-  font-size: var(--mx-type-segment-size);
+  font-size: 16px;
   letter-spacing: 0;
   cursor: pointer;
   margin-bottom: 2px;
@@ -945,7 +945,7 @@
   border-radius: 999px;
   background: transparent;
   color: rgb(var(--c-text, 243 243 243));
-  font-size: var(--mx-type-body-size);
+  font-size: 13px;
   line-height: 1;
   cursor: pointer;
 }
@@ -965,15 +965,15 @@
 }
 
 .mx-progress-bottom-pill__name {
-  font-size: var(--mx-type-control-size);
-  font-weight: var(--mx-weight-control);
+  font-size: 17px;
+  font-weight: 700;
   line-height: 1.2;
   letter-spacing: 0;
   color: rgb(var(--c-text, 243 243 243));
 }
 
 .mx-progress-bottom-pill__range {
-  font-size: var(--mx-type-caption-size);
+  font-size: 12px;
   font-weight: 500;
   line-height: 1.3;
   letter-spacing: 0;
@@ -992,8 +992,8 @@
 .mx-progress-full-calendar__title {
   margin: 0;
   text-align: center;
-  font-size: var(--mx-type-page-size);
-  font-weight: var(--mx-weight-title);
+  font-size: 34px;
+  font-weight: 800;
   line-height: 1;
   letter-spacing: -0.01em;
   color: rgb(var(--c-text, 243 243 243));
@@ -1002,7 +1002,7 @@
 .mx-progress-full-calendar__subtext {
   margin: 10px 0 20px;
   text-align: center;
-  font-size: var(--mx-type-checkin-label-size);
+  font-size: 15px;
   font-weight: 500;
   color: rgb(var(--c-muted, 133 133 133));
 }
@@ -1030,7 +1030,7 @@
   grid-column: 1 / -1;
   margin-top: 12px;
   text-align: left;
-  font-size: var(--mx-type-meta-size);
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.15em;
   text-transform: uppercase;

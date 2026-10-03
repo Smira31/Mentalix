@@ -82,7 +82,7 @@ function BreakContextSheet({ asceza, onSave, onClose }) {
                     platform.haptic('light')
                     setTrigger(item)
                   }}
-                  className={`practice-scene__choice py-3 px-3 rounded-2xl border text-[12px] mx-w-control ${
+                  className={`practice-scene__choice py-3 px-3 rounded-2xl border text-[12px] font-semibold ${
                     active
                       ? 'bg-gold text-emerald-deep border-gold'
                       : 'bg-cream/5 text-muted border-cream/10'

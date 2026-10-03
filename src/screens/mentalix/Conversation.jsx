@@ -35,7 +35,7 @@ import './DialogNotice.css'
 function ConversationNotice({ testId, text, retryTestId, onRetry }) {
   return (
     <div role="alert" data-testid={testId} className="mx-conversation-notice">
-      <span className="text-muted mx-type-body">{text}</span>
+      <span className="text-muted text-[13px] leading-snug">{text}</span>
       {onRetry && (
         <button
           type="button"
@@ -456,8 +456,8 @@ export default function Conversation({
                       {/* Неудачная отправка: статус и «Повторить» у своего пузыря. */}
                       {message.status === 'failed' && (
                         <div data-testid="chat-message-failed" className="mx-imessage-failed">
-                          <span className="text-muted mx-ai-caption">Не отправлено</span>
-                          <span aria-hidden="true" className="text-faint mx-ai-caption">
+                          <span className="text-muted text-[12px]">Не отправлено</span>
+                          <span aria-hidden="true" className="text-faint text-[12px]">
                             ·
                           </span>
                           <button
@@ -516,7 +516,7 @@ export default function Conversation({
               className="w-full py-2 flex items-center justify-center gap-2"
             >
               <LoaderCircle size={16} className="animate-spin text-muted" />
-              <p className="mx-ai-body text-muted">Новый разговор…</p>
+              <p className="text-[14px] text-muted">Новый разговор…</p>
             </div>
           )}
 
@@ -630,7 +630,7 @@ export default function Conversation({
                 data-testid="voice-hint"
                 className="absolute bottom-full right-0 mb-3 z-[76] pointer-events-none animate-fade-in"
               >
-                <div className="w-[168px] rounded-2xl bg-cream text-emerald-deep text-[12px] mx-w-control leading-snug px-4 py-2.5 text-center shadow-lg">
+                <div className="w-[168px] rounded-2xl bg-cream text-emerald-deep text-[12px] font-semibold leading-snug px-4 py-2.5 text-center shadow-lg">
                   Нажми и удерживай, чтобы записать голосовое
                 </div>
 

@@ -1117,7 +1117,7 @@ export default function Today({
                   setPathTab(key)
                 }}
                 className={[
-                  'flex-1 min-h-11 py-2 rounded-full text-[12px] mx-w-control border-0 transition-colors',
+                  'flex-1 min-h-11 py-2 rounded-full text-[12px] font-bold border-0 transition-colors',
                   pathTab === key ? 'bg-cream/10 text-cream' : 'bg-transparent text-muted',
                 ].join(' ')}
               >
@@ -1578,11 +1578,11 @@ export default function Today({
             changeSub('dailyThought')
           }}
           data-testid="today-quote-card"
-          className="mx-today-affirmation-card w-full px-[var(--mx-screen-x)] py-7 text-center animate-fade-in border-0 active:scale-[0.99] transition-transform"
+          className="mx-today-affirmation-card w-full px-[var(--mx-screen-x)] py-6 text-center animate-fade-in border-0 active:scale-[0.99] transition-transform"
         >
-          <span className="block mx-type-meta mx-today-quote-card__eyebrow mb-3">Мысль дня</span>
+          <span className="block mx-type-meta text-muted mb-3">Мысль дня</span>
 
-          <span className="block mx-today-quote-card__text">{thoughtOfDay.text}</span>
+          <span className="block font-display mx-type-card text-cream">{thoughtOfDay.text}</span>
         </button>
       )}
 
@@ -1684,7 +1684,7 @@ export default function Today({
           }}
           className="w-full rounded-3xl bg-emerald/60 px-[var(--mx-screen-x)] py-3 flex items-center gap-3 border-0 active:scale-[0.98] transition-transform"
         >
-          <span className="w-9 h-9 rounded-full bg-gold/15 text-gold flex items-center justify-center text-[13px] mx-w-control shrink-0">
+          <span className="w-9 h-9 rounded-full bg-gold/15 text-gold flex items-center justify-center text-[13px] font-bold shrink-0">
             ✓
           </span>
 
@@ -1707,10 +1707,7 @@ export default function Today({
         <div className="mx-today-progress" role="status" data-testid="today-progress">
           <span className="mx-today-progress__label">Сегодня</span>
           <div className="mx-today-progress__track" aria-hidden="true">
-            <div
-              className="mx-today-progress__fill"
-              style={{ transform: `scaleX(${Math.min(100, Math.max(0, pct)) / 100})` }}
-            />
+            <div className="mx-today-progress__fill" style={{ transform: `scaleX(${Math.min(100, Math.max(0, pct)) / 100})` }} />
           </div>
           <span className="mx-today-progress__count" data-testid="today-progress-count">
             {done} из {total}

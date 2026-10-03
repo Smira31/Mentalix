@@ -1547,11 +1547,7 @@ function respond(path, options = {}) {
         }
       }
     }
-    writeState({
-      ...state,
-      messages: [...(state.messages || []), userMessage, reply],
-      conversations,
-    })
+    writeState({ ...state, messages: [...(state.messages || []), userMessage, reply], conversations })
     return json({ ...reply, conversationId: convId || conversations[0]?.id || null })
   }
 

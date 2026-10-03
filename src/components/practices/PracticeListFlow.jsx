@@ -264,7 +264,7 @@ export default function PracticeListFlow({
           type="button"
           data-testid="practice-load-retry"
           onClick={onRetry}
-          className="mx-auto mt-5 block min-h-11 rounded-full bg-[var(--mx-btn-light-bg)] px-4 py-2 text-[13px] mx-w-control text-[#111]"
+          className="mx-auto mt-5 block min-h-11 rounded-full bg-cream px-4 py-2 text-[13px] font-semibold text-emerald-deep"
         >
           Повторить
         </button>

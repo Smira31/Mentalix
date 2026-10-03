@@ -43,7 +43,6 @@ function RailCard({ card, onOpen }) {
   return (
     <button
       className="mx-steps-rail-card"
-      data-testid={`steps-practice-${card.key}`}
       type="button"
       disabled={!card.active}
       aria-label={card.active ? `Открыть ${card.title}` : `${card.title}, скоро`}

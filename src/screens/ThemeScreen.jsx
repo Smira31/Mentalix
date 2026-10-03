@@ -435,7 +435,7 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
                 setLoadError(false)
                 setRetryToken(n => n + 1)
               }}
-              className="mt-5 min-h-11 rounded-full bg-[var(--mx-btn-light-bg)] px-4 py-2 text-[13px] mx-w-control text-[#111]"
+              className="mt-5 min-h-11 rounded-full bg-cream px-4 py-2 text-[13px] font-semibold text-emerald-deep"
             >
               Повторить
             </button>
@@ -501,7 +501,7 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
         <RoundBackButton onClick={back} />
 
         <div className="text-left mt-4 mb-7">
-          <div className="font-label text-[12px] text-faint mx-w-heading uppercase tracking-wide mb-2">
+          <div className="font-label text-[12px] text-faint font-semibold uppercase tracking-wide mb-2">
             {finished ? 'Неделя пройдена' : 'Что уже написано'}
           </div>
 
@@ -517,7 +517,7 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
         <div className="flex flex-col gap-3">
           {written.map(d => (
             <div key={d.day} className="rounded-[24px] bg-emerald border border-cream/10 p-5">
-              <div className="font-label text-[11px] text-gold mx-w-heading uppercase tracking-wide mb-2">
+              <div className="font-label text-[11px] text-gold font-bold uppercase tracking-wide mb-2">
                 День {d.day}
               </div>
 
@@ -525,7 +525,7 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
 
               <MarkdownText
                 content={d.reflection}
-                className="space-y-2 text-[16px] mx-w-body text-cream leading-relaxed"
+                className="space-y-2 text-[16px] font-normal text-cream leading-relaxed"
               />
 
               <button
@@ -571,16 +571,16 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
 
       <div className="shrink-0">
         <div className="text-left" data-testid="journal-day-content">
-          <div className="mb-2 font-label text-[11px] mx-w-heading uppercase tracking-[0.14em] text-gold">
+          <div className="mb-2 font-label text-[11px] font-bold uppercase tracking-[0.14em] text-gold">
             День {day} из {data.days.length}
           </div>
 
-          <h3 className="font-display text-[20px] mx-w-heading leading-[1.16] text-cream">
+          <h3 className="font-display text-[20px] font-bold leading-[1.16] text-cream">
             {current?.text}
           </h3>
 
           {current?.prompt && (
-            <p className="mt-3 border-l border-gold pl-4 text-[16px] mx-w-body leading-relaxed text-muted">
+            <p className="mt-3 border-l border-gold pl-4 text-[16px] font-normal leading-relaxed text-muted">
               {current.prompt}
             </p>
           )}
@@ -594,7 +594,7 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
         ariaLabel="Мысль по теме недели"
         testId="theme-text-input"
         className="mt-6 flex-1"
-        editorClassName="!text-[16px] mx-w-body pb-16"
+        editorClassName="!text-[16px] font-normal pb-16"
         formatting={false}
         floatingToolbar={false}
         writingCanvas={false}
@@ -618,7 +618,7 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
         aria-label={hasText ? 'Сохранить мысль' : undefined}
         onClick={hasText ? save : onBack}
         disabled={saving}
-        className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--mx-btn-light-bg)] text-[22px] mx-w-control text-[#111] transition-transform active:scale-95"
+        className="flex h-11 w-11 items-center justify-center rounded-full bg-[#efefef] text-[22px] font-semibold text-[#111] transition-transform active:scale-95"
         style={roundButtonStyle}
       >
         {hasText ? '›' : '✕'}

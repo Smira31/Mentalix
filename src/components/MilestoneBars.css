@@ -18,7 +18,7 @@
 }
 
 .mx-milestone-label {
-  font-size: var(--mx-type-body-size);
+  font-size: 13px;
   line-height: 1.4;
   color: rgb(var(--c-muted, 133 133 133));
 }

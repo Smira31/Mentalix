@@ -591,10 +591,10 @@ export default function MentalixChat({ user, onPersonaChange, onRegisterBack, on
         style={{ minHeight: '60vh' }}
       >
         {creatingConversation ? (
-          <p className="text-muted mx-ai-body">Загрузка...</p>
+          <p className="text-muted text-[14px]">Загрузка...</p>
         ) : (
           <>
-            <p className="text-muted mx-ai-body text-center px-6" data-testid="conversation-start-error">
+            <p className="text-muted text-[14px] text-center px-6" data-testid="conversation-start-error">
               Не удалось начать разговор
             </p>
             <button

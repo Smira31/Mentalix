@@ -68,7 +68,7 @@ test('Journal completed intro uses scoped title and action corrections', () => {
   assert.match(source, /journal-flow__intro--completed/)
   assert.match(source, /journal-flow__intro-cta--completed/)
   assert.match(css, /journal-flow__intro--completed \.journal-flow__intro-title \{[\s\S]*font-size: clamp\(1\.75rem, 7vw, 2\.35rem\)/)
-  assert.match(css, /journal-flow__guided-action \{[\s\S]*color: rgb\(var\(--c-text\) \/ 0\.72\);[\s\S]*font-size: var\(--mx-type-body-size\)/)
+  assert.match(css, /journal-flow__guided-action \{[\s\S]*color: rgb\(var\(--c-text\) \/ 0\.72\);[\s\S]*font-size: 13px/)
   assert.match(css, /journal-flow__intro--completed \.journal-flow__intro-actions \{[\s\S]*top: -20px/)
   const baseIntroTitle = css.match(/\.mx-practice-flow--journal \.journal-flow__intro-title \{([^}]*)\}/)?.[1] || ''
   assert.doesNotMatch(baseIntroTitle, /font-size: clamp\(1\.75rem, 7vw, 2\.35rem\)/)

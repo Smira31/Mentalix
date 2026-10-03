@@ -112,7 +112,7 @@ export default function MyThoughtsScreen({ user, onClose, onEditThought }) {
                     className="w-full p-4 text-left active:scale-[0.99] transition-transform"
                   >
                     {isSaved && (
-                      <span className="mb-1 inline-block rounded-full bg-gold/10 px-2 py-0.5 text-[10px] mx-w-heading text-gold">
+                      <span className="mb-1 inline-block rounded-full bg-gold/10 px-2 py-0.5 text-[10px] font-bold text-gold">
                         сохранено
                       </span>
                     )}

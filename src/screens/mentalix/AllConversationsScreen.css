@@ -7,7 +7,7 @@
   color: rgb(var(--c-text));
   font-family: 'Onest', sans-serif;
   font-size: var(--mx-type-section-size);
-  font-weight: var(--mx-weight-title);
+  font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.2;
 }
@@ -53,7 +53,7 @@
   color: rgb(var(--c-muted));
   font-family: 'Manrope', sans-serif;
   font-size: var(--mx-type-meta-size);
-  font-weight: var(--mx-weight-heading);
+  font-weight: 600;
   letter-spacing: 0.12em;
   line-height: 1.3;
   text-transform: uppercase;

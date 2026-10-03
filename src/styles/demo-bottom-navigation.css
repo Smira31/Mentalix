@@ -80,7 +80,7 @@
 
 .mx-bottom-nav > div nav button span {
   color: rgb(var(--c-line)) !important;
-  font-size: var(--mx-type-meta-size);
+  font-size: 11px;
   font-weight: 500;
   letter-spacing: normal;
 }
