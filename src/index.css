@@ -1483,6 +1483,28 @@ button {
   animation: mx-glow 3s ease-in-out infinite;
 }
 
+/*
+ * MXL-PERF-SCROLL: бесконечные анимации на паузе.
+ *
+ * Во время прокрутки (класс mx-is-scrolling ставит src/lib/idleMotion.js)
+ * декоративные бесконечные анимации останавливаются — каждый их кадр
+ * конкурировал с кадрами скролла за Paint. И входные анимации интерфейса
+ * (fade-in вкладок) при скролле замораживаются до конца жеста.
+ *
+ * mx-motion-paused ставит IntersectionObserver на обёртке глифа,
+ * когда тот вне экрана (usePauseOffscreenMotion).
+ */
+html.mx-is-scrolling *,
+html.mx-is-scrolling *::before,
+html.mx-is-scrolling *::after {
+  animation-play-state: paused !important;
+}
+
+.mx-motion-paused,
+.mx-motion-paused * {
+  animation-play-state: paused;
+}
+
 .mx-draw {
   stroke-dasharray: 1;
 

@@ -51,6 +51,7 @@ import { clearTrendsDataCache } from './lib/trendsDataCache'
 import { GUEST_MERGED_EVENT, loginAsGuest } from './lib/guestAuth'
 
 import { getFullscreenSnapshot, initFullscreen } from './lib/tgFullscreen'
+import { initIdleMotionPause } from './lib/idleMotion'
 import { useVisualViewportHeight } from './lib/visualViewport'
 import { useGlobalEdgeSwipeBack } from './lib/gestures/useGlobalEdgeSwipeBack'
 
@@ -557,6 +558,9 @@ function App() {
       setFullscreen(fs)
     })
   }, [])
+
+  /* Пауза бесконечных анимаций на время прокрутки (MXL-PERF-SCROLL). */
+  useEffect(() => initIdleMotionPause(), [])
 
   /* ============================================================
      AUTH

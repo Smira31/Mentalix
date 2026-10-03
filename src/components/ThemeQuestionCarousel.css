@@ -15,7 +15,8 @@
   scrollbar-width: none;
   overscroll-behavior-x: contain;
   -webkit-overflow-scrolling: touch;
-  touch-action: pan-x;
+  /* Вертикальный жест — странице, горизонтальный — карусели (MXL-PERF-SCROLL). */
+  touch-action: pan-x pan-y;
   min-width: 0; /* allow shrink inside grid/flex parents */
   flex-shrink: 0; /* prevent height collapse in flex-column parents */
   width: calc(100% + 2 * var(--mx-tqc-extend));

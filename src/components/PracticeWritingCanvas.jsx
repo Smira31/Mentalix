@@ -41,7 +41,7 @@ function useVisualViewportMetrics() {
       })
     update()
     viewport.addEventListener('resize', update)
-    viewport.addEventListener('scroll', update)
+    viewport.addEventListener('scroll', update, { passive: true })
     window.addEventListener('resize', update)
     return () => {
       viewport.removeEventListener('resize', update)

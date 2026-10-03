@@ -894,10 +894,15 @@
   left: 18px;
   right: 18px;
   z-index: 20;
+  /*
+   * Анимации — только transform/opacity (MXL-PERF-SCROLL): transition
+   * bottom/left/right на fixed-элементе давал layout-thrash и серии
+   * Layout/Paint на каждое сворачивание/разворачивание панели вкладок.
+   * Геометрия свернутого состояния меняется мгновенно — в этот момент
+   * пилюля скрыта (--hidden), скачок не виден.
+   */
   transition:
-    bottom 200ms cubic-bezier(0.22, 1, 0.36, 1),
-    left 200ms cubic-bezier(0.22, 1, 0.36, 1),
-    right 200ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
     opacity 200ms ease;
 }
 
