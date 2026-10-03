@@ -16,6 +16,8 @@
 
 [Главная, один курс](home.png) · [Главная, два демо-курса](home-demo.png) · [Курс с «‹ Назад»](course.png) · [Шторка](sheet.png) · [Начало статьи](reader-start.png) · [Конец статьи](reader-end.png)
 
+**PR:** [#1000 — Обновить Библиотеку Stoic и обобщить движок курсов](https://github.com/Smira31/Mentalix/pull/1000)
+
 **Ограничения:** полный `ux:check` и WebKit не запускались/не устанавливались — оставлены CI. Ручной iPhone/Telegram gate остаётся.
 
 ---
