@@ -23,7 +23,7 @@ export default defineConfig({
     'today-subscreen-navigation.spec.mjs',
     'daily-journal-flow.spec.mjs',
     'steps-reliability.spec.mjs',
-    'steps-reliability.spec.mjs',
+    'theme-daily-questions.spec.mjs',
     'dialog-screen.spec.mjs',
     'dialog-errors.spec.mjs',
   ],

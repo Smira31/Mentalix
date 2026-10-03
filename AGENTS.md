@@ -235,6 +235,12 @@ screens, and keep article cards unchanged unless the owner explicitly approves t
 - Отступы в новых и изменяемых экранах — только токенами (`--mx-space-*`, `--mx-radius-*`, `--mx-btn-*-h`, `--mx-screen-top`). Локальные пиксельные значения запрещены. Токены описаны в `docs/DESIGN_TOKENS.md`.
 - Пилотные экраны (MyThoughtsScreen, DailyThoughtInput, PracticeFieldFlow) уже переведены на `<Screen>` — использовать их как референс.
 
+## Base44: локальный dev и тема недели
+
+- `docker-compose.base44.yml` запускает исходники на 3000; polling нужен для bind mount. Проверка живого исходника: `/src/components/ThemeQuestionCarousel.jsx` содержит `data-day` и `theme-opening-label`.
+- Для задачи календарной темы достаточно `check:core` и `npx playwright test --config=playwright.ux.config.mjs steps-reliability.spec.mjs theme-daily-questions.spec.mjs`; ставить только Chromium, не WebKit. iPhone/Telegram остаётся ручным gate.
+- Демо `/themes/{id}/reflect` сохраняет ответ, не двигая `current_day`; календарь темы — `started_on`/`server_date`. Арифметика дат централизована в `src/lib/mskDate.js`.
+
 ## Context economy
 
 - Читай только файлы из порядка чтения (AGENTS.md → PROJECT_STATE.md → PRODUCT.md →

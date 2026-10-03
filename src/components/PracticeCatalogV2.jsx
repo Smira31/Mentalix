@@ -176,8 +176,12 @@ function ThemeCarousel({
         </h2>
         <ThemeQuestionCarousel
           questions={theme.days}
-          onWrite={() => onOpen(theme)}
-          onViewAnswer={() => onOpen(theme)}
+          currentDay={theme.current_day ?? 1}
+          startedOn={theme.started_on}
+          serverDate={theme.server_date}
+          initialIndex={Math.max(0, theme.days.findIndex(q => q.day === theme.current_day))}
+          onWrite={question => onOpen(theme, question.day)}
+          onViewAnswer={question => onOpen(theme, question.day)}
         />
       </div>
       {onOpenAllThemes && (
@@ -255,6 +259,7 @@ export default function PracticeCatalogV2({
   collectionsError = false,
   onRetryCollections,
 }) {
+  const currentTheme = themes?.find(theme => theme.is_current) || null
   const visiblePractices = useMemo(() => practices || [], [practices])
 
   return (
@@ -262,8 +267,8 @@ export default function PracticeCatalogV2({
       <JournalBanner onOpen={onOpenJournal} />
       <PracticeRail practices={visiblePractices} onOpen={onOpenPractice} />
       <ThemeCarousel
-        key={themes?.[0]?.id ?? (themeLoading ? 'loading' : themesError ? 'error' : 'empty')}
-        theme={themes?.[0] || null}
+        key={currentTheme?.id ?? (themeLoading ? 'loading' : themesError ? 'error' : 'empty')}
+        theme={currentTheme}
         themeLoading={themeLoading}
         themeError={themesError}
         onRetry={onRetryThemes}

@@ -1,5 +1,5 @@
 import { now } from './clock.js'
-import { mskDateParts } from './mskDate.js'
+import { mskDateParts, mskDayKey, shiftMskDay } from './mskDate.js'
 import { DEFAULT_REVIEW_HOUR } from './todayCardState.js'
 import {
   DAIMON_CELLS,
@@ -700,7 +700,9 @@ function seedState(todayState = null) {
         title: 'Фокус без перегруза',
         subtitle: 'Неделя про внимание и усталость',
         is_current: true,
-        current_day: empty ? 1 : 3,
+        current_day: 3,
+        started_on: shiftMskDay(mskDayKey(today), -2),
+        server_date: mskDayKey(today),
         total_days: 7,
         reflected_days: empty ? 0 : 2,
         days: Array.from({ length: 7 }, (_, i) => ({
@@ -725,6 +727,8 @@ function seedState(todayState = null) {
         subtitle: 'Семь коротких наблюдений о том, что действительно двигает.',
         is_current: false,
         current_day: 7,
+        started_on: shiftMskDay(mskDayKey(today), -6),
+        server_date: mskDayKey(today),
         total_days: 7,
         reflected_days: 7,
         days: Array.from({ length: 7 }, (_, i) => ({
@@ -749,6 +753,8 @@ function seedState(todayState = null) {
         subtitle: 'Неделя про «нет», которое бережёт «да».',
         is_current: false,
         current_day: 4,
+        started_on: shiftMskDay(mskDayKey(today), -3),
+        server_date: mskDayKey(today),
         total_days: 7,
         reflected_days: 3,
         days: Array.from({ length: 7 }, (_, i) => ({
@@ -773,6 +779,8 @@ function seedState(todayState = null) {
         subtitle: 'Что слышно, когда замолкает внешний шум.',
         is_current: false,
         current_day: 1,
+        started_on: shiftMskDay(mskDayKey(today), -0),
+        server_date: mskDayKey(today),
         total_days: 7,
         reflected_days: 0,
         days: Array.from({ length: 7 }, (_, i) => ({
@@ -817,7 +825,15 @@ function readState() {
 
   try {
     const raw = localStorage.getItem(stateKey)
-    return raw ? JSON.parse(raw) : seedState(todayState)
+    if (!raw) return seedState(todayState)
+    const state = JSON.parse(raw)
+    // Совместимость с уже сохранённым демо до календарного контракта.
+    state.themes = (state.themes || []).map(theme => ({
+      ...theme,
+      started_on: theme.started_on ?? shiftMskDay(mskDayKey(now()), 1 - theme.current_day),
+      server_date: theme.server_date ?? mskDayKey(now()),
+    }))
+    return state
   } catch {
     return seedState(todayState)
   }
@@ -1441,6 +1457,18 @@ function respond(path, options = {}) {
     return json({ period: { from, to }, ...result })
   }
   if (pathname === '/articles' && method === 'GET') return json([])
+  if (pathname.match(/^\/themes\/\d+\/reflect$/) && method === 'POST') {
+    const id = numericId(pathname)
+    const theme = (state.themes || []).find(t => t.id === id)
+    if (!theme) return json(null)
+    const updated = {
+      ...theme,
+      days: theme.days.map(d => d.day === body.day ? { ...d, reflection: body.text } : d),
+    }
+    updated.reflected_days = updated.days.filter(d => d.reflection).length
+    writeState({ ...state, themes: state.themes.map(t => t.id === id ? updated : t) })
+    return json(updated)
+  }
   if (pathname === '/themes' && method === 'GET') return json(state.themes || [])
   if (pathname.match(/^\/themes\/\d+$/) && method === 'GET') {
     const id = numericId(pathname)
