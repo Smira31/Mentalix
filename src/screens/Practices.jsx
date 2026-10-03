@@ -7,6 +7,7 @@ import { useVisualViewportGeometry } from '../lib/visualViewport'
 import { fetchPracticesData, peekPracticesData } from '../lib/practicesDataCache'
 import { fetchThemesData, peekThemesData } from '../lib/themesDataCache'
 import { useTabRefresh, useTabReset } from '../lib/tabRefresh'
+import { useScrollFade } from '../lib/useScrollFade'
 import { buildPracticeViewModels } from '../lib/practiceCatalogRegistry'
 import { previewPracticeAction } from '../lib/demoMode'
 
@@ -416,21 +417,9 @@ export default function Practices({
   }, [searchOpen])
 
   // Мягкое затухание под шапкой Telegram: включается, когда лента прокручена.
+  // Общий хук ставит data-атрибут только на границе «прокручено/нет».
   const catalogVisible = !sub && !selectedThemeId && !searchOpen && !isLoading
-  useEffect(() => {
-    if (!catalogVisible) return undefined
-    const root = document.querySelector('.mx-app-scroll-root')
-    if (!root) return undefined
-    const sync = () => {
-      root.dataset.mxStepsScrolled = root.scrollTop > 2 ? '1' : '0'
-    }
-    sync()
-    root.addEventListener('scroll', sync, { passive: true })
-    return () => {
-      root.removeEventListener('scroll', sync)
-      delete root.dataset.mxStepsScrolled
-    }
-  }, [catalogVisible])
+  useScrollFade('mxStepsScrolled', catalogVisible)
 
   // Каталог снова на экране — возвращаем сохранённую прокрутку (до отрисовки)
   useLayoutEffect(() => {

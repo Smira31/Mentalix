@@ -32,18 +32,34 @@ export default function ThemeQuestionCarousel({
     [questions, maxCards]
   )
 
-  function applyScale() {
+  // Кэш позиций карточек: offsetLeft/offsetWidth читаются один раз
+  // (и при resize), а в rAF только scrollLeft → transform/height.
+  const positionsRef = useRef([])
+
+  function measurePositions() {
     const track = trackRef.current
     if (!track || !track.clientWidth) return
     const cardEls = [...track.querySelectorAll('.mx-tqc-card')]
-    if (!cardEls.length) return
+    positionsRef.current = cardEls.map(card => ({
+      center: card.offsetLeft + card.offsetWidth / 2,
+      width: card.offsetWidth,
+    }))
+  }
+
+  function applyScale() {
+    const track = trackRef.current
+    if (!track || !track.clientWidth) return
+    const positions = positionsRef.current
+    if (!positions.length) return
+    const cardEls = track.querySelectorAll('.mx-tqc-card')
     const center = track.scrollLeft + track.clientWidth / 2
     if (renderCard) {
       // Custom cards (course carousel): scale + opacity, not height
-      cardEls.forEach(card => {
-        const cardCenter = card.offsetLeft + card.offsetWidth / 2
-        const distance = Math.abs(cardCenter - center)
-        const t = Math.min(distance / card.offsetWidth, 1)
+      positions.forEach((pos, i) => {
+        const card = cardEls[i]
+        if (!card) return
+        const distance = Math.abs(pos.center - center)
+        const t = Math.min(distance / pos.width, 1)
         const scale = 1 - 0.12 * t
         const opacity = 1 - 0.5 * t
         card.style.transform = `scale(${scale})`
@@ -51,10 +67,11 @@ export default function ThemeQuestionCarousel({
       })
       return
     }
-    cardEls.forEach(card => {
-      const cardCenter = card.offsetLeft + card.offsetWidth / 2
-      const distance = Math.abs(cardCenter - center)
-      const t = Math.min(distance / card.offsetWidth, 1)
+    positions.forEach((pos, i) => {
+      const card = cardEls[i]
+      if (!card) return
+      const distance = Math.abs(pos.center - center)
+      const t = Math.min(distance / pos.width, 1)
       // Active card: 322px, neighbors: 243px (~75%)
       const h = Math.round(322 - 79 * t)
       card.style.height = `${h}px`
@@ -68,12 +85,13 @@ export default function ThemeQuestionCarousel({
       applyScale()
       const track = trackRef.current
       if (!track) return
-      const cardEls = [...track.querySelectorAll('.mx-tqc-card')]
+      const positions = positionsRef.current
+      if (!positions.length) return
       const center = track.scrollLeft + track.clientWidth / 2
       let next = 0
       let minDist = Infinity
-      cardEls.forEach((card, i) => {
-        const dist = Math.abs(card.offsetLeft + card.offsetWidth / 2 - center)
+      positions.forEach((pos, i) => {
+        const dist = Math.abs(pos.center - center)
         if (dist < minDist) {
           minDist = dist
           next = i
@@ -106,17 +124,25 @@ export default function ThemeQuestionCarousel({
       setActiveIndex(idx)
     }
 
+    // Measure positions after layout, then apply scale from cache.
+    measurePositions()
     // Apply scale immediately — layout is ready at this point
     applyScale()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cards])
 
-  useEffect(
-    () => () => {
+  useEffect(() => {
+    const onResize = () => {
+      measurePositions()
+      applyScale()
+    }
+    window.addEventListener('resize', onResize)
+    return () => {
+      window.removeEventListener('resize', onResize)
       if (rafRef.current) cancelAnimationFrame(rafRef.current)
-    },
-    []
-  )
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const safeIndex = Math.min(activeIndex, Math.max(0, cards.length - 1))
   const currentCard = cards[safeIndex]

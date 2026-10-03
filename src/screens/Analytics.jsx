@@ -734,35 +734,17 @@ function CustomizeLayer({ preferences, onToggle, onClose }) {
 /*
  * Состояние сворачивания нижней навигации живёт внутри BottomNavigation и
  * публикуется классом mx-nav-collapsed на <html> (без setState в App).
- * Здесь только читаем его — для отступа пилюли периода.
+ * Раньше здесь был MutationObserver + setState на каждое сворачивание —
+ * теперь CSS читает класс напрямую (ProgressAnalytics.css), без ре-рендеров.
  */
-function useNavCollapsed() {
-  const [collapsed, setCollapsed] = useState(
-    () => document.documentElement.classList.contains('mx-nav-collapsed')
-  )
-
-  useEffect(() => {
-    const root = document.documentElement
-
-    const observer = new MutationObserver(() => {
-      setCollapsed(root.classList.contains('mx-nav-collapsed'))
-    })
-
-    observer.observe(root, { attributes: true, attributeFilter: ['class'] })
-
-    return () => observer.disconnect()
-  }, [])
-
-  return collapsed
-}
 
 /* ── Нижняя пилюля периода ── */
 
-function BottomPeriodPill({ granularity, offset, onPrev, onNext, canNext, hidden, collapsed }) {
+function BottomPeriodPill({ granularity, offset, onPrev, onNext, canNext }) {
   const window = getPeriodWindow(granularity, offset)
   return (
     <div
-      className={`mx-progress-bottom-pill-wrapper${hidden ? ' mx-progress-bottom-pill-wrapper--hidden' : ''}${collapsed ? ' mx-progress-bottom-pill-wrapper--collapsed' : ''}`}
+      className="mx-progress-bottom-pill-wrapper"
       data-testid="progress-bottom-pill"
     >
       <div className="mx-progress-bottom-pill">
@@ -805,7 +787,6 @@ export default function Analytics({
   onOpenNotifications,
   historyTrigger = 0,
 }) {
-  const navCollapsed = useNavCollapsed()
   const rootRef = useRef(null)
   const scrollPositions = useRef({ analytics: 0, history: 0 })
   const skipScrollRestore = useRef(true)
@@ -1027,10 +1008,6 @@ export default function Analytics({
     practices: <PracticesCard analyticsData={safeData} isCurrentPeriod={isCurrentPeriod} />,
   }
 
-  // Нижний отступ: пилюля (42) + панель вкладок + 16.
-  // При свёрнутой навигации пилюля в одну линию с кнопкой — отступ 42 + 50 + 16.
-  const bottomSpacerHeight = navCollapsed ? 42 + 50 + 16 : 42 + 53 + 16
-
   return (
     <div
       ref={rootRef}
@@ -1208,10 +1185,7 @@ export default function Analytics({
             ✎ Настроить
           </button>
 
-          <div
-            className="mx-progress-analytics__bottom-spacer"
-            style={{ height: `${bottomSpacerHeight}px` }}
-          />
+          <div className="mx-progress-analytics__bottom-spacer" />
         </>
       )}
 
@@ -1222,8 +1196,6 @@ export default function Analytics({
           onPrev={handlePrev}
           onNext={handleNext}
           canNext={offset > 0}
-          hidden={navCollapsed}
-          collapsed={navCollapsed}
         />
       )}
 
