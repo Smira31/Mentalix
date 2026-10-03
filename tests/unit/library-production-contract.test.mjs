@@ -21,9 +21,10 @@ test('Разделы минимум по две статьи, маленькие
     sections.map(s => s.topic),
     ['Кризис и рост', 'Юнг', 'Ещё почитать']
   )
+  // «кризис» объединён с «путь-героя» в раздел «Кризис и рост» (3 статьи)
   assert.deepEqual(
     sections.map(s => s.articles.length),
-    [2, 2, 4]
+    [3, 2, 3]
   )
   assert.equal(articleSections([]).length, 0)
   const ordered = sections.flatMap(s => s.articles)

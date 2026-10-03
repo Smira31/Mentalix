@@ -124,6 +124,9 @@
 .mx-library-sheet-surface.mx-screen {
   background: transparent;
   z-index: 100;
+  /* Шторка и затемнение поверх всего экрана до самого низа:
+     убираем safe-area отступы оболочки, safe area живёт внутри шторки. */
+  padding-bottom: 0 !important;
 }
 .mx-library-sheet-surface .mx-screen__content {
   position: relative;
@@ -182,6 +185,11 @@
   border-radius: var(--mx-radius-pill);
   background: var(--btn-bg);
   color: var(--btn-text);
+}
+/* Белая рамка фокуса только для клавиатуры (:focus-visible),
+   при касании/мыши — без обводки. */
+.mx-library-action:focus:not(:focus-visible) {
+  outline: 0;
 }
 .mx-library-reader {
   display: grid;

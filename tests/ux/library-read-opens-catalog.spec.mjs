@@ -66,6 +66,19 @@ test('Библиотека: курс → разделы → шторка → ч�
     expect(sheet.x).toBe(0)
     expect(sheet.width).toBe(today.width)
     expect(sheet.paddingLeft).toBe('16px')
+    // Нижний край шторки совпадает с нижним краем экрана (рамки)
+    const sheetBottom = await page
+      .getByTestId('article-sheet')
+      .evaluate(el => {
+        const frame = document.querySelector('[data-mentalix-demo-frame="true"]')
+        const rect = el.getBoundingClientRect()
+        const box = frame.getBoundingClientRect()
+        return Math.round(rect.bottom - box.y - frame.clientTop)
+      })
+    const frameClientHeight = await page.evaluate(() =>
+      document.querySelector('[data-mentalix-demo-frame="true"]').clientHeight
+    )
+    expect(sheetBottom).toBeGreaterThanOrEqual(frameClientHeight)
     await page.screenshot({ path: `${screenshots}/frame-${width}-sheet.png` })
     await page.getByTestId('article-sheet-read').click()
     await expect(page.getByTestId('article-reader')).toBeVisible()

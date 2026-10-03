@@ -5,7 +5,7 @@ const book = new URL('../assets/library/placeholder-book.svg', import.meta.url).
 export const LIBRARY_TOPICS = {
   'путь-героя': { title: 'Кризис и рост', image: mountain },
   юнг: { title: 'Юнг', image: mask },
-  кризис: { title: 'Кризис', image: book },
+  кризис: { title: 'Кризис и рост', image: mountain },
   ии: { title: 'ИИ', image: book },
   тревога: { title: 'Тревога', image: book },
   сон: { title: 'Сон', image: book },
