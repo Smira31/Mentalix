@@ -447,9 +447,10 @@ async function assertSoonControls(page) {
 async function assertLibrarySoonControl(page) {
   await expect(page.getByRole('heading', { name: 'библиотека.' })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Открыть поиск' })).toHaveCount(0)
-  const sectionHeadings = page.locator('.mx-library-v2__section-block > h2')
-  await expect(sectionHeadings).toHaveText(['Путь героя', 'Программы', 'Статьи', 'Направленные записи'])
-  await expect(page.getByRole('button', { name: 'Смотреть' })).toBeVisible()
+  await expect(page.getByTestId('library-hero')).toBeVisible()
+  await expect(page.getByTestId('library-topic')).toHaveCount(3)
+  await expect(page.getByText('Программы', { exact: true })).toHaveCount(0)
+  await expect(page.getByText('Направленные записи', { exact: true })).toHaveCount(0)
 }
 
 async function captureScreen({ page, viewport, screen, slug, runtimeErrors, results, check }) {
@@ -895,13 +896,13 @@ test('локальный UX smoke по основному маршруту', asy
       },
     })
 
-    // В браузере каталог программ имеет ровно одну круглую кнопку возврата.
-    await page.getByRole('button', { name: 'Смотреть' }).click()
-    await expect(page.getByRole('heading', { name: 'программы.' })).toBeVisible()
-    await expect(page.getByTestId('back-button')).toHaveCount(1)
-    await expect(page.getByText(/‹\s*Назад|К каталогу/)).toHaveCount(0)
-    await page.getByTestId('back-button').click()
-    await expect(page.getByRole('heading', { name: 'библиотека.' })).toBeVisible()
+    // Плитка → шторка → чтение → возврат в главный каталог.
+    await page.getByTestId('library-article-tile').first().click()
+    await expect(page.getByTestId('article-sheet')).toBeVisible()
+    await page.getByTestId('article-sheet-read').click()
+    await expect(page.getByTestId('article-reader')).toBeVisible()
+    await page.getByTestId('article-back').click()
+    await expect(page.getByTestId('library-home')).toBeVisible()
 
     await page.getByRole('button', { name: 'Прогресс' }).click()
     await captureScreen({

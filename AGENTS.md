@@ -246,6 +246,13 @@ screens, and keep article cards unchanged unless the owner explicitly approves t
 - Локальные ключи курса используют `:<userId>`, но CloudStorage Telegram не допускает двоеточия: облачный scoped-ключ заменяет их на `_`. Legacy-миграция выполняется до очистки пользовательского scope.
 - Для этой задачи владелец разрешил только `check:core` и целевой Playwright-файл `hero-journey-reliability.spec.mjs` (Chromium); полный `ux:check` и WebKit оставлены CI. Команды выполняются в `docker compose -f docker-compose.base44.yml exec -T web`.
 
+### Библиотека Stoic в Base44
+
+- Публикуемые статьи: только `src/data/articles.js`; `libraryDataCache.js` — совместимый адаптер того же массива, не API-кеш. Старые API-снимки намеренно не читаются.
+- Курс и журнал «Шагов» используют `StepsJournalBanner`. Программы остаются в `LibraryPrograms.jsx` за выключенным флагом; `GuidedJournals.jsx`, серверные методы и черновики не удалены.
+- При открытии шторки/читалки каталог остаётся смонтированным и сохраняет нижний отступ App: иначе в конце списка scrollTop ограничивается меньшей scrollHeight и возврат теряет позицию.
+- Локальный gate этой задачи: `check:core` и один `npx playwright test --config=pw-library-stoic.config.mjs` в web-контейнере. Только Chromium; полный UX/WebKit — CI. Скриншоты целевого теста находятся в `/tmp/mentalix-library-screens` контейнера, постоянный evidence — `qa-evidence/stoic-library/report.md`.
+
 ## Context economy
 
 - Читай только файлы из порядка чтения (AGENTS.md → PROJECT_STATE.md → PRODUCT.md →

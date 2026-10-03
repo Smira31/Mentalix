@@ -75,6 +75,10 @@ Frontend использует `GET /api/streak?user_id=<id>` для числа �
 
 В `hero-journey-reliability` прогресс и ответы курса изолированы по ID, сериализуются в JSON; legacy-ключ переносится до очистки scope, повреждённый JSON безопасно восстанавливается из облачной копии либо становится пустым прогрессом. Черновики текста хранятся локально по пользователю и шагу. Доступность считается по всему курсу и границе суток МСК, включая карточку продолжения; «Назад» следует подэкранам шага. Это состояние рабочей ветки, не факт production-релиза. Целевые проверки: `tests/unit/hero-journey-reliability.test.mjs`, `tests/unit/api-response-body-timeout.test.mjs` и `tests/ux/hero-journey-reliability.spec.mjs`.
 
+## Библиотека Stoic — ветка stoic-library-v2 (03.10.2026)
+
+База `main` / HEAD / merge-base на старте: `c82fad014a8aeef19bbb1e4110b494eaa26042c2`. Главная объединяет курс и тематические плитки статей; чтение идёт через шторку и отдельный Screen. Статьи публикуются только из `ARTICLES`, программа скрыта флагом, направленные записи не монтируются; данные и API-контракты не удалены. Экраны курса не изменены. Локальный gate: `check:core` и один Chromium UX-сценарий; полный UX, WebKit и ручной iPhone/Telegram — отдельные gates. Подробная сверка, источник и снимки: [отчёт](qa-evidence/stoic-library/report.md). Это состояние рабочей ветки, не production deployment.
+
 ## Ограничения подтверждения
 
 Зелёный CI и HTTP 200 не заменяют manual iPhone/Telegram gate. Нельзя объявлять safe-area, keyboard, Telegram WebView или data-dependent сценарии пройденными без соответствующей ручной проверки.

@@ -347,7 +347,7 @@ test('MXL-P0-CORE-JOURNAL-001 содержит единый ввод, confirmati
   assert.match(history, /content=\{checkin\.note\}/)
 })
 
-test('MXL-JOURNAL-GUIDED-001 добавляет guided catalog и private template builder внутрь Library', () => {
+test('Библиотека скрывает guided UI, сохраняя шаблоны, черновики и серверный контракт', () => {
   const library = readFileSync(new URL('../../src/screens/Library.jsx', import.meta.url), 'utf8')
   const guided = readFileSync(
     new URL('../../src/screens/GuidedJournals.jsx', import.meta.url),
@@ -355,8 +355,8 @@ test('MXL-JOURNAL-GUIDED-001 добавляет guided catalog и private templa
   )
   const api = readFileSync(new URL('../../src/lib/api.js', import.meta.url), 'utf8')
 
-  assert.match(library, /GuidedJournals/)
-  assert.match(library, /screen === 'journals'/)
+  assert.doesNotMatch(library, /GuidedJournals/)
+  assert.doesNotMatch(library, /screen === 'journals'/)
   assert.match(guided, /Начать или продолжить/)
   assert.match(guided, /Личный шаблон виден только тебе/)
   assert.match(guided, /stepAnswerIsPresent/)

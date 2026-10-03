@@ -19,7 +19,6 @@ export default defineConfig({
     'guest-save-reminder.spec.mjs',
     'bottom-nav-overlap.spec.mjs',
     'library-read-opens-catalog.spec.mjs',
-    'library-read-opens-catalog.spec.mjs',
     'today-subscreen-navigation.spec.mjs',
     'daily-journal-flow.spec.mjs',
     'steps-reliability.spec.mjs',

@@ -30,6 +30,7 @@ import {
   returnFlowOccurredAt,
 } from './lib/returnFlow'
 import { parseContextualDeepLink } from './lib/contextualDeepLink'
+import { isRemovedLibraryAddress, redirectRemovedLibraryAddress } from './lib/libraryNavigation'
 import {
   DEMO_USER,
   isPreviewDemoMode,
@@ -409,11 +410,13 @@ function App() {
     returnFlow: initialReturnFlow,
     practicesSub: initialPracticesSub,
   } = parseContextualDeepLink(window.location.search, platform.getStartParam?.())
-  const initialTab = initialTodaySub
-    ? null
-    : initialPracticesSub
-      ? 'practices'
-      : searchParams.get('tab')
+  const initialTab = isRemovedLibraryAddress(new URL(window.location.href))
+    ? 'library'
+    : initialTodaySub
+      ? null
+      : initialPracticesSub
+        ? 'practices'
+        : searchParams.get('tab')
   const validTabs = ['today', 'practices', 'mentor', 'library', 'trends']
 
   // ?tab=history → открывает «Прогресс» на вкладке «История»
@@ -459,6 +462,10 @@ function App() {
     scrollDirection.current = null
     scrollDistance.current = 0
   }, [tab, openedTabs])
+
+  useEffect(() => {
+    redirectRemovedLibraryAddress()
+  }, [])
 
   // ?tab=history → заменяем на ?tab=trends (история теперь сегмент внутри Прогресса)
   useEffect(() => {
@@ -1260,9 +1267,12 @@ function App() {
    * Когда navbar скрыт fullscreen-сценарием,
    * оставляем только системную нижнюю safe area.
    */
-  const contentBottomPadding = bottomNavigationHidden
-    ? 'var(--app-safe-bottom)'
-    : 'var(--app-content-bottom)'
+  // Шторка/читалка Библиотеки лежит поверх сохранённого каталога.
+  // Его scrollHeight не должен уменьшаться при скрытии навигации.
+  const contentBottomPadding =
+    bottomNavigationHidden && !(tab === 'library' && libraryInputMode)
+      ? 'var(--app-safe-bottom)'
+      : 'var(--app-content-bottom)'
 
   // Полноэкранные листы Истории остаются внутри shell, но не закрывают шапку Telegram.
   // В demo-рамке с эмуляцией Telegram все экраны получают отступы как в
