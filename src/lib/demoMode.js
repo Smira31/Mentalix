@@ -2106,27 +2106,5 @@ export async function demoRequest(path, options = {}) {
     error.status = 400
     throw error
   }
-  const dialogMode =
-    typeof window === 'undefined'
-      ? null
-      : new URLSearchParams(window.location.search).get('dialogTest')
-  const method = (options.method || 'GET').toUpperCase()
-  const creating = path === '/mentalix/conversations' && method === 'POST'
-  const sending = path === '/mentalix/messages' && method === 'POST'
-  if (
-    isPreviewDemoMode() &&
-    ((dialogMode === 'createError' && creating) ||
-      (dialogMode === 'sendError' && sending) ||
-      (dialogMode === 'dailyLimit' && sending))
-  ) {
-    const key = `mentalix:dialog-test:${dialogMode}`
-    if (dialogMode === 'dailyLimit' || !sessionStorage.getItem(key)) {
-      sessionStorage.setItem(key, '1')
-      const error = new Error(dialogMode === 'dailyLimit' ? 'daily_limit' : 'Демо: ошибка диалога')
-      error.status = dialogMode === 'dailyLimit' ? 429 : 502
-      error.body = { detail: error.message }
-      throw error
-    }
-  }
   return respond(path, options)
 }
