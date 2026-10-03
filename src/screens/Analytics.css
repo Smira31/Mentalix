@@ -31,8 +31,6 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--mx-radius-pill);
   background: var(--mx-glass-bg);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  backdrop-filter: blur(20px) saturate(160%);
   color: rgb(var(--c-ink));
   white-space: nowrap;
 }
@@ -55,8 +53,6 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 14px;
   background: var(--mx-glass-bg);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  backdrop-filter: blur(20px) saturate(160%);
   box-shadow: 0 14px 32px rgb(0 0 0 / 0.24);
 }
 

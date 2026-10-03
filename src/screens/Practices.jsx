@@ -30,8 +30,6 @@ const PRACTICE_SEARCH_STYLES = `
   border: 1px solid rgba(255,255,255,0.15);
   border-radius: 50%;
   background: rgba(255,255,255,0.04);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   color: #f3f3f3;
   cursor: pointer;
 }
@@ -81,8 +79,6 @@ input.mx-steps-search-input:focus-visible {
   border: 1px solid rgba(255,255,255,0.15);
   border-radius: 50%;
   background: rgba(255,255,255,0.04);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   color: #f3f3f3;
   cursor: pointer;
 }
@@ -140,8 +136,6 @@ input.mx-steps-search-input:focus-visible {
   border: 1px solid rgba(255,255,255,0.15);
   border-radius: 999px;
   background: rgba(255,255,255,0.04);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   color: #f3f3f3;
   font-size: 14px;
   font-weight: 500;

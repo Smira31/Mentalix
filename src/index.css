@@ -340,11 +340,15 @@
   --mx-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 
   --mx-glass-bg: rgba(38, 38, 38, 0.92);
+  /* «Стекло» (blur) остаётся только на нижней панели вкладок; все остальные
+     поверхности получают сплошной фон --mx-glass-bg без backdrop-filter —
+     на iOS blur в прокручиваемом контенте давал джанк скролла. */
+  --mx-nav-glass-bg: var(--mx-glass-bg);
 }
 
 @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
   :root {
-    --mx-glass-bg: rgba(38, 38, 38, 0.55);
+    --mx-nav-glass-bg: rgba(38, 38, 38, 0.55);
   }
 }
 
@@ -745,13 +749,12 @@ svg .animate-celebrate-pop {
     0 18px 44px rgb(0 0 0 / 0.16);
 }
 
-/* Единый класс «стекло» (референс Stoic): полупрозрачный тёмный фон +
-   blur(20px) saturate(160%), тонкая светлая граница. Без поддержки
-   backdrop-filter фон становится непрозрачным (0.92) через --mx-glass-bg. */
+/* Единый класс «стекло» (референс Stoic): сплошной тёмный фон
+   (0.92 через --mx-glass-bg) + тонкая светлая граница. blur убран:
+   на iOS backdrop-filter в прокручиваемом контенте давал джанк скролла;
+   «стекло» осталось только на нижней панели вкладок (--mx-nav-glass-bg). */
 .mx-glass {
   background: var(--mx-glass-bg);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  backdrop-filter: blur(20px) saturate(160%);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -2142,8 +2145,6 @@ button.mx-demo-telegram-chrome__pill:focus:not(:focus-visible) {
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 50%;
   background: var(--mx-glass-bg);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  backdrop-filter: blur(20px) saturate(160%);
   color: rgb(var(--c-text));
   transition: transform 140ms ease;
 }

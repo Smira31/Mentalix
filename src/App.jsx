@@ -1232,12 +1232,12 @@ function App() {
   const showTodayHeader =
     !previewDemoMode && !overlay && tab === 'today' && !todayFlowOpen && !todaySeriesOpen
 
-  const topSafeArea =
-    tab === 'mentor' && !overlay
-      ? 'var(--app-safe-top)'
-      : fullscreen
-        ? 'calc(var(--app-safe-top) + 56px)'
-        : 'var(--app-safe-top)'
+  // «Диалог» считает верхний отступ по той же формуле, что «Сегодня» и
+  // «Шаги»: safe area + компенсация контролов Telegram в fullscreen.
+  // Спец-кейс mentor (без +56px) давал несоосность шапки на iOS.
+  const topSafeArea = fullscreen
+    ? 'calc(var(--app-safe-top) + 56px)'
+    : 'var(--app-safe-top)'
 
   /*
    * КОНТРАКТ ОТСТУПОВ ЭКРАНА

@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef, useState } from 'react'
 import { BookOpen, ChartNoAxesColumn, Compass, House, Lightbulb } from 'lucide-react'
 
 import { platform } from '../platform'
@@ -47,6 +48,34 @@ function TabIcon({ item, size = 21 }) {
 export default function BottomNavigation({ tab, collapsed, onCollapseChange, onTabChange }) {
   const demoMode = isPreviewDemoMode()
 
+  /*
+   * Сворачивание панели — только transform/opacity (width/height/border-radius
+   * на iOS дают layout-thrash и джанк скролла). Пилюля всегда остаётся в
+   * полном размере, а визуально сжимается scale() к круглой кнопке слева;
+   * иконка восстановления компенсирует масштаб обратным scale().
+   */
+  const pillRef = useRef(null)
+  const [collapseScale, setCollapseScale] = useState(null)
+
+  useLayoutEffect(() => {
+    const el = pillRef.current
+    if (!el) return undefined
+
+    const update = () => {
+      const width = el.offsetWidth
+      const height = el.offsetHeight
+      if (!width || !height) return
+      const collapsedSize =
+        parseFloat(getComputedStyle(el).getPropertyValue('--bottom-nav-collapsed-size')) || 50
+      setCollapseScale({ x: collapsedSize / width, y: collapsedSize / height })
+    }
+
+    update()
+    const observer = new ResizeObserver(update)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
   return (
     /* При скролле панель остаётся доступной как кнопка текущей вкладки. */
     <div
@@ -70,6 +99,7 @@ export default function BottomNavigation({ tab, collapsed, onCollapseChange, onT
       }}
     >
       <div
+        ref={pillRef}
         className="
           relative
 
@@ -91,7 +121,7 @@ export default function BottomNavigation({ tab, collapsed, onCollapseChange, onT
 
           borderRadius: 'var(--mx-radius-pill)',
 
-          backgroundColor: 'var(--mx-glass-bg)',
+          backgroundColor: 'var(--mx-nav-glass-bg, var(--mx-glass-bg))',
 
           borderColor: 'rgba(255, 255, 255, 0.08)',
 
@@ -99,7 +129,13 @@ export default function BottomNavigation({ tab, collapsed, onCollapseChange, onT
           WebkitBackdropFilter: 'blur(20px) saturate(160%)',
 
           boxShadow: 'var(--shadow-float)',
-          transition: `width var(--mx-motion-slow) ${MOTION}, height var(--mx-motion-slow) ${MOTION}, border-radius var(--mx-motion-slow) ${MOTION}`,
+          transform:
+            collapsed && collapseScale
+              ? `scale(${collapseScale.x}, ${collapseScale.y})`
+              : 'scale(1, 1)',
+          transformOrigin: 'left center',
+          pointerEvents: collapsed ? 'none' : 'auto',
+          transition: `transform var(--mx-motion-slow) ${MOTION}`,
         }}
       >
         <nav
@@ -189,7 +225,11 @@ export default function BottomNavigation({ tab, collapsed, onCollapseChange, onT
             opacity: collapsed ? 1 : 0,
             visibility: collapsed ? 'visible' : 'hidden',
             pointerEvents: collapsed ? 'auto' : 'none',
-            transition: `opacity 180ms ${MOTION}, visibility 180ms ${MOTION}`,
+            transform:
+              collapsed && collapseScale
+                ? `scale(${1 / collapseScale.x}, ${1 / collapseScale.y})`
+                : 'scale(1, 1)',
+            transition: `opacity 180ms ${MOTION}, visibility 180ms ${MOTION}, transform var(--mx-motion-slow) ${MOTION}`,
           }}
         >
           <TabIcon item={TABS.find(item => item.key === tab) || TABS[0]} size={22} />
