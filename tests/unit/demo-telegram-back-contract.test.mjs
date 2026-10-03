@@ -16,10 +16,10 @@ test('Demo Telegram chrome — эмуляция без пропсов, лева�
   // сам читает стек useBackButton (тот же источник, что BackButton).
   assert.doesNotMatch(app, /<DemoTelegramChrome [^/]*onBack/)
   assert.doesNotMatch(app, /aria-label="Закрыть превью"/)
-  // Вложенная Библиотека владеет своей шапкой; остальные вкладки как раньше.
+  // App shell владеет единственной шапкой и оставляет её видимой на вложенных экранах.
   assert.match(
     app,
-    /!libraryInputMode\s*&&\s*shouldRenderDemoTelegramChrome\(\{\s*previewDemoMode,\s*platformName,\s*realPhone,\s*deviceFrameMode,\s*\}\)\s*&&\s*<DemoTelegramChrome \/>/
+    /shouldRenderDemoTelegramChrome\(\{\s*previewDemoMode,\s*platformName,\s*realPhone,\s*deviceFrameMode,\s*\}\)\s*&&\s*<DemoTelegramChrome \/>/
   )
 })
 
