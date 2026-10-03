@@ -5,7 +5,10 @@ import test from 'node:test'
 const app = await readFile(new URL('../../src/App.jsx', import.meta.url), 'utf8')
 const mentalix = await readFile(new URL('../../src/screens/Mentalix.jsx', import.meta.url), 'utf8')
 const today = await readFile(new URL('../../src/screens/Today.jsx', import.meta.url), 'utf8')
-const practices = await readFile(new URL('../../src/screens/Practices.jsx', import.meta.url), 'utf8')
+const practices = await readFile(
+  new URL('../../src/screens/Practices.jsx', import.meta.url),
+  'utf8'
+)
 
 test('Demo Telegram chrome — эмуляция без пропсов, левая пилюля живёт внутри компонента', () => {
   assert.match(app, /import DemoTelegramChrome from '\.\/components\/DemoTelegramChrome'/)
@@ -13,10 +16,10 @@ test('Demo Telegram chrome — эмуляция без пропсов, лева�
   // сам читает стек useBackButton (тот же источник, что BackButton).
   assert.doesNotMatch(app, /<DemoTelegramChrome [^/]*onBack/)
   assert.doesNotMatch(app, /aria-label="Закрыть превью"/)
-  // Рендерится всегда, когда нужна эмуляция (без условий overlay/series/flow).
+  // App shell владеет единственной шапкой и оставляет её видимой на вложенных экранах.
   assert.match(
     app,
-    /shouldRenderDemoTelegramChrome\(\{\s*previewDemoMode,\s*platformName,\s*realPhone,\s*deviceFrameMode,\s*\}\) && <DemoTelegramChrome \/>/
+    /shouldRenderDemoTelegramChrome\(\{\s*previewDemoMode,\s*platformName,\s*realPhone,\s*deviceFrameMode,\s*\}\)\s*&&\s*<DemoTelegramChrome \/>/
   )
 })
 

@@ -1,6 +1,5 @@
 import { createPortal } from 'react-dom'
 
-import DemoTelegramChrome from './DemoTelegramChrome'
 import { RoundBackButton } from './NestedScreenHeader'
 import {
   useFullscreenSurface,
@@ -10,10 +9,6 @@ import {
   FULLSCREEN_SCROLL_CLASS,
 } from '../lib/fullscreenSurface'
 import { isDemoEmulationActive } from '../lib/demoChrome'
-import { shouldRenderDemoTelegramChrome } from '../lib/demoChrome'
-import { isPreviewDemoMode } from '../lib/demoMode'
-import { platformName } from '../platform'
-import { isRealPhone } from '../lib/demoMode'
 
 import './Screen.css'
 import './ui/ui-details.css'
@@ -49,13 +44,6 @@ export default function Screen({
   const { style: surfaceStyle } = useFullscreenSurface()
   const portalTarget = getFullscreenPortalTarget()
 
-  const demoChrome = shouldRenderDemoTelegramChrome({
-    previewDemoMode: isPreviewDemoMode(),
-    platformName,
-    realPhone: isRealPhone(),
-    deviceFrameMode: Boolean(portalTarget?.getAttribute?.('data-mentalix-demo-frame')),
-  })
-
   const demoHidden = isDemoEmulationActive()
 
   const bodyClass = scroll
@@ -68,8 +56,6 @@ export default function Screen({
       style={surfaceStyle}
       data-testid="mx-screen-shell"
     >
-      {demoChrome && <DemoTelegramChrome />}
-
       {showHeader && (
         <div
           className={
@@ -88,13 +74,17 @@ export default function Screen({
       )}
 
       <div className={bodyClass}>
-        <div className={`w-full max-w-md mx-auto px-[var(--mx-screen-x)] mx-screen__content ${fullFrame ? 'mx-screen__content--full' : ''}`}>
+        <div
+          className={`w-full max-w-md mx-auto px-[var(--mx-screen-x)] mx-screen__content ${fullFrame ? 'mx-screen__content--full' : ''}`}
+        >
           {children}
         </div>
       </div>
 
       {footer && (
-        <div className={`shrink-0 px-[var(--mx-screen-x)] pb-4 mx-screen__footer ${footerClassName}`}>
+        <div
+          className={`shrink-0 px-[var(--mx-screen-x)] pb-4 mx-screen__footer ${footerClassName}`}
+        >
           <div className="w-full max-w-md mx-auto">{footer}</div>
         </div>
       )}

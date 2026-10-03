@@ -246,6 +246,15 @@ screens, and keep article cards unchanged unless the owner explicitly approves t
 - Локальные ключи курса используют `:<userId>`, но CloudStorage Telegram не допускает двоеточия: облачный scoped-ключ заменяет их на `_`. Legacy-миграция выполняется до очистки пользовательского scope.
 - Для этой задачи владелец разрешил только `check:core` и целевой Playwright-файл `hero-journey-reliability.spec.mjs` (Chromium); полный `ux:check` и WebKit оставлены CI. Команды выполняются в `docker compose -f docker-compose.base44.yml exec -T web`.
 
+### Библиотека Stoic в Base44
+
+- Публикуемые статьи: только `src/data/articles.js`; `libraryDataCache.js` — совместимый адаптер того же массива, не API-кеш. Старые API-снимки намеренно не читаются.
+- Курс и журнал «Шагов» используют `StepsJournalBanner`. Программы остаются в `LibraryPrograms.jsx` за выключенным флагом; `GuidedJournals.jsx`, серверные методы и черновики не удалены.
+- При открытии шторки/читалки каталог остаётся смонтированным и сохраняет нижний отступ App: иначе в конце списка scrollTop ограничивается меньшей scrollHeight и возврат теряет позицию.
+- Локальный gate этой задачи: `check:core` и один `npx playwright test --config=pw-library-stoic.config.mjs` в web-контейнере. Только Chromium; полный UX/WebKit — CI. Скриншоты целевого теста находятся в `/tmp/mentalix-library-screens` контейнера, постоянный evidence — `qa-evidence/stoic-library/report.md`.
+- Реестр `src/data/courses/*.js` подхватывает default-объекты автоматически; опубликованные курсы идут перед demoOnly. У «Пути героя» сохранены прежние scoped-ключи прогресса/черновиков, у остальных ключ включает courseId. `demo_courses=0` скрывает курс-пустышку.
+- Для снимков production-like демо: `VITE_LOCAL_PREVIEW=true npm run build`, затем `npm run preview:web -- --port 4175`; целевой тест запускается с `LIBRARY_BASE_URL=http://127.0.0.1:4175`. Не передавать параметры Vite через вложенный `npm run preview`: npm поглощает `--host`, и аргумент становится неверным корнем сервера.
+
 ## Context economy
 
 - Читай только файлы из порядка чтения (AGENTS.md → PROJECT_STATE.md → PRODUCT.md →

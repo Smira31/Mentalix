@@ -17,24 +17,24 @@ export { isStepAvailable, isStepCompleted } from './heroJourneyState'
  * Telegram допускает в CloudStorage только буквы, цифры, _ и -.
  * Старый облачный ключ уже изолирован самим Telegram-аккаунтом.
  */
-export function useHeroJourneyProgress(userId = getUserDataScope()) {
-  const key = heroProgressKey(userId)
+export function useHeroJourneyProgress(userId = getUserDataScope(), courseId = 'hero-journey') {
+  const key = heroProgressKey(userId, courseId)
   const cloudKey = key.replaceAll(':', '_')
   const [snapshot, setSnapshot] = useState(() => {
-    migrateHeroJourneyProgress(userId)
+    if (courseId === 'hero-journey') migrateHeroJourneyProgress(userId)
     return { key, raw: readLocal(key, JSON.stringify(emptyProgress())) }
   })
 
   useEffect(() => {
     let alive = true
-    migrateHeroJourneyProgress(userId)
+    if (courseId === 'hero-journey') migrateHeroJourneyProgress(userId)
     const local = mergeProgress(readLocal(key), null)
     writeLocal(key, local)
 
     async function restore() {
       let remote = await cloud.get(cloudKey)
       let legacy = false
-      if (remote == null) {
+      if (remote == null && courseId === 'hero-journey') {
         remote = await cloud.get(HERO_PROGRESS_KEY)
         legacy = remote != null
       }
@@ -49,7 +49,7 @@ export function useHeroJourneyProgress(userId = getUserDataScope()) {
     return () => {
       alive = false
     }
-  }, [cloudKey, key, userId])
+  }, [cloudKey, key, userId, courseId])
 
   const progress = parseProgress(snapshot.key === key ? snapshot.raw : readLocal(key))
 

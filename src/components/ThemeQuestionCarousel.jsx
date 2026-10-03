@@ -18,6 +18,8 @@ export default function ThemeQuestionCarousel({
   maxCards,
   initialIndex = 0,
   ctaTestId = 'theme-carousel-cta',
+  renderCard,
+  ariaLabel = 'Вопросы темы',
 }) {
   const [activeIndex, setActiveIndex] = useState(initialIndex)
   const trackRef = useRef(null)
@@ -51,6 +53,20 @@ export default function ThemeQuestionCarousel({
     if (!positions.length) return
     const cardEls = track.querySelectorAll('.mx-tqc-card')
     const center = track.scrollLeft + track.clientWidth / 2
+    if (renderCard) {
+      // Custom cards (course carousel): scale + opacity, not height
+      positions.forEach((pos, i) => {
+        const card = cardEls[i]
+        if (!card) return
+        const distance = Math.abs(pos.center - center)
+        const t = Math.min(distance / pos.width, 1)
+        const scale = 1 - 0.12 * t
+        const opacity = 1 - 0.5 * t
+        card.style.transform = `scale(${scale})`
+        card.style.opacity = String(opacity)
+      })
+      return
+    }
     positions.forEach((pos, i) => {
       const card = cardEls[i]
       if (!card) return
@@ -160,6 +176,27 @@ export default function ThemeQuestionCarousel({
   }
 
   if (!cards.length) return null
+
+  if (renderCard)
+    return (
+      <div
+        className="mx-tqc-track"
+        ref={trackRef}
+        onScroll={handleScroll}
+        role="region"
+        aria-label={ariaLabel}
+      >
+        {cards.map((card, index) => (
+          <div
+            className="mx-tqc-card"
+            key={card.id}
+            data-active={index === safeIndex ? 'true' : 'false'}
+          >
+            {renderCard(card, index)}
+          </div>
+        ))}
+      </div>
+    )
 
   return (
     <>
