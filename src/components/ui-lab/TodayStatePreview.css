@@ -9,21 +9,21 @@
 .mx-lab-route-heading > span,
 .mx-lab-today-route small {
   color: rgb(var(--c-muted));
-  font-size: 11px;
+  font-size: calc(11px * var(--mx-type-scale));
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 .mx-lab-route-heading h2 {
   margin: 0;
-  font-size: 25px;
+  font-size: calc(25px * var(--mx-type-scale));
   line-height: 1.12;
 }
 .mx-lab-route-heading p {
   max-width: 600px;
   margin: 0;
   color: rgb(var(--c-muted));
-  font-size: 13px;
+  font-size: calc(13px * var(--mx-type-scale));
   line-height: 1.5;
 }
 .mx-lab-state-picker {
@@ -78,11 +78,11 @@
   gap: 5px;
 }
 .mx-lab-baseline-head strong {
-  font-size: 18px;
+  font-size: calc(18px * var(--mx-type-scale));
 }
 .mx-lab-baseline-head span {
   color: rgb(var(--c-faint));
-  font-size: 11px;
+  font-size: calc(11px * var(--mx-type-scale));
 }
 .mx-lab-baseline-settings {
   width: 24px;
@@ -109,12 +109,12 @@
   color: rgb(var(--c-text));
 }
 .mx-lab-baseline-week small {
-  font-size: 10px;
+  font-size: calc(10px * var(--mx-type-scale));
   letter-spacing: 0;
   text-transform: none;
 }
 .mx-lab-baseline-week strong {
-  font-size: 13px;
+  font-size: calc(13px * var(--mx-type-scale));
 }
 .mx-lab-baseline-streak {
   display: flex;
@@ -141,7 +141,7 @@
 .mx-lab-today-experiment h3 {
   max-width: 330px;
   margin: 7px 0 0;
-  font-size: 22px;
+  font-size: calc(22px * var(--mx-type-scale));
   line-height: 1.18;
 }
 .mx-lab-baseline-copy p,
@@ -149,7 +149,7 @@
   max-width: 340px;
   margin: 9px 0 0;
   color: rgb(var(--c-muted));
-  font-size: 13px;
+  font-size: calc(13px * var(--mx-type-scale));
   line-height: 1.45;
 }
 .mx-lab-baseline-cta,
@@ -187,7 +187,7 @@
 .mx-lab-today-experiment > span {
   margin-top: 12px;
   color: rgb(var(--c-faint));
-  font-size: 11px;
+  font-size: calc(11px * var(--mx-type-scale));
 }
 .mx-lab-compare-grid {
   display: grid;
@@ -205,11 +205,11 @@
   margin: 0 4px 8px;
 }
 .mx-lab-compare-grid article > header strong {
-  font-size: 14px;
+  font-size: calc(14px * var(--mx-type-scale));
 }
 .mx-lab-compare-grid article > header span {
   color: rgb(var(--c-muted));
-  font-size: 10px;
+  font-size: calc(10px * var(--mx-type-scale));
 }
 .mx-lab-compare-mode {
   display: inline-grid;
@@ -239,7 +239,7 @@
 .mx-lab-compare-mode-help {
   margin: -10px 0 0;
   color: rgb(var(--c-muted));
-  font-size: 11px;
+  font-size: calc(11px * var(--mx-type-scale));
 }
 .mx-lab-compare-grid .mx-lab-today-baseline,
 .mx-lab-compare-grid .mx-lab-today-experiment {
@@ -252,7 +252,7 @@
 }
 .mx-lab-compare-grid .mx-lab-baseline-copy h3,
 .mx-lab-compare-grid .mx-lab-today-experiment h3 {
-  font-size: 18px;
+  font-size: calc(18px * var(--mx-type-scale));
 }
 .mx-lab-compare-grid[data-layout='sequential'] {
   grid-template-columns: 1fr;
@@ -272,7 +272,7 @@
   }
   .mx-lab-baseline-copy h3,
   .mx-lab-today-experiment h3 {
-    font-size: 20px;
+    font-size: calc(20px * var(--mx-type-scale));
   }
 }
 @media (prefers-reduced-motion: reduce) {

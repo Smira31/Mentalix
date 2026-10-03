@@ -3,7 +3,7 @@
  *
  * ?type=100|92|86|80 → --mx-type-scale 1 / 0.92 / 0.86 / 0.80.
  * Выбор сохраняется в localStorage и работает и в ?demo=1, и в Telegram.
- * Без параметра берём сохранённое значение, иначе 0.92.
+ * Без параметра берём сохранённое значение, иначе 0.86.
  *
  * Масштабируется только шрифт: все размеры шрифта выражены через
  * var(--mx-type-scale) (см. src/index.css и calc(Npx * var(--mx-type-scale))
@@ -16,7 +16,7 @@
 const STORAGE_KEY = 'mx-type-scale'
 
 /** Значение по умолчанию, пока владелец не выбрал своё. */
-export const DEFAULT_TYPE_SCALE = 0.92
+export const DEFAULT_TYPE_SCALE = 0.86
 
 /** Шаги переключателя: ?type=92 → 0.92. */
 export const TYPE_SCALE_STEPS = { 100: 1, 92: 0.92, 86: 0.86, 80: 0.8 }

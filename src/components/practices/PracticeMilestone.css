@@ -19,7 +19,7 @@
   border-radius: 50%;
   border: 2px solid rgb(var(--c-gold));
   font-family: 'Manrope', sans-serif;
-  font-size: 68px;
+  font-size: calc(68px * var(--mx-type-scale));
   font-weight: 700;
   line-height: 1;
   color: rgb(var(--c-text));
@@ -41,7 +41,7 @@
 .mx-practice-milestone-screen__name {
   margin: 0 0 10px;
   font-family: 'Manrope', sans-serif;
-  font-size: 12px;
+  font-size: calc(12px * var(--mx-type-scale));
   font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -52,7 +52,7 @@
 .mx-practice-milestone-screen__days {
   margin: 0 0 12px;
   font-family: 'Manrope', sans-serif;
-  font-size: 34px;
+  font-size: calc(34px * var(--mx-type-scale));
   font-weight: 700;
   line-height: 1.1;
   color: rgb(var(--c-text));
@@ -61,7 +61,7 @@
 .mx-practice-milestone-screen__phrase {
   margin: 0 0 28px;
   max-width: 280px;
-  font-size: 16px;
+  font-size: calc(16px * var(--mx-type-scale));
   line-height: 1.45;
   color: rgb(var(--c-muted));
 }
@@ -74,7 +74,7 @@
   align-items: center;
   justify-content: center;
   padding: 0 16px;
-  font-size: 15px;
+  font-size: calc(15px * var(--mx-type-scale));
   font-weight: 600;
   color: rgb(var(--c-bg));
   background: rgb(var(--c-text));

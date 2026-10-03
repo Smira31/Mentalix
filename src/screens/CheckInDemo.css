@@ -38,7 +38,7 @@
 .mx-checkin-question > h2 {
   margin: 0;
   color: #f4f4f4;
-  font-size: clamp(24px, 5.6vw, 36px);
+  font-size: clamp(calc(24px * var(--mx-type-scale)), calc(5.6vw * var(--mx-type-scale)), calc(36px * var(--mx-type-scale)));
   line-height: 1.12;
 }
 .mx-checkin-question__hint {
@@ -107,7 +107,7 @@
 .mx-checkin-scale__label {
   min-height: 2.2em;
   color: #8e8e8e;
-  font-size: 11px;
+  font-size: calc(11px * var(--mx-type-scale));
   line-height: 1.2;
 }
 .mx-checkin-scale__option:not(:first-child):not(:last-child) .mx-checkin-scale__label {
@@ -143,7 +143,7 @@
 }
 .mx-demo-checkin__header-title {
   color: #eee;
-  font-size: 15px;
+  font-size: calc(15px * var(--mx-type-scale));
   font-weight: 600;
 }
 .mx-demo-checkin__back {
@@ -153,7 +153,7 @@
   border: 0;
   background: transparent;
   color: #ddd;
-  font-size: 15px;
+  font-size: calc(15px * var(--mx-type-scale));
 }
 
 .mx-demo-checkin__seneca {
@@ -166,7 +166,7 @@
   border-radius: 999px;
   background: #151515;
   color: #eee;
-  font-size: 17px;
+  font-size: calc(17px * var(--mx-type-scale));
 }
 
 .mx-demo-checkin__leading-actions {
@@ -252,7 +252,7 @@
 .mx-demo-checkin__eyebrow {
   margin: 0 0 12px;
   color: #888;
-  font-size: 11px;
+  font-size: calc(11px * var(--mx-type-scale));
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -261,7 +261,7 @@
   margin: 0 auto;
   max-width: 540px;
   color: #f4f4f4;
-  font-size: clamp(27px, 6.4vw, 42px);
+  font-size: clamp(calc(27px * var(--mx-type-scale)), calc(6.4vw * var(--mx-type-scale)), calc(42px * var(--mx-type-scale)));
   font-weight: 500;
   letter-spacing: -0.055em;
   line-height: 1.08;
@@ -347,7 +347,7 @@
   margin: 18px auto;
   max-width: 340px;
   color: #777;
-  font-size: 12px;
+  font-size: calc(12px * var(--mx-type-scale));
 }
 /* Ровно 9 плиток 3×3 — экран без прокрутки на 393×852 и 440×956. */
 .mx-demo-checkin__focus-grid {
@@ -401,7 +401,7 @@
 .mx-demo-checkin__editor-scene h1 {
   margin-left: 0;
   max-width: 650px;
-  font-size: clamp(24px, 5.6vw, 36px);
+  font-size: clamp(calc(24px * var(--mx-type-scale)), calc(5.6vw * var(--mx-type-scale)), calc(36px * var(--mx-type-scale)));
 }
 /* Вопрос «Что на уме?» и подсказка центрируются, как в шагах шкал;
    поле ввода остаётся выровненным влево. */
@@ -467,7 +467,7 @@
   margin: 0 auto 12px;
 }
 .mx-demo-checkin__scene--complete h1 {
-  font-size: clamp(24px, 5.8vw, 34px);
+  font-size: clamp(calc(24px * var(--mx-type-scale)), calc(5.8vw * var(--mx-type-scale)), calc(34px * var(--mx-type-scale)));
   line-height: 1.08;
 }
 .mx-demo-checkin__bird {
@@ -487,7 +487,7 @@
 .mx-demo-checkin__complete-eyebrow {
   margin: 0 auto 16px !important;
   color: #888 !important;
-  font-size: 11px;
+  font-size: calc(11px * var(--mx-type-scale));
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -526,12 +526,12 @@
   border: 1px solid #383838;
   border-radius: 999px;
   color: #eee;
-  font-size: 16px;
+  font-size: calc(16px * var(--mx-type-scale));
 }
 .mx-demo-checkin__feedback-prompt {
   margin-top: 42px !important;
   color: rgb(var(--c-text)) !important;
-  font-size: 15px;
+  font-size: calc(15px * var(--mx-type-scale));
   line-height: 1.35 !important;
 }
 .mx-demo-checkin__feedback {
@@ -556,7 +556,7 @@
   border-radius: 18px;
   background: rgb(var(--c-card2));
   color: rgb(var(--c-muted));
-  font-size: 12px;
+  font-size: calc(12px * var(--mx-type-scale));
 }
 .mx-demo-checkin__feedback button .mx-face {
   color: rgb(var(--c-muted));
@@ -655,7 +655,7 @@
 
 @media (max-width: 360px) {
   .mx-demo-checkin__moods span {
-    font-size: 9px;
+    font-size: calc(9px * var(--mx-type-scale));
   }
   .mx-demo-checkin__focus-grid {
     gap: 6px;
@@ -681,7 +681,7 @@
 .mx-demo-checkin__action-bar > button {
   min-height: 54px;
   border-radius: 27px;
-  font-size: 16px;
+  font-size: calc(16px * var(--mx-type-scale));
   font-weight: 700;
 }
 
@@ -837,7 +837,7 @@
 .mx-demo-checkin__action-bar .cta-pill {
   min-height: 56px;
   border-radius: var(--mx-radius-pill);
-  font-size: 20px;
+  font-size: calc(20px * var(--mx-type-scale));
   font-weight: 700;
 }
 
@@ -911,7 +911,7 @@
   border-radius: var(--mx-radius-pill);
   background: rgb(var(--c-card2));
   color: rgb(var(--c-text));
-  font-size: 15px;
+  font-size: calc(15px * var(--mx-type-scale));
   font-weight: 500;
   white-space: nowrap;
   transition:
@@ -930,7 +930,7 @@
   border: 0;
   background: transparent;
   color: rgb(var(--c-gold));
-  font-size: 15px;
+  font-size: calc(15px * var(--mx-type-scale));
   font-weight: 600;
 }
 
@@ -1066,12 +1066,12 @@
 .mx-fullscreen-surface .mx-checkin-question__hint {
   margin-top: 8px;
   color: rgb(var(--c-muted));
-  font-size: 15px;
+  font-size: calc(15px * var(--mx-type-scale));
 }
 
 .mx-demo-checkin .mx-checkin-scale__label,
 .mx-fullscreen-surface .mx-checkin-scale__label {
-  font-size: 12px;
+  font-size: calc(12px * var(--mx-type-scale));
   font-weight: 500;
 }
 
@@ -1084,7 +1084,7 @@
 
 /* Вопрос «Главный фокус на сегодня?» — эталон Stoic, ≈ 22 pt / 600, --c-text 85% */
 .mx-demo-checkin__editor-scene--focus > h1 {
-  font-size: 22px;
+  font-size: calc(22px * var(--mx-type-scale));
   font-weight: 600;
   color: rgb(var(--c-text) / 0.85);
   letter-spacing: -0.02em;
@@ -1129,7 +1129,7 @@
   /* Иконка светло-серая ≈ #D0D0D0 */
   color: #d0d0d0;
   font-family: 'Onest', sans-serif;
-  font-size: 17px;
+  font-size: calc(17px * var(--mx-type-scale));
   font-weight: 500;
   line-height: 1.2;
 }
@@ -1137,7 +1137,7 @@
 .mx-demo-checkin .mx-demo-checkin__focus-grid button span {
   margin: 0;
   /* Подпись ≈ 17 pt / 500, text-muted ≈ #8A8A8A */
-  font-size: 17px;
+  font-size: calc(17px * var(--mx-type-scale));
   font-weight: 500;
   color: rgb(var(--c-muted));
 }
@@ -1164,7 +1164,7 @@
   background: transparent;
   /* 17 pt / 600 --c-text */
   color: rgb(var(--c-text));
-  font-size: 17px;
+  font-size: calc(17px * var(--mx-type-scale));
   font-weight: 600;
 }
 
@@ -1225,7 +1225,7 @@
 /* Текстовые вопросы разбора: заголовок 24/700, подсказка 13 muted
    (правило h2 с clamp(…36px) выше перебивало inline-типографику). */
 .mx-checkin-question--evening-card > h2 {
-  font-size: 24px;
+  font-size: calc(24px * var(--mx-type-scale));
   font-weight: 700;
   line-height: 1.2;
 }
@@ -1234,21 +1234,21 @@
    Базовое .mx-checkin-question > h2 с clamp(…36px) перебивает inline-класс
    и множит заголовок в 3 строки — это правило выше по специфичности. */
 .mx-checkin-question--emotion > h2 {
-  font-size: 24px;
+  font-size: calc(24px * var(--mx-type-scale));
   font-weight: 700;
   line-height: 1.2;
   text-align: center;
 }
 
 .mx-checkin-question--evening-card .mx-checkin-question__hint {
-  font-size: 13px;
+  font-size: calc(13px * var(--mx-type-scale));
   color: rgb(var(--c-muted));
 }
 
 /* Поле разбора — 17/1.5 */
 .mx-checkin-evening-editor,
 .mx-checkin-evening-editor [contenteditable] {
-  font-size: 17px;
+  font-size: calc(17px * var(--mx-type-scale));
   line-height: 1.5;
 }
 
@@ -1274,7 +1274,7 @@
   background: #111;
   color: rgb(var(--c-text));
   font-family: 'Onest', sans-serif;
-  font-size: 17px;
+  font-size: calc(17px * var(--mx-type-scale));
   font-weight: 600;
   line-height: 1.2;
   text-align: center;

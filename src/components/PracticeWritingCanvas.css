@@ -38,18 +38,18 @@
   border: 0;
   background: transparent;
   color: var(--pwc-text);
-  font-size: 26px;
+  font-size: calc(26px * var(--mx-type-scale));
   line-height: 1;
 }
 .practice-writing-canvas__context-actions button + button {
-  font-size: 27px;
+  font-size: calc(27px * var(--mx-type-scale));
 }
 .practice-writing-canvas__identity span {
   padding: 10px 22px;
   border-radius: 15px;
   background: #222120;
   color: var(--pwc-text);
-  font-size: 16px;
+  font-size: calc(16px * var(--mx-type-scale));
 }
 .practice-writing-canvas__identity button {
   display: grid;
@@ -60,14 +60,14 @@
   border-radius: 50%;
   background: #222120;
   color: var(--pwc-text);
-  font-size: 28px;
+  font-size: calc(28px * var(--mx-type-scale));
   line-height: 1;
 }
 .practice-writing-canvas__question {
   max-width: 100%;
   margin: 54px 0 0;
   color: var(--pwc-text);
-  font-size: clamp(30px, 8vw, 38px);
+  font-size: clamp(calc(30px * var(--mx-type-scale)), calc(8vw * var(--mx-type-scale)), calc(38px * var(--mx-type-scale)));
   font-weight: 500;
   line-height: 1.08;
   letter-spacing: -0.045em;
@@ -80,7 +80,7 @@
   border-radius: 50%;
   background: rgb(var(--c-emerald));
   color: var(--pwc-text);
-  font-size: 28px;
+  font-size: calc(28px * var(--mx-type-scale));
   line-height: 1;
 }
 .practice-writing-canvas__description {
@@ -89,7 +89,7 @@
   padding-left: 22px;
   border-left: 2px solid var(--pwc-azure);
   color: var(--pwc-muted);
-  font-size: 17px;
+  font-size: calc(17px * var(--mx-type-scale));
   line-height: 1.45;
 }
 .practice-writing-canvas__field {
@@ -104,7 +104,7 @@
   background: transparent;
   color: var(--pwc-text);
   caret-color: var(--pwc-azure);
-  font-size: 19px;
+  font-size: calc(19px * var(--mx-type-scale));
   line-height: 1.55;
 }
 .practice-writing-canvas__field::placeholder {
@@ -127,11 +127,11 @@
 }
 .practice-writing-canvas.is-demo-keyboard-open .practice-writing-canvas__question {
   margin-top: 18px;
-  font-size: clamp(24px, 7vw, 30px);
+  font-size: clamp(calc(24px * var(--mx-type-scale)), calc(7vw * var(--mx-type-scale)), calc(30px * var(--mx-type-scale)));
 }
 .practice-writing-canvas.is-demo-keyboard-open .practice-writing-canvas__description {
   margin-top: 12px;
-  font-size: 14px;
+  font-size: calc(14px * var(--mx-type-scale));
   line-height: 1.35;
 }
 .practice-writing-canvas.is-demo-keyboard-open .practice-writing-canvas__field {
@@ -176,7 +176,7 @@
   border-radius: 5px;
   background: rgb(76 76 79);
   color: rgb(var(--c-text));
-  font-size: 16px;
+  font-size: calc(16px * var(--mx-type-scale));
   line-height: 1;
   box-shadow: 0 1px 0 rgb(255 255 255 / 0.2);
 }
@@ -187,11 +187,11 @@
 }
 .practice-writing-canvas__demo-key--wide {
   flex: 0 1 18%;
-  font-size: 13px;
+  font-size: calc(13px * var(--mx-type-scale));
 }
 .practice-writing-canvas__demo-key--space {
   flex: 1 1 50%;
-  font-size: 13px;
+  font-size: calc(13px * var(--mx-type-scale));
 }
 .practice-writing-canvas.is-keyboard-open .practice-writing-canvas__dock {
   position: fixed;
@@ -210,7 +210,7 @@
   border: 1px solid var(--pwc-text);
   background: transparent;
   color: var(--pwc-text);
-  font-size: 18px;
+  font-size: calc(18px * var(--mx-type-scale));
   font-style: italic;
 }
 .practice-writing-canvas__format.is-open {
@@ -227,7 +227,7 @@
   border-radius: 28px;
   background: rgb(var(--c-card2));
   color: var(--pwc-text);
-  font-size: 15px;
+  font-size: calc(15px * var(--mx-type-scale));
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -235,7 +235,7 @@
   border: 1px solid rgb(var(--c-cream));
   background: rgb(var(--c-cream));
   color: rgb(var(--c-emerald-deep));
-  font-size: 30px;
+  font-size: calc(30px * var(--mx-type-scale));
 }
 .practice-writing-canvas__submit svg {
   display: block;
@@ -259,10 +259,10 @@
     gap: 7px;
   }
   .practice-writing-canvas__deepen {
-    font-size: 13px;
+    font-size: calc(13px * var(--mx-type-scale));
   }
   .practice-writing-canvas__demo-key {
     height: 34px;
-    font-size: 14px;
+    font-size: calc(14px * var(--mx-type-scale));
   }
 }

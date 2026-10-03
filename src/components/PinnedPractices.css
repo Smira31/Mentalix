@@ -49,7 +49,7 @@
   display: -webkit-box;
   overflow: hidden;
   width: 100%;
-  font-size: 15px;
+  font-size: calc(15px * var(--mx-type-scale));
   font-weight: 500;
   line-height: 1.18;
   text-align: center;
@@ -60,7 +60,7 @@
 /* Длинные названия («Разобраться с Даймоном») — две строки целиком,
    без «…»: 14px гарантирует перенос в две строки, anywhere — без обрезки. */
 .mx-pinned-practices__rail > .mx-pinned-practice-card .mx-pinned-practice-card__title {
-  font-size: 14px;
+  font-size: calc(14px * var(--mx-type-scale));
   line-height: 1.2;
   overflow-wrap: anywhere;
 }
@@ -102,7 +102,7 @@
 }
 /* «твои практики.» — 24pt/700, светло-серый, по центру. */
 .mx-pinned-sheet:not(.mx-pinned-sheet--library) .mx-pinned-sheet__header > h2 {
-  font-size: 24px;
+  font-size: calc(24px * var(--mx-type-scale));
   font-weight: 700;
   line-height: 1.15;
   color: #d6d6d6;
@@ -110,7 +110,7 @@
 }
 .mx-pinned-sheet__subtitle {
   max-width: 300px;
-  font-size: 15px;
+  font-size: calc(15px * var(--mx-type-scale));
   line-height: 1.3;
   text-align: center;
 }
@@ -148,14 +148,14 @@
   height: 45px;
 }
 .mx-pinned-practices__grid .mx-pinned-practice-card__title {
-  font-size: 17px;
+  font-size: calc(17px * var(--mx-type-scale));
   font-weight: 600;
 }
 .mx-pinned-practice-card__desc {
   display: -webkit-box;
   overflow: hidden;
   width: 100%;
-  font-size: 11px;
+  font-size: calc(11px * var(--mx-type-scale));
   font-weight: 400;
   line-height: 13px;
   text-align: center;
@@ -221,7 +221,7 @@
   background: transparent;
   color: rgb(var(--c-text));
   font: inherit;
-  font-size: 15px;
+  font-size: calc(15px * var(--mx-type-scale));
   text-align: left;
 }
 .mx-pinned-card-menu__item:active {
@@ -261,7 +261,7 @@
   -webkit-backdrop-filter: blur(20px) saturate(160%);
   backdrop-filter: blur(20px) saturate(160%);
   color: rgb(var(--c-text));
-  font-size: 15px;
+  font-size: calc(15px * var(--mx-type-scale));
   font-weight: 500;
 }
 .mx-pinned-sheet__pill:active {
@@ -280,7 +280,7 @@
   background: rgb(var(--c-card2));
   box-shadow: 0 8px 24px rgb(0 0 0 / 0.28);
   color: rgb(var(--c-muted));
-  font-size: 0.85rem;
+  font-size: calc(13.6px * var(--mx-type-scale));
   animation: mx-undo-toast-in 200ms ease;
 }
 .mx-pinned-library {
@@ -298,7 +298,7 @@
   border: 0;
 }
 .mx-pinned-library__name {
-  font-size: 17px;
+  font-size: calc(17px * var(--mx-type-scale));
   font-weight: 600;
 }
 .mx-pinned-library__toggle {
@@ -306,7 +306,7 @@
   height: auto;
   min-width: 28px;
   border: 0;
-  font-size: 22px;
+  font-size: calc(22px * var(--mx-type-scale));
 }
 .mx-pinned-library__toggle.is-pinned {
   width: 24px;
@@ -333,7 +333,7 @@
 }
 .mx-pinned-manage-empty__text {
   max-width: 260px;
-  font-size: 15px;
+  font-size: calc(15px * var(--mx-type-scale));
   line-height: 1.35;
 }
 
@@ -349,7 +349,7 @@
 .mx-pinned-sheet--library .mx-pinned-sheet__header > h2.mx-pinned-sheet__title--left {
   align-self: stretch;
   padding-right: 52px;
-  font-size: 30px;
+  font-size: calc(30px * var(--mx-type-scale));
   font-weight: 700;
   line-height: 1.1;
   text-align: left;
@@ -378,7 +378,7 @@
   border: 1px solid rgb(var(--c-border));
   background: rgb(var(--c-card-raised));
   color: rgb(var(--c-text));
-  font-size: 15px;
+  font-size: calc(15px * var(--mx-type-scale));
   font-weight: 500;
   white-space: nowrap;
   transition:
@@ -470,7 +470,7 @@
 /* Название 16pt 600, светло-серое */
 .mx-library-row__name {
   flex: 1;
-  font-size: 16px;
+  font-size: calc(16px * var(--mx-type-scale));
   font-weight: 600;
   line-height: 1.2;
   color: #d6d6d6;
@@ -487,7 +487,7 @@
   flex: 0 0 auto;
   width: 24px;
   height: 24px;
-  font-size: 16px;
+  font-size: calc(16px * var(--mx-type-scale));
   font-weight: 400;
   line-height: 1;
   color: rgb(var(--c-muted));
@@ -546,7 +546,7 @@
   border: 0;
   background: transparent;
   color: rgb(var(--c-text));
-  font-size: 15px;
+  font-size: calc(15px * var(--mx-type-scale));
   font-weight: 400;
   outline: none;
 }

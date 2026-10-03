@@ -9,7 +9,7 @@
 
 .mx-daily-thought__label {
   font-family: 'Manrope', sans-serif;
-  font-size: 11px;
+  font-size: calc(11px * var(--mx-type-scale));
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.2em;
@@ -18,7 +18,7 @@
 }
 
 .mx-daily-thought__text {
-  font-size: 28px;
+  font-size: calc(28px * var(--mx-type-scale));
   font-weight: 700;
   line-height: 1.3;
   color: rgb(var(--c-text));
@@ -35,7 +35,7 @@
 }
 
 .mx-daily-thought__my-thought p {
-  font-size: 17px;
+  font-size: calc(17px * var(--mx-type-scale));
   font-weight: 400;
   font-style: italic;
   line-height: 1.5;
@@ -46,7 +46,7 @@
 .mx-daily-thought__my-thought-author {
   display: block;
   margin-top: 8px;
-  font-size: 13px;
+  font-size: calc(13px * var(--mx-type-scale));
   color: rgb(var(--c-muted));
 }
 
@@ -65,7 +65,7 @@
   border-radius: 9999px;
   background: rgb(var(--c-text));
   color: rgb(var(--c-bg));
-  font-size: 15px;
+  font-size: calc(15px * var(--mx-type-scale));
   font-weight: 600;
   cursor: pointer;
   transition: transform 0.1s ease;
@@ -88,7 +88,7 @@
   border: 0;
   background: transparent;
   color: rgb(var(--c-muted));
-  font-size: 14px;
+  font-size: calc(14px * var(--mx-type-scale));
   font-weight: 500;
   cursor: pointer;
   transition: color 0.15s ease;
@@ -100,7 +100,7 @@
 
 .mx-daily-thought__dot {
   color: rgb(var(--c-faint));
-  font-size: 14px;
+  font-size: calc(14px * var(--mx-type-scale));
 }
 
 /* Навигация по дням: «‹ вчера»/«‹ раньше» слева, «сегодня ›» справа.
@@ -119,7 +119,7 @@
   padding: 0 8px;
   border: 0;
   background: transparent;
-  font-size: 13px;
+  font-size: calc(13px * var(--mx-type-scale));
   font-weight: 500;
   color: rgb(var(--c-muted));
   cursor: pointer;
@@ -149,7 +149,7 @@
   border: 0;
   background: transparent;
   color: rgb(var(--c-muted));
-  font-size: 14px;
+  font-size: calc(14px * var(--mx-type-scale));
   font-weight: 500;
   cursor: pointer;
   transition: color 0.15s ease;

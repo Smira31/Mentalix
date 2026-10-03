@@ -45,7 +45,7 @@
   max-width: 300px;
   margin: 64px 0 0;
   color: rgb(var(--c-text) / 0.85);
-  font-size: 26px;
+  font-size: calc(26px * var(--mx-type-scale));
   line-height: 36px;
   font-weight: 400;
 }
@@ -82,7 +82,7 @@
 
 .mx-streak-celebration__day-label {
   color: rgb(var(--c-muted));
-  font-size: 13px;
+  font-size: calc(13px * var(--mx-type-scale));
   font-weight: 500;
   line-height: 16px;
 }

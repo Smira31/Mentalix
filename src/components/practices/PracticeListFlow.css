@@ -27,7 +27,7 @@
 .mx-practice-flow-screen__title {
   margin: 0;
   font-family: 'Manrope', sans-serif;
-  font-size: 28px;
+  font-size: calc(28px * var(--mx-type-scale));
   font-weight: 700;
   line-height: 1.1;
   color: rgb(var(--c-text));
@@ -36,7 +36,7 @@
 
 .mx-practice-flow-screen__subtitle {
   margin: 6px 0 0;
-  font-size: 15px;
+  font-size: calc(15px * var(--mx-type-scale));
   line-height: 1.4;
   color: rgb(var(--c-muted));
 }
@@ -45,7 +45,7 @@
 .mx-practice-flow-screen__today {
   margin: 0 0 14px;
   font-family: 'Manrope', sans-serif;
-  font-size: 11px;
+  font-size: calc(11px * var(--mx-type-scale));
   font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -116,7 +116,7 @@
 /* Название — до двух строк без «…»: длинное имя переносится целиком. */
 .mx-practice-flow-tile__name {
   margin-top: 4px;
-  font-size: 16px;
+  font-size: calc(16px * var(--mx-type-scale));
   font-weight: 600;
   line-height: 1.2;
   max-width: 100%;
@@ -128,7 +128,7 @@
 }
 
 .mx-practice-flow-tile__minimum {
-  font-size: 12px;
+  font-size: calc(12px * var(--mx-type-scale));
   line-height: 1.35;
   color: rgb(var(--c-muted));
   max-width: 100%;
@@ -147,7 +147,7 @@
 .mx-practice-flow-tile__status {
   margin-top: auto;
   font-family: 'Manrope', sans-serif;
-  font-size: 10px;
+  font-size: calc(10px * var(--mx-type-scale));
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -215,7 +215,7 @@
   min-height: 49px;
   margin: 18px auto 0;
   padding: 0 20px;
-  font-size: 15px;
+  font-size: calc(15px * var(--mx-type-scale));
   font-weight: 600;
   color: rgb(var(--c-text));
   background: rgb(var(--c-card) / 0.72);
@@ -242,7 +242,7 @@
 .mx-practice-ready-screen__title {
   margin: 8px 0 6px;
   font-family: 'Manrope', sans-serif;
-  font-size: 28px;
+  font-size: calc(28px * var(--mx-type-scale));
   font-weight: 700;
   line-height: 1.1;
   color: rgb(var(--c-text));
@@ -251,7 +251,7 @@
 
 .mx-practice-ready-screen__subtitle {
   margin: 0 0 20px;
-  font-size: 15px;
+  font-size: calc(15px * var(--mx-type-scale));
   line-height: 1.4;
   color: rgb(var(--c-muted));
 }
@@ -308,7 +308,7 @@
 }
 
 .mx-practice-ready-card__name {
-  font-size: 16px;
+  font-size: calc(16px * var(--mx-type-scale));
   font-weight: 600;
   line-height: 1.25;
   color: rgb(var(--c-text));
@@ -316,7 +316,7 @@
 }
 
 .mx-practice-ready-card__minimum {
-  font-size: 13px;
+  font-size: calc(13px * var(--mx-type-scale));
   line-height: 1.35;
   color: rgb(var(--c-muted));
   overflow-wrap: anywhere;
@@ -331,7 +331,7 @@
   height: 32px;
   margin-left: auto;
   flex-shrink: 0;
-  font-size: 22px;
+  font-size: calc(22px * var(--mx-type-scale));
   font-weight: 400;
   line-height: 1;
   color: rgb(var(--c-muted));
@@ -345,7 +345,7 @@
 
 .mx-practice-own-step-label {
   font-family: 'Manrope', sans-serif;
-  font-size: 11px;
+  font-size: calc(11px * var(--mx-type-scale));
   font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -374,7 +374,7 @@
 .mx-practice-own-question {
   margin: 0 0 12px;
   font-family: 'Manrope', sans-serif;
-  font-size: 26px;
+  font-size: calc(26px * var(--mx-type-scale));
   font-weight: 700;
   line-height: 1.2;
   color: rgb(var(--c-text));
@@ -384,7 +384,7 @@
   position: relative;
   margin: 0 0 28px;
   padding-left: 12px;
-  font-size: 15px;
+  font-size: calc(15px * var(--mx-type-scale));
   line-height: 1.45;
   color: rgb(var(--c-muted));
 }
@@ -407,7 +407,7 @@
   outline: 0;
   -webkit-appearance: none;
   appearance: none;
-  font-size: 22px;
+  font-size: calc(22px * var(--mx-type-scale));
   font-weight: 500;
   line-height: 1.3;
   color: rgb(var(--c-text));
@@ -461,7 +461,7 @@
 .mx-practice-own-chip {
   flex-shrink: 0;
   padding: 8px 14px;
-  font-size: 13px;
+  font-size: calc(13px * var(--mx-type-scale));
   font-weight: 500;
   color: rgb(var(--c-muted));
   background: rgb(var(--c-card2));
@@ -484,7 +484,7 @@
   height: 45px;
   flex-shrink: 0;
   border-radius: 50%;
-  font-size: 22px;
+  font-size: calc(22px * var(--mx-type-scale));
   font-weight: 600;
   color: rgb(var(--c-bg));
   background: rgb(var(--c-text));
@@ -512,7 +512,7 @@
   left: 50%;
   transform: translateX(-50%);
   padding: 10px 20px;
-  font-size: 14px;
+  font-size: calc(14px * var(--mx-type-scale));
   font-weight: 600;
   color: rgb(var(--c-bg));
   background: rgb(var(--c-text));

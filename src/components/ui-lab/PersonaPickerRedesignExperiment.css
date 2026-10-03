@@ -18,7 +18,7 @@
 .mx-persona-redesign__intro > span,
 .mx-persona-redesign__variant-header > span {
   color: rgb(var(--c-gold));
-  font-size: 10px;
+  font-size: calc(10px * var(--mx-type-scale));
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -35,7 +35,7 @@
 }
 
 .mx-persona-redesign__intro h2 {
-  font-size: clamp(25px, 5vw, 38px);
+  font-size: clamp(calc(25px * var(--mx-type-scale)), calc(5vw * var(--mx-type-scale)), calc(38px * var(--mx-type-scale)));
   line-height: 1.08;
   letter-spacing: -0.035em;
 }
@@ -46,7 +46,7 @@
 .mx-persona-redesign__feedback,
 .mx-persona-redesign__note {
   color: rgb(var(--c-muted));
-  font-size: 13px;
+  font-size: calc(13px * var(--mx-type-scale));
   line-height: 1.55;
 }
 
@@ -63,7 +63,7 @@
 }
 
 .mx-persona-redesign__variant-header h3 {
-  font-size: clamp(20px, 3vw, 28px);
+  font-size: clamp(calc(20px * var(--mx-type-scale)), calc(3vw * var(--mx-type-scale)), calc(28px * var(--mx-type-scale)));
   line-height: 1.12;
   letter-spacing: -0.025em;
 }
@@ -127,28 +127,28 @@
 
 .mx-persona-redesign__identity h4 {
   margin: 0;
-  font-size: 22px;
+  font-size: calc(22px * var(--mx-type-scale));
   font-weight: 750;
   letter-spacing: -0.025em;
 }
 
 .mx-persona-redesign__identity span {
   color: rgb(var(--c-gold));
-  font-size: 12px;
+  font-size: calc(12px * var(--mx-type-scale));
   font-weight: 700;
 }
 
 .mx-persona-redesign__identity p {
   margin: 5px 0 0;
   color: rgb(var(--c-text));
-  font-size: 18px;
+  font-size: calc(18px * var(--mx-type-scale));
   line-height: 1.25;
 }
 
 .mx-persona-redesign__description {
   margin: 0;
   color: rgb(var(--c-muted));
-  font-size: 13px;
+  font-size: calc(13px * var(--mx-type-scale));
   line-height: 1.5;
 }
 
@@ -177,7 +177,7 @@
   border: 1px solid rgb(var(--c-border));
   background: rgb(var(--c-card-raised));
   color: rgb(var(--c-muted));
-  font-size: 12px;
+  font-size: calc(12px * var(--mx-type-scale));
   text-align: left;
 }
 
@@ -188,14 +188,14 @@
   border-radius: 999px;
   background: rgb(var(--c-gold));
   color: rgb(var(--c-bg));
-  font-size: 13px;
+  font-size: calc(13px * var(--mx-type-scale));
   font-weight: 800;
 }
 
 .mx-persona-redesign__helper {
   margin: 0;
   color: rgb(var(--c-muted));
-  font-size: 11px;
+  font-size: calc(11px * var(--mx-type-scale));
   line-height: 1.45;
 }
 
