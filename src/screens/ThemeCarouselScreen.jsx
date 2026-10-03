@@ -183,6 +183,9 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
             <ThemeQuestionCarousel
               key={activeId}
               questions={questions}
+              currentDay={data.current_day ?? 1}
+              startedOn={data.started_on}
+              serverDate={data.server_date}
               initialIndex={initialScrollIndex}
               onWrite={handleWrite}
               onViewAnswer={handleWrite}

@@ -88,11 +88,6 @@
   mask-image: linear-gradient(to right, #000 30%, transparent 75%);
 }
 
-/* --- Closed card: dimmed number (~45% opacity) --- */
-.mx-tqc-card[data-open='false'] .mx-tqc-card__num {
-  opacity: 0.45;
-}
-
 /* --- Dots --- */
 .mx-tqc-dots {
   display: flex;

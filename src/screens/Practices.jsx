@@ -296,6 +296,7 @@ import Ascezas from './Ascezas'
 import DailyJournalFlow from './DailyJournal/DailyJournalFlow'
 import DaimonFlow from './Daimon/DaimonFlow'
 import ThemeCarouselScreen from './ThemeCarouselScreen'
+import ThemeScreen from './ThemeScreen'
 
 function PracticesCatalogLoading() {
   return (
@@ -393,6 +394,7 @@ export default function Practices({
   const [themeLoading, setThemeLoading] = useState(!initialThemesData)
   const [themesError, setThemesError] = useState(false)
   const themeRequestRef = useRef(0)
+  const [selectedThemeDay, setSelectedThemeDay] = useState(null)
   const [selectedThemeId, setSelectedThemeId] = useState(null)
   const [isLoading, setIsLoading] = useState(!initialPracticesData)
   const [loadError, setLoadError] = useState(null)
@@ -579,6 +581,7 @@ export default function Practices({
     savedScrollRef.current = null
     setSub(null)
     setEnteredFromToday(false)
+    setSelectedThemeDay(null)
     setSelectedThemeId(null)
     setSearchOpen(false)
   })
@@ -591,6 +594,21 @@ export default function Practices({
     }
     prevSub.current = sub
   }, [sub, silentRefreshPractices])
+
+  if (selectedThemeId && selectedThemeDay != null) {
+    return (
+      <ThemeScreen
+        user={user}
+        themeId={selectedThemeId}
+        initialDay={selectedThemeDay}
+        onBack={() => {
+          setSelectedThemeDay(null)
+          setSelectedThemeId(null)
+          silentRefreshThemes()
+        }}
+      />
+    )
+  }
 
   if (selectedThemeId) {
     return (
@@ -652,6 +670,7 @@ export default function Practices({
           }}
           onOpenTheme={theme => {
             platform.haptic('light')
+            setSelectedThemeDay(null)
             setSelectedThemeId(theme.id)
           }}
           onOpenJournal={() => {
@@ -704,9 +723,10 @@ export default function Practices({
           platform.haptic('light')
           setSub('journal')
         }}
-        onOpenTheme={theme => {
+        onOpenTheme={(theme, day) => {
           rememberScroll()
           platform.haptic('light')
+          setSelectedThemeDay(day ?? null)
           setSelectedThemeId(theme.id)
         }}
         onOpenAllThemes={
@@ -714,7 +734,8 @@ export default function Practices({
             ? () => {
                 rememberScroll()
                 platform.haptic('light')
-                setSelectedThemeId(themes[0].id)
+                setSelectedThemeDay(null)
+                setSelectedThemeId((themes.find(theme => theme.is_current) || themes[0]).id)
               }
             : undefined
         }

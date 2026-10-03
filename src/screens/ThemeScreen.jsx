@@ -5,7 +5,7 @@ import { platform } from '../platform'
 import { api } from '../lib/api'
 import { peekThemeDetail, fetchThemeDetail, invalidateThemeDetail } from '../lib/themeDetailCache'
 import { peekThemesData, fetchThemesData } from '../lib/themesDataCache'
-import { Lock, Check } from 'lucide-react'
+import { mskCalendarLabel } from '../lib/mskDate'
 import { RoundBackButton } from '../components/NestedScreenHeader'
 import JournalTextarea from '../components/JournalTextarea'
 import MarkdownText from '../components/MarkdownText'
@@ -91,7 +91,8 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
   )
   const [text, setText] = useState('')
   const [saving, setSaving] = useState(false)
-  const [saveError, setSaveError] = useState(false)
+  const [saveError, setSaveError] = useState(null)
+  const [saved, setSaved] = useState(false)
   const [loadError, setLoadError] = useState(false)
   const [retryToken, setRetryToken] = useState(0)
   const savingRef = useRef(false)
@@ -153,7 +154,8 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
       } else {
         setText('')
       }
-      setSaveError(false)
+      setSaveError(null)
+      setSaved(false)
     }
   }
 
@@ -220,18 +222,25 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
     return () => clearTimeout(timeoutId)
   }, [text, themeId, day, user?.id])
 
-  async function persistReflection({ advance = true } = {}) {
+  async function persistReflection() {
     if (!data || savingRef.current) return false
     savingRef.current = true
 
     setSaving(true)
-    setSaveError(false)
+    setSaveError(null)
+    setSaved(false)
 
+    let result
     try {
-      await api.themes.reflect(activeId, user.id, day, text)
+      result = await api.themes.reflect(activeId, user.id, day, text)
     } catch (error) {
-      console.error(error)
-      setSaveError(true)
+      const locked = error.status === 409 && error.body?.code === 'day_locked'
+      if (!locked) console.error(error)
+      setSaveError(
+        locked
+          ? `Этот вопрос откроется ${mskCalendarLabel(error.body.opens_on)}`
+          : 'Не удалось сохранить. Попробуй ещё раз.'
+      )
       savingRef.current = false
       setSaving(false)
       return false
@@ -256,21 +265,15 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
       }
     }
 
-    setData(fresh)
-
-    const answered = fresh.days.filter(x => x.reflection).length
-
-    /*
-     * Последний ответ недели ведёт не на восьмой день, которого
-     * нет, а сразу в разбор: это и есть завершение темы.
-     */
-    if (advance) {
-      if (answered === fresh.days.length) {
-        setView('review')
-      } else if (day < data.days.length) {
-        setDay(day + 1)
-      }
-    }
+    // POST — источник календаря даже при сбое/устаревшем ответе повторного GET.
+    setData({
+      ...fresh,
+      current_day: result?.current_day ?? fresh.current_day,
+      started_on: result?.started_on ?? fresh.started_on,
+      server_date: result?.server_date ?? fresh.server_date,
+    })
+    clearThemeDraft({ userId: user?.id, themeId: activeId, day })
+    setSaved(true)
 
     savingRef.current = false
     setSaving(false)
@@ -284,7 +287,7 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
   async function deepenReflection() {
     if (!current || !text.trim()) return
 
-    const saved = await persistReflection({ advance: false })
+    const saved = await persistReflection()
     if (!saved) return
 
     try {
@@ -571,7 +574,7 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
 
       <div className="shrink-0">
         <div className="text-left" data-testid="journal-day-content">
-          <div className="mb-2 font-label text-[11px] font-bold uppercase tracking-[0.14em] text-gold">
+          <div data-testid="theme-day-label" data-current-day={data.current_day} className="mb-2 font-label text-[11px] font-bold uppercase tracking-[0.14em] text-gold">
             День {day} из {data.days.length}
           </div>
 
@@ -589,7 +592,10 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
 
       <JournalTextarea
         value={text}
-        onChange={setText}
+        onChange={value => {
+          setText(value)
+          setSaved(false)
+        }}
         placeholder="Записать мысль..."
         ariaLabel="Мысль по теме недели"
         testId="theme-text-input"
@@ -607,14 +613,21 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
         submitLoading={saving}
       />
 
+      {saved && (
+        <p role="status" className="text-[13px] text-muted mt-2" data-testid="theme-save-success">
+          {day === data.days.length ? 'Неделя пройдена' : 'Ответ записан. Завтра — новый вопрос'}
+        </p>
+      )}
+
       {saveError && (
         <p role="alert" className="text-[13px] text-red-300 mt-2" data-testid="theme-save-error">
-          Не удалось сохранить. Попробуй ещё раз.
+          {saveError}
         </p>
       )}
 
       <button
         type="button"
+        data-testid="theme-save"
         aria-label={hasText ? 'Сохранить мысль' : undefined}
         onClick={hasText ? save : onBack}
         disabled={saving}
