@@ -901,9 +901,9 @@ test('локальный UX smoke по основному маршруту', asy
     await expect(page.getByTestId('article-sheet')).toBeVisible()
     await page.getByTestId('article-sheet-read').click()
     await expect(page.getByTestId('article-reader')).toBeVisible()
-    await page.evaluate(() => window.__mxGetCurrentBackAction?.())
+    await page.evaluate(() => window.__mxGetCurrentBackAction?.()?.())
     await expect(page.getByTestId('article-sheet')).toBeVisible()
-    await page.evaluate(() => window.__mxGetCurrentBackAction?.())
+    await page.evaluate(() => window.__mxGetCurrentBackAction?.()?.())
     await expect(page.getByTestId('library-home')).toBeVisible()
 
     await page.getByRole('button', { name: 'Прогресс' }).click()
