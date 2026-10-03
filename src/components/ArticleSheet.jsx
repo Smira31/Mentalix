@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import Screen from './Screen'
+import { libraryTopic } from '../data/libraryTopics'
 import { useBackButton } from '../platform/telegram.hooks'
 import { useSheetSwipeDown } from '../lib/gestures/useSheetSwipeDown'
 
@@ -27,6 +28,7 @@ export default function ArticleSheet({ article, onClose, onRead }) {
   return (
     <Screen
       showHeader={false}
+      telegramChrome
       scroll={false}
       fullFrame
       className="mx-library-sheet-surface"
@@ -48,7 +50,7 @@ export default function ArticleSheet({ article, onClose, onRead }) {
         data-testid="article-sheet"
       >
         <div className="mx-library-sheet-handle" aria-hidden="true" />
-        <p className="mx-library-caps">{article.tag || article.category || 'Статья'}</p>
+        <p className="mx-library-caps">{libraryTopic(article.tag || article.category).title}</p>
         <h2 id="article-sheet-title" className="mx-type-hero">
           {article.title}
         </h2>

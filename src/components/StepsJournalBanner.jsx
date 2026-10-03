@@ -43,8 +43,10 @@ export default function StepsJournalBanner({
         onClick={onOpen}
         data-testid={testId}
       >
+        <div className="mx-steps-journal__art" aria-hidden="true">
+          {art}
+        </div>
         <div className="mx-steps-journal__body">{content}</div>
-        <div className="mx-steps-journal__art" aria-hidden="true" />
       </button>
     )
   return (

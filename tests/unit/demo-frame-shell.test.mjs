@@ -30,6 +30,10 @@ test('корневой layout в demo-рамке даёт верх = safe-top + 
     appSource,
     /previewDemoMode && !realPhone && deviceFrameMode\s*\?\s*'calc\(var\(--app-safe-top\) \+ 56px\)'/
   )
+  assert.match(
+    appSource,
+    /previewDemoMode && tab === 'library' && platformName !== 'telegram'\s*\?\s*'calc\(max\(var\(--app-safe-top\), var\(--demo-statusbar-h, 62px\)\) \+ 56px\)'/
+  )
 })
 
 test('CSS demo-рамки эмулирует геометрию iPhone: статус-бар 62/59, низ 34', () => {

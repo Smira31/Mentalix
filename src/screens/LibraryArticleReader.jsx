@@ -1,19 +1,22 @@
 import Screen from '../components/Screen'
+import { useBackButton } from '../platform/telegram.hooks'
+import { libraryTopic } from '../data/libraryTopics'
 
 export default function LibraryArticleReader({ article, next, onBack, onJournal, onNext }) {
+  useBackButton(onBack)
   const paragraphs = String(article.body || '')
     .split(/\n\s*\n/)
     .filter(Boolean)
   return (
-    <Screen onBack={onBack} backTestId="article-back" className="mx-library-reader-surface">
+    <Screen showHeader={false} telegramChrome className="mx-library-reader-surface">
       <article
         className="mx-library-reader"
         data-testid="article-reader"
         data-article-id={article.id}
       >
         <header>
-          <p className="mx-library-caps">{article.tag || article.category || 'Статья'}</p>
-          <h1 className="mx-type-hero" data-testid="article-title">
+          <p className="mx-library-caps">{libraryTopic(article.tag || article.category).title}</p>
+          <h1 className="mx-type-page" data-testid="article-title">
             {article.title}
           </h1>
           <p className="mx-type-meta text-muted">{article.minutes} мин чтения</p>

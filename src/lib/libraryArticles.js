@@ -1,3 +1,4 @@
+import { libraryTopic } from '../data/libraryTopics.js'
 import { ARTICLES } from '../data/articles.js'
 
 // Единственный опубликованный каталог. Не зависит от сети, API и устаревших снимков.
@@ -13,10 +14,11 @@ export function articleSections(articles = libraryArticles) {
   const sections = []
   const rest = []
   for (const [topic, items] of groups) {
-    if (topic && items.length >= 2) sections.push({ topic, articles: items })
+    if (topic && items.length >= 2)
+      sections.push({ ...libraryTopic(topic), topic: libraryTopic(topic).title, articles: items })
     else rest.push(...items)
   }
-  if (rest.length) sections.push({ topic: 'Ещё почитать', articles: rest })
+  if (rest.length) sections.push({ ...libraryTopic('rest'), topic: 'Ещё почитать', articles: rest })
   return sections
 }
 

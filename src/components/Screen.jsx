@@ -40,6 +40,7 @@ export default function Screen({
   scroll = true,
   fullFrame = false,
   showHeader = true,
+  telegramChrome = false,
   headerSlot,
   footer,
   footerClassName = '',
@@ -49,12 +50,14 @@ export default function Screen({
   const { style: surfaceStyle } = useFullscreenSurface()
   const portalTarget = getFullscreenPortalTarget()
 
-  const demoChrome = shouldRenderDemoTelegramChrome({
-    previewDemoMode: isPreviewDemoMode(),
-    platformName,
-    realPhone: isRealPhone(),
-    deviceFrameMode: Boolean(portalTarget?.getAttribute?.('data-mentalix-demo-frame')),
-  })
+  const demoChrome =
+    (telegramChrome && isPreviewDemoMode() && platformName !== 'telegram') ||
+    shouldRenderDemoTelegramChrome({
+      previewDemoMode: isPreviewDemoMode(),
+      platformName,
+      realPhone: isRealPhone(),
+      deviceFrameMode: Boolean(portalTarget?.getAttribute?.('data-mentalix-demo-frame')),
+    })
 
   const demoHidden = isDemoEmulationActive()
 
@@ -65,7 +68,15 @@ export default function Screen({
   return createPortal(
     <div
       className={`${FULLSCREEN_SHELL_CLASS} mx-screen ${fullFrame ? 'mx-screen--full-frame' : ''} ${className}`}
-      style={surfaceStyle}
+      style={
+        telegramChrome && isPreviewDemoMode() && platformName !== 'telegram'
+          ? {
+              ...surfaceStyle,
+              paddingTop:
+                'calc(max(var(--app-safe-top), var(--demo-statusbar-h, 62px)) + 56px)',
+            }
+          : surfaceStyle
+      }
       data-testid="mx-screen-shell"
     >
       {demoChrome && <DemoTelegramChrome />}
@@ -88,13 +99,17 @@ export default function Screen({
       )}
 
       <div className={bodyClass}>
-        <div className={`w-full max-w-md mx-auto px-[var(--mx-screen-x)] mx-screen__content ${fullFrame ? 'mx-screen__content--full' : ''}`}>
+        <div
+          className={`w-full max-w-md mx-auto px-[var(--mx-screen-x)] mx-screen__content ${fullFrame ? 'mx-screen__content--full' : ''}`}
+        >
           {children}
         </div>
       </div>
 
       {footer && (
-        <div className={`shrink-0 px-[var(--mx-screen-x)] pb-4 mx-screen__footer ${footerClassName}`}>
+        <div
+          className={`shrink-0 px-[var(--mx-screen-x)] pb-4 mx-screen__footer ${footerClassName}`}
+        >
           <div className="w-full max-w-md mx-auto">{footer}</div>
         </div>
       )}

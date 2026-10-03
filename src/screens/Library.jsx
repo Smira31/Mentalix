@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import StepsJournalBanner from '../components/StepsJournalBanner'
+import CourseCatalog, { CourseCards } from '../components/CourseCatalog'
+import { HERO_COURSE, libraryCourses } from '../data/courses'
+import { isPreviewDemoMode } from '../lib/demoMode'
 import ArticleSheet from '../components/ArticleSheet'
 import LibraryArticleReader from './LibraryArticleReader'
 import HeroJourneyMap from './HeroJourneyMap'
@@ -14,8 +16,6 @@ import { articleSections, nextArticle } from '../lib/libraryArticles'
 import { redirectRemovedLibraryAddress } from '../lib/libraryNavigation'
 import { useTabReset } from '../lib/tabRefresh'
 import { previewHeroJourneyAction } from '../lib/heroJourneyDemo'
-import { useHeroJourneyProgress, isStepCompleted } from '../lib/heroJourneyProgress'
-import { HERO_JOURNEY_TRIALS, HERO_JOURNEY_COURSE } from '../data/heroJourney'
 import { platform } from '../platform'
 import './Library.css'
 import './LibraryStoic.css'
@@ -27,17 +27,18 @@ export default function Library({ user, onInputModeChange }) {
   const [sheet, setSheet] = useState(null)
   const [article, setArticle] = useState(null)
   const [program, setProgram] = useState('Самодисциплина')
-  const { progress } = useHeroJourneyProgress(user.id)
-  const completedTotal = HERO_JOURNEY_TRIALS.filter(trial =>
-    isStepCompleted(trial.id, progress)
-  ).length
-  const hasProgress = completedTotal > 0
+  const [course, setCourse] = useState(HERO_COURSE)
+  const [courseOrigin, setCourseOrigin] = useState('home')
+  const courses = libraryCourses(
+    isPreviewDemoMode(),
+    new URLSearchParams(window.location.search).get('demo_courses') !== '0'
+  )
   const originTile = useRef(null)
   const readerScroll = useRef(0)
   const homeScroll = useRef(0)
   const closeSheet = useCallback(() => setSheet(null), [])
   const readerOpen = screen === 'reader'
-  const focused = Boolean(sheet) || readerOpen || screen === 'journal'
+  const focused = Boolean(sheet) || screen !== 'home'
 
   useEffect(() => {
     redirectRemovedLibraryAddress()
@@ -74,14 +75,39 @@ export default function Library({ user, onInputModeChange }) {
   }
 
   if (screen === 'hero-journey')
-    return <HeroJourneyMap key={user.id} user={user} onBack={() => setScreen('home')} />
+    return (
+      <HeroJourneyMap
+        key={`${user.id}:${course.id}`}
+        user={user}
+        course={course}
+        onBack={() => setScreen(courseOrigin)}
+      />
+    )
+  const openCourse = selected => {
+    homeScroll.current = document.querySelector('.mx-app-scroll-root')?.scrollTop || 0
+    setCourseOrigin(screen)
+    setCourse(selected)
+    setScreen('hero-journey')
+  }
+  if (screen === 'courses')
+    return (
+      <CourseCatalog
+        courses={courses}
+        userId={user.id}
+        onOpen={openCourse}
+        onBack={() => setScreen('home')}
+      />
+    )
   const reader =
     readerOpen && article ? (
       <LibraryArticleReader
         key={article.id}
         article={article}
         next={nextArticle(article, sections)}
-        onBack={() => setScreen('home')}
+        onBack={() => {
+          setScreen('home')
+          setSheet(article)
+        }}
         onJournal={() => {
           readerScroll.current =
             document.querySelector('.mx-library-reader-surface .mx-fullscreen-scroll')?.scrollTop ||
@@ -118,25 +144,21 @@ export default function Library({ user, onInputModeChange }) {
         <header className="mx-library-catalog__header">
           <h1 className="font-display mx-type-page text-cream">библиотека.</h1>
         </header>
-        <section aria-labelledby="library-v2-hero-journey-title">
-          <StepsJournalBanner
-            course
-            titleId="library-v2-hero-journey-title"
-            meta={
-              hasProgress ? (
-                <span className="mx-hj-library__progress">{completedTotal} из 16</span>
-              ) : null
-            }
-            label="КУРС · 16 ШАГОВ"
-            title="путь героя."
-            description={HERO_JOURNEY_COURSE.description}
-            action={hasProgress ? 'Продолжить →' : 'Начать →'}
-            testId="library-hero"
-            onOpen={() => {
-              homeScroll.current = document.querySelector('.mx-app-scroll-root')?.scrollTop || 0
-              setScreen('hero-journey')
-            }}
-          />
+        <section className="mx-library-topic" aria-labelledby="library-courses-title">
+          <h2 id="library-courses-title" className="mx-library-caps">
+            КУРСЫ
+          </h2>
+          <CourseCards courses={courses.slice(0, 3)} userId={user.id} onOpen={openCourse} />
+          {courses.length > 3 && (
+            <button
+              type="button"
+              data-testid="library-all-courses-open"
+              className="mx-library-next mx-type-control"
+              onClick={() => setScreen('courses')}
+            >
+              Все курсы →
+            </button>
+          )}
         </section>
         {LIBRARY_PROGRAMS_ENABLED && (
           <LibraryV2ProgramLanding onOpen={() => setScreen('programs')} />
@@ -159,7 +181,9 @@ export default function Library({ user, onInputModeChange }) {
                   data-article-id={item.id}
                   onClick={event => openArticle(item, event)}
                 >
-                  <span className="mx-library-art-slot" aria-hidden="true" />
+                  <span className="mx-library-art-slot" aria-hidden="true">
+                    <img src={section.image} alt="" />
+                  </span>
                   <strong className="mx-type-card">{item.title}</strong>
                   <span className="mx-type-body text-muted mx-library-excerpt">{item.excerpt}</span>
                 </button>

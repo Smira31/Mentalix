@@ -18,6 +18,8 @@ export default function ThemeQuestionCarousel({
   maxCards,
   initialIndex = 0,
   ctaTestId = 'theme-carousel-cta',
+  renderCard,
+  ariaLabel = 'Вопросы темы',
 }) {
   const [activeIndex, setActiveIndex] = useState(initialIndex)
   const trackRef = useRef(null)
@@ -32,7 +34,7 @@ export default function ThemeQuestionCarousel({
 
   function applyScale() {
     const track = trackRef.current
-    if (!track || !track.clientWidth) return
+    if (renderCard || !track || !track.clientWidth) return
     const cardEls = [...track.querySelectorAll('.mx-tqc-card')]
     if (!cardEls.length) return
     const center = track.scrollLeft + track.clientWidth / 2
@@ -135,6 +137,27 @@ export default function ThemeQuestionCarousel({
   }
 
   if (!cards.length) return null
+
+  if (renderCard)
+    return (
+      <div
+        className="mx-tqc-track"
+        ref={trackRef}
+        onScroll={handleScroll}
+        role="region"
+        aria-label={ariaLabel}
+      >
+        {cards.map((card, index) => (
+          <div
+            className="mx-tqc-card"
+            key={card.id}
+            data-active={index === safeIndex ? 'true' : 'false'}
+          >
+            {renderCard(card, index)}
+          </div>
+        ))}
+      </div>
+    )
 
   return (
     <>

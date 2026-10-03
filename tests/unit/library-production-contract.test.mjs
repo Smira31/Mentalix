@@ -7,7 +7,8 @@ const source = path => readFileSync(new URL(`../../${path}`, import.meta.url), '
 const library = source('src/screens/Library.jsx')
 
 test('Библиотека использует общий баннер и не монтирует направленные записи', () => {
-  assert.match(library, /<StepsJournalBanner/)
+  assert.match(library, /<CourseCards/)
+  assert.match(source('src/components/CourseCard.jsx'), /<StepsJournalBanner/)
   assert.match(source('src/components/PracticeCatalogV2.jsx'), /<StepsJournalBanner/)
   assert.doesNotMatch(library, /GuidedJournals|<Articles|ArticleCover/)
   assert.match(source('src/screens/LibraryPrograms.jsx'), /LIBRARY_PROGRAMS_ENABLED = false/)
@@ -18,7 +19,7 @@ test('Разделы минимум по две статьи, маленькие
   const sections = articleSections()
   assert.deepEqual(
     sections.map(s => s.topic),
-    ['путь-героя', 'юнг', 'Ещё почитать']
+    ['Путь героя', 'Юнг', 'Ещё почитать']
   )
   assert.deepEqual(
     sections.map(s => s.articles.length),

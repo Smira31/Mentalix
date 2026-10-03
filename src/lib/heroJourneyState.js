@@ -3,12 +3,16 @@ import { scopedStorageKey } from './userDataScope.js'
 
 export const HERO_PROGRESS_KEY = 'mx-hero-journey-progress'
 
-export function heroProgressKey(userId) {
-  return scopedStorageKey(`${HERO_PROGRESS_KEY}:`, userId, true)
+export function heroProgressKey(userId, courseId = 'hero-journey') {
+  return courseId === 'hero-journey'
+    ? scopedStorageKey(`${HERO_PROGRESS_KEY}:`, userId, true)
+    : `${scopedStorageKey('mx-course-progress:', userId, true)}:${courseId}`
 }
 
-export function heroDraftKey(userId, stepId) {
-  return `${scopedStorageKey('mx-hero-journey-draft:', userId, true)}:${stepId}`
+export function heroDraftKey(userId, stepId, courseId = 'hero-journey') {
+  return courseId === 'hero-journey'
+    ? `${scopedStorageKey('mx-hero-journey-draft:', userId, true)}:${stepId}`
+    : `${scopedStorageKey('mx-course-draft:', userId, true)}:${courseId}:${stepId}`
 }
 
 export function emptyProgress() {

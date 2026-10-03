@@ -252,6 +252,8 @@ screens, and keep article cards unchanged unless the owner explicitly approves t
 - Курс и журнал «Шагов» используют `StepsJournalBanner`. Программы остаются в `LibraryPrograms.jsx` за выключенным флагом; `GuidedJournals.jsx`, серверные методы и черновики не удалены.
 - При открытии шторки/читалки каталог остаётся смонтированным и сохраняет нижний отступ App: иначе в конце списка scrollTop ограничивается меньшей scrollHeight и возврат теряет позицию.
 - Локальный gate этой задачи: `check:core` и один `npx playwright test --config=pw-library-stoic.config.mjs` в web-контейнере. Только Chromium; полный UX/WebKit — CI. Скриншоты целевого теста находятся в `/tmp/mentalix-library-screens` контейнера, постоянный evidence — `qa-evidence/stoic-library/report.md`.
+- Реестр `src/data/courses/*.js` подхватывает default-объекты автоматически; опубликованные курсы идут перед demoOnly. У «Пути героя» сохранены прежние scoped-ключи прогресса/черновиков, у остальных ключ включает courseId. `demo_courses=0` скрывает курс-пустышку.
+- Для снимков production-like демо: `VITE_LOCAL_PREVIEW=true npm run build`, затем `npm run preview:web -- --port 4175`; целевой тест запускается с `LIBRARY_BASE_URL=http://127.0.0.1:4175`. Не передавать параметры Vite через вложенный `npm run preview`: npm поглощает `--host`, и аргумент становится неверным корнем сервера.
 
 ## Context economy
 
