@@ -123,7 +123,10 @@
 }
 .mx-library-sheet-surface.mx-screen {
   background: transparent;
-  z-index: 100;
+  /* Глобальная demo-шапка имеет z-index: 100 и должна принимать Back
+     поверх любой библиотечной шторки. Сама шторка остаётся выше обычных
+     fullscreen-экранов (z-index: 60). */
+  z-index: 99;
   /* Шторка и затемнение поверх всего экрана до самого низа:
      убираем safe-area отступы оболочки, safe area живёт внутри шторки. */
   padding-bottom: 0 !important;
@@ -312,7 +315,9 @@
   border: 0;
   border-radius: var(--mx-radius-card);
   scroll-snap-align: center;
-  transition: transform 180ms var(--mx-ease-out), opacity 180ms ease;
+  transition:
+    transform 180ms var(--mx-ease-out),
+    opacity 180ms ease;
   will-change: transform, opacity;
   transform-origin: center;
 }
