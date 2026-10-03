@@ -1362,13 +1362,12 @@ function App() {
           paddingLeft: 'var(--app-safe-left)',
         }}
       >
-        {!libraryInputMode &&
-          shouldRenderDemoTelegramChrome({
-            previewDemoMode,
-            platformName,
-            realPhone,
-            deviceFrameMode,
-          }) && <DemoTelegramChrome />}
+        {shouldRenderDemoTelegramChrome({
+          previewDemoMode,
+          platformName,
+          realPhone,
+          deviceFrameMode,
+        }) && <DemoTelegramChrome />}
 
         {/* ========================================================
           MENTALIX WORDMARK
