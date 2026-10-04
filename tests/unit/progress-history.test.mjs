@@ -187,10 +187,27 @@ test('formatDayLabel: год добавляется только если не �
 
 // ── Вспомогательные функции ──
 
-test('extractTime: извлекает HH:MM из ISO datetime', () => {
-  assert.equal(extractTime('2026-09-25T20:46:00Z'), '20:46')
-  assert.equal(extractTime('2026-09-25T08:30:00+03:00'), '08:30')
-  assert.equal(extractTime('2026-09-25'), '')
+function localHHMM(iso) {
+  const d = new Date(iso)
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+}
+
+test('extractTime: T+Z → локальное время пользователя', () => {
+  const input = '2026-10-04T05:12:00Z'
+  assert.equal(extractTime(input), localHHMM(input))
+})
+
+test('extractTime: T+offset → локальное время пользователя', () => {
+  const input = '2026-09-25T08:30:00+03:00'
+  assert.equal(extractTime(input), localHHMM(input))
+})
+
+test('extractTime: пробел без пояса → HH:MM как есть', () => {
+  assert.equal(extractTime('2026-10-04 08:12:00'), '08:12')
+})
+
+test('extractTime: только дата → пустая строка', () => {
+  assert.equal(extractTime('2026-10-04'), '')
   assert.equal(extractTime(''), '')
   assert.equal(extractTime(null), '')
 })

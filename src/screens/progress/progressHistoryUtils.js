@@ -86,10 +86,19 @@ export function formatEntryDateCaps(isoDate, time, now) {
  */
 export function extractTime(isoString) {
   if (!isoString || typeof isoString !== 'string') return ''
-  // ISO datetime: «2026-09-25T20:46:00Z» или «2026-09-25T20:46:00+03:00»
-  const match = isoString.match(/T(\d{2}):(\d{2})/)
+  // Разделитель между датой и временем — «T» или пробел
+  const match = isoString.match(/[T ](\d{2}):(\d{2})/)
   if (!match) return ''
-  return `${match[1]}:${match[2]}`
+  const hh = match[1]
+  const mm = match[2]
+  // Пояс (Z или ±HH:MM) → парсим через Date в локальное время пользователя;
+  // без пояса — берём часы:минуты как есть
+  if (/[zZ]$|[+-]\d{2}:\d{2}$/.test(isoString)) {
+    const d = new Date(isoString.replace(' ', 'T'))
+    if (isNaN(d.getTime())) return `${hh}:${mm}`
+    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+  }
+  return `${hh}:${mm}`
 }
 
 /**
