@@ -521,25 +521,13 @@ function PeriodCard({ rangeLabel, title, onClick, testId }) {
   )
 }
 
-function entryMoodChip(entry) {
-  if (entry.checkin?.mood != null) return { text: moodWord(entry.checkin.mood), mood: entry.checkin.mood }
-  if (entry.moodPractice?.mood != null) return { text: moodWord(entry.moodPractice.mood), mood: entry.moodPractice.mood }
+function entryMoodDot(entry) {
+  if (entry.checkin?.mood != null) return entry.checkin.mood
+  if (entry.moodPractice?.mood != null) return entry.moodPractice.mood
   return null
 }
 
 function entryPreview(entry) {
-  const moodChip = entryMoodChip(entry)
-  if (moodChip) {
-    return (
-      <span className="mx-progress-history__row-chip" aria-hidden="true">
-        <span
-          className="mx-progress-history__row-chip-dot"
-          style={{ background: moodColor(moodChip.mood) }}
-        />
-        {moodChip.text}
-      </span>
-    )
-  }
   if (entry.type === ENTRY_TYPES.JOURNAL && entry.journal?.phases?.length) {
     const phase = entry.journal.phases[0]
     return (
@@ -574,6 +562,7 @@ function DayList({ days, onSelectEntry }) {
       </div>
       {day.entries.map((entry, index) => {
         const preview = entryPreview(entry)
+        const moodLevel = entryMoodDot(entry)
         return (
           <button
             type="button"
@@ -584,7 +573,16 @@ function DayList({ days, onSelectEntry }) {
           >
             <div className="mx-progress-history__row-top">
               <span className="mx-progress-history__row-name">{entryListName(entry.type)}</span>
-              {entry.time && <span className="mx-progress-history__row-time">{entry.time}</span>}
+              <span className="mx-progress-history__row-right">
+                {moodLevel != null && (
+                  <span
+                    className="mx-progress-history__row-mood-dot"
+                    style={{ background: moodColor(moodLevel) }}
+                    aria-hidden="true"
+                  />
+                )}
+                {entry.time && <span className="mx-progress-history__row-time">{entry.time}</span>}
+              </span>
             </div>
             {preview && (
               <div className="mx-progress-history__row-preview">{preview}</div>
