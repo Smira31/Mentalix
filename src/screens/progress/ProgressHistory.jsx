@@ -612,7 +612,7 @@ function PeriodDetail({ label, days, onBack, onSelectEntry }) {
 const GRANULARITY_KEY = 'mx-history-granularity'
 const FILTER_KEY = 'mx-history-filter'
 
-export default function ProgressHistory({ user, onGoCheckin, onRedo, onRedoReview }) {
+export default function ProgressHistory({ user, onGoCheckin, onRedo, onRedoReview, reloadKey = 0 }) {
   const [days, setDays] = useState(null)
   const [selectedEntry, setSelectedEntry] = useState(null)
   const [deleting, setDeleting] = useState(false)
@@ -736,7 +736,7 @@ export default function ProgressHistory({ user, onGoCheckin, onRedo, onRedoRevie
         )
       )
     })
-  }, [user, journalEntries, thoughts])
+  }, [user, journalEntries, thoughts, reloadKey])
 
   async function deleteSelectedCheckin() {
     const checkin = selectedEntry?.checkin
@@ -1041,7 +1041,7 @@ export default function ProgressHistory({ user, onGoCheckin, onRedo, onRedoRevie
                   Здесь появятся твои записи
                 </div>
                 <div className="mx-progress-history__empty-subtitle">
-                  Пройди чек-ин или отметь настроение — и здесь появится первая запись.
+                  Отметь, как ты, или пройди чек-ин — и здесь появится первая запись.
                 </div>
                 {onGoCheckin && (
                   <button

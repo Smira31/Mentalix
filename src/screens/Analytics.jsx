@@ -250,33 +250,76 @@ function CardEmpty({ hint }) {
   )
 }
 
-function MoodCard({ onStartMood }) {
-  function handleFace(level) {
-    if (typeof onStartMood === 'function') onStartMood(level)
+const MOOD_SCALE_LABELS = ['Тяжко', 'Так себе', 'Нормально', 'Хорошо', 'Отлично']
+
+function MoodScaleCard({ user, onSaved }) {
+  const [selected, setSelected] = useState(null)
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+
+  async function handlePick(level) {
+    if (saving) return
+    setSelected(level)
+    setSaving(true)
+    setSaved(false)
+    try {
+      await api.moodPractices.create({ mood: level })
+      setSaved(true)
+      platform.haptic('light')
+      if (typeof onSaved === 'function') onSaved()
+      setTimeout(() => setSaved(false), 2000)
+    } catch {
+      // Ошибка сети — не блокируем UI, пользователь видит выбор
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
-    <section className="mx-progress-mood-card" aria-labelledby="progress-mood-card-title">
+    <section
+      className="mx-progress-mood-card"
+      aria-labelledby="progress-mood-card-title"
+      data-testid="progress-mood-card"
+    >
       <h2 id="progress-mood-card-title" className="mx-progress-mood-card__title">
-        Как ты себя чувствуешь?
+        Как ты сейчас?
       </h2>
       <p className="mx-progress-mood-card__hint">
-        Отметь настроение — пройди короткую практику и добавь точку в прогресс
+        Отметь настроение — точка появится в календаре и истории
       </p>
-      <div className="mx-progress-mood-card__faces" role="group" aria-label="Выбери настроение">
-        {MOOD_LABELS.map((label, level) => (
-          <button
-            key={label}
-            type="button"
-            className="mx-progress-mood-card__face"
-            data-testid={`progress-mood-face-${level + 1}`}
-            aria-label={label}
-            onClick={() => handleFace(level + 1)}
-          >
-            <MoodFace level={level} />
-          </button>
-        ))}
+      <div
+        className="mx-progress-mood-card__scale"
+        role="radiogroup"
+        aria-label="Как ты сейчас?"
+      >
+        {MOOD_SCALE_LABELS.map((label, level) => {
+          const value = level + 1
+          const isSelected = selected === value
+          return (
+            <button
+              key={label}
+              type="button"
+              role="radio"
+              aria-checked={isSelected}
+              aria-label={`${value}: ${label}`}
+              data-testid={`progress-mood-option-${value}`}
+              className={`mx-progress-mood-card__option${isSelected ? ' is-selected' : ''}`}
+              onClick={() => handlePick(value)}
+              disabled={saving}
+            >
+              <span className="mx-progress-mood-card__circle">
+                <span className="mx-progress-mood-card__inner" />
+              </span>
+              <span className="mx-progress-mood-card__label">{label}</span>
+            </button>
+          )
+        })}
       </div>
+      {saved && (
+        <p className="mx-progress-mood-card__saved" role="status">
+          Отметка сохранена
+        </p>
+      )}
     </section>
   )
 }
@@ -290,7 +333,7 @@ function countDaysWithRecords(checkins) {
   return dates.size
 }
 
-function NeedDataPlaque({ daysWithRecords, onRemind }) {
+function NeedDataPlaque({ daysWithRecords, onMark }) {
   const remaining = Math.max(0, MIN_DAYS - daysWithRecords)
   if (remaining <= 0) return null
 
@@ -300,7 +343,7 @@ function NeedDataPlaque({ daysWithRecords, onRemind }) {
   return (
     <section className="mx-progress-need-data" aria-labelledby="progress-need-data-title">
       <h2 id="progress-need-data-title" className="mx-progress-need-data__title">
-        Нужны данные ещё за {formatDays(remaining)}, чтобы показать выводы
+        Отметь, как ты, ещё {formatDays(remaining)} — здесь появятся выводы
       </h2>
       <div className="mx-progress-need-data__days" aria-hidden="true">
         {cells.map((isDone, i) => (
@@ -315,10 +358,10 @@ function NeedDataPlaque({ daysWithRecords, onRemind }) {
       <button
         type="button"
         className="mx-progress-need-data__remind"
-        data-testid="progress-need-data-remind"
-        onClick={typeof onRemind === 'function' ? onRemind : undefined}
+        data-testid="progress-need-data-mark"
+        onClick={typeof onMark === 'function' ? onMark : undefined}
       >
-        Напомнить
+        Отметить
       </button>
     </section>
   )
@@ -397,7 +440,7 @@ function MoodCalendarCard({ periodCheckins, granularity, window, onOpenFull }) {
           ))}
         </div>
       ) : (
-        <CardEmpty hint="Отметь настроение в чек-ине — здесь появятся столбики" />
+        <CardEmpty hint="Отметь, как ты, — здесь появятся столбики" />
       )}
     </CardShell>
   )
@@ -421,7 +464,7 @@ function EmotionsRing({ influences }) {
             <span className="mx-progress-practices__empty-dot" aria-hidden="true" />
             <span className="mx-progress-practices__empty-title">Пока нет данных</span>
             <span className="mx-progress-practices__empty-hint">
-              Отметь настроение ещё {formatDays(remaining)} — здесь появятся эмоции
+              Отметь, как ты, ещё {formatDays(remaining)} — здесь появятся эмоции
             </span>
           </div>
         </div>
@@ -506,7 +549,7 @@ function InfluencesCard({ direction, influences }) {
         <div className="mx-progress-influences__empty">
           <span className="mx-progress-influences__empty-title">Пока нет данных</span>
           <span className="mx-progress-influences__empty-hint">
-            Отметь настроение ещё {formatDays(remaining)} — здесь появятся выводы
+            Отметь, как ты, ещё {formatDays(remaining)} — здесь появятся выводы
           </span>
         </div>
       </CardShell>
@@ -694,37 +737,30 @@ function CustomizeLayer({ preferences, onToggle, onClose }) {
 
   return (
     <div className="mx-progress-customize" data-testid="progress-customize">
-      <button
-        type="button"
-        className="mx-progress-customize__close"
-        aria-label="Закрыть настройки графиков"
-        data-testid="progress-customize-close"
-        onClick={onClose}
-      >
-        ✕
-      </button>
       <h2 className="mx-progress-customize__title">настроить.</h2>
       <p className="mx-progress-customize__subtext">Что показывать в аналитике</p>
       {sections.map(section => (
         <div className="mx-progress-customize__section" key={section}>
           <SectionLabel>{section}</SectionLabel>
-          {ANALYTICS_CARDS.filter(c => c.section === section).map(card => {
-            const visible = !preferences.hidden.includes(card.id)
-            return (
-              <label className="mx-progress-customize__row" key={card.id}>
-                <span>{card.title}</span>
-                <span className="mx-progress-customize__toggle">
-                  <input
-                    type="checkbox"
-                    checked={visible}
-                    onChange={() => onToggle(card.id)}
-                    aria-label={`Показывать: ${card.title}`}
-                  />
-                  <span aria-hidden="true" />
-                </span>
-              </label>
-            )
-          })}
+          <div className="mx-progress-customize__group">
+            {ANALYTICS_CARDS.filter(c => c.section === section).map(card => {
+              const visible = !preferences.hidden.includes(card.id)
+              return (
+                <label className="mx-progress-customize__row" key={card.id}>
+                  <span>{card.title}</span>
+                  <span className="mx-progress-customize__toggle">
+                    <input
+                      type="checkbox"
+                      checked={visible}
+                      onChange={() => onToggle(card.id)}
+                      aria-label={`Показывать: ${card.title}`}
+                    />
+                    <span aria-hidden="true" />
+                  </span>
+                </label>
+              )
+            })}
+          </div>
         </div>
       ))}
     </div>
@@ -788,6 +824,7 @@ export default function Analytics({
   historyTrigger = 0,
 }) {
   const rootRef = useRef(null)
+  const moodCardRef = useRef(null)
   const scrollPositions = useRef({ analytics: 0, history: 0 })
   const skipScrollRestore = useRef(true)
 
@@ -1104,7 +1141,9 @@ export default function Analytics({
             </p>
           </header>
 
-          <MoodCard onStartMood={handleStartMood} />
+          <div ref={moodCardRef}>
+            <MoodScaleCard user={user} onSaved={() => setReloadKey(k => k + 1)} />
+          </div>
 
           {analyticsError && (
             <div role="alert" className="mx-progress-redesign__status-note">
@@ -1126,7 +1165,12 @@ export default function Analytics({
           )}
 
           {showNeedData && (
-            <NeedDataPlaque daysWithRecords={daysWithRecords} onRemind={onOpenNotifications} />
+            <NeedDataPlaque
+              daysWithRecords={daysWithRecords}
+              onMark={() => {
+                moodCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+              }}
+            />
           )}
 
           {cardPreferences.order.filter(
@@ -1205,6 +1249,7 @@ export default function Analytics({
           onGoCheckin={onGoCheckin}
           onRedo={onRedo}
           onRedoReview={onRedoReview}
+          reloadKey={reloadKey}
         />
       )}
     </div>
