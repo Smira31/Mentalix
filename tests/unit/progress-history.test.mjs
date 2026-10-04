@@ -174,14 +174,14 @@ test('extractTime: извлекает HH:MM из ISO datetime', () => {
 test('entryListName: правильные названия для строки списка', () => {
   assert.equal(entryListName(ENTRY_TYPES.MORNING), 'Утренний чек-ин')
   assert.equal(entryListName(ENTRY_TYPES.EVENING), 'Вечерний разбор')
-  assert.equal(entryListName(ENTRY_TYPES.MOOD), 'Настроение')
+  assert.equal(entryListName(ENTRY_TYPES.MOOD), 'Отметка настроения')
   assert.equal(entryListName(ENTRY_TYPES.JOURNAL), 'Дневник')
 })
 
 test('entryScreenTitle: заголовки экрана записи строчными с точкой', () => {
   assert.equal(entryScreenTitle(ENTRY_TYPES.MORNING), 'утро.')
   assert.equal(entryScreenTitle(ENTRY_TYPES.EVENING), 'вечер.')
-  assert.equal(entryScreenTitle(ENTRY_TYPES.MOOD), 'настроение.')
+  assert.equal(entryScreenTitle(ENTRY_TYPES.MOOD), 'отметка настроения.')
   assert.equal(entryScreenTitle(ENTRY_TYPES.JOURNAL), 'дневник.')
 })
 
