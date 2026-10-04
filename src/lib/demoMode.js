@@ -455,6 +455,7 @@ function seedState(todayState = null) {
         energy: 2,
         note: 'Демо-запись.',
         emotion: 'ровно',
+        created_at: new Date(`${d}T08:30:00Z`).toISOString(),
         review_completed_at: new Date(`${d}T20:00:00Z`).toISOString(),
       }
     })
