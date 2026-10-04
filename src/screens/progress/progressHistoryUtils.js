@@ -111,7 +111,7 @@ export function entryListName(type) {
     case ENTRY_TYPES.EVENING:
       return 'Вечерний разбор'
     case ENTRY_TYPES.MOOD:
-      return 'Настроение'
+      return 'Отметка настроения'
     case ENTRY_TYPES.JOURNAL:
       return 'Дневник'
     case ENTRY_TYPES.THOUGHT:
@@ -131,7 +131,7 @@ export function entryScreenTitle(type) {
     case ENTRY_TYPES.EVENING:
       return 'вечер.'
     case ENTRY_TYPES.MOOD:
-      return 'настроение.'
+      return 'отметка настроения.'
     case ENTRY_TYPES.JOURNAL:
       return 'дневник.'
     case ENTRY_TYPES.THOUGHT:
