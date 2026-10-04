@@ -32,37 +32,11 @@ import { Eye } from 'lucide-react'
 
 const CALENDAR_WEEKDAYS = ['П', 'В', 'С', 'Ч', 'П', 'С', 'В']
 
-const MOOD_LABELS = ['Очень тяжело', 'Тяжело', 'Ровно', 'Хорошо', 'Отлично']
-
 /** Минимальное число дней с записями для показа карточек. */
 const MIN_DAYS = 2
 
 /** Минимальное число чек-инов для выводов (используется insightDigest, surpriseInsight). */
 export const MIN_CHECKINS = 5
-
-function MoodFace({ level }) {
-  const mouths = [
-    'M9 21.5C11.2 18.4 20.8 18.4 23 21.5',
-    'M9.5 20.5C12 19.1 20 19.1 22.5 20.5',
-    'M9.5 20H22.5',
-    'M9.5 19.5C12 20.9 20 20.9 22.5 19.5',
-    'M9 18.5C11.2 21.6 20.8 21.6 23 18.5',
-  ]
-
-  return (
-    <svg
-      className="mx-progress-redesign__mood-face"
-      viewBox="0 0 32 32"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <circle cx="16" cy="16" r="12.5" />
-      <circle cx="11.5" cy="13" r="1" className="mx-progress-redesign__mood-eye" />
-      <circle cx="20.5" cy="13" r="1" className="mx-progress-redesign__mood-eye" />
-      <path d={mouths[level]} />
-    </svg>
-  )
-}
 
 /* ── Склонение существительных (обёртка над pluralize) ── */
 function formatDays(n) {
