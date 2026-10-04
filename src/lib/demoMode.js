@@ -487,6 +487,7 @@ function seedState(todayState = null) {
       day_focus: 'Работа',
       note: 'Спокойное утро.',
       emotion: 'ровно',
+      created_at: new Date(`${todayStr}T08:30:00Z`).toISOString(),
       review_completed_at: null,
     }
   } else if (
@@ -501,6 +502,7 @@ function seedState(todayState = null) {
       energy: 2,
       note: 'Спокойное утро.',
       emotion: 'ровно',
+      created_at: new Date(`${todayStr}T08:30:00Z`).toISOString(),
       review_completed_at: now().toISOString(),
     }
   } else if (todayState === 'streak5') {
@@ -511,6 +513,7 @@ function seedState(todayState = null) {
       energy: 2,
       note: 'Спокойное утро.',
       emotion: 'ровно',
+      created_at: new Date(`${todayStr}T08:30:00Z`).toISOString(),
       review_completed_at: null,
     }
   }
@@ -1281,6 +1284,8 @@ function respond(path, options = {}) {
       id: existing?.id || Date.now(),
       date: today,
       ...body,
+      // created_at ставится один раз — как на сервере (авто-поле БД).
+      ...(existing?.created_at ? {} : { created_at: now().toISOString() }),
       ...(body.review_completed ? { review_completed_at: now().toISOString() } : {}),
     }
     writeState({
@@ -1302,6 +1307,8 @@ function respond(path, options = {}) {
       id: existing?.id || Date.now(),
       date: today,
       ...body,
+      // created_at ставится один раз — как на сервере (авто-поле БД).
+      ...(existing?.created_at ? {} : { created_at: now().toISOString() }),
       ...(body.review_completed
         ? { review_completed_at: existing?.review_completed_at || now().toISOString() }
         : {}),

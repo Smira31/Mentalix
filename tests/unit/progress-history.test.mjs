@@ -106,6 +106,30 @@ test('buildEntriesByDay: пустые данные → пустой массив
   assert.deepEqual(buildEntriesByDay(null, null, null, null), [])
 })
 
+test('buildEntriesByDay: утренний чек-ин читает время из created_at', () => {
+  const days = buildEntriesByDay(
+    [{ date: '2026-09-25', mood: 4, note: 'Утро', created_at: '2026-09-25T08:30:00Z' }],
+    [],
+    [],
+    []
+  )
+  assert.equal(days.length, 1)
+  assert.equal(days[0].entries.length, 1)
+  assert.equal(days[0].entries[0].type, ENTRY_TYPES.MORNING)
+  assert.equal(days[0].entries[0].time, '08:30')
+})
+
+test('buildEntriesByDay: утренний чек-ин без created_at — время пустое', () => {
+  const days = buildEntriesByDay(
+    [{ date: '2026-09-25', mood: 4, note: 'Утро' }],
+    [],
+    [],
+    []
+  )
+  assert.equal(days.length, 1)
+  assert.equal(days[0].entries[0].time, '')
+})
+
 test('buildEntriesByDay: чек-ин без review_completed_at не создаёт вечернюю запись', () => {
   const days = buildEntriesByDay(
     [{ date: '2026-09-25', mood: 4, note: 'Утро' }],
