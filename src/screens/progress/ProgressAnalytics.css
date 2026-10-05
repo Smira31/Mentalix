@@ -3,8 +3,8 @@
 /* Override global .mx-type-page letter-spacing for Progress screens (ШРИФТ) */
 .mx-progress-redesign {
   letter-spacing: 0;
-  padding-left: 15px;
-  padding-right: 15px;
+  padding-left: var(--mx-screen-x);
+  padding-right: var(--mx-screen-x);
 }
 
 .mx-progress-segment-bar {
