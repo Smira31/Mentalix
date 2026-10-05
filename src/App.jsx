@@ -1425,6 +1425,7 @@ function App() {
                     <ScreenErrorBoundary resetKey={`trends-${errorResetKey}`} onHome={goHome}>
                       <Suspense fallback={<ScreenLoading />}>
                         <Analytics
+                          active={tab === 'trends'}
                           user={user}
                           historyTrigger={progressHistoryTrigger}
                           onOpenHistory={() => {

@@ -20,6 +20,8 @@ import { getNearestMilestones } from '../lib/milestones'
 import { pickCurrentTheme } from '../lib/themeHelpers'
 
 import BackButton from '../components/BackButton'
+import DemoTelegramHeader from '../components/DemoTelegramHeader'
+import { isDemoEmulationActive } from '../lib/demoChrome'
 import MilestoneBars from '../components/MilestoneBars'
 import './SeriesBadges.css'
 
@@ -186,7 +188,7 @@ function ProgressBar({ progress, goal }) {
 function CloseButton({ onClose, label = 'Закрыть', testId = 'series-close' }) {
   // В Telegram закрытие — только нативная «Назад» (BackButton).
   // Свой ✕ остаётся только в web/PWA.
-  if (platformName === 'telegram') return null
+  if (platformName === 'telegram' || isDemoEmulationActive()) return null
   return (
     <button
       type="button"
@@ -438,7 +440,11 @@ function AwardsView({ badges, onOpenBadge, onShowAll }) {
           {!upcoming.length && <p className="mx-path-status">Новых значков пока нет</p>}
         </div>
         {upcoming.length > 0 && (
-          <button type="button" className="mx-path-see-all mx-path-see-all--end" onClick={onShowAll}>
+          <button
+            type="button"
+            className="mx-path-see-all mx-path-see-all--end"
+            onClick={onShowAll}
+          >
             Все значки <span aria-hidden="true">›</span>
           </button>
         )}
@@ -584,6 +590,7 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
   const [theme, setTheme] = useState(null)
   const { style: surfaceStyle, tgFullscreen } = useFullscreenSurface()
   const demoMode = isPreviewDemoMode()
+  const demoChrome = isDemoEmulationActive()
 
   const screenRef = useRef(null)
   // zoneOnly: свайп-закрытие только за верхнюю зону, иначе жест глушит
@@ -709,11 +716,11 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
     >
       <section
         ref={screenRef}
-        className={`mx-path-surface ${demoMode ? 'mx-path-surface--demo' : ''}${showAll ? ' mx-path-surface--all' : ''}${tgFullscreen ? ' mx-path-surface--tg-fullscreen' : ''}`}
+        className={`mx-path-surface ${demoMode ? 'mx-path-surface--demo' : ''}${demoChrome ? ' mx-path-surface--demo-chrome' : ''}${showAll ? ' mx-path-surface--all' : ''}${tgFullscreen ? ' mx-path-surface--tg-fullscreen' : ''}`}
         style={{
           // В Telegram сверху только safe-top (зона кнопок) — без 56px резерва
           // под controls: сегмент становится на safe-top + 8 (см. CSS).
-          paddingTop: tgFullscreen ? 'var(--app-safe-top)' : surfaceStyle.paddingTop,
+          paddingTop: tgFullscreen || demoChrome ? 'var(--app-safe-top)' : surfaceStyle.paddingTop,
         }}
         onClick={event => event.stopPropagation()}
         role="dialog"
@@ -725,40 +732,38 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
             <BackButton onClick={() => setShowAll(false)} />
           </header>
         )}
-        <main
-          className={`mx-path-scroll${showAll ? '' : ' mx-path-scroll--overlay'}`}
-        >
-          {/* Шапка-сегмент внутри скролла (Stoic): липнет к верху, фон
-            прозрачный — контент уходит под плавающий переключатель. */}
+        <main className={`mx-path-scroll${showAll ? '' : ' mx-path-scroll--overlay'}`}>
+          {/* В демо сегмент вынесен в строку Telegram; на устройстве
+            остаётся исходная липкая шапка внутри скролла. */}
           {!showAll && (
-            <header
-              className="mx-path-header"
-            >
-              <div className="mx-path-tabs" role="tablist" aria-label="Раздел серии и значков">
-                <button
-                  type="button"
-                  role="tab"
-                  className="mx-tap-target"
-                  data-testid="series-tab-badges"
-                  aria-selected={activeTab === 'badges'}
-                  onClick={() => setActiveTab('badges')}
-                >
-                  Значки
-                </button>
-                <button
-                  type="button"
-                  role="tab"
-                  className="mx-tap-target"
-                  data-testid="series-tab-stats"
-                  aria-selected={activeTab === 'stats'}
-                  onClick={() => setActiveTab('stats')}
-                >
-                  Статистика
-                </button>
-              </div>
-              <CloseButton onClose={onBack} />
-              <BackButton onClick={onBack} />
-            </header>
+            <DemoTelegramHeader>
+              <header className="mx-path-header">
+                <div className="mx-path-tabs" role="tablist" aria-label="Раздел серии и значков">
+                  <button
+                    type="button"
+                    role="tab"
+                    className="mx-tap-target"
+                    data-testid="series-tab-badges"
+                    aria-selected={activeTab === 'badges'}
+                    onClick={() => setActiveTab('badges')}
+                  >
+                    Значки
+                  </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    className="mx-tap-target"
+                    data-testid="series-tab-stats"
+                    aria-selected={activeTab === 'stats'}
+                    onClick={() => setActiveTab('stats')}
+                  >
+                    Статистика
+                  </button>
+                </div>
+                <CloseButton onClose={onBack} />
+                <BackButton onClick={onBack} />
+              </header>
+            </DemoTelegramHeader>
           )}
           {error && errorUserId === user.id && (
             <p className="mx-path-status">

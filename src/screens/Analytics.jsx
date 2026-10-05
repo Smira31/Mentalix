@@ -16,6 +16,7 @@ import '../components/ui-lab/ProgressRedesignExperiment.css'
 import './Analytics.css'
 import ProgressHistory from './progress/ProgressHistory'
 import ScreenBack from '../components/ScreenBack'
+import DemoTelegramHeader from '../components/DemoTelegramHeader'
 import './progress/ProgressScreen.css'
 import './progress/ProgressAnalytics.css'
 import {
@@ -261,11 +262,7 @@ function MoodScaleCard({ user, onSaved }) {
       <p className="mx-progress-mood-card__hint">
         Отметь настроение — точка появится в календаре и истории
       </p>
-      <div
-        className="mx-progress-mood-card__scale"
-        role="radiogroup"
-        aria-label="Как ты сейчас?"
-      >
+      <div className="mx-progress-mood-card__scale" role="radiogroup" aria-label="Как ты сейчас?">
         {MOOD_SCALE_LABELS.map((label, level) => {
           const value = level + 1
           const isSelected = selected === value
@@ -753,10 +750,7 @@ function CustomizeLayer({ preferences, onToggle, onClose }) {
 function BottomPeriodPill({ granularity, offset, onPrev, onNext, canNext }) {
   const window = getPeriodWindow(granularity, offset)
   return (
-    <div
-      className="mx-progress-bottom-pill-wrapper"
-      data-testid="progress-bottom-pill"
-    >
+    <div className="mx-progress-bottom-pill-wrapper" data-testid="progress-bottom-pill">
       <div className="mx-progress-bottom-pill">
         <button
           type="button"
@@ -789,6 +783,7 @@ function BottomPeriodPill({ granularity, offset, onPrev, onNext, canNext }) {
 const PROGRESS_SEGMENT_KEY = 'mx-progress-segment'
 
 export default function Analytics({
+  active = true,
   user,
   onGoCheckin,
   onRedo,
@@ -1025,32 +1020,34 @@ export default function Analytics({
       className="mx-progress-redesign mx-progress-redesign--live mx-type-page w-full max-w-md px-[var(--mx-screen-x)] animate-fade-in"
     >
       <div className="mx-progress-segment-bar">
-        <div className="mx-progress-segment-row">
-          <div
-            className="mx-progress-segment"
-            role="tablist"
-            aria-label="Прогресс: Аналитика и История"
-          >
-            <button
-              type="button"
-              role="tab"
-              data-testid="progress-tab-analytics"
-              aria-selected={activeTab === 'analytics'}
-              onClick={() => handleSegmentClick('analytics')}
+        <DemoTelegramHeader active={active}>
+          <div className="mx-progress-segment-row">
+            <div
+              className="mx-progress-segment"
+              role="tablist"
+              aria-label="Прогресс: Аналитика и История"
             >
-              Аналитика
-            </button>
-            <button
-              type="button"
-              role="tab"
-              data-testid="progress-tab-history"
-              aria-selected={activeTab === 'history'}
-              onClick={() => handleSegmentClick('history')}
-            >
-              История
-            </button>
+              <button
+                type="button"
+                role="tab"
+                data-testid="progress-tab-analytics"
+                aria-selected={activeTab === 'analytics'}
+                onClick={() => handleSegmentClick('analytics')}
+              >
+                Аналитика
+              </button>
+              <button
+                type="button"
+                role="tab"
+                data-testid="progress-tab-history"
+                aria-selected={activeTab === 'history'}
+                onClick={() => handleSegmentClick('history')}
+              >
+                История
+              </button>
+            </div>
           </div>
-        </div>
+        </DemoTelegramHeader>
         <div className="mx-progress-actions-row" data-testid="progress-actions-row">
           {activeTab === 'analytics' && (
             <button

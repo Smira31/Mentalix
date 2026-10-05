@@ -16,6 +16,28 @@
   background: rgb(var(--c-bg, 5 4 3));
 }
 
+/* ── Сегмент «Аналитика | История» между кнопками Telegram ──
+   В fullscreen (Telegram) и demo-рамке контент начинается ниже
+   56-px полосы Telegram-контролов. Поднимаем пилюлю сегмента в
+   эту полосу — между левой (Назад/Закрыть) и правой (⋯) кнопками.
+   42-px сегмент центрируется в 56-px полосе: (56−42)/2 = 7px от
+   верха контролов, т.е. на 49px выше верха скролл-контента. */
+[data-mentalix-demo-frame='true'] .mx-progress-segment-bar,
+.mx-app-shell--fullscreen .mx-progress-segment-bar {
+  padding-top: 0;
+}
+
+.mx-app-shell--fullscreen .mx-progress-segment-row {
+  position: relative;
+  z-index: 10;
+  margin-top: -49px;
+}
+
+[data-mentalix-demo-frame='true'] .mx-progress-actions-row,
+.mx-app-shell--fullscreen .mx-progress-actions-row {
+  margin-top: 7px;
+}
+
 .mx-progress-segment-row {
   display: flex;
   justify-content: center;
