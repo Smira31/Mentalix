@@ -58,11 +58,18 @@ test('bundle-size-report: JS и CSS с одним именем и одноимё
   assert.doesNotMatch(out, /~~/)
 })
 
-test('ci: сборка PR для отчёта о размерах не удаляется перед сборкой main', () => {
+test('ci: скрипт копируется до checkout main и запускается из $RUNNER_TEMP', () => {
   const bundle = job('bundle-size-report')
   assert.doesNotMatch(bundle, /git clean[^\n]*dist-pr/)
   assert.match(bundle, /mv dist "\$RUNNER_TEMP\/dist-pr"/)
-  assert.match(bundle, /bundle-size-report\.mjs "\$RUNNER_TEMP\/dist-pr" dist/)
+  // Скрипт копируется в $RUNNER_TEMP до checkout main — иначе main его затрёт
+  const cpIdx = bundle.indexOf('cp scripts/bundle-size-report.mjs "$RUNNER_TEMP/bundle-size-report.mjs"')
+  const checkoutIdx = bundle.indexOf('git checkout origin/main')
+  assert.ok(cpIdx !== -1, 'cp скрипта в $RUNNER_TEMP не найден')
+  assert.ok(checkoutIdx !== -1, 'checkout main не найден')
+  assert.ok(cpIdx < checkoutIdx, 'скрипт должен копироваться до checkout main')
+  // Запуск из $RUNNER_TEMP, а не из рабочей папки (где main затёр файлы)
+  assert.match(bundle, /node "\$RUNNER_TEMP\/bundle-size-report\.mjs" "\$RUNNER_TEMP\/dist-pr" dist/)
 })
 
 test('ci: PR-скриншоты собираются с демо-режимом', () => {

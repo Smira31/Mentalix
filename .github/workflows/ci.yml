@@ -485,9 +485,11 @@ jobs:
         run: npm run build
 
       # Сборку PR уносим из рабочей папки: checkout main её не трогает.
+      # Скрипт тоже — иначе checkout main затрёт его версией из main.
       - name: Save PR dist
         run: |
           mv dist "$RUNNER_TEMP/dist-pr"
+          cp scripts/bundle-size-report.mjs "$RUNNER_TEMP/bundle-size-report.mjs"
 
       - name: Checkout main
         run: |
@@ -500,7 +502,7 @@ jobs:
         run: npm run build
 
       - name: Generate bundle size report
-        run: node scripts/bundle-size-report.mjs "$RUNNER_TEMP/dist-pr" dist > bundle-report.md
+        run: node "$RUNNER_TEMP/bundle-size-report.mjs" "$RUNNER_TEMP/dist-pr" dist > bundle-report.md
 
       - name: Post bundle size comment
         uses: actions/github-script@v7
