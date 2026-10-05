@@ -929,7 +929,7 @@
 /* ── Нижняя плавающая пилюля периода (§5.5) ── */
 .mx-progress-bottom-pill-wrapper {
   position: fixed;
-  bottom: calc(var(--app-safe-bottom, 0px) + var(--bottom-nav-offset, 8px) + var(--bottom-nav-height, 53px) + 8px);
+  bottom: calc(var(--app-safe-bottom, 0px) + var(--bottom-nav-offset, 8px) + var(--bottom-nav-height, 53px) + 4px);
   left: 18px;
   right: 18px;
   z-index: 20;
@@ -1035,6 +1035,16 @@ html.mx-nav-collapsed .mx-progress-bottom-pill-wrapper {
   bottom: calc(var(--app-safe-bottom, 0px) + var(--bottom-nav-offset, 0px));
   left: 75px;
   right: 25px;
+}
+
+/* Demo-рамка: навигация стоит на bottom:0 (игнорирует --app-safe-bottom),
+   поэтому пилюля тоже должна считать от 0, иначе повисает на 34px выше тачбара. */
+[data-mentalix-demo-frame='true'] .mx-progress-bottom-pill-wrapper {
+  bottom: calc(var(--bottom-nav-offset, 0px) + var(--bottom-nav-height, 54px) + 4px);
+}
+
+html.mx-nav-collapsed [data-mentalix-demo-frame='true'] .mx-progress-bottom-pill-wrapper {
+  bottom: var(--bottom-nav-offset, 0px);
 }
 
 /* ── Полный календарь настроения ── */
