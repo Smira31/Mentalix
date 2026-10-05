@@ -1,13 +1,28 @@
 ---
 status: current
-last_verified: 2026-09-27
+last_verified: 2026-10-05
 ---
 
 # PROJECT_STATE — подтверждённое состояние Mentalix
 
 Этот файл содержит только проверенные факты о репозиториях, окружениях, release provenance и активных GitHub-треках. Активный backlog находится в [`docs/TASK_INDEX.md`](docs/TASK_INDEX.md). История решений находится в [`TASKS.md`](TASKS.md), [`CHANGES.md`](CHANGES.md) и `docs/archive/`.
 
-**Последняя сверка:** 27.09.2026. Документная база после PR #905 (`main` `1daa58b0ffe8fc742c936d6b226e74c72f52e53a`); решения владельца от 27.09 имеют приоритет над прежними планами. Статус реализации и production deployment отдельно не подтверждён. Исторический snapshot после #904: `767a3b55e69d670cb3ea9b2adbd6704f0d734a70` (18+); это не exact-SHA Production.
+**Последняя сверка репозитория и конфигурации:** 05.10.2026. Frontend baseline — `main` `b1fdfb2fff939fb515afb878f72a40a14328fc03` после PR #1003. Это снимок перед новым документационным пакетом, не SHA этого пакета и не exact-SHA Production. Прочитана backend deployment/proxy-документация на `0a48f04111515df0bf19a3f40f8051110bc17155`; backend runtime и deployed SHA не проверены. Решения владельца от 27.09 сохраняются, назначения исполнителей не менялись. Предыдущий snapshot после #905 (`1daa58b0ffe8fc742c936d6b226e74c72f52e53a`) и #904 (`767a3b55e69d670cb3ea9b2adbd6704f0d734a70`) — исторический контекст, не подтверждение текущего production.
+
+## Сверка 05.10.2026: подтверждено и не проверено
+
+- Проверены последние пять frontend-коммитов и слияние #1003. На момент pre-flight перед этим пакетом открытых frontend PR не было; это не постоянный статус очереди.
+- Последние продуктовые изменения в истории `main`: #1002 — история/настроение, #1001 — viewport/scroll, #1000 — библиотека и движок курсов. Названия и факт слияния не доказывают ручную приёмку или deployment.
+- В CI PR #1003 на candidate `39f28e1303545cadff96754b87773393909d2cc8` завершились 14 jobs: 13 success, Backend health skipped для docs-only diff. Результаты push-CI на merge SHA и Firebase deploy отдельно не проверены.
+- Проверены `package.json`, `firebase.json`, `.github/workflows/ci.yml`, `.github/workflows/firebase-hosting.yml`, backend `RENDER.md` и `proxy/README.md`. Объявленные версии стека — в `package.json`, разрешённые точные версии — в `package-lock.json`; lockfile и установленное окружение в этой сверке не анализировались.
+- Production frontend SHA, Cloud Run runtime/upstream, Render health/version, данные и ручной Telegram/iPhone gate — NOT RUN. Локальные unit/lint/build/docs/UX также не запускались: доступна документационная копия, не полный проект с зависимостями.
+- Разделы ниже с датами 27.09 и 03.10 сохраняют прежние решения и evidence; они не переаттестованы как текущее состояние продукта или базы данных.
+
+## Настроенный маршрут production API
+
+По конфигурации production workflow задаёт `VITE_API_BASE_URL=/api`, а `firebase.json` направляет `/api/**` в Cloud Run `mentalix-auth-proxy` (`us-central1`) перед SPA fallback. В `mentalix-bot/proxy` находится same-site proxy: upstream задаётся `BACKEND_ORIGIN`, по умолчанию Render. Схема настроек: frontend → Firebase `/api/**` → Cloud Run proxy → backend. Наличие этих файлов не подтверждает действующий сервис, его текущую переменную upstream, deploy SHA или корректность авторизации; для этого нужна отдельная read-only runtime-проверка.
+
+Источники: frontend `firebase.json` и `.github/workflows/firebase-hosting.yml` на baseline выше, backend `proxy/README.md` на указанном backend SHA. Runtime не проверялся; конфигурация в рамках этой сверки не менялась.
 
 ## Решения владельца от 27.09.2026 (цель, не утверждение о готовности)
 
@@ -24,8 +39,8 @@ last_verified: 2026-09-27
 | Card System v2      | Нормативная спецификация в `DESIGN_SYSTEM.md` §5.1, решение владельца от 22.09.2026                                                            | [`DESIGN_SYSTEM.md`](DESIGN_SYSTEM.md) §5.1                                                                                                            |
 | Card System v1      | [`docs/archive/CARD_SYSTEM_V1_2026-09-22.md`](docs/archive/CARD_SYSTEM_V1_2026-09-22.md), статус `archived`                                    | Архив; не текущий источник истины                                                                                                                      |
 | Frontend            | `Smira31/Mentalix`, default branch `main`                                                                                                      | [GitHub](https://github.com/Smira31/Mentalix)                                                                                                          |
-| Frontend `main`     | commit `1daa58b0ffe8fc742c936d6b226e74c72f52e53a` после мержа PR #905 (на момент сверки); #904 — предыдущий snapshot                           | [commit](https://github.com/Smira31/Mentalix/commit/1daa58b0ffe8fc742c936d6b226e74c72f52e53a)                                                          |
-| Production frontend | Policy: `main → Firebase Hosting Live channel → https://mentalix-production.web.app`; exact deployed SHA для #904 в этой сверке не подтверждён | [Firebase workflow](https://github.com/Smira31/Mentalix/actions/workflows/firebase-hosting.yml); run 35119350799 подтверждал прежний snapshot, не #904 |
+| Frontend `main` | baseline `b1fdfb2fff939fb515afb878f72a40a14328fc03` после PR #1003 на момент сверки 05.10.2026; не deployed SHA | [commit](https://github.com/Smira31/Mentalix/commit/b1fdfb2fff939fb515afb878f72a40a14328fc03), [PR #1003](https://github.com/Smira31/Mentalix/pull/1003) |
+| Production frontend | Настройки: успешный push-CI `main` → Firebase Hosting Live; ручной запуск также предусмотрен. Текущий deployed SHA не проверен | [Firebase workflow](https://github.com/Smira31/Mentalix/actions/workflows/firebase-hosting.yml); исторический run 35119350799 не доказывает текущий deploy |
 | `Demo Preview`      | Cloudflare Pages project `mentalix-owner-qa` → `https://mentalix-owner-qa.pages.dev`                                                           | workflow [Cloudflare Owner QA](https://github.com/Smira31/Mentalix/actions/workflows/cloudflare-owner-qa.yml)                                          |
 | Backend             | `Smira31/mentalix-bot`, `main`                                                                                                                 | [GitHub](https://github.com/Smira31/mentalix-bot)                                                                                                      |
 | Backend runtime     | Исторический адрес health: `https://mentalix-bot.onrender.com/api/health`; текущий статус backend не проверялся в этой docs-сверке             | Приватный `mentalix-bot` и отдельная runtime-проверка обязательны для актуального статуса                                                              |
@@ -42,14 +57,14 @@ last_verified: 2026-09-27
 ## Hosting policy
 
 1. Разработка и быстрая визуальная проверка выполняются через Cloudflare `Demo Preview`.
-2. После QA изменения проходят обычный PR и обязательный GitHub check `Базовая проверка проекта`.
-3. Merge в `main` запускает Firebase Hosting Production deploy.
+2. После QA изменения проходят обычный PR и обязательный GitHub check `Функциональная проверка проекта`.
+3. Push в `main` запускает CI; только его успешное завершение удовлетворяет автоматическому Firebase Production deploy gate. В workflow также есть ручной запуск. Это описание условий запуска, не подтверждение результата deploy.
 4. `Firebase Preview Channels`, `Vercel Preview` и Vercel watchdog не используются.
 5. Render backend не переносится в рамках frontend-задач.
 
 Полная policy: [`docs/handoffs/2026-09-16-hosting-policy.md`](docs/handoffs/2026-09-16-hosting-policy.md).
 
-## Release snapshot и GitHub на 27.09.2026
+## Исторический release snapshot и GitHub на 27.09.2026
 
 - `main` после [#904](https://github.com/Smira31/Mentalix/pull/904): публичный MVP **18+**, 16–17 отложены до v1.1 (см. `PRODUCT.md` и решение владельца в `docs/core/PRODUCT_DECISIONS.md`). Не путать commit `main` с доказательством exact-SHA production deployment: post-#904 Firebase run и ручной Web/PWA/Telegram gate здесь не подтверждены.
 - [#903](https://github.com/Smira31/Mentalix/pull/903) добавил frontend gate: Telegram user screens монтируются только после появления user и подписанного `initData`; API отправляет `Authorization: tma ...`. Это **не** доказательство backend-проверки подписи или полномочий.
@@ -75,9 +90,11 @@ Frontend использует `GET /api/streak?user_id=<id>` для числа �
 
 В `hero-journey-reliability` прогресс и ответы курса изолированы по ID, сериализуются в JSON; legacy-ключ переносится до очистки scope, повреждённый JSON безопасно восстанавливается из облачной копии либо становится пустым прогрессом. Черновики текста хранятся локально по пользователю и шагу. Доступность считается по всему курсу и границе суток МСК, включая карточку продолжения; «Назад» следует подэкранам шага. Это состояние рабочей ветки, не факт production-релиза. Целевые проверки: `tests/unit/hero-journey-reliability.test.mjs`, `tests/unit/api-response-body-timeout.test.mjs` и `tests/ux/hero-journey-reliability.spec.mjs`.
 
-## Библиотека Stoic — ветка stoic-library-v2 (03.10.2026)
+## Библиотека Stoic — объединено в main через #1000
 
-База первой итерации: `c82fad014a8aeef19bbb1e4110b494eaa26042c2`; продолжение начато с HEAD `5ebd255b13` и сохранённых незакоммиченных правок. Главная объединяет курсы и тематические плитки; чтение через шторку и Screen. Реестр `src/data/courses/*.js` автоматически подаёт данные в общий движок карты/глав/шагов; прежние ключи прогресса и черновиков hero-journey сохранены, новые курсы изолированы по userId/courseId. Один курс — полная ширина, несколько — карусель; пустышка только в demo. Монохромные SVG и словарь тем заменили пустые слоты и подписи-теги. Вложенные экраны используют Telegram «Назад», в демо шапка не перекрывает текст. Статьи — только ARTICLES; программы/направленные записи скрыты, данные и API-контракты не удалены. `check:core`: 859 passed, 0 failed, 2 прежних skipped. Один Chromium UX-сценарий прошёл на dev и production-like build, включая прямой возврат из курса и сохранение прогресса после reload. Полный UX/WebKit — CI, iPhone/Telegram — ручной gate. Шесть снимков 430×932 на собранном приложении и подробности: [отчёт](qa-evidence/stoic-library/report.md). Это состояние рабочей ветки, не production deployment.
+PR [#1000](https://github.com/Smira31/Mentalix/pull/1000) объединён 03.10.2026, commit `a0147e2e89bbf440e2877fc5ba5a1434e9e0665a`. Ниже сохранено evidence рабочей ветки от 03.10; новый прогон и production deployment не подтверждены.
+
+База первой итерации: `c82fad014a8aeef19bbb1e4110b494eaa26042c2`; продолжение начато с HEAD `5ebd255b13` и сохранённых незакоммиченных правок. Главная объединяет курсы и тематические плитки; чтение через шторку и Screen. Реестр `src/data/courses/*.js` автоматически подаёт данные в общий движок карты/глав/шагов; прежние ключи прогресса и черновиков hero-journey сохранены, новые курсы изолированы по userId/courseId. Один курс — полная ширина, несколько — карусель; пустышка только в demo. Монохромные SVG и словарь тем заменили пустые слоты и подписи-теги. Вложенные экраны используют Telegram «Назад», в демо шапка не перекрывает текст. Статьи — только ARTICLES; программы/направленные записи скрыты, данные и API-контракты не удалены. `check:core`: 859 passed, 0 failed, 2 прежних skipped. Один Chromium UX-сценарий прошёл на dev и production-like build, включая прямой возврат из курса и сохранение прогресса после reload. Полный UX/WebKit — CI, iPhone/Telegram — ручной gate. Шесть снимков 430×932 на собранном приложении и подробности: [отчёт](qa-evidence/stoic-library/report.md). Это историческое evidence рабочей ветки до объединения #1000, не подтверждение production deployment.
 
 ## Ограничения подтверждения
 
@@ -85,7 +102,7 @@ Frontend использует `GET /api/streak?user_id=<id>` для числа �
 
 ## References
 
-[1]: https://github.com/Smira31/Mentalix/commit/767a3b55e69d670cb3ea9b2adbd6704f0d734a70 'Current frontend main after PR #904'
+[1]: https://github.com/Smira31/Mentalix/commit/767a3b55e69d670cb3ea9b2adbd6704f0d734a70 'Historical frontend snapshot after PR #904'
 [2]: https://mentalix-production.web.app 'Mentalix Firebase Production'
 [3]: https://mentalix-owner-qa.pages.dev 'Mentalix Cloudflare QA'
 [4]: https://github.com/Smira31/Mentalix/actions/workflows/firebase-hosting.yml 'Firebase Hosting workflow'

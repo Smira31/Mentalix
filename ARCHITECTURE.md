@@ -1,6 +1,6 @@
 ---
 status: normative
-last_verified: 2026-09-27
+last_verified: 2026-10-05
 ---
 
 # Mentalix — Architecture v1
@@ -15,13 +15,17 @@ Backend находится в приватном `Smira31/mentalix-bot`; его 
 Публичный репозиторий содержит frontend:
 
 - React 18.3;
-- Vite 5.4;
+- Vite: диапазон `^6.4.3` в `package.json`; точная устанавливаемая версия определяется `package-lock.json`;
 - Tailwind CSS 3.4;
 - `@twa-dev/sdk`;
 - lucide-react;
-- Recharts.
+- `@tanstack/react-query` (частичная интеграция, см. §5). Recharts не объявлен в текущем `package.json`; это не утверждение об отсутствии любых исторических упоминаний.
 
-Production frontend автоматически публикуется из `main` в Firebase Hosting Live channel. `Demo Preview` публикуется отдельно в Cloudflare Pages. В Firebase frontend получает Render API через `VITE_API_BASE_URL`; относительный `/api` остаётся локальным fallback.
+Production frontend публикуется в Firebase Hosting Live channel после успешного CI для push в `main`; workflow также допускает ручной запуск. `Demo Preview` публикуется отдельно в Cloudflare Pages.
+
+По конфигурации production workflow задаёт `VITE_API_BASE_URL=/api`, а `firebase.json` направляет `/api/**` в Cloud Run `mentalix-auth-proxy` (`us-central1`) перед SPA fallback. В `mentalix-bot/proxy` находится same-site proxy: upstream задаётся `BACKEND_ORIGIN`, по умолчанию Render. Схема настроек: frontend → Firebase `/api/**` → Cloud Run proxy → backend. Наличие этих файлов не подтверждает действующий сервис, его текущую переменную upstream, deploy SHA или корректность авторизации; для этого нужна отдельная read-only runtime-проверка.
+
+Сверка 05.10.2026 ограничена стеком и конфигурацией маршрута API на frontend baseline `b1fdfb2fff939fb515afb878f72a40a14328fc03`; proxy-документация прочитана на backend SHA `0a48f04111515df0bf19a3f40f8051110bc17155`. Остальные архитектурные наблюдения не являются новым подтверждением runtime.
 
 Отдельный приватный `mentalix-bot` содержит FastAPI, SQLAlchemy, aiogram и PostgreSQL; актуальный deployment-контур — Render + Neon. Подробности и текущие secrets/contracts должны проверяться только в `mentalix-bot/main` и его `RENDER.md`.
 

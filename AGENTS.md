@@ -1,6 +1,6 @@
 ---
 status: normative
-last_verified: 2026-09-22
+last_verified: 2026-10-05
 ---
 
 # AGENTS.md
@@ -39,7 +39,7 @@ Russian-only — never introduce English strings into product-facing text.
 ## Project
 
 Mentalix — a Telegram Mini App (rituals, "ascezas"/abstentions, AI personas, analytics).
-This repo is the **frontend only**: React 18 + Vite 5 + Tailwind 3. Production is
+This repo is the **frontend only**: React 18 + Vite 6 + Tailwind 3. Production is
 deployed from `main` to Firebase Hosting; Demo Preview uses Cloudflare Pages. The backend/bot
 (FastAPI + SQLAlchemy + aiogram + PostgreSQL on Render + Neon) lives in a separate **private**
 repo, `mentalix-bot`, and is not visible here — do not invent its API shape; if a task
@@ -224,8 +224,7 @@ screens, and keep article cards unchanged unless the owner explicitly approves t
   (`Today.jsx`, `MorningPilotCard.jsx`), which are what's actually shipped. There's no
   TypeScript build configured (no tsconfig); do not recreate or extend the removed `.tsx`
   copies expecting them to compile or ship.
-- Firebase Production uses `VITE_API_BASE_URL` to call the Render backend directly.
-  `src/lib/api.js` keeps relative `/api` only as a local fallback; Firebase Hosting does not proxy API requests.
+- Production workflow Firebase задаёт `VITE_API_BASE_URL=/api`. Firebase Hosting направляет `/api/**` в Cloud Run `mentalix-auth-proxy` (`us-central1`); backend-репозиторий содержит same-site proxy с Render как upstream по умолчанию. Это описание настроек, не доказательство действующего Cloud Run или текущего upstream. Runtime и deployment проверяются отдельно; нельзя удалять proxy или менять auth-маршрут заодно с исправлением документации.
 
 ## Запреты
 
