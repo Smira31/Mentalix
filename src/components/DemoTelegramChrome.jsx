@@ -107,6 +107,10 @@ export default function DemoTelegramChrome() {
           <Ellipsis size={16} strokeWidth={2.4} aria-hidden="true" />
         </span>
       </div>
+      {/* Dynamic Island — чёрная капсула как на iPhone 15 Pro / 16 Pro Max */}
+      <div className="mx-demo-telegram-chrome__island" aria-hidden="true" />
+      {/* Home indicator — полоса жестов внизу экрана */}
+      <div className="mx-demo-telegram-chrome__home-indicator" aria-hidden="true" />
     </div>
   )
 }

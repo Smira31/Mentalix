@@ -1751,6 +1751,33 @@ button.mx-demo-telegram-chrome__pill:focus:not(:focus-visible) {
   justify-content: space-evenly;
 }
 
+/* Dynamic Island — чёрная капсула вверху экрана, как на iPhone 15 Pro / 16 Pro Max.
+   z-index выше статус-бара, но внутри chrome-слоя (контролы остаются кликабельными). */
+.mx-demo-telegram-chrome__island {
+  position: absolute;
+  top: 11px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 125px;
+  height: 37px;
+  background: #000;
+  border-radius: 20px;
+  z-index: 1;
+}
+
+/* Home indicator — индикатор жестов внизу экрана (в зоне safe-area). */
+.mx-demo-telegram-chrome__home-indicator {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 134px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+  z-index: 1;
+}
+
 /* In the Demo frame the Telegram-style chrome owns the page title. Keep the
    real screen controls close to it without rendering a second large heading. */
 /* В demo-рамке шапка Telegram пустая посередине: заголовки экранов
@@ -1858,15 +1885,22 @@ button.mx-demo-telegram-chrome__pill:focus:not(:focus-visible) {
   letter-spacing: 0.04em;
   box-shadow: 0 8px 22px rgb(0 0 0 / 0.2);
 }
+/* В рамке телефона демо-метка не нужна — рамка и так выглядит как устройство. */
+.mx-preview-stage:has([data-mentalix-demo-frame='true']) .mx-preview-demo-note {
+  display: none;
+}
+
 .mx-preview-stage > .h-screen {
   flex: 0 0 auto;
   max-width: calc(100vw - 40px);
   transform-origin: top center;
-  border: 8px solid #191817;
-  border-radius: 42px;
+  border: 10px solid #1a1a1c;
+  border-radius: 46px;
   box-shadow:
-    0 0 0 1px rgb(255 255 255 / 0.1),
-    0 28px 80px rgb(0 0 0 / 0.55);
+    0 0 0 1.5px #333336,
+    0 0 0 3px #0a0a0a,
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 30px 80px rgb(0 0 0 / 0.6);
   overflow: hidden;
 }
 @media (max-width: 700px) {
@@ -1882,6 +1916,10 @@ button.mx-demo-telegram-chrome__pill:focus:not(:focus-visible) {
     transform-origin: top center;
   }
   .mx-preview-demo-note {
+    display: none;
+  }
+  .mx-demo-telegram-chrome__island,
+  .mx-demo-telegram-chrome__home-indicator {
     display: none;
   }
   .mx-preview-stage > .h-screen {
