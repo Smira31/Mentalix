@@ -15,6 +15,7 @@ export default defineConfig({
     'profile-wave3.spec.mjs',
     'profile-canonical-streak.spec.mjs',
     'demo-phone.spec.mjs',
+    'demo-telegram-header.spec.mjs',
     'demo-panel.spec.mjs',
     'guest-save-reminder.spec.mjs',
     'bottom-nav-overlap.spec.mjs',

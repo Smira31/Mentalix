@@ -1634,6 +1634,7 @@ html.mx-is-scrolling *::after {
   --app-safe-top: 62px;
   --app-safe-bottom: 34px;
   --demo-statusbar-h: 62px;
+  --demo-header-h: 47px;
 }
 
 [data-mentalix-demo-frame='true'][data-demo-mode='true'][data-demo-device='standard'] {
@@ -1712,7 +1713,7 @@ html.mx-is-scrolling *::after {
 }
 
 /*
- * Левая пилюля Telegram: 94×30, радиус 15 (как в Telegram на iPhone).
+ * Левая пилюля Telegram: «Назад» 80×30, «Закрыть» 88×30.
  * Когда в стеке есть «назад» — кликабельна и вызывает тот же обработчик,
  * что системная BackButton; «✕ Закрыть» — некликабельный span.
  */
@@ -1721,17 +1722,19 @@ html.mx-is-scrolling *::after {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  width: 94px;
+  width: 88px;
   height: 30px;
-  border-radius: 15px;
+  border-radius: var(--mx-radius-pill);
   background: rgba(44, 44, 46, 0.92);
   color: rgb(255 255 255);
-  font-size: calc(15px * var(--mx-type-scale));
-  font-weight: 600;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: var(--mx-type-control-size);
+  font-weight: 500;
   white-space: nowrap;
 }
 
 button.mx-demo-telegram-chrome__pill {
+  width: 80px;
   appearance: none;
   border: 0;
   padding: 0;
@@ -1749,34 +1752,6 @@ button.mx-demo-telegram-chrome__pill:focus:not(:focus-visible) {
 .mx-demo-telegram-chrome__pill--menu {
   width: 72px;
   justify-content: space-evenly;
-}
-
-/* Dynamic Island — чёрная капсула вверху экрана, как на iPhone 15 Pro / 16 Pro Max.
-   z-index выше статус-бара, но внутри chrome-слоя (контролы остаются кликабельными). */
-.mx-demo-telegram-chrome__island {
-  position: absolute;
-  top: 11px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 125px;
-  height: 37px;
-  background: #000;
-  border-radius: 20px;
-  z-index: 2;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.03);
-}
-
-/* Home indicator — индикатор жестов внизу экрана (в зоне safe-area). */
-.mx-demo-telegram-chrome__home-indicator {
-  position: absolute;
-  bottom: 8px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 134px;
-  height: 5px;
-  background: rgba(255, 255, 255, 0.35);
-  border-radius: 999px;
-  z-index: 1;
 }
 
 /* In the Demo frame the Telegram-style chrome owns the page title. Keep the
@@ -1895,7 +1870,7 @@ button.mx-demo-telegram-chrome__pill:focus:not(:focus-visible) {
   flex: 0 0 auto;
   max-width: calc(100vw - 40px);
   transform-origin: top center;
-  border: 10px solid #1a1a1c;
+  border: 8px solid #1a1a1c;
   border-radius: 46px;
   box-shadow:
     0 0 0 1.5px #333336,
@@ -1917,10 +1892,6 @@ button.mx-demo-telegram-chrome__pill:focus:not(:focus-visible) {
     transform-origin: top center;
   }
   .mx-preview-demo-note {
-    display: none;
-  }
-  .mx-demo-telegram-chrome__island,
-  .mx-demo-telegram-chrome__home-indicator {
     display: none;
   }
   .mx-preview-stage > .h-screen {

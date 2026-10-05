@@ -255,6 +255,13 @@ screens, and keep article cards unchanged unless the owner explicitly approves t
 - Реестр `src/data/courses/*.js` подхватывает default-объекты автоматически; опубликованные курсы идут перед demoOnly. У «Пути героя» сохранены прежние scoped-ключи прогресса/черновиков, у остальных ключ включает courseId. `demo_courses=0` скрывает курс-пустышку.
 - Для снимков production-like демо: `VITE_LOCAL_PREVIEW=true npm run build`, затем `npm run preview:web -- --port 4175`; целевой тест запускается с `LIBRARY_BASE_URL=http://127.0.0.1:4175`. Не передавать параметры Vite через вложенный `npm run preview`: npm поглощает `--host`, и аргумент становится неверным корнем сервера.
 
+### Шапка Telegram в демо Base44
+
+- `VITE_TG_SHELL=1` включает существующие демо-данные и рамку; внешних секретов для неё нет.
+- Сегменты аналитики и значков в рамке выводятся `DemoTelegramHeader` порталом непосредственно в shell. Отрицательный отступ внутри `mx-app-scroll-root` обрезает сегмент и делает его невидимым; не возвращать этот приём для демо.
+- `Analytics.active` скрывает вынесенную шапку при уходе с вкладки: открытые вкладки остаются смонтированными. На настоящем телефоне и в Telegram компонент возвращает исходную шапку без портала.
+- Целевая проверка: `npx playwright test --config=playwright.ux.config.mjs demo-telegram-header.spec.mjs` внутри web-контейнера; размеры рамок 393/440 на viewport 793. Аппаратные Island/Home Indicator не имитируются.
+
 ## Context economy
 
 - Читай только файлы из порядка чтения (AGENTS.md → PROJECT_STATE.md → PRODUCT.md →

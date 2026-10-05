@@ -21,8 +21,8 @@ test('эмуляция Telegram рендерится в demo-режиме: ст�
   assert.match(chrome, /Назад/)
   assert.doesNotMatch(chrome, /mx-demo-telegram-chrome__pill-divider/)
 
-  // Home Indicator убран полностью.
-  assert.doesNotMatch(chrome, /mx-demo-telegram-chrome__home/)
+  // Только системные кнопки, без имитации аппаратных элементов.
+  assert.doesNotMatch(chrome, /mx-demo-telegram-chrome__(home|island)/)
 
   // Компонент подключён один раз в App shell; вложенные Screen не дублируют его.
   assert.match(app, /import DemoTelegramChrome from '\.\/components\/DemoTelegramChrome'/)

@@ -27,7 +27,6 @@
   padding-top: 0;
 }
 
-[data-mentalix-demo-frame='true'] .mx-progress-segment-row,
 .mx-app-shell--fullscreen .mx-progress-segment-row {
   position: relative;
   z-index: 10;

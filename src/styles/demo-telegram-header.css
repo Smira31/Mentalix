@@ -1,0 +1,55 @@
+/* Одна строка с Telegram: без отрицательных отступов внутри прокрутки. */
+.mx-demo-telegram-header {
+  position: absolute;
+  top: var(--demo-statusbar-h);
+  left: 50%;
+  z-index: 80;
+  width: min(200px, calc(100% - 2 * (var(--mx-screen-x) + 88px)));
+  transform: translateX(-50%);
+  color: rgb(var(--c-text));
+  font-family: 'Onest', sans-serif;
+}
+
+.mx-demo-telegram-header .mx-progress-segment-row,
+.mx-demo-telegram-header .mx-path-header {
+  position: static;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.mx-demo-telegram-header .mx-progress-segment,
+.mx-demo-telegram-header .mx-path-tabs {
+  width: 100%;
+  height: var(--demo-header-h);
+  background: rgb(var(--c-card2));
+}
+
+/* Без рамки нет эмуляции Telegram: сегмент остаётся внутри видимой прокрутки. */
+.mx-real-phone-demo .mx-app-shell--fullscreen .mx-progress-segment-row {
+  margin-top: 0;
+}
+
+/* Карточка начинается на том же уровне, что в Telegram, без дубля ✕. */
+.mx-path-surface--demo-chrome .mx-path-scroll--overlay {
+  padding-top: calc(var(--demo-header-h) + var(--mx-space-10) + var(--mx-space-1));
+}
+
+[data-demo-mode='true'] .mx-path-tiles {
+  grid-auto-columns: min(399px, 100%);
+}
+
+[data-demo-mode='true'] .mx-progress-mood-card__title {
+  align-self: stretch;
+  white-space: nowrap;
+}
+
+[data-demo-mode='true'] .mx-progress-bottom-pill__label {
+  min-width: 0;
+}
+
+[data-demo-mode='true'] .mx-progress-bottom-pill__name,
+[data-demo-mode='true'] .mx-progress-bottom-pill__range {
+  white-space: nowrap;
+}
