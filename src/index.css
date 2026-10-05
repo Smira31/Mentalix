@@ -1762,7 +1762,8 @@ button.mx-demo-telegram-chrome__pill:focus:not(:focus-visible) {
   height: 37px;
   background: #000;
   border-radius: 20px;
-  z-index: 1;
+  z-index: 2;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.03);
 }
 
 /* Home indicator — индикатор жестов внизу экрана (в зоне safe-area). */

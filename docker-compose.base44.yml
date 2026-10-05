@@ -11,8 +11,7 @@ services:
     command: ["sh", "-ec", "CI=true npm ci --ignore-scripts && exec npm run dev -- --host 0.0.0.0 --port 5173 --strictPort"]
     environment:
       - NODE_ENV=development
-      # Обычный ?demo=1 использует рамку App, без второй dev-only Telegram-эмуляции.
-      - VITE_TG_SHELL=0
+      - VITE_TG_SHELL=1
       - CHOKIDAR_USEPOLLING=true
       - __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS
       - BASE44_PUBLIC_HOST_SUFFIX
