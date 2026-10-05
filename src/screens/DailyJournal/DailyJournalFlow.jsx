@@ -95,6 +95,7 @@ export default function DailyJournalFlow({ userId, onClose, reflectionPrompt = n
   const [pendingComplete, setPendingComplete] = useState(false)
   const [hasTodayEntry, setHasTodayEntry] = useState(false)
   const [entriesReturnStage, setEntriesReturnStage] = useState(null)
+  const [retryKey, setRetryKey] = useState(0)
   const streamRef = useRef(null)
   const answerRef = useRef(null)
   const appendCursorRef = useRef(false)
@@ -295,7 +296,7 @@ export default function DailyJournalFlow({ userId, onClose, reflectionPrompt = n
           setPromptText(d.promptText || '')
           setStage('today')
         } else {
-          setStage('stream')
+          setStage('error')
         }
       }
     }
@@ -304,7 +305,7 @@ export default function DailyJournalFlow({ userId, onClose, reflectionPrompt = n
     return () => {
       cancelled = true
     }
-  }, [userId]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [userId, retryKey]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Draft persistence ──
   // Запись — с задержкой 400 мс; при сворачивании/закрытии — сразу.
@@ -478,6 +479,13 @@ export default function DailyJournalFlow({ userId, onClose, reflectionPrompt = n
     setStage(entriesReturnStage || (hasTodayEntry ? 'today' : 'review'))
   }
 
+  // ── Повтор начальной загрузки при ошибке ──
+  function retryInit() {
+    platform.haptic('light')
+    setStage('loading')
+    setRetryKey(k => k + 1)
+  }
+
   // ── Дописать: открыть поток с уже введённым текстом ──
   function handleAppend() {
     platform.haptic('light')
@@ -585,6 +593,26 @@ export default function DailyJournalFlow({ userId, onClose, reflectionPrompt = n
           }}
         >
           Загрузка…
+        </div>
+      </Screen>
+    )
+  }
+
+  // ── Init error ──
+  if (stage === 'error') {
+    return (
+      <Screen onBack={onClose} scroll={false}>
+        <div className="mx-dj-init-error" role="alert" data-testid="dj-init-error">
+          <h2 className="mx-dj-init-error__title">Не удалось загрузить журнал</h2>
+          <p className="mx-dj-init-error__text">Проверь соединение и попробуй ещё раз.</p>
+          <button
+            type="button"
+            className="cta-pill mx-dj-init-error__retry"
+            data-testid="dj-init-retry"
+            onClick={retryInit}
+          >
+            Повторить
+          </button>
         </div>
       </Screen>
     )
