@@ -23,10 +23,29 @@ const DEVICES = [
   { name: '440', width: 440, height: 956 },
 ]
 
+// steps — действия по порядку: { tap: testId } или { type: testId, text }.
+// Демо-режим нужен сборке с VITE_LOCAL_PREVIEW=true (см. job pr-screenshots в ci.yml).
 const SCREENS = [
   { id: 'today', label: 'Сегодня', url: '/?demo=1&tab=today' },
-  { id: 'daily-thought', label: 'Мысль дня', url: '/?demo=1&tab=today', tap: 'today-quote-card' },
-  { id: 'my-thoughts', label: 'Мои мысли', url: '/?demo=1&tab=today', tap: 'today-thoughts' },
+  {
+    id: 'daily-thought',
+    label: 'Мысль дня',
+    url: '/?demo=1&tab=today',
+    steps: [{ tap: 'today-quote-card' }],
+  },
+  {
+    // Ссылка «Мои мысли» появляется только при хотя бы одной записанной мысли.
+    id: 'my-thoughts',
+    label: 'Мои мысли',
+    url: '/?demo=1&tab=today',
+    steps: [
+      { tap: 'today-quote-card' },
+      { tap: 'daily-thought-write' },
+      { type: 'daily-thought-input-field', text: 'Один спокойный шаг за раз.' },
+      { tap: 'daily-thought-input-round' },
+      { tap: 'daily-thought-my-thoughts-link' },
+    ],
+  },
   {
     id: 'rituals-list',
     label: 'Ритуалы список',
@@ -41,24 +60,23 @@ const SCREENS = [
     id: 'ritual-own',
     label: 'Свой ритуал',
     url: '/?demo=1&tab=practices&action=rituals_list',
-    tap: 'practice-new-pill',
-    tap2: 'practice-own-pill',
+    steps: [{ tap: 'practice-new-pill' }, { tap: 'practice-own-pill' }],
   },
   { id: 'profile', label: 'Профиль', url: '/?demo=1&tab=profile' },
-  { id: 'progress', label: 'Прогресс', url: '/?demo=1&tab=progress' },
+  { id: 'progress', label: 'Прогресс', url: '/?demo=1&tab=trends' },
   { id: 'library', label: 'Библиотека', url: '/?demo=1&tab=library' },
   {
+    // «Путь героя» живёт в «Библиотеке»; демо-ссылка action=hero_journey.
     id: 'hero-map',
     label: 'Путь героя карта',
-    url: '/?demo=1&tab=progress',
-    tap: 'progress-hero-journey',
+    url: '/?demo=1&tab=library&action=hero_journey',
+    steps: [{ wait: 'hero-journey-map' }],
   },
   {
     id: 'hero-step',
     label: 'Путь героя шаг',
-    url: '/?demo=1&tab=progress',
-    tap: 'progress-hero-journey',
-    tap2: 'hero-step-0',
+    url: '/?demo=1&tab=library&action=hero_journey',
+    steps: [{ tap: 'hero-continue' }, { wait: 'hero-step-start' }],
   },
 ]
 
@@ -90,18 +108,15 @@ async function run() {
         await page.goto(`${BASE_URL}${screen.url}`, { waitUntil: 'networkidle', timeout: 30_000 })
         await page.waitForTimeout(800)
 
-        if (screen.tap) {
-          const el = page.getByTestId(screen.tap)
+        for (const step of screen.steps || []) {
+          const el = page.getByTestId(step.tap || step.type || step.wait)
           await el.waitFor({ state: 'visible', timeout: 10_000 })
-          await el.click()
-          await page.waitForTimeout(800)
-        }
-
-        if (screen.tap2) {
-          const el2 = page.getByTestId(screen.tap2)
-          await el2.waitFor({ state: 'visible', timeout: 10_000 })
-          await el2.click()
-          await page.waitForTimeout(800)
+          if (step.tap) await el.click()
+          if (step.type) {
+            await el.click()
+            await page.keyboard.type(step.text)
+          }
+          await page.waitForTimeout(step.wait ? 0 : 800)
         }
 
         const filename = `${screen.id}-${device.name}.png`

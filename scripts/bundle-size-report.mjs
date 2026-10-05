@@ -55,6 +55,15 @@ if (!currentDir) {
 }
 
 const currentChunks = collectChunks(currentDir)
+
+// Пустая сборка PR — это сбой подготовки, а не «все чанки удалены».
+if (currentChunks.length === 0) {
+  console.log('## 📦 Размеры чанков сборки')
+  console.log('')
+  console.log(`⚠️ В сборке PR нет JS/CSS-чанков (\`${currentDir}/assets\`). Отчёт не построен.`)
+  process.exit(0)
+}
+
 const baseChunks = baseDir ? collectChunks(baseDir) : []
 const baseMap = new Map(baseChunks.map(c => [c.name.replace(/-[A-Za-z0-9_-]+\.(js|css)$/, ''), c]))
 const currentMap = new Map(currentChunks.map(c => [c.name.replace(/-[A-Za-z0-9_-]+\.(js|css)$/, ''), c]))
