@@ -484,14 +484,14 @@ jobs:
       - name: Build PR branch
         run: npm run build
 
+      # Сборку PR уносим из рабочей папки: checkout main её не трогает.
       - name: Save PR dist
         run: |
-          mv dist dist-pr
+          mv dist "$RUNNER_TEMP/dist-pr"
 
       - name: Checkout main
         run: |
           git checkout origin/main -- .
-          git clean -fdx -- dist-pr
 
       - name: Install dependencies (main)
         run: npm ci
@@ -500,7 +500,7 @@ jobs:
         run: npm run build
 
       - name: Generate bundle size report
-        run: node scripts/bundle-size-report.mjs dist-pr dist > bundle-report.md
+        run: node scripts/bundle-size-report.mjs "$RUNNER_TEMP/dist-pr" dist > bundle-report.md
 
       - name: Post bundle size comment
         uses: actions/github-script@v7
@@ -594,8 +594,9 @@ jobs:
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
+      # Демо-режим (?demo=1) в собранной версии работает только с этим флагом.
       - name: Build preview
-        run: npm run build
+        run: VITE_LOCAL_PREVIEW=true npm run build
 
       - name: Start preview server
         run: npx vite preview --host 127.0.0.1 --port 4173 &
