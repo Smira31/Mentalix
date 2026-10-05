@@ -17,17 +17,20 @@ const markdown = (value) => '# Test fixture\n\n```json\n' + JSON.stringify(value
 
 function run(
   t,
-  { text = markdown(canonical), required = 'true', absent = false, missingFile = false } = {}
+  {
+    text = markdown(canonical),
+    required = 'true',
+    absent = false,
+    missingFile = false,
+    client = "export const health = () => request('/health')\n",
+  } = {}
 ) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mentalix-contract-'))
   t.after(() => fs.rmSync(dir, { recursive: true, force: true }))
   fs.mkdirSync(path.join(dir, 'tests/unit'), { recursive: true })
   fs.mkdirSync(path.join(dir, 'src/lib'), { recursive: true })
   fs.copyFileSync(target, path.join(dir, 'tests/unit/api-contract.test.mjs'))
-  fs.writeFileSync(
-    path.join(dir, 'src/lib/api.js'),
-    "export const health = () => request('/health')\n"
-  )
+  fs.writeFileSync(path.join(dir, 'src/lib/api.js'), client)
   const env = { ...process.env }
   delete env.CONTRACT_FILE
   delete env.CONTRACT_REQUIRED
@@ -95,4 +98,38 @@ test('endpoint mismatch is not weakened', (t) => {
     endpoints: [{ method: 'POST', path: '/api/health', response_schema: { type: 'object' } }],
   }
   assert.notEqual(run(t, { text: markdown(fixture) }).status, 0)
+})
+
+test('path-like strings outside request()/withQuery() are not counted as API calls', (t) => {
+  // Те же конструкции, что в src/lib/api.js давали ложные записи: список в .includes,
+  // сравнение пути и регулярное выражение с '/g, '.
+  const client = [
+    'async function request(path, options = {}) {',
+    "  if (['/auth/email/verify', '/auth/guest', '/auth/guest/merge'].includes(path)) {}",
+    "  if (path === '/daimon/chat') notifyActivity()",
+    "  const safe = String(path).replace(/\\/\\d+/g, '/:id')",
+    '}',
+    'export const api = {',
+    "  health: () => request('/health'),",
+    "  list: userId => request(withQuery('/items', { user_id: userId })),",
+    '  update: id => request(`/items/${id}`, { method: \'PATCH\' }),',
+    '  reorder: () =>',
+    '    request(',
+    "      '/items/reorder',",
+    "      { method: 'POST' }",
+    '    ),',
+    '}',
+    '',
+  ].join('\n')
+  const fixture = {
+    endpoints: [
+      { method: 'GET', path: '/api/health', response_schema: { type: 'object' } },
+      { method: 'GET', path: '/api/items', response_schema: { type: 'object' } },
+      { method: 'PATCH', path: '/api/items/{param}', response_schema: { type: 'object' } },
+      { method: 'POST', path: '/api/items/reorder', response_schema: { type: 'object' } },
+    ],
+  }
+  const result = run(t, { text: markdown(fixture), client })
+  assert.equal(result.status, 0, result.stdout)
+  assert.match(result.stdout, /# pass 2/)
 })

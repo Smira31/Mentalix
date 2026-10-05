@@ -19,7 +19,7 @@ concurrency:
 
 env:
   NODE_VERSION: 22.22.1
-  BACKEND_SHA: 7fa1cc88d90935fada35bb2b5f6477979cb2cd31
+  BACKEND_SHA: 193b5ab178f1a74ffc4c591bb469c92215dc9121
 
 jobs:
   change-scope:
