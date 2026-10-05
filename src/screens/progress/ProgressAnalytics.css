@@ -962,7 +962,7 @@
   display: flex;
   align-items: center;
   width: 100%;
-  height: 42px;
+  height: var(--bottom-nav-collapsed-size, 50px);
   padding: 0 20px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 999px;
@@ -1016,15 +1016,15 @@
 }
 
 .mx-progress-analytics__bottom-spacer {
-  /* Пилюля (42) + панель вкладок (53) + 16 = 111px.
+  /* Пилюля (50) + панель вкладок (53) + 16 = 119px.
      Высота через CSS, не инлайн: не зависит от React state. */
-  height: 111px;
+  height: 119px;
 }
 
 /* Свёрнутая навигация: пилюля в одну линию с круглой кнопкой — отступ 42 + 50 + 16 = 108px.
    Управляется классом mx-nav-collapsed на <html> (ставит BottomNavigation), без setState. */
 html.mx-nav-collapsed .mx-progress-analytics__bottom-spacer {
-  height: 108px;
+  height: 116px;
 }
 
 /* Свёрнутая навигация: пилюля остаётся видимой — встаёт в один ряд с круглой кнопкой.
