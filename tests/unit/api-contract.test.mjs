@@ -28,20 +28,29 @@ function readContract() {
   assert.ok(Array.isArray(contract?.endpoints), 'API-контракт должен содержать массив endpoints')
   return contract
 }
-const source = fs.readFileSync(new URL('../../src/lib/api.js', import.meta.url), 'utf8')
 
 const normalize = path => path.replace(/\$\{[^}]+\}/g, '{param}')
-const used = new Set()
-const pathPattern = /[`'\"](\/[^`'\"]+)[`'\"]/g
-for (const match of source.matchAll(pathPattern)) {
-  const raw = match[1]
-  if (raw === '/api' || raw.startsWith('/api/')) continue
-  const path = normalize(raw)
-  const nextRequest = source.indexOf('request(', match.index + match[0].length)
-  const snippet = source.slice(match.index + match[0].length, nextRequest < 0 ? match.index + 260 : nextRequest)
-  const method = snippet.match(/method:\s*['\"](GET|POST|PUT|PATCH|DELETE)/)?.[1] ?? 'GET'
-  used.add(`${method} /api${path}`)
+
+// Учитываем только пути, переданные первым аргументом в request(...) или withQuery(...).
+// Строки вроде '/auth/guest' в списках, сравнениях и регулярных выражениях — не вызовы API.
+const callPattern = /\b(?:request|withQuery)\(\s*([`'"])(\/[^`'"]*)\1/g
+
+function collectFrontendCalls(source) {
+  const used = new Set()
+  for (const match of source.matchAll(callPattern)) {
+    const raw = match[2]
+    if (raw === '/api' || raw.startsWith('/api/')) continue
+    const end = match.index + match[0].length
+    const nextRequest = source.indexOf('request(', end)
+    const snippet = source.slice(end, nextRequest < 0 ? end + 260 : nextRequest)
+    const method = snippet.match(/method:\s*['"](GET|POST|PUT|PATCH|DELETE)/)?.[1] ?? 'GET'
+    used.add(`${method} /api${normalize(raw)}`)
+  }
+  return used
 }
+
+const source = fs.readFileSync(new URL('../../src/lib/api.js', import.meta.url), 'utf8')
+const used = collectFrontendCalls(source)
 
 test('frontend API calls match the canonical backend contract', { skip: contractSkip }, () => {
   const contract = readContract()
