@@ -7,8 +7,18 @@ import { platform } from '../../platform'
 import { api } from '../../lib/api'
 
 const MONTHS_RU = [
-  'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
-  'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря',
+  'января',
+  'февраля',
+  'марта',
+  'апреля',
+  'мая',
+  'июня',
+  'июля',
+  'августа',
+  'сентября',
+  'октября',
+  'ноября',
+  'декабря',
 ]
 
 function parseDate(dateStr) {
@@ -37,20 +47,29 @@ export default function DailyJournalEntries({ userId, onBack }) {
   const [view, setView] = useState('list')
   const [entries, setEntries] = useState([])
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
+  const [retryKey, setRetryKey] = useState(0)
   const [loadingMore, setLoadingMore] = useState(false)
+  const [loadMoreError, setLoadMoreError] = useState(false)
   const [hasMore, setHasMore] = useState(true)
   const [selectedEntry, setSelectedEntry] = useState(null)
   const [entryLoading, setEntryLoading] = useState(false)
+  const [entryError, setEntryError] = useState('')
   const sentinelRef = useRef(null)
 
-  const loadEntries = useCallback(async (before) => {
-    const res = await api.dailyJournal.entries(userId, { limit: 30, before })
-    return res
-  }, [userId])
+  const loadEntries = useCallback(
+    async before => {
+      const res = await api.dailyJournal.entries(userId, { limit: 30, before })
+      return res
+    },
+    [userId]
+  )
 
   useEffect(() => {
     let cancelled = false
     async function init() {
+      setLoadError(false)
+      setLoading(true)
       try {
         const res = await loadEntries()
         if (cancelled) return
@@ -58,17 +77,21 @@ export default function DailyJournalEntries({ userId, onBack }) {
         setHasMore((res.items || []).length >= 30)
       } catch (err) {
         console.error('[dailyJournal] entries load failed', err)
+        if (!cancelled) setLoadError(true)
       } finally {
         if (!cancelled) setLoading(false)
       }
     }
     init()
-    return () => { cancelled = true }
-  }, [loadEntries])
+    return () => {
+      cancelled = true
+    }
+  }, [loadEntries, retryKey])
 
   const loadMore = useCallback(async () => {
     if (loadingMore || !hasMore || entries.length === 0) return
     setLoadingMore(true)
+    setLoadMoreError(false)
     try {
       const lastDate = entries[entries.length - 1].date
       const res = await loadEntries(lastDate)
@@ -76,6 +99,7 @@ export default function DailyJournalEntries({ userId, onBack }) {
       setHasMore((res.items || []).length >= 30)
     } catch (err) {
       console.error('[dailyJournal] entries load more failed', err)
+      setLoadMoreError(true)
     } finally {
       setLoadingMore(false)
     }
@@ -99,13 +123,20 @@ export default function DailyJournalEntries({ userId, onBack }) {
   function openEntry(entry) {
     platform.haptic('light')
     setSelectedEntry(entry)
+    setEntryError('')
     setView('entry')
     // Fetch full entry if needed (list item may be truncated)
     if (entry.id != null) {
       setEntryLoading(true)
-      api.dailyJournal.getEntry(entry.id, userId)
-        .then(full => { setSelectedEntry(full) })
-        .catch(err => console.error('[dailyJournal] getEntry failed', err))
+      api.dailyJournal
+        .getEntry(entry.id, userId)
+        .then(full => {
+          setSelectedEntry(full)
+        })
+        .catch(err => {
+          console.error('[dailyJournal] getEntry failed', err)
+          setEntryError('Не удалось загрузить полную запись. Показан краткий вариант.')
+        })
         .finally(() => setEntryLoading(false))
     }
   }
@@ -142,6 +173,12 @@ export default function DailyJournalEntries({ userId, onBack }) {
               <p className="mx-dj-entry-view__text">{e.prompt_answer || ''}</p>
             </div>
           )}
+          {entryLoading && <p className="mx-dj-entry-view__loading">Загрузка записи…</p>}
+          {entryError && (
+            <p role="alert" className="mx-dj-entry-view__error">
+              {entryError}
+            </p>
+          )}
         </div>
       </Screen>
     )
@@ -152,15 +189,28 @@ export default function DailyJournalEntries({ userId, onBack }) {
     <Screen onBack={handleBack} scroll>
       <div className="mx-dj-entries" data-testid="dj-entries">
         <CapsLabel className="mx-dj-entries__label">МОИ ЗАПИСИ</CapsLabel>
-        {loading && (
-          <div className="mx-dj-entries__loading">Загрузка…</div>
+        {loading && <div className="mx-dj-entries__loading">Загрузка…</div>}
+        {!loading && loadError && (
+          <div className="mx-dj-entries__error" role="alert" data-testid="dj-entries-load-error">
+            <p className="mx-dj-entries__error-text">
+              Не удалось загрузить записи. Проверь соединение и попробуй ещё раз.
+            </p>
+            <button
+              type="button"
+              className="mx-dj-entries__error-retry"
+              data-testid="dj-entries-load-retry"
+              onClick={() => setRetryKey(k => k + 1)}
+            >
+              Повторить
+            </button>
+          </div>
         )}
-        {!loading && entries.length === 0 && (
+        {!loading && !loadError && entries.length === 0 && (
           <div className="mx-dj-entries__empty" data-testid="dj-entries-empty">
             Здесь будут твои страницы. Первая — сегодня.
           </div>
         )}
-        {!loading && entries.length > 0 && (
+        {!loading && !loadError && entries.length > 0 && (
           <div className="mx-dj-entries__list">
             {entries.map(entry => (
               <button
@@ -171,15 +221,11 @@ export default function DailyJournalEntries({ userId, onBack }) {
                 onClick={() => openEntry(entry)}
               >
                 <div className="mx-dj-entries__item-header">
-                  <span className="mx-dj-entries__item-date">
-                    {formatRussianDate(entry.date)}
-                  </span>
+                  <span className="mx-dj-entries__item-date">{formatRussianDate(entry.date)}</span>
                   <span className="mx-dj-entries__item-day">день {entry.day_number}</span>
                 </div>
                 {firstLines(entry.stream_text, 2) && (
-                  <p className="mx-dj-entries__item-stream">
-                    {firstLines(entry.stream_text, 2)}
-                  </p>
+                  <p className="mx-dj-entries__item-stream">{firstLines(entry.stream_text, 2)}</p>
                 )}
                 {entry.prompt_text && (
                   <p className="mx-dj-entries__item-question">{entry.prompt_text}</p>
@@ -189,6 +235,22 @@ export default function DailyJournalEntries({ userId, onBack }) {
             {hasMore && (
               <div ref={sentinelRef} className="mx-dj-entries__sentinel">
                 {loadingMore && '…'}
+              </div>
+            )}
+            {loadMoreError && (
+              <div
+                className="mx-dj-entries__load-more-error"
+                role="alert"
+                data-testid="dj-entries-load-more-error"
+              >
+                <p>Не удалось загрузить ещё записи.</p>
+                <button
+                  type="button"
+                  data-testid="dj-entries-load-more-retry"
+                  onClick={() => loadMore()}
+                >
+                  Повторить
+                </button>
               </div>
             )}
           </div>
