@@ -3,8 +3,8 @@
 /* Override global .mx-type-page letter-spacing for Progress screens (ШРИФТ) */
 .mx-progress-redesign {
   letter-spacing: 0;
-  padding-left: 15px;
-  padding-right: 15px;
+  padding-left: var(--mx-screen-x);
+  padding-right: var(--mx-screen-x);
 }
 
 .mx-progress-segment-bar {
@@ -929,7 +929,7 @@
 /* ── Нижняя плавающая пилюля периода (§5.5) ── */
 .mx-progress-bottom-pill-wrapper {
   position: fixed;
-  bottom: calc(var(--app-safe-bottom, 0px) + var(--bottom-nav-offset, 8px) + var(--bottom-nav-height, 53px) + 8px);
+  bottom: calc(var(--app-safe-bottom, 0px) + var(--bottom-nav-offset, 8px) + var(--bottom-nav-height, 53px) + 4px);
   left: 18px;
   right: 18px;
   z-index: 20;
@@ -953,7 +953,7 @@
 
 /* Свернутая навигация: пилюля в одну линию с круглой кнопкой слева */
 .mx-progress-bottom-pill-wrapper--collapsed {
-  bottom: calc(var(--app-safe-bottom, 0px) + 19px);
+  bottom: calc(var(--app-safe-bottom, 0px) + var(--bottom-nav-offset, 0px));
   left: 75px;
   right: 25px;
 }
@@ -962,7 +962,7 @@
   display: flex;
   align-items: center;
   width: 100%;
-  height: 42px;
+  height: var(--bottom-nav-collapsed-size, 50px);
   padding: 0 20px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 999px;
@@ -1016,23 +1016,35 @@
 }
 
 .mx-progress-analytics__bottom-spacer {
-  /* Пилюля (42) + панель вкладок (53) + 16 = 111px.
+  /* Пилюля (50) + панель вкладок (53) + 16 = 119px.
      Высота через CSS, не инлайн: не зависит от React state. */
-  height: 111px;
+  height: 119px;
 }
 
 /* Свёрнутая навигация: пилюля в одну линию с круглой кнопкой — отступ 42 + 50 + 16 = 108px.
    Управляется классом mx-nav-collapsed на <html> (ставит BottomNavigation), без setState. */
 html.mx-nav-collapsed .mx-progress-analytics__bottom-spacer {
-  height: 108px;
+  height: 116px;
 }
 
-/* Свёрнутая навигация: пилюля остаётся видимой — сдвигается вверх к круглой кнопке.
-   Раньше пилюля скрывалась при свёрнутой навигации; теперь она всегда видна (§5.5 п.4). */
+/* Свёрнутая навигация: пилюля остаётся видимой — встаёт в один ряд с круглой кнопкой.
+   Раньше пилюля скрывалась при свёрнутой навигации; теперь она всегда видна (§5.5 п.4).
+   Bottom совпадает с bottom круглой кнопки (var(--bottom-nav-offset)), чтобы они
+   стояли на одной базовой линии. */
 html.mx-nav-collapsed .mx-progress-bottom-pill-wrapper {
-  bottom: calc(var(--app-safe-bottom, 0px) + 19px);
+  bottom: calc(var(--app-safe-bottom, 0px) + var(--bottom-nav-offset, 0px));
   left: 75px;
   right: 25px;
+}
+
+/* Demo-рамка: навигация стоит на bottom:0 (игнорирует --app-safe-bottom),
+   поэтому пилюля тоже должна считать от 0, иначе повисает на 34px выше тачбара. */
+[data-mentalix-demo-frame='true'] .mx-progress-bottom-pill-wrapper {
+  bottom: calc(var(--bottom-nav-offset, 0px) + var(--bottom-nav-height, 54px) + 4px);
+}
+
+html.mx-nav-collapsed [data-mentalix-demo-frame='true'] .mx-progress-bottom-pill-wrapper {
+  bottom: var(--bottom-nav-offset, 0px);
 }
 
 /* ── Полный календарь настроения ── */
