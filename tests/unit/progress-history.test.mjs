@@ -106,6 +106,30 @@ test('buildEntriesByDay: пустые данные → пустой массив
   assert.deepEqual(buildEntriesByDay(null, null, null, null), [])
 })
 
+test('buildEntriesByDay: утренний чек-ин читает время из created_at', () => {
+  const days = buildEntriesByDay(
+    [{ date: '2026-09-25', mood: 4, note: 'Утро', created_at: '2026-09-25T08:30:00Z' }],
+    [],
+    [],
+    []
+  )
+  assert.equal(days.length, 1)
+  assert.equal(days[0].entries.length, 1)
+  assert.equal(days[0].entries[0].type, ENTRY_TYPES.MORNING)
+  assert.equal(days[0].entries[0].time, '08:30')
+})
+
+test('buildEntriesByDay: утренний чек-ин без created_at — время пустое', () => {
+  const days = buildEntriesByDay(
+    [{ date: '2026-09-25', mood: 4, note: 'Утро' }],
+    [],
+    [],
+    []
+  )
+  assert.equal(days.length, 1)
+  assert.equal(days[0].entries[0].time, '')
+})
+
 test('buildEntriesByDay: чек-ин без review_completed_at не создаёт вечернюю запись', () => {
   const days = buildEntriesByDay(
     [{ date: '2026-09-25', mood: 4, note: 'Утро' }],
@@ -163,10 +187,27 @@ test('formatDayLabel: год добавляется только если не �
 
 // ── Вспомогательные функции ──
 
-test('extractTime: извлекает HH:MM из ISO datetime', () => {
-  assert.equal(extractTime('2026-09-25T20:46:00Z'), '20:46')
-  assert.equal(extractTime('2026-09-25T08:30:00+03:00'), '08:30')
-  assert.equal(extractTime('2026-09-25'), '')
+function localHHMM(iso) {
+  const d = new Date(iso)
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+}
+
+test('extractTime: T+Z → локальное время пользователя', () => {
+  const input = '2026-10-04T05:12:00Z'
+  assert.equal(extractTime(input), localHHMM(input))
+})
+
+test('extractTime: T+offset → локальное время пользователя', () => {
+  const input = '2026-09-25T08:30:00+03:00'
+  assert.equal(extractTime(input), localHHMM(input))
+})
+
+test('extractTime: пробел без пояса → HH:MM как есть', () => {
+  assert.equal(extractTime('2026-10-04 08:12:00'), '08:12')
+})
+
+test('extractTime: только дата → пустая строка', () => {
+  assert.equal(extractTime('2026-10-04'), '')
   assert.equal(extractTime(''), '')
   assert.equal(extractTime(null), '')
 })
@@ -174,14 +215,14 @@ test('extractTime: извлекает HH:MM из ISO datetime', () => {
 test('entryListName: правильные названия для строки списка', () => {
   assert.equal(entryListName(ENTRY_TYPES.MORNING), 'Утренний чек-ин')
   assert.equal(entryListName(ENTRY_TYPES.EVENING), 'Вечерний разбор')
-  assert.equal(entryListName(ENTRY_TYPES.MOOD), 'Настроение')
+  assert.equal(entryListName(ENTRY_TYPES.MOOD), 'Отметка настроения')
   assert.equal(entryListName(ENTRY_TYPES.JOURNAL), 'Дневник')
 })
 
 test('entryScreenTitle: заголовки экрана записи строчными с точкой', () => {
   assert.equal(entryScreenTitle(ENTRY_TYPES.MORNING), 'утро.')
   assert.equal(entryScreenTitle(ENTRY_TYPES.EVENING), 'вечер.')
-  assert.equal(entryScreenTitle(ENTRY_TYPES.MOOD), 'настроение.')
+  assert.equal(entryScreenTitle(ENTRY_TYPES.MOOD), 'отметка настроения.')
   assert.equal(entryScreenTitle(ENTRY_TYPES.JOURNAL), 'дневник.')
 })
 
