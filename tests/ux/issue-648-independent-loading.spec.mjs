@@ -107,7 +107,8 @@ test('Analytics keeps the mood check-in neighbor visible and interactive when an
   try {
     await page.goto('/?tab=trends')
     await expect(page.getByRole('heading', { name: 'аналитика.' })).toBeVisible()
-    await expect(page.getByText('Как ты себя чувствуешь?')).toBeVisible()
+    await expect(page.getByText('Как ты сейчас?')).toBeVisible()
+    await expect(page.getByTestId('progress-mood-option-1')).toBeEnabled()
     await expect(page.getByRole('button', { name: 'Повторить' }).first()).toBeEnabled()
     await expect(page.getByRole('alert').filter({ hasText: 'Статистика временно недоступна.' })).toBeVisible()
   } finally {
