@@ -953,7 +953,7 @@
 
 /* Свернутая навигация: пилюля в одну линию с круглой кнопкой слева */
 .mx-progress-bottom-pill-wrapper--collapsed {
-  bottom: calc(var(--app-safe-bottom, 0px) + 19px);
+  bottom: calc(var(--app-safe-bottom, 0px) + var(--bottom-nav-offset, 0px));
   left: 75px;
   right: 25px;
 }
@@ -1027,10 +1027,12 @@ html.mx-nav-collapsed .mx-progress-analytics__bottom-spacer {
   height: 108px;
 }
 
-/* Свёрнутая навигация: пилюля остаётся видимой — сдвигается вверх к круглой кнопке.
-   Раньше пилюля скрывалась при свёрнутой навигации; теперь она всегда видна (§5.5 п.4). */
+/* Свёрнутая навигация: пилюля остаётся видимой — встаёт в один ряд с круглой кнопкой.
+   Раньше пилюля скрывалась при свёрнутой навигации; теперь она всегда видна (§5.5 п.4).
+   Bottom совпадает с bottom круглой кнопки (var(--bottom-nav-offset)), чтобы они
+   стояли на одной базовой линии. */
 html.mx-nav-collapsed .mx-progress-bottom-pill-wrapper {
-  bottom: calc(var(--app-safe-bottom, 0px) + 19px);
+  bottom: calc(var(--app-safe-bottom, 0px) + var(--bottom-nav-offset, 0px));
   left: 75px;
   right: 25px;
 }

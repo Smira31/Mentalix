@@ -29,7 +29,7 @@ import {
   periodName,
 } from './progress/progressAnalyticsPeriods'
 import { ProgressGlassMenu, ProgressGlassMenuItem } from '../components/ProgressGlassMenu'
-import { Eye } from 'lucide-react'
+import { Eye, SlidersHorizontal } from 'lucide-react'
 
 const CALENDAR_WEEKDAYS = ['П', 'В', 'С', 'Ч', 'П', 'С', 'В']
 
@@ -1197,7 +1197,7 @@ export default function Analytics({
             data-testid="progress-customize-pill"
             onClick={() => setView('customize')}
           >
-            ✎ Настроить
+            <SlidersHorizontal size={16} strokeWidth={1.5} aria-hidden="true" /> Настроить
           </button>
 
           <div className="mx-progress-analytics__bottom-spacer" />
