@@ -93,21 +93,46 @@ jobs:
       - name: Check documentation drift
         run: npm run docs:drift
 
-      - name: Contract test against backend SHA (advisory)
-        continue-on-error: true
-        env:
-          CONTRACT_FILE: ${{ runner.temp }}/API_CONTRACT.md
+      - name: Статус контракта вне доверенного main (advisory)
+        if: github.event_name == 'pull_request' || github.ref != 'refs/heads/main' || github.repository != 'Smira31/Mentalix'
         run: |
-          set -euo pipefail
-          echo "Backend SHA checked: $BACKEND_SHA"
-          curl --fail --silent --show-error \
-            "https://raw.githubusercontent.com/Smira31/mentalix-bot/$BACKEND_SHA/docs/API_CONTRACT.md" \
-            --output "$CONTRACT_FILE"
-          npm run test:contract
+          echo 'CONTRACT_STATUS=SKIPPED reason=untrusted_context'
+          echo 'Контракт API: **SKIPPED** — приватный контракт не передаётся коду PR или недоверенной ветки.' >> "$GITHUB_STEP_SUMMARY"
 
       - name: Check canonical documentation drift (advisory)
         continue-on-error: true
         run: npm run docs:canonical-drift
+
+  backend-contract:
+    name: Контракт API (advisory)
+    needs: quality
+    if: >-
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
+      github.ref == 'refs/heads/main' && github.repository == 'Smira31/Mentalix'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    continue-on-error: true
+    # Before adding the secret, restrict this environment to selected branch main.
+    environment: backend-contract-read
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout доверенного SHA main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Проверить приватный контракт без публикации содержимого
+        env:
+          CONTRACT_TRUSTED_CONTEXT: 'true'
+          BACKEND_CONTRACT_TOKEN: ${{ secrets.BACKEND_CONTRACT_TOKEN }}
+        run: node scripts/check-api-contract.mjs
 
   ux:
     name: Playwright Chromium smoke
