@@ -245,34 +245,11 @@ export default function PracticeListFlow({
   // Единый обработчик системной «Назад» на уровне каркаса — исключает
   // гонку регистраций useBackButton при переходах между видами.
   useBackButton(() => {
-    // Список не загрузился: не выдаём ошибку за пустой список
-  if (loadError && !loading && items.length === 0) {
-    return (
-      <div
-        className="mx-practice-flow-screen w-full max-w-md px-[var(--mx-screen-x)] animate-fade-in"
-        role="alert"
-        data-testid="practice-load-error"
-      >
-        <div className="mx-practice-flow-screen__header">
-          <RoundBackButton onClick={onBack} className="mx-practice-flow-screen__back" />
-          <h1 className="mx-practice-flow-screen__title">{wording.title}</h1>
-        </div>
-        <p className="text-muted text-[13px] text-center">
-          Не удалось загрузить список. Проверь соединение и попробуй ещё раз.
-        </p>
-        <button
-          type="button"
-          data-testid="practice-load-retry"
-          onClick={onRetry}
-          className="mx-auto mt-5 block min-h-11 rounded-full bg-cream px-4 py-2 text-[13px] font-semibold text-emerald-deep"
-        >
-          Повторить
-        </button>
-      </div>
-    )
-  }
-
-  if (selected) {
+    if (loadError && !loading) {
+      onBack()
+      return
+    }
+    if (selected) {
       setSelected(null)
     } else if (view === 'own') {
       setView('ready')
@@ -374,6 +351,32 @@ export default function PracticeListFlow({
       onDone={() => setMilestone(null)}
     />
   ) : null
+
+  if (loadError && !loading && items.length === 0) {
+    return (
+      <div
+        className="mx-practice-flow-screen w-full max-w-md px-[var(--mx-screen-x)] animate-fade-in"
+        role="alert"
+        data-testid="practice-load-error"
+      >
+        <div className="mx-practice-flow-screen__header">
+          <RoundBackButton onClick={onBack} className="mx-practice-flow-screen__back" />
+          <h1 className="mx-practice-flow-screen__title">{wording.title}</h1>
+        </div>
+        <p className="text-muted text-[13px] text-center">
+          Не удалось загрузить список. Проверь соединение и попробуй ещё раз.
+        </p>
+        <button
+          type="button"
+          data-testid="practice-load-retry"
+          onClick={onRetry}
+          className="mx-auto mt-5 block min-h-11 rounded-full bg-cream px-4 py-2 text-[13px] font-semibold text-emerald-deep"
+        >
+          Повторить
+        </button>
+      </div>
+    )
+  }
 
   if (selected) {
     return (
