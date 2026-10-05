@@ -36,6 +36,7 @@ import AppLock from './AppLock'
 import PrivacyNotice from './PrivacyNotice'
 import WillingnessToPayTest from './WillingnessToPayTest'
 import Profile from './Profile'
+import CrisisSupportBlock from '../components/CrisisSupportBlock'
 import { ProfileBanners } from './settings/ProfileBanners'
 import {
   ProfileBody,
@@ -1170,6 +1171,8 @@ export default function Settings({
             />
           </ProfileCard>
         </ProfileGroup>
+
+        <CrisisSupportBlock />
 
         <ProfileGroup label="Помощь">
           <ProfileCard>
