@@ -192,10 +192,21 @@ export default function JournalTextarea({
     if (!autoFocus || !editorRef.current) return undefined
 
     const focusEditor = () => {
-      editorRef.current?.focus({ preventScroll: true })
+      const editor = editorRef.current
+      if (!editor) return
+      // На iOS/Telegram WebView программный focus на contentEditable
+      // не всегда открывает клавиатуру, если вызов отложен через rAF.
+      // Синхронный вызов в том же tick эффекта работает надёжнее.
+      editor.focus({ preventScroll: true })
     }
+
+    // Синхронный вызов — сразу при монтировании шага.
+    focusEditor()
+
+    // Повторные попытки: после отрисовки кадра и с задержкой,
+    // на случай если элемент ещё не был готов в момент эффекта.
     const frame = window.requestAnimationFrame(focusEditor)
-    const retry = window.setTimeout(focusEditor, 80)
+    const retry = window.setTimeout(focusEditor, 120)
     return () => {
       window.cancelAnimationFrame(frame)
       window.clearTimeout(retry)
