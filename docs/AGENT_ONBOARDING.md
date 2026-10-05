@@ -40,9 +40,10 @@ last_verified: 2026-09-11
 ### Канонический flow
 
 ```text
-Issue → one branch → one PR → exact QA candidate →
-mentalix-preview (promote exact deployment) → owner PASS →
-merge → delete branch → next Issue
+Issue → согласованные scope, проверки и роль → одна рабочая ветка →
+тест до кода → минимальный diff → проверки → owner review →
+разрешённые commit/push/PR → exact-SHA Cloudflare Owner QA →
+owner PASS → разрешённый merge → подтверждение deployment → следующая Issue
 ```
 
 Рабочим источником активных задач является связка [`docs/TASK_INDEX.md`](TASK_INDEX.md) + GitHub Issues/PR. Перед началом агент должен найти существующую Issue по теме или task ID, прочитать её описание, комментарии и связанные PR, затем проверить код текущего `main`. Если подходящая Issue уже существует, агент продолжает её, а не создаёт новую. Если задача относится к нескольким направлениям, выбирается одна ведущая Issue, а остальные связываются ссылками или чек-листом.
@@ -68,9 +69,9 @@ merge → delete branch → next Issue
 - CI green на candidate PR перед merge;
 - exact QA candidate определён (SHA + deployment в `mentalix-preview`), если для задачи требуется manual QA;
 - manual QA владельца пройден, если требуется (Telegram/iPhone / `web_app`);
-- PR merged в `main`;
-- Issue closed/completed;
-- feature branch удалена;
+- PR merged в `main` после разрешения владельца;
+- Issue closed/completed после выполнения критериев и согласованного закрытия;
+- feature branch сохранена либо удалена по разрешению владельца; удаление не является самостоятельным критерием качества результата;
 - `TASK_INDEX` указывает на правильную следующую задачу;
 - нет duplicate open PR в этой же product area.
 
