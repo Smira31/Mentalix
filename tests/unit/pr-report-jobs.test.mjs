@@ -42,6 +42,22 @@ test('bundle-size-report: обычное сравнение показывает
   assert.match(out, /\+1\.00 \(\+100\.0%\)/)
 })
 
+test('bundle-size-report: JS и CSS с одним именем и одноимённые чанки не путаются', () => {
+  const files = {
+    'UiLab-AAA.js': 'j'.repeat(3072),
+    'UiLab-BBB.css': 'c'.repeat(1024),
+    'index-CCC.js': 'i'.repeat(2048),
+    'index-DDD.js': 'k'.repeat(512),
+  }
+  const out = report(dist(files), dist(files))
+  for (const name of Object.keys(files)) {
+    const row = out.split('\n').find(line => line.startsWith(`| ${name} |`))
+    assert.ok(row, name)
+    assert.match(row, /\| ±0 \| ±0 \|$/, row)
+  }
+  assert.doesNotMatch(out, /~~/)
+})
+
 test('ci: сборка PR для отчёта о размерах не удаляется перед сборкой main', () => {
   const bundle = job('bundle-size-report')
   assert.doesNotMatch(bundle, /git clean[^\n]*dist-pr/)

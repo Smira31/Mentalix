@@ -65,8 +65,22 @@ if (currentChunks.length === 0) {
 }
 
 const baseChunks = baseDir ? collectChunks(baseDir) : []
-const baseMap = new Map(baseChunks.map(c => [c.name.replace(/-[A-Za-z0-9_-]+\.(js|css)$/, ''), c]))
-const currentMap = new Map(currentChunks.map(c => [c.name.replace(/-[A-Za-z0-9_-]+\.(js|css)$/, ''), c]))
+// Ключ сравнения — имя без хэша, но с расширением: UiLab.js и UiLab.css — разные
+// чанки. Одноимённые чанки (два index-*.js) нумеруются по размеру: index.js#2.
+function withKeys(chunks) {
+  const seen = new Map()
+  return chunks.map(c => {
+    const base = c.name.replace(/-[A-Za-z0-9_-]+\.(js|css)$/, '.$1')
+    const n = (seen.get(base) || 0) + 1
+    seen.set(base, n)
+    return { ...c, key: n === 1 ? base : `${base}#${n}` }
+  })
+}
+
+const keyedCurrent = withKeys(currentChunks)
+const keyedBase = withKeys(baseChunks)
+const baseMap = new Map(keyedBase.map(c => [c.key, c]))
+const currentMap = new Map(keyedCurrent.map(c => [c.key, c]))
 
 // Главный чанк — index-*.js
 const indexChunk = currentChunks.find(c => c.name.startsWith('index-') && c.name.endsWith('.js'))
@@ -78,18 +92,16 @@ lines.push('')
 lines.push('| Чанк | Тип | Размер | gzip | Δ размер | Δ gzip |')
 lines.push('|------|-----|-------|------|----------|--------|')
 
-for (const chunk of currentChunks) {
-  const key = chunk.name.replace(/-[A-Za-z0-9_-]+\.(js|css)$/, '')
-  const base = baseMap.get(key)
+for (const chunk of keyedCurrent) {
+  const base = baseMap.get(chunk.key)
   lines.push(
     `| ${chunk.name} | ${chunk.type} | ${fmtKb(chunk.size)} kB | ${fmtKb(chunk.gzip)} kB | ${fmtDelta(chunk.size, base?.size)} | ${fmtDelta(chunk.gzip, base?.gzip)} |`
   )
 }
 
 // Чанки, которые были в main, но исчезли
-for (const chunk of baseChunks) {
-  const key = chunk.name.replace(/-[A-Za-z0-9_-]+\.(js|css)$/, '')
-  if (!currentMap.has(key)) {
+for (const chunk of keyedBase) {
+  if (!currentMap.has(chunk.key)) {
     lines.push(
       `| ~~${chunk.name}~~ | ${chunk.type} | — | — | -${fmtKb(chunk.size)} kB | -${fmtKb(chunk.gzip)} kB |`
     )
