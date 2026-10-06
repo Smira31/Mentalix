@@ -271,7 +271,10 @@ export default function WebAuthScreen({ onAuthed }) {
         </section>
       )}
 
-      <section className="mx-web-auth-telegram-card" aria-labelledby="telegram-auth-title">
+      <section
+        className={`mx-web-auth-telegram-card${emailLoginEnabled ? '' : ' is-primary'}`}
+        aria-labelledby="telegram-auth-title"
+      >
         <h2 id="telegram-auth-title">
           {emailLoginEnabled ? 'Или через Telegram' : 'Войти через Telegram'}
         </h2>

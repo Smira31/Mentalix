@@ -28,3 +28,11 @@ test('продакшн-сборка скрывает email и знает имя 
   assert.match(prodWorkflow, /VITE_EMAIL_LOGIN_ENABLED: 'false'/)
   assert.match(prodWorkflow, /VITE_TELEGRAM_BOT_USERNAME: Mentalix_club_bot/)
 })
+
+const authCss = readFileSync(new URL('../../src/screens/WebAuthScreen.css', import.meta.url), 'utf8')
+
+// Блок Telegram скрыт стилями, пока основной вход — email; без email он должен быть виден.
+test('без email блок Telegram виден (класс is-primary снимает display: none)', () => {
+  assert.match(authScreen, /mx-web-auth-telegram-card\$\{emailLoginEnabled \? '' : ' is-primary'\}/)
+  assert.match(authCss, /\.mx-web-auth-telegram-card\.is-primary\s*\{[^}]*display:\s*flex/)
+})
