@@ -54,6 +54,12 @@ function keepFieldVisible(event) {
   window.setTimeout(() => field.scrollIntoView?.({ block: 'center', behavior: 'smooth' }), 300)
 }
 
+// Письма с кодом уходят только при своём домене в Resend. Пока домена нет,
+// продакшн-сборка выключает вход по email (VITE_EMAIL_LOGIN_ENABLED=false),
+// и основной способ входа на вебе — Telegram Login.
+const emailLoginEnabled = import.meta.env.VITE_EMAIL_LOGIN_ENABLED !== 'false'
+const botUsername = import.meta.env.VITE_TELEGRAM_BOT_USERNAME
+
 export default function WebAuthScreen({ onAuthed }) {
   const [email, setEmail] = useState('')
   const [code, setCode] = useState('')
@@ -168,94 +174,118 @@ export default function WebAuthScreen({ onAuthed }) {
       <h1 id="web-auth-title">
         <strong>Продолжай расти</strong> даже вне приложения.
       </h1>
-      <p className="mx-web-auth-lead">
-        Получай вдохновляющие письма Mentalix прямо на почту. Один раз в неделю.
-      </p>
+      {emailLoginEnabled ? (
+        <p className="mx-web-auth-lead">
+          Получай вдохновляющие письма Mentalix прямо на почту. Один раз в неделю.
+        </p>
+      ) : (
+        <p className="mx-web-auth-lead">
+          Войди через Telegram, чтобы сохранять записи и общаться с собеседником.
+        </p>
+      )}
 
-      <div className="mx-web-auth-benefits" aria-label="Что будет в письме">
-        <span>
-          короткая
-          <br />
-          <b>рефлексия</b>
-        </span>
-        <span>
-          тема
-          <br />
-          <b>на неделю</b>
-        </span>
-        <span>
-          вдумчивая
-          <br />
-          <b>цитата</b>
-        </span>
-      </div>
+      {emailLoginEnabled && (
+        <div className="mx-web-auth-benefits" aria-label="Что будет в письме">
+          <span>
+            короткая
+            <br />
+            <b>рефлексия</b>
+          </span>
+          <span>
+            тема
+            <br />
+            <b>на неделю</b>
+          </span>
+          <span>
+            вдумчивая
+            <br />
+            <b>цитата</b>
+          </span>
+        </div>
+      )}
 
-      <section className="mx-web-auth-form" aria-labelledby="email-auth-title">
-        <h2 id="email-auth-title" className="sr-only">
-          Вход по email
-        </h2>
-        {step === 'email' ? (
-          <form onSubmit={requestCode}>
-            <label className="mx-web-auth-input-wrap">
-              <span aria-hidden="true">✉</span>
-              <input
-                aria-label="Email"
-                type="email"
-                autoComplete="email"
-                value={email}
-                onFocus={keepFieldVisible}
-                onChange={event => setEmail(event.target.value)}
-                placeholder="Введи свой email"
-              />
-            </label>
-            <p className="mx-web-auth-quote">Ты становишься тем, чему отдаёшь своё внимание.</p>
-            <p className="mx-web-auth-author">— Эпиктет</p>
-            <button type="submit" disabled={busy || !emailValid} className="mx-web-auth-submit">
-              {busy ? 'Отправляю…' : 'Получить письмо'}
-            </button>
-          </form>
-        ) : (
-          <form onSubmit={verifyCode}>
-            <label className="mx-web-auth-input-wrap">
-              <span aria-hidden="true">✉</span>
-              <input
-                aria-label="Код из email"
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                value={code}
-                onFocus={keepFieldVisible}
-                onChange={event => setCode(event.target.value)}
-                placeholder="Код из письма"
-              />
-            </label>
-            <p className="mx-web-auth-quote">Ты становишься тем, чему отдаёшь своё внимание.</p>
-            <p className="mx-web-auth-author">— Эпиктет</p>
-            <button
-              type="submit"
-              disabled={busy || code.trim().length < 4}
-              className="mx-web-auth-submit"
-            >
-              {busy ? 'Проверяю…' : 'Войти'}
-            </button>
-            <button
-              type="button"
-              onClick={resendCode}
-              disabled={busy || resendLeft > 0}
-              className="mx-web-auth-change"
-              data-testid="web-auth-resend"
-            >
-              {resendLeft > 0 ? `Отправить код ещё раз (${resendLeft} с)` : 'Отправить код ещё раз'}
-            </button>
-            <button type="button" onClick={changeEmail} className="mx-web-auth-change">
-              Изменить email
-            </button>
-          </form>
-        )}
-      </section>
+      {emailLoginEnabled && (
+        <section className="mx-web-auth-form" aria-labelledby="email-auth-title">
+          <h2 id="email-auth-title" className="sr-only">
+            Вход по email
+          </h2>
+          {step === 'email' ? (
+            <form onSubmit={requestCode}>
+              <label className="mx-web-auth-input-wrap">
+                <span aria-hidden="true">✉</span>
+                <input
+                  aria-label="Email"
+                  type="email"
+                  autoComplete="email"
+                  value={email}
+                  onFocus={keepFieldVisible}
+                  onChange={event => setEmail(event.target.value)}
+                  placeholder="Введи свой email"
+                />
+              </label>
+              <p className="mx-web-auth-quote">Ты становишься тем, чему отдаёшь своё внимание.</p>
+              <p className="mx-web-auth-author">— Эпиктет</p>
+              <button type="submit" disabled={busy || !emailValid} className="mx-web-auth-submit">
+                {busy ? 'Отправляю…' : 'Получить письмо'}
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={verifyCode}>
+              <label className="mx-web-auth-input-wrap">
+                <span aria-hidden="true">✉</span>
+                <input
+                  aria-label="Код из email"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  value={code}
+                  onFocus={keepFieldVisible}
+                  onChange={event => setCode(event.target.value)}
+                  placeholder="Код из письма"
+                />
+              </label>
+              <p className="mx-web-auth-quote">Ты становишься тем, чему отдаёшь своё внимание.</p>
+              <p className="mx-web-auth-author">— Эпиктет</p>
+              <button
+                type="submit"
+                disabled={busy || code.trim().length < 4}
+                className="mx-web-auth-submit"
+              >
+                {busy ? 'Проверяю…' : 'Войти'}
+              </button>
+              <button
+                type="button"
+                onClick={resendCode}
+                disabled={busy || resendLeft > 0}
+                className="mx-web-auth-change"
+                data-testid="web-auth-resend"
+              >
+                {resendLeft > 0
+                  ? `Отправить код ещё раз (${resendLeft} с)`
+                  : 'Отправить код ещё раз'}
+              </button>
+              <button type="button" onClick={changeEmail} className="mx-web-auth-change">
+                Изменить email
+              </button>
+            </form>
+          )}
+        </section>
+      )}
 
       <section className="mx-web-auth-telegram-card" aria-labelledby="telegram-auth-title">
-        <h2 id="telegram-auth-title">Или через Telegram</h2>
+        <h2 id="telegram-auth-title">
+          {emailLoginEnabled ? 'Или через Telegram' : 'Войти через Telegram'}
+        </h2>
         <TelegramLogin onSuccess={onAuthed} onError={handleTelegramError} />
+        {!emailLoginEnabled && botUsername && (
+          <a
+            className="mx-web-auth-change"
+            href={`https://t.me/${botUsername}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Открыть Mentalix в Telegram
+          </a>
+        )}
       </section>
 
       <button
