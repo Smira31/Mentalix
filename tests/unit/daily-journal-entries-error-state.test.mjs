@@ -112,7 +112,7 @@ test('DailyJournalEntries: openEntry при ошибке getEntry показыв
   // В catch getEntry должен вызываться setEntryError
   assert.match(
     source,
-    /api\.dailyJournal\.getEntry\([\s\S]*?\.catch\([\s\S]*?setEntryError/,
+    /api\.dailyJournal\s*\.getEntry\([\s\S]*?\.catch\([\s\S]*?setEntryError/,
     'catch getEntry должен вызывать setEntryError'
   )
 })
