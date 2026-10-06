@@ -19,6 +19,10 @@ concurrency:
 
 env:
   VITE_API_BASE_URL: /api
+  # Публичное имя бота для Telegram Login (не секрет); домен привязан в BotFather.
+  VITE_TELEGRAM_BOT_USERNAME: Mentalix_club_bot
+  # Нет своего домена в Resend — письма с кодом не уходят, вход по email скрыт.
+  VITE_EMAIL_LOGIN_ENABLED: 'false'
 
 jobs:
   build-and-deploy:
