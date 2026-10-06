@@ -30,11 +30,7 @@ import { useBackButton } from '../../platform/telegram.hooks'
 import { readJournalHistory } from '../../lib/journalHistory'
 import { moodPracticeDate } from '../../lib/moodPracticeLogic'
 import { getDailyThoughtForDate } from '../../data/dailyThoughts'
-import {
-  THOUGHT_KIND,
-  loadDailyItems,
-  readCachedDailyItems,
-} from '../../lib/dailyThoughtStorage'
+import { THOUGHT_KIND, loadDailyItems, readCachedDailyItems } from '../../lib/dailyThoughtStorage'
 import { MENTOR_DRAFT_KEY, MENTOR_PERSONA_KEY, MENTOR_SAFETY_KEY } from '../mentalix/personas'
 import MarkdownText from '../../components/MarkdownText'
 import {
@@ -542,9 +538,7 @@ function entryPreview(entry) {
     return (
       <div className="mx-progress-history__row-preview-text">
         <span className="mx-progress-history__thought-text">{entry.thought?.text}</span>
-        {quote?.text && (
-          <span className="mx-progress-history__thought-quote">{quote.text}</span>
-        )}
+        {quote?.text && <span className="mx-progress-history__thought-quote">{quote.text}</span>}
       </div>
     )
   }
@@ -584,9 +578,7 @@ function DayList({ days, onSelectEntry }) {
                 {entry.time && <span className="mx-progress-history__row-time">{entry.time}</span>}
               </span>
             </div>
-            {preview && (
-              <div className="mx-progress-history__row-preview">{preview}</div>
-            )}
+            {preview && <div className="mx-progress-history__row-preview">{preview}</div>}
           </button>
         )
       })}
@@ -612,8 +604,16 @@ function PeriodDetail({ label, days, onBack, onSelectEntry }) {
 const GRANULARITY_KEY = 'mx-history-granularity'
 const FILTER_KEY = 'mx-history-filter'
 
-export default function ProgressHistory({ user, onGoCheckin, onRedo, onRedoReview, reloadKey = 0 }) {
+export default function ProgressHistory({
+  user,
+  onGoCheckin,
+  onRedo,
+  onRedoReview,
+  reloadKey = 0,
+}) {
   const [days, setDays] = useState(null)
+  const [loadError, setLoadError] = useState(false)
+  const [retryKey, setRetryKey] = useState(0)
   const [selectedEntry, setSelectedEntry] = useState(null)
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState('')
@@ -714,29 +714,37 @@ export default function ProgressHistory({ user, onGoCheckin, onRedo, onRedoRevie
 
   useEffect(() => {
     if (!user) return
+    let alive = true
+    setLoadError(false)
     const moodFrom = new Date()
     moodFrom.setDate(moodFrom.getDate() - 30)
     Promise.all([
-      api.checkin.history(user.id, 30).catch(() => []),
+      api.checkin.history(user.id, 30),
       api.analytics.get(user.id, 30).catch(() => null),
-      api.moodPractices
-        .list(user.id, {
-          from: moodFrom.toISOString().slice(0, 10),
-          to: new Date().toISOString().slice(0, 10),
-        })
-        .catch(() => []),
-    ]).then(([checkins, analytics, moodPractices]) => {
-      setDays(
-        buildEntriesByDay(
-          checkins,
-          moodPractices,
-          journalEntries,
-          analytics?.daily_activity || [],
-          thoughts
+      api.moodPractices.list(user.id, {
+        from: moodFrom.toISOString().slice(0, 10),
+        to: new Date().toISOString().slice(0, 10),
+      }),
+    ])
+      .then(([checkins, analytics, moodPractices]) => {
+        if (!alive) return
+        setDays(
+          buildEntriesByDay(
+            checkins,
+            moodPractices,
+            journalEntries,
+            analytics?.daily_activity || [],
+            thoughts
+          )
         )
-      )
-    })
-  }, [user, journalEntries, thoughts, reloadKey])
+      })
+      .catch(() => {
+        if (alive) setLoadError(true)
+      })
+    return () => {
+      alive = false
+    }
+  }, [user, journalEntries, thoughts, reloadKey, retryKey])
 
   async function deleteSelectedCheckin() {
     const checkin = selectedEntry?.checkin
@@ -963,6 +971,32 @@ export default function ProgressHistory({ user, onGoCheckin, onRedo, onRedoRevie
     )
   }
 
+  /* ── Экран ошибки загрузки ── */
+  if (loadError) {
+    return (
+      <>
+        {actionButtons}
+        <div className="mx-progress-history" role="alert" data-testid="progress-history-load-error">
+          <h2 className="mx-progress-history__title">история.</h2>
+          <div className="mx-progress-history__empty">
+            <div className="mx-progress-history__empty-title">Не удалось загрузить записи</div>
+            <div className="mx-progress-history__empty-subtitle">
+              Проверь соединение и попробуй ещё раз.
+            </div>
+            <button
+              type="button"
+              className="mx-progress-history__empty-button"
+              data-testid="progress-history-load-retry"
+              onClick={() => setRetryKey(k => k + 1)}
+            >
+              Повторить
+            </button>
+          </div>
+        </div>
+      </>
+    )
+  }
+
   /* ── Лист фильтров ── */
   if (filterOpen) {
     return (
@@ -1037,9 +1071,7 @@ export default function ProgressHistory({ user, onGoCheckin, onRedo, onRedoRevie
           <div className="mx-progress-history__empty">
             {days.length === 0 ? (
               <>
-                <div className="mx-progress-history__empty-title">
-                  Здесь появятся твои записи
-                </div>
+                <div className="mx-progress-history__empty-title">Здесь появятся твои записи</div>
                 <div className="mx-progress-history__empty-subtitle">
                   Отметь, как ты, или пройди чек-ин — и здесь появится первая запись.
                 </div>
