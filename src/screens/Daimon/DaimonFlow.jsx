@@ -312,6 +312,8 @@ function BoardView({
   onNewGame,
   throwsLeft,
   paywallMessage,
+  rollError,
+  onRetryRoll,
   walking = false,
   piecePosition,
   rolling = false,
@@ -370,6 +372,13 @@ function BoardView({
               Продолжить клетку {pendingCellNum}
               {pendingCellTitle ? ` · ${pendingCellTitle}` : ''}
             </PillButton>
+          ) : rollError ? (
+            <div className="mx-daimon-board__roll-error" data-testid="daimon-roll-error">
+              <p className="mx-daimon-error__text">{rollError}</p>
+              <PillButton variant="light" onClick={onRetryRoll} testId="daimon-roll-retry">
+                Повторить
+              </PillButton>
+            </div>
           ) : (
             <PillButton
               variant="light"
@@ -464,6 +473,8 @@ function CellView({ game, board, userId, onInsight, onBackToBoard, onGuestLogin 
   const [guestForbidden, setGuestForbidden] = useState(false)
   // Пока подтягиваем разговор клетки, отправлять нечего — кнопки ждут.
   const [historyLoading, setHistoryLoading] = useState(true)
+  // Ошибка загрузки истории: показываем экран с кнопкой повтора, не начинаем заново.
+  const [historyError, setHistoryError] = useState(false)
   const chatEndRef = useRef(null)
   const insightRef = useRef(null)
   const cellInitRef = useRef(false)
@@ -488,30 +499,41 @@ function CellView({ game, board, userId, onInsight, onBackToBoard, onGuestLogin 
    * вопрос, и ответы игрока. Пустое стартовое сообщение шлём только тогда,
    * когда разговора ещё нет.
    */
+  // Загрузка истории клетки: при ошибке показываем экран с кнопкой повтора,
+  // а не молча начинаем разговор заново.
+  async function loadCellHistory() {
+    const moveId = pendingMove?.id
+    let thread = []
+    let historyFailed = false
+    if (moveId) {
+      try {
+        const res = await api.daimon.history(userId, moveId)
+        thread = (Array.isArray(res) ? res : []).filter(m => m?.content)
+      } catch {
+        historyFailed = true
+      }
+    }
+    if (historyFailed) {
+      setHistoryError(true)
+      setHistoryLoading(false)
+      return
+    }
+    setHistoryError(false)
+    if (thread.length > 0) {
+      setMessages(thread.map(m => ({ role: m.role, content: m.content })))
+      // Разговор уже дошёл до поддержки или до вопроса о выводе — возвращаем экран.
+      setCrisis(thread.some(m => m.crisis))
+      setAskInsight(thread[thread.length - 1]?.content === DAIMON_INSIGHT_PROMPT)
+    } else {
+      void sendChat('')
+    }
+    setHistoryLoading(false)
+  }
+
   useEffect(() => {
     if (cellInitRef.current) return
     cellInitRef.current = true
-    const moveId = pendingMove?.id
-    ;(async () => {
-      let thread = []
-      if (moveId) {
-        try {
-          const res = await api.daimon.history(userId, moveId)
-          thread = (Array.isArray(res) ? res : []).filter(m => m?.content)
-        } catch {
-          thread = []
-        }
-      }
-      if (thread.length > 0) {
-        setMessages(thread.map(m => ({ role: m.role, content: m.content })))
-        // Разговор уже дошёл до поддержки или до вопроса о выводе — возвращаем экран.
-        setCrisis(thread.some(m => m.crisis))
-        setAskInsight(thread[thread.length - 1]?.content === DAIMON_INSIGHT_PROMPT)
-      } else {
-        void sendChat('')
-      }
-      setHistoryLoading(false)
-    })()
+    void loadCellHistory()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Scroll to bottom on new messages
@@ -590,6 +612,15 @@ function CellView({ game, board, userId, onInsight, onBackToBoard, onGuestLogin 
         buttonLabel="Сохранить прогресс"
         testId="daimon-guest-gate"
         buttonTestId="daimon-guest-gate-button"
+      />
+    )
+
+  // Ошибка загрузки истории: не начинаем разговор заново, даём повторить.
+  if (historyError)
+    return (
+      <ErrorView
+        message="Не удалось загрузить разговор. Попробуй ещё раз."
+        onRetry={loadCellHistory}
       />
     )
 
@@ -1153,6 +1184,7 @@ export default function DaimonFlow({ userId, onClose, onGuestLogin }) {
   const [creating, setCreating] = useState(false)
   const creatingRef = useRef(false)
   const [rolling, setRolling] = useState(false)
+  const [rollError, setRollError] = useState(null)
   const [confirmNewGame, setConfirmNewGame] = useState(false)
 
   // Жёсткая защита от двойного тапа по «Бросить кубик» (state не успевает обновиться).
@@ -1319,6 +1351,7 @@ export default function DaimonFlow({ userId, onClose, onGuestLogin }) {
     if (rollingRef.current) return
     rollingRef.current = true
     setRolling(true)
+    setRollError(null)
     try {
       const from = gameState?.game?.position ?? 0
       const res = await api.daimon.roll(userId)
@@ -1367,10 +1400,10 @@ export default function DaimonFlow({ userId, onClose, onGuestLogin }) {
           setError(null)
           setStage(current.game?.pending_move_id ? 'cell' : 'board')
         } catch {
-          setError('Не удалось загрузить незакрытую клетку. Попробуй ещё раз.')
+          setRollError('Не удалось загрузить незакрытую клетку. Попробуй ещё раз.')
         }
       } else {
-        setError('Не удалось бросить кубик')
+        setRollError('Не удалось бросить кубик')
       }
     } finally {
       rollingRef.current = false
@@ -1525,6 +1558,8 @@ export default function DaimonFlow({ userId, onClose, onGuestLogin }) {
           paywallMessage={
             showPaywall ? 'Mentalix Pro' : error?.includes('На сегодня') ? error : null
           }
+          rollError={rollError}
+          onRetryRoll={handleRoll}
           walking={Boolean(walk)}
           piecePosition={walk?.current}
           rolling={rolling}
