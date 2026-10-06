@@ -151,6 +151,20 @@
 .mx-web-auth-telegram-card {
   display: none;
 }
+/* Без входа по email Telegram — основной способ входа, блок показываем. */
+.mx-web-auth-telegram-card.is-primary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  margin: 32px auto 0;
+  text-align: center;
+}
+.mx-web-auth-telegram-card.is-primary h2 {
+  margin: 0;
+  font-size: calc(18px * var(--mx-type-scale));
+  font-weight: 600;
+}
 .mx-web-auth-hint,
 .mx-web-auth-status,
 .mx-web-auth-error {
