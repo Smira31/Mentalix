@@ -14,13 +14,14 @@ import CompletionArtEvening from '../../components/CompletionArtEvening'
 import { ProfileFeatherArt } from '../../screens/settings/ProfileBannerArt'
 import { RitualsCollectionArt } from '../../components/practice-art/RitualsCollectionArt'
 import { JournalCompleteArt } from '../../components/practice-art/JournalCompleteArt'
+import { JournalHeroArt } from '../../components/practice-art/JournalHeroArt'
 
 export const illustrations = {
   recordComplete: CompletionArtEvening,
   profileSiteFeather: ProfileFeatherArt,
   // Ключи для главного экрана «Шаги» (Stoic Explore-редизайн).
   // Пока null — экран рендерится без картинки, контент поднимается вверх.
-  stepsHero: null,
+  stepsHero: JournalHeroArt,
   stepsCollectionsRituals: RitualsCollectionArt,
   stepsCollectionsAscezas: null,
   // Ключи для Журнала (отдельная практика).

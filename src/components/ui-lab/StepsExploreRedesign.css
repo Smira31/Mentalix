@@ -33,6 +33,11 @@
   width: 100%;
   height: 100%;
 }
+.mx-steps-journal__art-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
 .mx-steps-journal__body {
   display: flex;
   flex-direction: column;
