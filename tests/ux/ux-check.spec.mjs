@@ -1517,7 +1517,13 @@ test('старый флаг настроения не блокирует Сег�
   await context.close()
 })
 
-test('завершённые карточки сохраняют высоту без рисунка и линии', async ({ browser, baseURL }) => {
+/*
+ * Завершённые карточки «Сегодня» держат пропорцию 2:3 (раскладка Stoic,
+ * редизайн карточек) и показывают сову. Раньше карточка была фиксированной
+ * высоты 260 px и без рисунка; редизайн сменил контракт, поэтому проверяем
+ * новый: высота не схлопывается, утро и вечер одной высоты.
+ */
+test('завершённые карточки держат пропорцию 2:3 и сову', async ({ browser, baseURL }) => {
   const context = await browser.newContext({ baseURL, viewport: { width: 390, height: 844 }, serviceWorkers: 'block' })
   await context.addInitScript(user => {
     localStorage.clear()
@@ -1533,12 +1539,20 @@ test('завершённые карточки сохраняют высоту б
   })
   const page = await context.newPage()
   await page.goto('/')
+  const heights = []
   for (const kind of ['morning', 'evening']) {
     const card = page.getByTestId(`today-card-${kind}`)
     await expect(card).toHaveAttribute('data-state', 'done')
-    await expect(card.getByTestId('today-card-illustration')).toHaveCount(0)
-    await expect(card).toHaveCSS('height', '260px')
+    // Иллюстрация совы видна у завершённой карточки (новая раскладка).
+    await expect(card.locator('.mx-today-day-card__owl svg')).toBeVisible()
+    const box = await card.boundingBox()
+    expect(box).not.toBeNull()
+    // Пропорция 2:3 — высота завершённой карточки не схлопывается.
+    expect(box.height / box.width).toBeCloseTo(1.5, 1)
+    heights.push(box.height)
   }
+  // Утро и вечер одной высоты — карточки не «прыгают».
+  expect(Math.abs(heights[0] - heights[1])).toBeLessThanOrEqual(1)
   await context.close()
 })
 
