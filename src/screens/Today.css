@@ -2303,6 +2303,7 @@
 /* Готово: чёрный фон с тонкой серой рамкой */
 .mx-today-day-card[data-state='done'] {
   height: auto;
+  padding-bottom: 15%;
   background: #000;
   border: 1px solid #333;
 }
@@ -2363,17 +2364,17 @@
   align-items: flex-end;
 }
 
-/* Сова «старт» и «закрыто» — ~50% ширины карточки */
+/* Сова — полный bbox с декоративными элементами (лучи, солнце/месяц, земля).
+   viewBox теперь включает весь арт, поэтому CSS-ширина увеличена. */
 .mx-today-day-card__owl .mx-today-day-card__art {
-  width: 64%;
+  width: 100%;
   height: auto;
   max-height: 100%;
   flex-shrink: 0;
 }
 
-/* Сова «готово» — ~60% ширины карточки */
 .mx-today-day-card[data-state='done'] .mx-today-day-card__owl .mx-today-day-card__art {
-  width: 70%;
+  width: 100%;
 }
 
 /* Сова в закрытом состоянии — opacity 0.4 */
