@@ -1307,7 +1307,7 @@ export default function Today({
         </>
       ) : state === 'active' ? (
         <>
-          <span className="mx-today-day-card__title">
+          <span className="mx-today-day-card__title mx-type-checkin-title">
             {labelTop}
             <br />
             {labelBottom}
@@ -1319,7 +1319,7 @@ export default function Today({
         </>
       ) : (
         <>
-          <span className="mx-today-day-card__title">
+          <span className="mx-today-day-card__title mx-type-checkin-title">
             {labelTop}
             <br />
             {labelBottom}

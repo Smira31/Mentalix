@@ -12,7 +12,11 @@ test('Today keeps independent morning and review card entry points', () => {
   assert.match(today, /checkinRecap/)
   assert.doesNotMatch(today, /mx-today-day-card__pill|cardStart2x|cardStart3x/)
   assert.match(today, /cardStates\.isNight/)
-  assert.match(today, /<strong>\{titleEmphasis\}<\/strong>/)
+  // Редизайн карточек дня: заголовок рендерится через классы карточки,
+  // а не через <strong>. Две независимые точки входа сохраняются:
+  // заголовок (mx-today-day-card__title) и текст завершения (mx-today-day-card__done-text).
+  assert.match(today, /mx-today-day-card__title/)
+  assert.match(today, /mx-today-day-card__done-text/)
   assert.match(today, /data-testid=\{`today-card-start-\$\{kind\}`\}/)
   assert.doesNotMatch(today, /isPreviewDemoMode\(\)/)
 })
