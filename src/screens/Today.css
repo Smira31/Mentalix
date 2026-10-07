@@ -2364,17 +2364,14 @@
   align-items: flex-end;
 }
 
-/* Сова — полный bbox с декоративными элементами (лучи, солнце/месяц, земля).
-   viewBox теперь включает весь арт, поэтому CSS-ширина увеличена. */
+/* Сова — viewBox по видимым пикселям (без служебных контуров potrace).
+   Ширина 58% карточки, по центру, прижата к низу (preserveAspectRatio xMidYMax meet).
+   height: 100% — SVG заполняет контейнер по высоте, контент масштабируется
+   preserveAspectRatio и прижимается к низу (xMidYMax meet). */
 .mx-today-day-card__owl .mx-today-day-card__art {
-  width: 100%;
-  height: auto;
-  max-height: 100%;
+  width: 67%;
+  height: 100%;
   flex-shrink: 0;
-}
-
-.mx-today-day-card[data-state='done'] .mx-today-day-card__owl .mx-today-day-card__art {
-  width: 100%;
 }
 
 /* Сова в закрытом состоянии — opacity 0.4 */
