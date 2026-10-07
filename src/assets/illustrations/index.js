@@ -12,6 +12,7 @@
  */
 import CompletionArtEvening from '../../components/CompletionArtEvening'
 import { ProfileFeatherArt } from '../../screens/settings/ProfileBannerArt'
+import { RitualsCollectionArt } from '../../components/practice-art/RitualsCollectionArt'
 
 export const illustrations = {
   recordComplete: CompletionArtEvening,
@@ -19,7 +20,7 @@ export const illustrations = {
   // Ключи для главного экрана «Шаги» (Stoic Explore-редизайн).
   // Пока null — экран рендерится без картинки, контент поднимается вверх.
   stepsHero: null,
-  stepsCollectionsRituals: null,
+  stepsCollectionsRituals: RitualsCollectionArt,
   stepsCollectionsAscezas: null,
   // Ключи для Журнала (отдельная практика).
   // Пока null — фолбэк на иконку книги (SemanticGlyph 'journal').
