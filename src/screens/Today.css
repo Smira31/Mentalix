@@ -2361,6 +2361,11 @@
   overflow: hidden;
 }
 
+/* В завершённом состоянии сова центрирована по вертикали */
+.mx-today-day-card[data-state='done'] .mx-today-day-card__owl {
+  align-items: center;
+}
+
 /* Сова «старт» — ~48% ширины карточки */
 .mx-today-day-card__owl .mx-today-day-card__art {
   width: 48%;
@@ -2369,9 +2374,9 @@
   flex-shrink: 0;
 }
 
-/* Сова «готово» — ~60% ширины карточки */
+/* Сова «готово» — ~85% ширины карточки, заполняет пустое пространство */
 .mx-today-day-card[data-state='done'] .mx-today-day-card__owl .mx-today-day-card__art {
-  width: 60%;
+  width: 85%;
 }
 
 /* Сова в закрытом состоянии — opacity 0.4 */
