@@ -1288,8 +1288,7 @@ export default function Today({
     const content =
       state === 'done' ? (
         <>
-          <div className="mx-today-day-card__glyph">{cardArt}</div>
-          <span className="mx-today-day-card__done">
+          <span className="mx-today-day-card__done-text">
             {isMorning ? (
               <>
                 Утро
@@ -1304,31 +1303,36 @@ export default function Today({
               </>
             )}
           </span>
+          <div className="mx-today-day-card__owl">{cardArt}</div>
         </>
       ) : state === 'active' ? (
         <>
-          <div className="mx-today-day-card__glyph">{cardArt}</div>
           <span className="mx-today-day-card__label">
             {labelTop}
             <br />
             {labelBottom}
           </span>
-          <span className="mx-today-day-card__title mx-type-checkin-title">
+          <span className="mx-today-day-card__title">
             {titleStart}
             <strong>{titleEmphasis}</strong>
           </span>
+          <div className="mx-today-day-card__owl">{cardArt}</div>
           <span className="mx-today-day-card__start" data-testid={`today-card-start-${kind}`}>
             Начать
           </span>
         </>
       ) : (
         <>
-          <div className="mx-today-day-card__glyph">{cardArt}</div>
           <span className="mx-today-day-card__label">
             {labelTop}
             <br />
             {labelBottom}
           </span>
+          <span className="mx-today-day-card__title">
+            {titleStart}
+            <strong>{titleEmphasis}</strong>
+          </span>
+          <div className="mx-today-day-card__owl mx-today-day-card__owl--locked">{cardArt}</div>
           <span className="mx-today-day-card__locked">{lockedText}</span>
         </>
       )
