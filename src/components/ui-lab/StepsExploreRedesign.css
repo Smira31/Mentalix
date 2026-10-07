@@ -180,6 +180,11 @@
   width: 80%;
   height: 80%;
 }
+
+.mx-steps-rail-card__icon svg[class*="mx-catalog-"] {
+  width: 60%;
+  height: 60%;
+}
 .mx-steps-rail-card__badge {
   position: absolute;
   top: 64px;

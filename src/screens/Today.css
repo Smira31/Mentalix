@@ -1304,6 +1304,12 @@
   stroke-width: 1.5;
 }
 
+/* Трассированные значки каталога в кружке — 60% диаметра, #EDEDED, по центру */
+.mx-pinned-practice-glyph__traced {
+  width: 60%;
+  height: 60%;
+}
+
 /* Подсказка серии по §5.3. Слой не меняет PWA/Safari layout. */
 .mx-today-series-tooltip {
   position: relative;

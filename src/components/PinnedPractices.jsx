@@ -15,6 +15,15 @@ import {
 import './PinnedPractices.css'
 
 import CardSystemGlyph, { practiceGlyphKind } from './CardSystemGlyph'
+import { CatalogPuzzleArt } from './practice-art/CatalogPuzzleArt'
+import { CatalogCandleArt } from './practice-art/CatalogCandleArt'
+import { CatalogDieArt } from './practice-art/CatalogDieArt'
+
+const TRACED_GLYPHS = {
+  rituals: CatalogPuzzleArt,
+  ascezas: CatalogCandleArt,
+  daimon: CatalogDieArt,
+}
 import { api } from '../lib/api'
 import { buildPracticeViewModels, PRACTICE_RAIL_KEYS } from '../lib/practiceCatalogRegistry'
 import { getFullscreenPortalTarget, useFullscreenSurface } from '../lib/fullscreenSurface'
@@ -98,6 +107,14 @@ function Sheet({
 }
 
 function PracticeGlyph({ practice }) {
+  const TracedIcon = practice?.key ? TRACED_GLYPHS[practice.key] : null
+  if (TracedIcon) {
+    return (
+      <span className="mx-pinned-practice-glyph" aria-hidden="true">
+        <TracedIcon className="mx-pinned-practice-glyph__traced" />
+      </span>
+    )
+  }
   return (
     <span className="mx-pinned-practice-glyph" aria-hidden="true">
       <CardSystemGlyph kind={practiceGlyphKind(practice)} />

@@ -459,6 +459,11 @@
   height: 21px;
 }
 
+.mx-library-row__icon .mx-pinned-practice-glyph__traced {
+  width: 23px;
+  height: 23px;
+}
+
 /* Название 16pt 600, светло-серое */
 .mx-library-row__name {
   flex: 1;

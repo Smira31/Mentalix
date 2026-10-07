@@ -15,7 +15,9 @@ import { ProfileFeatherArt } from '../../screens/settings/ProfileBannerArt'
 import { RitualsCollectionArt } from '../../components/practice-art/RitualsCollectionArt'
 import { AscezasCollectionArt } from '../../components/practice-art/AscezasCollectionArt'
 import { JournalCompleteArt } from '../../components/practice-art/JournalCompleteArt'
+import { JournalIntroArt } from '../../components/practice-art/JournalIntroArt'
 import { JournalHeroArt } from '../../components/practice-art/JournalHeroArt'
+import { CatalogDieArt } from '../../components/practice-art/CatalogDieArt'
 
 export const illustrations = {
   recordComplete: CompletionArtEvening,
@@ -28,7 +30,7 @@ export const illustrations = {
   // Ключи для Журнала (отдельная практика).
   // Пока null — фолбэк на иконку книги (SemanticGlyph 'journal').
   // Владелец заменит слоты на свои иллюстрации.
-  journalIntro: null,
+  journalIntro: JournalIntroArt,
   journalComplete: JournalCompleteArt,
   // Ключи для игры «Даймон».
   // daimonCard — карточка в каталоге «Шаги» и рейле «Новое и рекомендованное».
@@ -36,7 +38,7 @@ export const illustrations = {
   // daimonIntro — пустой слот на входе в игру (текст поднят к середине экрана).
   // daimonHowTo — пустой слот сверху экрана «Как играть».
   // daimonFinish — пустой слот сверху экрана финала игры.
-  daimonCard: null,
+  daimonCard: CatalogDieArt,
   daimonIntro: null,
   daimonHowTo: null,
   daimonFinish: null,
