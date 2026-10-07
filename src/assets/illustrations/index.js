@@ -18,6 +18,9 @@ import { JournalCompleteArt } from '../../components/practice-art/JournalComplet
 import { JournalIntroArt } from '../../components/practice-art/JournalIntroArt'
 import { JournalHeroArt } from '../../components/practice-art/JournalHeroArt'
 import { CatalogDieArt } from '../../components/practice-art/CatalogDieArt'
+import { DaimonIntroArt } from '../../components/daimon-art/DaimonIntroArt'
+import { DaimonHowToArt } from '../../components/daimon-art/DaimonHowToArt'
+import { DaimonFinishArt } from '../../components/daimon-art/DaimonFinishArt'
 
 export const illustrations = {
   recordComplete: CompletionArtEvening,
@@ -35,11 +38,11 @@ export const illustrations = {
   // Ключи для игры «Даймон».
   // daimonCard — карточка в каталоге «Шаги» и рейле «Новое и рекомендованное».
   //   Пока null — фолбэк на крупную залитую форму (SemanticGlyph 'daimon').
-  // daimonIntro — пустой слот на входе в игру (текст поднят к середине экрана).
-  // daimonHowTo — пустой слот сверху экрана «Как играть».
-  // daimonFinish — пустой слот сверху экрана финала игры.
+  // daimonIntro — иллюстрация на входе в игру (фигура с огнём и камнями).
+  // daimonHowTo — иллюстрация сверху экрана «Как играть» (змея, кубик, стрела).
+  // daimonFinish — иллюстрация сверху экрана финала игры (фигура у сердца).
   daimonCard: CatalogDieArt,
-  daimonIntro: null,
-  daimonHowTo: null,
-  daimonFinish: null,
+  daimonIntro: DaimonIntroArt,
+  daimonHowTo: DaimonHowToArt,
+  daimonFinish: DaimonFinishArt,
 }
