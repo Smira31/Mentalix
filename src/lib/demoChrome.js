@@ -25,7 +25,17 @@ export function demoTelegramPillState(hasBackAction) {
  * Telegram (как на устройстве, где экран видит системную кнопку).
  */
 export function isDemoEmulationActive(root = typeof document !== 'undefined' ? document : null) {
-  return Boolean(root?.querySelector?.("[data-mentalix-demo-frame='true'][data-demo-mode='true']"))
+  /*
+   * Демо-эмуляция Telegram активна, пока нарисована её шапка (data-demo-chrome
+   * на shell) — независимо от рамки телефона: при ?frame=0 шапка с пилюлей
+   * «‹ Назад» остаётся, а фрейма нет. Старый признак рамки оставляем вторым
+   * селектором, чтобы поведение внутри рамки не менялось.
+   */
+  return Boolean(
+    root?.querySelector?.(
+      "[data-demo-chrome='true'], [data-mentalix-demo-frame='true'][data-demo-mode='true']"
+    )
+  )
 }
 
 export function shouldRenderDemoTelegramChrome({

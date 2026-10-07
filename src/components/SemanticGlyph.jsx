@@ -11,22 +11,30 @@ const includesAny = (value, fragments) => {
 }
 
 export function semanticKindForRitual(title) {
-  if (includesAny(title, ['молит', 'духовн'])) return 'prayer'
+  if (includesAny(title, ['молит', 'духовн'])) return 'praying-hands'
   if (includesAny(title, ['душ', 'холодн', 'облив'])) return 'shower'
-  if (includesAny(title, ['зачем', 'проснул', 'смысл', 'намерен'])) return 'purpose'
-  if (includesAny(title, ['вод', 'стакан'])) return 'water'
-  if (includesAny(title, ['дых', 'вдох'])) return 'breath'
+  if (includesAny(title, ['зачем', 'проснул', 'смысл', 'намерен'])) return 'star'
+  if (includesAny(title, ['вод', 'стакан'])) return 'glass'
+  if (includesAny(title, ['дых', 'вдох'])) return 'waves'
   if (includesAny(title, ['медит', 'осознан'])) return 'meditation'
-  if (includesAny(title, ['дневник', 'чтен', 'книг', 'журнал'])) return 'journal'
-  if (includesAny(title, ['фокус', 'концентрац', 'вниман'])) return 'focus'
-  return 'ritual'
+  if (includesAny(title, ['дневник', 'журнал'])) return 'journal'
+  if (includesAny(title, ['чтен', 'книг'])) return 'book'
+  if (includesAny(title, ['фокус', 'концентрац', 'вниман'])) return 'target'
+  if (includesAny(title, ['прогул', 'гуля', 'ходьб'])) return 'sneaker'
+  return 'hourglass'
 }
 
 export function semanticKindForAsceza(asceza) {
   const text = `${asceza?.name || ''} ${asceza?.category || ''}`
-  if (includesAny(text, ['алкогол', 'вино', 'пиво'])) return 'alcohol'
-  if (includesAny(text, ['курен', 'сигар', 'никотин'])) return 'smoking'
-  return 'asceza'
+  if (includesAny(text, ['алкогол', 'вино', 'пиво'])) return 'wine-glass'
+  if (includesAny(text, ['курен', 'сигар', 'никотин'])) return 'cigarette'
+  if (includesAny(text, ['сахар', 'сладк'])) return 'candy'
+  if (includesAny(text, ['соц', 'лент', 'reel', 'инстаграм'])) return 'phone-play'
+  if (includesAny(text, ['телефон', 'смартфон'])) return 'phone-slash'
+  if (includesAny(text, ['кофе', 'коф'])) return 'coffee'
+  if (includesAny(text, ['жалоб', 'жал', 'ныть'])) return 'speech-slash'
+  if (includesAny(text, ['покуп', 'список', 'шопинг'])) return 'shopping-bag'
+  return 'shield'
 }
 
 export function semanticKindForArticle(article) {

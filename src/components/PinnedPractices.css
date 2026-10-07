@@ -145,6 +145,20 @@
   width: 45px;
   height: 45px;
 }
+/* Трассированные значки в сетке — размер по видимой массе */
+.mx-pinned-practices__grid .mx-pinned-practice-glyph__traced {
+  width: 58%;
+  height: 58%;
+}
+.mx-pinned-practices__grid .mx-traced--rituals,
+.mx-pinned-practices__grid .mx-traced--daimon {
+  width: 58%;
+  height: 58%;
+}
+.mx-pinned-practices__grid .mx-traced--ascezas {
+  width: 100%;
+  height: 68%;
+}
 .mx-pinned-practices__grid .mx-pinned-practice-card__title {
   font-size: calc(17px * var(--mx-type-scale));
   font-weight: 600;
@@ -457,6 +471,22 @@
 .mx-library-row__icon .mx-pinned-practice-glyph svg {
   width: 21px;
   height: 21px;
+}
+
+.mx-library-row__icon .mx-pinned-practice-glyph__traced {
+  width: 23px;
+  height: 23px;
+}
+/* Пазл и кубик — 58% диаметра (39px → ~23px) */
+.mx-library-row__icon .mx-traced--rituals,
+.mx-library-row__icon .mx-traced--daimon {
+  width: 23px;
+  height: 23px;
+}
+/* Свеча — 68% по высоте (39px → ~27px высота) */
+.mx-library-row__icon .mx-traced--ascezas {
+  width: 39px;
+  height: 27px;
 }
 
 /* Название 16pt 600, светло-серое */

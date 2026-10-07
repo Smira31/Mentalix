@@ -1,0 +1,19 @@
+// Auto-generated from traced SVG: icon-target.svg
+// fill rgb(var(--c-text)), fill-rule evenodd
+
+export function IconTarget({ className }) {
+  return (
+    <svg
+      className={className || "mx-icon-target-art"}
+      viewBox="0 0 265 259"
+      preserveAspectRatio="xMidYMid meet"
+      aria-hidden="true"
+      focusable="false"
+    >
+            <path d="M116.9 10.5c-54 8.5-95.3 47.3-105.6 99.2-2.2 11.3-2.1 30.7.1 42.6 4.5 23.9 17.1 46.5 35.7 64.2 16.7 15.9 38.4 27.2 61.1 31.9 10.2 2.1 33.8 2.1 44.8 0 39.8-7.5 73.9-33.3 91-69 9.2-19.1 12.5-34.7 11.7-55.9-.8-23.4-6.2-40.5-19.2-60.5-24.9-38.7-73-59.7-119.6-52.5M156.5 47c51.1 13.2 77.5 66.6 57 115.2-9.8 23.2-28.7 40.2-54.5 48.9-8.2 2.8-11.2 3.3-22.7 3.7-11.2.4-14.7.1-22.6-1.7-40.1-9.3-68.9-47.3-66.4-87.6 2.5-38.9 32.6-72.3 72.2-80.1 9.5-1.8 26.7-1.1 37 1.6" fill="currentColor" fillRule="evenodd" />
+      <path d="M120.3 78.9c-12.9 3.7-25.4 14-31.6 26-15.8 30.4.5 66.8 33.4 74.6 12.2 2.8 23.1 1.6 34.6-4 17.1-8.4 28.3-24.9 29.9-43.9.8-9-2.1-21.6-6.9-29.4-4.2-7-14.7-16.9-21.1-19.8-12.2-5.5-26.5-6.9-38.3-3.5" fill="currentColor" fillRule="evenodd" />
+    </svg>
+  )
+}
+
+export default IconTarget

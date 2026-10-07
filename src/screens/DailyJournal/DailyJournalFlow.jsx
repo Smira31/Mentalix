@@ -968,7 +968,7 @@ export default function DailyJournalFlow({ userId, onClose, reflectionPrompt = n
             evening
             art={
               CompleteArt ? (
-                <CompleteArt />
+                <CompleteArt className="mx-completion__art mx-completion__art--journal" />
               ) : (
                 <div className="mx-dj-complete__art">
                   <SemanticGlyph kind="journal" animated={false} />

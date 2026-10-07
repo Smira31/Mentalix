@@ -5,18 +5,23 @@
   display: flex;
   flex-direction: column;
   flex: 1;
+  min-height: 0;
 }
 
-/* Пустой слот под иллюстрацию: поднимает блок текста примерно к середине экрана. */
+/* Слот под иллюстрацию: занимает свободную высоту и сжимается, чтобы
+   текст и кнопка «Начать игру» всегда помещались без прокрутки. */
 .mx-daimon-intro__art {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: clamp(200px, 42dvh, 360px);
+  flex: 1 1 0;
+  min-height: 0;
 }
 
 .mx-daimon-intro__art svg {
   width: 100%;
+  height: 100%;
+  max-width: 100%;
   max-height: 100%;
 }
 
@@ -40,7 +45,6 @@
   line-height: 1.45;
   color: rgb(var(--c-faint));
   margin-top: var(--mx-space-5);
-  max-width: 34ch;
 }
 
 .mx-daimon-intro__actions {
@@ -103,21 +107,25 @@
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
+  overflow: hidden;
   padding-top: var(--mx-space-2);
   padding-bottom: var(--mx-space-6);
 }
 
-/* Слот иллюстрации сверху — тот же ритм, что у слота входа (mx-daimon-intro__art). */
+/* Слот иллюстрации сверху — тот же ритм, что у слота входа (mx-daimon-intro__art):
+   тянется по свободной высоте и сжимается, чтобы кнопка «Понятно» была видна. */
 .mx-daimon-help__art {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: clamp(200px, 42dvh, 360px);
+  flex: 1 1 0;
+  min-height: 0;
 }
 
 .mx-daimon-help__art svg {
   width: 100%;
+  height: 100%;
+  max-width: 100%;
   max-height: 100%;
 }
 
@@ -930,17 +938,29 @@
   display: flex;
   flex-direction: column;
   flex: 1;
+  min-height: 0;
 }
 
+/* Финальный арт шире, чем арт входа (viewBox 1198.6×1668.6 против
+   1057.08×1783.08), поэтому по ширине фигура рисовалась крупнее. Ограничиваем
+   высоту слота той же свободной высотой, что остаётся у входа после шапки и
+   текстового блока — заголовок, три шага, подпись «Змеи тянут вниз…» и кнопка
+   занимают 266 px при телефонной ширине. Фигура получает тот же масштаб, что на
+   входе, а заголовок не уезжает вниз: остаток свободной высоты забирает
+   нижний блок действий (margin-top: auto). */
 .mx-daimon-finish__art {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: clamp(160px, 26dvh, 240px);
+  flex: 1 1 0;
+  min-height: 0;
+  max-height: calc(100% - 266px);
 }
 
 .mx-daimon-finish__art svg {
   width: 100%;
+  height: 100%;
+  max-width: 100%;
   max-height: 100%;
 }
 

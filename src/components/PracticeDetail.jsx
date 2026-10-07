@@ -5,7 +5,8 @@ import { useEdgeSwipeBack } from '../lib/gestures/useEdgeSwipeBack'
 import { useBackButton } from '../platform/telegram.hooks'
 import { RoundBackButton } from './NestedScreenHeader'
 import DeleteConfirmationDialog from './DeleteConfirmationDialog'
-import SemanticGlyph, { semanticKindForAsceza, semanticKindForRitual } from './SemanticGlyph'
+import PracticeIcon from './PracticeIcon'
+import { semanticKindForAsceza, semanticKindForRitual } from './SemanticGlyph'
 import { isRitualDoneToday } from '../lib/practiceDoneToday'
 import {
   PRACTICE_WORDING,
@@ -212,7 +213,7 @@ export default function PracticeDetail({
         <span className="mx-practice-detail__hero-ring" />
         <span className="mx-practice-detail__hero-ring" />
         <span className="mx-practice-detail__hero-icon">
-          <SemanticGlyph kind={glyphKind} className="w-full h-full" />
+          <PracticeIcon glyph={glyphKind} className="w-full h-full" />
         </span>
       </div>
 

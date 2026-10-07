@@ -17,6 +17,10 @@ import './Today.css'
 import BackButton from '../components/BackButton'
 import cardEveningDone2x from '../assets/today/card-evening-done@2x.webp'
 import cardEveningDone3x from '../assets/today/card-evening-done@3x.webp'
+import { OwlMorningStartArt } from '../components/practice-art/OwlMorningStartArt'
+import { OwlMorningDoneArt } from '../components/practice-art/OwlMorningDoneArt'
+import { OwlEveningStartArt } from '../components/practice-art/OwlEveningStartArt'
+import { OwlEveningDoneArt } from '../components/practice-art/OwlEveningDoneArt'
 
 import EmptyState from '../components/EmptyState'
 import StarterSetPicker from '../components/StarterSetPicker'
@@ -1273,10 +1277,18 @@ export default function Today({
     const completedText = isMorning ? 'Утро отмечено.' : 'День закрыт.'
     const lockedText = isMorning ? 'Утро прошло' : `Откроется в ${reviewTime}`
 
+    const cardArt = isMorning
+      ? state === 'done'
+        ? <OwlMorningDoneArt className="mx-today-day-card__art" viewBox="249 155 627 737" />
+        : <OwlMorningStartArt className="mx-today-day-card__art" viewBox="249 155 627 737" />
+      : state === 'done'
+        ? <OwlEveningDoneArt className="mx-today-day-card__art" viewBox="249 133 598 759" />
+        : <OwlEveningStartArt className="mx-today-day-card__art" viewBox="249 133 598 759" />
+
     const content =
       state === 'done' ? (
         <>
-          <span className="mx-today-day-card__done">
+          <span className="mx-today-day-card__done-text">
             {isMorning ? (
               <>
                 Утро
@@ -1291,29 +1303,28 @@ export default function Today({
               </>
             )}
           </span>
+          <div className="mx-today-day-card__owl">{cardArt}</div>
         </>
       ) : state === 'active' ? (
         <>
-          <span className="mx-today-day-card__label">
+          <span className="mx-today-day-card__title mx-type-checkin-title">
             {labelTop}
             <br />
             {labelBottom}
           </span>
-          <span className="mx-today-day-card__title mx-type-checkin-title">
-            {titleStart}
-            <strong>{titleEmphasis}</strong>
-          </span>
+          <div className="mx-today-day-card__owl">{cardArt}</div>
           <span className="mx-today-day-card__start" data-testid={`today-card-start-${kind}`}>
             Начать
           </span>
         </>
       ) : (
         <>
-          <span className="mx-today-day-card__label">
+          <span className="mx-today-day-card__title mx-type-checkin-title">
             {labelTop}
             <br />
             {labelBottom}
           </span>
+          <div className="mx-today-day-card__owl mx-today-day-card__owl--locked">{cardArt}</div>
           <span className="mx-today-day-card__locked">{lockedText}</span>
         </>
       )

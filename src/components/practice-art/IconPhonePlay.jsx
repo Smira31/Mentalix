@@ -1,0 +1,18 @@
+// Auto-generated from traced SVG: icon-phone-play.svg
+// fill rgb(var(--c-text)), fill-rule evenodd
+
+export function IconPhonePlay({ className }) {
+  return (
+    <svg
+      className={className || "mx-icon-phone-play-art"}
+      viewBox="0 0 316 225"
+      preserveAspectRatio="xMidYMid meet"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="M35.3 9.9c-7.3 2.5-12.6 6.5-16.7 12.4-6.8 9.9-6.7 8.8-6.4 93.3l.3 75.9 2.7 5.7c3.5 7.4 10.3 14.1 17.6 17l5.7 2.3 115 .3c71.8.2 117.4-.1 121.3-.7 12.2-1.9 21.1-8.4 26.1-19l2.6-5.6.3-74.9c.2-48.3-.1-76.8-.8-80.4-2-11.1-8.3-19.7-18.2-24.9l-5.3-2.8L160 8.3C47.1 8.1 40.2 8.1 35.3 9.9m99 51.2c10.5 5.5 75.7 44.6 77.5 46.5 2.7 3.1 2.9 8.9.4 12-.9 1.2-9.1 6.5-18.2 11.7s-26.6 15.4-39 22.6c-22.9 13.4-26.2 14.6-31.1 12.1-4.8-2.6-4.9-3.8-4.9-52.7.1-36.1.4-46.3 1.4-48.2 2.5-4.5 9.1-6.4 13.9-4" fill="currentColor" fillRule="evenodd" />
+    </svg>
+  )
+}
+
+export default IconPhonePlay

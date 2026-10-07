@@ -19,7 +19,7 @@
 
 .mx-practice-sign__grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 8px;
 }
 
@@ -45,9 +45,17 @@
   border-color: rgb(var(--c-gold));
 }
 
-.mx-practice-sign__cell svg {
-  width: 34px;
-  height: 34px;
+.mx-practice-sign__cell {
+  color: rgb(var(--c-text));
+}
+
+.mx-practice-sign__cell.is-active {
+  color: rgb(var(--c-text));
+}
+
+.mx-practice-sign__cell .mx-practice-icon {
+  width: 60%;
+  height: 60%;
 }
 
 @media (prefers-reduced-motion: reduce) {

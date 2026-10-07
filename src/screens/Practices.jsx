@@ -13,6 +13,7 @@ import { previewPracticeAction } from '../lib/demoMode'
 
 import PracticeCatalogV2 from '../components/PracticeCatalogV2'
 import SemanticGlyph from '../components/SemanticGlyph'
+import { CatalogDieSmallArt } from '../components/practice-art/CatalogDieSmallArt'
 
 import './PracticeFlow.css'
 
@@ -110,6 +111,8 @@ input.mx-steps-search-input:focus-visible {
   flex-shrink: 0;
 }
 .mx-steps-search-result span .mx-semantic-glyph { width: 80%; height: 80%; }
+/* Даймон в результатах поиска — трассированный кубик каталога, как в «Твоих практиках» */
+.mx-steps-search-result span .mx-steps-search-result__die { width: 58%; height: 58%; }
 .mx-steps-search-result strong { font-size: 16px; font-weight: 500; }
 .mx-steps-search-empty { padding: 40px 16px; text-align: center; color: #666; font-size: 14px; }
 .mx-steps-search-start {
@@ -254,7 +257,11 @@ function PracticeSearchOverlay({
             }}
           >
             <span aria-hidden="true">
-              <SemanticGlyph kind={p.kind || 'journal'} animated={false} />
+              {p.kind === 'daimon' ? (
+                <CatalogDieSmallArt className="mx-steps-search-result__die" />
+              ) : (
+                <SemanticGlyph kind={p.kind || 'journal'} animated={false} />
+              )}
             </span>
             <strong>{p.title}</strong>
           </button>
