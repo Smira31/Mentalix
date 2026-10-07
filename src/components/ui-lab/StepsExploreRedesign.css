@@ -38,6 +38,29 @@
   width: auto;
   max-width: 100%;
 }
+
+/* Журнал «Шагов»: рисунок занимает ~60% высоты карточки (трассировка
+   обрезана по границам рисунка, поэтому размер svg = размер видимого
+   рисунка). Колонка рисунка считается от той же высоты, а не от 33% ширины,
+   иначе на 393 рисунок ограничивался бы шириной колонки (~114px).
+   Отдельный модификатор: курсы Библиотеки (.mx-library-hero) не затронуты. */
+.mx-steps-journal--hero {
+  --mx-steps-journal-h: 235px;
+  --mx-steps-journal-art: calc(var(--mx-steps-journal-h) * 0.6);
+  grid-template-columns: calc(var(--mx-steps-journal-art) + 12px) minmax(0, 1fr);
+  height: var(--mx-steps-journal-h);
+}
+.mx-steps-journal--hero .mx-steps-journal__art-img {
+  height: var(--mx-steps-journal-art);
+  width: auto;
+  max-width: 100%;
+}
+.mx-steps-journal--hero .mx-steps-journal__body {
+  padding: 20px 14px 20px 4px;
+}
+.mx-steps-journal--hero .mx-steps-journal__cta {
+  min-width: min(180px, 100%);
+}
 .mx-steps-journal__body {
   display: flex;
   flex-direction: column;
@@ -376,13 +399,16 @@
 
 .mx-steps-collection__art {
   position: absolute;
-  bottom: 0;
+  /* Отступ снизу ~8% высоты карточки, чтобы колени не касались края.
+     Верх рисунка остаётся на прежнем месте (60% − 8% = 52% высоты),
+     поэтому он не заезжает на описание. */
+  bottom: 8%;
   left: 0;
   right: 0;
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  height: 60%;
+  height: 52%;
   overflow: hidden;
   pointer-events: none;
 }

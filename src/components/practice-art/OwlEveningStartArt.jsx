@@ -7,11 +7,14 @@
 // Прозрачный фон — тёмная поверхность просвечивает в прорезях.
 // viewBox 0 0 1024.000000 1024.000000, координаты перенесены через transform.
 
-export function OwlEveningStartArt({ className }) {
+// viewBox — необязательный: по умолчанию весь холст 1024×1024 (завершение
+// чек-ина). Карточки «Сегодня» передают обрезанный по сове viewBox, чтобы
+// CSS-ширина равнялась ширине видимой совы, а не холста с пустыми полями.
+export function OwlEveningStartArt({ className, viewBox = '0 0 1024.000000 1024.000000' }) {
   return (
     <svg
       className={className || "mx-owl-art mx-owl-art--evening-start"}
-      viewBox="0 0 1024.000000 1024.000000"
+      viewBox={viewBox}
       preserveAspectRatio="xMidYMax meet"
       aria-hidden="true"
       focusable="false"

@@ -56,7 +56,7 @@ export default function StepsJournalBanner({
       </button>
     )
   return (
-    <article className="mx-steps-journal">
+    <article className="mx-steps-journal mx-steps-journal--hero">
       <div className="mx-steps-journal__art" aria-hidden="true">
         {art}
       </div>
