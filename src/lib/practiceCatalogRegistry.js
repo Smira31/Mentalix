@@ -43,7 +43,7 @@ export const PRACTICE_COLLECTIONS = [
   {
     key: 'rituals',
     title: 'Ритуалы',
-    description: 'Твои повторяемые опоры и сегодняшний прогресс.',
+    description: 'Твои опоры и прогресс на сегодня',
     kind: 'ritual',
     source: 'rituals',
   },

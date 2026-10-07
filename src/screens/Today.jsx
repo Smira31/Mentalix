@@ -1307,14 +1307,10 @@ export default function Today({
         </>
       ) : state === 'active' ? (
         <>
-          <span className="mx-today-day-card__label">
+          <span className="mx-today-day-card__title">
             {labelTop}
             <br />
             {labelBottom}
-          </span>
-          <span className="mx-today-day-card__title">
-            {titleStart}
-            <strong>{titleEmphasis}</strong>
           </span>
           <div className="mx-today-day-card__owl">{cardArt}</div>
           <span className="mx-today-day-card__start" data-testid={`today-card-start-${kind}`}>
@@ -1323,14 +1319,10 @@ export default function Today({
         </>
       ) : (
         <>
-          <span className="mx-today-day-card__label">
+          <span className="mx-today-day-card__title">
             {labelTop}
             <br />
             {labelBottom}
-          </span>
-          <span className="mx-today-day-card__title">
-            {titleStart}
-            <strong>{titleEmphasis}</strong>
           </span>
           <div className="mx-today-day-card__owl mx-today-day-card__owl--locked">{cardArt}</div>
           <span className="mx-today-day-card__locked">{lockedText}</span>
