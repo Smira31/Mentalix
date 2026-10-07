@@ -1279,11 +1279,11 @@ export default function Today({
 
     const cardArt = isMorning
       ? state === 'done'
-        ? <OwlMorningDoneArt className="mx-today-day-card__art" />
-        : <OwlMorningStartArt className="mx-today-day-card__art" />
+        ? <OwlMorningDoneArt className="mx-today-day-card__art" viewBox="249 155 627 737" />
+        : <OwlMorningStartArt className="mx-today-day-card__art" viewBox="249 155 627 737" />
       : state === 'done'
-        ? <OwlEveningDoneArt className="mx-today-day-card__art" />
-        : <OwlEveningStartArt className="mx-today-day-card__art" />
+        ? <OwlEveningDoneArt className="mx-today-day-card__art" viewBox="249 133 598 759" />
+        : <OwlEveningStartArt className="mx-today-day-card__art" viewBox="249 133 598 759" />
 
     const content =
       state === 'done' ? (
