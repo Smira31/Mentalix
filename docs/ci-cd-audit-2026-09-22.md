@@ -55,3 +55,19 @@ Production действительно настроен на Firebase Hosting: wo
 ## Decision requested from owner
 
 Подтвердить отдельным решением судьбу четырёх manually disabled workflows и необходимость сохранения Cloudflare Owner QA. В этом PR их статус и содержимое не меняются; изменения ограничены разделением functional/visual Playwright gate и добавлением аудита.
+
+## Дополнение 2026-10-07: required-check не стартовал из-за сбоя GitHub Actions
+
+Наблюдение на PR #1026 (ветка `rituals-card-illustration`, коммит `8079f64d`, прогон `Mentalix CI baseline` #2418 от 07.10.2026 14:59 UTC): 12 из 13 job'ов завершились успешно, а job `required-check` («Функциональная проверка проекта») не был создан вовсе — чек-рана с этим именем у коммита нет. Прогон помечен `failure`, и в разделе Annotations есть запись уровня workflow: `Mentalix CI baseline — Internal server error. Correlation ID: 94d2e243-3709-4091-a1d0-b7bbaab2a2a4`.
+
+Следствие: required context `Функциональная проверка проекта` ни разу не опубликовал статус, поэтому PR бессрочно висит в `Expected — Waiting for status to be reported` и merge заблокирован. Упавший прогон этот статус уже не опубликует: чек-ран создаётся в момент старта job.
+
+Как отличить этот сбой от регрессии в репозитории:
+
+1. Сравнить job'ы прогона (в UI или через `GET /repos/{owner}/{repo}/actions/runs/{id}/jobs`) с job'ами из `.github/workflows/ci.yml`: отсутствующий job плюс error-аннотация уровня workflow = сбой инфраструктуры GitHub, а не кода.
+2. Проверить предыдущий прогон на той же ветке: если там тот же job отработал (например, `required-check` успешен на `f34c329b`), workflow и содержимое ветки корректны и менять YAML не нужно.
+3. В графе прогона незапустившийся job показан серым кругом без длительности — он не «queued», а не создан.
+
+Восстановление: **Re-run all jobs** для этого прогона (Actions → нужный run → Re-run all jobs) либо любой новый push в ветку (`synchronize`) — новый прогон создаст job заново и опубликует required status. В самом workflow, branch protection и настройках репозитория менять ничего не требуется.
+
+Это тот же симптом, что в инциденте 2026-08-28 (описан в `CHANGES.md` и `TASKS.md`), но причина другая: тогда job `required-check` отсутствовал в `ci.yml` и лечился возвратом job'а, здесь YAML корректен, а job не создала инфраструктура GitHub.
