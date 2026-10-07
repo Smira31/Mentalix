@@ -13,6 +13,7 @@
 import CompletionArtEvening from '../../components/CompletionArtEvening'
 import { ProfileFeatherArt } from '../../screens/settings/ProfileBannerArt'
 import { RitualsCollectionArt } from '../../components/practice-art/RitualsCollectionArt'
+import { AscezasCollectionArt } from '../../components/practice-art/AscezasCollectionArt'
 import { JournalCompleteArt } from '../../components/practice-art/JournalCompleteArt'
 import { JournalHeroArt } from '../../components/practice-art/JournalHeroArt'
 
@@ -23,7 +24,7 @@ export const illustrations = {
   // Пока null — экран рендерится без картинки, контент поднимается вверх.
   stepsHero: JournalHeroArt,
   stepsCollectionsRituals: RitualsCollectionArt,
-  stepsCollectionsAscezas: null,
+  stepsCollectionsAscezas: AscezasCollectionArt,
   // Ключи для Журнала (отдельная практика).
   // Пока null — фолбэк на иконку книги (SemanticGlyph 'journal').
   // Владелец заменит слоты на свои иллюстрации.

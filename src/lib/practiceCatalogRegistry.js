@@ -50,7 +50,7 @@ export const PRACTICE_COLLECTIONS = [
   {
     key: 'ascezas',
     title: 'Аскезы',
-    description: 'Выбранные ограничения и их текущий статус.',
+    description: 'Твои ограничения и их статус',
     kind: 'asceza',
     source: 'ascezas',
   },
