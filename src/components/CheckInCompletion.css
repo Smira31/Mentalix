@@ -40,7 +40,7 @@
   width: auto;
   height: 180px;
   max-height: 100%;
-  aspect-ratio: 100 / 120;
+  aspect-ratio: 1 / 1;
   flex: none;
 }
 

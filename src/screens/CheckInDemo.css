@@ -480,9 +480,8 @@
 .mx-demo-checkin__character {
   display: block;
   width: 132px;
-  height: auto;
+  height: 132px;
   margin: 0 auto 12px;
-  object-fit: contain;
 }
 .mx-demo-checkin__complete-eyebrow {
   margin: 0 auto 16px !important;
@@ -784,6 +783,7 @@
 
 .mx-demo-checkin__character {
   width: 112px;
+  height: 112px;
 }
 
 .mx-demo-checkin__scene--complete h1 {

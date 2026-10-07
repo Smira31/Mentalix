@@ -1,20 +1,22 @@
-/*
- * Утренняя иллюстрация экрана завершения — сова «утро готово».
- * Трассировано potrace из растрового оригинала. fill rgb(var(--c-text)),
- * fill-rule evenodd, плоский силуэт. Прозрачный фон.
- * viewBox 0 0 1024 1024, координаты через transform.
- */
+// src/components/practice-art/OwlMorningDoneArt.jsx
+//
+// Сова «утро готово» — сова на ветке с солнцем, глаза закрыты.
+// Трассировано potrace. fill rgb(var(--c-text)), fill-rule evenodd.
+//
+// Трассировано potrace из растрового оригинала. fill rgb(var(--c-text)), fill-rule evenodd.
+// Прозрачный фон — тёмная поверхность просвечивает в прорезях.
+// viewBox 0 0 1024.000000 1024.000000, координаты перенесены через transform.
 
-export default function CompletionArtMorning() {
+export function OwlMorningDoneArt({ className }) {
   return (
     <svg
-      className="mx-completion__art"
-      viewBox="0 0 1024 1024"
+      className={className || "mx-owl-art mx-owl-art--morning-done"}
+      viewBox="0 0 1024.000000 1024.000000"
       preserveAspectRatio="xMidYMax meet"
       aria-hidden="true"
       focusable="false"
     >
-      <g transform="translate(0 1024) scale(0.1 -0.1)">
+      <g transform="translate(0 1024.000000) scale(0.1 -0.1)">
         <path d="M5512 8678 c-9 -9 -12 -77 -12 -244 0 -199 2 -233 16 -245 11 -9 20
 -10 32 -2 15 9
         17 38 20 243 2 232 -1 260 -32 260 -7 0 -17 -5 -24 -12z M4532 8478 c-7 -7 -12 -17
@@ -207,3 +209,5 @@ c-212 103 -389 293 -461 493 -21 59 -26 92 -26 173 -1 92 1 105 31 165 51
     </svg>
   )
 }
+
+export default OwlMorningDoneArt

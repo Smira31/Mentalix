@@ -13,6 +13,7 @@
 import CompletionArtEvening from '../../components/CompletionArtEvening'
 import { ProfileFeatherArt } from '../../screens/settings/ProfileBannerArt'
 import { RitualsCollectionArt } from '../../components/practice-art/RitualsCollectionArt'
+import { JournalCompleteArt } from '../../components/practice-art/JournalCompleteArt'
 
 export const illustrations = {
   recordComplete: CompletionArtEvening,
@@ -26,7 +27,7 @@ export const illustrations = {
   // Пока null — фолбэк на иконку книги (SemanticGlyph 'journal').
   // Владелец заменит слоты на свои иллюстрации.
   journalIntro: null,
-  journalComplete: null,
+  journalComplete: JournalCompleteArt,
   // Ключи для игры «Даймон».
   // daimonCard — карточка в каталоге «Шаги» и рейле «Новое и рекомендованное».
   //   Пока null — фолбэк на крупную залитую форму (SemanticGlyph 'daimon').

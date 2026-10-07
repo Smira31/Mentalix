@@ -17,6 +17,10 @@ import './Today.css'
 import BackButton from '../components/BackButton'
 import cardEveningDone2x from '../assets/today/card-evening-done@2x.webp'
 import cardEveningDone3x from '../assets/today/card-evening-done@3x.webp'
+import { OwlMorningStartArt } from '../components/practice-art/OwlMorningStartArt'
+import { OwlMorningDoneArt } from '../components/practice-art/OwlMorningDoneArt'
+import { OwlEveningStartArt } from '../components/practice-art/OwlEveningStartArt'
+import { OwlEveningDoneArt } from '../components/practice-art/OwlEveningDoneArt'
 
 import EmptyState from '../components/EmptyState'
 import StarterSetPicker from '../components/StarterSetPicker'
@@ -1273,9 +1277,18 @@ export default function Today({
     const completedText = isMorning ? 'Утро отмечено.' : 'День закрыт.'
     const lockedText = isMorning ? 'Утро прошло' : `Откроется в ${reviewTime}`
 
+    const cardArt = isMorning
+      ? state === 'done'
+        ? <OwlMorningDoneArt className="mx-today-day-card__art" />
+        : <OwlMorningStartArt className="mx-today-day-card__art" />
+      : state === 'done'
+        ? <OwlEveningDoneArt className="mx-today-day-card__art" />
+        : <OwlEveningStartArt className="mx-today-day-card__art" />
+
     const content =
       state === 'done' ? (
         <>
+          <div className="mx-today-day-card__glyph">{cardArt}</div>
           <span className="mx-today-day-card__done">
             {isMorning ? (
               <>
@@ -1294,6 +1307,7 @@ export default function Today({
         </>
       ) : state === 'active' ? (
         <>
+          <div className="mx-today-day-card__glyph">{cardArt}</div>
           <span className="mx-today-day-card__label">
             {labelTop}
             <br />
@@ -1309,6 +1323,7 @@ export default function Today({
         </>
       ) : (
         <>
+          <div className="mx-today-day-card__glyph">{cardArt}</div>
           <span className="mx-today-day-card__label">
             {labelTop}
             <br />

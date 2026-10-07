@@ -74,10 +74,8 @@ import { yesterdayLabel } from './StreakRecovery'
 import { resolveDesyncStep } from '../lib/checkinDesync'
 import { sendCheckinFeedback } from '../lib/checkinFeedback'
 import CheckInCompletion from '../components/CheckInCompletion'
-import cardMorningDone2x from '../assets/today/card-morning-done@2x.webp'
-import cardMorningDone3x from '../assets/today/card-morning-done@3x.webp'
-import cardEveningDone2x from '../assets/today/card-evening-done@2x.webp'
-import cardEveningDone3x from '../assets/today/card-evening-done@3x.webp'
+import { OwlMorningDoneArt } from '../components/practice-art/OwlMorningDoneArt'
+import { OwlEveningDoneArt } from '../components/practice-art/OwlEveningDoneArt'
 import './CheckInDemo.css'
 
 const MENTOR_PERSONA_KEY = 'mx-mentor-persona'
@@ -158,19 +156,10 @@ export function CheckInNextControls({ onNext, disabled = false, variant = 'scale
  * (src/assets/today), новых рисунков не рисуем.
  */
 function CompletionArt({ variant = 'morning' }) {
-  const evening = variant === 'evening'
-  const src2x = evening ? cardEveningDone2x : cardMorningDone2x
-  const src3x = evening ? cardEveningDone3x : cardMorningDone3x
-
-  return (
-    <img
-      src={src2x}
-      srcSet={`${src2x} 2x, ${src3x} 3x`}
-      width={200}
-      height={evening ? 230 : 212}
-      alt={evening ? 'Персонаж с закрытыми глазами' : 'Персонаж со взглядом вправо'}
-      className="mx-demo-checkin__character"
-    />
+  return variant === 'evening' ? (
+    <OwlEveningDoneArt className="mx-demo-checkin__character" />
+  ) : (
+    <OwlMorningDoneArt className="mx-demo-checkin__character" />
   )
 }
 

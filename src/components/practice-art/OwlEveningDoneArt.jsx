@@ -1,20 +1,22 @@
-/*
- * Вечерняя иллюстрация экрана завершения — сова «вечер готово».
- * Трассировано potrace из растрового оригинала. fill rgb(var(--c-text)),
- * fill-rule evenodd, плоский силуэт. Прозрачный фон.
- * viewBox 0 0 1024 1024, координаты через transform.
- */
+// src/components/practice-art/OwlEveningDoneArt.jsx
+//
+// Сова «вечер готово» — сова на ветке с месяцем, глаза закрыты.
+// Трассировано potrace. fill rgb(var(--c-text)), fill-rule evenodd.
+//
+// Трассировано potrace из растрового оригинала. fill rgb(var(--c-text)), fill-rule evenodd.
+// Прозрачный фон — тёмная поверхность просвечивает в прорезях.
+// viewBox 0 0 1024.000000 1024.000000, координаты перенесены через transform.
 
-export default function CompletionArtEvening() {
+export function OwlEveningDoneArt({ className }) {
   return (
     <svg
-      className="mx-completion__art"
-      viewBox="0 0 1024 1024"
+      className={className || "mx-owl-art mx-owl-art--evening-done"}
+      viewBox="0 0 1024.000000 1024.000000"
       preserveAspectRatio="xMidYMax meet"
       aria-hidden="true"
       focusable="false"
     >
-      <g transform="translate(0 1024) scale(0.1 -0.1)">
+      <g transform="translate(0 1024.000000) scale(0.1 -0.1)">
         <path d="M4775 8904 c-382 -20 -790 -155 -1126 -376 -179 -116 -268 -190 -419
 -345 -169
         -171 -301 -342 -392 -503 -14 -25 -37 -65 -51 -90 -101 -178 -213
@@ -174,3 +176,5 @@ c-212 103 -389 293
     </svg>
   )
 }
+
+export default OwlEveningDoneArt
