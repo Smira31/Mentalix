@@ -202,9 +202,14 @@ function ThemeCarousel({
 /* ── 5. Коллекции ── */
 function CollectionTile({ collection, onOpen }) {
   const isSoon = collection.active === false || collection.soon
+  const Art =
+    illustrations[
+      `stepsCollections${collection.key.charAt(0).toUpperCase()}${collection.key.slice(1)}`
+    ] || null
+
   return (
     <button
-      className="mx-steps-collection"
+      className={`mx-steps-collection${Art ? ' mx-steps-collection--art' : ''}`}
       data-collection-key={collection.key}
       type="button"
       disabled={isSoon}
@@ -217,6 +222,11 @@ function CollectionTile({ collection, onOpen }) {
       <small className="mx-steps-collection__desc">
         {isSoon ? 'Скоро' : collection.description}
       </small>
+      {Art && (
+        <span className="mx-steps-collection__art" aria-hidden="true">
+          <Art />
+        </span>
+      )}
       <ChevronRight className="mx-steps-collection__chevron" size={17} aria-hidden="true" />
     </button>
   )
