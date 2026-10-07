@@ -209,7 +209,7 @@ function CollectionTile({ collection, onOpen }) {
 
   return (
     <button
-      className={`mx-steps-collection${Art ? ' mx-steps-collection--art' : ''}`}
+      className={`mx-steps-collection${Art ? ' mx-steps-collection--art' : ''} mx-steps-collection--${collection.key}`}
       data-collection-key={collection.key}
       type="button"
       disabled={isSoon}

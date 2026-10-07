@@ -463,7 +463,7 @@ function CollectionsSection({ onOpen }) {
               <button
                 type="button"
                 key={collection.key}
-                className="mx-steps-collection mx-steps-collection--art"
+                className={`mx-steps-collection mx-steps-collection--art mx-steps-collection--${collection.key}`}
                 onClick={() => onOpen(collection)}
               >
                 <strong>{collection.title}</strong>

@@ -420,6 +420,28 @@
   height: 100%;
 }
 
+/* ── Ascezas: иллюстрация по ширине, bleed в левый нижний угол ── */
+.mx-steps-collection--ascezas .mx-steps-collection__art {
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 72%;
+  justify-content: flex-start;
+}
+
+.mx-steps-collection--ascezas .mx-steps-collection__art svg {
+  width: 88%;
+  height: auto;
+  max-width: 100%;
+  max-height: none;
+}
+
+.mx-steps-collection--ascezas .mx-steps-collection__title,
+.mx-steps-collection--ascezas .mx-steps-collection__desc {
+  position: relative;
+  z-index: 1;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .mx-steps-rail {
     scroll-behavior: auto;
