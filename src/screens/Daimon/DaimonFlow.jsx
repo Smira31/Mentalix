@@ -1499,8 +1499,17 @@ export default function DaimonFlow({ userId, onClose, onGuestLogin }) {
 
   const serifReady = useSerifReady()
 
-  const scrollStages = ['intro', 'games', 'pathView', 'overview', 'error', 'loading']
-  const fullFrameStages = ['request', 'cell', 'rolling', 'transition', 'saved', 'help', 'finish']
+  const scrollStages = ['games', 'pathView', 'overview', 'error', 'loading']
+  const fullFrameStages = [
+    'intro',
+    'request',
+    'cell',
+    'rolling',
+    'transition',
+    'saved',
+    'help',
+    'finish',
+  ]
 
   if (!serifReady) {
     return (
