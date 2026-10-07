@@ -8,21 +8,21 @@ const DAY_FORMS = ['день', 'дня', 'дней']
  * Каждый пресет: имя, минимум (текст-описание) и glyph-вид иконки SemanticGlyph.
  */
 export const RITUAL_PRESETS = [
-  { name: 'Стакан воды', minimum: 'пара глотков у кровати', glyph: 'water' },
-  { name: 'Прогулка', minimum: '10 минут вокруг дома', glyph: 'ritual' },
-  { name: 'Чтение', minimum: 'одна страница', glyph: 'journal' },
-  { name: 'Дыхание', minimum: '5 медленных вдохов', glyph: 'breath' },
+  { name: 'Стакан воды', minimum: 'пара глотков у кровати', glyph: 'glass' },
+  { name: 'Прогулка', minimum: '10 минут вокруг дома', glyph: 'sneaker' },
+  { name: 'Чтение', minimum: 'одна страница', glyph: 'book' },
+  { name: 'Дыхание', minimum: '5 медленных вдохов', glyph: 'waves' },
   { name: 'Дневник', minimum: 'одна строка о дне', glyph: 'journal' },
-  { name: 'Утро без телефона', minimum: '15 минут после пробуждения', glyph: 'purpose' },
+  { name: 'Утро без телефона', minimum: '15 минут после пробуждения', glyph: 'phone-slash' },
 ]
 
 export const ASCEZA_PRESETS = [
-  { name: 'Без сахара', minimum: 'не покупать сладкое домой', glyph: 'asceza' },
-  { name: 'Соцсети до обеда', minimum: 'не открывать ленту до завтрака', glyph: 'asceza' },
-  { name: 'Без алкоголя', minimum: 'не пить в будни', glyph: 'alcohol' },
-  { name: 'Кофе после 14:00', minimum: 'не больше одной чашки после обеда', glyph: 'asceza' },
-  { name: 'Без жалоб', minimum: 'поймал жалобу — переформулировал', glyph: 'asceza' },
-  { name: 'Покупки по списку', minimum: 'ничего вне списка дороже 1000 ₽', glyph: 'asceza' },
+  { name: 'Без сахара', minimum: 'не покупать сладкое домой', glyph: 'candy' },
+  { name: 'Соцсети до обеда', minimum: 'не открывать ленту до завтрака', glyph: 'phone-play' },
+  { name: 'Без алкоголя', minimum: 'не пить в будни', glyph: 'wine-glass' },
+  { name: 'Кофе после 14:00', minimum: 'не больше одной чашки после обеда', glyph: 'coffee' },
+  { name: 'Без жалоб', minimum: 'поймал жалобу — переформулировал', glyph: 'speech-slash' },
+  { name: 'Покупки по списку', minimum: 'ничего вне списка дороже 1000 ₽', glyph: 'shopping-bag' },
 ]
 
 /*
@@ -114,7 +114,7 @@ export const PRACTICE_WORDING = {
     ],
     presets: RITUAL_PRESETS,
     optionalFields: RITUAL_OPTIONAL_FIELDS,
-    defaultGlyph: 'ritual',
+    defaultGlyph: 'hourglass',
   },
   asceza: {
     kind: 'asceza',
@@ -158,7 +158,7 @@ export const PRACTICE_WORDING = {
     ],
     presets: ASCEZA_PRESETS,
     optionalFields: ASCEZA_OPTIONAL_FIELDS,
-    defaultGlyph: 'asceza',
+    defaultGlyph: 'shield',
   },
 }
 
@@ -252,22 +252,31 @@ export function milestoneDayLabel(streak) {
 }
 
 /*
- * «Знак» практики — 12 иконок SemanticGlyph сеткой 4×3.
+ * «Знак» практики — 20 иконок сеткой 5×4.
  * Набор общий для ритуалов и аскез: визуальный язык один.
+ * Порядок соответствует утверждённой таблице иконок.
  */
 export const PRACTICE_GLYPHS = [
-  'ritual',
-  'water',
-  'breath',
+  'hourglass',
+  'sneaker',
+  'book',
   'journal',
-  'prayer',
-  'purpose',
+  'glass',
+  'waves',
+  'phone-slash',
+  'shield',
+  'candy',
+  'phone-play',
+  'wine-glass',
+  'coffee',
+  'speech-slash',
+  'shopping-bag',
+  'star',
+  'target',
+  'praying-hands',
   'shower',
   'meditation',
-  'asceza',
-  'alcohol',
-  'smoking',
-  'focus',
+  'cigarette',
 ]
 
 export function isStreakMilestone(streak) {

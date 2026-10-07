@@ -2,7 +2,7 @@ import { createPortal } from 'react-dom'
 import { platform } from '../../platform'
 import { useBackButton } from '../../platform/telegram.hooks'
 import { RoundBackButton } from '../NestedScreenHeader'
-import SemanticGlyph from '../SemanticGlyph'
+import PracticeIcon, { resolveGlyphKey } from '../PracticeIcon'
 import { PRACTICE_GLYPHS } from '../../lib/practiceWording'
 import {
   useFullscreenSurface,
@@ -14,7 +14,7 @@ import {
 import './PracticeSignScreen.css'
 
 /*
- * «Знак» практики — выбор иконки SemanticGlyph сеткой 4×3.
+ * «Знак» практики — выбор иконки PracticeIcon сеткой 5×4.
  * Один набор знаков на ритуалы и аскезы: визуальный язык общий.
  * Выбранный знак едет вместе с практикой (поле glyph).
  */
@@ -39,7 +39,7 @@ export default function PracticeSignScreen({ title, subtitle, current, onPick, o
 
           <div className="mx-practice-sign__grid" data-testid="practice-sign-grid">
             {PRACTICE_GLYPHS.map(kind => {
-              const active = kind === current
+              const active = resolveGlyphKey(kind) === resolveGlyphKey(current)
               return (
                 <button
                   type="button"
@@ -53,7 +53,7 @@ export default function PracticeSignScreen({ title, subtitle, current, onPick, o
                     onPick(kind)
                   }}
                 >
-                  <SemanticGlyph kind={kind} className="w-full h-full" />
+                  <PracticeIcon glyph={kind} className="w-full h-full" />
                 </button>
               )
             })}
