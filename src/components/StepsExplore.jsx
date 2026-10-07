@@ -3,7 +3,7 @@ import { ArrowRight, ChevronRight, Ellipsis, Search, Shuffle } from 'lucide-reac
 
 import JournalArt from './practice-art/JournalArt'
 import SemanticGlyph from './SemanticGlyph'
-import { getPracticeByKey, PRACTICE_COLLECTIONS } from '../lib/practiceCatalogRegistry'
+import { PRACTICE_COLLECTIONS } from '../lib/practiceCatalogRegistry'
 import { isPreviewDemoMode } from '../lib/demoMode'
 import { api } from '../lib/api'
 import { illustrations } from '../assets/illustrations'
@@ -15,6 +15,12 @@ import './StepsExplore.css'
    Решение владельца от 27.09.2026. Референс:
    docs/references/stoic-explore-2026-09-26.md
    ============================================================ */
+
+/* Случайная тема для кнопки «Удиви меня»: вызов вне области рендера,
+   чтобы не нарушать чистоту рендера (react-hooks/purity). */
+function pickRandomItem(list) {
+  return list[Math.floor(Math.random() * list.length)]
+}
 
 const HIDDEN_PRACTICES_KEY = 'mx-steps-hidden-practices'
 
@@ -330,8 +336,7 @@ function OtherThemes({ themes, onOpen }) {
 
   function surprise() {
     if (unpassed.length === 0) return
-    const random = unpassed[Math.floor(Math.random() * unpassed.length)]
-    onOpen(random)
+    onOpen(pickRandomItem(unpassed))
   }
 
   return (
@@ -568,8 +573,8 @@ function SearchOverlay({ practices, themes, onOpenPractice, onOpenTheme, onClose
    ============================================================ */
 export default function StepsExplore({
   practices,
-  rituals,
-  ascezas,
+  rituals: _rituals,
+  ascezas: _ascezas,
   themes,
   themeLoading = false,
   themesError = false,
