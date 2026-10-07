@@ -6,13 +6,14 @@
 //
 // fill #EDEDED, fill-rule evenodd. Прозрачный фон — тёмная поверхность
 // просвечивает в прорезях (глаз, ребро щита, дырки в звеньях цепи).
-// viewBox 0 0 1668.600000 1538.784000, координаты перенесены через transform.
+// viewBox 61.8 0 1606.8 1481.792 — слева/снизу без отступа (тропинка уходит под
+// скругление карточки), сверху/справа +4% сохранены.
 
 export function AscezasCollectionArt() {
   return (
     <svg
       className="mx-ascezas-collection-art"
-      viewBox="0 0 1668.600000 1538.784000"
+      viewBox="61.800000 0 1606.800000 1481.792000"
       preserveAspectRatio="xMinYMax meet"
       aria-hidden="true"
       focusable="false"
