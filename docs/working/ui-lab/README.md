@@ -2,25 +2,22 @@
 status: working
 last_verified: 2026-09-16
 ---
+
 # UI Lab — постоянная рабочая доска
 
 UI Lab — изолированный рабочий слой Mentalix для UI-экспериментов, сравнений и выводов. Он существует рядом с production и не является второй production-веткой, альтернативным deployment или разрешением на автоматическое изменение продукта.
 
 ## Канонические ссылки
 
-| Назначение  | Ссылка                                                                                   |
-| ----------- | ---------------------------------------------------------------------------------------- |
-| Compare     | [Cloudflare Demo — Compare](https://mentalix-owner-qa.pages.dev/?ui_lab=compare)         |
-| Baseline    | [Cloudflare Demo — Baseline](https://mentalix-owner-qa.pages.dev/?ui_lab=baseline)       |
-| Experiments | [Cloudflare Demo — Experiments](https://mentalix-owner-qa.pages.dev/?ui_lab=experiments) |
-| Library     | [Cloudflare Demo — Library](https://mentalix-owner-qa.pages.dev/?ui_lab=library)         |
-| PR          | [PR #483](https://github.com/Smira31/Mentalix/pull/483)                                  |
+| Назначение | Ссылка                                                  |
+| ---------- | ------------------------------------------------------- |
+| PR         | [PR #483](https://github.com/Smira31/Mentalix/pull/483) |
 
 Ссылка выше — зафиксированный Preview для текущего UI Lab; новый Preview становится каноническим только после явного обновления этой записи.
 
 ## Границы
 
-- Канонический Production Mentalix — `https://mentalix-production.web.app`; UI Lab и Cloudflare Demo его не заменяют и не изменяют.
+- Канонический Production Mentalix — `https://mentalix-production.web.app`; UI Lab его не заменяет и не изменяет.
 - Любой UI-эксперимент начинается в UI Lab или отдельном Preview, а не в production.
 - Эксперимент не считается продуктовом решением только потому, что он визуально готов или доступен по Preview-ссылке.
 - Перенос результата в production требует отдельного scope, PR, проверок и предусмотренного manual gate.

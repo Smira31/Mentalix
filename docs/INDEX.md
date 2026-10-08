@@ -23,7 +23,6 @@ last_verified: 2026-09-22
 | History   | [`CHANGES.md`](../CHANGES.md)                                                         | История изменений; не использовать как текущий status.                                     |
 | History   | [`docs/archive/`](archive/)                                                           | Архивные аудиты, handoff и старые планы.                                                   |
 | Hosting   | [`docs/handoffs/2026-09-16-hosting-policy.md`](handoffs/2026-09-16-hosting-policy.md) | Cloudflare Demo, Firebase Production и Render API.                                         |
-| QA        | [`docs/CLOUDFLARE_OWNER_QA.md`](CLOUDFLARE_OWNER_QA.md)                               | Exact-SHA Cloudflare Demo QA; не Production.                                               |
 
 ## Полный каталог по папкам docs
 
@@ -39,7 +38,6 @@ last_verified: 2026-09-22
 | [`INDEX.md`](INDEX.md)                                                 | `current` / 2026-09-11    | Открыть для полного каталога документации и статусов.         |
 | [`MENTALIX_CHAT_OPERATING_MODEL.md`](MENTALIX_CHAT_OPERATING_MODEL.md) | `working` / 2026-09-11    | Открыть для контекста и деталей, относящихся к этому разделу. |
 | [`TASK_INDEX.md`](TASK_INDEX.md)                                       | `current` / 2026-09-11    | Открыть для контекста и деталей, относящихся к этому разделу. |
-| [`CLOUDFLARE_OWNER_QA.md`](CLOUDFLARE_OWNER_QA.md)                     | `current` / 2026-09-16    | Ручной exact-SHA Demo Preview и Owner QA.                     |
 | [`ui-audit-2026-08-13.md`](ui-audit-2026-08-13.md)                     | `working` / 2026-09-11    | Открыть для UI/UX-решения и визуальных ограничений.           |
 
 ### `architecture`
