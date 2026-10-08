@@ -30,7 +30,7 @@ import {
 } from './progress/progressAnalyticsPeriods'
 import { ProgressGlassMenu, ProgressGlassMenuItem } from '../components/ProgressGlassMenu'
 import MilestoneProgress from './progress/MilestoneProgress'
-import { daysSinceFirst } from './progress/weeklySummary'
+import { countActiveDays } from './progress/weeklySummary'
 import { Eye, SlidersHorizontal } from 'lucide-react'
 
 const CALENDAR_WEEKDAYS = ['П', 'В', 'С', 'Ч', 'П', 'С', 'В']
@@ -295,15 +295,6 @@ function MoodScaleCard({ user, onSaved }) {
       )}
     </section>
   )
-}
-
-/** Считает уникальные дни с записями (F2: по реальным дням, не чек-инам). */
-function countDaysWithRecords(checkins) {
-  const dates = new Set()
-  for (const c of checkins) {
-    if (c?.date) dates.add(c.date)
-  }
-  return dates.size
 }
 
 function NeedDataPlaque({ daysWithRecords, onMark }) {
@@ -968,16 +959,12 @@ export default function Analytics({
   const checkinsFailed = !sourceLoading && checkinsState && checkinsState !== SOURCE_STATES.success
   const isCurrentPeriod = offset === 0
 
-  const daysWithRecords = countDaysWithRecords(periodCheckins)
+  const daysWithRecords = countActiveDays(periodCheckins)
   const showNeedData = daysWithRecords < MIN_DAYS
 
-  // Total days since first checkin — for day milestone progress bar
-  const totalDays = useMemo(() => {
-    if (!poolCheckins || poolCheckins.length === 0) return 0
-    const dates = poolCheckins.map(c => c?.date).filter(Boolean).sort()
-    if (!dates.length) return 0
-    return daysSinceFirst(dates[0])
-  }, [poolCheckins])
+  // Число РАЗНЫХ дней с активностью за всё время — для вех дней.
+  // Не календарные дни с первой записи: иначе один заход месяц назад давал бы «30 дней».
+  const totalDays = useMemo(() => countActiveDays(poolCheckins), [poolCheckins])
 
   function handlePrev() {
     setOffset(o => o + 1)
@@ -1145,6 +1132,10 @@ export default function Analytics({
             </p>
           )}
 
+          {/* Вехи дней показываем всегда — новичку они нужнее всего.
+              Плашка «нужно больше данных» идёт ниже как призыв отметить. */}
+          <MilestoneProgress totalDays={totalDays} />
+
           {showNeedData && (
             <NeedDataPlaque
               daysWithRecords={daysWithRecords}
@@ -1153,8 +1144,6 @@ export default function Analytics({
               }}
             />
           )}
-
-          {!showNeedData && <MilestoneProgress totalDays={totalDays} />}
 
           {cardPreferences.order.filter(
             id => !cardPreferences.hidden.includes(id) && ANALYTICS_CARDS.some(c => c.id === id)
