@@ -9,7 +9,7 @@ test('all onboarding question and completion steps use the shared compact-layout
   assert.equal(
     (onboardingSource.match(/mx-onboarding-question-step/g) || []).length,
     4,
-    'focus, age, reminder, and completion steps must share the responsive layout class'
+    'age, underage, reminder, and completion steps must share the responsive layout class'
   )
   assert.match(onboardingSource, /mx-onboarding-option-list/)
   assert.match(onboardingSource, /mx-onboarding-reminder-list/)

@@ -206,6 +206,18 @@ export function isRecoveryDemoRequested() {
 }
 
 /*
+ * Превью-ссылка на приветствие онбординга:
+ *   ?demo=1&action=onboarding
+ * В демо-режиме онбординг обычно пропускается; этот параметр
+ * принудительно показывает экран онбординга.
+ */
+export function isDemoOnboardingRequested() {
+  if (typeof window === 'undefined') return false
+  if (!isPreviewDemoMode()) return false
+  return new URLSearchParams(window.location.search).get('action') === 'onboarding'
+}
+
+/*
  * Превью-ссылка на «твой профиль.»: ?demo=1&action=profile.
  * Вне демо-режима возвращает false.
  */

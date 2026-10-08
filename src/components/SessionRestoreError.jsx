@@ -1,4 +1,4 @@
-import BookLogo from './BookLogo'
+import OwlMark from './OwlMark'
 
 /**
  * Экран ошибки восстановления сессии для standalone Safari / web.
@@ -21,7 +21,7 @@ export default function SessionRestoreError({ onRetry }) {
         text-center
       "
     >
-      <BookLogo size={132} className="text-gold" />
+      <OwlMark size={140} className="text-gold" />
 
       <p
         className="

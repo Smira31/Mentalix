@@ -12,7 +12,7 @@ import { paintChrome, useSettingsButton } from './platform/telegram.hooks'
 
 import Today from './screens/Today'
 
-import BookLogo from './components/BookLogo'
+import OwlMark from './components/OwlMark'
 import BackButton from './components/BackButton'
 import BottomNavigation from './components/BottomNavigation'
 import PreviewApiDiagnostic from './components/PreviewApiDiagnostic'
@@ -40,6 +40,7 @@ import {
   previewSeriesAction,
   isProfileDemoRequested,
   previewProfileAction,
+  isDemoOnboardingRequested,
 } from './lib/demoMode'
 import { installDemoPressFeedback } from './lib/demoPressFeedback'
 import { shouldRenderDemoTelegramChrome } from './lib/demoChrome'
@@ -118,7 +119,7 @@ function Splash() {
         font-body
       "
     >
-      <BookLogo size={132} className="text-gold" />
+      <OwlMark size={140} className="text-gold" />
 
       <div
         className="
@@ -352,7 +353,8 @@ function App() {
   // Demo builds are synthetic users only: they skip onboarding in DEV or
   // Vercel Preview, without writing the user's synced onboarding flag.
   // isPreviewDemoMode itself requires ?demo=1 and an allowed preview host.
-  const onboarded = onboardedFlag === '1' || isPreviewDemoMode()
+  const onboarded =
+    onboardedFlag === '1' || (isPreviewDemoMode() && !isDemoOnboardingRequested())
   const [recoveryAllowedAtLaunch] = useState(() => onboardedFlag === '1' || isPreviewDemoMode())
 
   /*

@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
-import { platform } from '../platform'
+import { useEffect, useRef, useState } from 'react'
+import { platform, platformName } from '../platform'
 import { api } from '../lib/api'
 import { Check } from 'lucide-react'
 import BackButton from '../components/BackButton'
+import OwlMark from '../components/OwlMark'
 import { DEFAULT_REVIEW_HOUR } from '../lib/todayCardState'
 import {
   useFullscreenSurface,
@@ -10,43 +11,10 @@ import {
   FULLSCREEN_HEADER_SLOT_CLASS,
   FULLSCREEN_SCROLL_CLASS,
 } from '../lib/fullscreenSurface'
+import { useGlobalEdgeSwipeBack } from '../lib/gestures/useGlobalEdgeSwipeBack'
 import './Onboarding.css'
 
-// ── Онбординг по схеме stoic.: приветствие → вопросы о себе →
-// напоминания → «план готов» с зеркалом ответов ──
-
-const FOCUS_OPTIONS = [
-  {
-    key: 'calm',
-    label: 'Меньше тревоги',
-    proof:
-      'Регулярная рефлексия снижает уровень тревоги: это подтверждают более 200 исследований о письменных практиках.',
-  },
-  {
-    key: 'discipline',
-    label: 'Больше дисциплины',
-    proof:
-      'Дисциплина — не характер, а система. Ритуалы и аскезы держат её за тебя, когда мотивация кончилась.',
-  },
-  {
-    key: 'focus',
-    label: 'Собранность и фокус',
-    proof:
-      'Одно действие за раз работает лучше списка из десяти. Mentalix всегда показывает только следующий шаг.',
-  },
-  {
-    key: 'sleep',
-    label: 'Спокойный сон',
-    proof:
-      'Вечерняя выгрузка мыслей на бумагу помогает засыпать быстрее: голова перестаёт дожёвывать день.',
-  },
-  {
-    key: 'self',
-    label: 'Понять себя',
-    proof:
-      'Чек-ины копят данные о твоём состоянии. Через пару недель ты увидишь, что на тебя влияет на самом деле.',
-  },
-]
+// ── Онбординг: приветствие → возраст → напоминание → «план готов» ──
 
 const AGE_OPTIONS = ['До 18', '18–24', '25–34', '35–44', '45+']
 
@@ -58,14 +26,43 @@ const REMINDER_OPTIONS = [
 
 const PLAN_CARDS = [
   'Твои записи сохраняются в профиле Mentalix',
-  'Наставник, Спутник и Наблюдатель готовы к разговору',
+  'Наставник, Спутник, Наблюдатель и Даймон ждут тебя в «Диалоге»',
   'Первый шаг уже ждёт тебя на главной',
 ]
+
+const PROGRESS_KEY = 'mx-onboarding-progress'
+const TOTAL = 4
+
+// ── сохранение/восстановление прогресса ──
+
+function readProgress() {
+  try {
+    return JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}')
+  } catch {
+    return {}
+  }
+}
+
+function writeProgress(data) {
+  try {
+    localStorage.setItem(PROGRESS_KEY, JSON.stringify(data))
+  } catch {
+    // приватный режим/квота — не критично
+  }
+}
+
+function clearProgress() {
+  try {
+    localStorage.removeItem(PROGRESS_KEY)
+  } catch {
+    // см. выше
+  }
+}
 
 // ── шапка: системный Telegram BackButton · прогресс ──
 function Head({ step, total, onBack }) {
   return (
-    <div className="w-full max-w-md px-[var(--mx-screen-x)] pt-5 grid grid-cols-[1fr_auto_1fr] items-center">
+    <div className="w-full max-w-md px-[var(--mx-screen-x)] pt-[var(--mx-space-5)] grid grid-cols-[1fr_auto_1fr] items-center">
       <div className="justify-self-start">
         <BackButton onClick={onBack} />
       </div>
@@ -85,46 +82,45 @@ function Head({ step, total, onBack }) {
   )
 }
 
-// ── карточка-вариант: выбранная инвертируется и раскрывает довод ──
-function Option({ label, proof, selected, onClick }) {
+// ── карточка-вариант: выбранная инвертируется ──
+function Option({ label, selected, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="mx-onboarding-option w-full rounded-[22px] px-[var(--mx-screen-x)] py-4 text-center border-0"
+      data-testid="onboarding-option"
+      className="mx-onboarding-option w-full rounded-[var(--mx-radius-card)] px-[var(--mx-screen-x)] py-[var(--mx-space-4)] text-center border-0"
       data-selected={selected}
     >
       <span className="block text-[14px] font-bold">{label}</span>
-      {proof && selected && (
-        <span className="mx-onboarding-proof block text-[12.5px] leading-snug mt-2 opacity-70">
-          {proof}
-        </span>
-      )}
     </button>
   )
 }
 
 export default function Onboarding({ user, onFinish }) {
-  const [step, setStep] = useState(0)
-  const [focuses, setFocuses] = useState([])
-  const [age, setAge] = useState(null)
-  const [reminder, setReminder] = useState('morning')
+  const saved = readProgress()
+  const [step, setStep] = useState(saved.step || 0)
+  const [age, setAge] = useState(saved.age || null)
+  const [reminder, setReminder] = useState(saved.reminder || 'morning')
   const [revealed, setRevealed] = useState(0)
+  const [underage, setUnderage] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [saveError, setSaveError] = useState(false)
 
-  /*
-   * Раньше отступ сверху запрашивался как var(--tg-top, 0px),
-   * но такой переменной в проекте нет — она нигде не объявлена.
-   * Значит фактически применялся 0px, и в fullscreen онбординг
-   * лез под контролы Telegram. Теперь экран живёт по тому же
-   * контракту, что CheckIn и «Тема недели».
-   */
+  const rootRef = useRef(null)
+
   const { style: surfaceStyle } = useFullscreenSurface()
 
-  const TOTAL = 5
+  // Свайп «назад» от левого края на шагах > 0 (back доступен)
+  useGlobalEdgeSwipeBack(rootRef, { enabled: step > 0 })
 
-  // На финальном экране карточки уже занимают свои места и только
-  // набирают контраст. Так список не прыгает во время появления.
+  // Сохранение прогресса на каждом шаге
   useEffect(() => {
-    if (step !== 4) return
+    writeProgress({ step, age, reminder })
+  }, [step, age, reminder])
+
+  // На финальном экране карточки набирают контраст по очереди
+  useEffect(() => {
+    if (step !== TOTAL - 1) return
     const timers = PLAN_CARDS.map((_, i) =>
       setTimeout(
         () => {
@@ -139,114 +135,95 @@ export default function Onboarding({ user, onFinish }) {
     return () => timers.forEach(clearTimeout)
   }, [step])
 
+  function handleBack() {
+    if (underage) {
+      setUnderage(false)
+    } else {
+      setStep(s => Math.max(0, s - 1))
+    }
+  }
+
   function next() {
-    if (step === 2 && (!age || age === 'До 18')) return
     platform.haptic('light')
     setStep(s => s + 1)
   }
 
-  async function finish() {
-    platform.haptic('medium')
-    const opt = REMINDER_OPTIONS.find(r => r.key === reminder)
-    try {
-      localStorage.setItem('mx-onboarding', JSON.stringify({ focuses, age, reminder }))
-    } catch {
-      // приватный режим/квота — не критично
+  function selectAge(a) {
+    platform.haptic('light')
+    setAge(a)
+    if (a === 'До 18') {
+      setUnderage(true)
     }
+  }
+
+  async function finish() {
+    if (submitting) return
+    platform.haptic('medium')
+    setSubmitting(true)
+    setSaveError(false)
+    const opt = REMINDER_OPTIONS.find(r => r.key === reminder)
     try {
       if (user?.id && opt) {
         await api.profile.saveSettings(user.id, {
           reminder_enabled: true,
           reminder_hour: opt.hour,
-          // Вечерний разбор по умолчанию в 19:00 — синхронизируем с онбордингом,
-          // чтобы review_hour был задан с самого начала (единый источник).
           review_hour: DEFAULT_REVIEW_HOUR,
         })
       }
+      clearProgress()
+      onFinish()
     } catch (e) {
       console.error(e)
+      setSaveError(true)
+    } finally {
+      setSubmitting(false)
     }
+  }
+
+  function continueWithoutReminder() {
+    platform.haptic('light')
+    clearProgress()
     onFinish()
   }
 
-  const chosenFocusLabels = FOCUS_OPTIONS.filter(f => focuses.includes(f.key)).map(f =>
-    f.label.toLowerCase()
-  )
-
   return (
-    <div className={FULLSCREEN_SHELL_CLASS} style={surfaceStyle}>
+    <div ref={rootRef} className={FULLSCREEN_SHELL_CLASS} style={surfaceStyle}>
       <div className={FULLSCREEN_HEADER_SLOT_CLASS}>
         {step > 0 && (
-          <Head step={step} total={TOTAL} onBack={() => setStep(current => current - 1)} />
+          <Head step={step} total={TOTAL} onBack={handleBack} />
         )}
       </div>
       <div className={FULLSCREEN_SCROLL_CLASS}>
         {/* ── 0. Приветствие ── */}
         {step === 0 && (
-          <div className="mx-onboarding-step mx-onboarding-intro-step flex-1 w-full max-w-md flex flex-col items-center justify-center px-8 text-center">
+          <div className="mx-onboarding-step mx-onboarding-intro-step flex-1 w-full max-w-md flex flex-col items-center justify-center px-[var(--mx-screen-x)] text-center">
             <div className="mx-onboarding-intro-copy flex flex-col items-center">
+              <OwlMark size={150} className="text-cream mb-[var(--mx-space-8)]" />
               <h2 className="font-display text-[30px] text-cream leading-tight">Mentalix.</h2>
-              <p className="text-[14px] text-muted mt-4 leading-relaxed max-w-xs">
-                Пара вопросов — и приложение соберётся под тебя. Это займёт минуту.
+              <p className="text-[14px] text-muted mt-[var(--mx-space-4)] leading-relaxed max-w-xs">
+                Пара коротких вопросов — и начнём. Это займёт минуту.
               </p>
-              <button onClick={next} className="cta-pill text-[16px] px-14 py-4 mt-10">
+              <button
+                onClick={next}
+                data-testid="onboarding-start"
+                className="cta-pill text-[16px] py-[var(--mx-space-4)] mt-[var(--mx-space-10)]"
+              >
                 Начать
               </button>
             </div>
           </div>
         )}
 
-        {/* ── 1. Фокусы ── */}
-        {step === 1 && (
+        {/* ── 1. Возраст ── */}
+        {step === 1 && !underage && (
           <div
             key="s1"
-            className="mx-onboarding-step mx-onboarding-question-step flex-1 w-full max-w-md flex flex-col justify-center px-6 py-8"
-          >
-            <h2 className="font-display text-[22px] text-cream text-center leading-tight">
-              Что сейчас важнее всего?
-            </h2>
-            <p className="text-[13px] text-muted mt-3 mb-7 text-center leading-snug">
-              Ответы соберут приложение под твои задачи. Можно выбрать несколько.
-            </p>
-            <div className="mx-onboarding-option-list space-y-2.5">
-              {FOCUS_OPTIONS.map(o => (
-                <Option
-                  key={o.key}
-                  label={o.label}
-                  proof={o.proof}
-                  selected={focuses.includes(o.key)}
-                  onClick={() => {
-                    platform.haptic('light')
-                    setFocuses(f =>
-                      f.includes(o.key) ? f.filter(k => k !== o.key) : [...f, o.key]
-                    )
-                  }}
-                />
-              ))}
-            </div>
-            <p className="text-[12px] text-muted text-center mt-6 leading-snug">
-              Выбор ничего не ограничивает — все функции остаются доступными.
-            </p>
-            <button
-              onClick={next}
-              disabled={focuses.length === 0}
-              className="cta-pill text-[16px] px-14 py-4 mx-auto mt-8 disabled:opacity-30"
-            >
-              Дальше
-            </button>
-          </div>
-        )}
-
-        {/* ── 2. Возраст ── */}
-        {step === 2 && (
-          <div
-            key="s2"
-            className="mx-onboarding-step mx-onboarding-question-step flex-1 w-full max-w-md flex flex-col justify-center px-6 py-8"
+            className="mx-onboarding-step mx-onboarding-question-step flex-1 w-full max-w-md flex flex-col justify-center px-[var(--mx-screen-x)] py-[var(--mx-space-8)]"
           >
             <h2 className="font-display text-[22px] text-cream text-center leading-tight">
               Сколько тебе лет?
             </h2>
-            <p className="text-[13px] text-muted mt-3 mb-7 text-center leading-snug">
+            <p className="text-[13px] text-muted mt-[var(--mx-space-3)] mb-[var(--mx-space-7)] text-center leading-snug">
               Чтобы говорить с тобой на одном языке.
             </p>
             <div className="mx-onboarding-option-list space-y-2.5">
@@ -255,42 +232,58 @@ export default function Onboarding({ user, onFinish }) {
                   key={a}
                   label={a}
                   selected={age === a}
-                  onClick={() => {
-                    platform.haptic('light')
-                    setAge(a)
-                  }}
+                  onClick={() => selectAge(a)}
                 />
               ))}
             </div>
-            {age === 'До 18' ? (
-              <p role="alert" className="text-[12px] text-muted text-center mt-6">
-                Mentalix доступен с 18 лет
-              </p>
-            ) : (
-              <p className="text-[12px] text-muted text-center mt-6">
-                Возрастная группа сохраняется в настройках знакомства.
-              </p>
-            )}
+            <p className="text-[12px] text-muted text-center mt-[var(--mx-space-6)]">
+              Возрастная группа сохраняется в настройках знакомства.
+            </p>
             <button
               onClick={next}
               disabled={!age || age === 'До 18'}
-              className="cta-pill text-[16px] px-14 py-4 mx-auto mt-8 disabled:opacity-30"
+              data-testid="onboarding-next"
+              className="cta-pill text-[16px] py-[var(--mx-space-4)] mx-auto mt-[var(--mx-space-8)] disabled:opacity-30"
             >
               Дальше
             </button>
           </div>
         )}
 
-        {/* ── 3. Напоминание ── */}
-        {step === 3 && (
+        {/* ── 1b. Экран 18+ ── */}
+        {step === 1 && underage && (
           <div
-            key="s3"
-            className="mx-onboarding-step mx-onboarding-question-step flex-1 w-full max-w-md flex flex-col justify-center px-6 py-8"
+            key="s1u"
+            className="mx-onboarding-step mx-onboarding-question-step flex-1 w-full max-w-md flex flex-col justify-center px-[var(--mx-screen-x)] py-[var(--mx-space-8)] text-center"
+          >
+            <h2 className="font-display text-[22px] text-cream leading-tight">
+              Mentalix доступен с 18 лет
+            </h2>
+            <p className="text-[13px] text-muted mt-[var(--mx-space-3)] leading-relaxed max-w-xs mx-auto">
+              Приложение использует практики саморефлексии, рассчитанные на взрослых пользователей.
+            </p>
+            {platformName === 'telegram' && (
+              <button
+                onClick={() => platform.close()}
+                data-testid="onboarding-underage-close"
+                className="cta-pill text-[16px] py-[var(--mx-space-4)] mx-auto mt-[var(--mx-space-8)]"
+              >
+                Закрыть
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* ── 2. Напоминание ── */}
+        {step === 2 && (
+          <div
+            key="s2"
+            className="mx-onboarding-step mx-onboarding-question-step flex-1 w-full max-w-md flex flex-col justify-center px-[var(--mx-screen-x)] py-[var(--mx-space-8)]"
           >
             <h2 className="font-display text-[22px] text-cream text-center leading-tight">
               Когда напомнить о себе?
             </h2>
-            <p className="text-[13px] text-muted mt-3 mb-7 text-center leading-snug">
+            <p className="text-[13px] text-muted mt-[var(--mx-space-3)] mb-[var(--mx-space-7)] text-center leading-snug">
               Привычка держится на одном постоянном времени. Бот пришлёт короткое сообщение — не
               спам.
             </p>
@@ -301,12 +294,13 @@ export default function Onboarding({ user, onFinish }) {
                 return (
                   <button
                     key={r.key}
+                    data-testid="onboarding-reminder-option"
                     onClick={() => {
                       platform.haptic('light')
                       setReminder(r.key)
                     }}
                     className={[
-                      'mx-onboarding-reminder w-full rounded-3xl px-[var(--mx-screen-x)] py-4 flex items-center gap-4 border-0 text-left',
+                      'mx-onboarding-reminder w-full rounded-[var(--mx-radius-card)] px-[var(--mx-screen-x)] py-[var(--mx-space-4)] flex items-center gap-[var(--mx-space-4)] border-0 text-left',
                       on ? 'bg-cream text-emerald-deep' : 'bg-emerald text-cream',
                     ].join(' ')}
                   >
@@ -336,34 +330,33 @@ export default function Onboarding({ user, onFinish }) {
               })}
             </div>
 
-            <button onClick={next} className="cta-pill text-[16px] px-14 py-4 mx-auto mt-8">
+            <button
+              onClick={next}
+              data-testid="onboarding-next"
+              className="cta-pill text-[16px] py-[var(--mx-space-4)] mx-auto mt-[var(--mx-space-8)]"
+            >
               Дальше
             </button>
           </div>
         )}
 
-        {/* ── 4. План готов ── */}
-        {step === 4 && (
+        {/* ── 3. Готово ── */}
+        {step === 3 && (
           <div
-            key="s4"
-            className="mx-onboarding-step mx-onboarding-question-step flex-1 w-full max-w-md flex flex-col justify-center px-6 py-8"
+            key="s3"
+            className="mx-onboarding-step mx-onboarding-question-step flex-1 w-full max-w-md flex flex-col justify-center px-[var(--mx-screen-x)] py-[var(--mx-space-8)]"
           >
             <h2 className="font-display text-[24px] text-cream text-center leading-tight">
               Готово. Путь размечен.
             </h2>
-            {chosenFocusLabels.length > 0 && (
-              <p className="text-[13px] text-muted mt-3 text-center leading-snug">
-                Фокус: <span className="text-cream font-bold">{chosenFocusLabels.join(', ')}</span>
-              </p>
-            )}
 
-            <div className="space-y-2.5 mt-8">
+            <div className="space-y-2.5 mt-[var(--mx-space-8)]">
               {PLAN_CARDS.map((text, i) => {
                 const shown = revealed > i
                 return (
                   <div
                     key={i}
-                    className="mx-onboarding-plan-card rounded-3xl bg-emerald px-[var(--mx-screen-x)] py-4 flex items-center gap-3"
+                    className="mx-onboarding-plan-card rounded-[var(--mx-radius-card)] bg-emerald px-[var(--mx-screen-x)] py-[var(--mx-space-4)] flex items-center gap-[var(--mx-space-3)]"
                     data-revealed={shown}
                   >
                     <span className="flex-1 text-[13px] font-semibold text-cream leading-snug">
@@ -381,14 +374,39 @@ export default function Onboarding({ user, onFinish }) {
               })}
             </div>
 
-            {/* Брендовый символ статичен; готовность плана показывают карточки и CTA. */}
-            <button
-              onClick={finish}
-              disabled={revealed < PLAN_CARDS.length}
-              className="cta-pill text-[16px] px-14 py-4 mx-auto mt-8 disabled:opacity-30"
-            >
-              {revealed < PLAN_CARDS.length ? 'Собираю...' : 'Войти'}
-            </button>
+            {saveError ? (
+              <div className="flex flex-col items-center gap-[var(--mx-space-3)] mt-[var(--mx-space-8)]">
+                <p className="text-[13px] text-muted text-center">
+                  Не удалось сохранить напоминание
+                </p>
+                <div className="flex gap-[var(--mx-space-3)]">
+                  <button
+                    onClick={finish}
+                    disabled={submitting}
+                    data-testid="onboarding-save-retry"
+                    className="cta-pill text-[16px] py-[var(--mx-space-4)]"
+                  >
+                    {submitting ? 'Сохраняю...' : 'Повторить'}
+                  </button>
+                  <button
+                    onClick={continueWithoutReminder}
+                    data-testid="onboarding-save-skip"
+                    className="cta-pill text-[16px] py-[var(--mx-space-4)] opacity-60"
+                  >
+                    Без напоминания
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={finish}
+                disabled={revealed < PLAN_CARDS.length || submitting}
+                data-testid="onboarding-enter"
+                className="cta-pill text-[16px] py-[var(--mx-space-4)] mx-auto mt-[var(--mx-space-8)] disabled:opacity-30"
+              >
+                Войти
+              </button>
+            )}
           </div>
         )}
       </div>
