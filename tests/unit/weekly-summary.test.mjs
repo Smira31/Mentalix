@@ -7,6 +7,7 @@ import {
   isWeekComplete,
   formatWeekRangeShort,
   daysSinceFirst,
+  countActiveDays,
   getNearestDayMilestone,
   DAY_MILESTONES,
 } from '../../src/screens/progress/weeklySummary.js'
@@ -307,7 +308,34 @@ test('daysSinceFirst: null → null', () => {
   assert.equal(daysSinceFirst(null), null)
 })
 
+// ── countActiveDays ──
+
+test('countActiveDays: один активный день месяц назад → 1 (не 30 календарных)', () => {
+  const checkins = [{ date: '2026-09-08' }]
+  assert.equal(countActiveDays(checkins), 1)
+})
+
+test('countActiveDays: несколько записей в один день → один день', () => {
+  const checkins = [{ date: '2026-09-08' }, { date: '2026-09-08' }, { date: '2026-09-09' }]
+  assert.equal(countActiveDays(checkins), 2)
+})
+
+test('countActiveDays: пустой список → 0', () => {
+  assert.equal(countActiveDays([]), 0)
+})
+
 // ── Вехи дней ──
+
+test('веха: 1 активный день месяц назад → «3 дня», прогресс 1/3', () => {
+  const checkins = [{ date: '2026-09-08' }]
+  const totalDays = countActiveDays(checkins)
+  const m = getNearestDayMilestone(totalDays)
+  assert.ok(m)
+  assert.equal(m.goal, 3)
+  assert.equal(m.percent, 33)
+  assert.equal(m.remaining, 2)
+  assert.equal(m.title, '3 дня — первые выводы')
+})
 
 test('веха: 0 дней → ближайшая «3 дня — первые выводы»', () => {
   const m = getNearestDayMilestone(0)
