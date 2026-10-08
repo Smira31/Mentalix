@@ -73,7 +73,7 @@ function PracticeRail({ practices, onOpen }) {
       key: 'daimon',
       title: 'Даймон',
       category: 'Самопознание',
-      description: 'Игра для самопознания: вопрос, кубик, разговор с внутренним голосом',
+      description: 'Вопрос, кубик и разговор с внутренним голосом.',
       status: 'НОВОЕ',
       badgeColor: 'gold',
       kind: 'daimon',

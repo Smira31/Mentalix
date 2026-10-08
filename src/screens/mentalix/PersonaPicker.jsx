@@ -40,7 +40,7 @@ const DIALOG_DESCRIPTIONS = {
 const DAIMON_CARD = {
   key: 'daimon',
   name: 'Даймон',
-  promise: 'Игра самопознания: брось кубик и узнай, где ты сейчас.',
+  promise: 'Брось кубик и узнай, где ты сейчас.',
   description: 'Внутренний голос. Первые броски бесплатно.',
 }
 
