@@ -1314,7 +1314,7 @@ test('ошибка гостевого входа оставляет рабочи
   await expect(page.getByRole('heading', { name: 'Вход по email' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Или через Telegram' })).toBeHidden()
   await page.getByTestId('web-auth-guest-button').click()
-  await expect(page.getByText(/Пара вопросов — и приложение/)).toBeVisible()
+  await expect(page.getByText('Пара коротких вопросов — и начнём. Это займёт минуту.')).toBeVisible()
   expect(attempts).toBe(2)
   await context.close()
 })
