@@ -35,7 +35,7 @@ export default function DemoTelegramChrome() {
   const pill = demoTelegramPillState(hasBackAction)
 
   return (
-    <div className="mx-demo-telegram-chrome">
+    <div className="mx-demo-telegram-chrome" data-demo-chrome="true">
       <div className="mx-demo-telegram-chrome__status" aria-hidden="true">
         <div className="mx-demo-telegram-chrome__status-zone mx-demo-telegram-chrome__status-zone--time">
           <span className="mx-demo-telegram-chrome__time">{time}</span>

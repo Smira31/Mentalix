@@ -1,0 +1,18 @@
+// Auto-generated from traced SVG: icon-phone-slash.svg
+// fill rgb(var(--c-text)), fill-rule evenodd
+
+export function IconPhoneSlash({ className }) {
+  return (
+    <svg
+      className={className || "mx-icon-phone-slash-art"}
+      viewBox="0 0 199 321"
+      preserveAspectRatio="xMidYMid meet"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="M31.3 13c-9.5 2-17 7.9-21.2 17l-2.5 5.5-.1 88.7c-.1 48.9.1 88.8.4 88.8.4 0 12.1-10.2 26.1-22.8 30.8-27.6 92.9-82.9 130.3-116.2l27.5-24.5.1-6.1c.2-12.9-6.3-23.6-17.1-28.5l-5.3-2.4-67-.2c-36.9 0-68.9.3-71.2.7M176 92.6c-8.5 7.6-25.8 23-38.5 34.4-12.6 11.3-44.6 39.9-71 63.4-26.4 23.6-50.6 45.3-53.8 48.4l-5.8 5.5.5 21.4c.4 18 .8 22 2.4 25.6 2.7 6.1 7.7 11.4 13.6 14.5l5.1 2.7 67 .3c36.9.2 69.3 0 72.1-.3 10.3-1.2 20.6-10.3 23.4-20.5.7-2.4.9-39.1.8-106.4l-.3-102.7z" fill="currentColor" fillRule="evenodd" />
+    </svg>
+  )
+}
+
+export default IconPhoneSlash

@@ -1,0 +1,18 @@
+// Auto-generated from traced SVG: icon-glass.svg
+// fill rgb(var(--c-text)), fill-rule evenodd
+
+export function IconGlass({ className }) {
+  return (
+    <svg
+      className={className || "mx-icon-glass-art"}
+      viewBox="0 0 222 264"
+      preserveAspectRatio="xMidYMid meet"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="M86.5 9.7c-28 1.8-65.2 6.9-72.2 9.8-1.7.7-3.9 2.5-4.8 3.9-1.8 2.8-2.1-.3 3.6 37.1 10.9 70.8 29.1 178 31 182.8 2.7 6.5 7.4 7.9 34.4 10.3 31.3 2.7 77.7.7 88.8-3.9 6.3-2.7 7.1-4.8 12.2-30.9 6.7-35 12.7-66.9 17.5-93.8 2.3-12.9 6.9-38.4 10.2-56.5 3.3-18.2 6-36.2 6.1-40l.2-7-3.7-1.8c-7.4-3.6-32.6-7.7-60.3-9.7-12.8-.9-50.9-1.1-63-.3M95 83c3 .6 13.2 3.7 22.5 6.7 15.3 5 18.1 5.6 28 6 15.8.8 27.1-1.8 46.3-10.4.9-.4 1.2 1 1.2 5v5.6l-5.5 2c-7.9 3-19.2 5.8-28.6 7.2-13.6 2-28.3-.1-50.4-7.1-29.4-9.3-45.3-9.4-68.3-.3-10.5 4.1-11.2 3.9-11.2-3 0-3.4.4-4 3.5-5.3 5.4-2.2 20.4-6.3 27-7.4 7.4-1.1 28.1-.6 35.5 1" fill="currentColor" fillRule="evenodd" />
+    </svg>
+  )
+}
+
+export default IconGlass

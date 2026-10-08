@@ -42,7 +42,6 @@ last_verified: 2026-09-11
 ```text
 Issue → согласованные scope, проверки и роль → одна рабочая ветка →
 тест до кода → минимальный diff → проверки → owner review →
-разрешённые commit/push/PR → exact-SHA Cloudflare Owner QA →
 owner PASS → разрешённый merge → подтверждение deployment → следующая Issue
 ```
 
@@ -111,19 +110,16 @@ PR/commit: ...
 
 ## 6. Product and Preview boundaries
 
-Card Lab, Motion Kit и другие UI-lab поверхности являются Demo-only, пока владелец отдельно не подтвердил production scope. Частые итерации выполняются локально; exact-SHA owner gate публикуется через GitHub Actions workflow `Cloudflare Owner QA` в Cloudflare Pages. Production публикуется только Firebase workflow после merge в `main`. Не отправляйте токены, raw `initData`, персональные данные или production URLs with credentials в PR, issue, chat или commit.
+Card Lab, Motion Kit и другие UI-lab поверхности являются Demo-only, пока владелец отдельно не подтвердил production scope. Частые итерации выполняются локально. Production публикуется только Firebase workflow после merge в `main`. Не отправляйте токены, raw `initData`, персональные данные или production URLs with credentials в PR, issue, chat или commit.
 
 ### Preview contract (обязательно)
 
-| Роль                        | Платформа / проект                   | URL                                     |
-| --------------------------- | ------------------------------------ | --------------------------------------- |
-| **Production**              | Firebase Hosting Live                | https://mentalix-production.web.app     |
-| **Demo Preview / Owner QA** | Cloudflare Pages `mentalix-owner-qa` | **https://mentalix-owner-qa.pages.dev** |
+| Роль           | Платформа / проект    | URL                                 |
+| -------------- | --------------------- | ----------------------------------- |
+| **Production** | Firebase Hosting Live | https://mentalix-production.web.app |
 
-- Канонический QA-процесс: локальный UI Lab → готовый exact SHA → GitHub Actions `Cloudflare Owner QA` → `https://mentalix-owner-qa.pages.dev` → Telegram owner QA → iPhone/browser → Telegram `web_app` → owner PASS → merge → автоматический Firebase Production deploy из `main`.
 - Production Firebase не используется для feature QA.
 - Vercel Preview, Vercel deployment URLs и workflow `Telegram Preview` не используются.
-- Health check и Telegram button для Demo QA используют Cloudflare stable URL.
 
 ## 7. Финальный чек-лист PR
 

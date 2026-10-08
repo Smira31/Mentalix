@@ -50,6 +50,26 @@ export default function EmotionStep({
 }) {
   const emotionSet = emotions || EMOTIONS
 
+  /*
+   * Хуки вызываются всегда и до ветвления по variant: условный вызов ломает
+   * правила хуков (react-hooks/rules-of-hooks). В grid-варианте они не нужны,
+   * но порядок вызова должен совпадать с carousel.
+   */
+  const [activeLevel, setActiveLevel] = useState(initialLevel)
+  const scrollRef = useRef(null)
+  const rafRef = useRef(null)
+
+  useLayoutEffect(() => {
+    const container = scrollRef.current
+    if (!container) return
+    const column = container.children[initialLevel - 1]
+    if (column) {
+      const target = column.offsetLeft + column.offsetWidth / 2 - container.clientWidth / 2
+      container.scrollLeft = Math.max(0, target)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   // ── Grid-вариант (вечерний разбор) ──
   // Множественный выбор (как Stoic): тап по плитке добавляет/снимает её;
   // выбранные эмоции хранятся в строке через запятую («тревожно, вымотан»).
@@ -84,21 +104,6 @@ export default function EmotionStep({
   }
 
   // ── Carousel-вариант (утро, практика «Настроение») ──
-  const [activeLevel, setActiveLevel] = useState(initialLevel)
-  const scrollRef = useRef(null)
-  const rafRef = useRef(null)
-
-  useLayoutEffect(() => {
-    const container = scrollRef.current
-    if (!container) return
-    const column = container.children[initialLevel - 1]
-    if (column) {
-      const target = column.offsetLeft + column.offsetWidth / 2 - container.clientWidth / 2
-      container.scrollLeft = Math.max(0, target)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
   function handleScroll() {
     if (rafRef.current) return
     rafRef.current = requestAnimationFrame(() => {

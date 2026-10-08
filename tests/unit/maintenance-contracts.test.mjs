@@ -208,22 +208,6 @@ test('MXL-PREVIEW-CLOUDFLARE-001 разрешает Quick Tunnel только ч
   assert.match(demo, /\(isPreviewRuntime \|\| isQaProductionHost\)/)
 })
 
-test('MXL-CLOUDFLARE-OWNER-QA-001 использует manual exact-SHA Demo gate', () => {
-  const workflow = readFileSync(
-    new URL('../../.github/workflows/cloudflare-owner-qa.yml', import.meta.url),
-    'utf8'
-  )
-
-  assert.match(workflow, /workflow_dispatch:/)
-  assert.match(workflow, /commit_sha:/)
-  assert.match(workflow, /mentalix-owner-qa/)
-  assert.match(workflow, /qa-build\.json/)
-  assert.match(workflow, /X-Robots-Tag: noindex, nofollow/)
-  assert.match(workflow, /cloudflare\/wrangler-action@[0-9a-f]{40}/)
-  assert.match(workflow, /pages deploy dist/)
-  assert.match(workflow, /immutable provenance/)
-})
-
 test('MXL-007 публикует reference Today chrome with streak/calendar and calm cards', () => {
   const today = readFileSync(new URL('../../src/screens/Today.jsx', import.meta.url), 'utf8')
   const conversation = readFileSync(

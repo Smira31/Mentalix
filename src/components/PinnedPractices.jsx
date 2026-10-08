@@ -15,6 +15,24 @@ import {
 import './PinnedPractices.css'
 
 import CardSystemGlyph, { practiceGlyphKind } from './CardSystemGlyph'
+import { CatalogPuzzleArt } from './practice-art/CatalogPuzzleArt'
+import { CatalogCandleArt } from './practice-art/CatalogCandleArt'
+import { CatalogDieArt } from './practice-art/CatalogDieArt'
+import { CatalogPuzzleSmallArt } from './practice-art/CatalogPuzzleSmallArt'
+import { CatalogCandleSmallArt } from './practice-art/CatalogCandleSmallArt'
+import { CatalogDieSmallArt } from './practice-art/CatalogDieSmallArt'
+
+const TRACED_GLYPHS = {
+  rituals: CatalogPuzzleArt,
+  ascezas: CatalogCandleArt,
+  daimon: CatalogDieArt,
+}
+
+const TRACED_GLYPHS_SMALL = {
+  rituals: CatalogPuzzleSmallArt,
+  ascezas: CatalogCandleSmallArt,
+  daimon: CatalogDieSmallArt,
+}
 import { api } from '../lib/api'
 import { buildPracticeViewModels, PRACTICE_RAIL_KEYS } from '../lib/practiceCatalogRegistry'
 import { getFullscreenPortalTarget, useFullscreenSurface } from '../lib/fullscreenSurface'
@@ -97,7 +115,16 @@ function Sheet({
   return typeof document === 'undefined' ? null : createPortal(content, getFullscreenPortalTarget())
 }
 
-function PracticeGlyph({ practice }) {
+function PracticeGlyph({ practice, small = false }) {
+  const glyphSet = small ? TRACED_GLYPHS_SMALL : TRACED_GLYPHS
+  const TracedIcon = practice?.key ? glyphSet[practice.key] : null
+  if (TracedIcon) {
+    return (
+      <span className="mx-pinned-practice-glyph" aria-hidden="true">
+        <TracedIcon className={`mx-pinned-practice-glyph__traced mx-traced--${practice.key}`} />
+      </span>
+    )
+  }
   return (
     <span className="mx-pinned-practice-glyph" aria-hidden="true">
       <CardSystemGlyph kind={practiceGlyphKind(practice)} />
@@ -552,7 +579,7 @@ export default function PinnedPractices({
                     onClick={() => togglePinned(practice, { undoable: false })}
                   >
                     <span className="mx-library-row__icon" aria-hidden="true">
-                      <PracticeGlyph practice={practice} />
+                      <PracticeGlyph practice={practice} small />
                     </span>
                     <span className="mx-library-row__name">{practice.title}</span>
                     <span

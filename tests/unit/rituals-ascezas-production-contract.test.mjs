@@ -169,7 +169,7 @@ test('practice menu offers edit, sign and delete', () => {
   assert.match(detail, /buildEditPatch/)
   assert.match(detail, /<PracticeSignScreen/)
   assert.match(signScreen, /PRACTICE_GLYPHS/)
-  assert.match(signScreen, /SemanticGlyph/)
+  assert.match(signScreen, /PracticeIcon/)
   assert.match(wording, /buildEditPatch/)
 })
 

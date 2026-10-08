@@ -899,36 +899,4 @@ button.mx-profile-row:active {
   cursor: default;
 }
 
-/* ── Блок кризисной помощи: кликабельные номера (tel:) ── */
-.mx-crisis-link {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  min-height: 50px;
-  padding: 8px 20px;
-  text-decoration: none;
-  color: rgb(var(--c-text));
-  font: inherit;
-  text-align: left;
-}
 
-.mx-crisis-link:active {
-  background: rgb(var(--c-text) / 0.04);
-}
-
-.mx-crisis-link + .mx-crisis-link::before {
-  position: absolute;
-  top: 0;
-  right: 0;
-  left: 20px;
-  height: 1px;
-  background: rgb(var(--c-border));
-  content: '';
-}
-
-.mx-crisis-link__number {
-  flex-shrink: 0;
-  font-weight: 700;
-  white-space: nowrap;
-}

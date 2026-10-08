@@ -3,7 +3,8 @@ import { Check } from 'lucide-react'
 import { platform } from '../../platform'
 import { useBackButton } from '../../platform/telegram.hooks'
 import { RoundBackButton } from '../NestedScreenHeader'
-import SemanticGlyph, { semanticKindForRitual, semanticKindForAsceza } from '../SemanticGlyph'
+import PracticeIcon from '../PracticeIcon'
+import { semanticKindForRitual, semanticKindForAsceza } from '../SemanticGlyph'
 import PracticeDetail from '../PracticeDetail'
 import StreakRestoreSheet from '../StreakRestoreSheet'
 import { previewPracticeAction } from '../../lib/demoMode'
@@ -110,7 +111,7 @@ function ListScreen({
                   </button>
 
                   <span className="mx-practice-flow-tile__icon">
-                    <SemanticGlyph kind={glyph} className="w-full h-full" />
+                    <PracticeIcon glyph={glyph} className="w-full h-full" />
                   </span>
                   <span className="mx-practice-flow-tile__name">{item.name}</span>
                   {minimum && <span className="mx-practice-flow-tile__minimum">{minimum}</span>}
@@ -170,7 +171,7 @@ function ReadyScreen({ wording, items, onAddPreset, onOpenOwn, onBack }) {
               }}
             >
               <span className="mx-practice-ready-card__icon">
-                <SemanticGlyph kind={preset.glyph} className="w-full h-full" />
+                <PracticeIcon glyph={preset.glyph} className="w-full h-full" />
               </span>
               <span className="mx-practice-ready-card__body">
                 <span className="mx-practice-ready-card__name">{preset.name}</span>
