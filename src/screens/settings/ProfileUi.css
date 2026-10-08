@@ -178,7 +178,7 @@
   color: rgb(var(--c-muted));
   font-family: 'Manrope', system-ui, sans-serif;
   font-size: max(11px, calc(11px * var(--mx-type-scale)));
-  font-weight: 700;
+  font-weight: 600;
   line-height: 13px;
   letter-spacing: 0.2em;
   text-transform: uppercase;

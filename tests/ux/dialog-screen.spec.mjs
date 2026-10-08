@@ -47,7 +47,7 @@ test.describe('Диалог — экран выбора роли', () => {
     await expect(cards.nth(3)).toContainText('Даймон')
 
     await expect(cards.nth(1)).toContainText('Выслушает, когда нужно выговориться.')
-    await expect(cards.nth(3)).toContainText('Игра самопознания')
+    await expect(cards.nth(3)).toContainText('Брось кубик и узнай, где ты сейчас.')
   })
 
   test('«Начать» у Спутника открывает пустой чат', async ({ page }) => {
