@@ -3,6 +3,7 @@ import { platform, platformName } from '../platform'
 import { api } from '../lib/api'
 import { Check } from 'lucide-react'
 import BackButton from '../components/BackButton'
+import OwlMark from '../components/OwlMark'
 import { DEFAULT_REVIEW_HOUR } from '../lib/todayCardState'
 import {
   useFullscreenSurface,
@@ -197,7 +198,7 @@ export default function Onboarding({ user, onFinish }) {
         {step === 0 && (
           <div className="mx-onboarding-step mx-onboarding-intro-step flex-1 w-full max-w-md flex flex-col items-center justify-center px-[var(--mx-screen-x)] text-center">
             <div className="mx-onboarding-intro-copy flex flex-col items-center">
-              {/* Место под иллюстрацию — не ломать вёрстку, чтобы вставить позже */}
+              <OwlMark size={150} className="text-cream mb-[var(--mx-space-8)]" />
               <h2 className="font-display text-[30px] text-cream leading-tight">Mentalix.</h2>
               <p className="text-[14px] text-muted mt-[var(--mx-space-4)] leading-relaxed max-w-xs">
                 Пара коротких вопросов — и начнём. Это займёт минуту.

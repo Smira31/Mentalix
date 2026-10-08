@@ -12,7 +12,7 @@ import { paintChrome, useSettingsButton } from './platform/telegram.hooks'
 
 import Today from './screens/Today'
 
-import BookLogo from './components/BookLogo'
+import OwlMark from './components/OwlMark'
 import BackButton from './components/BackButton'
 import BottomNavigation from './components/BottomNavigation'
 import PreviewApiDiagnostic from './components/PreviewApiDiagnostic'
@@ -118,7 +118,7 @@ function Splash() {
         font-body
       "
     >
-      <BookLogo size={132} className="text-gold" />
+      <OwlMark size={140} className="text-gold" />
 
       <div
         className="
