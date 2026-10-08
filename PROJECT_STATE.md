@@ -34,21 +34,19 @@ last_verified: 2026-10-05
 
 ## Каноническое состояние
 
-| Область             | Факт                                                                                                                                           | Доказательство                                                                                                                                         |
-| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Card System v2      | Нормативная спецификация в `DESIGN_SYSTEM.md` §5.1, решение владельца от 22.09.2026                                                            | [`DESIGN_SYSTEM.md`](DESIGN_SYSTEM.md) §5.1                                                                                                            |
-| Card System v1      | [`docs/archive/CARD_SYSTEM_V1_2026-09-22.md`](docs/archive/CARD_SYSTEM_V1_2026-09-22.md), статус `archived`                                    | Архив; не текущий источник истины                                                                                                                      |
-| Frontend            | `Smira31/Mentalix`, default branch `main`                                                                                                      | [GitHub](https://github.com/Smira31/Mentalix)                                                                                                          |
-| Frontend `main` | baseline `b1fdfb2fff939fb515afb878f72a40a14328fc03` после PR #1003 на момент сверки 05.10.2026; не deployed SHA | [commit](https://github.com/Smira31/Mentalix/commit/b1fdfb2fff939fb515afb878f72a40a14328fc03), [PR #1003](https://github.com/Smira31/Mentalix/pull/1003) |
-| Production frontend | Настройки: успешный push-CI `main` → Firebase Hosting Live; ручной запуск также предусмотрен. Текущий deployed SHA не проверен | [Firebase workflow](https://github.com/Smira31/Mentalix/actions/workflows/firebase-hosting.yml); исторический run 35119350799 не доказывает текущий deploy |
-| `Demo Preview`      | Cloudflare Pages project `mentalix-owner-qa` → `https://mentalix-owner-qa.pages.dev`                                                           | workflow [Cloudflare Owner QA](https://github.com/Smira31/Mentalix/actions/workflows/cloudflare-owner-qa.yml)                                          |
-| Backend             | `Smira31/mentalix-bot`, `main`                                                                                                                 | [GitHub](https://github.com/Smira31/mentalix-bot)                                                                                                      |
-| Backend runtime     | Исторический адрес health: `https://mentalix-bot.onrender.com/api/health`; текущий статус backend не проверялся в этой docs-сверке             | Приватный `mentalix-bot` и отдельная runtime-проверка обязательны для актуального статуса                                                              |
-| Vercel              | Git integration отключена у проектов `mentalix` и `mentalix-preview`                                                                           | Vercel git context: linked projects отсутствуют                                                                                                        |
+| Область             | Факт                                                                                                                               | Доказательство                                                                                                                                             |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Card System v2      | Нормативная спецификация в `DESIGN_SYSTEM.md` §5.1, решение владельца от 22.09.2026                                                | [`DESIGN_SYSTEM.md`](DESIGN_SYSTEM.md) §5.1                                                                                                                |
+| Card System v1      | [`docs/archive/CARD_SYSTEM_V1_2026-09-22.md`](docs/archive/CARD_SYSTEM_V1_2026-09-22.md), статус `archived`                        | Архив; не текущий источник истины                                                                                                                          |
+| Frontend            | `Smira31/Mentalix`, default branch `main`                                                                                          | [GitHub](https://github.com/Smira31/Mentalix)                                                                                                              |
+| Frontend `main`     | baseline `b1fdfb2fff939fb515afb878f72a40a14328fc03` после PR #1003 на момент сверки 05.10.2026; не deployed SHA                    | [commit](https://github.com/Smira31/Mentalix/commit/b1fdfb2fff939fb515afb878f72a40a14328fc03), [PR #1003](https://github.com/Smira31/Mentalix/pull/1003)   |
+| Production frontend | Настройки: успешный push-CI `main` → Firebase Hosting Live; ручной запуск также предусмотрен. Текущий deployed SHA не проверен     | [Firebase workflow](https://github.com/Smira31/Mentalix/actions/workflows/firebase-hosting.yml); исторический run 35119350799 не доказывает текущий deploy |
+| Backend             | `Smira31/mentalix-bot`, `main`                                                                                                     | [GitHub](https://github.com/Smira31/mentalix-bot)                                                                                                          |
+| Backend runtime     | Исторический адрес health: `https://mentalix-bot.onrender.com/api/health`; текущий статус backend не проверялся в этой docs-сверке | Приватный `mentalix-bot` и отдельная runtime-проверка обязательны для актуального статуса                                                                  |
+| Vercel              | Git integration отключена у проектов `mentalix` и `mentalix-preview`                                                               | Vercel git context: linked projects отсутствуют                                                                                                            |
 
 ## Канонический словарь окружений
 
-- **`Demo Preview`:** Cloudflare Pages, ручной exact-SHA deploy для быстрой визуальной и Telegram/iPhone QA-проверки.
 - **Production:** Firebase Hosting Live channel, автоматический deploy только из `main`.
 - **Local Preview:** `vite preview` после production build.
 - **UI Lab:** экспериментальные маршруты внутри репозитория; не Production.
@@ -56,11 +54,10 @@ last_verified: 2026-10-05
 
 ## Hosting policy
 
-1. Разработка и быстрая визуальная проверка выполняются через Cloudflare `Demo Preview`.
-2. После QA изменения проходят обычный PR и обязательный GitHub check `Функциональная проверка проекта`.
-3. Push в `main` запускает CI; только его успешное завершение удовлетворяет автоматическому Firebase Production deploy gate. В workflow также есть ручной запуск. Это описание условий запуска, не подтверждение результата deploy.
-4. `Firebase Preview Channels`, `Vercel Preview` и Vercel watchdog не используются.
-5. Render backend не переносится в рамках frontend-задач.
+1. После QA изменения проходят обычный PR и обязательный GitHub check `Функциональная проверка проекта`.
+2. Push в `main` запускает CI; только его успешное завершение удовлетворяет автоматическому Firebase Production deploy gate. В workflow также есть ручной запуск. Это описание условий запуска, не подтверждение результата deploy.
+3. `Firebase Preview Channels`, `Vercel Preview` и Vercel watchdog не используются.
+4. Render backend не переносится в рамках frontend-задач.
 
 Полная policy: [`docs/handoffs/2026-09-16-hosting-policy.md`](docs/handoffs/2026-09-16-hosting-policy.md).
 
@@ -104,5 +101,4 @@ PR [#1000](https://github.com/Smira31/Mentalix/pull/1000) объединён 03.
 
 [1]: https://github.com/Smira31/Mentalix/commit/767a3b55e69d670cb3ea9b2adbd6704f0d734a70 'Historical frontend snapshot after PR #904'
 [2]: https://mentalix-production.web.app 'Mentalix Firebase Production'
-[3]: https://mentalix-owner-qa.pages.dev 'Mentalix Cloudflare QA'
-[4]: https://github.com/Smira31/Mentalix/actions/workflows/firebase-hosting.yml 'Firebase Hosting workflow'
+[3]: https://github.com/Smira31/Mentalix/actions/workflows/firebase-hosting.yml 'Firebase Hosting workflow'

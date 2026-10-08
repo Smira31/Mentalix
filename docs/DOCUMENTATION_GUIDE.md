@@ -11,13 +11,13 @@ last_verified: 2026-09-16
 
 Во всех актуальных документах Mentalix используются только следующие пять терминов:
 
-| Термин              | Каноническое определение                                                              |
-| ------------------- | ------------------------------------------------------------------------------------- |
-| **Production**      | `main` → Firebase Hosting Live channel → <https://mentalix-production.web.app>.       |
-| **Demo Preview**    | Cloudflare Pages project `mentalix-owner-qa` → <https://mentalix-owner-qa.pages.dev>. |
-| **UI Lab**          | Встроенные экспериментальные маршруты в репозитории, не Production.                   |
-| **Local Preview**   | `vite preview` после production build.                                                |
-| **Vercel fallback** | Старое отключённое окружение; не использовать для новых deploy/checks.                |
+| Термин         | Каноническое определение                                                        |
+| -------------- | ------------------------------------------------------------------------------- |
+| **Production** | `main` → Firebase Hosting Live channel → <https://mentalix-production.web.app>. |
+
+| **UI Lab** | Встроенные экспериментальные маршруты в репозитории, не Production. |
+| **Local Preview** | `vite preview` после production build. |
+| **Vercel fallback** | Старое отключённое окружение; не использовать для новых deploy/checks. |
 
 Не используйте `preview` как самостоятельное имя окружения: всегда выбирайте точный термин из этой таблицы. Документ с актуальными SHA и проверенными release/production-фактами — [`PROJECT_STATE.md`](../PROJECT_STATE.md); исходный freeze — [`BASELINE_SNAPSHOT.md`](../BASELINE_SNAPSHOT.md).
 
@@ -79,4 +79,4 @@ npm run docs:check
 
 Не создавайте отдельный status-файл для каждого агента, отдельный backlog для каждой модели, копии технических токенов, полную историю проверок в нескольких местах или обязательные обновления архива для каждого микро-diff. Не перемещайте и не удаляйте старые документы без отдельной задачи: архив остаётся доказательством прошлого.
 
-| Что проверяется в UI Lab и какие выводы приняты? | [`docs/working/ui-lab/`](working/ui-lab/README.md) | Production snapshot или незакрытый Owner QA Preview |
+| Что проверяется в UI Lab и какие выводы приняты? | [`docs/working/ui-lab/`](working/ui-lab/README.md) | Production snapshot или незакрытый Preview |
