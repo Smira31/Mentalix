@@ -50,6 +50,18 @@ import {
 import HistoryFilterSheet from './HistoryFilterSheet'
 import HistorySearchSheet from './HistorySearchSheet'
 import { ProgressGlassMenu, ProgressGlassMenuItem } from '../../components/ProgressGlassMenu'
+import WeeklySummaryScreen from './WeeklySummaryScreen'
+import FirstDayScreen from './FirstDayScreen'
+import {
+  computeWeekSummary,
+  getWeekBounds,
+  isWeekComplete,
+  formatWeekRangeShort,
+  daysSinceFirst,
+  interleaveWeekSummaries,
+} from './weeklySummary'
+import { now as clockNow } from '../../lib/clock'
+import './weeklySummary.css'
 import './ProgressScreen.css'
 
 const MOOD_WORDS = ['тяжко', 'так себе', 'нормально', 'хорошо', 'отлично']
@@ -545,48 +557,77 @@ function entryPreview(entry) {
   return null
 }
 
-function DayList({ days, onSelectEntry }) {
-  return days.map(day => (
-    <div className="mx-progress-history__group" key={day.date}>
-      <div className="mx-progress-history__day-label">
-        <span>{formatDayLabel(day.date)}</span>
-        <span className="mx-progress-history__day-chevron" aria-hidden="true">
-          ›
-        </span>
-      </div>
-      {day.entries.map((entry, index) => {
-        const preview = entryPreview(entry)
-        const moodLevel = entryMoodDot(entry)
-        return (
-          <button
-            type="button"
-            key={`${entry.type}-${index}`}
-            className="mx-progress-history__row"
-            data-testid="progress-history-row"
-            onClick={() => onSelectEntry(entry)}
-          >
-            <div className="mx-progress-history__row-top">
-              <span className="mx-progress-history__row-name">{entryListName(entry.type)}</span>
-              <span className="mx-progress-history__row-right">
-                {moodLevel != null && (
-                  <span
-                    className="mx-progress-history__row-mood-dot"
-                    style={{ background: moodColor(moodLevel) }}
-                    aria-hidden="true"
-                  />
-                )}
-                {entry.time && <span className="mx-progress-history__row-time">{entry.time}</span>}
-              </span>
-            </div>
-            {preview && <div className="mx-progress-history__row-preview">{preview}</div>}
-          </button>
-        )
-      })}
-    </div>
-  ))
+function WeekSummaryCard({ summary, onClick }) {
+  return (
+    <button
+      type="button"
+      className="mx-week-summary-card"
+      data-testid="week-summary-card"
+      onClick={onClick}
+    >
+      <span className="mx-week-summary-card__eyebrow">ИТОГ НЕДЕЛИ</span>
+      <span className="mx-week-summary-card__title">Неделя {summary.weekNumber}</span>
+      <span className="mx-week-summary-card__range">{summary.rangeLabel}</span>
+    </button>
+  )
 }
 
-function PeriodDetail({ label, days, onBack, onSelectEntry }) {
+function DayList({ days, onSelectEntry, onOpenWeekSummary }) {
+  // now() учитывает демо-часы: итог недели появляется только после её воскресенья.
+  const items = interleaveWeekSummaries(days, clockNow())
+  return items.map((item, index) => {
+    if (item.type === 'weekSummary') {
+      return (
+        <WeekSummaryCard
+          key={`ws-${item.summary.startDate}`}
+          summary={item.summary}
+          onClick={() => onOpenWeekSummary(item.summary)}
+        />
+      )
+    }
+    const day = item.day
+    return (
+      <div className="mx-progress-history__group" key={day.date}>
+        <div className="mx-progress-history__day-label">
+          <span>{formatDayLabel(day.date)}</span>
+          <span className="mx-progress-history__day-chevron" aria-hidden="true">
+            ›
+          </span>
+        </div>
+        {day.entries.map((entry, index) => {
+          const preview = entryPreview(entry)
+          const moodLevel = entryMoodDot(entry)
+          return (
+            <button
+              type="button"
+              key={`${entry.type}-${index}`}
+              className="mx-progress-history__row"
+              data-testid="progress-history-row"
+              onClick={() => onSelectEntry(entry)}
+            >
+              <div className="mx-progress-history__row-top">
+                <span className="mx-progress-history__row-name">{entryListName(entry.type)}</span>
+                <span className="mx-progress-history__row-right">
+                  {moodLevel != null && (
+                    <span
+                      className="mx-progress-history__row-mood-dot"
+                      style={{ background: moodColor(moodLevel) }}
+                      aria-hidden="true"
+                    />
+                  )}
+                  {entry.time && <span className="mx-progress-history__row-time">{entry.time}</span>}
+                </span>
+              </div>
+              {preview && <div className="mx-progress-history__row-preview">{preview}</div>}
+            </button>
+          )
+        })}
+      </div>
+    )
+  })
+}
+
+function PeriodDetail({ label, days, onBack, onSelectEntry, onOpenWeekSummary }) {
   return (
     <div className="mx-progress-history" data-testid="progress-period-detail">
       <div className="mx-progress-entry__top-bar">
@@ -594,7 +635,7 @@ function PeriodDetail({ label, days, onBack, onSelectEntry }) {
         <span aria-hidden="true" />
       </div>
       <h2 className="mx-progress-history__title">{label.toLowerCase()}</h2>
-      <DayList days={days} onSelectEntry={onSelectEntry} />
+      <DayList days={days} onSelectEntry={onSelectEntry} onOpenWeekSummary={onOpenWeekSummary} />
     </div>
   )
 }
@@ -641,6 +682,8 @@ export default function ProgressHistory({
   })
   const [searchOpen, setSearchOpen] = useState(false)
   const [selectedPeriod, setSelectedPeriod] = useState(null)
+  const [selectedWeekSummary, setSelectedWeekSummary] = useState(null)
+  const [showFirstDay, setShowFirstDay] = useState(false)
   const [portalTarget, setPortalTarget] = useState(null)
 
   const userId = user?.id
@@ -1045,6 +1088,32 @@ export default function ProgressHistory({
     )
   }
 
+  /* ── Экран «Итог недели» ── */
+  if (selectedWeekSummary) {
+    return (
+      <WeeklySummaryScreen
+        summary={selectedWeekSummary}
+        user={user}
+        onBack={() => setSelectedWeekSummary(null)}
+      />
+    )
+  }
+
+  /* ── Экран «Первый день» ── */
+  if (showFirstDay) {
+    const firstDay = days && days.length > 0 ? days[days.length - 1] : null
+    const firstDate = firstDay?.date
+    const firstEntry = firstDay?.entries?.[0]
+    return (
+      <FirstDayScreen
+        firstDate={firstDate}
+        firstEntry={firstEntry}
+        user={user}
+        onBack={() => setShowFirstDay(false)}
+      />
+    )
+  }
+
   /* ── Период (неделя/месяц/год) — записи периода ── */
   if (selectedPeriod) {
     return (
@@ -1055,6 +1124,7 @@ export default function ProgressHistory({
           days={selectedPeriod.days}
           onBack={() => setSelectedPeriod(null)}
           onSelectEntry={handleSelectEntry}
+          onOpenWeekSummary={setSelectedWeekSummary}
         />
       </>
     )
@@ -1116,21 +1186,61 @@ export default function ProgressHistory({
       <div className="mx-progress-history" data-testid="progress-history-list">
         <h2 className="mx-progress-history__title">история.</h2>
 
-        {granularity === 'day' && <DayList days={filteredDays} onSelectEntry={handleSelectEntry} />}
+        {granularity === 'day' && (
+          <>
+            <DayList
+              days={filteredDays}
+              onSelectEntry={handleSelectEntry}
+              onOpenWeekSummary={setSelectedWeekSummary}
+            />
+            {days.length > 0 && (
+              <button
+                type="button"
+                className="mx-progress-history__row"
+                data-testid="first-day-row"
+                onClick={() => {
+                  platform.haptic('light')
+                  setShowFirstDay(true)
+                }}
+              >
+                <div className="mx-progress-history__row-top">
+                  <span className="mx-progress-history__row-name">
+                    Твой первый день в Mentalix
+                  </span>
+                </div>
+              </button>
+            )}
+          </>
+        )}
 
         {granularity === 'week' &&
           groupDaysByWeek(filteredDays).map(group => (
             <div className="mx-progress-history__period-section" key={group.monthLabel}>
               <h3 className="mx-progress-history__period-header">{group.monthLabel}</h3>
-              {group.cards.map(card => (
-                <PeriodCard
-                  key={card.startDate}
-                  rangeLabel={card.rangeLabel}
-                  title={`Неделя ${card.weekNumber}`}
-                  testId="history-week-card"
-                  onClick={() => openPeriod(card)}
-                />
-              ))}
+              {group.cards.map(card => {
+                const { end } = getWeekBounds(card.startDate)
+                const now = clockNow()
+                const isComplete = isWeekComplete(end, now)
+                const summary = isComplete
+                  ? computeWeekSummary(card.days, [], now)
+                  : null
+                return (
+                  <PeriodCard
+                    key={card.startDate}
+                    rangeLabel={card.rangeLabel}
+                    title={`Неделя ${card.weekNumber}`}
+                    testId="history-week-card"
+                    onClick={() => {
+                      if (summary) {
+                        platform.haptic('light')
+                        setSelectedWeekSummary(summary)
+                      } else {
+                        openPeriod(card)
+                      }
+                    }}
+                  />
+                )
+              })}
             </div>
           ))}
 
