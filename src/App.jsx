@@ -50,7 +50,7 @@ import { dispatchTabRefresh, dispatchTabReset } from './lib/tabRefresh'
 import { clearHistoryCache } from './lib/mentalixHistoryCache'
 import { clearSeriesSnapshots } from './lib/series'
 import { clearTrendsDataCache } from './lib/trendsDataCache'
-import { GUEST_MERGED_EVENT, loginAsGuest } from './lib/guestAuth'
+import { GUEST_MERGED_EVENT, loginAsGuest, canAutoCreateGuest } from './lib/guestAuth'
 
 import { getFullscreenSnapshot, initFullscreen } from './lib/tgFullscreen'
 import { initIdleMotionPause } from './lib/idleMotion'
@@ -644,7 +644,7 @@ function App() {
         const emailLink =
           window.location.pathname.startsWith('/auth/') ||
           ['email', 'code', 'token'].some(key => params.has(key))
-        if (!emailLink) {
+        if (!emailLink && canAutoCreateGuest()) {
           try {
             await loginAsGuest(api, acceptUser)
           } catch {

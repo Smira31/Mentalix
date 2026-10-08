@@ -232,6 +232,9 @@ test.describe('MXL-010 automated technical gate', () => {
       } catch {
         window.Telegram = undefined
       }
+      // Тестовый флаг: автогость разрешён только на боевом хосте,
+      // но UX-тесты работают на 127.0.0.1 — обходим проверку hostname.
+      window.__MX_TEST_ALLOW_GUEST = true
     })
     let guestRequests = 0
     await context.route('**/api/**', route => {
