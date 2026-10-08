@@ -29,6 +29,8 @@ import {
   periodName,
 } from './progress/progressAnalyticsPeriods'
 import { ProgressGlassMenu, ProgressGlassMenuItem } from '../components/ProgressGlassMenu'
+import MilestoneProgress from './progress/MilestoneProgress'
+import { daysSinceFirst } from './progress/weeklySummary'
 import { Eye, SlidersHorizontal } from 'lucide-react'
 
 const CALENDAR_WEEKDAYS = ['П', 'В', 'С', 'Ч', 'П', 'С', 'В']
@@ -969,6 +971,14 @@ export default function Analytics({
   const daysWithRecords = countDaysWithRecords(periodCheckins)
   const showNeedData = daysWithRecords < MIN_DAYS
 
+  // Total days since first checkin — for day milestone progress bar
+  const totalDays = useMemo(() => {
+    if (!poolCheckins || poolCheckins.length === 0) return 0
+    const dates = poolCheckins.map(c => c?.date).filter(Boolean).sort()
+    if (!dates.length) return 0
+    return daysSinceFirst(dates[0])
+  }, [poolCheckins])
+
   function handlePrev() {
     setOffset(o => o + 1)
     setView('analytics')
@@ -1143,6 +1153,8 @@ export default function Analytics({
               }}
             />
           )}
+
+          {!showNeedData && <MilestoneProgress totalDays={totalDays} />}
 
           {cardPreferences.order.filter(
             id => !cardPreferences.hidden.includes(id) && ANALYTICS_CARDS.some(c => c.id === id)

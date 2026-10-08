@@ -1,0 +1,242 @@
+/* ── Итог недели: карточка в списке истории ── */
+
+.mx-week-summary-card {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  min-height: 72px;
+  margin-bottom: 8px;
+  padding: 14px 20px 14px 17px;
+  border: 0;
+  border-radius: 14px;
+  background: rgb(var(--c-card2, 17 17 17));
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.mx-week-summary-card:active {
+  transform: scale(0.99);
+}
+
+.mx-week-summary-card__eyebrow {
+  font-size: max(10px, calc(10px * var(--mx-type-scale)));
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: rgb(var(--c-muted, 133 133 133));
+}
+
+.mx-week-summary-card__title {
+  font-size: calc(20px * var(--mx-type-scale));
+  font-weight: 700;
+  line-height: 1.1;
+  color: rgb(var(--c-text, 243 243 243));
+}
+
+.mx-week-summary-card__range {
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: rgb(var(--c-muted, 133 133 133));
+}
+
+/* ── Экран «Итог недели» / «Первый день» ── */
+
+.mx-week-summary {
+  padding-top: var(--mx-screen-top, 72px);
+  padding-bottom: 32px;
+}
+
+.mx-week-summary__header {
+  margin-bottom: 24px;
+}
+
+.mx-week-summary__eyebrow {
+  display: block;
+  font-size: max(10px, calc(10px * var(--mx-type-scale)));
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: rgb(var(--c-muted, 133 133 133));
+  margin-bottom: 4px;
+}
+
+.mx-week-summary__title {
+  font-size: calc(28px * var(--mx-type-scale));
+  font-weight: 700;
+  line-height: 1;
+  color: rgb(var(--c-text, 243 243 243));
+  margin: 0 0 4px;
+}
+
+.mx-week-summary__range {
+  font-size: max(13px, calc(13px * var(--mx-type-scale)));
+  color: rgb(var(--c-muted, 133 133 133));
+}
+
+/* 7 кружков дней */
+
+.mx-week-summary__circles {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+  margin-bottom: 24px;
+}
+
+.mx-week-summary__circle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.mx-week-summary__circle-dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid rgb(var(--c-card3, 46 46 46));
+  background: transparent;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.mx-week-summary__circle--active .mx-week-summary__circle-dot {
+  background: rgb(var(--c-gold, 237 189 96));
+  border-color: rgb(var(--c-gold, 237 189 96));
+}
+
+.mx-week-summary__circle-label {
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
+  color: rgb(var(--c-muted, 133 133 133));
+}
+
+/* Метрики (энергия, настроение) */
+
+.mx-week-summary__metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.mx-week-summary__metric-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: rgb(var(--c-card2, 17 17 17));
+}
+
+.mx-week-summary__metric-label {
+  font-size: max(13px, calc(13px * var(--mx-type-scale)));
+  color: rgb(var(--c-muted, 133 133 133));
+}
+
+.mx-week-summary__metric-value {
+  font-size: max(15px, calc(15px * var(--mx-type-scale)));
+  font-weight: 700;
+  color: rgb(var(--c-text, 243 243 243));
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mx-week-summary__trend {
+  font-size: max(13px, calc(13px * var(--mx-type-scale)));
+  font-weight: 700;
+  line-height: 1;
+}
+
+.mx-week-summary__trend--up {
+  color: rgb(var(--c-gold, 237 189 96));
+}
+
+.mx-week-summary__trend--down {
+  color: rgb(var(--c-azure, 111 183 224));
+}
+
+.mx-week-summary__trend--same {
+  color: rgb(var(--c-muted, 133 133 133));
+}
+
+/* Блоки (эмоция, практики, тема) */
+
+.mx-week-summary__block {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: rgb(var(--c-card2, 17 17 17));
+  margin-bottom: 8px;
+}
+
+.mx-week-summary__block-label {
+  font-size: max(13px, calc(13px * var(--mx-type-scale)));
+  color: rgb(var(--c-muted, 133 133 133));
+}
+
+.mx-week-summary__block-value {
+  font-size: max(13px, calc(13px * var(--mx-type-scale)));
+  font-weight: 600;
+  color: rgb(var(--c-text, 243 243 243));
+  text-align: right;
+}
+
+/* Фраза-вывод */
+
+.mx-week-summary__phrase {
+  margin-top: 20px;
+  padding: 16px;
+  border-radius: 12px;
+  background: rgb(var(--c-card2, 17 17 17));
+}
+
+.mx-week-summary__phrase p {
+  font-size: max(14px, calc(14px * var(--mx-type-scale)));
+  line-height: 1.5;
+  color: rgb(var(--c-text, 243 243 243));
+  margin: 0;
+}
+
+.mx-week-summary__empty {
+  padding-top: var(--mx-screen-top, 72px);
+  font-size: max(14px, calc(14px * var(--mx-type-scale)));
+  color: rgb(var(--c-muted, 133 133 133));
+}
+
+/* ── Первый день ── */
+
+.mx-first-day .mx-week-summary__phrase p {
+  font-size: max(15px, calc(15px * var(--mx-type-scale)));
+}
+
+/* ── Вехи дней в аналитике ── */
+
+.mx-day-milestone {
+  margin-bottom: 16px;
+}
+
+.mx-day-milestone__label {
+  font-size: max(12px, calc(12px * var(--mx-type-scale)));
+  color: rgb(var(--c-muted, 133 133 133));
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.mx-day-milestone__bar {
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: rgb(var(--c-card3, 46 46 46));
+  overflow: hidden;
+}
+
+.mx-day-milestone__fill {
+  height: 100%;
+  border-radius: 2px;
+  background: rgb(var(--c-gold, 237 189 96));
+  transition: width 0.3s ease;
+}
