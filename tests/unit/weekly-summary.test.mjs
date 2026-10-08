@@ -10,6 +10,7 @@ import {
   countActiveDays,
   getNearestDayMilestone,
   DAY_MILESTONES,
+  interleaveWeekSummaries,
 } from '../../src/screens/progress/weeklySummary.js'
 import { pickWeekPhrase } from '../../src/screens/progress/weeklySummaryPhrases.js'
 
@@ -375,4 +376,53 @@ test('веха: 30 дней → null (не показывать)', () => {
 test('веха: 100 дней → null', () => {
   const m = getNearestDayMilestone(100)
   assert.equal(m, null)
+})
+
+// ── Раскладка итогов недели в ленте истории ──
+
+function localIso(d) {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
+test('среда текущей недели: итога текущей нет, итог прошлой — над её следующим понедельником', () => {
+  // «Сегодня» — среда текущей недели (относительно реального дня).
+  const { start: thisMonday } = getWeekBounds(new Date())
+  const wednesday = new Date(thisMonday)
+  wednesday.setDate(thisMonday.getDate() + 2)
+  wednesday.setHours(12, 0, 0, 0)
+
+  // Прошлая неделя: понедельник и среда — два активных дня.
+  const prevMonday = new Date(thisMonday)
+  prevMonday.setDate(thisMonday.getDate() - 7)
+  const prevWednesday = new Date(prevMonday)
+  prevWednesday.setDate(prevMonday.getDate() + 2)
+
+  const activeEntry = date => makeCheckinEntry({ date, mood: 3, energy: 3 })
+  const days = [
+    makeDay(localIso(thisMonday), [activeEntry(localIso(thisMonday))]),
+    makeDay(localIso(wednesday), [activeEntry(localIso(wednesday))]),
+    makeDay(localIso(prevMonday), [activeEntry(localIso(prevMonday))]),
+    makeDay(localIso(prevWednesday), [activeEntry(localIso(prevWednesday))]),
+  ]
+
+  const items = interleaveWeekSummaries(days, wednesday)
+
+  // Итога текущей (незавершённой) недели нет — только итог прошлой.
+  const summaries = items.filter(i => i.type === 'weekSummary')
+  assert.equal(summaries.length, 1)
+  assert.equal(summaries[0].summary.startDate, localIso(prevMonday))
+
+  // Итог прошлой недели стоит НАД понедельником следующей (текущей) недели.
+  const summaryIndex = items.findIndex(i => i.type === 'weekSummary')
+  const nextMondayIndex = items.findIndex(
+    i => i.type === 'dayGroup' && i.day.date === localIso(thisMonday)
+  )
+  assert.ok(nextMondayIndex !== -1, 'понедельник текущей недели должен быть в ленте')
+  assert.ok(
+    summaryIndex < nextMondayIndex,
+    'итог прошлой недели должен быть выше понедельника следующей недели'
+  )
 })

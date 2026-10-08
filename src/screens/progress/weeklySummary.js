@@ -204,9 +204,12 @@ export function computeWeekSummary(weekDays, prevWeekDays = [], _now = new Date(
  * Раскладывает дни истории по неделям и вставляет карточки «Итог недели».
  *
  * Список идёт от новых дней к старым. Итог недели N стоит НАД записями
- * понедельника следующей недели: он появляется только после воскресенья
- * недели N (isWeekComplete) — то есть когда есть записи более новой недели.
- * Карточка появляется при ≥2 активных днях недели N.
+ * понедельника следующей (более новой) недели, то есть перед днями этой
+ * более новой недели. Итог появляется только после воскресенья недели N
+ * (isWeekComplete); карточка — при ≥2 активных днях недели N.
+ *
+ * Итог самой новой недели не над чем разместить (более новой недели нет),
+ * поэтому он показывается сверху, чтобы завершённая неделя не пропала.
  *
  * @param {Array} days — дни истории ({date, entries}); порядок не важен
  * @param {Date} [now] — текущая дата для проверки завершённости недели
@@ -239,20 +242,20 @@ export function interleaveWeekSummaries(days, now = new Date()) {
 
   const result = []
 
-  // Самая новая неделя не имеет более новой соседки — её итог идёт над всеми записями.
-  const newestSummary = summaryForWeek(sortedWeekKeys[0], null)
+  // Итог самой новой недели не над чем разместить (более новой недели нет) —
+  // показываем его сверху, чтобы завершённая неделя не пропала из ленты.
+  const newestSummary = summaryForWeek(sortedWeekKeys[0], sortedWeekKeys[1])
   if (newestSummary) result.push({ type: 'weekSummary', summary: newestSummary })
 
   for (let i = 0; i < sortedWeekKeys.length; i++) {
-    const weekKey = sortedWeekKeys[i]
-    for (const day of weeksByStart.get(weekKey)) result.push({ type: 'dayGroup', day })
-
-    // Итог следующей (более старой) недели — сразу под её понедельником.
+    // Итог недели N стоит НАД понедельником следующей (более новой) недели:
+    // перед днями этой недели вставляем итог предыдущей (более старой) недели.
     const olderKey = sortedWeekKeys[i + 1]
     if (olderKey) {
       const summary = summaryForWeek(olderKey, sortedWeekKeys[i + 2])
       if (summary) result.push({ type: 'weekSummary', summary })
     }
+    for (const day of weeksByStart.get(sortedWeekKeys[i])) result.push({ type: 'dayGroup', day })
   }
 
   return result
