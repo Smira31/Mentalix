@@ -36,7 +36,17 @@ export default function StepSlide({ stepKey, children, onAnimatingChange, classN
   const leavingRef = useRef(null)
   const lastChildrenRef = useRef(children)
   const prevKeyRef = useRef(stepKey)
+  const animatingCallbackRef = useRef(onAnimatingChange)
   const [leaving, setLeaving] = useState(null)
+
+  /*
+   * Колбэк родителя храним в ref и читаем его оттуда в эффекте анимации:
+   * перерисовка родителя даёт новую функцию, и она не должна перезапускать
+   * уже идущую анимацию (зависимость эффекта — только [leaving]).
+   */
+  useLayoutEffect(() => {
+    animatingCallbackRef.current = onAnimatingChange
+  }, [onAnimatingChange])
 
   /*
    * На каждом коммите: если stepKey сменился — захватываем предыдущие children
@@ -62,7 +72,7 @@ export default function StepSlide({ stepKey, children, onAnimatingChange, classN
     }
 
     setLeaving({ content: leavingContent, direction, key: leavingKey })
-  })
+  }, [stepKey, children])
 
   /*
    * Запуск анимаций после монтирования уходящего клона.
@@ -99,11 +109,11 @@ export default function StepSlide({ stepKey, children, onAnimatingChange, classN
       { duration: STEP_DURATION, easing: STEP_EASING, fill: 'none' }
     )
 
-    onAnimatingChange?.(true)
+    animatingCallbackRef.current?.(true)
 
     const timer = setTimeout(() => {
       setLeaving(null)
-      onAnimatingChange?.(false)
+      animatingCallbackRef.current?.(false)
     }, STEP_DURATION)
 
     return () => {

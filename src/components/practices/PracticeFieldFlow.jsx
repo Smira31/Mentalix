@@ -62,7 +62,7 @@ export default function PracticeFieldFlow({
         setError('Не получилось сохранить. Проверь соединение и попробуй ещё раз.')
         setSaving(false)
       }
-    } catch (e) {
+    } catch {
       setError('Не получилось сохранить. Проверь соединение и попробуй ещё раз.')
       setSaving(false)
     }
