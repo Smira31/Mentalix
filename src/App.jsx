@@ -40,6 +40,7 @@ import {
   previewSeriesAction,
   isProfileDemoRequested,
   previewProfileAction,
+  isDemoOnboardingRequested,
 } from './lib/demoMode'
 import { installDemoPressFeedback } from './lib/demoPressFeedback'
 import { shouldRenderDemoTelegramChrome } from './lib/demoChrome'
@@ -352,7 +353,8 @@ function App() {
   // Demo builds are synthetic users only: they skip onboarding in DEV or
   // Vercel Preview, without writing the user's synced onboarding flag.
   // isPreviewDemoMode itself requires ?demo=1 and an allowed preview host.
-  const onboarded = onboardedFlag === '1' || isPreviewDemoMode()
+  const onboarded =
+    onboardedFlag === '1' || (isPreviewDemoMode() && !isDemoOnboardingRequested())
   const [recoveryAllowedAtLaunch] = useState(() => onboardedFlag === '1' || isPreviewDemoMode())
 
   /*

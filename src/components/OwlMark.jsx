@@ -3,14 +3,18 @@
  * Трассирована из docs/sources/cut/owl-master.png → docs/sources/svg/owl-master.svg.
  * fill="currentColor" — цвет задаётся снаружи (rgb(var(--c-text)) по умолчанию).
  *
- * @param {number} size — высота (и ширина, viewBox квадратный) в px
+ * @param {number} size — высота совы в px (ширина вычисляется пропорционально viewBox)
  */
+const VB_W = 833
+const VB_H = 1262
+
 export default function OwlMark({ size = 64, className = '' }) {
+  const width = Math.round((size * VB_W) / VB_H)
   return (
     <svg
-      width={size}
+      width={width}
       height={size}
-      viewBox="0 0 1920 1920"
+      viewBox="487 310 833 1262"
       fill="currentColor"
       className={className}
       aria-hidden="true"
