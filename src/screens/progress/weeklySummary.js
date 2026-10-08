@@ -201,6 +201,21 @@ export function computeWeekSummary(weekDays, prevWeekDays = [], _now = new Date(
 }
 
 /**
+ * Число разных дней с записями (по датам), за всё переданное время.
+ * Один день считается один раз, даже если записей в нём несколько.
+ * @param {Array} checkins — записи с полем date (ISO-строка)
+ * @returns {number}
+ */
+export function countActiveDays(checkins) {
+  if (!Array.isArray(checkins)) return 0
+  const dates = new Set()
+  for (const c of checkins) {
+    if (c?.date) dates.add(c.date)
+  }
+  return dates.size
+}
+
+/**
  * Число дней с первого дня в Mentalix до сейчас.
  */
 export function daysSinceFirst(firstDateStr, now = new Date()) {
