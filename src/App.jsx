@@ -408,7 +408,7 @@ function App() {
   const validTabs = ['today', 'practices', 'mentor', 'library', 'trends']
 
   // ?tab=history → открывает «Прогресс» на вкладке «История»
-  const isHistoryInitial = initialTab === 'history'
+  const isHistoryInitial = initialTab === 'history' || initialTab === 'progress'
   const [tab, setTab] = useState(
     isHistoryInitial ? 'trends' : validTabs.includes(initialTab) ? initialTab : 'today'
   )
@@ -455,9 +455,11 @@ function App() {
   }, [])
 
   // ?tab=history → заменяем на ?tab=trends (история теперь сегмент внутри Прогресса)
+  // ?tab=progress → алиас для ?tab=trends
   useEffect(() => {
-    if (isHistoryInitial) {
-      const url = new URL(window.location.href)
+    const url = new URL(window.location.href)
+    const tab = url.searchParams.get('tab')
+    if (tab === 'history' || tab === 'progress') {
       url.searchParams.set('tab', 'trends')
       window.history.replaceState(null, '', url)
     }
