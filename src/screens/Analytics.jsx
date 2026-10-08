@@ -35,9 +35,6 @@ import { Eye, SlidersHorizontal } from 'lucide-react'
 
 const CALENDAR_WEEKDAYS = ['П', 'В', 'С', 'Ч', 'П', 'С', 'В']
 
-/** Минимальное число дней с записями для показа карточек. */
-const MIN_DAYS = 2
-
 /** Минимальное число чек-инов для выводов (используется insightDigest, surpriseInsight). */
 export const MIN_CHECKINS = 5
 
@@ -293,39 +290,6 @@ function MoodScaleCard({ user, onSaved }) {
           Отметка сохранена
         </p>
       )}
-    </section>
-  )
-}
-
-function NeedDataPlaque({ daysWithRecords, onMark }) {
-  const remaining = Math.max(0, MIN_DAYS - daysWithRecords)
-  if (remaining <= 0) return null
-
-  const done = Math.min(daysWithRecords, MIN_DAYS)
-  const cells = Array.from({ length: MIN_DAYS }, (_, i) => i < done)
-
-  // Заголовок с «ещё N дней» убран: ту же мысль несёт веха дней выше,
-  // поэтому здесь остаётся только призыв отметить без второго сообщения.
-  return (
-    <section className="mx-progress-need-data" aria-label="Отметь настроение">
-      <div className="mx-progress-need-data__days" aria-hidden="true">
-        {cells.map((isDone, i) => (
-          <span
-            key={i}
-            className={`mx-progress-need-data__day${isDone ? ' mx-progress-need-data__day--done' : ''}`}
-          >
-            {isDone ? '✓' : ''}
-          </span>
-        ))}
-      </div>
-      <button
-        type="button"
-        className="mx-progress-need-data__remind"
-        data-testid="progress-need-data-mark"
-        onClick={typeof onMark === 'function' ? onMark : undefined}
-      >
-        Отметить
-      </button>
     </section>
   )
 }
@@ -958,9 +922,6 @@ export default function Analytics({
   const checkinsFailed = !sourceLoading && checkinsState && checkinsState !== SOURCE_STATES.success
   const isCurrentPeriod = offset === 0
 
-  const daysWithRecords = countActiveDays(periodCheckins)
-  const showNeedData = daysWithRecords < MIN_DAYS
-
   // Число РАЗНЫХ дней с активностью за всё время — для вех дней.
   // Не календарные дни с первой записи: иначе один заход месяц назад давал бы «30 дней».
   const totalDays = useMemo(() => countActiveDays(poolCheckins), [poolCheckins])
@@ -1099,12 +1060,6 @@ export default function Analytics({
             <h1 className="mx-progress-analytics__title font-display">аналитика.</h1>
             <p className="mx-progress-analytics__subtext">
               Здесь видно, как меняется твоё настроение за неделю
-              {showNeedData && (
-                <span className="mx-progress-analytics__subtext-empty">
-                  <br />
-                  Но пока нет данных, чтобы показать
-                </span>
-              )}
             </p>
           </header>
 
@@ -1132,17 +1087,8 @@ export default function Analytics({
           )}
 
           {/* Вехи дней показываем всегда — новичку они нужнее всего.
-              Плашка «нужно больше данных» идёт ниже как призыв отметить. */}
+              Прогресс несёт веха, отметку — карточка «Как ты сейчас?» выше. */}
           <MilestoneProgress totalDays={totalDays} />
-
-          {showNeedData && (
-            <NeedDataPlaque
-              daysWithRecords={daysWithRecords}
-              onMark={() => {
-                moodCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-              }}
-            />
-          )}
 
           {cardPreferences.order.filter(
             id => !cardPreferences.hidden.includes(id) && ANALYTICS_CARDS.some(c => c.id === id)

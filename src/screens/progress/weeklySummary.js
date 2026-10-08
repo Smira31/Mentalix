@@ -201,6 +201,64 @@ export function computeWeekSummary(weekDays, prevWeekDays = [], _now = new Date(
 }
 
 /**
+ * Раскладывает дни истории по неделям и вставляет карточки «Итог недели».
+ *
+ * Список идёт от новых дней к старым. Итог недели N стоит НАД записями
+ * понедельника следующей недели: он появляется только после воскресенья
+ * недели N (isWeekComplete) — то есть когда есть записи более новой недели.
+ * Карточка появляется при ≥2 активных днях недели N.
+ *
+ * @param {Array} days — дни истории ({date, entries}); порядок не важен
+ * @param {Date} [now] — текущая дата для проверки завершённости недели
+ * @returns {Array} — [{type:'weekSummary'|'dayGroup', ...}]
+ */
+export function interleaveWeekSummaries(days, now = new Date()) {
+  if (!days || days.length === 0) return []
+
+  // Ключ недели — локальная дата понедельника. toISOString() сдвигал бы её
+  // на UTC и уводил неделю в предыдущую (итог показывался для текущей недели).
+  const weeksByStart = new Map()
+  for (const day of days) {
+    const { start } = getWeekBounds(day.date)
+    const key = isoDate(start)
+    if (!weeksByStart.has(key)) weeksByStart.set(key, [])
+    weeksByStart.get(key).push(day)
+  }
+
+  const sortedWeekKeys = [...weeksByStart.keys()].sort((a, b) => (a < b ? 1 : -1))
+
+  const summaryForWeek = (key, prevKey) => {
+    const { end } = getWeekBounds(key)
+    if (!isWeekComplete(end, now)) return null
+    return computeWeekSummary(
+      weeksByStart.get(key),
+      prevKey ? weeksByStart.get(prevKey) : [],
+      now
+    )
+  }
+
+  const result = []
+
+  // Самая новая неделя не имеет более новой соседки — её итог идёт над всеми записями.
+  const newestSummary = summaryForWeek(sortedWeekKeys[0], null)
+  if (newestSummary) result.push({ type: 'weekSummary', summary: newestSummary })
+
+  for (let i = 0; i < sortedWeekKeys.length; i++) {
+    const weekKey = sortedWeekKeys[i]
+    for (const day of weeksByStart.get(weekKey)) result.push({ type: 'dayGroup', day })
+
+    // Итог следующей (более старой) недели — сразу под её понедельником.
+    const olderKey = sortedWeekKeys[i + 1]
+    if (olderKey) {
+      const summary = summaryForWeek(olderKey, sortedWeekKeys[i + 2])
+      if (summary) result.push({ type: 'weekSummary', summary })
+    }
+  }
+
+  return result
+}
+
+/**
  * Число разных дней с записями (по датам), за всё переданное время.
  * Один день считается один раз, даже если записей в нём несколько.
  * @param {Array} checkins — записи с полем date (ISO-строка)

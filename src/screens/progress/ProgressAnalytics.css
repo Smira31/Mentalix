@@ -27,10 +27,31 @@
   padding-top: 0;
 }
 
-.mx-app-shell--fullscreen .mx-progress-segment-row {
-  position: relative;
-  z-index: 10;
-  margin-top: -49px;
+/* Сегмент в полосе кнопок Telegram — как «Значки | Статистика» в SeriesBadges:
+   строка зафиксирована в зоне кнопок (--app-safe-top) и не прокручивается.
+   Раньше её поднимал отрицательный отступ внутри скролла, но скролл-контейнер
+   обрезал строку — на iPhone оставался виден только краешек сегмента. */
+.mx-app-shell--fullscreen .mx-progress-segment-bar > .mx-progress-segment-row {
+  position: fixed;
+  top: var(--app-safe-top);
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+  z-index: 80;
+  width: min(200px, calc(100% - 2 * (var(--mx-screen-x) + 88px)));
+  height: 56px;
+  align-items: center;
+  margin-top: 0;
+  pointer-events: none;
+}
+
+.mx-app-shell--fullscreen
+  .mx-progress-segment-bar
+  > .mx-progress-segment-row
+  > .mx-progress-segment {
+  width: 100%;
+  height: 42px;
+  pointer-events: auto;
 }
 
 [data-mentalix-demo-frame='true'] .mx-progress-actions-row,

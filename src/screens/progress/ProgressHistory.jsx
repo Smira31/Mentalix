@@ -58,7 +58,9 @@ import {
   isWeekComplete,
   formatWeekRangeShort,
   daysSinceFirst,
+  interleaveWeekSummaries,
 } from './weeklySummary'
+import { now as clockNow } from '../../lib/clock'
 import './weeklySummary.css'
 import './ProgressScreen.css'
 
@@ -555,47 +557,6 @@ function entryPreview(entry) {
   return null
 }
 
-/**
- * Группирует дни по неделям и вставляет карточки «Итог недели»
- * между завершёнными неделями (с ≥2 активных дней).
- */
-function interleaveWeekSummaries(days, now = new Date()) {
-  if (!days || days.length === 0) return []
-
-  const weeksByStart = new Map()
-  for (const day of days) {
-    const { start } = getWeekBounds(day.date)
-    const key = start.toISOString().slice(0, 10)
-    if (!weeksByStart.has(key)) weeksByStart.set(key, [])
-    weeksByStart.get(key).push(day)
-  }
-
-  const sortedWeekKeys = [...weeksByStart.keys()].sort((a, b) => (a < b ? 1 : -1))
-  const result = []
-
-  for (let i = 0; i < sortedWeekKeys.length; i++) {
-    const weekKey = sortedWeekKeys[i]
-    const weekDays = weeksByStart.get(weekKey)
-    const { start, end } = getWeekBounds(weekKey)
-
-    // Перед днями этой недели — если неделя завершена, вставляем карточку
-    if (isWeekComplete(end, now)) {
-      const prevKey = sortedWeekKeys[i + 1]
-      const prevDays = prevKey ? weeksByStart.get(prevKey) : []
-      const summary = computeWeekSummary(weekDays, prevDays, now)
-      if (summary) {
-        result.push({ type: 'weekSummary', summary })
-      }
-    }
-
-    for (const day of weekDays) {
-      result.push({ type: 'dayGroup', day })
-    }
-  }
-
-  return result
-}
-
 function WeekSummaryCard({ summary, onClick }) {
   return (
     <button
@@ -612,7 +573,8 @@ function WeekSummaryCard({ summary, onClick }) {
 }
 
 function DayList({ days, onSelectEntry, onOpenWeekSummary }) {
-  const items = interleaveWeekSummaries(days)
+  // now() учитывает демо-часы: итог недели появляется только после её воскресенья.
+  const items = interleaveWeekSummaries(days, clockNow())
   return items.map((item, index) => {
     if (item.type === 'weekSummary') {
       return (
@@ -1257,9 +1219,10 @@ export default function ProgressHistory({
               <h3 className="mx-progress-history__period-header">{group.monthLabel}</h3>
               {group.cards.map(card => {
                 const { end } = getWeekBounds(card.startDate)
-                const isComplete = isWeekComplete(end)
+                const now = clockNow()
+                const isComplete = isWeekComplete(end, now)
                 const summary = isComplete
-                  ? computeWeekSummary(card.days, [], new Date())
+                  ? computeWeekSummary(card.days, [], now)
                   : null
                 return (
                   <PeriodCard
