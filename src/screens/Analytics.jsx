@@ -304,11 +304,10 @@ function NeedDataPlaque({ daysWithRecords, onMark }) {
   const done = Math.min(daysWithRecords, MIN_DAYS)
   const cells = Array.from({ length: MIN_DAYS }, (_, i) => i < done)
 
+  // Заголовок с «ещё N дней» убран: ту же мысль несёт веха дней выше,
+  // поэтому здесь остаётся только призыв отметить без второго сообщения.
   return (
-    <section className="mx-progress-need-data" aria-labelledby="progress-need-data-title">
-      <h2 id="progress-need-data-title" className="mx-progress-need-data__title">
-        Отметь, как ты, ещё {formatDays(remaining)} — здесь появятся выводы
-      </h2>
+    <section className="mx-progress-need-data" aria-label="Отметь настроение">
       <div className="mx-progress-need-data__days" aria-hidden="true">
         {cells.map((isDone, i) => (
           <span
