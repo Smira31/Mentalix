@@ -1229,6 +1229,9 @@ test('прямая web-ссылка автоматически создаёт г
     localStorage.clear()
     sessionStorage.clear()
     localStorage.setItem('mx-onboarded-v2', '1')
+    // Тестовый флаг: автогость разрешён только на боевом хосте,
+    // но UX-тесты работают на 127.0.0.1 — обходим проверку hostname.
+    window.__MX_TEST_ALLOW_GUEST = true
   })
   const guest = { id: 900002, first_name: 'Гость', is_guest: true }
   let guestRequests = 0
@@ -1293,6 +1296,9 @@ test('ошибка гостевого входа оставляет рабочи
   await context.addInitScript(() => {
     localStorage.clear()
     sessionStorage.clear()
+    // Тестовый флаг: автогость разрешён только на боевом хосте,
+    // но UX-тесты работают на 127.0.0.1 — обходим проверку hostname.
+    window.__MX_TEST_ALLOW_GUEST = true
   })
   let attempts = 0
   await context.route('**/api/**', route => {

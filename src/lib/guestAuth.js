@@ -9,6 +9,37 @@ import { platform } from '../platform'
 
 export const GUEST_MERGE_TOKEN_KEY = 'mentalix_guest_merge_token'
 
+/*
+ * Разрешённые хосты для автоматического создания веб-гостя.
+ * На превью-каналах Firebase (*--pr-*-*.web.app), превью Base44,
+ * localhost и 127.0.0.1 автогость не создаётся — это загрязняло
+ * боевую БД (~1970 пустых гостей за 2 недели).
+ *
+ * mentalix-production.firebaseapp.com — домен по умолчанию Firebase Hosting
+ * (projectId: mentalix-production), см. firebase.json.
+ */
+const PRODUCTION_HOSTS = new Set([
+  'mentalix-production.web.app',
+  'mentalix-production.firebaseapp.com',
+])
+
+/**
+ * Можно ли автоматически создавать гостя на текущем хосте.
+ *
+ * Возвращает true только на боевом хосте. На превью/localhost — false,
+ * если не установлен тестовый флаг window.__MX_TEST_ALLOW_GUEST
+ * (только для Playwright-тестов, не открывает автосоздание в превью).
+ *
+ * @param {string} [hostname] — хост для проверки (по умолчанию window.location.hostname)
+ * @returns {boolean}
+ */
+export function canAutoCreateGuest(hostname) {
+  if (typeof window !== 'undefined' && window.__MX_TEST_ALLOW_GUEST === true) return true
+  const host = hostname || (typeof window !== 'undefined' ? window.location.hostname : '')
+  if (!host) return false
+  return PRODUCTION_HOSTS.has(host)
+}
+
 export const GUEST_MERGED_EVENT = 'mentalix:guest-merged'
 
 export function isGuestUser(user) {
