@@ -43,10 +43,21 @@ const DEFAULT_IMAGE_OVERLAP = 0.12
  * под статус-баром и кнопками Telegram лежит скрим (см. .mx-hj-hero в CSS).
  * Перекрытие под заголовок даёт отрицательный нижний margin самого героя.
  */
-function HeroImage({ src, size, focus, compact, overlap = DEFAULT_IMAGE_OVERLAP, onError }) {
+function HeroImage({
+  src,
+  size,
+  focus,
+  compact,
+  overlap = DEFAULT_IMAGE_OVERLAP,
+  onError,
+  /* Гибкая высота (вход в шаг): картинка сама занимает свободное место колонки. */
+  flexible = false,
+}) {
   return (
     <div
-      className={`mx-hj-hero${compact ? ' mx-hj-hero--compact' : ''}`}
+      className={`mx-hj-hero${compact ? ' mx-hj-hero--compact' : ''}${
+        flexible ? ' mx-hj-hero--flex' : ''
+      }`}
       style={{ '--mx-hj-hero-overlap': overlap }}
     >
       <div className="mx-hj-hero__frame">
@@ -314,16 +325,18 @@ function StepIntro({ trial, onStart }) {
   const showEnterImage = Boolean(enterImage) && !imageFailed
 
   return (
-    /* С картинкой экран начинается от верха и скроллится на низких экранах:
-       высота героя задана clamp'ом, а не свободным местом. */
-    <Shell fit={!showEnterImage} topFlush={showEnterImage} bodyClassName="mx-hj-step-intro">
+    /* Колонка на всю доступную высоту без скролла. Сверху — картинка, которая
+       сама забирает место, оставшееся после текста и кнопки (flex + min/max);
+       текст слегка перехлёстывает затемнённый нижний край; «≈ 6 минут» и
+       кнопка прижаты к низу (см. .mx-hj-hero--flex и __bottom в CSS). */
+    <Shell fit topFlush={showEnterImage} bodyClassName="mx-hj-step-intro">
       {showEnterImage ? (
         <HeroImage
+          flexible
           src={enterImage}
           size={STEP_IMAGE_DIMENSIONS.enter}
           focus={trial.image?.focus}
           compact={trial.image?.compact}
-          overlap={trial.image?.overlap}
           onError={() => setImageFailed(true)}
         />
       ) : (
@@ -344,17 +357,21 @@ function StepIntro({ trial, onStart }) {
         {trial.intro.split('\n\n').map((para, i) => (
           <p key={i} className="mx-hj-step-intro__desc">{para}</p>
         ))}
-        <p className="mx-hj-step-intro__flow">≈ 6 минут</p>
       </div>
 
-      <button
-        type="button"
-        data-testid="hero-step-start"
-        onClick={onStart}
-        className="cta-pill mx-hj-step-intro__cta"
-      >
-        Начать шаг
-      </button>
+      <div className="mx-hj-step-intro__spacer" aria-hidden="true" />
+
+      <div className="mx-hj-step-intro__bottom">
+        <p className="mx-hj-step-intro__flow">≈ 6 минут</p>
+        <button
+          type="button"
+          data-testid="hero-step-start"
+          onClick={onStart}
+          className="cta-pill mx-hj-step-intro__cta"
+        >
+          Начать шаг
+        </button>
+      </div>
     </Shell>
   )
 }
@@ -419,7 +436,9 @@ function WriteScreen({
   }, [canSubmit, onSubmit])
 
   return (
-    <Shell>
+    /* Колонка без скролла: поле занимает свободную высоту, кнопка (floating
+       toolbar JournalTextarea) прижата к низу и не скрывается за краем. */
+    <Shell fit>
       <StepHeader trial={trial} onBack={onBack} view={view} />
 
       <div className="mx-hj-write">
