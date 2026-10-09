@@ -14,6 +14,7 @@ import lonelinessEnter from '../assets/hero-journey/loneliness-enter.webp'
 import lonelinessDone from '../assets/hero-journey/loneliness-done.webp'
 import relationshipsEnter from '../assets/hero-journey/relationships-enter.webp'
 import relationshipsDone from '../assets/hero-journey/relationships-done.webp'
+import lostSupportsEnter from '../assets/hero-journey/lost-supports-enter.webp'
 import lostSupportsDone from '../assets/hero-journey/lost-supports-done.webp'
 import ageCrisesEnter from '../assets/hero-journey/age-crises-enter.webp'
 import ageCrisesDone from '../assets/hero-journey/age-crises-done.webp'
@@ -257,7 +258,7 @@ export const HERO_JOURNEY_TRIALS = [
     action: 'Назови одну новую опору, которую ты можешь начать строить изнутри.',
     shadowAction:
       'Цепляться за рухнувшую опору. Или впадать в ужас, не замечая, что старая опора была не нужна.',
-    image: { done: lostSupportsDone, focus: '50% 40%', overlap: 0.08 },
+    image: { enter: lostSupportsEnter, done: lostSupportsDone, focus: '50% 40%', overlap: 0.08 },
   },
   {
     id: 'age-crises',
