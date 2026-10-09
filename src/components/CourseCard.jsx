@@ -9,7 +9,7 @@ export default function CourseCard({ course, userId, onOpen }) {
   const completed = isEmpty ? 0 : course.steps.filter(step => isStepCompleted(step.id, progress)).length
   const art = (
     <img
-      src={course.image}
+      src={course.cover || course.image}
       alt=""
       width={course.imageWidth}
       height={course.imageHeight}

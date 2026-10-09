@@ -14,6 +14,14 @@ import lonelinessEnter from '../assets/hero-journey/loneliness-enter.webp'
 import lonelinessDone from '../assets/hero-journey/loneliness-done.webp'
 import relationshipsEnter from '../assets/hero-journey/relationships-enter.webp'
 import relationshipsDone from '../assets/hero-journey/relationships-done.webp'
+import lostSupportsEnter from '../assets/hero-journey/lost-supports-enter.webp'
+import lostSupportsDone from '../assets/hero-journey/lost-supports-done.webp'
+import ageCrisesEnter from '../assets/hero-journey/age-crises-enter.webp'
+import ageCrisesDone from '../assets/hero-journey/age-crises-done.webp'
+import meaningEnter from '../assets/hero-journey/meaning-enter.webp'
+import meaningDone from '../assets/hero-journey/meaning-done.webp'
+import selfAssemblyEnter from '../assets/hero-journey/self-assembly-enter.webp'
+import selfAssemblyDone from '../assets/hero-journey/self-assembly-done.webp'
 
 /**
  * Путь героя — авторский курс Mentalix.
@@ -250,6 +258,7 @@ export const HERO_JOURNEY_TRIALS = [
     action: 'Назови одну новую опору, которую ты можешь начать строить изнутри.',
     shadowAction:
       'Цепляться за рухнувшую опору. Или впадать в ужас, не замечая, что старая опора была не нужна.',
+    image: { enter: lostSupportsEnter, done: lostSupportsDone, focus: '50% 40%', overlap: 0.08 },
   },
   {
     id: 'age-crises',
@@ -262,6 +271,7 @@ export const HERO_JOURNEY_TRIALS = [
     action: 'Прими случившееся как факт. На этом основании — один шаг вперёд.',
     shadowAction:
       'Обойти кризис: уйти в работу, в детей, во что угодно. «Может, пронесёт» — не пронесёт, следующий будет тяжелее.',
+    image: { enter: ageCrisesEnter, done: ageCrisesDone, focus: '55% 40%', overlap: 0.12 },
   },
   {
     id: 'meaning',
@@ -274,6 +284,7 @@ export const HERO_JOURNEY_TRIALS = [
     action: 'Сформулируй один смысл, который идёт изнутри, а не из внешнего авторитета.',
     shadowAction:
       'Искать смысл вовне, перебирая занятия и предназначения. Или подчиниться чужому смыслу, который не твой.',
+    image: { enter: meaningEnter, done: meaningDone, focus: '45% 35%', overlap: 0.08 },
   },
   {
     id: 'self-assembly',
@@ -286,6 +297,7 @@ export const HERO_JOURNEY_TRIALS = [
     action: 'Опиши одним словом, что для тебя сейчас значит «быть цельным».',
     shadowAction:
       'Собирать себя по кусочкам: ещё вот это научусь, ещё вот это. Самосборка — иллюзия, которая разваливается.',
+    image: { enter: selfAssemblyEnter, done: selfAssemblyDone, focus: '40% 40%', overlap: 0.12 },
   },
 ]
 
