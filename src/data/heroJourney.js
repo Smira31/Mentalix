@@ -197,7 +197,7 @@ export const HERO_JOURNEY_TRIALS = [
     action: 'Откажись от одного сравнения на сегодня. Замени его наблюдением за собой.',
     shadowAction:
       'Собирать себя из чужих отражений. Кажется, что достигаешь, а на деле — держится на страхе.',
-    image: { enter: comparisonEnter, done: comparisonDone },
+    image: { enter: comparisonEnter, done: comparisonDone, focus: '30% 40%' },
   },
   {
     id: 'mirror',
@@ -210,7 +210,7 @@ export const HERO_JOURNEY_TRIALS = [
     action: 'Запиши одну черту, которую ты прячешь от себя. Не оценивая — просто назови.',
     shadowAction:
       'Бегать от зеркала, наговаривая себе причины. «Может, я не справлюсь, может, это не я» — бесконечный разговор вместо шага.',
-    image: { enter: mirrorEnter, done: mirrorDone },
+    image: { enter: mirrorEnter, done: mirrorDone, focus: '40% 40%' },
   },
   {
     id: 'loneliness',
@@ -223,7 +223,7 @@ export const HERO_JOURNEY_TRIALS = [
     action: 'Опиши это одиночество одним честным предложением — без попытки его исправить.',
     shadowAction:
       'Прятать одиночество за шумом, контактами, активностью. Или обвинять других в том, что они не понимают.',
-    image: { enter: lonelinessEnter, done: lonelinessDone },
+    image: { enter: lonelinessEnter, done: lonelinessDone, focus: '35% 40%' },
   },
   {
     id: 'relationships',
@@ -236,8 +236,8 @@ export const HERO_JOURNEY_TRIALS = [
     action: 'Опиши, что значит для тебя «открыться отношениям», без требований к партнёру.',
     shadowAction:
       'Искать идеального партнёра среди восьми миллиардов. Люди меняются, обстоятельства меняются — идеал не находится.',
-    // anchor: 'top' — верх кадра важнее центра (арка на верхних 8% высоты).
-    image: { enter: relationshipsEnter, done: relationshipsDone, anchor: 'top' },
+    // focus — арка держится в кадре; compact — на полной высоте срезается её правая половина.
+    image: { enter: relationshipsEnter, done: relationshipsDone, focus: '40% 30%', compact: true },
   },
   {
     id: 'lost-supports',

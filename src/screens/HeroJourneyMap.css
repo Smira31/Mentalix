@@ -313,39 +313,95 @@
   color: rgb(var(--c-muted));
 }
 
-/* ── общая картинка шага на всю ширину ── */
+/* ── иллюстрация шага: на всю ширину экрана, растворяющиеся края ── */
 
-.mx-hj-hero-image {
-  position: relative;
-  width: calc(100% + 2 * var(--mx-screen-x));
-  margin-left: calc(-1 * var(--mx-screen-x));
-  margin-right: calc(-1 * var(--mx-screen-x));
-  aspect-ratio: 390 / 300;
-  overflow: hidden;
-  /* Низ картинки растворяется в фоне приложения (--c-bg = 5 4 3):
-     непрозрачно до 65% высоты, к 100% — прозрачность. */
-  -webkit-mask-image: linear-gradient(to bottom, #000 0 65%, transparent 100%);
-  mask-image: linear-gradient(to bottom, #000 0 65%, transparent 100%);
+/*
+ * Высоту задаёт экран через --mx-hj-hero-h (вход/завершение; у steps с
+ * важным краем кадра — компактный вариант). Отрицательный нижний margin — это
+ * перекрытие 22 % высоты героя: заголовок ложится на нижнюю треть кадра,
+ * которая у иллюстраций намеренно оставлена пустой.
+ * Боковые отступы и верхний margin выводят картинку из контейнера к верху экрана
+ * (--mx-space-2 — тот же padding-top, что у .mx-screen__content).
+ */
+/*
+ * Экран с героем начинается от верха экрана: верхний отступ поверхности
+ * (safe-area + контролы Telegram, inline-стиль хука) снят, картинка уходит
+ * под статус-бар и кнопки, читаемость держит скрим.
+ */
+.mx-hero-journey--top {
+  padding-top: 0 !important;
 }
 
-.mx-hj-hero-image img {
+.mx-hj-hero {
+  position: relative;
+  flex: none;
+  width: calc(100% + 2 * var(--mx-screen-x));
+  margin:
+    calc(-1 * var(--mx-space-2)) calc(-1 * var(--mx-screen-x))
+    calc(-0.22 * var(--mx-hj-hero-h, 320px));
+  height: var(--mx-hj-hero-h, 320px);
+  /* Фон до загрузки картинки — цвет приложения, без вспышки. */
+  background: #050403;
+  overflow: hidden;
+}
+
+.mx-hj-hero__frame {
+  position: absolute;
+  inset: 0;
+  /* Края растворяются по всем четырём сторонам: прямоугольников не видно. */
+  -webkit-mask-image:
+    linear-gradient(to bottom, transparent 0, #000 14%, #000 62%, transparent 100%),
+    linear-gradient(to right, transparent 0, #000 5%, #000 95%, transparent 100%);
+  mask-image:
+    linear-gradient(to bottom, transparent 0, #000 14%, #000 62%, transparent 100%),
+    linear-gradient(to right, transparent 0, #000 5%, #000 95%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+
+.mx-hj-hero__frame img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  /* Положение кадра задаёт шаг через image.focus (inline style). */
+  object-position: 50% 40%;
   display: block;
+  animation:
+    mx-hj-hero-fade 350ms ease-out both,
+    mx-hj-hero-zoom 14s linear both;
 }
 
-/* Верх кадра важнее центра: при области 180–260px центр обрезал бы арку
-   relationships, поэтому входим с верха картинки. */
-.mx-hj-hero-image--anchor-top img {
-  object-position: center top;
-}
-
-.mx-hj-hero-image__back {
+/* Скрим под статус-баром и кнопками Telegram: они остаются читаемыми на кадре. */
+.mx-hj-hero__scrim {
   position: absolute;
-  top: 10px;
-  left: var(--mx-screen-x);
-  z-index: 2;
+  inset: 0 0 auto;
+  height: 110px;
+  background: linear-gradient(rgba(5, 4, 3, 0.65), transparent);
+  pointer-events: none;
+}
+
+@keyframes mx-hj-hero-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes mx-hj-hero-zoom {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.04);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-hj-hero__frame img {
+    animation: none;
+  }
 }
 
 /* ── B. Вход в шаг: колонка на всю высоту, без скролла ── */
@@ -355,12 +411,14 @@
   min-height: 0;
 }
 
-/* Картинка гибкая: 180–260, сжимается раньше текста */
-.mx-hj-step-intro .mx-hj-hero-image {
-  flex: 1 1 260px;
-  min-height: 180px;
-  max-height: 260px;
-  aspect-ratio: auto;
+/* Высота героя на входе. Компактный вариант — шаги, где полная высота срезает
+   главный объект кадра (relationships: правая половина арки). */
+.mx-hj-step-intro {
+  --mx-hj-hero-h: clamp(300px, 42dvh, 380px);
+}
+
+.mx-hj-step-intro .mx-hj-hero--compact {
+  --mx-hj-hero-h: min(clamp(300px, 42dvh, 380px), 290px);
 }
 
 .mx-hj-step-intro .mx-hj-step-intro__image {
@@ -406,6 +464,14 @@
   flex-shrink: 0;
   /* Свободная высота уходит в зазор между картинкой и текстом */
   margin-top: auto;
+}
+
+/* С картинкой текст ложится на её нижнюю треть: перекрытие уже дал сам герой
+   отрицательным нижним margin, поэтому авто-зазор здесь не нужен. */
+.mx-hj-hero + .mx-hj-step-intro__text {
+  margin-top: 0;
+  position: relative;
+  z-index: 1;
 }
 
 .mx-hj-step-intro__label {
@@ -732,13 +798,29 @@
 
 /* ── G. Шаг пройден ── */
 
+/* Высота героя на завершении: кадр done выше входного. */
+.mx-hj-step-complete {
+  --mx-hj-hero-h: clamp(320px, 46dvh, 420px);
+}
+
+.mx-hj-step-complete .mx-hj-hero--compact {
+  --mx-hj-hero-h: min(clamp(320px, 46dvh, 420px), 330px);
+}
+
+/* Контент идёт сразу под картинкой (перекрытие дал сам герой), свободная
+   высота остаётся между контентом и закреплённой внизу кнопкой. */
 .mx-hj-complete {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   text-align: center;
+}
+
+.mx-hj-hero + .mx-hj-complete {
+  position: relative;
+  z-index: 1;
 }
 
 .mx-hj-complete__circle {
