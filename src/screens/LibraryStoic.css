@@ -25,7 +25,12 @@
   padding: var(--mx-space-5);
   gap: var(--mx-space-2);
 }
+/* Обложка курса: чёрный фон картинки сливается с фоном карточки, поэтому
+   у области картинки — тонкая рамка и скругление как у карточек Библиотеки. */
 .mx-library-hero .mx-steps-journal__art {
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--mx-radius-card) 0 0 var(--mx-radius-card);
   background: rgb(var(--c-card2));
 }
 .mx-library-hero .mx-steps-journal__label {
@@ -256,6 +261,12 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+/* Кадр обложки «Пути героя»: фокусы картинки — по центру по обеим осям
+   (врата вверху, космонавт и тропа внизу), поэтому режется только кайма
+   по краям, а не сам сюжет. */
+.mx-library-hero .mx-steps-journal__art img {
+  object-position: center;
 }
 /* Картинка стоит на светлом «дне» капсулы, верх остаётся тёмной нишей. */
 .mx-library-art-slot img {
