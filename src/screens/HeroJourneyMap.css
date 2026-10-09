@@ -566,28 +566,56 @@
   }
 
   .mx-hj-step-intro__title {
-    margin-top: 4px;
+    margin-top: 2px;
   }
 
   .mx-hj-step-intro__subtitle {
-    margin-top: 6px;
+    margin-top: 4px;
   }
 
   .mx-hj-step-intro__desc {
-    margin-top: 10px;
+    margin-top: 8px;
+    line-height: 1.5;
   }
 
   .mx-hj-step-intro__flow {
-    margin-top: 8px;
+    margin-top: 6px;
   }
 
   /* Минимальный зазор текста к кнопке, кнопка прижата к низу экрана */
   .mx-hj-step-intro__text {
-    padding-bottom: 16px;
+    padding-bottom: 12px;
   }
 
   .mx-hj-step-intro__cta {
     margin-top: auto;
+  }
+
+  /* Нижний паддинг поверхности сжимается: кнопка прижата к низу */
+  .mx-hj-fit .mx-screen__content {
+    padding-bottom: 8px;
+  }
+}
+
+/*
+ * Самые низкие экраны (360×640): ещё чуть ужимаются межабзацный интервал
+ * и отступы, чтобы вступление оставалось без скролла.
+ */
+@media (max-height: 650px) {
+  .mx-hj-step-intro__title {
+    margin-top: 0;
+  }
+
+  .mx-hj-step-intro__subtitle {
+    margin-top: 0;
+  }
+
+  .mx-hj-step-intro__desc {
+    margin-top: 3px;
+  }
+
+  .mx-hj-step-intro__text {
+    padding-bottom: 2px;
   }
 }
 
