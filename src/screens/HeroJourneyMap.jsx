@@ -111,7 +111,15 @@ function headerScreens(trial) {
 
 /* ── оболочка экрана ── */
 
-function Shell({ children, footer, bodyClassName = '', fit = false, topFlush = false, testId }) {
+function Shell({
+  children,
+  footer,
+  bodyClassName = '',
+  screenBodyClassName = '',
+  fit = false,
+  topFlush = false,
+  testId,
+}) {
   return (
     <Screen
       showHeader={false}
@@ -119,7 +127,7 @@ function Shell({ children, footer, bodyClassName = '', fit = false, topFlush = f
       scroll={!fit}
       footer={footer}
       className={`mx-hero-journey${topFlush ? ' mx-hero-journey--top' : ''}`}
-      bodyClassName={fit ? 'mx-hj-fit' : ''}
+      bodyClassName={`${fit ? 'mx-hj-fit' : ''} ${screenBodyClassName}`.trim()}
     >
       <div
         data-testid={testId}
@@ -567,6 +575,7 @@ function StepComplete({ trial, progress, onBackToMap }) {
     <Shell
       topFlush={showDoneImage}
       bodyClassName="mx-hj-step-complete"
+      screenBodyClassName="mx-hj-stretch"
       footer={
         <div className="mx-hj-complete__footer mx-auto w-full max-w-md px-[var(--mx-screen-x)]">
           <button
@@ -591,7 +600,11 @@ function StepComplete({ trial, progress, onBackToMap }) {
         />
       ) : null}
 
-      <div className="mx-hj-complete">
+      {/* перекрытие то же, что у героя: по нему блок считает свободную высоту */}
+      <div
+        className="mx-hj-complete"
+        style={{ '--mx-hj-hero-overlap': trial.image?.overlap ?? DEFAULT_IMAGE_OVERLAP }}
+      >
         {!showDoneImage && (
           <div className="mx-hj-complete__circle">
             <Check size={40} strokeWidth={3} />

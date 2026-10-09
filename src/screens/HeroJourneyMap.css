@@ -831,19 +831,49 @@
   --mx-hj-hero-h: clamp(320px, 46dvh, 420px);
 }
 
+/*
+ * Скролл-контейнер экрана завершения растягивает контент на свободную высоту —
+ * её распределяет центрированием .mx-hj-complete. При переполнении (низкие
+ * экраны) контент остаётся выше доступной высоты, и контейнер прокручивается.
+ */
+.mx-hj-stretch > .mx-screen__content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.mx-hj-stretch .mx-hj-step-complete {
+  flex: 1;
+  margin-bottom: calc(-1 * (var(--mx-space-6) + var(--app-safe-bottom, 0px)));
+}
+
 .mx-hj-step-complete .mx-hj-hero--compact {
   --mx-hj-hero-h: min(clamp(320px, 46dvh, 420px), 330px);
 }
 
-/* Контент идёт сразу под картинкой (перекрытие дал сам герой), свободная
-   высота остаётся между контентом и закреплённой внизу кнопкой. */
+/* Контент идёт сразу под картинкой (перекрытие дал сам герой) и центрируется
+   по вертикали в свободной высоте между героем и закреплённой внизу кнопкой. */
 .mx-hj-complete {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   text-align: center;
+  padding-top: calc(var(--mx-hj-hero-overlap, 0.12) * var(--mx-hj-hero-h, 320px));
+}
+
+/* Низкие экраны: блок прижат к картинке без центрирования, чтобы содержимое
+   шага помещалось без прокрутки. */
+@media (max-height: 700px) {
+  .mx-hj-complete {
+    justify-content: flex-start;
+    padding-top: 0;
+  }
+
+  .mx-hj-stretch .mx-hj-step-complete {
+    margin-bottom: 0;
+  }
 }
 
 .mx-hj-hero + .mx-hj-complete {
@@ -875,7 +905,11 @@
 
 .mx-hj-complete__phrase {
   font-size: calc(15px * var(--mx-type-scale));
-  color: rgb(var(--c-muted));
+  font-weight: 500;
+  /* Светлее — контраст к фону ≥ 7:1 на самом светлом месте кадра;
+     тень гасит светлые пятна картинки. */
+  color: rgb(var(--c-text));
+  text-shadow: 0 1px 8px #050403;
   margin-top: 8px;
 }
 
