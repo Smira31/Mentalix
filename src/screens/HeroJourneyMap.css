@@ -313,15 +313,90 @@
   color: rgb(var(--c-muted));
 }
 
-/* ── общая картинка шага на всю ширину ── */
+/* ── общая картинка шага: во всю ширину, маска по четырём краям ── */
 
 .mx-hj-hero-image {
   position: relative;
   width: calc(100% + 2 * var(--mx-screen-x));
   margin-left: calc(-1 * var(--mx-screen-x));
   margin-right: calc(-1 * var(--mx-screen-x));
-  aspect-ratio: 390 / 300;
   overflow: hidden;
+  background: #050403;
+}
+
+/* Высоты: enter 42dvh, done 46dvh; компактные шаги ограничены; короткие экраны ниже */
+.mx-hj-step-intro {
+  --hj-img-h: clamp(300px, 42dvh, 380px);
+}
+
+.mx-hj-step-intro--compact {
+  --hj-img-h: min(clamp(300px, 42dvh, 380px), 290px);
+}
+
+.mx-hj-complete-screen {
+  --hj-img-h: clamp(320px, 46dvh, 420px);
+}
+
+.mx-hj-complete-screen--compact {
+  --hj-img-h: min(clamp(320px, 46dvh, 420px), 330px);
+}
+
+@media (max-height: 700px) {
+  .mx-hj-step-intro {
+    --hj-img-h: clamp(250px, 38dvh, 320px);
+  }
+
+  .mx-hj-complete-screen {
+    --hj-img-h: clamp(260px, 42dvh, 340px);
+  }
+
+  /* На коротких экранах блок завершения прижат к картинке */
+  .mx-hj-complete {
+    justify-content: flex-start;
+  }
+}
+
+/* Картинка от самого верха области контента */
+.mx-hj-step-intro .mx-hj-hero-image,
+.mx-hj-complete-screen .mx-hj-hero-image {
+  margin-top: calc(-1 * var(--mx-space-2));
+}
+
+/* На коротких экранах картинка сжимается, чтобы не было прокрутки */
+.mx-hj-hero-image--enter {
+  height: var(--hj-img-h);
+  flex: 0 1 auto;
+  min-height: 200px;
+}
+
+.mx-hj-hero-image--done {
+  height: var(--hj-img-h);
+  flex: 0 1 auto;
+  min-height: 240px;
+}
+
+/* Появление: налив 350 мс + медленный zoom, без движения при reduced motion */
+@keyframes mx-hj-img-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes mx-hj-img-zoom {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.04);
+  }
+}
+
+.mx-hj-hero-image--enter,
+.mx-hj-hero-image--done {
+  animation: mx-hj-img-fade 350ms ease-out both;
 }
 
 .mx-hj-hero-image img {
@@ -329,6 +404,37 @@
   height: 100%;
   object-fit: cover;
   display: block;
+  transform-origin: 50% 45%;
+  animation: mx-hj-img-zoom 14s linear both;
+  /* Маска по четырём краям: края растворяются в фоне #050403 */
+  -webkit-mask-image:
+    linear-gradient(to bottom, transparent 0, #000 14%, #000 56%, transparent 100%),
+    linear-gradient(to right, transparent 0, #000 5%, #000 95%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(to bottom, transparent 0, #000 14%, #000 56%, transparent 100%),
+    linear-gradient(to right, transparent 0, #000 5%, #000 95%, transparent 100%);
+  mask-composite: intersect;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-hj-hero-image--enter,
+  .mx-hj-hero-image--done,
+  .mx-hj-hero-image img {
+    animation: none;
+  }
+}
+
+/* Скрим под системными кнопками навигации поверх верха картинки */
+.mx-hj-hero-image__scrim {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 110px;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(to bottom, rgb(5 4 3 / 0.65), rgb(5 4 3 / 0));
 }
 
 .mx-hj-hero-image__back {
@@ -343,14 +449,6 @@
 .mx-hj-step-intro {
   flex: 1;
   min-height: 0;
-}
-
-/* Картинка гибкая: 180–260, сжимается раньше текста */
-.mx-hj-step-intro .mx-hj-hero-image {
-  flex: 1 1 260px;
-  min-height: 180px;
-  max-height: 260px;
-  aspect-ratio: auto;
 }
 
 .mx-hj-step-intro .mx-hj-step-intro__image {
@@ -396,6 +494,37 @@
   flex-shrink: 0;
   /* Свободная высота уходит в зазор между картинкой и текстом */
   margin-top: auto;
+}
+
+/* С картинкой: текст заходит на нижнюю часть картинки на долю overlap её высоты */
+.mx-hj-step-intro--image .mx-hj-step-intro__text {
+  position: relative;
+  z-index: 2;
+  margin-top: calc(var(--hj-img-h) * var(--hj-overlap, 0.12) * -1);
+}
+
+/* Скрим под заходящим текстом: подпись и заголовок остаются читаемыми */
+.mx-hj-step-intro--image .mx-hj-step-intro__text::before {
+  content: '';
+  position: absolute;
+  left: calc(-1 * var(--mx-screen-x));
+  right: calc(-1 * var(--mx-screen-x));
+  top: -16px;
+  bottom: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgb(5 4 3 / 0.85) 0%,
+    rgb(5 4 3 / 0.55) 55%,
+    rgb(5 4 3 / 0) 85%
+  );
+}
+
+.mx-hj-step-intro--image .mx-hj-step-intro__label,
+.mx-hj-step-intro--image .mx-hj-step-intro__subtitle {
+  color: rgb(var(--c-text));
+  text-shadow: 0 1px 3px rgb(5 4 3 / 0.9);
 }
 
 .mx-hj-step-intro__label {
