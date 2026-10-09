@@ -6,6 +6,14 @@ import choiceEnter from '../assets/hero-journey/choice-enter.webp'
 import choiceDone from '../assets/hero-journey/choice-done.webp'
 import abundanceEnter from '../assets/hero-journey/abundance-enter.webp'
 import abundanceDone from '../assets/hero-journey/abundance-done.webp'
+import comparisonEnter from '../assets/hero-journey/comparison-enter.webp'
+import comparisonDone from '../assets/hero-journey/comparison-done.webp'
+import mirrorEnter from '../assets/hero-journey/mirror-enter.webp'
+import mirrorDone from '../assets/hero-journey/mirror-done.webp'
+import lonelinessEnter from '../assets/hero-journey/loneliness-enter.webp'
+import lonelinessDone from '../assets/hero-journey/loneliness-done.webp'
+import relationshipsEnter from '../assets/hero-journey/relationships-enter.webp'
+import relationshipsDone from '../assets/hero-journey/relationships-done.webp'
 
 /**
  * Путь героя — авторский курс Mentalix.
@@ -77,7 +85,7 @@ export const HERO_JOURNEY_TRIALS = [
     action: 'Назови одну вещь, которая зависит от тебя, несмотря на неопределённость.',
     shadowAction:
       'Уход в отказ: «меня это не касается», голова в песок. Или наркоз — алкоголь, зависимости, цифровое ничто.',
-    image: { enter: uncertaintyEnter, done: uncertaintyDone },
+    image: { enter: uncertaintyEnter, done: uncertaintyDone, overlap: 0.08 },
   },
   {
     id: 'temporality',
@@ -90,7 +98,7 @@ export const HERO_JOURNEY_TRIALS = [
     action: 'Назови одну вещь, которую сегодня стоит прожить как дар, а не как данность.',
     shadowAction:
       'Воспринимать дар как должное. Тогда потеря неизбежно превращается в боль, а не в благодарность.',
-    image: { enter: temporalityEnter, done: temporalityDone },
+    image: { enter: temporalityEnter, done: temporalityDone, overlap: 0.08 },
   },
   {
     id: 'choice',
@@ -103,7 +111,7 @@ export const HERO_JOURNEY_TRIALS = [
     action: 'Выбери одну дверь. Не ту, что красивее, а ту, за которой тебе теплее.',
     shadowAction:
       'Бесконечно взвешивать варианты, не выбирая ни один. Маркетинг питает иллюзию, что дверь важнее того, что за ней.',
-    image: { enter: choiceEnter, done: choiceDone },
+    image: { enter: choiceEnter, done: choiceDone, overlap: 0.08 },
   },
   {
     id: 'abundance',
@@ -128,7 +136,7 @@ export const HERO_JOURNEY_TRIALS = [
       'Выбрать одно действительное дело и выдержать отказ от остального. Фокус — не сила воли, а решение, чего не делать.',
     heroOutcome: 'Итог: внутренний труд, который даёт результат и опору.',
     quote: 'Всякое действительное требует внутреннего труда, а труд требует фокуса.',
-    image: { enter: abundanceEnter, done: abundanceDone },
+    image: { enter: abundanceEnter, done: abundanceDone, overlap: 0.08 },
   },
   {
     id: 'info-pressure',
@@ -189,6 +197,7 @@ export const HERO_JOURNEY_TRIALS = [
     action: 'Откажись от одного сравнения на сегодня. Замени его наблюдением за собой.',
     shadowAction:
       'Собирать себя из чужих отражений. Кажется, что достигаешь, а на деле — держится на страхе.',
+    image: { enter: comparisonEnter, done: comparisonDone, focus: '30% 40%', overlap: 0.22 },
   },
   {
     id: 'mirror',
@@ -201,6 +210,7 @@ export const HERO_JOURNEY_TRIALS = [
     action: 'Запиши одну черту, которую ты прячешь от себя. Не оценивая — просто назови.',
     shadowAction:
       'Бегать от зеркала, наговаривая себе причины. «Может, я не справлюсь, может, это не я» — бесконечный разговор вместо шага.',
+    image: { enter: mirrorEnter, done: mirrorDone, focus: '40% 40%', overlap: 0.22 },
   },
   {
     id: 'loneliness',
@@ -213,6 +223,7 @@ export const HERO_JOURNEY_TRIALS = [
     action: 'Опиши это одиночество одним честным предложением — без попытки его исправить.',
     shadowAction:
       'Прятать одиночество за шумом, контактами, активностью. Или обвинять других в том, что они не понимают.',
+    image: { enter: lonelinessEnter, done: lonelinessDone, focus: '35% 40%', overlap: 0.22 },
   },
   {
     id: 'relationships',
@@ -225,6 +236,8 @@ export const HERO_JOURNEY_TRIALS = [
     action: 'Опиши, что значит для тебя «открыться отношениям», без требований к партнёру.',
     shadowAction:
       'Искать идеального партнёра среди восьми миллиардов. Люди меняются, обстоятельства меняются — идеал не находится.',
+    // focus — арка держится в кадре; compact — на полной высоте срезается её правая половина.
+    image: { enter: relationshipsEnter, done: relationshipsDone, focus: '40% 30%', compact: true, overlap: 0.22 },
   },
   {
     id: 'lost-supports',

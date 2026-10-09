@@ -30,6 +30,41 @@ const STEP_IMAGE_DIMENSIONS = {
   done: { width: 1170, height: 900 },
 }
 
+/* Положение кадра по умолчанию: чуть выше середины — низ кадров намеренно пустой. */
+const DEFAULT_HERO_FOCUS = '50% 40%'
+
+/* Доля высоты героя, на которую текст заходит на картинку (image.overlap).
+   Глава I — 0.08, глава III — 0.22, у остальных шагов — это значение. */
+const DEFAULT_IMAGE_OVERLAP = 0.12
+
+/*
+ * Иллюстрация шага — одна геометрия на входе и на завершении.
+ * Картинка идёт от верха экрана на всю ширину, края растворяются маской,
+ * под статус-баром и кнопками Telegram лежит скрим (см. .mx-hj-hero в CSS).
+ * Перекрытие под заголовок даёт отрицательный нижний margin самого героя.
+ */
+function HeroImage({ src, size, focus, compact, overlap = DEFAULT_IMAGE_OVERLAP, onError }) {
+  return (
+    <div
+      className={`mx-hj-hero${compact ? ' mx-hj-hero--compact' : ''}`}
+      style={{ '--mx-hj-hero-overlap': overlap }}
+    >
+      <div className="mx-hj-hero__frame">
+        <img
+          src={src}
+          alt=""
+          width={size.width}
+          height={size.height}
+          decoding="async"
+          style={{ objectPosition: focus || DEFAULT_HERO_FOCUS }}
+          onError={onError}
+        />
+      </div>
+      <span className="mx-hj-hero__scrim" aria-hidden="true" />
+    </div>
+  )
+}
+
 /* Предзагрузка картинок следующего шага: открытие шага без мигания. */
 function usePreloadStepImages(trial) {
   const enterImage = trial?.image?.enter
@@ -76,15 +111,23 @@ function headerScreens(trial) {
 
 /* ── оболочка экрана ── */
 
-function Shell({ children, footer, bodyClassName = '', fit = false, testId }) {
+function Shell({
+  children,
+  footer,
+  bodyClassName = '',
+  screenBodyClassName = '',
+  fit = false,
+  topFlush = false,
+  testId,
+}) {
   return (
     <Screen
       showHeader={false}
       telegramChrome
       scroll={!fit}
       footer={footer}
-      className="mx-hero-journey"
-      bodyClassName={fit ? 'mx-hj-fit' : ''}
+      className={`mx-hero-journey${topFlush ? ' mx-hero-journey--top' : ''}`}
+      bodyClassName={`${fit ? 'mx-hj-fit' : ''} ${screenBodyClassName}`.trim()}
     >
       <div
         data-testid={testId}
@@ -277,18 +320,18 @@ function StepIntro({ trial, onStart }) {
   const showEnterImage = Boolean(enterImage) && !imageFailed
 
   return (
-    <Shell fit bodyClassName="mx-hj-step-intro">
+    /* С картинкой экран начинается от верха и скроллится на низких экранах:
+       высота героя задана clamp'ом, а не свободным местом. */
+    <Shell fit={!showEnterImage} topFlush={showEnterImage} bodyClassName="mx-hj-step-intro">
       {showEnterImage ? (
-        <div className="mx-hj-hero-image">
-          <img
-            src={enterImage}
-            alt=""
-            width={STEP_IMAGE_DIMENSIONS.enter.width}
-            height={STEP_IMAGE_DIMENSIONS.enter.height}
-            decoding="async"
-            onError={() => setImageFailed(true)}
-          />
-        </div>
+        <HeroImage
+          src={enterImage}
+          size={STEP_IMAGE_DIMENSIONS.enter}
+          focus={trial.image?.focus}
+          compact={trial.image?.compact}
+          overlap={trial.image?.overlap}
+          onError={() => setImageFailed(true)}
+        />
       ) : (
         <div className="mx-hj-step-intro__image">
           <div className="mx-hj-step-intro__glyph">
@@ -530,6 +573,9 @@ function StepComplete({ trial, progress, onBackToMap }) {
 
   return (
     <Shell
+      topFlush={showDoneImage}
+      bodyClassName="mx-hj-step-complete"
+      screenBodyClassName="mx-hj-stretch"
       footer={
         <div className="mx-hj-complete__footer mx-auto w-full max-w-md px-[var(--mx-screen-x)]">
           <button
@@ -544,19 +590,21 @@ function StepComplete({ trial, progress, onBackToMap }) {
       }
     >
       {showDoneImage ? (
-        <div className="mx-hj-hero-image">
-          <img
-            src={doneImage}
-            alt=""
-            width={STEP_IMAGE_DIMENSIONS.done.width}
-            height={STEP_IMAGE_DIMENSIONS.done.height}
-            decoding="async"
-            onError={() => setImageFailed(true)}
-          />
-        </div>
+        <HeroImage
+          src={doneImage}
+          size={STEP_IMAGE_DIMENSIONS.done}
+          focus={trial.image?.focus}
+          compact={trial.image?.compact}
+          overlap={trial.image?.overlap}
+          onError={() => setImageFailed(true)}
+        />
       ) : null}
 
-      <div className="mx-hj-complete">
+      {/* перекрытие то же, что у героя: по нему блок считает свободную высоту */}
+      <div
+        className="mx-hj-complete"
+        style={{ '--mx-hj-hero-overlap': trial.image?.overlap ?? DEFAULT_IMAGE_OVERLAP }}
+      >
         {!showDoneImage && (
           <div className="mx-hj-complete__circle">
             <Check size={40} strokeWidth={3} />
