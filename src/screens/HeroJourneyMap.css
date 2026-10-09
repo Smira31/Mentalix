@@ -335,6 +335,12 @@
   display: block;
 }
 
+/* Верх кадра важнее центра: при области 180–260px центр обрезал бы арку
+   relationships, поэтому входим с верха картинки. */
+.mx-hj-hero-image--anchor-top img {
+  object-position: center top;
+}
+
 .mx-hj-hero-image__back {
   position: absolute;
   top: 10px;

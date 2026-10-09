@@ -6,6 +6,14 @@ import choiceEnter from '../assets/hero-journey/choice-enter.webp'
 import choiceDone from '../assets/hero-journey/choice-done.webp'
 import abundanceEnter from '../assets/hero-journey/abundance-enter.webp'
 import abundanceDone from '../assets/hero-journey/abundance-done.webp'
+import comparisonEnter from '../assets/hero-journey/comparison-enter.webp'
+import comparisonDone from '../assets/hero-journey/comparison-done.webp'
+import mirrorEnter from '../assets/hero-journey/mirror-enter.webp'
+import mirrorDone from '../assets/hero-journey/mirror-done.webp'
+import lonelinessEnter from '../assets/hero-journey/loneliness-enter.webp'
+import lonelinessDone from '../assets/hero-journey/loneliness-done.webp'
+import relationshipsEnter from '../assets/hero-journey/relationships-enter.webp'
+import relationshipsDone from '../assets/hero-journey/relationships-done.webp'
 
 /**
  * Путь героя — авторский курс Mentalix.
@@ -189,6 +197,7 @@ export const HERO_JOURNEY_TRIALS = [
     action: 'Откажись от одного сравнения на сегодня. Замени его наблюдением за собой.',
     shadowAction:
       'Собирать себя из чужих отражений. Кажется, что достигаешь, а на деле — держится на страхе.',
+    image: { enter: comparisonEnter, done: comparisonDone },
   },
   {
     id: 'mirror',
@@ -201,6 +210,7 @@ export const HERO_JOURNEY_TRIALS = [
     action: 'Запиши одну черту, которую ты прячешь от себя. Не оценивая — просто назови.',
     shadowAction:
       'Бегать от зеркала, наговаривая себе причины. «Может, я не справлюсь, может, это не я» — бесконечный разговор вместо шага.',
+    image: { enter: mirrorEnter, done: mirrorDone },
   },
   {
     id: 'loneliness',
@@ -213,6 +223,7 @@ export const HERO_JOURNEY_TRIALS = [
     action: 'Опиши это одиночество одним честным предложением — без попытки его исправить.',
     shadowAction:
       'Прятать одиночество за шумом, контактами, активностью. Или обвинять других в том, что они не понимают.',
+    image: { enter: lonelinessEnter, done: lonelinessDone },
   },
   {
     id: 'relationships',
@@ -225,6 +236,8 @@ export const HERO_JOURNEY_TRIALS = [
     action: 'Опиши, что значит для тебя «открыться отношениям», без требований к партнёру.',
     shadowAction:
       'Искать идеального партнёра среди восьми миллиардов. Люди меняются, обстоятельства меняются — идеал не находится.',
+    // anchor: 'top' — верх кадра важнее центра (арка на верхних 8% высоты).
+    image: { enter: relationshipsEnter, done: relationshipsDone, anchor: 'top' },
   },
   {
     id: 'lost-supports',

@@ -247,6 +247,7 @@ screens, and keep article cards unchanged unless the owner explicitly approves t
 
 - Локальные ключи курса используют `:<userId>`, но CloudStorage Telegram не допускает двоеточия: облачный scoped-ключ заменяет их на `_`. Legacy-миграция выполняется до очистки пользовательского scope.
 - Для этой задачи владелец разрешил только `check:core` и целевой Playwright-файл `hero-journey-reliability.spec.mjs` (Chromium); полный `ux:check` и WebKit оставлены CI. Команды выполняются в `docker compose -f docker-compose.base44.yml exec -T web`.
+- В свежем web-контейнере браузера Playwright нет: перед прогоном нужен `npx playwright install --with-deps chromium` (в `node:22-slim` нет системных библиотек, иначе launch падает на `libglib-2.0.so.0`). Ставить только Chromium.
 
 ### Библиотека Stoic в Base44
 

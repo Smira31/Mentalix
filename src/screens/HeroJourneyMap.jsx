@@ -275,11 +275,13 @@ function StepIntro({ trial, onStart }) {
   const enterImage = trial.image?.enter
   const [imageFailed, setImageFailed] = useState(false)
   const showEnterImage = Boolean(enterImage) && !imageFailed
+  /* Картинки с важным верхом кадра (арка relationships) якорим к верху области. */
+  const anchorTop = trial.image?.anchor === 'top'
 
   return (
     <Shell fit bodyClassName="mx-hj-step-intro">
       {showEnterImage ? (
-        <div className="mx-hj-hero-image">
+        <div className={`mx-hj-hero-image${anchorTop ? ' mx-hj-hero-image--anchor-top' : ''}`}>
           <img
             src={enterImage}
             alt=""
