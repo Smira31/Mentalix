@@ -1,5 +1,11 @@
-import uncertaintyEnter from '../assets/hero-journey/uncertainty-enter.svg'
-import uncertaintyDone from '../assets/hero-journey/uncertainty-done.svg'
+import uncertaintyEnter from '../assets/hero-journey/uncertainty-enter.webp'
+import uncertaintyDone from '../assets/hero-journey/uncertainty-done.webp'
+import temporalityEnter from '../assets/hero-journey/temporality-enter.webp'
+import temporalityDone from '../assets/hero-journey/temporality-done.webp'
+import choiceEnter from '../assets/hero-journey/choice-enter.webp'
+import choiceDone from '../assets/hero-journey/choice-done.webp'
+import abundanceEnter from '../assets/hero-journey/abundance-enter.webp'
+import abundanceDone from '../assets/hero-journey/abundance-done.webp'
 
 /**
  * Путь героя — авторский курс Mentalix.
@@ -84,6 +90,7 @@ export const HERO_JOURNEY_TRIALS = [
     action: 'Назови одну вещь, которую сегодня стоит прожить как дар, а не как данность.',
     shadowAction:
       'Воспринимать дар как должное. Тогда потеря неизбежно превращается в боль, а не в благодарность.',
+    image: { enter: temporalityEnter, done: temporalityDone },
   },
   {
     id: 'choice',
@@ -96,6 +103,7 @@ export const HERO_JOURNEY_TRIALS = [
     action: 'Выбери одну дверь. Не ту, что красивее, а ту, за которой тебе теплее.',
     shadowAction:
       'Бесконечно взвешивать варианты, не выбирая ни один. Маркетинг питает иллюзию, что дверь важнее того, что за ней.',
+    image: { enter: choiceEnter, done: choiceDone },
   },
   {
     id: 'abundance',
@@ -120,7 +128,7 @@ export const HERO_JOURNEY_TRIALS = [
       'Выбрать одно действительное дело и выдержать отказ от остального. Фокус — не сила воли, а решение, чего не делать.',
     heroOutcome: 'Итог: внутренний труд, который даёт результат и опору.',
     quote: 'Всякое действительное требует внутреннего труда, а труд требует фокуса.',
-    image: null,
+    image: { enter: abundanceEnter, done: abundanceDone },
   },
   {
     id: 'info-pressure',

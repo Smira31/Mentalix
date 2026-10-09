@@ -322,6 +322,10 @@
   margin-right: calc(-1 * var(--mx-screen-x));
   aspect-ratio: 390 / 300;
   overflow: hidden;
+  /* Низ картинки растворяется в фоне приложения (--c-bg = 5 4 3):
+     непрозрачно до 65% высоты, к 100% — прозрачность. */
+  -webkit-mask-image: linear-gradient(to bottom, #000 0 65%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0 65%, transparent 100%);
 }
 
 .mx-hj-hero-image img {

@@ -24,6 +24,27 @@ const useCourse = () => useContext(CourseContext)
 
 const DEMO = isPreviewDemoMode()
 
+/* Размеры картинок шага: enter 1.6:1, done 1.3:1 (совпадает с aspect-ratio в CSS). */
+const STEP_IMAGE_DIMENSIONS = {
+  enter: { width: 1200, height: 750 },
+  done: { width: 1170, height: 900 },
+}
+
+/* Предзагрузка картинок следующего шага: открытие шага без мигания. */
+function usePreloadStepImages(trial) {
+  const enterImage = trial?.image?.enter
+  const doneImage = trial?.image?.done
+
+  useEffect(() => {
+    for (const src of [enterImage, doneImage]) {
+      if (!src) continue
+      const image = new Image()
+      image.decoding = 'async'
+      image.src = src
+    }
+  }, [enterImage, doneImage])
+}
+
 /* ── утилиты потока ── */
 
 function screenSequence(trial) {
@@ -167,6 +188,8 @@ function CourseMap({ progress, onOpenStep }) {
     return HERO_JOURNEY_TRIALS.find(t => !isStepCompleted(t.id, progress))
   }, [progress])
 
+  usePreloadStepImages(nextTrial)
+
   if (HERO_JOURNEY_TRIALS.length === 0)
     return (
       <Shell testId="hero-journey-map">
@@ -250,22 +273,29 @@ function StepIntro({ trial, onStart }) {
   const { chapterForTrial, total: HERO_JOURNEY_TOTAL_STEPS } = useCourse()
   const chapter = chapterForTrial(trial.id)
   const enterImage = trial.image?.enter
+  const [imageFailed, setImageFailed] = useState(false)
+  const showEnterImage = Boolean(enterImage) && !imageFailed
 
   return (
     <Shell fit bodyClassName="mx-hj-step-intro">
-      {enterImage ? (
+      {showEnterImage ? (
         <div className="mx-hj-hero-image">
-          <img src={enterImage} alt="" />
+          <img
+            src={enterImage}
+            alt=""
+            width={STEP_IMAGE_DIMENSIONS.enter.width}
+            height={STEP_IMAGE_DIMENSIONS.enter.height}
+            decoding="async"
+            onError={() => setImageFailed(true)}
+          />
         </div>
       ) : (
-        <>
-          <div className="mx-hj-step-intro__image">
-            <div className="mx-hj-step-intro__glyph">
-              <SemanticGlyph kind="pathfinder" animated={false} />
-            </div>
-            <span className="mx-hj-step-intro__image-caption">шаг {trial.number}</span>
+        <div className="mx-hj-step-intro__image">
+          <div className="mx-hj-step-intro__glyph">
+            <SemanticGlyph kind="pathfinder" animated={false} />
           </div>
-        </>
+          <span className="mx-hj-step-intro__image-caption">шаг {trial.number}</span>
+        </div>
       )}
 
       <div className="mx-hj-step-intro__text">
@@ -495,6 +525,8 @@ function StepComplete({ trial, progress, onBackToMap }) {
 
   const reflection = progress.reflections[trial.id] || ''
   const doneImage = trial.image?.done
+  const [imageFailed, setImageFailed] = useState(false)
+  const showDoneImage = Boolean(doneImage) && !imageFailed
 
   return (
     <Shell
@@ -511,14 +543,21 @@ function StepComplete({ trial, progress, onBackToMap }) {
         </div>
       }
     >
-      {doneImage ? (
+      {showDoneImage ? (
         <div className="mx-hj-hero-image">
-          <img src={doneImage} alt="" />
+          <img
+            src={doneImage}
+            alt=""
+            width={STEP_IMAGE_DIMENSIONS.done.width}
+            height={STEP_IMAGE_DIMENSIONS.done.height}
+            decoding="async"
+            onError={() => setImageFailed(true)}
+          />
         </div>
       ) : null}
 
       <div className="mx-hj-complete">
-        {!doneImage && (
+        {!showDoneImage && (
           <div className="mx-hj-complete__circle">
             <Check size={40} strokeWidth={3} />
           </div>
