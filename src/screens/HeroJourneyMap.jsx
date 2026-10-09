@@ -1,4 +1,13 @@
-import { useState, useMemo, useCallback, useEffect, useRef, createContext, useContext } from 'react'
+import {
+  useState,
+  useMemo,
+  useCallback,
+  useEffect,
+  useRef,
+  createContext,
+  useContext,
+  useSyncExternalStore,
+} from 'react'
 import { ArrowRight, Check, Lock } from 'lucide-react'
 
 import Screen from '../components/Screen'
@@ -16,6 +25,7 @@ import {
   clearHeroDraft,
 } from '../lib/heroJourneyProgress'
 import { heroDraftKey } from '../lib/heroJourneyState'
+import { getFullscreenSnapshot, subscribeFullscreen } from '../lib/tgFullscreen'
 import { writeLocal } from '../lib/store'
 import './HeroJourneyMap.css'
 
@@ -23,62 +33,6 @@ const CourseContext = createContext(null)
 const useCourse = () => useContext(CourseContext)
 
 const DEMO = isPreviewDemoMode()
-
-/* Размеры картинок шага: enter 1.6:1, done 1.3:1 (совпадает с aspect-ratio в CSS). */
-const STEP_IMAGE_DIMENSIONS = {
-  enter: { width: 1200, height: 750 },
-  done: { width: 1170, height: 900 },
-}
-
-/* Положение кадра по умолчанию: чуть выше середины — низ кадров намеренно пустой. */
-const DEFAULT_HERO_FOCUS = '50% 40%'
-
-/* Доля высоты героя, на которую текст заходит на картинку (image.overlap).
-   Глава I — 0.08, глава III — 0.22, у остальных шагов — это значение. */
-const DEFAULT_IMAGE_OVERLAP = 0.12
-
-/*
- * Иллюстрация шага — одна геометрия на входе и на завершении.
- * Картинка идёт от верха экрана на всю ширину, края растворяются маской,
- * под статус-баром и кнопками Telegram лежит скрим (см. .mx-hj-hero в CSS).
- * Перекрытие под заголовок даёт отрицательный нижний margin самого героя.
- */
-function HeroImage({ src, size, focus, compact, overlap = DEFAULT_IMAGE_OVERLAP, onError }) {
-  return (
-    <div
-      className={`mx-hj-hero${compact ? ' mx-hj-hero--compact' : ''}`}
-      style={{ '--mx-hj-hero-overlap': overlap }}
-    >
-      <div className="mx-hj-hero__frame">
-        <img
-          src={src}
-          alt=""
-          width={size.width}
-          height={size.height}
-          decoding="async"
-          style={{ objectPosition: focus || DEFAULT_HERO_FOCUS }}
-          onError={onError}
-        />
-      </div>
-      <span className="mx-hj-hero__scrim" aria-hidden="true" />
-    </div>
-  )
-}
-
-/* Предзагрузка картинок следующего шага: открытие шага без мигания. */
-function usePreloadStepImages(trial) {
-  const enterImage = trial?.image?.enter
-  const doneImage = trial?.image?.done
-
-  useEffect(() => {
-    for (const src of [enterImage, doneImage]) {
-      if (!src) continue
-      const image = new Image()
-      image.decoding = 'async'
-      image.src = src
-    }
-  }, [enterImage, doneImage])
-}
 
 /* ── утилиты потока ── */
 
@@ -111,23 +65,15 @@ function headerScreens(trial) {
 
 /* ── оболочка экрана ── */
 
-function Shell({
-  children,
-  footer,
-  bodyClassName = '',
-  screenBodyClassName = '',
-  fit = false,
-  topFlush = false,
-  testId,
-}) {
+function Shell({ children, footer, bodyClassName = '', fit = false, testId }) {
   return (
     <Screen
       showHeader={false}
       telegramChrome
       scroll={!fit}
       footer={footer}
-      className={`mx-hero-journey${topFlush ? ' mx-hero-journey--top' : ''}`}
-      bodyClassName={`${fit ? 'mx-hj-fit' : ''} ${screenBodyClassName}`.trim()}
+      className="mx-hero-journey"
+      bodyClassName={fit ? 'mx-hj-fit' : ''}
     >
       <div
         data-testid={testId}
@@ -231,8 +177,6 @@ function CourseMap({ progress, onOpenStep }) {
     return HERO_JOURNEY_TRIALS.find(t => !isStepCompleted(t.id, progress))
   }, [progress])
 
-  usePreloadStepImages(nextTrial)
-
   if (HERO_JOURNEY_TRIALS.length === 0)
     return (
       <Shell testId="hero-journey-map">
@@ -310,38 +254,89 @@ function CourseMap({ progress, onOpenStep }) {
   )
 }
 
+/* ── картинка шага ── */
+
+/* размеры экспорта серии: enter 3:2, done 13:10; svg-заглушки главы I — 390×300 */
+function stepImageDims(src, kind) {
+  if (src?.endsWith('.svg')) return { width: 390, height: 300 }
+  return kind === 'enter' ? { width: 1200, height: 750 } : { width: 1170, height: 900 }
+}
+
+function preloadImage(src) {
+  if (!src) return
+  const img = new Image()
+  img.decoding = 'async'
+  img.src = src
+}
+
+/* Картинка шага: во всю ширину, от верха экрана, маска по четырём краям.
+ * Ошибка загрузки → прежняя заглушка (глиф на входе, галочка на завершении). */
+function StepImage({ image, kind, underChrome, fallback, className = '' }) {
+  const [failedSrc, setFailedSrc] = useState(null)
+  const src = failedSrc === image?.[kind] ? null : image?.[kind]
+  if (!src) return fallback || null
+  const compact = Boolean(image?.compact)
+  const dims = stepImageDims(src, kind)
+
+  return (
+    <div
+      className={`mx-hj-hero-image mx-hj-hero-image--${kind} ${compact ? 'mx-hj-hero-image--compact' : ''} ${underChrome ? 'mx-hj-hero-image--under-chrome' : ''} ${className}`}
+    >
+      <img
+        src={src}
+        alt=""
+        width={dims.width}
+        height={dims.height}
+        decoding="async"
+        style={{ objectPosition: image?.focus || '50% 40%' }}
+        onError={() => setFailedSrc(src)}
+      />
+      <span className="mx-hj-hero-image__scrim" aria-hidden="true" />
+    </div>
+  )
+}
+
 /* ── B. Вход в шаг ── */
 
 function StepIntro({ trial, onStart }) {
-  const { chapterForTrial, total: HERO_JOURNEY_TOTAL_STEPS } = useCourse()
+  const { chapterForTrial, total: HERO_JOURNEY_TOTAL_STEPS, steps } = useCourse()
+  const tgFullscreen = useSyncExternalStore(subscribeFullscreen, getFullscreenSnapshot)
   const chapter = chapterForTrial(trial.id)
-  const enterImage = trial.image?.enter
-  const [imageFailed, setImageFailed] = useState(false)
-  const showEnterImage = Boolean(enterImage) && !imageFailed
+  const image = trial.image
+  const enterImage = image?.enter
+  const overlap = image?.overlap ?? 0.12
+  const nextTrial = steps[trial.number] || null
+
+  /* Подгрузка: завершение текущего шага и вход следующего */
+  useEffect(() => {
+    preloadImage(image?.done)
+    preloadImage(nextTrial?.image?.enter)
+  }, [image, nextTrial])
 
   return (
-    /* С картинкой экран начинается от верха и скроллится на низких экранах:
-       высота героя задана clamp'ом, а не свободным местом. */
-    <Shell fit={!showEnterImage} topFlush={showEnterImage} bodyClassName="mx-hj-step-intro">
-      {showEnterImage ? (
-        <HeroImage
-          src={enterImage}
-          size={STEP_IMAGE_DIMENSIONS.enter}
-          focus={trial.image?.focus}
-          compact={trial.image?.compact}
-          overlap={trial.image?.overlap}
-          onError={() => setImageFailed(true)}
-        />
-      ) : (
-        <div className="mx-hj-step-intro__image">
-          <div className="mx-hj-step-intro__glyph">
-            <SemanticGlyph kind="pathfinder" animated={false} />
+    <Shell
+      fit
+      bodyClassName={`mx-hj-step-intro ${enterImage ? 'mx-hj-step-intro--image' : ''} ${image?.compact && enterImage ? 'mx-hj-step-intro--compact' : ''}`}
+    >
+      <StepImage
+        key={enterImage}
+        image={image}
+        kind="enter"
+        underChrome={tgFullscreen || DEMO}
+        fallback={
+          <div className="mx-hj-step-intro__image">
+            <div className="mx-hj-step-intro__glyph">
+              <SemanticGlyph kind="pathfinder" animated={false} />
+            </div>
+            <span className="mx-hj-step-intro__image-caption">шаг {trial.number}</span>
           </div>
-          <span className="mx-hj-step-intro__image-caption">шаг {trial.number}</span>
-        </div>
-      )}
+        }
+      />
 
-      <div className="mx-hj-step-intro__text">
+      <div
+        className="mx-hj-step-intro__text"
+        style={enterImage ? { '--hj-overlap': overlap } : undefined}
+      >
         <div className="mx-hj-step-intro__label">
           Глава {chapter.roman} · {chapter.title} · Шаг {trial.number} из {HERO_JOURNEY_TOTAL_STEPS}
         </div>
@@ -557,7 +552,8 @@ function WriteScreen({
 /* ── G. Шаг пройден ── */
 
 function StepComplete({ trial, progress, onBackToMap }) {
-  const { chapterForTrial, trialsForChapter, chapters: HERO_JOURNEY_CHAPTERS } = useCourse()
+  const { chapterForTrial, trialsForChapter, chapters: HERO_JOURNEY_CHAPTERS, steps } = useCourse()
+  const tgFullscreen = useSyncExternalStore(subscribeFullscreen, getFullscreenSnapshot)
   const chapter = chapterForTrial(trial.id)
   const chapterTrials = trialsForChapter(chapter)
   const completedInChapter = chapterTrials.filter(t => isStepCompleted(t.id, progress))
@@ -568,14 +564,15 @@ function StepComplete({ trial, progress, onBackToMap }) {
 
   const reflection = progress.reflections[trial.id] || ''
   const doneImage = trial.image?.done
-  const [imageFailed, setImageFailed] = useState(false)
-  const showDoneImage = Boolean(doneImage) && !imageFailed
+
+  /* Подгрузка входа следующего шага */
+  useEffect(() => {
+    preloadImage(steps[trial.number]?.image?.enter)
+  }, [trial.id, steps])
 
   return (
     <Shell
-      topFlush={showDoneImage}
-      bodyClassName="mx-hj-step-complete"
-      screenBodyClassName="mx-hj-stretch"
+      bodyClassName={`mx-hj-complete-screen ${trial.image?.compact ? 'mx-hj-complete-screen--compact' : ''}`}
       footer={
         <div className="mx-hj-complete__footer mx-auto w-full max-w-md px-[var(--mx-screen-x)]">
           <button
@@ -589,23 +586,15 @@ function StepComplete({ trial, progress, onBackToMap }) {
         </div>
       }
     >
-      {showDoneImage ? (
-        <HeroImage
-          src={doneImage}
-          size={STEP_IMAGE_DIMENSIONS.done}
-          focus={trial.image?.focus}
-          compact={trial.image?.compact}
-          overlap={trial.image?.overlap}
-          onError={() => setImageFailed(true)}
-        />
-      ) : null}
+      <StepImage
+        key={doneImage}
+        image={trial.image}
+        kind="done"
+        underChrome={tgFullscreen || DEMO}
+      />
 
-      {/* перекрытие то же, что у героя: по нему блок считает свободную высоту */}
-      <div
-        className="mx-hj-complete"
-        style={{ '--mx-hj-hero-overlap': trial.image?.overlap ?? DEFAULT_IMAGE_OVERLAP }}
-      >
-        {!showDoneImage && (
+      <div className="mx-hj-complete">
+        {!doneImage && (
           <div className="mx-hj-complete__circle">
             <Check size={40} strokeWidth={3} />
           </div>

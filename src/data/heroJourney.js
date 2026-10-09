@@ -22,6 +22,14 @@ import meaningEnter from '../assets/hero-journey/meaning-enter.webp'
 import meaningDone from '../assets/hero-journey/meaning-done.webp'
 import selfAssemblyEnter from '../assets/hero-journey/self-assembly-enter.webp'
 import selfAssemblyDone from '../assets/hero-journey/self-assembly-done.webp'
+import infoPressureEnter from '../assets/hero-journey/info-pressure-enter.webp'
+import infoPressureDone from '../assets/hero-journey/info-pressure-done.webp'
+import hasteEnter from '../assets/hero-journey/haste-enter.webp'
+import hasteDone from '../assets/hero-journey/haste-done.webp'
+import othersLivesEnter from '../assets/hero-journey/others-lives-enter.webp'
+import othersLivesDone from '../assets/hero-journey/others-lives-done.webp'
+import digitalAvatarEnter from '../assets/hero-journey/digital-avatar-enter.webp'
+import digitalAvatarDone from '../assets/hero-journey/digital-avatar-done.webp'
 
 /**
  * Путь героя — авторский курс Mentalix.
@@ -157,6 +165,12 @@ export const HERO_JOURNEY_TRIALS = [
     action: 'Отключи один источник информации на 24 часа. Заметь, что изменилось.',
     shadowAction:
       'Подчиниться ритму «быстрее, больше, не пропусти». Спешка опустошает, не обогащая.',
+    image: {
+      enter: infoPressureEnter,
+      done: infoPressureDone,
+      focus: '40% 40%',
+      overlap: 0.08,
+    },
   },
   {
     id: 'haste',
@@ -169,6 +183,13 @@ export const HERO_JOURNEY_TRIALS = [
     action: 'Остановись на пять минут. Ничего не делай. Заметь, что поднимается.',
     shadowAction:
       'Бежать от тревоги через действие. Кажется, что двигаешься, а на деле — убегаешь от себя.',
+    image: {
+      enter: hasteEnter,
+      done: hasteDone,
+      focus: '65% 40%',
+      overlap: 0.08,
+      compact: true,
+    },
   },
   {
     id: 'others-lives',
@@ -181,6 +202,13 @@ export const HERO_JOURNEY_TRIALS = [
     action: 'Один день — только своя жизнь. Чужие новости — мимо.',
     shadowAction:
       'Жить духами смердящего пространства. Кажется, что ты в курсе, а на деле — прячешься от себя.',
+    image: {
+      enter: othersLivesEnter,
+      done: othersLivesDone,
+      focus: '75% 35%',
+      overlap: 0.12,
+      compact: true,
+    },
   },
   {
     id: 'digital-avatar',
@@ -193,6 +221,13 @@ export const HERO_JOURNEY_TRIALS = [
     action: 'Опиши себя без единой ссылки на соцсети, профессию или аккаунт.',
     shadowAction:
       'Отождествиться с аватаром. Фильтры, нейросети, фальшивый образ — пока зеркало не становится врагом.',
+    image: {
+      enter: digitalAvatarEnter,
+      done: digitalAvatarDone,
+      focus: '45% 40%',
+      overlap: 0.12,
+      compact: true,
+    },
   },
   {
     id: 'comparison',
