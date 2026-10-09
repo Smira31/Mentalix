@@ -405,21 +405,67 @@
   }
 }
 
-/* ── B. Вход в шаг: колонка на всю высоту, без скролла ── */
+/* ── B. Вход в шаг: колонка на всю доступную высоту, без скролла ── */
 
 .mx-hj-step-intro {
   flex: 1;
   min-height: 0;
 }
 
-/* Высота героя на входе. Компактный вариант — шаги, где полная высота срезает
-   главный объект кадра (relationships: правая половина арки). */
-.mx-hj-step-intro {
-  --mx-hj-hero-h: clamp(300px, 42dvh, 380px);
+/*
+ * Контент растягивается на всю высоту noscroll-колонки: картинка сама занимает
+ * место, оставшееся после текста и кнопки. Правило адресовано только экранам
+ * «Пути героя» — единственному потребителю noscroll-оболочки.
+ */
+.mx-screen__body--noscroll .mx-screen__content {
+  flex: 1;
+  min-height: 0;
 }
 
-.mx-hj-step-intro .mx-hj-hero--compact {
-  --mx-hj-hero-h: min(clamp(300px, 42dvh, 380px), 290px);
+/*
+ * Гибкий герой на входе: 110–260 px по вертикали. Свободное место после текста
+ * и кнопки забирает картинка (flex-grow 999 до max-height); остаток сверх
+ * максимума уходит в распорку перед нижней группой. Компактный вариант —
+ * шаги, где высокая высота срезает главный объект кадра (relationships).
+ */
+.mx-hj-step-intro .mx-hj-hero--flex {
+  flex: 999 1 auto;
+  height: auto;
+  min-height: 110px;
+  max-height: 260px;
+  margin-bottom: 0;
+}
+
+.mx-hj-step-intro .mx-hj-hero--flex.mx-hj-hero--compact {
+  max-height: 210px;
+}
+
+/* Нижний край уходит в чёрный линейно с 65% до 100% высоты блока
+   (арт-спецификация); верх и бока растворяются как у остальных героев. */
+.mx-hj-hero--flex .mx-hj-hero__frame {
+  -webkit-mask-image:
+    linear-gradient(to bottom, transparent 0, #000 14%, #000 65%, transparent 100%),
+    linear-gradient(to right, transparent 0, #000 5%, #000 95%, transparent 100%);
+  mask-image:
+    linear-gradient(to bottom, transparent 0, #000 14%, #000 65%, transparent 100%),
+    linear-gradient(to right, transparent 0, #000 5%, #000 95%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+
+/* Распорка: остаток свободной высоты между текстом и нижней группой. */
+.mx-hj-step-intro__spacer {
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+/* Нижняя группа: «≈ 6 минут» и кнопка «Начать шаг», прижаты к низу колонки. */
+.mx-hj-step-intro__bottom {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
 }
 
 .mx-hj-step-intro .mx-hj-step-intro__image {
@@ -462,15 +508,14 @@
 }
 
 .mx-hj-step-intro__text {
-  flex-shrink: 0;
-  /* Свободная высота уходит в зазор между картинкой и текстом */
-  margin-top: auto;
+  flex: none;
+  /* Без героя (картинка не загрузилась): зазор под заглушкой */
+  margin-top: 12px;
 }
 
-/* С картинкой текст ложится на её нижнюю треть: перекрытие уже дал сам герой
-   отрицательным нижним margin, поэтому авто-зазор здесь не нужен. */
+/* С картинкой текст слегка перехлёстывает затемнённый нижний край героя. */
 .mx-hj-hero + .mx-hj-step-intro__text {
-  margin-top: 0;
+  margin-top: -28px;
   position: relative;
   z-index: 1;
 }
@@ -516,7 +561,7 @@
   font-weight: 600;
   line-height: 1.15;
   color: rgb(var(--c-text));
-  margin-top: 8px;
+  margin-top: 6px;
   text-shadow: 0 2px 14px #050403;
 }
 
@@ -524,21 +569,26 @@
   font-size: calc(15px * var(--mx-type-scale));
   font-weight: 400;
   color: rgb(var(--c-muted));
-  margin-top: 8px;
+  margin-top: 6px;
 }
 
+/*
+ * Вступление: межабзацный интервал 12 px, межстрочный 1.45 — текст влезает
+ * без скролла на низких экранах, не обрезается и не сокращается.
+ * Эффективный размер не ниже 15 px (масштаб типографики 0.86 давал 13.8 px).
+ */
 .mx-hj-step-intro__desc {
-  font-size: calc(16px * var(--mx-type-scale));
-  line-height: 1.6;
+  font-size: max(15px, calc(16px * var(--mx-type-scale)));
+  line-height: 1.45;
   color: rgb(var(--c-muted));
-  margin-top: 20px;
+  margin-top: 12px;
 }
 
 .mx-hj-step-intro__flow {
   font-size: calc(15px * var(--mx-type-scale));
   font-weight: 400;
   color: rgb(var(--c-muted));
-  margin-top: 16px;
+  text-align: center;
 }
 
 .mx-hj-step-intro__cta {
@@ -547,75 +597,13 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  margin-top: 24px;
   font-size: calc(15px * var(--mx-type-scale));
 }
 
-/*
- * Низкие экраны (iPhone SE 375×667, 360×640): вступление без скролла.
- * Герой ужимается до 180px, межабзацные отступы сжимаются, «Начать шаг»
- * прижимается к низу свободной высоты. Текст не сокращается и не мельчит.
- */
+/* На экранах ниже 700 px высотой допустимо 14.5 px во вступлении. */
 @media (max-height: 700px) {
-  .mx-hj-step-intro {
-    --mx-hj-hero-h: 180px;
-  }
-
-  .mx-hj-step-intro .mx-hj-hero--compact {
-    --mx-hj-hero-h: 180px;
-  }
-
-  .mx-hj-step-intro__title {
-    margin-top: 2px;
-  }
-
-  .mx-hj-step-intro__subtitle {
-    margin-top: 4px;
-  }
-
   .mx-hj-step-intro__desc {
-    margin-top: 8px;
-    line-height: 1.5;
-  }
-
-  .mx-hj-step-intro__flow {
-    margin-top: 6px;
-  }
-
-  /* Минимальный зазор текста к кнопке, кнопка прижата к низу экрана */
-  .mx-hj-step-intro__text {
-    padding-bottom: 12px;
-  }
-
-  .mx-hj-step-intro__cta {
-    margin-top: auto;
-  }
-
-  /* Нижний паддинг поверхности сжимается: кнопка прижата к низу */
-  .mx-hj-fit .mx-screen__content {
-    padding-bottom: 8px;
-  }
-}
-
-/*
- * Самые низкие экраны (360×640): ещё чуть ужимаются межабзацный интервал
- * и отступы, чтобы вступление оставалось без скролла.
- */
-@media (max-height: 650px) {
-  .mx-hj-step-intro__title {
-    margin-top: 0;
-  }
-
-  .mx-hj-step-intro__subtitle {
-    margin-top: 0;
-  }
-
-  .mx-hj-step-intro__desc {
-    margin-top: 3px;
-  }
-
-  .mx-hj-step-intro__text {
-    padding-bottom: 2px;
+    font-size: max(14.5px, calc(16px * var(--mx-type-scale)));
   }
 }
 
@@ -877,10 +865,12 @@
   border-left: 2px solid rgb(var(--c-border));
 }
 
-/* Поле: 17/400, межстрочный 1.5, левый край по вопросу */
+/* Поле: 17/400, межстрочный 1.5, левый край по вопросу.
+   Колонка без скролла — длинный текст прокручивается внутри поля. */
 .mx-hj-write-editor {
   font-weight: 400;
   line-height: 1.5;
+  overflow-y: auto;
 }
 
 /* Пока поле пустое, «→» на «Запиши» неактивна: фон card2, стрелка muted */
