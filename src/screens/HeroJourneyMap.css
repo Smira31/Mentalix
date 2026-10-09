@@ -487,7 +487,7 @@
 
 .mx-hj-step-intro__image-caption {
   font-size: max(11px, calc(12px * var(--mx-type-scale)));
-  color: rgb(var(--c-faint));
+  color: rgb(var(--c-muted));
 }
 
 .mx-hj-step-intro__text {
