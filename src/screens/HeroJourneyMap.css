@@ -551,6 +551,46 @@
   font-size: calc(15px * var(--mx-type-scale));
 }
 
+/*
+ * Низкие экраны (iPhone SE 375×667, 360×640): вступление без скролла.
+ * Герой ужимается до 180px, межабзацные отступы сжимаются, «Начать шаг»
+ * прижимается к низу свободной высоты. Текст не сокращается и не мельчит.
+ */
+@media (max-height: 700px) {
+  .mx-hj-step-intro {
+    --mx-hj-hero-h: 180px;
+  }
+
+  .mx-hj-step-intro .mx-hj-hero--compact {
+    --mx-hj-hero-h: 180px;
+  }
+
+  .mx-hj-step-intro__title {
+    margin-top: 4px;
+  }
+
+  .mx-hj-step-intro__subtitle {
+    margin-top: 6px;
+  }
+
+  .mx-hj-step-intro__desc {
+    margin-top: 10px;
+  }
+
+  .mx-hj-step-intro__flow {
+    margin-top: 8px;
+  }
+
+  /* Минимальный зазор текста к кнопке, кнопка прижата к низу экрана */
+  .mx-hj-step-intro__text {
+    padding-bottom: 16px;
+  }
+
+  .mx-hj-step-intro__cta {
+    margin-top: auto;
+  }
+}
+
 /* ── общая шапка C–F ── */
 
 .mx-hj-step-header {
