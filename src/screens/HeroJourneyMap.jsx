@@ -82,14 +82,8 @@ function usePreloadStepImages(trial) {
 
 /* ── утилиты потока ── */
 
-function screenSequence(trial) {
-  const hasSigns = Array.isArray(trial?.signs) && trial.signs.length > 0
-  const hasPaths = Boolean(trial?.heroPath)
-  const seq = ['step-intro']
-  if (hasSigns) seq.push('signs')
-  if (hasPaths) seq.push('paths')
-  seq.push('write', 'action', 'complete')
-  return seq
+function screenSequence() {
+  return ['step-intro', 'write', 'action', 'complete']
 }
 
 function nextView(currentView, trial) {
@@ -347,8 +341,10 @@ function StepIntro({ trial, onStart }) {
         </div>
         <h2 className="mx-hj-step-intro__title">{appHeading(trial.title)}</h2>
         <p className="mx-hj-step-intro__subtitle">{trial.subtitle}</p>
-        <p className="mx-hj-step-intro__desc">{trial.description}</p>
-        <p className="mx-hj-step-intro__flow">2 шага: запись и одно действие</p>
+        {trial.intro.split('\n\n').map((para, i) => (
+          <p key={i} className="mx-hj-step-intro__desc">{para}</p>
+        ))}
+        <p className="mx-hj-step-intro__flow">≈ 6 минут</p>
       </div>
 
       <button
@@ -367,8 +363,6 @@ function StepIntro({ trial, onStart }) {
 
 /* подписи действий экранов шага для метки в шапке */
 const HEADER_VIEW_LABELS = {
-  signs: 'Как проявляется',
-  paths: 'Два пути',
   write: 'Запиши',
   action: 'Одно действие',
 }
@@ -397,105 +391,6 @@ function StepHeader({ trial, view }) {
         )}
       </div>
     </div>
-  )
-}
-
-/* ── C. Как это проявляется ── */
-
-function SignsScreen({ trial, markedSigns, onToggleSign, onNext, onBack }) {
-  const signs = trial.signs || []
-  const markedCount = markedSigns.length
-
-  return (
-    <Shell>
-      <StepHeader trial={trial} onBack={onBack} view="signs" />
-
-      <h2 className="mx-hj-signs__title">{appHeading('Узнаёшь себя?')}</h2>
-      <p className="mx-hj-signs__sub">Отметь то, что про тебя. Это видишь только ты.</p>
-
-      <div className="mx-hj-signs__list">
-        {signs.map((sign, i) => {
-          const checked = markedSigns.includes(i)
-          return (
-            <button
-              key={i}
-              type="button"
-              aria-pressed={checked}
-              onClick={() => onToggleSign(i)}
-              className={`mx-hj-sign-card ${checked ? 'is-checked' : ''}`}
-            >
-              <span className="mx-hj-sign-card__text">{sign}</span>
-              <span className="mx-hj-sign-card__check">
-                {checked && <Check size={16} strokeWidth={3} />}
-              </span>
-            </button>
-          )
-        })}
-      </div>
-
-      <div className="mx-hj-signs__footer">
-        <span className="mx-hj-signs__count">
-          Отмечено {markedCount} из {signs.length}
-        </span>
-        <button
-          type="button"
-          data-testid="hero-signs-next"
-          onClick={onNext}
-          className="cta-pill mx-hj-signs__cta"
-        >
-          Дальше
-        </button>
-      </div>
-    </Shell>
-  )
-}
-
-/* ── D. Два пути ── */
-
-function PathsScreen({ trial, onNext, onBack }) {
-  return (
-    <Shell>
-      <StepHeader trial={trial} onBack={onBack} view="paths" />
-
-      <h2 className="mx-hj-paths__title">{appHeading('Как пройти — и как не пройти')}</h2>
-
-      <div className="mx-hj-path-card mx-hj-path-card--shadow">
-        <span className="mx-hj-path-card__label">Путь тени</span>
-        <p className="mx-hj-path-card__action">{trial.shadowAction}</p>
-        {trial.shadowOutcome && (
-          <>
-            <div className="mx-hj-path-card__divider" />
-            <p className="mx-hj-path-card__outcome">{trial.shadowOutcome}</p>
-          </>
-        )}
-      </div>
-
-      <div className="mx-hj-path-card mx-hj-path-card--hero">
-        <span className="mx-hj-path-card__label">Путь героя</span>
-        <p className="mx-hj-path-card__action">{trial.heroPath}</p>
-        {trial.heroOutcome && (
-          <>
-            <div className="mx-hj-path-card__divider" />
-            <p className="mx-hj-path-card__outcome">{trial.heroOutcome}</p>
-          </>
-        )}
-      </div>
-
-      {trial.quote && (
-        <blockquote className="mx-hj-paths__quote">
-          <p>{trial.quote}</p>
-        </blockquote>
-      )}
-
-      <button
-        type="button"
-        data-testid="hero-paths-next"
-        onClick={onNext}
-        className="cta-pill mx-hj-paths__cta"
-      >
-        Дальше
-      </button>
-    </Shell>
   )
 }
 
@@ -610,10 +505,13 @@ function StepComplete({ trial, progress, onBackToMap }) {
             <Check size={40} strokeWidth={3} />
           </div>
         )}
-        <h2 className="mx-hj-complete__title">{appHeading('Шаг пройден')}</h2>
+        <h2 className="mx-hj-complete__title">{appHeading(trial.doneTitle || 'Шаг пройден')}</h2>
         <p className="mx-hj-complete__phrase">
-          {trial.doneText || 'Ты сделал ещё один шаг по пути.'}
+          {trial.doneSummary || 'Ты сделал ещё один шаг по пути.'}
         </p>
+        {trial.doneTeaser && (
+          <p className="mx-hj-complete__teaser">{trial.doneTeaser}</p>
+        )}
 
         <div className="mx-hj-complete__chapter-card">
           <div className="mx-hj-complete__chapter-segs">
@@ -662,7 +560,7 @@ export default function HeroJourneyMap({ course = HERO_COURSE, ...props }) {
 
 function CourseFlow({ onBack, user, course }) {
   const { findTrial, previousTrial } = useCourse()
-  const { progress, completeStep, setSigns } = useHeroJourneyProgress(user.id, course.id)
+  const { progress, completeStep } = useHeroJourneyProgress(user.id, course.id)
   const [view, setView] = useState('map')
   const [activeStepId, setActiveStepId] = useState(null)
   const [markedSigns, setMarkedSigns] = useState([])
@@ -747,24 +645,6 @@ function CourseFlow({ onBack, user, course }) {
     setView(nextView('step-intro', trial))
   }
 
-  function toggleSign(index) {
-    platform.haptic('light')
-    setMarkedSigns(prev =>
-      prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]
-    )
-  }
-
-  function proceedFromSigns() {
-    if (!trial) return
-    setSigns(trial.id, markedSigns)
-    setView(nextView('signs', trial))
-  }
-
-  function proceedFromPaths() {
-    if (!trial) return
-    setView(nextView('paths', trial))
-  }
-
   function submitWrite() {
     if (!trial) return
     setView(nextView('write', trial))
@@ -792,28 +672,12 @@ function CourseFlow({ onBack, user, course }) {
     return <StepIntro trial={trial} onBack={handleBack} onStart={startStep} />
   }
 
-  if (view === 'signs') {
-    return (
-      <SignsScreen
-        trial={trial}
-        markedSigns={markedSigns}
-        onToggleSign={toggleSign}
-        onNext={proceedFromSigns}
-        onBack={handleBack}
-      />
-    )
-  }
-
-  if (view === 'paths') {
-    return <PathsScreen trial={trial} onNext={proceedFromPaths} onBack={handleBack} />
-  }
-
   if (view === 'write') {
     return (
       <WriteScreen
         label="ЗАПИШИ"
-        prompt={trial.prompt}
-        hint={trial.hint || 'Не оценивай — просто назови, как есть.'}
+        prompt={trial.writePrompt}
+        hint={trial.writeHint || 'Не оценивай — просто назови, как есть.'}
         placeholder="Начни писать…"
         value={reflection}
         onChange={value => changeDraft('reflection', value)}
@@ -830,8 +694,8 @@ function CourseFlow({ onBack, user, course }) {
     return (
       <WriteScreen
         label="ОДНО ДЕЙСТВИЕ"
-        prompt={trial.action}
-        hint="Напиши, какое. Оно сохранится вместе с ответом в дневнике."
+        prompt={trial.actionPrompt}
+        hint={trial.actionHint || 'Напиши, какое. Оно сохранится вместе с ответом в дневнике.'}
         placeholder={trial.actionPlaceholder || 'Моё действие…'}
         value={action}
         onChange={value => changeDraft('action', value)}

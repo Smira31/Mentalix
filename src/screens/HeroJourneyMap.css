@@ -913,6 +913,13 @@
   margin-top: 8px;
 }
 
+.mx-hj-complete__teaser {
+  font-size: calc(14px * var(--mx-type-scale));
+  line-height: 1.45;
+  color: rgb(var(--c-muted));
+  margin-top: 12px;
+}
+
 .mx-hj-complete__chapter-card {
   width: 100%;
   display: flex;

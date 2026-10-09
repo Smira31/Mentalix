@@ -93,7 +93,7 @@ test('черновик сохраняется с debounce и при выходе
   await expect(page.locator('.mx-library-course-progress')).toHaveText('Шаг 2 из 16')
 })
 
-test('Назад проходит по подэкранам шага с признаками и двумя путями', async ({ page }) => {
+test('Назад проходит по подэкранам шага: запись и действие', async ({ page }) => {
   await page.setViewportSize({ width: 393, height: 852 })
   await page.addInitScript(() => {
     localStorage.clear()
@@ -110,15 +110,7 @@ test('Назад проходит по подэкранам шага с приз
   await page.goto('/?demo=1&tab=library&action=hero_journey')
   await page.getByTestId('hero-continue').click()
   await page.getByTestId('hero-step-start').click()
-  await expect(page.getByTestId('hero-signs-next')).toBeVisible()
-  await page.getByTestId('hero-signs-next').click()
-  await expect(page.getByTestId('hero-paths-next')).toBeVisible()
-  await page.getByTestId('hero-paths-next').click()
   await expect(page.getByTestId('hero-write-input')).toBeVisible()
-  await page.getByTestId('demo-chrome-back').click()
-  await expect(page.getByTestId('hero-paths-next')).toBeVisible()
-  await page.getByTestId('demo-chrome-back').click()
-  await expect(page.getByTestId('hero-signs-next')).toBeVisible()
   await page.getByTestId('demo-chrome-back').click()
   await expect(page.getByTestId('hero-step-start')).toBeVisible()
   await page.getByTestId('demo-chrome-back').click()
