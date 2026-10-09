@@ -318,8 +318,9 @@
 /*
  * Высоту задаёт экран через --mx-hj-hero-h (вход/завершение; у steps с
  * важным краем кадра — компактный вариант). Отрицательный нижний margin — это
- * перекрытие 22 % высоты героя: заголовок ложится на нижнюю треть кадра,
- * которая у иллюстраций намеренно оставлена пустой.
+ * перекрытие высоты героя, долю задаёт шаг через image.overlap
+ * (--mx-hj-hero-overlap; глава I — 0.08, глава III — 0.22, по умолчанию 0.12):
+ * заголовок ложится на нижнюю часть кадра.
  * Боковые отступы и верхний margin выводят картинку из контейнера к верху экрана
  * (--mx-space-2 — тот же padding-top, что у .mx-screen__content).
  */
@@ -338,7 +339,7 @@
   width: calc(100% + 2 * var(--mx-screen-x));
   margin:
     calc(-1 * var(--mx-space-2)) calc(-1 * var(--mx-screen-x))
-    calc(-0.22 * var(--mx-hj-hero-h, 320px));
+    calc(-1 * var(--mx-hj-hero-overlap, 0.12) * var(--mx-hj-hero-h, 320px));
   height: var(--mx-hj-hero-h, 320px);
   /* Фон до загрузки картинки — цвет приложения, без вспышки. */
   background: #050403;
@@ -350,10 +351,10 @@
   inset: 0;
   /* Края растворяются по всем четырём сторонам: прямоугольников не видно. */
   -webkit-mask-image:
-    linear-gradient(to bottom, transparent 0, #000 14%, #000 62%, transparent 100%),
+    linear-gradient(to bottom, transparent 0, #000 14%, #000 56%, transparent 100%),
     linear-gradient(to right, transparent 0, #000 5%, #000 95%, transparent 100%);
   mask-image:
-    linear-gradient(to bottom, transparent 0, #000 14%, #000 62%, transparent 100%),
+    linear-gradient(to bottom, transparent 0, #000 14%, #000 56%, transparent 100%),
     linear-gradient(to right, transparent 0, #000 5%, #000 95%, transparent 100%);
   -webkit-mask-composite: source-in;
   mask-composite: intersect;
@@ -474,13 +475,39 @@
   z-index: 1;
 }
 
+/*
+ * Скрим под текстовым блоком: начинается за 56 px до подписи «ГЛАВА…» и уводит
+ * фон в цвет приложения, чтобы подпись и заголовок читались на светлой штриховке
+ * кадра. Лежит ниже текста и выше картинки; кнопок навигации сверху не касается —
+ * текст стоит ниже героя, а скрим поднимается лишь на 56 px над первой строкой.
+ */
+.mx-hj-hero + .mx-hj-step-intro__text::before,
+.mx-hj-hero + .mx-hj-complete::before {
+  content: '';
+  position: absolute;
+  left: calc(-1 * var(--mx-screen-x));
+  right: calc(-1 * var(--mx-screen-x));
+  top: -56px;
+  height: 64px;
+  background: linear-gradient(
+    to bottom,
+    rgba(5, 4, 3, 0) 0,
+    rgba(5, 4, 3, 0.82) 36px,
+    #050403 64px
+  );
+  z-index: -1;
+  pointer-events: none;
+}
+
 .mx-hj-step-intro__label {
   font-family: var(--font-label, 'Manrope', sans-serif);
   font-size: max(11px, calc(11px * var(--mx-type-scale)));
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: rgb(var(--c-muted));
+  /* Светлее — контраст к фону ≥ 7:1; тень гасит светлые пятна кадра. */
+  color: rgb(var(--c-text));
+  text-shadow: 0 1px 8px #050403;
 }
 
 .mx-hj-step-intro__title {
@@ -490,6 +517,7 @@
   line-height: 1.15;
   color: rgb(var(--c-text));
   margin-top: 8px;
+  text-shadow: 0 2px 14px #050403;
 }
 
 .mx-hj-step-intro__subtitle {
@@ -842,6 +870,7 @@
   line-height: 1.15;
   color: rgb(var(--c-text));
   margin-top: 4px;
+  text-shadow: 0 2px 14px #050403;
 }
 
 .mx-hj-complete__phrase {

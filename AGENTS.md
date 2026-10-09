@@ -246,6 +246,7 @@ screens, and keep article cards unchanged unless the owner explicitly approves t
 ### Проверка «Пути героя» в Base44
 
 - Локальные ключи курса используют `:<userId>`, но CloudStorage Telegram не допускает двоеточия: облачный scoped-ключ заменяет их на `_`. Legacy-миграция выполняется до очистки пользовательского scope.
+- Перекрытие текста на иллюстрацию задаётся шагом через `image.overlap` (доля высоты героя; глава I — 0.08, глава III — 0.22, по умолчанию 0.12) → CSS-переменная `--mx-hj-hero-overlap`; читаемость подписи и заголовка на экранах входа/завершения держат `::before`-скрим (56 px над первой строкой) и текстовые тени. Контраст подписи к фону ≥ 7:1; измерить и снять экраны можно gitignored-скриптом `artifacts/hero-layout/capture-contrast.mjs`.
 - Для этой задачи владелец разрешил только `check:core` и целевой Playwright-файл `hero-journey-reliability.spec.mjs` (Chromium); полный `ux:check` и WebKit оставлены CI. Команды выполняются в `docker compose -f docker-compose.base44.yml exec -T web`.
 - В свежем web-контейнере браузера Playwright нет: перед прогоном нужен `npx playwright install --with-deps chromium` (в `node:22-slim` нет системных библиотек, иначе launch падает на `libglib-2.0.so.0`). Ставить только Chromium.
 

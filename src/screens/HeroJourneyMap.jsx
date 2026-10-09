@@ -33,15 +33,22 @@ const STEP_IMAGE_DIMENSIONS = {
 /* Положение кадра по умолчанию: чуть выше середины — низ кадров намеренно пустой. */
 const DEFAULT_HERO_FOCUS = '50% 40%'
 
+/* Доля высоты героя, на которую текст заходит на картинку (image.overlap).
+   Глава I — 0.08, глава III — 0.22, у остальных шагов — это значение. */
+const DEFAULT_IMAGE_OVERLAP = 0.12
+
 /*
  * Иллюстрация шага — одна геометрия на входе и на завершении.
  * Картинка идёт от верха экрана на всю ширину, края растворяются маской,
  * под статус-баром и кнопками Telegram лежит скрим (см. .mx-hj-hero в CSS).
  * Перекрытие под заголовок даёт отрицательный нижний margin самого героя.
  */
-function HeroImage({ src, size, focus, compact, onError }) {
+function HeroImage({ src, size, focus, compact, overlap = DEFAULT_IMAGE_OVERLAP, onError }) {
   return (
-    <div className={`mx-hj-hero${compact ? ' mx-hj-hero--compact' : ''}`}>
+    <div
+      className={`mx-hj-hero${compact ? ' mx-hj-hero--compact' : ''}`}
+      style={{ '--mx-hj-hero-overlap': overlap }}
+    >
       <div className="mx-hj-hero__frame">
         <img
           src={src}
@@ -314,6 +321,7 @@ function StepIntro({ trial, onStart }) {
           size={STEP_IMAGE_DIMENSIONS.enter}
           focus={trial.image?.focus}
           compact={trial.image?.compact}
+          overlap={trial.image?.overlap}
           onError={() => setImageFailed(true)}
         />
       ) : (
@@ -578,6 +586,7 @@ function StepComplete({ trial, progress, onBackToMap }) {
           size={STEP_IMAGE_DIMENSIONS.done}
           focus={trial.image?.focus}
           compact={trial.image?.compact}
+          overlap={trial.image?.overlap}
           onError={() => setImageFailed(true)}
         />
       ) : null}
