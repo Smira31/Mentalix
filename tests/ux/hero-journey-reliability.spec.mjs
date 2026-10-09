@@ -93,6 +93,25 @@ test('черновик сохраняется с debounce и при выходе
   await expect(page.locator('.mx-library-course-progress')).toHaveText('Шаг 2 из 16')
 })
 
+test('Вступление шага 1 на 375×667 без скролла, кнопка «Начать шаг» видна', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 667 })
+  await page.addInitScript(() => {
+    localStorage.clear()
+    sessionStorage.clear()
+  })
+  // frame=0: приложение на реальном viewport, как на телефоне.
+  await page.goto('/?demo=1&tab=library&action=hero_journey&frame=0')
+  await page.getByTestId('hero-continue').click()
+  const column = page.locator('.mx-hj-step-intro')
+  await expect(page.getByTestId('hero-step-start')).toBeVisible()
+  await expect(column).toBeVisible()
+  const overflow = await column.evaluate(el => el.scrollHeight - el.clientHeight)
+  expect(overflow).toBeLessThanOrEqual(0)
+  const box = await page.getByTestId('hero-step-start').boundingBox()
+  expect(box.y).toBeGreaterThanOrEqual(0)
+  expect(box.y + box.height).toBeLessThanOrEqual(667)
+})
+
 test('Назад проходит по подэкранам шага: запись и действие', async ({ page }) => {
   await page.setViewportSize({ width: 393, height: 852 })
   await page.addInitScript(() => {
