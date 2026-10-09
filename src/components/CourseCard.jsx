@@ -7,6 +7,15 @@ export default function CourseCard({ course, userId, onOpen }) {
   const total = course.steps.length
   const isEmpty = total === 0
   const completed = isEmpty ? 0 : course.steps.filter(step => isStepCompleted(step.id, progress)).length
+  const art = (
+    <img
+      src={course.cover || course.image}
+      alt=""
+      width={course.imageWidth}
+      height={course.imageHeight}
+      loading="lazy"
+    />
+  )
 
   if (isEmpty)
     return (
@@ -15,7 +24,7 @@ export default function CourseCard({ course, userId, onOpen }) {
         label="КУРС · СКОРО"
         title={`${course.title.toLowerCase()}.`}
         description={course.description}
-        art={<img src={course.image} alt="" />}
+        art={art}
         action="Скоро"
         muted
         testId={course.id === 'hero-journey' ? 'library-hero' : 'library-course-card'}
@@ -29,7 +38,7 @@ export default function CourseCard({ course, userId, onOpen }) {
       label={course.label || `КУРС · ${total} ШАГОВ`}
       title={`${course.title.toLowerCase()}.`}
       description={course.description}
-      art={<img src={course.image} alt="" />}
+      art={art}
       action={completed ? 'Продолжить' : 'Начать'}
       actionIcon={<ArrowRight size={16} />}
       testId={course.id === 'hero-journey' ? 'library-hero' : 'library-course-card'}

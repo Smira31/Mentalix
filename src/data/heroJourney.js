@@ -1,5 +1,27 @@
-import uncertaintyEnter from '../assets/hero-journey/uncertainty-enter.svg'
-import uncertaintyDone from '../assets/hero-journey/uncertainty-done.svg'
+import uncertaintyEnter from '../assets/hero-journey/uncertainty-enter.webp'
+import uncertaintyDone from '../assets/hero-journey/uncertainty-done.webp'
+import temporalityEnter from '../assets/hero-journey/temporality-enter.webp'
+import temporalityDone from '../assets/hero-journey/temporality-done.webp'
+import choiceEnter from '../assets/hero-journey/choice-enter.webp'
+import choiceDone from '../assets/hero-journey/choice-done.webp'
+import abundanceEnter from '../assets/hero-journey/abundance-enter.webp'
+import abundanceDone from '../assets/hero-journey/abundance-done.webp'
+import comparisonEnter from '../assets/hero-journey/comparison-enter.webp'
+import comparisonDone from '../assets/hero-journey/comparison-done.webp'
+import mirrorEnter from '../assets/hero-journey/mirror-enter.webp'
+import mirrorDone from '../assets/hero-journey/mirror-done.webp'
+import lonelinessEnter from '../assets/hero-journey/loneliness-enter.webp'
+import lonelinessDone from '../assets/hero-journey/loneliness-done.webp'
+import relationshipsEnter from '../assets/hero-journey/relationships-enter.webp'
+import relationshipsDone from '../assets/hero-journey/relationships-done.webp'
+import lostSupportsEnter from '../assets/hero-journey/lost-supports-enter.webp'
+import lostSupportsDone from '../assets/hero-journey/lost-supports-done.webp'
+import ageCrisesEnter from '../assets/hero-journey/age-crises-enter.webp'
+import ageCrisesDone from '../assets/hero-journey/age-crises-done.webp'
+import meaningEnter from '../assets/hero-journey/meaning-enter.webp'
+import meaningDone from '../assets/hero-journey/meaning-done.webp'
+import selfAssemblyEnter from '../assets/hero-journey/self-assembly-enter.webp'
+import selfAssemblyDone from '../assets/hero-journey/self-assembly-done.webp'
 import infoPressureEnter from '../assets/hero-journey/info-pressure-enter.webp'
 import infoPressureDone from '../assets/hero-journey/info-pressure-done.webp'
 import hasteEnter from '../assets/hero-journey/haste-enter.webp'
@@ -92,6 +114,7 @@ export const HERO_JOURNEY_TRIALS = [
     action: 'Назови одну вещь, которую сегодня стоит прожить как дар, а не как данность.',
     shadowAction:
       'Воспринимать дар как должное. Тогда потеря неизбежно превращается в боль, а не в благодарность.',
+    image: { enter: temporalityEnter, done: temporalityDone, overlap: 0.08 },
   },
   {
     id: 'choice',
@@ -104,6 +127,7 @@ export const HERO_JOURNEY_TRIALS = [
     action: 'Выбери одну дверь. Не ту, что красивее, а ту, за которой тебе теплее.',
     shadowAction:
       'Бесконечно взвешивать варианты, не выбирая ни один. Маркетинг питает иллюзию, что дверь важнее того, что за ней.',
+    image: { enter: choiceEnter, done: choiceDone, overlap: 0.08 },
   },
   {
     id: 'abundance',
@@ -128,7 +152,7 @@ export const HERO_JOURNEY_TRIALS = [
       'Выбрать одно действительное дело и выдержать отказ от остального. Фокус — не сила воли, а решение, чего не делать.',
     heroOutcome: 'Итог: внутренний труд, который даёт результат и опору.',
     quote: 'Всякое действительное требует внутреннего труда, а труд требует фокуса.',
-    image: null,
+    image: { enter: abundanceEnter, done: abundanceDone, overlap: 0.08 },
   },
   {
     id: 'info-pressure',
@@ -216,6 +240,7 @@ export const HERO_JOURNEY_TRIALS = [
     action: 'Откажись от одного сравнения на сегодня. Замени его наблюдением за собой.',
     shadowAction:
       'Собирать себя из чужих отражений. Кажется, что достигаешь, а на деле — держится на страхе.',
+    image: { enter: comparisonEnter, done: comparisonDone, focus: '30% 40%', overlap: 0.22 },
   },
   {
     id: 'mirror',
@@ -228,6 +253,7 @@ export const HERO_JOURNEY_TRIALS = [
     action: 'Запиши одну черту, которую ты прячешь от себя. Не оценивая — просто назови.',
     shadowAction:
       'Бегать от зеркала, наговаривая себе причины. «Может, я не справлюсь, может, это не я» — бесконечный разговор вместо шага.',
+    image: { enter: mirrorEnter, done: mirrorDone, focus: '40% 40%', overlap: 0.22 },
   },
   {
     id: 'loneliness',
@@ -240,6 +266,7 @@ export const HERO_JOURNEY_TRIALS = [
     action: 'Опиши это одиночество одним честным предложением — без попытки его исправить.',
     shadowAction:
       'Прятать одиночество за шумом, контактами, активностью. Или обвинять других в том, что они не понимают.',
+    image: { enter: lonelinessEnter, done: lonelinessDone, focus: '35% 40%', overlap: 0.22 },
   },
   {
     id: 'relationships',
@@ -252,6 +279,8 @@ export const HERO_JOURNEY_TRIALS = [
     action: 'Опиши, что значит для тебя «открыться отношениям», без требований к партнёру.',
     shadowAction:
       'Искать идеального партнёра среди восьми миллиардов. Люди меняются, обстоятельства меняются — идеал не находится.',
+    // focus — арка держится в кадре; compact — на полной высоте срезается её правая половина.
+    image: { enter: relationshipsEnter, done: relationshipsDone, focus: '40% 30%', compact: true, overlap: 0.22 },
   },
   {
     id: 'lost-supports',
@@ -264,6 +293,7 @@ export const HERO_JOURNEY_TRIALS = [
     action: 'Назови одну новую опору, которую ты можешь начать строить изнутри.',
     shadowAction:
       'Цепляться за рухнувшую опору. Или впадать в ужас, не замечая, что старая опора была не нужна.',
+    image: { enter: lostSupportsEnter, done: lostSupportsDone, focus: '50% 40%', overlap: 0.08 },
   },
   {
     id: 'age-crises',
@@ -276,6 +306,7 @@ export const HERO_JOURNEY_TRIALS = [
     action: 'Прими случившееся как факт. На этом основании — один шаг вперёд.',
     shadowAction:
       'Обойти кризис: уйти в работу, в детей, во что угодно. «Может, пронесёт» — не пронесёт, следующий будет тяжелее.',
+    image: { enter: ageCrisesEnter, done: ageCrisesDone, focus: '55% 40%', overlap: 0.12 },
   },
   {
     id: 'meaning',
@@ -288,6 +319,7 @@ export const HERO_JOURNEY_TRIALS = [
     action: 'Сформулируй один смысл, который идёт изнутри, а не из внешнего авторитета.',
     shadowAction:
       'Искать смысл вовне, перебирая занятия и предназначения. Или подчиниться чужому смыслу, который не твой.',
+    image: { enter: meaningEnter, done: meaningDone, focus: '45% 35%', overlap: 0.08 },
   },
   {
     id: 'self-assembly',
@@ -300,6 +332,7 @@ export const HERO_JOURNEY_TRIALS = [
     action: 'Опиши одним словом, что для тебя сейчас значит «быть цельным».',
     shadowAction:
       'Собирать себя по кусочкам: ещё вот это научусь, ещё вот это. Самосборка — иллюзия, которая разваливается.',
+    image: { enter: selfAssemblyEnter, done: selfAssemblyDone, focus: '40% 40%', overlap: 0.12 },
   },
 ]
 

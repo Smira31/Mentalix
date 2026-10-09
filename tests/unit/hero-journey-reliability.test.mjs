@@ -37,7 +37,7 @@ function setup() {
 
 const dataSource = (
   await readFile(new URL('../../src/data/heroJourney.js', import.meta.url), 'utf8')
-).replace(/^import (\w+) from '[^']+\.(svg|webp)'$/gm, "const $1 = ''")
+).replace(/^import (\w+) from '[^']+\.(?:svg|webp|avif|png|jpe?g|gif)'$/gm, "const $1 = ''")
 const { HERO_JOURNEY_TRIALS, previousTrial } = await import(
   `data:text/javascript;base64,${Buffer.from(dataSource).toString('base64')}`
 )
