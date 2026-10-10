@@ -149,12 +149,26 @@ for (const [width, height] of [
       {
         key: PROGRESS_KEY,
         value: JSON.stringify({
-          completed: {
-            uncertainty: new Date(Date.now() - 4 * 86400000).toISOString(),
-            temporality: new Date(Date.now() - 3 * 86400000).toISOString(),
-            choice: new Date(Date.now() - 2 * 86400000).toISOString(),
-            abundance: new Date(Date.now() - 86400000).toISOString(),
-          },
+          // Весь путь пройден: все главы раскрыты, любой шаг открыт по карточке.
+          completed: Object.fromEntries(
+            [
+              'uncertainty',
+              'temporality',
+              'choice',
+              'abundance',
+              'phone',
+              'autopilot',
+              'digital-avatar',
+              'comparison',
+              'mirror',
+              'loneliness',
+              'relationships',
+              'lost-supports',
+              'age-crises',
+              'meaning',
+              'self-assembly',
+            ].map((id, i) => [id, new Date(Date.now() - (16 - i) * 86400000).toISOString()])
+          ),
           signs: {},
           reflections: {},
           actions: {},
