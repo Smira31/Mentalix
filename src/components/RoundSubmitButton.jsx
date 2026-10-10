@@ -1,4 +1,4 @@
-import { ArrowRight, Check } from 'lucide-react'
+import { ArrowRight, Check, ChevronRight, X } from 'lucide-react'
 
 /*
  * Круглая светлая кнопка «→» / «✓» — одна на редактор (JournalTextarea)
@@ -25,6 +25,10 @@ export default function RoundSubmitButton({
     >
       {icon === 'arrow' ? (
         <ArrowRight size={25} strokeWidth={2.4} />
+      ) : icon === 'x' ? (
+        <X size={25} strokeWidth={2.4} />
+      ) : icon === 'chevron' ? (
+        <ChevronRight size={25} strokeWidth={2.4} />
       ) : (
         <Check size={25} strokeWidth={2.4} />
       )}

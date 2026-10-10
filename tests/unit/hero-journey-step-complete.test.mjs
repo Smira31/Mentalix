@@ -32,8 +32,26 @@ test('Гибкий герой на завершении: 110–300 px, град�
   )
   assert.match(
     cssSource,
-    /\.mx-hj-step-complete \.mx-hj-hero__scrim \{[\s\S]*?height: 64px;/
+    /\.mx-hj-step-complete \.mx-hj-hero__scrim \{[\s\S]*?height: 80px;[\s\S]*?rgba\(5, 4, 3, 0\.85\)/
   )
+})
+
+test('Запиши/Одно действие: одна круглая кнопка ×/›, крестика в шапке нет', () => {
+  // Крестик в правом верхнем углу удалён вместе со стилями.
+  assert.doesNotMatch(jsxSource, /mx-hj-step-close/)
+  assert.doesNotMatch(jsxSource, /hero-step-close/)
+  assert.doesNotMatch(cssSource, /mx-hj-step-close/)
+  // Кнопка: пустое поле — крестик «×» (закрывает), после ввода — шеврон «›».
+  assert.match(jsxSource, /submitIcon=\{hasText \? 'chevron' : 'x'\}/)
+  assert.match(jsxSource, /submitLabel=\{hasText \? 'Дальше' : 'Закрыть'\}/)
+  assert.doesNotMatch(jsxSource, /Пропустить/)
+})
+
+test('Пролог: оговорки и строки про космонавта нет ни в данных, ни в JSX', () => {
+  assert.doesNotMatch(jsxSource, /mx-hj-about__note/)
+  assert.doesNotMatch(cssSource, /mx-hj-about__note/)
+  assert.doesNotMatch(jsxSource, /hero-about-note/)
+  assert.doesNotMatch(jsxSource, /prologue\.note/)
 })
 
 test('Текст завершения: итог не жирный, ~90% белого; тизер 14 px, ~70% белого', () => {

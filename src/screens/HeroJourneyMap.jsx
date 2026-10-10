@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect, useRef, createContext, useContext } from 'react'
-import { ArrowRight, Check, ChevronRight, Lock, X } from 'lucide-react'
+import { Check, ChevronRight, Lock } from 'lucide-react'
 
 import Screen from '../components/Screen'
 import { HERO_COURSE, courseContent } from '../data/courses'
@@ -243,7 +243,7 @@ function FinaleCard({ progress, onOpenStep }) {
       {state === 'done' ? (
         <Check size={20} strokeWidth={3} className="mx-hj-finale-card__icon" />
       ) : state === 'open' ? (
-        <ArrowRight size={20} className="mx-hj-finale-card__icon" />
+        <ChevronRight size={20} className="mx-hj-finale-card__icon" />
       ) : (
         <Lock size={20} className="mx-hj-finale-card__icon" />
       )}
@@ -369,9 +369,6 @@ function AboutScreen({ prologue, onBackToMap }) {
           {para}
         </p>
       ))}
-      <p className="mx-hj-about__note" data-testid="hero-about-note">
-        {prologue.note}
-      </p>
 
       <div className="mx-hj-step-intro__bottom">
         <button
@@ -472,7 +469,11 @@ function StepHeader({ trial, view }) {
     <div className="mx-hj-step-header">
       <div className="mx-hj-step-header__row">
         <span className="mx-hj-step-header__label">
-          {trial.title} · {HEADER_VIEW_LABELS[view]}
+          <span className="mx-hj-step-header__name">{trial.title}</span>
+          <span className="mx-hj-step-header__mode">
+            {' · '}
+            {HEADER_VIEW_LABELS[view]}
+          </span>
         </span>
         {isWriteFlow ? (
           <span className="mx-hj-step-header__label mx-hj-step-header__pager">{writeStep} / 2</span>
@@ -498,42 +499,35 @@ function WriteScreen({
   value,
   onChange,
   onSubmit,
-  allowEmpty,
-  onBack,
   onClose,
   trial,
   view,
 }) {
   const hasText = Boolean(value.trim())
-  const canSubmit = allowEmpty || hasText
 
+  /* Одна круглая кнопка справа внизу (RoundSubmitButton): пока поле пустое —
+     крестик «×», нажатие закрывает экран (пустое поле — без подтверждения, как
+     у крестика в журнале и чек-ине); после первого символа — шеврон «›»,
+     нажатие идёт дальше. */
   const handleSubmit = useCallback(() => {
-    if (!canSubmit) return
-    platform.haptic('light')
-    onSubmit()
-  }, [canSubmit, onSubmit])
+    if (hasText) {
+      platform.haptic('light')
+      onSubmit()
+      return
+    }
+    onClose(false)
+  }, [hasText, onSubmit, onClose])
 
   return (
     /* Колонка без скролла: поле занимает свободную высоту, кнопка (floating
        toolbar JournalTextarea) прижата к низу и не скрывается за краем. */
     <Shell fit bodyClassName="mx-hj-write-col">
-      <StepHeader trial={trial} onBack={onBack} view={view} />
+      <StepHeader trial={trial} view={view} />
 
       <div className="mx-hj-write">
         <h2 className="mx-hj-write__prompt">{prompt}</h2>
         {hint && <p className="mx-hj-write__hint">{hint}</p>}
       </div>
-
-      {/* Крестик — как в чек-ине: с несохранённым текстом просит подтверждение. */}
-      <button
-        type="button"
-        data-testid="hero-step-close"
-        onClick={() => onClose(hasText)}
-        aria-label="Закрыть шаг"
-        className="mx-hj-step-close"
-      >
-        <X size={18} aria-hidden="true" />
-      </button>
 
       <JournalTextarea
         testId={`hero-${view}-input`}
@@ -547,9 +541,9 @@ function WriteScreen({
         hideAddAction
         guidedFlow
         onSubmit={handleSubmit}
-        submitDisabled={!canSubmit}
-        submitIcon="arrow"
-        submitLabel={hasText ? 'Далее' : 'Пропустить'}
+        submitDisabled={false}
+        submitIcon={hasText ? 'chevron' : 'x'}
+        submitLabel={hasText ? 'Дальше' : 'Закрыть'}
         className="mt-[28px] flex-1 mx-hj-write-input"
         editorClassName="mx-hj-write-editor"
       />
@@ -650,7 +644,7 @@ function StepComplete({ trial, progress, onBackToMap }) {
 
         {reflection && (
           <button type="button" className="mx-hj-complete__diary-link" onClick={onBackToMap}>
-            Твоя запись в дневнике <ChevronRight size={14} aria-hidden="true" />
+            Твоя запись в дневнике
           </button>
         )}
       </div>
@@ -884,8 +878,6 @@ function CourseFlow({ onBack, user, course }) {
           value={reflection}
           onChange={value => changeDraft('reflection', value)}
           onSubmit={submitWrite}
-          allowEmpty={false}
-          onBack={handleBack}
           onClose={requestClose}
           trial={trial}
           view="write"
@@ -906,8 +898,6 @@ function CourseFlow({ onBack, user, course }) {
           value={action}
           onChange={value => changeDraft('action', value)}
           onSubmit={submitAction}
-          allowEmpty
-          onBack={handleBack}
           onClose={requestClose}
           trial={trial}
           view="action"

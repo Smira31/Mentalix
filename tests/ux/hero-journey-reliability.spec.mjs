@@ -172,6 +172,35 @@ test('Шаг пройден на 375×667: «Продолжить» видна �
   await expect(page.getByTestId('hero-step-uncertainty')).toHaveAttribute('data-state', 'done')
 })
 
+test('Кнопка на «Запиши»: крестик при пустом поле, шеврон после ввода', async ({ page }) => {
+  await page.setViewportSize({ width: 393, height: 852 })
+  await page.addInitScript(() => {
+    localStorage.clear()
+    sessionStorage.clear()
+  })
+  await page.goto('/?demo=1&tab=library&action=hero_journey&frame=0')
+  await page.getByTestId('hero-continue').click()
+  await page.getByTestId('hero-step-start').click()
+
+  // Пока поле пустое — белая круглая кнопка с крестиком «×».
+  const submit = page.getByTestId('hero-write-next')
+  await expect(submit).toBeVisible()
+  await expect(submit.locator('svg')).toHaveClass(/lucide-x/)
+  await expect(submit).toHaveAttribute('aria-label', 'Закрыть')
+  // Пустое поле: нажатие закрывает шаг сразу, без подтверждения.
+  await submit.click()
+  await expect(page.getByTestId('hero-journey-map')).toBeVisible()
+
+  // После ввода символа — в той же кнопке шеврон «›», нажатие идёт дальше.
+  await page.getByTestId('hero-continue').click()
+  await page.getByTestId('hero-step-start').click()
+  await page.getByTestId('hero-write-input').fill('а')
+  await expect(submit.locator('svg')).toHaveClass(/lucide-chevron-right/)
+  await expect(submit).toHaveAttribute('aria-label', 'Дальше')
+  await submit.click()
+  await expect(page.getByTestId('hero-action-input')).toBeVisible()
+})
+
 test('Назад проходит по подэкранам шага: запись и действие', async ({ page }) => {
   await page.setViewportSize({ width: 393, height: 852 })
   await page.addInitScript(() => {

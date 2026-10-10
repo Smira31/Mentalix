@@ -185,16 +185,6 @@
   margin-top: var(--mx-space-4);
 }
 
-/* Оговорка должна читаться: не мельче 13 px и не темнее 60% белого. */
-.mx-hj-about__note {
-  font-size: max(13px, calc(13px * var(--mx-type-scale)));
-  line-height: 1.45;
-  color: rgb(var(--c-text) / 0.6);
-  margin-top: var(--mx-space-6);
-  padding-left: var(--mx-space-3);
-  border-left: 2px solid rgb(var(--c-border));
-}
-
 /* ── главы ── */
 
 .mx-hj-chapters {
@@ -663,7 +653,7 @@
   font-family: var(--font-label, 'Manrope', sans-serif);
   font-size: max(11px, calc(11px * var(--mx-type-scale)));
   font-weight: 500;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   /* Светлее — контраст к фону ≥ 7:1; тень гасит светлые пятна кадра. */
   color: rgb(var(--c-text));
@@ -727,16 +717,34 @@
   justify-content: space-between;
   gap: 12px;
   min-width: 0;
-  /* На «Запиши»/«Одно действие» справа стоит крестик (43 px). */
-  padding-right: 52px;
 }
 
+/*
+ * Строка шапки — одна строка: название шага сжимается с многоточием,
+ * режим («ЗАПИШИ»/«ОДНО ДЕЙСТВИЕ») и пейджер не переносятся и не сжимаются.
+ */
 .mx-hj-step-header__label {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
   font-size: max(11px, calc(11px * var(--mx-type-scale)));
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: rgb(var(--c-gold));
+}
+
+.mx-hj-step-header__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mx-hj-step-header__mode,
+.mx-hj-step-header__pager {
+  flex: none;
+  white-space: nowrap;
 }
 
 .mx-hj-step-header__dots {
@@ -978,15 +986,6 @@
   overflow-y: auto;
 }
 
-/* Пока поле пустое, «→» на «Запиши» неактивна: фон card2, стрелка muted */
-.mx-hj-write-input .mx-keyboard-submit:disabled {
-  border-color: rgb(var(--c-border)) !important;
-  background: rgb(var(--c-card2)) !important;
-  color: rgb(var(--c-muted)) !important;
-  opacity: 1;
-  box-shadow: none;
-}
-
 /* ── G. Шаг пройден: колонка без скролла, как у вступления ── */
 
 .mx-hj-step-complete {
@@ -1011,9 +1010,12 @@
   max-height: 210px;
 }
 
-/* Под кнопками Telegram («Назад», «⌄», «···») — тёмный градиент ~64 px. */
+/* Под кнопками Telegram («Назад», «⌄», «···») — тёмный градиент ~80 px,
+   от 85% чёрного у верха до прозрачного: белые детали кадра не накладываются
+   на кнопки. */
 .mx-hj-step-complete .mx-hj-hero__scrim {
-  height: 64px;
+  height: 80px;
+  background: linear-gradient(rgba(5, 4, 3, 0.85), transparent);
 }
 
 /* Текстовый блок: фиксированный, идёт сразу под картинкой (перекрытие дал
@@ -1120,32 +1122,6 @@
 /* Кнопка «Продолжить» живёт в нижней группе колонки
    (.mx-hj-step-intro__bottom + .mx-hj-step-intro__cta). */
 
-/* Крестик на «Запиши»/«Одно действие»: та же круглая кнопка, что «назад». */
-.mx-hj-write-col {
-  position: relative;
-}
-
-.mx-hj-step-close {
-  position: absolute;
-  top: var(--mx-space-2);
-  right: 0;
-  z-index: 1;
-  display: grid;
-  width: 43px;
-  height: 43px;
-  padding: 0;
-  place-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 50%;
-  background: var(--mx-glass-bg);
-  color: rgb(var(--c-text));
-  cursor: pointer;
-  transition: transform 140ms ease;
-}
-
-.mx-hj-step-close:active {
-  transform: scale(0.95);
-}
 .mx-hj-empty-course {
   margin: 12px 0 0;
   text-align: left;
