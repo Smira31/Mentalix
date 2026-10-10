@@ -448,7 +448,9 @@ async function assertLibrarySoonControl(page) {
   await expect(page.getByRole('heading', { name: 'библиотека.' })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Открыть поиск' })).toHaveCount(0)
   await expect(page.getByTestId('library-hero')).toBeVisible()
-  await expect(page.getByTestId('library-topic')).toHaveCount(3)
+  // Раздела «Кризис и рост» больше нет: две статьи скрыты (hidden: true),
+  // видимые разделы — «Юнг» и «Ещё почитать».
+  await expect(page.getByTestId('library-topic')).toHaveCount(2)
   await expect(page.getByText('Программы', { exact: true })).toHaveCount(0)
   await expect(page.getByText('Направленные записи', { exact: true })).toHaveCount(0)
 }
