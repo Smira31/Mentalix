@@ -25,6 +25,8 @@ import selfAssemblyDone from '../assets/hero-journey/self-assembly-done.webp'
 import returnImage from '../assets/hero-journey/return.webp'
 import bodyEnter from '../assets/hero-journey/body-enter.webp'
 import bodyDone from '../assets/hero-journey/body-done.webp'
+import digitalAvatarEnter from '../assets/hero-journey/digital-avatar-enter.webp'
+import digitalAvatarDone from '../assets/hero-journey/digital-avatar-done.webp'
 
 /**
  * Путь героя — авторский курс Mentalix.
@@ -166,6 +168,13 @@ export const HERO_JOURNEY_TRIALS = [
     doneTitle: 'Кто ты без экрана, стало понятнее.',
     doneSummary: 'Три слова о себе без профессии и соцсетей. Это точка опоры.',
     doneTeaser: 'Дальше: сравнение. Когда у других всё кажется лучше.',
+    image: {
+      enter: digitalAvatarEnter,
+      done: digitalAvatarDone,
+      focus: '45% 40%',
+      overlap: 0.12,
+      compact: true,
+    },
   },
   {
     id: 'comparison',

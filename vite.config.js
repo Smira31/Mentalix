@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import fs from 'node:fs'
 import path from 'node:path'
+import { privacyPolicy } from './src/content/privacyPolicy.js'
 
 const JOURNAL_PATH = path.resolve('docs/working/ui-lab/EXPERIMENT_JOURNAL.md')
 const DECISION_PATH = path.resolve('docs/working/ui-lab/DECISION_LOG.md')
@@ -71,9 +72,156 @@ function uiLabDecisionWriter() {
   }
 }
 
+/*
+ * Публичная страница политики конфиденциальности: /privacy (для BotFather).
+ * Текст берётся из src/content/privacyPolicy.js — единственного источника
+ * правды; страница статичная (без React и Telegram SDK), шрифт Onest
+ * встроен в HTML, внешних запросов нет.
+ */
+const PRIVACY_FONT_CSS = ['cyrillic-400.css', 'latin-400.css', 'cyrillic-700.css']
+
+let cachedPrivacyFontCss = null
+
+function privacyFontCss() {
+  if (cachedPrivacyFontCss !== null) return cachedPrivacyFontCss
+  try {
+    const pkg = path.resolve('node_modules/@fontsource/onest')
+    cachedPrivacyFontCss = PRIVACY_FONT_CSS.map(name => {
+      const css = fs.readFileSync(path.resolve(pkg, name), 'utf8')
+      return css.replace(/url\(\.\/files\/([^)]+)\)/g, (match, file) =>
+        `url(data:font/woff2;base64,${fs.readFileSync(path.resolve(pkg, 'files', file)).toString('base64')})`
+      )
+    }).join('\n')
+  } catch {
+    // Шрифт недоступен — остаётся системный стек, страница всё равно собирается.
+    cachedPrivacyFontCss = ''
+  }
+  return cachedPrivacyFontCss
+}
+
+function escapeHtml(value) {
+  return String(value).replace(
+    /[&<>"']/g,
+    char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]
+  )
+}
+
+function renderPrivacyParts(parts) {
+  return parts
+    .map(part => {
+      if (part.href && /^(https?:|mailto:)/.test(part.href)) {
+        return `<a href="${escapeHtml(part.href)}">${escapeHtml(part.text)}</a>`
+      }
+      return escapeHtml(part.text)
+    })
+    .join('')
+}
+
+function renderPrivacyBlock(block) {
+  if (block.type === 'list') {
+    return `        <ul>\n${block.items.map(item => `          <li>${escapeHtml(item)}</li>`).join('\n')}\n        </ul>`
+  }
+  const text = block.parts ? renderPrivacyParts(block.parts) : escapeHtml(block.text)
+  return `        <p>${text}</p>`
+}
+
+function renderPrivacyHtml() {
+  const sections = privacyPolicy.sections
+    .map(
+      section =>
+        `      <section>\n        <h2>${section.id}. ${escapeHtml(section.heading)}</h2>\n${section.blocks
+          .map(renderPrivacyBlock)
+          .join('\n')}\n      </section>`
+    )
+    .join('\n')
+
+  return `<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Политика конфиденциальности Mentalix" />
+    <title>Политика конфиденциальности — Mentalix</title>
+    <style>
+${privacyFontCss()}
+      *, *::before, *::after { box-sizing: border-box; }
+      html { background: #000; }
+      body {
+        margin: 0;
+        background: #000;
+        color: #E8E8E8;
+        font-family: 'Onest', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        font-size: 16px;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
+      .mx-privacy {
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 40px 16px;
+      }
+      h1 {
+        margin: 0 0 8px;
+        color: #fff;
+        font-size: 24px;
+        font-weight: 700;
+        line-height: 1.25;
+        letter-spacing: -0.01em;
+      }
+      .mx-privacy__meta {
+        margin: 0 0 32px;
+        color: #888;
+        font-size: 14px;
+      }
+      section + section { margin-top: 28px; }
+      h2 {
+        margin: 0 0 14px;
+        color: #fff;
+        font-size: 18px;
+        font-weight: 700;
+        line-height: 1.3;
+        letter-spacing: -0.01em;
+      }
+      p { margin: 0 0 14px; }
+      ul { margin: 0 0 14px; padding-left: 20px; }
+      li + li { margin-top: 8px; }
+      a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+      section > :last-child { margin-bottom: 0; }
+    </style>
+  </head>
+  <body>
+    <article class="mx-privacy">
+      <h1>${escapeHtml(privacyPolicy.title)}</h1>
+      <p class="mx-privacy__meta">Версия ${escapeHtml(privacyPolicy.version)} · действует с ${escapeHtml(privacyPolicy.effectiveDate)}</p>
+${sections}
+    </article>
+  </body>
+</html>
+`
+}
+
+function privacyPagePlugin() {
+  return {
+    name: 'privacy-page',
+    // В dev-сервере страница доступна по тем же адресам, что и в проде.
+    configureServer(server) {
+      server.middlewares.use((request, response, next) => {
+        const url = (request.url || '').split('?')[0]
+        if (url !== '/privacy' && url !== '/privacy/' && url !== '/privacy.html') return next()
+        response.setHeader('content-type', 'text/html; charset=utf-8')
+        response.end(renderPrivacyHtml())
+      })
+    },
+    writeBundle(options) {
+      const outDir = options.dir || 'dist'
+      fs.writeFileSync(path.join(outDir, 'privacy.html'), renderPrivacyHtml())
+    },
+  }
+}
+
 export default defineConfig({
   base: globalThis.process?.env?.GITHUB_PAGES === 'true' ? '/Mentalix/' : '/',
-  plugins: [react(), fontPreloadPlugin(), uiLabDecisionWriter()],
+  plugins: [react(), fontPreloadPlugin(), uiLabDecisionWriter(), privacyPagePlugin()],
   define: {
     'import.meta.env.VERCEL_ENV': JSON.stringify(globalThis.process?.env?.VERCEL_ENV || ''),
   },

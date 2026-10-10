@@ -1,4 +1,13 @@
-import { useState, useMemo, useCallback, useEffect, useRef, createContext, useContext } from 'react'
+import {
+  useState,
+  useMemo,
+  useCallback,
+  useEffect,
+  useRef,
+  createContext,
+  useContext,
+  useSyncExternalStore,
+} from 'react'
 import { Check, ChevronRight, Lock } from 'lucide-react'
 
 import Screen from '../components/Screen'
@@ -32,6 +41,14 @@ const STEP_IMAGE_DIMENSIONS = {
 
 /* Положение кадра по умолчанию: чуть выше середины — низ кадров намеренно пустой. */
 const DEFAULT_HERO_FOCUS = '50% 40%'
+
+/* Предзагрузка одной картинки: открытие следующего экрана без мигания. */
+function preloadImage(src) {
+  if (!src) return
+  const img = new Image()
+  img.decoding = 'async'
+  img.src = src
+}
 
 /* Доля высоты героя, на которую текст заходит на картинку (image.overlap).
    Глава I — 0.08, глава III — 0.22, у остальных шагов — это значение. */
@@ -387,12 +404,19 @@ function AboutScreen({ prologue, onBackToMap }) {
 /* ── B. Вход в шаг ── */
 
 function StepIntro({ trial, onStart }) {
-  const { chapterForTrial, finale, total: HERO_JOURNEY_TOTAL_STEPS } = useCourse()
+  const { chapterForTrial, finale, steps, total: HERO_JOURNEY_TOTAL_STEPS } = useCourse()
+  const tgFullscreen = useSyncExternalStore(subscribeFullscreen, getFullscreenSnapshot)
   const isFinale = finale?.id === trial.id
   const chapter = isFinale ? null : chapterForTrial(trial.id)
   const enterImage = trial.image?.enter
   const [imageFailed, setImageFailed] = useState(false)
   const showEnterImage = Boolean(enterImage) && !imageFailed
+
+  /* Подгрузка (из main): завершение текущего шага и вход следующего. */
+  useEffect(() => {
+    preloadImage(trial.image?.done)
+    preloadImage(steps[trial.number]?.image?.enter)
+  }, [trial.id, steps])
 
   return (
     /* Колонка на всю доступную высоту без скролла. Сверху — картинка, которая
@@ -401,7 +425,7 @@ function StepIntro({ trial, onStart }) {
        прижата к низу (см. .mx-hj-hero--flex и __bottom в CSS). */
     <Shell
       fit
-      topFlush={showEnterImage}
+      topFlush={showEnterImage && (tgFullscreen || DEMO)}
       bodyClassName="mx-hj-step-intro"
       screenBodyClassName="mx-hj-intro-body"
     >
@@ -559,7 +583,9 @@ function StepComplete({ trial, progress, onBackToMap }) {
     trialsForChapter,
     chapters: HERO_JOURNEY_CHAPTERS,
     finale,
+    steps,
   } = useCourse()
+  const tgFullscreen = useSyncExternalStore(subscribeFullscreen, getFullscreenSnapshot)
   /* У финала нет главы: на его экране «Путь пройден» карточки главы нет. */
   const chapter = finale?.id === trial.id ? null : chapterForTrial(trial.id)
   const chapterTrials = trialsForChapter(chapter)
@@ -576,13 +602,18 @@ function StepComplete({ trial, progress, onBackToMap }) {
   const [imageFailed, setImageFailed] = useState(false)
   const showDoneImage = Boolean(doneImage) && !imageFailed
 
+  /* Подгрузка входа следующего шага (из main) */
+  useEffect(() => {
+    preloadImage(steps[trial.number]?.image?.enter)
+  }, [trial.id, steps])
+
   return (
     /* Колонка на всю высоту без скролла, как у вступления: картинка сама
        забирает свободную высоту (110–300 px), текст идёт сразу под ней,
        кнопка «Продолжить» прижата к низу. */
     <Shell
       fit
-      topFlush={showDoneImage}
+      topFlush={showDoneImage && (tgFullscreen || DEMO)}
       bodyClassName="mx-hj-step-complete"
       screenBodyClassName="mx-hj-complete-body"
     >
