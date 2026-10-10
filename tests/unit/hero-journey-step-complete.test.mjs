@@ -11,23 +11,40 @@ const cssSource = await readFile(
   'utf8'
 )
 
-test('StepComplete всегда рендерит видимую кнопку «К карте пути» в футере', () => {
-  // Кнопка должна быть в footer, который рендерится без условий
-  assert.match(jsxSource, /К карте пути/)
-  // footer передаётся в Shell без условного рендеринга
-  assert.match(jsxSource, /footer=\{/)
-  // Кнопка имеет класс cta-pill
-  assert.match(jsxSource, /cta-pill mx-hj-complete__cta/)
+test('StepComplete — колонка без скролла, кнопка «Продолжить» прижата к низу', () => {
+  // Кнопка «Продолжить» остаётся на месте (testid не менялся) и лежит в нижней группе.
+  assert.match(jsxSource, /data-testid="hero-complete-map"/)
+  assert.match(jsxSource, /mx-hj-step-intro__bottom mx-hj-complete__bottom/)
+  assert.match(jsxSource, /cta-pill mx-hj-step-intro__cta/)
+  assert.doesNotMatch(jsxSource, /К карте пути/)
+  // Футер вне колонки больше не используется: кнопка внутри flex-колонки.
+  assert.doesNotMatch(jsxSource, /mx-hj-complete__footer/)
+  assert.match(jsxSource, /bodyClassName="mx-hj-step-complete"/)
+  assert.match(cssSource, /\.mx-hj-step-complete \{[\s\S]*?flex: 1;[\s\S]*?min-height: 0;/)
+  // Нижняя группа прижата к низу (margin-top: auto).
+  assert.match(cssSource, /\.mx-hj-step-intro__bottom \{[\s\S]*?margin-top: auto;/)
 })
 
-test('футер StepComplete закреплён внизу и ограничен по ширине контента', () => {
-  // футер не сжимается и имеет отступ снизу с safe-area
-  assert.match(cssSource, /\.mx-hj-complete__footer[\s\S]*?flex-shrink:\s*0/)
-  assert.match(cssSource, /\.mx-hj-complete__footer[\s\S]*?padding-bottom:\s*calc\(env\(safe-area-inset-bottom/)
-  // отступ снизу не меньше 24px
-  assert.match(cssSource, /\.mx-hj-complete__footer[\s\S]*?24px\)/)
-  // футер ограничен по ширине и центрирован (классы в JSX)
-  assert.match(jsxSource, /mx-hj-complete__footer mx-auto w-full max-w-md/)
+test('Гибкий герой на завершении: 110–300 px, градиент под кнопками Telegram', () => {
+  assert.match(
+    cssSource,
+    /\.mx-hj-step-complete \.mx-hj-hero--flex \{[\s\S]*?min-height: 110px;[\s\S]*?max-height: 300px;/
+  )
+  assert.match(
+    cssSource,
+    /\.mx-hj-step-complete \.mx-hj-hero__scrim \{[\s\S]*?height: 64px;/
+  )
+})
+
+test('Текст завершения: итог не жирный, ~90% белого; тизер 14 px, ~70% белого', () => {
+  assert.match(
+    cssSource,
+    /\.mx-hj-complete__phrase \{[\s\S]*?font-size: max\(14px[\s\S]*?font-weight: 400;[\s\S]*?color: rgb\(var\(--c-text\) \/ 0\.9\);/
+  )
+  assert.match(
+    cssSource,
+    /\.mx-hj-complete__teaser \{[\s\S]*?font-size: 14px;[\s\S]*?color: rgb\(var\(--c-text\) \/ 0\.7\);/
+  )
 })
 
 test('карточка главы на экране завершения во всю ширину контента', () => {
@@ -37,4 +54,11 @@ test('карточка главы на экране завершения во в
   assert.match(cssSource, /\.mx-hj-complete__chapter-segs[\s\S]*?width:\s*100%/)
   // подпись по центру
   assert.match(cssSource, /\.mx-hj-complete__chapter-card[\s\S]*?text-align:\s*center/)
+})
+
+test('Длительность шага убрана со вступления и карточки «Следующий шаг»', () => {
+  assert.doesNotMatch(jsxSource, /≈ 6 мин/)
+  assert.doesNotMatch(jsxSource, /mx-hj-step-intro__flow/)
+  assert.doesNotMatch(jsxSource, /next-card__meta/)
+  assert.doesNotMatch(cssSource, /__flow|next-card__meta/)
 })
