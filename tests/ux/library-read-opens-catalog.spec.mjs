@@ -103,7 +103,9 @@ test('Библиотека: курс → разделы → шторка → ч�
   page.on('pageerror', error => errors.push(error.message))
   await page.goto('/?demo=1&tab=library&demo_courses=0')
   await expect(page.getByTestId('library-hero')).toContainText('путь героя.')
-  await expect(page.getByTestId('library-topic')).toHaveCount(3)
+  // «Кризис и рост» исчез: статьи «Путь героя: зачем кризис» и «16 испытаний»
+  // скрыты (hidden: true), видимые разделы — «Юнг» и «Ещё почитать».
+  await expect(page.getByTestId('library-topic')).toHaveCount(2)
   await expect(page.getByText('Программы', { exact: true })).toHaveCount(0)
   await expect(page.getByText('Направленные записи', { exact: true })).toHaveCount(0)
   const settle = () =>
@@ -195,7 +197,8 @@ test('Библиотека: курс → разделы → шторка → ч�
   await tile.click()
   await page.getByTestId('article-sheet-read').click()
   await expect(page.getByTestId('article-reader')).toBeVisible()
-  await expect(page.getByTestId('article-title')).toHaveText('Путь героя: зачем кризис')
+  // Первая видимая статья — «Тень и Персона» (раздел «Юнг», скрытые статьи отфильтрованы).
+  await expect(page.getByTestId('article-title')).toHaveText('Тень и Персона: что прячем от себя')
   await settle()
   await belowChrome(page.getByTestId('article-reader').locator('header .mx-library-caps'))
   await page.screenshot({ path: `${screenshots}/reader-start.png` })
@@ -219,7 +222,8 @@ test('Библиотека: курс → разделы → шторка → ч�
     )
     .toBe(readScroll)
   await page.getByTestId('article-next').click()
-  await expect(page.getByTestId('article-title')).toHaveText('16 испытаний современного человека')
+  // «16 испытаний» скрыто, «Следующая статья» ведёт в следующий видимый текст раздела «Юнг».
+  await expect(page.getByTestId('article-title')).toHaveText('Самость: точка опоры внутри')
   await page.getByTestId('demo-chrome-back').click()
   await expect(page.getByTestId('article-sheet')).toBeVisible()
   await page.getByTestId('demo-chrome-back').click()
