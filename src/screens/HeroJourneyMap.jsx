@@ -25,6 +25,7 @@ import {
   clearHeroDraft,
 } from '../lib/heroJourneyProgress'
 import { heroDraftKey } from '../lib/heroJourneyState'
+import { getFullscreenSnapshot, subscribeFullscreen } from '../lib/tgFullscreen'
 import { writeLocal } from '../lib/store'
 import './HeroJourneyMap.css'
 
@@ -416,7 +417,7 @@ function StepIntro({ trial, onStart }) {
   useEffect(() => {
     preloadImage(trial.image?.done)
     preloadImage(steps[trial.number]?.image?.enter)
-  }, [trial.id, steps])
+  }, [trial, steps])
 
   return (
     /* Колонка на всю доступную высоту без скролла. Сверху — картинка, которая
@@ -605,7 +606,7 @@ function StepComplete({ trial, progress, onBackToMap }) {
   /* Подгрузка входа следующего шага (из main) */
   useEffect(() => {
     preloadImage(steps[trial.number]?.image?.enter)
-  }, [trial.id, steps])
+  }, [trial, steps])
 
   return (
     /* Колонка на всю высоту без скролла, как у вступления: картинка сама
