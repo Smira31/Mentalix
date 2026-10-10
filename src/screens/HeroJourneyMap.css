@@ -539,15 +539,6 @@
   .mx-hj-step-intro .mx-hj-hero--flex {
     max-height: 340px;
   }
-
-  .mx-hj-step-intro .mx-hj-hero--flex.mx-hj-hero--compact {
-    max-height: 210px;
-  }
-
-  .mx-hj-step-intro__desc {
-    line-height: 1.55;
-    margin-top: 14px;
-  }
 }
 
 /* Нижний край уходит в чёрный линейно с 65% до 100% высоты блока
@@ -719,6 +710,22 @@
   line-height: 1.4;
   color: rgb(var(--c-muted));
   margin-top: var(--mx-space-2);
+}
+
+/*
+ * Высокие экраны (393×852 и выше, порог — по высоте колонки): воздух уходит в
+ * текст — межстрочный 1.55 и межабзацный 14 px. Правило стоит после базового:
+ * контейнерный запрос не добавляет специфичности, и стоящий выше блок
+ * перебивался бы базовыми 1.4/8 px. Пустота над кнопкой держится ≤ ~60 px:
+ * у компактных шагов (digital-avatar, relationships) потолок картинки тоже
+ * поднят до 340 px — иначе остаток свободной высоты скапливался зазором
+ * над кнопкой (130 px у «Образа в сети»).
+ */
+@container (min-height: 700px) {
+  .mx-hj-step-intro .mx-hj-step-intro__desc {
+    line-height: 1.55;
+    margin-top: 14px;
+  }
 }
 
 .mx-hj-step-intro__cta {
