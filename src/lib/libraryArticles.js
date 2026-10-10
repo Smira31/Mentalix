@@ -2,7 +2,10 @@ import { libraryTopic } from '../data/libraryTopics.js'
 import { ARTICLES } from '../data/articles.js'
 
 // Единственный опубликованный каталог. Не зависит от сети, API и устаревших снимков.
-export const libraryArticles = ARTICLES
+// Скрытые статьи (hidden: true — чужой текст дословно) не показываются нигде:
+// ни в разделах Библиотеки, ни в поиске, ни в переходах «следующая статья».
+// Файл и текст остаются в articles.js — вернуть статью можно, убрав флаг.
+export const libraryArticles = ARTICLES.filter(article => !article.hidden)
 
 export function articleSections(articles = libraryArticles) {
   // Группируем по резолвнутому заголовку темы: теги «путь-героя» и «кризис»

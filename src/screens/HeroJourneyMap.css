@@ -108,12 +108,6 @@
   color: rgb(var(--c-muted));
 }
 
-.mx-hj-next-card__meta {
-  font-size: max(11px, calc(12px * var(--mx-type-scale)));
-  color: rgb(var(--c-faint));
-  margin-top: 2px;
-}
-
 .mx-hj-next-card__cta {
   display: inline-flex;
   align-items: center;
@@ -122,6 +116,73 @@
   margin-top: 12px;
   align-self: flex-start;
   font-size: calc(14px * var(--mx-type-scale));
+}
+
+/* ── пролог «О курсе»: пункт меню и экран ── */
+
+.mx-hj-about-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--mx-space-3);
+  width: 100%;
+  margin-top: var(--mx-space-5);
+  padding: var(--mx-space-3) var(--mx-space-4);
+  border-radius: var(--mx-radius-md);
+  background: rgb(var(--c-card));
+  border: 1px solid rgb(var(--c-border));
+  color: rgb(var(--c-muted));
+  text-align: left;
+  cursor: pointer;
+  transition: transform 140ms ease;
+}
+
+.mx-hj-about-link:active {
+  transform: scale(0.98);
+}
+
+.mx-hj-about-link__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mx-space-1);
+  min-width: 0;
+}
+
+.mx-hj-about-link__title {
+  font-size: calc(15px * var(--mx-type-scale));
+  font-weight: 500;
+  color: rgb(var(--c-text));
+}
+
+.mx-hj-about-link__sub {
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
+  color: rgb(var(--c-muted));
+}
+
+/* Пролог: колонка без скролла, кнопка «К шагам» прижата к низу. */
+.mx-hj-about {
+  display: flex;
+  flex-direction: column;
+  padding-top: var(--mx-space-2);
+  flex: 1;
+  min-height: 0;
+}
+
+.mx-hj-about__title {
+  font-family: 'Onest', sans-serif;
+  font-size: calc(36px * var(--mx-type-scale));
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: rgb(var(--c-text));
+  margin-top: var(--mx-space-2);
+}
+
+.mx-hj-about__text {
+  font-size: max(15px, calc(16px * var(--mx-type-scale)));
+  line-height: 1.45;
+  color: rgb(var(--c-text));
+  margin-top: var(--mx-space-4);
 }
 
 /* ── главы ── */
@@ -313,70 +374,75 @@
   color: rgb(var(--c-muted));
 }
 
-/* ── общая картинка шага: во всю ширину, маска по четырём краям ── */
+/* ── иллюстрация шага: на всю ширину экрана, растворяющиеся края ── */
 
-.mx-hj-hero-image {
+/*
+ * Высоту задаёт экран через --mx-hj-hero-h (вход/завершение; у steps с
+ * важным краем кадра — компактный вариант). Отрицательный нижний margin — это
+ * перекрытие высоты героя, долю задаёт шаг через image.overlap
+ * (--mx-hj-hero-overlap; глава I — 0.08, глава III — 0.22, по умолчанию 0.12):
+ * заголовок ложится на нижнюю часть кадра.
+ * Боковые отступы и верхний margin выводят картинку из контейнера к верху экрана
+ * (--mx-space-2 — тот же padding-top, что у .mx-screen__content).
+ */
+/*
+ * Экран с героем начинается от верха экрана: верхний отступ поверхности
+ * (safe-area + контролы Telegram, inline-стиль хука) снят, картинка уходит
+ * под статус-бар и кнопки, читаемость держит скрим.
+ */
+.mx-hero-journey--top {
+  padding-top: 0 !important;
+}
+
+.mx-hj-hero {
   position: relative;
+  flex: none;
   width: calc(100% + 2 * var(--mx-screen-x));
-  margin-left: calc(-1 * var(--mx-screen-x));
-  margin-right: calc(-1 * var(--mx-screen-x));
-  overflow: hidden;
+  margin:
+    calc(-1 * var(--mx-space-2)) calc(-1 * var(--mx-screen-x))
+    calc(-1 * var(--mx-hj-hero-overlap, 0.12) * var(--mx-hj-hero-h, 320px));
+  height: var(--mx-hj-hero-h, 320px);
+  /* Фон до загрузки картинки — цвет приложения, без вспышки. */
   background: #050403;
+  overflow: hidden;
 }
 
-/* Высоты: enter 42dvh, done 46dvh; компактные шаги ограничены; короткие экраны ниже */
-.mx-hj-step-intro {
-  --hj-img-h: clamp(300px, 42dvh, 380px);
+.mx-hj-hero__frame {
+  position: absolute;
+  inset: 0;
+  /* Края растворяются по всем четырём сторонам: прямоугольников не видно. */
+  -webkit-mask-image:
+    linear-gradient(to bottom, transparent 0, #000 14%, #000 56%, transparent 100%),
+    linear-gradient(to right, transparent 0, #000 5%, #000 95%, transparent 100%);
+  mask-image:
+    linear-gradient(to bottom, transparent 0, #000 14%, #000 56%, transparent 100%),
+    linear-gradient(to right, transparent 0, #000 5%, #000 95%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
 }
 
-.mx-hj-step-intro--compact {
-  --hj-img-h: min(clamp(300px, 42dvh, 380px), 290px);
+.mx-hj-hero__frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Положение кадра задаёт шаг через image.focus (inline style). */
+  object-position: 50% 40%;
+  display: block;
+  animation:
+    mx-hj-hero-fade 350ms ease-out both,
+    mx-hj-hero-zoom 14s linear both;
 }
 
-.mx-hj-complete-screen {
-  --hj-img-h: clamp(320px, 46dvh, 420px);
+/* Скрим под статус-баром и кнопками Telegram: они остаются читаемыми на кадре. */
+.mx-hj-hero__scrim {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 110px;
+  background: linear-gradient(rgba(5, 4, 3, 0.65), transparent);
+  pointer-events: none;
 }
 
-.mx-hj-complete-screen--compact {
-  --hj-img-h: min(clamp(320px, 46dvh, 420px), 330px);
-}
-
-@media (max-height: 700px) {
-  .mx-hj-step-intro {
-    --hj-img-h: clamp(250px, 38dvh, 320px);
-  }
-
-  .mx-hj-complete-screen {
-    --hj-img-h: clamp(260px, 42dvh, 340px);
-  }
-
-  /* На коротких экранах блок завершения прижат к картинке */
-  .mx-hj-complete {
-    justify-content: flex-start;
-  }
-}
-
-/* Картинка от самого верха области контента */
-.mx-hj-step-intro .mx-hj-hero-image,
-.mx-hj-complete-screen .mx-hj-hero-image {
-  margin-top: calc(-1 * var(--mx-space-2));
-}
-
-/* На коротких экранах картинка сжимается, чтобы не было прокрутки */
-.mx-hj-hero-image--enter {
-  height: var(--hj-img-h);
-  flex: 0 1 auto;
-  min-height: 200px;
-}
-
-.mx-hj-hero-image--done {
-  height: var(--hj-img-h);
-  flex: 0 1 auto;
-  min-height: 240px;
-}
-
-/* Появление: налив 350 мс + медленный zoom, без движения при reduced motion */
-@keyframes mx-hj-img-fade {
+@keyframes mx-hj-hero-fade {
   from {
     opacity: 0;
   }
@@ -385,7 +451,7 @@
   }
 }
 
-@keyframes mx-hj-img-zoom {
+@keyframes mx-hj-hero-zoom {
   from {
     transform: scale(1);
   }
@@ -394,82 +460,161 @@
   }
 }
 
-.mx-hj-hero-image--enter,
-.mx-hj-hero-image--done {
-  animation: mx-hj-img-fade 350ms ease-out both;
-}
-
-.mx-hj-hero-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  transform-origin: 50% 45%;
-  animation: mx-hj-img-zoom 14s linear both;
-  /* Маска по четырём краям: края растворяются в фоне #050403 */
-  -webkit-mask-image:
-    linear-gradient(to bottom, transparent 0, #000 14%, #000 56%, transparent 100%),
-    linear-gradient(to right, transparent 0, #000 5%, #000 95%, transparent 100%);
-  -webkit-mask-composite: source-in;
-  mask-image:
-    linear-gradient(to bottom, transparent 0, #000 14%, #000 56%, transparent 100%),
-    linear-gradient(to right, transparent 0, #000 5%, #000 95%, transparent 100%);
-  mask-composite: intersect;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .mx-hj-hero-image--enter,
-  .mx-hj-hero-image--done,
-  .mx-hj-hero-image img {
+  .mx-hj-hero__frame img {
     animation: none;
   }
 }
 
-/* Скрим под системными кнопками навигации поверх верха картинки */
-.mx-hj-hero-image__scrim {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 110px;
-  z-index: 1;
-  pointer-events: none;
-  background: linear-gradient(to bottom, rgb(5 4 3 / 0.65), rgb(5 4 3 / 0));
-}
-
-.mx-hj-hero-image__back {
-  position: absolute;
-  top: 10px;
-  left: var(--mx-screen-x);
-  z-index: 2;
-}
-
-/* ── B. Вход в шаг: колонка на всю высоту, без скролла ── */
+/* ── B. Вход в шаг: колонка на всю доступную высоту, без скролла ── */
 
 .mx-hj-step-intro {
   flex: 1;
   min-height: 0;
+  /* Высота самой колонки — контейнер запросов ниже: на высоких экранах текст
+     получает больше воздуха, на низких картинка поджимается сильнее. */
+  container-type: size;
 }
 
-.mx-hj-step-intro .mx-hj-step-intro__image {
-  flex: 1 1 260px;
-  min-height: 180px;
-  max-height: 260px;
+/*
+ * Контент растягивается на всю высоту noscroll-колонки: картинка сама занимает
+ * место, оставшееся после текста и кнопки. Правило адресовано только экранам
+ * «Пути героя» — единственному потребителю noscroll-оболочки.
+ */
+.mx-screen__body--noscroll .mx-screen__content {
+  flex: 1;
+  min-height: 0;
+}
+
+/*
+ * Вступление: кнопка у нижнего края. Нижний отступ колонки 12 px вместо 24, а
+ * safe-area (зона home-индикатора) учитывается один раз — padding-bottom
+ * поверхности <Screen>; второй такой же у .mx-screen__body в noscroll-колонке
+ * только отодвигал кнопку вверх (в рамке 393×852 — на 34 px лишних).
+ */
+.mx-screen__body.mx-hj-intro-body,
+.mx-screen__body.mx-hj-about-body,
+.mx-screen__body.mx-hj-complete-body {
+  padding-bottom: 0;
+}
+
+.mx-hj-intro-body .mx-screen__content,
+.mx-hj-about-body .mx-screen__content,
+.mx-hj-complete-body .mx-screen__content {
+  padding-bottom: var(--mx-space-3);
+}
+
+/*
+ * Гибкий герой на входе: картинка сама занимает высоту, оставшуюся в колонке
+ * экрана приложения после текста и кнопки (flex 1 1 auto), но не меньше 76 и
+ * не больше 260 px. От высоты окна браузера не зависит: колонка берёт высоту у
+ * экрана, а не у media-запроса, поэтому раскладка одинакова в демо-рамке 393×852
+ * и на реальных 375×667 и 360×640. Остаток сверх максимума уходит в зазор
+ * между текстом и нижней группой (margin-top: auto у __bottom). Компактный
+ * вариант — шаги, где высокая высота срезает главный объект кадра.
+ */
+.mx-hj-step-intro .mx-hj-hero--flex {
+  flex: 1 1 auto;
   height: auto;
+  /* 76 px: у самого длинного вступления («Сигналы тела») на 360×640 и
+     375×667 после текста остаётся меньше 110 px — кнопка уезжала за край.
+     Ниже опускать нельзя: кадр перестаёт читаться. */
+  min-height: 76px;
+  max-height: 260px;
+  margin-bottom: 0;
 }
 
+.mx-hj-step-intro .mx-hj-hero--flex.mx-hj-hero--compact {
+  max-height: 210px;
+}
+
+/*
+ * Высокие экраны (393×852 и выше): потолок картинки поднят до 340 px —
+ * обрезка по бокам допустима, герой остаётся в кадре. Остаток высоты уходит
+ * в текст — межстрочный до 1.55 и межабзацный до 14 px, — чтобы над кнопкой
+ * не копилась пустота. Порог — по высоте колонки (контейнерный запрос),
+ * не по высоте окна: в демо-рамке поверхность меньше окна браузера.
+ */
+@container (min-height: 700px) {
+  .mx-hj-step-intro .mx-hj-hero--flex {
+    max-height: 340px;
+  }
+
+  .mx-hj-step-intro .mx-hj-hero--flex.mx-hj-hero--compact {
+    max-height: 340px;
+  }
+}
+
+/* Нижний край уходит в чёрный линейно с 65% до 100% высоты блока
+   (арт-спецификация); верх и бока растворяются как у остальных героев. */
+.mx-hj-hero--flex .mx-hj-hero__frame {
+  -webkit-mask-image:
+    linear-gradient(to bottom, transparent 0, #000 14%, #000 65%, transparent 100%),
+    linear-gradient(to right, transparent 0, #000 5%, #000 95%, transparent 100%);
+  mask-image:
+    linear-gradient(to bottom, transparent 0, #000 14%, #000 65%, transparent 100%),
+    linear-gradient(to right, transparent 0, #000 5%, #000 95%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+
+/*
+ * Нижняя группа: кнопка. flex none и margin-top: auto прижимают её к низу
+ * колонки; свободная высота сверх максимума картинки остаётся зазором над ней,
+ * а не под кнопкой.
+ */
+.mx-hj-step-intro__bottom {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--mx-space-2);
+  margin-top: auto;
+  padding-top: var(--mx-space-2);
+}
+
+/*
+ * Без иллюстрации (шаг ещё не нарисован) вместо героя стоит заглушка. Она
+ * ведёт себя как герой: берёт свободную высоту колонки, максимум 260 px.
+ * Минимума у неё нет: у длинного вступления на 360×640 места под картинку не
+ * остаётся, и заглушка схлопывается. Решает это контейнерный запрос по высоте
+ * самой заглушки, а не по окну: карточка начинается на 16 px ниже верха блока
+ * (зазор под кнопками Telegram) и пропадает вместе со значком и подписью, когда
+ * сама ниже 96 px. Фон карточки лежит в ::before, чтобы запрос мог его убрать;
+ * отступа снаружи у блока нет, поэтому в схлопнутом виде он не занимает места.
+ */
 .mx-hj-step-intro__image {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  height: 200px;
-  margin-top: 16px;
-  border-radius: 24px;
-  background: rgb(var(--c-card));
+  gap: var(--mx-space-2);
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: 276px;
   overflow: hidden;
+  container-type: size;
+}
+
+.mx-hj-step-intro__image::before {
+  content: '';
+  position: absolute;
+  inset: var(--mx-space-4) 0 0;
+  border-radius: var(--mx-radius-card);
+  background: rgb(var(--c-card));
+}
+
+.mx-hj-step-intro__image > * {
+  position: relative;
+  top: var(--mx-space-2);
+}
+
+@container (max-height: 111px) {
+  .mx-hj-step-intro__image::before,
+  .mx-hj-step-intro__image > .mx-hj-step-intro__glyph,
+  .mx-hj-step-intro__image > .mx-hj-step-intro__image-caption {
+    display: none;
+  }
 }
 
 .mx-hj-step-intro__glyph {
@@ -487,53 +632,56 @@
 
 .mx-hj-step-intro__image-caption {
   font-size: max(11px, calc(12px * var(--mx-type-scale)));
+  /* Из main: контраст подписи к фону (faint → muted) */
   color: rgb(var(--c-muted));
 }
 
 .mx-hj-step-intro__text {
-  flex-shrink: 0;
-  /* Свободная высота уходит в зазор между картинкой и текстом */
-  margin-top: auto;
+  flex: none;
+  /* Без героя (картинка не загрузилась): зазор под заглушкой */
+  margin-top: 12px;
 }
 
-/* С картинкой: текст заходит на нижнюю часть картинки на долю overlap её высоты */
-.mx-hj-step-intro--image .mx-hj-step-intro__text {
+/* С картинкой текст слегка перехлёстывает затемнённый нижний край героя. */
+.mx-hj-hero + .mx-hj-step-intro__text {
+  margin-top: -28px;
   position: relative;
-  z-index: 2;
-  margin-top: calc(var(--hj-img-h) * var(--hj-overlap, 0.12) * -1);
+  z-index: 1;
 }
 
-/* Скрим под заходящим текстом: подпись и заголовок остаются читаемыми */
-.mx-hj-step-intro--image .mx-hj-step-intro__text::before {
+/*
+ * Скрим под текстовым блоком: начинается за 56 px до подписи «ГЛАВА…» и уводит
+ * фон в цвет приложения, чтобы подпись и заголовок читались на светлой штриховке
+ * кадра. Лежит ниже текста и выше картинки; кнопок навигации сверху не касается —
+ * текст стоит ниже героя, а скрим поднимается лишь на 56 px над первой строкой.
+ */
+.mx-hj-hero + .mx-hj-step-intro__text::before,
+.mx-hj-hero + .mx-hj-complete::before {
   content: '';
   position: absolute;
   left: calc(-1 * var(--mx-screen-x));
   right: calc(-1 * var(--mx-screen-x));
-  top: -16px;
-  bottom: 0;
-  z-index: -1;
-  pointer-events: none;
+  top: -56px;
+  height: 64px;
   background: linear-gradient(
     to bottom,
-    rgb(5 4 3 / 0.85) 0%,
-    rgb(5 4 3 / 0.55) 55%,
-    rgb(5 4 3 / 0) 85%
+    rgba(5, 4, 3, 0) 0,
+    rgba(5, 4, 3, 0.82) 36px,
+    #050403 64px
   );
-}
-
-.mx-hj-step-intro--image .mx-hj-step-intro__label,
-.mx-hj-step-intro--image .mx-hj-step-intro__subtitle {
-  color: rgb(var(--c-text));
-  text-shadow: 0 1px 3px rgb(5 4 3 / 0.9);
+  z-index: -1;
+  pointer-events: none;
 }
 
 .mx-hj-step-intro__label {
   font-family: var(--font-label, 'Manrope', sans-serif);
   font-size: max(11px, calc(11px * var(--mx-type-scale)));
-  font-weight: 700;
-  letter-spacing: 0.2em;
+  font-weight: 500;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgb(var(--c-muted));
+  /* Светлее — контраст к фону ≥ 7:1; тень гасит светлые пятна кадра. */
+  color: rgb(var(--c-text));
+  text-shadow: 0 1px 8px #050403;
 }
 
 .mx-hj-step-intro__title {
@@ -542,28 +690,46 @@
   font-weight: 600;
   line-height: 1.15;
   color: rgb(var(--c-text));
-  margin-top: 8px;
+  margin-top: 6px;
+  text-shadow: 0 2px 14px #050403;
 }
 
+/* Подзаголовок читается: не мельче 14 px и не темнее 65% белого. */
 .mx-hj-step-intro__subtitle {
-  font-size: calc(15px * var(--mx-type-scale));
+  font-size: max(14px, calc(15px * var(--mx-type-scale)));
   font-weight: 400;
-  color: rgb(var(--c-muted));
-  margin-top: 8px;
+  color: rgb(var(--c-text) / 0.65);
+  margin-top: 6px;
 }
 
+/*
+ * Вступление: шрифт абзаца строго 15 px (масштаб типографики 0.86 давал бы
+ * 13.8 px), межстрочный 1.4, межабзацный интервал 8 px. Весь текст остаётся на
+ * экране целиком — ни сокращений, ни скролла; недостающую высоту отдаёт
+ * картинка (до своих 76 px), а не шрифт. На высоких экранах (запрос выше)
+ * текст получает больше воздуха: межстрочный 1.55 и межабзацный 14 px.
+ */
 .mx-hj-step-intro__desc {
-  font-size: calc(16px * var(--mx-type-scale));
-  line-height: 1.6;
+  font-size: max(15px, calc(16px * var(--mx-type-scale)));
+  line-height: 1.4;
   color: rgb(var(--c-muted));
-  margin-top: 20px;
+  margin-top: var(--mx-space-2);
 }
 
-.mx-hj-step-intro__flow {
-  font-size: calc(15px * var(--mx-type-scale));
-  font-weight: 400;
-  color: rgb(var(--c-muted));
-  margin-top: 16px;
+/*
+ * Высокие экраны (393×852 и выше, порог — по высоте колонки): воздух уходит в
+ * текст — межстрочный 1.55 и межабзацный 14 px. Правило стоит после базового:
+ * контейнерный запрос не добавляет специфичности, и стоящий выше блок
+ * перебивался бы базовыми 1.4/8 px. Пустота над кнопкой держится ≤ ~60 px:
+ * у компактных шагов (digital-avatar, relationships) потолок картинки тоже
+ * поднят до 340 px — иначе остаток свободной высоты скапливался зазором
+ * над кнопкой (130 px у «Образа в сети»).
+ */
+@container (min-height: 700px) {
+  .mx-hj-step-intro .mx-hj-step-intro__desc {
+    line-height: 1.55;
+    margin-top: 14px;
+  }
 }
 
 .mx-hj-step-intro__cta {
@@ -572,7 +738,6 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  margin-top: 24px;
   font-size: calc(15px * var(--mx-type-scale));
 }
 
@@ -595,12 +760,32 @@
   min-width: 0;
 }
 
+/*
+ * Строка шапки — одна строка: название шага сжимается с многоточием,
+ * режим («ЗАПИШИ»/«ОДНО ДЕЙСТВИЕ») и пейджер не переносятся и не сжимаются.
+ */
 .mx-hj-step-header__label {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
   font-size: max(11px, calc(11px * var(--mx-type-scale)));
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: rgb(var(--c-gold));
+}
+
+.mx-hj-step-header__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mx-hj-step-header__mode,
+.mx-hj-step-header__pager {
+  flex: none;
+  white-space: nowrap;
 }
 
 .mx-hj-step-header__dots {
@@ -834,30 +1019,60 @@
   border-left: 2px solid rgb(var(--c-border));
 }
 
-/* Поле: 17/400, межстрочный 1.5, левый край по вопросу */
+/* Поле: 17/400, межстрочный 1.5, левый край по вопросу.
+   Колонка без скролла — длинный текст прокручивается внутри поля. */
 .mx-hj-write-editor {
   font-weight: 400;
   line-height: 1.5;
+  overflow-y: auto;
 }
 
-/* Пока поле пустое, «→» на «Запиши» неактивна: фон card2, стрелка muted */
-.mx-hj-write-input .mx-keyboard-submit:disabled {
-  border-color: rgb(var(--c-border)) !important;
-  background: rgb(var(--c-card2)) !important;
-  color: rgb(var(--c-muted)) !important;
-  opacity: 1;
-  box-shadow: none;
-}
+/* ── G. Шаг пройден: колонка без скролла, как у вступления ── */
 
-/* ── G. Шаг пройден ── */
-
-.mx-hj-complete {
+.mx-hj-step-complete {
   flex: 1;
+  min-height: 0;
+}
+
+/*
+ * Гибкий герой на завершении: та же схема, что на входе, но кадр done выше —
+ * до 300 px (компактный вариант — до 210). Свободная высота сверх максимума
+ * уходит в зазор над кнопкой (margin-top: auto у __bottom), а не в прокрутку.
+ */
+.mx-hj-step-complete .mx-hj-hero--flex {
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 110px;
+  max-height: 300px;
+  margin-bottom: 0;
+}
+
+.mx-hj-step-complete .mx-hj-hero--flex.mx-hj-hero--compact {
+  max-height: 210px;
+}
+
+/* Под кнопками Telegram («Назад», «⌄», «···») — тёмный градиент ~80 px,
+   от 85% чёрного у верха до прозрачного: белые детали кадра не накладываются
+   на кнопки. */
+.mx-hj-step-complete .mx-hj-hero__scrim {
+  height: 80px;
+  background: linear-gradient(rgba(5, 4, 3, 0.85), transparent);
+}
+
+/* Текстовый блок: фиксированный, идёт сразу под картинкой (перекрытие дал
+   герой), читаемость держит тот же скрим, что у вступления. */
+.mx-hj-complete {
+  flex: none;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   text-align: center;
+}
+
+.mx-hj-hero + .mx-hj-complete {
+  margin-top: -28px;
+  position: relative;
+  z-index: 1;
 }
 
 .mx-hj-complete__circle {
@@ -879,12 +1094,23 @@
   line-height: 1.15;
   color: rgb(var(--c-text));
   margin-top: 4px;
+  text-shadow: 0 2px 14px #050403;
 }
 
 .mx-hj-complete__phrase {
-  font-size: calc(15px * var(--mx-type-scale));
-  color: rgb(var(--c-muted));
+  font-size: max(14px, calc(15px * var(--mx-type-scale)));
+  font-weight: 400;
+  /* Около 90% белого; тень гасит светлые пятна картинки. */
+  color: rgb(var(--c-text) / 0.9);
+  text-shadow: 0 1px 8px #050403;
   margin-top: 8px;
+}
+
+.mx-hj-complete__teaser {
+  font-size: 14px;
+  line-height: 1.45;
+  color: rgb(var(--c-text) / 0.7);
+  margin-top: 12px;
 }
 
 .mx-hj-complete__chapter-card {
@@ -934,19 +1160,9 @@
   text-align: center;
 }
 
-.mx-hj-complete__footer {
-  flex-shrink: 0;
-  padding-top: 16px;
-  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
-}
+/* Кнопка «Продолжить» живёт в нижней группе колонки
+   (.mx-hj-step-intro__bottom + .mx-hj-step-intro__cta). */
 
-.mx-hj-complete__cta {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  font-size: calc(15px * var(--mx-type-scale));
-}
 .mx-hj-empty-course {
   margin: 12px 0 0;
   text-align: left;

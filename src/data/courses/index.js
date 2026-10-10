@@ -11,16 +11,21 @@ export function libraryCourses(demo = false, demoCourses = true) {
 
 export function courseContent(course) {
   const steps = course.steps
-  const findTrial = id => steps.find(step => step.id === id) || null
+  const finale = course.finale ?? null
+  // Финал открывается как шаг: после последнего шага курса.
+  const findTrial = id => steps.find(step => step.id === id) || (finale?.id === id ? finale : null)
   return {
     course,
     steps,
     chapters: course.chapters,
-    finale: course.finale,
+    prologue: course.prologue ?? null,
+    finale,
     total: steps.length,
     findTrial,
-    previousTrial: id => steps[steps.findIndex(step => step.id === id) - 1] || null,
+    previousTrial: id =>
+      (finale?.id === id ? steps[steps.length - 1] : steps[steps.findIndex(step => step.id === id) - 1]) ||
+      null,
     chapterForTrial: id => course.chapters.find(chapter => chapter.trialIds.includes(id)),
-    trialsForChapter: chapter => chapter.trialIds.map(findTrial).filter(Boolean),
+    trialsForChapter: chapter => (chapter ? chapter.trialIds.map(findTrial).filter(Boolean) : []),
   }
 }
