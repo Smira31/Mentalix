@@ -124,6 +124,83 @@ test('Вступление шага 1 на 375×667 без скролла, кн�
   expect(fontSize).toBeGreaterThanOrEqual(15)
 })
 
+/*
+ * Самый длинный текст вступления — 447 px на 360×640 (по замерам: uncertainty,
+ * digital-avatar, mirror, relationships, age-crises; шаг 5 body — 405 px).
+ * Проверяем longest-группу и шаг 5: колонка без скролла, кнопка «Начать шаг»
+ * видна целиком и прижата к низу, картинка не ниже минимума 76 px.
+ */
+const LONGEST_TEXT_IDS = ['uncertainty', 'age-crises', 'body']
+
+for (const [width, height] of [
+  [360, 640],
+  [375, 667],
+]) {
+  test(`Вступление длинного шага на ${width}×${height}: без скролла, кнопка видна целиком`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height })
+    await page.addInitScript(
+      ({ key, value }) => {
+        localStorage.clear()
+        sessionStorage.clear()
+        localStorage.setItem(key, value)
+      },
+      {
+        key: PROGRESS_KEY,
+        value: JSON.stringify({
+          completed: {
+            uncertainty: new Date(Date.now() - 4 * 86400000).toISOString(),
+            temporality: new Date(Date.now() - 3 * 86400000).toISOString(),
+            choice: new Date(Date.now() - 2 * 86400000).toISOString(),
+            abundance: new Date(Date.now() - 86400000).toISOString(),
+          },
+          signs: {},
+          reflections: {},
+          actions: {},
+        }),
+      }
+    )
+    // frame=0: приложение на реальном viewport, как на телефоне.
+    await page.goto('/?demo=1&tab=library&action=hero_journey&frame=0')
+    await page.getByTestId('hero-journey-map').waitFor({ state: 'visible' })
+
+    for (const id of LONGEST_TEXT_IDS) {
+      await page.getByTestId(`hero-step-${id}`).click()
+      await page.getByTestId('hero-step-start').waitFor({ state: 'visible' })
+      await page.waitForTimeout(100)
+
+      const column = page.locator('.mx-hj-step-intro')
+      const overflow = await column.evaluate(el => el.scrollHeight - el.clientHeight)
+      expect(overflow).toBeLessThanOrEqual(0)
+      const docOverflow = await page.evaluate(
+        () => document.documentElement.scrollHeight - document.documentElement.clientHeight
+      )
+      expect(docOverflow).toBeLessThanOrEqual(0)
+
+      const box = await page.getByTestId('hero-step-start').boundingBox()
+      expect(box.y).toBeGreaterThanOrEqual(0)
+      expect(box.y + box.height).toBeLessThanOrEqual(height)
+      expect(height - (box.y + box.height)).toBeLessThanOrEqual(24)
+
+      const hero = await page
+        .locator('.mx-hj-step-intro .mx-hj-hero, .mx-hj-step-intro__image')
+        .first()
+        .boundingBox()
+      expect(hero.height).toBeGreaterThanOrEqual(76)
+
+      const fontSize = await page
+        .locator('.mx-hj-step-intro__desc')
+        .first()
+        .evaluate(el => parseFloat(getComputedStyle(el).fontSize))
+      expect(fontSize).toBeGreaterThanOrEqual(14.5)
+
+      await page.getByTestId('demo-chrome-back').click()
+      await page.getByTestId('hero-journey-map').waitFor({ state: 'visible' })
+    }
+  })
+}
+
 test('Шаг пройден на 375×667: «Продолжить» видна целиком, без скролла', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 667 })
   await page.addInitScript(() => {
