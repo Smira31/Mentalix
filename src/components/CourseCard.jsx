@@ -21,7 +21,7 @@ export default function CourseCard({ course, userId, onOpen }) {
     return (
       <StepsJournalBanner
         course
-        label="КУРС · СКОРО"
+        label="ПРАКТИКУМ · СКОРО"
         title={`${course.title.toLowerCase()}.`}
         description={course.description}
         art={art}
@@ -35,7 +35,7 @@ export default function CourseCard({ course, userId, onOpen }) {
   return (
     <StepsJournalBanner
       course
-      label={course.label || `КУРС · ${total} ШАГОВ`}
+      label={course.label || `ПРАКТИКУМ · ${total} ШАГОВ`}
       title={`${course.title.toLowerCase()}.`}
       description={course.description}
       art={art}
@@ -49,7 +49,7 @@ export default function CourseCard({ course, userId, onOpen }) {
             <span>
               Шаг {Math.min(completed + 1, total)} из {total}
             </span>
-            <progress value={completed} max={total} aria-label="Прогресс курса" />
+            <progress value={completed} max={total} aria-label="Прогресс практикума" />
           </span>
         )
       }

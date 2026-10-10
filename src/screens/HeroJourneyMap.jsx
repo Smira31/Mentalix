@@ -297,7 +297,7 @@ function CourseMap({ progress, onOpenStep, onOpenAbout }) {
           <p className="mx-hj-map__desc">{HERO_JOURNEY_COURSE.description}</p>
         </div>
         <p className="mx-hj-empty-course" data-testid="hero-empty-course">
-          Курс готовится. Скоро здесь появятся шаги.
+          Практикум готовится. Скоро здесь появятся шаги.
         </p>
       </Shell>
     )
@@ -306,7 +306,7 @@ function CourseMap({ progress, onOpenStep, onOpenAbout }) {
     <Shell testId="hero-journey-map">
       <div className="mx-hj-map__head">
         <span className="mx-hj-eyebrow">
-          Курс · {HERO_JOURNEY_TRIALS.length} шагов · {HERO_JOURNEY_CHAPTERS.length} главы
+          Практикум · {HERO_JOURNEY_TRIALS.length} шагов · {HERO_JOURNEY_CHAPTERS.length} главы
         </span>
         <h1 className="mx-hj-map__title">{appHeading(HERO_JOURNEY_COURSE.title)}</h1>
         <p className="mx-hj-map__desc">{HERO_JOURNEY_COURSE.description}</p>
@@ -374,7 +374,7 @@ function CourseMap({ progress, onOpenStep, onOpenAbout }) {
   )
 }
 
-/* ── Пролог «О курсе» ── */
+/* ── Пролог «О практикуме» ── */
 
 function AboutScreen({ prologue, onBackToMap }) {
   return (
@@ -592,10 +592,9 @@ function StepComplete({ trial, progress, onBackToMap }) {
   const chapterTrials = trialsForChapter(chapter)
   const completedInChapter = chapterTrials.filter(t => isStepCompleted(t.id, progress))
   const chapterDone = completedInChapter.length === chapterTrials.length
+  /* Следующая глава — по позиции в списке, не по римским цифрам («II» ≠ «I»+1). */
   const nextChapter = chapter
-    ? HERO_JOURNEY_CHAPTERS.find(
-        ch => ch.roman === String.fromCharCode(chapter.roman.charCodeAt(0) + 1)
-      )
+    ? HERO_JOURNEY_CHAPTERS[HERO_JOURNEY_CHAPTERS.indexOf(chapter) + 1] || null
     : null
 
   const reflection = progress.reflections[trial.id] || ''

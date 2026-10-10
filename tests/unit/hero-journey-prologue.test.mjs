@@ -11,13 +11,13 @@ const { HERO_JOURNEY_PROLOGUE, HERO_JOURNEY_COURSE } = await import(
 
 test('пролог: метка, заголовок и четыре абзаца дословно по документу', () => {
   assert.equal(HERO_JOURNEY_PROLOGUE.eyebrow, 'ПУТЬ ГЕРОЯ')
-  assert.equal(HERO_JOURNEY_PROLOGUE.title, 'Зачем этот курс')
-  assert.equal(HERO_JOURNEY_PROLOGUE.menuLabel, 'О курсе')
+  assert.equal(HERO_JOURNEY_PROLOGUE.title, 'Зачем этот практикум')
+  assert.equal(HERO_JOURNEY_PROLOGUE.menuLabel, 'О практикуме')
   assert.equal(HERO_JOURNEY_PROLOGUE.paragraphs.length, 4)
   const text = HERO_JOURNEY_PROLOGUE.paragraphs.join('\n')
   assert.match(text, /Бывает так: день прошёл, а что в нём было, не вспомнить\./)
   assert.match(text, /На автопилоте живёт почти каждый/)
-  assert.match(text, /В курсе 16 шагов\. В каждом одна тема из обычной жизни/)
+  assert.match(text, /В практикуме 16 шагов\. В каждом одна тема из обычной жизни/)
   assert.match(text, /Не нужно ничего менять сразу\./)
 })
 

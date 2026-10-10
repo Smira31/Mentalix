@@ -8,7 +8,7 @@ export function CourseCards({ courses, userId, onOpen, carousel = true }) {
   if (carousel && courses.length > 1)
     return (
       <div className="mx-library-course-carousel" data-testid="library-course-carousel">
-        <ThemeQuestionCarousel questions={courses} renderCard={renderCard} ariaLabel="Курсы" />
+        <ThemeQuestionCarousel questions={courses} renderCard={renderCard} ariaLabel="Практикумы" />
       </div>
     )
   return (
@@ -25,7 +25,7 @@ export default function CourseCatalog({ courses, userId, onOpen, onBack }) {
   return (
     <Screen showHeader={false} telegramChrome className="mx-library-courses-surface">
       <section data-testid="library-all-courses" className="mx-library-course-list">
-        <h1 className="mx-type-page">все курсы.</h1>
+        <h1 className="mx-type-page">все практикумы.</h1>
         <CourseCards courses={courses} userId={userId} onOpen={onOpen} carousel={false} />
       </section>
     </Screen>

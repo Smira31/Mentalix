@@ -147,7 +147,7 @@ export default function Library({ user, onInputModeChange }) {
         </header>
         <section className="mx-library-topic" aria-labelledby="library-courses-title">
           <h2 id="library-courses-title" className="mx-library-caps">
-            КУРСЫ
+            ПРАКТИКУМЫ
           </h2>
           <CourseCards courses={courses.slice(0, 3)} userId={user.id} onOpen={openCourse} />
           {courses.length > 3 && (
@@ -157,7 +157,7 @@ export default function Library({ user, onInputModeChange }) {
               className="mx-library-next mx-type-control"
               onClick={() => setScreen('courses')}
             >
-              Все курсы <ArrowRight size={16} />
+              Все практикумы <ArrowRight size={16} />
             </button>
           )}
         </section>

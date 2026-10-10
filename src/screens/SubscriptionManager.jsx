@@ -16,7 +16,7 @@ import './SubscriptionManager.css'
  */
 const FEATURES = [
   [Users, 'Спутники без ограничений', 'Наставник и другие спутники отвечают глубже и без лимита'],
-  [BookOpen, 'Курсы', '«Путь героя» и новые курсы'],
+  [BookOpen, 'Практикумы', '«Путь героя» и новые практикумы'],
   [LineChart, 'Полная аналитика и история', 'Все записи и связи между ними'],
   [Lightbulb, 'Персональные наблюдения', 'Что повторяется в твоих днях'],
 ]
@@ -45,7 +45,7 @@ export default function SubscriptionManager({ tier: _tier, onBack }) {
 
         <h2 className="mx-subscription-promise">Готов открыть свой потенциал?</h2>
         <p className="mx-subscription-pitch">
-          Спутники без ограничений, курсы и полная аналитика — в одном тарифе.
+          Спутники без ограничений, практикумы и полная аналитика — в одном тарифе.
         </p>
 
         <p className="mx-subscription-price">690 ₽<span>/мес</span></p>
