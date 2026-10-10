@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import { readFile } from 'node:fs/promises'
 import { ARTICLES } from '../../src/data/articles.js'
+import { libraryArticles } from '../../src/lib/libraryArticles.js'
 import {
   fetchArticles,
   peekArticles,
@@ -9,12 +10,14 @@ import {
   invalidateArticles,
 } from '../../src/lib/libraryDataCache.js'
 
-test('Все потребители читают единый ARTICLES, включая старый адаптер', async () => {
-  assert.equal(peekArticles(), ARTICLES)
-  assert.equal(peekArticlesSnapshot(), ARTICLES)
-  assert.equal(await fetchArticles({ force: true }), ARTICLES)
+// Каталог для потребителей — отфильтрованный (hidden-статьи удалены),
+// но это один и тот же массив: без сети, копий и API-снимков.
+test('Все потребители читают единый каталог, включая старый адаптер', async () => {
+  assert.equal(peekArticles(), libraryArticles)
+  assert.equal(peekArticlesSnapshot(), libraryArticles)
+  assert.equal(await fetchArticles({ force: true }), libraryArticles)
   invalidateArticles()
-  assert.equal(await fetchArticles(), ARTICLES)
+  assert.equal(await fetchArticles(), libraryArticles)
   const cache = await readFile(
     new URL('../../src/lib/libraryDataCache.js', import.meta.url),
     'utf8'
