@@ -124,6 +124,54 @@ test('Вступление шага 1 на 375×667 без скролла, кн�
   expect(fontSize).toBeGreaterThanOrEqual(15)
 })
 
+test('Шаг пройден на 375×667: «Продолжить» видна целиком, без скролла', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 667 })
+  await page.addInitScript(() => {
+    localStorage.clear()
+    sessionStorage.clear()
+  })
+  await page.goto('/?demo=1&tab=library&action=hero_journey&frame=0')
+  await page.getByTestId('hero-continue').click()
+  await page.getByTestId('hero-step-start').click()
+  await page.getByTestId('hero-write-input').fill('Запись первого шага')
+  await page.getByTestId('hero-write-next').click()
+  await page.getByTestId('hero-action-input').fill('Одно действие')
+  await page.getByTestId('hero-action-next').click()
+  await expect(page.getByTestId('hero-complete-map')).toBeVisible()
+
+  const column = page.locator('.mx-hj-step-complete')
+  // Скролла нет: ни в колонке, ни в документе.
+  const overflow = await column.evaluate(el => el.scrollHeight - el.clientHeight)
+  expect(overflow).toBeLessThanOrEqual(0)
+  const docOverflow = await page.evaluate(
+    () => document.documentElement.scrollHeight - document.documentElement.clientHeight
+  )
+  expect(docOverflow).toBeLessThanOrEqual(0)
+
+  // Кнопка «Продолжить» целиком в области видимости.
+  const box = await page.getByTestId('hero-complete-map').boundingBox()
+  expect(box.y).toBeGreaterThanOrEqual(0)
+  expect(box.y + box.height).toBeLessThanOrEqual(667)
+  // Кнопка прижата к низу колонки.
+  expect(667 - (box.y + box.height)).toBeLessThanOrEqual(24)
+
+  // Картинка гибкая: 110–300 px, текст идёт сразу под ней.
+  const hero = await page.locator('.mx-hj-step-complete .mx-hj-hero').boundingBox()
+  expect(hero.height).toBeGreaterThanOrEqual(110)
+  expect(hero.height).toBeLessThanOrEqual(300)
+
+  // Итог обычным начертанием, не мельче 14 px.
+  const phrase = await page.locator('.mx-hj-complete__phrase').evaluate(el => {
+    const s = getComputedStyle(el)
+    return { weight: s.fontWeight, size: parseFloat(s.fontSize) }
+  })
+  expect(phrase.weight).toBe('400')
+  expect(phrase.size).toBeGreaterThanOrEqual(14)
+
+  await page.getByTestId('hero-complete-map').click()
+  await expect(page.getByTestId('hero-step-uncertainty')).toHaveAttribute('data-state', 'done')
+})
+
 test('Назад проходит по подэкранам шага: запись и действие', async ({ page }) => {
   await page.setViewportSize({ width: 393, height: 852 })
   await page.addInitScript(() => {
