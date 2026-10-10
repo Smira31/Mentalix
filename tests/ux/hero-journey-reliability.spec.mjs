@@ -147,7 +147,9 @@ for (const [width, height] of [
         localStorage.setItem(key, value)
       },
       {
-        key: PROGRESS_KEY,
+        // Demo-режим работает под пользователем 900001 и чистит чужие scope-ключи,
+        // поэтому прогресс обязан лежать под этим ключом — иначе карточки заблокированы.
+        key: 'mx-hero-journey-progress:900001',
         value: JSON.stringify({
           // Весь путь пройден: все главы раскрыты, любой шаг открыт по карточке.
           completed: Object.fromEntries(
@@ -156,6 +158,7 @@ for (const [width, height] of [
               'temporality',
               'choice',
               'abundance',
+              'body',
               'phone',
               'autopilot',
               'digital-avatar',
