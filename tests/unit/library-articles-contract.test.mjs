@@ -32,3 +32,12 @@ test('Статья доступна целиком и без сети: текс�
     'https://www.nature.com/articles/s41593-024-01638-y'
   )
 })
+
+test('Скрытые статьи отфильтрованы в каталоге, тексты остаются в файле', async () => {
+  const hiddenIds = ['put-geroya-zachem-krizis', 'ispytaniya-sovremennogo-cheloveka']
+  for (const id of hiddenIds) {
+    assert.equal(peekArticles().some(a => a.id === id), false, id)
+    const source = ARTICLES.find(a => a.id === id)
+    assert.ok(source && source.hidden && source.body.length > 100, id)
+  }
+})
