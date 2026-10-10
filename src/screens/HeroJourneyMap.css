@@ -539,6 +539,10 @@
   .mx-hj-step-intro .mx-hj-hero--flex {
     max-height: 340px;
   }
+
+  .mx-hj-step-intro .mx-hj-hero--flex.mx-hj-hero--compact {
+    max-height: 340px;
+  }
 }
 
 /* Нижний край уходит в чёрный линейно с 65% до 100% высоты блока
