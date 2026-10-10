@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect, useRef, createContext, useContext } from 'react'
-import { ArrowRight, Check, ChevronRight, Lock } from 'lucide-react'
+import { ArrowRight, Check, ChevronRight, Lock, X } from 'lucide-react'
 
 import Screen from '../components/Screen'
 import { HERO_COURSE, courseContent } from '../data/courses'
@@ -333,9 +333,8 @@ function CourseMap({ progress, onOpenStep, onOpenAbout }) {
           <span className="mx-hj-next-card__label">Следующий шаг · {nextTrial.number}</span>
           <span className="mx-hj-next-card__title">{appHeading(nextTrial.title)}</span>
           <span className="mx-hj-next-card__sub">{nextTrial.subtitle}</span>
-          <span className="mx-hj-next-card__meta">≈ 6 мин</span>
           <span className="cta-pill mx-hj-next-card__cta">
-            Продолжить <ArrowRight size={16} />
+            Продолжить <ChevronRight size={16} />
           </span>
         </button>
       )}
@@ -359,20 +358,30 @@ function CourseMap({ progress, onOpenStep, onOpenAbout }) {
 
 /* ── Пролог «О курсе» ── */
 
-function AboutScreen({ prologue }) {
+function AboutScreen({ prologue, onBackToMap }) {
   return (
-    <Shell testId="hero-about">
-      <div className="mx-hj-about">
-        <span className="mx-hj-eyebrow">{prologue.eyebrow}</span>
-        <h1 className="mx-hj-about__title">{appHeading(prologue.title)}</h1>
-        {prologue.paragraphs.map((para, i) => (
-          <p key={i} className="mx-hj-about__text">
-            {para}
-          </p>
-        ))}
-        <p className="mx-hj-about__note" data-testid="hero-about-note">
-          {prologue.note}
+    /* Колонка без скролла: кнопка «К шагам» прижата к низу (см. __bottom в CSS). */
+    <Shell fit bodyClassName="mx-hj-about" screenBodyClassName="mx-hj-about-body">
+      <span className="mx-hj-eyebrow">{prologue.eyebrow}</span>
+      <h1 className="mx-hj-about__title">{appHeading(prologue.title)}</h1>
+      {prologue.paragraphs.map((para, i) => (
+        <p key={i} className="mx-hj-about__text">
+          {para}
         </p>
+      ))}
+      <p className="mx-hj-about__note" data-testid="hero-about-note">
+        {prologue.note}
+      </p>
+
+      <div className="mx-hj-step-intro__bottom">
+        <button
+          type="button"
+          data-testid="hero-about-steps"
+          onClick={onBackToMap}
+          className="cta-pill mx-hj-step-intro__cta"
+        >
+          К шагам
+        </button>
       </div>
     </Shell>
   )
@@ -391,8 +400,8 @@ function StepIntro({ trial, onStart }) {
   return (
     /* Колонка на всю доступную высоту без скролла. Сверху — картинка, которая
        сама забирает место, оставшееся после текста и кнопки (flex + min/max);
-       текст слегка перехлёстывает затемнённый нижний край; «≈ 6 минут» и
-       кнопка прижаты к низу (см. .mx-hj-hero--flex и __bottom в CSS). */
+       текст слегка перехлёстывает затемнённый нижний край; кнопка
+       прижата к низу (см. .mx-hj-hero--flex и __bottom в CSS). */
     <Shell
       fit
       topFlush={showEnterImage}
@@ -431,7 +440,6 @@ function StepIntro({ trial, onStart }) {
       </div>
 
       <div className="mx-hj-step-intro__bottom">
-        <p className="mx-hj-step-intro__flow">≈ 6 минут</p>
         <button
           type="button"
           data-testid="hero-step-start"
@@ -492,6 +500,7 @@ function WriteScreen({
   onSubmit,
   allowEmpty,
   onBack,
+  onClose,
   trial,
   view,
 }) {
@@ -507,13 +516,24 @@ function WriteScreen({
   return (
     /* Колонка без скролла: поле занимает свободную высоту, кнопка (floating
        toolbar JournalTextarea) прижата к низу и не скрывается за краем. */
-    <Shell fit>
+    <Shell fit bodyClassName="mx-hj-write-col">
       <StepHeader trial={trial} onBack={onBack} view={view} />
 
       <div className="mx-hj-write">
         <h2 className="mx-hj-write__prompt">{prompt}</h2>
         {hint && <p className="mx-hj-write__hint">{hint}</p>}
       </div>
+
+      {/* Крестик — как в чек-ине: с несохранённым текстом просит подтверждение. */}
+      <button
+        type="button"
+        data-testid="hero-step-close"
+        onClick={() => onClose(hasText)}
+        aria-label="Закрыть шаг"
+        className="mx-hj-step-close"
+      >
+        <X size={18} aria-hidden="true" />
+      </button>
 
       <JournalTextarea
         testId={`hero-${view}-input`}
@@ -563,25 +583,18 @@ function StepComplete({ trial, progress, onBackToMap }) {
   const showDoneImage = Boolean(doneImage) && !imageFailed
 
   return (
+    /* Колонка на всю высоту без скролла, как у вступления: картинка сама
+       забирает свободную высоту (110–300 px), текст идёт сразу под ней,
+       кнопка «Продолжить» прижата к низу. */
     <Shell
+      fit
       topFlush={showDoneImage}
       bodyClassName="mx-hj-step-complete"
-      screenBodyClassName="mx-hj-stretch"
-      footer={
-        <div className="mx-hj-complete__footer mx-auto w-full max-w-md px-[var(--mx-screen-x)]">
-          <button
-            type="button"
-            data-testid="hero-complete-map"
-            onClick={onBackToMap}
-            className="cta-pill mx-hj-complete__cta"
-          >
-            К карте пути
-          </button>
-        </div>
-      }
+      screenBodyClassName="mx-hj-complete-body"
     >
       {showDoneImage ? (
         <HeroImage
+          flexible
           src={doneImage}
           size={STEP_IMAGE_DIMENSIONS.done}
           focus={trial.image?.focus}
@@ -591,11 +604,7 @@ function StepComplete({ trial, progress, onBackToMap }) {
         />
       ) : null}
 
-      {/* перекрытие то же, что у героя: по нему блок считает свободную высоту */}
-      <div
-        className="mx-hj-complete"
-        style={{ '--mx-hj-hero-overlap': trial.image?.overlap ?? DEFAULT_IMAGE_OVERLAP }}
-      >
+      <div className="mx-hj-complete">
         {!showDoneImage && (
           <div className="mx-hj-complete__circle">
             <Check size={40} strokeWidth={3} />
@@ -641,9 +650,20 @@ function StepComplete({ trial, progress, onBackToMap }) {
 
         {reflection && (
           <button type="button" className="mx-hj-complete__diary-link" onClick={onBackToMap}>
-            Твоя запись в дневнике →
+            Твоя запись в дневнике <ChevronRight size={14} aria-hidden="true" />
           </button>
         )}
+      </div>
+
+      <div className="mx-hj-step-intro__bottom mx-hj-complete__bottom">
+        <button
+          type="button"
+          data-testid="hero-complete-map"
+          onClick={onBackToMap}
+          className="cta-pill mx-hj-step-intro__cta"
+        >
+          Продолжить <ChevronRight size={16} />
+        </button>
       </div>
     </Shell>
   )
@@ -664,6 +684,7 @@ function CourseFlow({ onBack, user, course }) {
   const { progress, completeStep } = useHeroJourneyProgress(user.id, course.id)
   const [view, setView] = useState('map')
   const [activeStepId, setActiveStepId] = useState(null)
+  const [closeConfirmOpen, setCloseConfirmOpen] = useState(false)
   const [markedSigns, setMarkedSigns] = useState([])
   const [reflection, setReflection] = useState('')
   const [action, setAction] = useState('')
@@ -750,6 +771,70 @@ function CourseFlow({ onBack, user, course }) {
     setView(nextView('step-intro', trial))
   }
 
+  /* Крестик на «Запиши»/«Одно действие» — как в чек-ине: с несохранённым
+     текстом сначала просит подтверждение, иначе закрывает шаг сразу.
+     Черновик остаётся на устройстве (как в журнале). */
+  function requestClose(hasText) {
+    if (hasText) {
+      setCloseConfirmOpen(true)
+      return
+    }
+    closeStep()
+  }
+
+  function closeStep() {
+    platform.haptic('light')
+    flushDraft()
+    pendingDraft.current = null
+    setCloseConfirmOpen(false)
+    setView('map')
+  }
+
+  /* Диалог подтверждения — та же копия и логика, что у экрана записи чек-ина
+     («Закрыть запись?»): «Продолжить» остаётся, «Закрыть» выходит к карте. */
+  const closeConfirmDialog = closeConfirmOpen ? (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="hero-close-dialog-title"
+      aria-describedby="hero-close-dialog-description"
+      className="fixed inset-0 z-[90] flex items-end bg-black/70 p-5 sm:items-center"
+      data-testid="hero-close-confirm"
+    >
+      <div className="w-full max-w-md mx-auto rounded-[28px] bg-emerald p-6 shadow-xl animate-fade-in">
+        <h2 id="hero-close-dialog-title" className="font-display text-[22px] text-cream">
+          Закрыть запись?
+        </h2>
+        <p
+          id="hero-close-dialog-description"
+          className="mt-3 text-[14px] leading-relaxed text-muted"
+        >
+          Есть несохранённая запись. Черновик останется только на этом устройстве и не будет выдан
+          за сохранённую запись.
+        </p>
+        <div className="mt-6 grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            autoFocus
+            data-testid="hero-close-stay"
+            onClick={() => setCloseConfirmOpen(false)}
+            className="min-h-12 rounded-full bg-cream px-4 text-[14px] font-semibold text-emerald-deep"
+          >
+            Продолжить
+          </button>
+          <button
+            type="button"
+            data-testid="hero-close-exit"
+            onClick={closeStep}
+            className="min-h-12 rounded-full border border-cream/15 px-4 text-[14px] font-semibold text-cream"
+          >
+            Закрыть
+          </button>
+        </div>
+      </div>
+    </div>
+  ) : null
+
   function submitWrite() {
     if (!trial) return
     setView(nextView('write', trial))
@@ -770,7 +855,7 @@ function CourseFlow({ onBack, user, course }) {
   }
 
   if (view === 'about' && prologue) {
-    return <AboutScreen prologue={prologue} />
+    return <AboutScreen prologue={prologue} onBackToMap={() => setView('map')} />
   }
 
   if (view === 'map' || !trial) {
@@ -790,37 +875,45 @@ function CourseFlow({ onBack, user, course }) {
 
   if (view === 'write') {
     return (
-      <WriteScreen
-        label="ЗАПИШИ"
-        prompt={trial.writePrompt}
-        hint={trial.writeHint || 'Не оценивай — просто назови, как есть.'}
-        placeholder="Начни писать…"
-        value={reflection}
-        onChange={value => changeDraft('reflection', value)}
-        onSubmit={submitWrite}
-        allowEmpty={false}
-        onBack={handleBack}
-        trial={trial}
-        view="write"
-      />
+      <>
+        <WriteScreen
+          label="ЗАПИШИ"
+          prompt={trial.writePrompt}
+          hint={trial.writeHint || 'Не оценивай — просто назови, как есть.'}
+          placeholder="Начни писать…"
+          value={reflection}
+          onChange={value => changeDraft('reflection', value)}
+          onSubmit={submitWrite}
+          allowEmpty={false}
+          onBack={handleBack}
+          onClose={requestClose}
+          trial={trial}
+          view="write"
+        />
+        {closeConfirmDialog}
+      </>
     )
   }
 
   if (view === 'action') {
     return (
-      <WriteScreen
-        label="ОДНО ДЕЙСТВИЕ"
-        prompt={trial.actionPrompt}
-        hint={trial.actionHint || 'Напиши, какое. Оно сохранится вместе с ответом в дневнике.'}
-        placeholder={trial.actionPlaceholder || 'Моё действие…'}
-        value={action}
-        onChange={value => changeDraft('action', value)}
-        onSubmit={submitAction}
-        allowEmpty
-        onBack={handleBack}
-        trial={trial}
-        view="action"
-      />
+      <>
+        <WriteScreen
+          label="ОДНО ДЕЙСТВИЕ"
+          prompt={trial.actionPrompt}
+          hint={trial.actionHint || 'Напиши, какое. Оно сохранится вместе с ответом в дневнике.'}
+          placeholder={trial.actionPlaceholder || 'Моё действие…'}
+          value={action}
+          onChange={value => changeDraft('action', value)}
+          onSubmit={submitAction}
+          allowEmpty
+          onBack={handleBack}
+          onClose={requestClose}
+          trial={trial}
+          view="action"
+        />
+        {closeConfirmDialog}
+      </>
     )
   }
 
