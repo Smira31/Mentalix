@@ -108,12 +108,6 @@
   color: rgb(var(--c-muted));
 }
 
-.mx-hj-next-card__meta {
-  font-size: max(11px, calc(12px * var(--mx-type-scale)));
-  color: rgb(var(--c-faint));
-  margin-top: 2px;
-}
-
 .mx-hj-next-card__cta {
   display: inline-flex;
   align-items: center;
@@ -165,10 +159,13 @@
   color: rgb(var(--c-muted));
 }
 
+/* Пролог: колонка без скролла, кнопка «К шагам» прижата к низу. */
 .mx-hj-about {
   display: flex;
   flex-direction: column;
   padding-top: var(--mx-space-2);
+  flex: 1;
+  min-height: 0;
 }
 
 .mx-hj-about__title {
@@ -188,10 +185,11 @@
   margin-top: var(--mx-space-4);
 }
 
+/* Оговорка должна читаться: не мельче 13 px и не темнее 60% белого. */
 .mx-hj-about__note {
-  font-size: max(11px, calc(13px * var(--mx-type-scale)));
+  font-size: max(13px, calc(13px * var(--mx-type-scale)));
   line-height: 1.45;
-  color: rgb(var(--c-muted));
+  color: rgb(var(--c-text) / 0.6);
   margin-top: var(--mx-space-6);
   padding-left: var(--mx-space-3);
   border-left: 2px solid rgb(var(--c-border));
@@ -501,11 +499,15 @@
  * поверхности <Screen>; второй такой же у .mx-screen__body в noscroll-колонке
  * только отодвигал кнопку вверх (в рамке 393×852 — на 34 px лишних).
  */
-.mx-screen__body.mx-hj-intro-body {
+.mx-screen__body.mx-hj-intro-body,
+.mx-screen__body.mx-hj-about-body,
+.mx-screen__body.mx-hj-complete-body {
   padding-bottom: 0;
 }
 
-.mx-hj-intro-body .mx-screen__content {
+.mx-hj-intro-body .mx-screen__content,
+.mx-hj-about-body .mx-screen__content,
+.mx-hj-complete-body .mx-screen__content {
   padding-bottom: var(--mx-space-3);
 }
 
@@ -544,9 +546,9 @@
 }
 
 /*
- * Нижняя группа: «≈ 6 минут» и кнопка «Начать шаг». flex none и margin-top: auto
- * прижимают её к низу колонки; свободная высота сверх максимума картинки
- * остаётся зазором над ней, а не под кнопкой.
+ * Нижняя группа: кнопка. flex none и margin-top: auto прижимают её к низу
+ * колонки; свободная высота сверх максимума картинки остаётся зазором над ней,
+ * а не под кнопкой.
  */
 .mx-hj-step-intro__bottom {
   flex: none;
@@ -660,8 +662,8 @@
 .mx-hj-step-intro__label {
   font-family: var(--font-label, 'Manrope', sans-serif);
   font-size: max(11px, calc(11px * var(--mx-type-scale)));
-  font-weight: 600;
-  letter-spacing: 0.2em;
+  font-weight: 500;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   /* Светлее — контраст к фону ≥ 7:1; тень гасит светлые пятна кадра. */
   color: rgb(var(--c-text));
@@ -678,10 +680,11 @@
   text-shadow: 0 2px 14px #050403;
 }
 
+/* Подзаголовок читается: не мельче 14 px и не темнее 65% белого. */
 .mx-hj-step-intro__subtitle {
-  font-size: calc(15px * var(--mx-type-scale));
+  font-size: max(14px, calc(15px * var(--mx-type-scale)));
   font-weight: 400;
-  color: rgb(var(--c-muted));
+  color: rgb(var(--c-text) / 0.65);
   margin-top: 6px;
 }
 
@@ -696,14 +699,6 @@
   line-height: 1.4;
   color: rgb(var(--c-muted));
   margin-top: var(--mx-space-2);
-}
-
-.mx-hj-step-intro__flow {
-  font-size: calc(15px * var(--mx-type-scale));
-  line-height: 1.2;
-  font-weight: 400;
-  color: rgb(var(--c-muted));
-  text-align: center;
 }
 
 .mx-hj-step-intro__cta {
@@ -732,6 +727,8 @@
   justify-content: space-between;
   gap: 12px;
   min-width: 0;
+  /* На «Запиши»/«Одно действие» справа стоит крестик (43 px). */
+  padding-right: 52px;
 }
 
 .mx-hj-step-header__label {
@@ -990,59 +987,47 @@
   box-shadow: none;
 }
 
-/* ── G. Шаг пройден ── */
+/* ── G. Шаг пройден: колонка без скролла, как у вступления ── */
 
-/* Высота героя на завершении: кадр done выше входного. */
 .mx-hj-step-complete {
-  --mx-hj-hero-h: clamp(320px, 46dvh, 420px);
+  flex: 1;
+  min-height: 0;
 }
 
 /*
- * Скролл-контейнер экрана завершения растягивает контент на свободную высоту —
- * её распределяет центрированием .mx-hj-complete. При переполнении (низкие
- * экраны) контент остаётся выше доступной высоты, и контейнер прокручивается.
+ * Гибкий герой на завершении: та же схема, что на входе, но кадр done выше —
+ * до 300 px (компактный вариант — до 210). Свободная высота сверх максимума
+ * уходит в зазор над кнопкой (margin-top: auto у __bottom), а не в прокрутку.
  */
-.mx-hj-stretch > .mx-screen__content {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
+.mx-hj-step-complete .mx-hj-hero--flex {
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 110px;
+  max-height: 300px;
+  margin-bottom: 0;
 }
 
-.mx-hj-stretch .mx-hj-step-complete {
-  flex: 1;
-  margin-bottom: calc(-1 * (var(--mx-space-6) + var(--app-safe-bottom, 0px)));
+.mx-hj-step-complete .mx-hj-hero--flex.mx-hj-hero--compact {
+  max-height: 210px;
 }
 
-.mx-hj-step-complete .mx-hj-hero--compact {
-  --mx-hj-hero-h: min(clamp(320px, 46dvh, 420px), 330px);
+/* Под кнопками Telegram («Назад», «⌄», «···») — тёмный градиент ~64 px. */
+.mx-hj-step-complete .mx-hj-hero__scrim {
+  height: 64px;
 }
 
-/* Контент идёт сразу под картинкой (перекрытие дал сам герой) и центрируется
-   по вертикали в свободной высоте между героем и закреплённой внизу кнопкой. */
+/* Текстовый блок: фиксированный, идёт сразу под картинкой (перекрытие дал
+   герой), читаемость держит тот же скрим, что у вступления. */
 .mx-hj-complete {
-  flex: 1;
+  flex: none;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   text-align: center;
-  padding-top: calc(var(--mx-hj-hero-overlap, 0.12) * var(--mx-hj-hero-h, 320px));
-}
-
-/* Низкие экраны: блок прижат к картинке без центрирования, чтобы содержимое
-   шага помещалось без прокрутки. */
-@media (max-height: 700px) {
-  .mx-hj-complete {
-    justify-content: flex-start;
-    padding-top: 0;
-  }
-
-  .mx-hj-stretch .mx-hj-step-complete {
-    margin-bottom: 0;
-  }
 }
 
 .mx-hj-hero + .mx-hj-complete {
+  margin-top: -28px;
   position: relative;
   z-index: 1;
 }
@@ -1070,19 +1055,18 @@
 }
 
 .mx-hj-complete__phrase {
-  font-size: calc(15px * var(--mx-type-scale));
-  font-weight: 500;
-  /* Светлее — контраст к фону ≥ 7:1 на самом светлом месте кадра;
-     тень гасит светлые пятна картинки. */
-  color: rgb(var(--c-text));
+  font-size: max(14px, calc(15px * var(--mx-type-scale)));
+  font-weight: 400;
+  /* Около 90% белого; тень гасит светлые пятна картинки. */
+  color: rgb(var(--c-text) / 0.9);
   text-shadow: 0 1px 8px #050403;
   margin-top: 8px;
 }
 
 .mx-hj-complete__teaser {
-  font-size: calc(14px * var(--mx-type-scale));
+  font-size: 14px;
   line-height: 1.45;
-  color: rgb(var(--c-muted));
+  color: rgb(var(--c-text) / 0.7);
   margin-top: 12px;
 }
 
@@ -1133,18 +1117,34 @@
   text-align: center;
 }
 
-.mx-hj-complete__footer {
-  flex-shrink: 0;
-  padding-top: 16px;
-  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
+/* Кнопка «Продолжить» живёт в нижней группе колонки
+   (.mx-hj-step-intro__bottom + .mx-hj-step-intro__cta). */
+
+/* Крестик на «Запиши»/«Одно действие»: та же круглая кнопка, что «назад». */
+.mx-hj-write-col {
+  position: relative;
 }
 
-.mx-hj-complete__cta {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  font-size: calc(15px * var(--mx-type-scale));
+.mx-hj-step-close {
+  position: absolute;
+  top: var(--mx-space-2);
+  right: 0;
+  z-index: 1;
+  display: grid;
+  width: 43px;
+  height: 43px;
+  padding: 0;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+  background: var(--mx-glass-bg);
+  color: rgb(var(--c-text));
+  cursor: pointer;
+  transition: transform 140ms ease;
+}
+
+.mx-hj-step-close:active {
+  transform: scale(0.95);
 }
 .mx-hj-empty-course {
   margin: 12px 0 0;
