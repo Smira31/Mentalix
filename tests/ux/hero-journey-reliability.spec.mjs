@@ -110,6 +110,18 @@ test('Вступление шага 1 на 375×667 без скролла, кн�
   const box = await page.getByTestId('hero-step-start').boundingBox()
   expect(box.y).toBeGreaterThanOrEqual(0)
   expect(box.y + box.height).toBeLessThanOrEqual(667)
+  // Кнопка прижата к низу колонки, а не висит под текстом.
+  expect(667 - (box.y + box.height)).toBeLessThanOrEqual(24)
+  // Картинка гибкая: 110–260 px по свободной высоте экрана.
+  const hero = await page.locator('.mx-hj-step-intro .mx-hj-hero').boundingBox()
+  expect(hero.height).toBeGreaterThanOrEqual(110)
+  expect(hero.height).toBeLessThanOrEqual(260)
+  // Шрифт текста вступления не ниже 15 px.
+  const fontSize = await page
+    .locator('.mx-hj-step-intro__desc')
+    .first()
+    .evaluate(el => parseFloat(getComputedStyle(el).fontSize))
+  expect(fontSize).toBeGreaterThanOrEqual(15)
 })
 
 test('Назад проходит по подэкранам шага: запись и действие', async ({ page }) => {

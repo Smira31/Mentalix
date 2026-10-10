@@ -124,6 +124,79 @@
   font-size: calc(14px * var(--mx-type-scale));
 }
 
+/* ── пролог «О курсе»: пункт меню и экран ── */
+
+.mx-hj-about-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--mx-space-3);
+  width: 100%;
+  margin-top: var(--mx-space-5);
+  padding: var(--mx-space-3) var(--mx-space-4);
+  border-radius: var(--mx-radius-md);
+  background: rgb(var(--c-card));
+  border: 1px solid rgb(var(--c-border));
+  color: rgb(var(--c-muted));
+  text-align: left;
+  cursor: pointer;
+  transition: transform 140ms ease;
+}
+
+.mx-hj-about-link:active {
+  transform: scale(0.98);
+}
+
+.mx-hj-about-link__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mx-space-1);
+  min-width: 0;
+}
+
+.mx-hj-about-link__title {
+  font-size: calc(15px * var(--mx-type-scale));
+  font-weight: 500;
+  color: rgb(var(--c-text));
+}
+
+.mx-hj-about-link__sub {
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
+  color: rgb(var(--c-muted));
+}
+
+.mx-hj-about {
+  display: flex;
+  flex-direction: column;
+  padding-top: var(--mx-space-2);
+}
+
+.mx-hj-about__title {
+  font-family: 'Onest', sans-serif;
+  font-size: calc(36px * var(--mx-type-scale));
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: rgb(var(--c-text));
+  margin-top: var(--mx-space-2);
+}
+
+.mx-hj-about__text {
+  font-size: max(15px, calc(16px * var(--mx-type-scale)));
+  line-height: 1.45;
+  color: rgb(var(--c-text));
+  margin-top: var(--mx-space-4);
+}
+
+.mx-hj-about__note {
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
+  line-height: 1.45;
+  color: rgb(var(--c-muted));
+  margin-top: var(--mx-space-6);
+  padding-left: var(--mx-space-3);
+  border-left: 2px solid rgb(var(--c-border));
+}
+
 /* ── главы ── */
 
 .mx-hj-chapters {
@@ -423,13 +496,30 @@
 }
 
 /*
- * Гибкий герой на входе: 110–260 px по вертикали. Свободное место после текста
- * и кнопки забирает картинка (flex-grow 999 до max-height); остаток сверх
- * максимума уходит в распорку перед нижней группой. Компактный вариант —
- * шаги, где высокая высота срезает главный объект кадра (relationships).
+ * Вступление: кнопка у нижнего края. Нижний отступ колонки 12 px вместо 24, а
+ * safe-area (зона home-индикатора) учитывается один раз — padding-bottom
+ * поверхности <Screen>; второй такой же у .mx-screen__body в noscroll-колонке
+ * только отодвигал кнопку вверх (в рамке 393×852 — на 34 px лишних).
+ */
+.mx-screen__body.mx-hj-intro-body {
+  padding-bottom: 0;
+}
+
+.mx-hj-intro-body .mx-screen__content {
+  padding-bottom: var(--mx-space-3);
+}
+
+/*
+ * Гибкий герой на входе: картинка сама занимает высоту, оставшуюся в колонке
+ * экрана приложения после текста и кнопки (flex 1 1 auto), но не меньше 110 и
+ * не больше 260 px. От высоты окна браузера не зависит: колонка берёт высоту у
+ * экрана, а не у media-запроса, поэтому раскладка одинакова в демо-рамке 393×852
+ * и на реальных 375×667 и 360×640. Остаток сверх максимума уходит в зазор
+ * между текстом и нижней группой (margin-top: auto у __bottom). Компактный
+ * вариант — шаги, где высокая высота срезает главный объект кадра.
  */
 .mx-hj-step-intro .mx-hj-hero--flex {
-  flex: 999 1 auto;
+  flex: 1 1 auto;
   height: auto;
   min-height: 110px;
   max-height: 260px;
@@ -453,40 +543,63 @@
   mask-composite: intersect;
 }
 
-/* Распорка: остаток свободной высоты между текстом и нижней группой. */
-.mx-hj-step-intro__spacer {
-  flex: 1 1 0;
-  min-height: 0;
-}
-
-/* Нижняя группа: «≈ 6 минут» и кнопка «Начать шаг», прижаты к низу колонки. */
+/*
+ * Нижняя группа: «≈ 6 минут» и кнопка «Начать шаг». flex none и margin-top: auto
+ * прижимают её к низу колонки; свободная высота сверх максимума картинки
+ * остаётся зазором над ней, а не под кнопкой.
+ */
 .mx-hj-step-intro__bottom {
   flex: none;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-top: 12px;
+  gap: var(--mx-space-2);
+  margin-top: auto;
+  padding-top: var(--mx-space-2);
 }
 
-.mx-hj-step-intro .mx-hj-step-intro__image {
-  flex: 1 1 260px;
-  min-height: 180px;
-  max-height: 260px;
-  height: auto;
-}
-
+/*
+ * Без иллюстрации (шаг ещё не нарисован) вместо героя стоит заглушка. Она
+ * ведёт себя как герой: берёт свободную высоту колонки, максимум 260 px.
+ * Минимума у неё нет: у длинного вступления на 360×640 места под картинку не
+ * остаётся, и заглушка схлопывается. Решает это контейнерный запрос по высоте
+ * самой заглушки, а не по окну: карточка начинается на 16 px ниже верха блока
+ * (зазор под кнопками Telegram) и пропадает вместе со значком и подписью, когда
+ * сама ниже 96 px. Фон карточки лежит в ::before, чтобы запрос мог его убрать;
+ * отступа снаружи у блока нет, поэтому в схлопнутом виде он не занимает места.
+ */
 .mx-hj-step-intro__image {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  height: 200px;
-  margin-top: 16px;
-  border-radius: 24px;
-  background: rgb(var(--c-card));
+  gap: var(--mx-space-2);
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: 276px;
   overflow: hidden;
+  container-type: size;
+}
+
+.mx-hj-step-intro__image::before {
+  content: '';
+  position: absolute;
+  inset: var(--mx-space-4) 0 0;
+  border-radius: var(--mx-radius-card);
+  background: rgb(var(--c-card));
+}
+
+.mx-hj-step-intro__image > * {
+  position: relative;
+  top: var(--mx-space-2);
+}
+
+@container (max-height: 111px) {
+  .mx-hj-step-intro__image::before,
+  .mx-hj-step-intro__image > .mx-hj-step-intro__glyph,
+  .mx-hj-step-intro__image > .mx-hj-step-intro__image-caption {
+    display: none;
+  }
 }
 
 .mx-hj-step-intro__glyph {
@@ -573,19 +686,21 @@
 }
 
 /*
- * Вступление: межабзацный интервал 12 px, межстрочный 1.45 — текст влезает
- * без скролла на низких экранах, не обрезается и не сокращается.
- * Эффективный размер не ниже 15 px (масштаб типографики 0.86 давал 13.8 px).
+ * Вступление: шрифт абзаца строго 15 px (масштаб типографики 0.86 давал бы
+ * 13.8 px), межстрочный 1.4, межабзацный интервал 8 px. Весь текст остаётся на
+ * экране целиком — ни сокращений, ни скролла; недостающую высоту отдаёт
+ * картинка (до своих 110 px), а не шрифт.
  */
 .mx-hj-step-intro__desc {
   font-size: max(15px, calc(16px * var(--mx-type-scale)));
-  line-height: 1.45;
+  line-height: 1.4;
   color: rgb(var(--c-muted));
-  margin-top: 12px;
+  margin-top: var(--mx-space-2);
 }
 
 .mx-hj-step-intro__flow {
   font-size: calc(15px * var(--mx-type-scale));
+  line-height: 1.2;
   font-weight: 400;
   color: rgb(var(--c-muted));
   text-align: center;
@@ -598,13 +713,6 @@
   justify-content: center;
   width: 100%;
   font-size: calc(15px * var(--mx-type-scale));
-}
-
-/* На экранах ниже 700 px высотой допустимо 14.5 px во вступлении. */
-@media (max-height: 700px) {
-  .mx-hj-step-intro__desc {
-    font-size: max(14.5px, calc(16px * var(--mx-type-scale)));
-  }
 }
 
 /* ── общая шапка C–F ── */
