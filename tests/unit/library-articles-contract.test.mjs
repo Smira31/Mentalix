@@ -37,7 +37,14 @@ test('Статья доступна целиком и без сети: текс�
 })
 
 test('Скрытые статьи отфильтрованы в каталоге, тексты остаются в файле', async () => {
-  const hiddenIds = ['put-geroya-zachem-krizis', 'ispytaniya-sovremennogo-cheloveka']
+  const hiddenIds = [
+    'put-geroya-zachem-krizis',
+    'ispytaniya-sovremennogo-cheloveka',
+    'ten-i-persona-chto-pryachem',
+    'samost-tochka-opory-vnutri',
+    'vozrastnye-krizisy-chernovik-konchaetsya',
+    'ii-i-samost-pochemu-mashina-ne-zamenit',
+  ]
   for (const id of hiddenIds) {
     assert.equal(peekArticles().some(a => a.id === id), false, id)
     const source = ARTICLES.find(a => a.id === id)

@@ -50,6 +50,8 @@ export const ARTICLES = [
   },
   {
     id: 'ten-i-persona-chto-pryachem',
+    // Скрыта: содержит дословный материал стороннего источника.
+    hidden: true,
     question: 'Что ты сейчас не решаешься сказать другим?',
     title: 'Тень и Персона: что прячем от себя',
     excerpt:
@@ -71,6 +73,8 @@ export const ARTICLES = [
   },
   {
     id: 'samost-tochka-opory-vnutri',
+    // Скрыта: содержит дословный материал стороннего источника.
+    hidden: true,
     question: 'В какие моменты ты чувствуешь себя собой?',
     title: 'Самость: точка опоры внутри',
     excerpt:
@@ -139,6 +143,8 @@ export const ARTICLES = [
   },
   {
     id: 'vozrastnye-krizisy-chernovik-konchaetsya',
+    // Скрыта: содержит дословный материал стороннего источника.
+    hidden: true,
     question: 'Что в своей жизни ты хочешь делать иначе?',
     title: 'Возрастные кризисы: когда черновик кончается',
     excerpt:
@@ -160,6 +166,8 @@ export const ARTICLES = [
   },
   {
     id: 'ii-i-samost-pochemu-mashina-ne-zamenit',
+    // Скрыта: содержит дословный материал стороннего источника.
+    hidden: true,
     question: 'С кем ты можешь быть собой без притворства?',
     title: 'ИИ и самость: почему машина не заменит путь',
     excerpt:

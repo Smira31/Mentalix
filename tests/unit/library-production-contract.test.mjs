@@ -16,21 +16,29 @@ test('Библиотека использует общий баннер и не 
 })
 
 test('Скрытые статьи не показываются: ни в разделах, ни в переходах', () => {
-  const hiddenIds = ['put-geroya-zachem-krizis', 'ispytaniya-sovremennogo-cheloveka']
+  const hiddenIds = [
+    'put-geroya-zachem-krizis',
+    'ispytaniya-sovremennogo-cheloveka',
+    'ten-i-persona-chto-pryachem',
+    'samost-tochka-opory-vnutri',
+    'vozrastnye-krizisy-chernovik-konchaetsya',
+    'ii-i-samost-pochemu-mashina-ne-zamenit',
+  ]
   const sections = articleSections()
   const shown = new Set(sections.flatMap(s => s.articles.map(a => a.id)))
   for (const id of hiddenIds) {
     assert.equal(libraryArticles.some(a => a.id === id), false, id)
     assert.equal(shown.has(id), false, id)
   }
-  // Порядок разделов меняется: «Кризис и рост» опустел и исчез целиком.
+  // Видимыми остаются «Тревога…» (тревога) и «Сон…» (сон) — по одной статье
+  // на тему, поэтому секции ≥2 статей не собираются и обе уходят в «Ещё почитать».
   assert.deepEqual(
     sections.map(s => s.topic),
-    ['Юнг', 'Ещё почитать']
+    ['Ещё почитать']
   )
   assert.deepEqual(
     sections.map(s => s.articles.length),
-    [2, 4]
+    [2]
   )
 })
 
