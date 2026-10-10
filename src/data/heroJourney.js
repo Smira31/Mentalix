@@ -23,6 +23,8 @@ import meaningDone from '../assets/hero-journey/meaning-done.webp'
 import selfAssemblyEnter from '../assets/hero-journey/self-assembly-enter.webp'
 import selfAssemblyDone from '../assets/hero-journey/self-assembly-done.webp'
 import returnImage from '../assets/hero-journey/return.webp'
+import bodyEnter from '../assets/hero-journey/body-enter.webp'
+import bodyDone from '../assets/hero-journey/body-done.webp'
 
 /**
  * Путь героя — авторский курс Mentalix.
@@ -118,6 +120,7 @@ export const HERO_JOURNEY_TRIALS = [
     doneTitle: 'Тело услышано.',
     doneSummary: 'Одна забота о теле, и оно ответит спокойнее. Слушать его можно каждый день.',
     doneTeaser: 'Дальше: телефон. Пальцы листают сами, а зачем, неясно.',
+    image: { enter: bodyEnter, done: bodyDone, overlap: 0.12 },
   },
   {
     id: 'phone',
@@ -361,7 +364,7 @@ export const HERO_JOURNEY_PROLOGUE = {
   paragraphs: [
     'Раньше на вопрос «зачем жить» отвечали семья, школа, традиции. Теперь ответов много, они спорят, и выбирать приходится самому. Жизнь стала быстрой и громкой: лента, чаты, срочные дела. Легко прожить год и не заметить, куда он ушёл.',
     'Это не слабость. Так живёт большинство, пока что-то не остановит.',
-    'Курс не учит, как жить правильно. Он задаёт 16 простых вопросов, по одному на шаг. Каждый шаг занимает около шести минут: прочитать, записать, сделать одно действие.',
+    'Курс не учит, как жить правильно. Он задаёт 16 простых вопросов, по одному на шаг. В каждом шаге: прочитать, записать, сделать одно действие.',
     'Идти будешь не один: рядом космонавт, который тоже ищет дорогу по незнакомой планете.',
   ],
   note: 'Это курс для размышления и маленьких действий, а не терапия. Если тяжело, поговори с близким человеком или со специалистом.',
@@ -371,7 +374,7 @@ export const HERO_JOURNEY_COURSE = {
   title: 'Путь героя',
   subtitle: '16 шагов · 4 главы',
   description:
-    '16 шагов о том, как не прожить жизнь на автопилоте. Каждый шаг около 6 минут: прочитать, записать, сделать одно действие.',
+    '16 шагов о том, как не прожить жизнь на автопилоте. В каждом шаге: прочитать, записать, сделать одно действие.',
   prologue: HERO_JOURNEY_PROLOGUE,
   chapters: HERO_JOURNEY_CHAPTERS,
   finale: HERO_JOURNEY_FINALE,
