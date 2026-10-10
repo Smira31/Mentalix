@@ -267,6 +267,11 @@ screens, and keep article cards unchanged unless the owner explicitly approves t
 - `Analytics.active` скрывает вынесенную шапку при уходе с вкладки: открытые вкладки остаются смонтированными. На настоящем телефоне и в Telegram компонент возвращает исходную шапку без портала.
 - Целевая проверка: `npx playwright test --config=playwright.ux.config.mjs demo-telegram-header.spec.mjs` внутри web-контейнера; размеры рамок 393/440 на viewport 793. Аппаратные Island/Home Indicator не имитируются.
 
+### Публичная страница политики конфиденциальности (/privacy)
+
+- `dist/privacy.html` — статичная страница для BotFather: её генерирует плагин `privacyPagePlugin` в `vite.config.js` из `src/content/privacyPolicy.js` (текст политики не дублируется). Шрифт Onest встроен в HTML, внешних запросов и скриптов нет.
+- В dev-сервере те же адреса отдаёт middleware плагина (`/privacy`, `/privacy/`, `/privacy.html`), в проде — rewrites в `firebase.json` выше общего `**`. Проверка: `/privacy` возвращает `<h1>Политика конфиденциальности Mentalix</h1>` и 12 секций, `/` по-прежнему отдаёт SPA.
+
 ## Context economy
 
 - Читай только файлы из порядка чтения (AGENTS.md → PROJECT_STATE.md → PRODUCT.md →
