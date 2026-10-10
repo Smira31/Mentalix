@@ -15,17 +15,27 @@ test('Библиотека использует общий баннер и не 
   assert.match(library, /LIBRARY_PROGRAMS_ENABLED &&/)
 })
 
-test('Разделы минимум по две статьи, маленькие темы — в конце', () => {
+test('Скрытые статьи не показываются: ни в разделах, ни в переходах', () => {
+  const hiddenIds = ['put-geroya-zachem-krizis', 'ispytaniya-sovremennogo-cheloveka']
   const sections = articleSections()
+  const shown = new Set(sections.flatMap(s => s.articles.map(a => a.id)))
+  for (const id of hiddenIds) {
+    assert.equal(libraryArticles.some(a => a.id === id), false, id)
+    assert.equal(shown.has(id), false, id)
+  }
+  // Порядок разделов меняется: «Кризис и рост» опустел и исчез целиком.
   assert.deepEqual(
     sections.map(s => s.topic),
-    ['Кризис и рост', 'Юнг', 'Ещё почитать']
+    ['Юнг', 'Ещё почитать']
   )
-  // «кризис» объединён с «путь-героя» в раздел «Кризис и рост» (3 статьи)
   assert.deepEqual(
     sections.map(s => s.articles.length),
-    [3, 2, 3]
+    [2, 4]
   )
+})
+
+test('Разделы минимум по две статьи, маленькие темы — в конце', () => {
+  const sections = articleSections()
   assert.equal(articleSections([]).length, 0)
   const ordered = sections.flatMap(s => s.articles)
   assert.equal(new Set(ordered.map(a => a.id)).size, libraryArticles.length)
