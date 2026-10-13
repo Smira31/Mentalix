@@ -14,7 +14,6 @@ const badge = (id, title, locked, earned, done, progress, goal, progressLabel) =
 export function buildMvpBadges({
   checkins = [],
   totalCheckins = 0,
-  journalEntries = [],
   completedSessions = [],
   canonicalStats,
 } = {}) {
@@ -28,9 +27,8 @@ export function buildMvpBadges({
           (item && Number.isInteger(item.mood) && item.mood >= 1 && item.mood <= 5)
       ))
   const hasJournal =
-    (Array.isArray(journalEntries) && journalEntries.some(item => item?.status === 'final')) ||
-    (Array.isArray(completedSessions) &&
-      completedSessions.some(item => item?.status === 'completed'))
+    Array.isArray(completedSessions) &&
+    completedSessions.some(item => item?.status === 'completed')
 
   const badges = [
     badge(

@@ -63,17 +63,12 @@ test('первый сохранённый утренний чек-ин или з
   )
 })
 
-test('первая Journal запись: final в локальной истории или completed в существующем архиве', () => {
+test('первая запись: completed в архиве практик (черновик не подходит)', () => {
   assert.equal(
-    byId(
-      { journalEntries: [{ status: 'draft' }], completedSessions: [{ status: 'in_progress' }] },
-      'first_journal'
-    ).done,
+    byId({ completedSessions: [{ status: 'in_progress' }] }, 'first_journal').done,
     false
   )
-  assert.equal(byId({ journalEntries: [{ status: 'final' }] }, 'first_journal').done, true)
   assert.equal(byId({ completedSessions: [{ status: 'completed' }] }, 'first_journal').done, true)
-  assert.match(source, /readJournalHistory\(user\.id\)/)
   assert.match(source, /api\.journalTemplates\s*\.sessions\(user\.id, 'completed'\)/)
   assert.match(source, /api\.checkin\.history\(user\.id, 90\)/)
   assert.match(source, /readCanonicalStreakStats\(payload\)/)
@@ -81,15 +76,13 @@ test('первая Journal запись: final в локальной истор�
   // Допускаем перенос строки после catalogReady (палттер).
   assert.match(source, /catalogReady\s*\?\s*buildMvpBadges\(\{/)
   assert.match(source, /const badges = \[\.\.\.mvpBadges, \.\.\.serverBadges\]/)
-  // «Записей» считает записи журнала, а не чек-ины.
-  assert.match(source, /\['Записей', journalEntries\.length\]/)
 })
 
 test('MVP копирайт и уникальность ID', () => {
   const locked = buildMvpBadges({ canonicalStats: canonical(0, 0, 0) })
   const earned = buildMvpBadges({
     checkins: [{ mood: 2 }],
-    journalEntries: [{ status: 'final' }],
+    completedSessions: [{ status: 'completed' }],
     canonicalStats: canonical(30, 30, 100),
   })
   assert.deepEqual(

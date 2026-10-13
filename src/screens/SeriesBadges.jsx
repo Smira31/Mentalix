@@ -9,7 +9,6 @@ import { readCanonicalStreakStats, serverSeriesBadges } from '../lib/canonicalSt
 import { badgeGroups, daysSinceRegistration, upcomingBadges } from '../lib/badgeCatalog'
 import { featuredBadge, featuredBadgeCaption } from '../lib/featuredBadge'
 import { buildMvpBadges } from '../lib/badgesMvp'
-import { readJournalHistory } from '../lib/journalHistory'
 import { platform } from '../platform'
 import { logEngagementEvent } from '../lib/engagementEvents'
 import { formatCount } from '../lib/pluralize'
@@ -482,7 +481,7 @@ function AllBadgesView({ badges, onOpenBadge }) {
   )
 }
 
-function StatsView({ model, canonicalStats, theme, journalEntries = [], checkins = [] }) {
+function StatsView({ model, canonicalStats, theme, checkins = [] }) {
   const { currentStreak, bestStreak, activeDays } = canonicalStats ?? {
     currentStreak: 0,
     bestStreak: 0,
@@ -542,13 +541,6 @@ function StatsView({ model, canonicalStats, theme, journalEntries = [], checkins
         rows={[
           ['Ритуалов', 0],
           ['Аскез', 0],
-        ]}
-      />
-      <StatSection
-        title="Записи"
-        rows={[
-          ['Записей', journalEntries.length],
-          ['Сохранено цитат', 0],
         ]}
       />
     </div>
@@ -674,7 +666,6 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
     profileStats?.userId === user.id ? profileStats.value?.created_at : user?.created_at
   )
   const serverBadges = serverSeriesBadges(visibleModel?.badges, serverStats, registrationDays)
-  const journalEntries = useMemo(() => readJournalHistory(user.id), [user.id])
   const catalogReady = Boolean(
     visibleModel &&
     checkinHistory?.userId === user.id &&
@@ -687,7 +678,6 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
     ? buildMvpBadges({
         checkins: checkinHistory.items,
         totalCheckins: checkinTotal.count,
-        journalEntries,
         completedSessions: completedSessions.items,
         canonicalStats: serverStats,
       })
@@ -784,7 +774,6 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
                 model={{ ...visibleModel, badges: serverBadges }}
                 canonicalStats={serverStats}
                 theme={theme}
-                journalEntries={journalEntries}
                 checkins={checkinHistory?.userId === user.id ? checkinHistory.items : []}
               />
             )
