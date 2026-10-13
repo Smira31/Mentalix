@@ -4,8 +4,6 @@ import { ArrowLeft, ArrowRight, ChevronRight, RefreshCw } from 'lucide-react'
 import { api } from '../../lib/api'
 import { platform } from '../../platform'
 import ThemeScreen from '../../screens/ThemeScreen'
-import JournalFlow from '../../screens/JournalFlow'
-import JournalArt from '../practice-art/JournalArt'
 import SemanticGlyph from '../SemanticGlyph'
 import { ExperimentShell } from './UiExperiments'
 import {
@@ -336,51 +334,6 @@ function CollectionScreen({ collection, practices, rituals, ascezas, onBack, onO
   )
 }
 
-function JournalDemoScreen({ onBack }) {
-  const [draft, setDraft] = useState('')
-
-  return (
-    <section className="mx-layered-journal-demo" aria-labelledby="journal-demo-title">
-      <button type="button" className="mx-layered-journal-demo__back" onClick={onBack}>
-        <ArrowLeft size={18} /> Назад в каталог
-      </button>
-      <span className="mx-layered-journal-demo__eyebrow">Preview-only · без сохранения</span>
-      <h3 id="journal-demo-title">Собери день в четыре шага</h3>
-      <p>
-        В Telegram-сессии эта кнопка откроет настоящий JournalFlow. Здесь можно посмотреть только
-        форму и ритм записи.
-      </p>
-      <textarea
-        value={draft}
-        onChange={event => setDraft(event.target.value)}
-        placeholder="Начни писать…"
-        aria-label="Демонстрационная запись журнала"
-      />
-      <button type="button" className="mx-layered-catalog__pill" onClick={onBack}>
-        Закрыть preview
-      </button>
-    </section>
-  )
-}
-
-function JournalBanner({ onOpen }) {
-  return (
-    <article className="mx-layered-catalog__journal-hero">
-      <div className="mx-layered-catalog__journal-hero-art" aria-hidden="true">
-        <JournalArt />
-      </div>
-      <div className="mx-layered-catalog__journal-hero-copy">
-        <span>Журнал</span>
-        <h3>Собери день в четыре шага</h3>
-        <p>Идея, действие, анализ и новый шаг — спокойно, в своём темпе.</p>
-        <button type="button" className="mx-layered-catalog__pill" onClick={onOpen}>
-          Открыть журнал <ArrowRight size={15} />
-        </button>
-      </div>
-    </article>
-  )
-}
-
 function ThemeDemoScreen({ theme, onBack }) {
   return (
     <section className="mx-layered-theme-demo" aria-labelledby="theme-demo-title">
@@ -441,7 +394,6 @@ export default function LayeredPracticeCatalogExperiment({ mode = 'after' }) {
   const { rituals, ascezas, themes, status, error, reload } = usePreviewData(previewUser)
   const [selectedCollection, setSelectedCollection] = useState(null)
   const [selectedTheme, setSelectedTheme] = useState(null)
-  const [journalOpen, setJournalOpen] = useState(false)
   const [openedPractice, setOpenedPractice] = useState(null)
   const completedToday = useMemo(() => {
     if (!previewUser) return new Set(LAYERED_CATALOG_DEMO_COMPLETED_KEYS)
@@ -451,38 +403,6 @@ export default function LayeredPracticeCatalogExperiment({ mode = 'after' }) {
     () => buildPracticeViewModels({ rituals, ascezas, completedToday }),
     [rituals, ascezas, completedToday]
   )
-
-  if (journalOpen && previewUser) {
-    return (
-      <ExperimentShell
-        number="26"
-        eyebrow="UI-EXP-003 · live journal preview"
-        title="Журнал"
-        purpose="Реальный JournalFlow открывается из крупного journal-banner."
-        mode={mode}
-      >
-        <JournalFlow
-          userId={previewUser.id}
-          onClose={() => setJournalOpen(false)}
-          onOpenGuided={() => setJournalOpen(false)}
-        />
-      </ExperimentShell>
-    )
-  }
-
-  if (journalOpen) {
-    return (
-      <ExperimentShell
-        number="26"
-        eyebrow="UI-EXP-003 · anonymous journal preview"
-        title="Журнал"
-        purpose="Демонстрация крупного journal-banner без пользователя; запись не сохраняется."
-        mode={mode}
-      >
-        <JournalDemoScreen onBack={() => setJournalOpen(false)} />
-      </ExperimentShell>
-    )
-  }
 
   if (selectedTheme && !previewUser) {
     return (
@@ -525,7 +445,6 @@ export default function LayeredPracticeCatalogExperiment({ mode = 'after' }) {
       mode={mode}
     >
       <div className="mx-layered-catalog mx-layered-catalog--mxl-547-preview" data-accent="gold">
-        <JournalBanner onOpen={() => setJournalOpen(true)} />
         <PreviewStatus status={status} error={error} onReload={reload} />
         <PracticeRail practices={practices} onOpen={practice => setOpenedPractice(practice)} />
         <ThemeCarousel themes={themes} onOpen={theme => setSelectedTheme(theme)} />

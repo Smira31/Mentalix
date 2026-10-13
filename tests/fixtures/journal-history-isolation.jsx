@@ -10,10 +10,13 @@
  * дублируется: стенд использует тот же компонент ProfileScopedHistory, что и
  * Analytics.jsx.
  *
+ * Единственный источник записей — дневник DailyJournal (api.dailyJournal) и
+ * чек-ины (api.checkin.history); старый локальный журнал удалён.
+ *
  * Управляемый Promise: api.checkin.history каждого профиля отдаёт отложенный
- * промис, которым управляет тест через window.__journalIsolation.setCheckins.
- * Поэтому можно начать запрос A, переключить профиль и только затем разрешить
- * ответ A.
+ * промис, которым управляет тест через window.__journalIsolation.setCheckins,
+ * а api.dailyJournal.entries — через setDiary/failDiary. Поэтому можно начать
+ * запрос A, переключить профиль и только затем разрешить ответ A.
  *
  * Это тестовый стенд, а не экран приложения: вне tests/ он не собирается и в
  * бандл не попадает.
@@ -30,11 +33,7 @@ import { api } from '../../src/lib/api.js'
 
 const PROFILE_A = 900001
 const PROFILE_B = 900002
-const KEY_A = `mx-journal-v2:user:${PROFILE_A}`
-const KEY_B = `mx-journal-v2:user:${PROFILE_B}`
 
-const TEXT_A = 'JOURNAL-001 A: раскрытая запись профиля A'
-const TEXT_B = 'JOURNAL-001 B: запись профиля B'
 const CHECKIN_A = 'JOURNAL-001 CHECKIN A: заметка профиля A'
 const CHECKIN_B = 'JOURNAL-001 CHECKIN B: заметка профиля B'
 const DIARY_A = 'JOURNAL-001 ДНЕВНИК A: поток записи профиля A'
@@ -52,26 +51,6 @@ function isoDay(offset) {
 const DAY_A = isoDay(0)
 const DAY_B = isoDay(-1)
 
-function journalStore(date, text) {
-  const phase = (value, status) => ({ text: value, status, updatedAt: null })
-  return {
-    version: 2,
-    entries: {
-      [date]: {
-        version: 2,
-        cycle: {
-          idea: phase(text, 'final'),
-          action: phase('', 'draft'),
-          analysis: phase('', 'draft'),
-          newStep: phase('', 'draft'),
-        },
-        freeWrites: [],
-        updatedAt: null,
-      },
-    },
-  }
-}
-
 function checkin(date, note) {
   return { date, mood: 4, note, created_at: `${date}T09:00:00Z` }
 }
@@ -88,10 +67,6 @@ function diaryEntry(id, date, streamText) {
     created_at: `${date}T09:00:00Z`,
   }
 }
-
-/* Журнал обоих профилей засевается один раз — до монтирования, без перезагрузки. */
-localStorage.setItem(KEY_A, JSON.stringify(journalStore(DAY_A, TEXT_A)))
-localStorage.setItem(KEY_B, JSON.stringify(journalStore(DAY_B, TEXT_B)))
 
 const checkinLoads = new Map()
 
@@ -219,7 +194,7 @@ render()
 
 window.__journalIsolation = {
   profiles: { A: PROFILE_A, B: PROFILE_B },
-  texts: { TEXT_A, TEXT_B, CHECKIN_A, CHECKIN_B, DIARY_A, DIARY_B },
+  texts: { CHECKIN_A, CHECKIN_B, DIARY_A, DIARY_B },
   checkins: { A: [checkin(DAY_A, CHECKIN_A)], B: [checkin(DAY_B, CHECKIN_B)] },
   diary: {
     A: [diaryEntry('diary-a-1', DAY_A, DIARY_A)],

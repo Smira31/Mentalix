@@ -27,7 +27,6 @@ import { api } from '../../lib/api'
 import { platform, platformName } from '../../platform'
 import ScreenBack from '../../components/ScreenBack'
 import { useBackButton } from '../../platform/telegram.hooks'
-import { readJournalHistory } from '../../lib/journalHistory'
 import {
   DAILY_JOURNAL_PAGE_SIZE,
   diaryPageCursor,
@@ -400,7 +399,6 @@ function EntryBody({ entry }) {
   if (entry.type === ENTRY_TYPES.MORNING) return <MorningBody checkin={entry.checkin} />
   if (entry.type === ENTRY_TYPES.EVENING) return <EveningBody checkin={entry.checkin} />
   if (entry.type === ENTRY_TYPES.MOOD) return <MoodBody mp={entry.moodPractice} />
-  if (entry.type === ENTRY_TYPES.JOURNAL) return <JournalBody entry={entry.journal} />
   if (entry.type === ENTRY_TYPES.DAILY_JOURNAL) return <DailyJournalBody entry={entry.diary} />
   if (entry.type === ENTRY_TYPES.THOUGHT) return <ThoughtBody entry={entry} />
   return null
@@ -508,31 +506,7 @@ function MoodBody({ mp }) {
   )
 }
 
-function JournalBody({ entry }) {
-  if (!entry?.phases?.length && !entry?.freeWrites?.length) return null
-  return (
-    <>
-      {entry?.phases?.map(phase => (
-        <div className="mx-progress-entry__field" key={phase.key}>
-          <div className="mx-progress-entry__field-label">{phase.label}</div>
-          <MarkdownText content={phase.text} className="mx-progress-entry__field-value" />
-        </div>
-      ))}
-      {entry?.freeWrites?.map(freeWrite => (
-        <div
-          className="mx-progress-entry__field"
-          key={freeWrite.id || freeWrite.text}
-          data-testid="local-journal-freewrite"
-        >
-          <div className="mx-progress-entry__field-label">Свободная запись</div>
-          <MarkdownText content={freeWrite.text} className="mx-progress-entry__field-value" />
-        </div>
-      ))}
-    </>
-  )
-}
-
-/* Запись настоящего дневника (api.dailyJournal): поток и ответ на вопрос —
+/* Запись дневника (api.dailyJournal): поток и ответ на вопрос —
    тот же состав, что показывает экран «Мои записи». Только чтение. */
 function DailyJournalBody({ entry }) {
   if (!entry) return null
@@ -605,24 +579,6 @@ function entryMoodDot(entry) {
 }
 
 function entryPreview(entry) {
-  if (entry.type === ENTRY_TYPES.JOURNAL && entry.journal?.phases?.length) {
-    const phase = entry.journal.phases[0]
-    return (
-      <div className="mx-progress-history__row-preview-text">
-        <span className="mx-progress-history__row-preview-q">{phase.label}</span>
-        <span className="mx-progress-history__row-preview-a">{phase.text}</span>
-      </div>
-    )
-  }
-  if (entry.type === ENTRY_TYPES.JOURNAL && entry.journal?.freeWrites?.length) {
-    const freeWrite = entry.journal.freeWrites[0]
-    return (
-      <div className="mx-progress-history__row-preview-text">
-        <span className="mx-progress-history__row-preview-q">Свободная запись</span>
-        <span className="mx-progress-history__row-preview-a">{freeWrite.text}</span>
-      </div>
-    )
-  }
   if (entry.type === ENTRY_TYPES.DAILY_JOURNAL && entry.diary) {
     const preview = entry.diary.streamText?.trim() || entry.diary.promptAnswer || ''
     if (!preview) return null
@@ -786,15 +742,6 @@ export default function ProgressHistory({
   const userId = user?.id
   const canManageAiContext = platformName === 'telegram' && Number(user?.id) > 0
 
-  const journalEntries = useMemo(() => {
-    if (!userId) return []
-    try {
-      return readJournalHistory(user.id)
-    } catch {
-      return []
-    }
-  }, [user, userId])
-
   /*
    * Свои мысли дня («Мысль дня» → записи /quotes с tag thought:YYYY-MM-DD).
    * Сначала кэш, следом сервер — как на самом экране «Мысль дня».
@@ -936,7 +883,6 @@ export default function ProgressHistory({
           buildEntriesByDay(
             checkins,
             moodPractices,
-            journalEntries,
             analytics?.daily_activity || [],
             thoughts,
             diaryEntries
@@ -949,7 +895,7 @@ export default function ProgressHistory({
     return () => {
       alive = false
     }
-  }, [user, journalEntries, thoughts, diaryEntries, reloadKey, retryKey])
+  }, [user, thoughts, diaryEntries, reloadKey, retryKey])
 
   async function deleteSelectedCheckin() {
     const checkin = selectedEntry?.checkin

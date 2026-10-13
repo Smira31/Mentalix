@@ -2,35 +2,33 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import test from 'node:test'
 
-import { readJournalHistory } from '../../src/lib/journalHistory.js'
 import {
   acceptsProfileLoad,
   beginProfileLoad,
   normalizeProfileId,
   profileScopeKey,
 } from '../../src/lib/historyProfileScope.js'
+import { buildEntriesByDay, ENTRY_TYPES } from '../../src/screens/progress/progressHistoryUtils.js'
 
 /*
- * JOURNAL-001 — воспроизведение утечки состояния между профилями в «Истории».
+ * JOURNAL-001 — профильная изоляция поверхности «История» и единственный
+ * источник записей — дневник DailyJournal (api.dailyJournal).
  *
- * Сценарий владельца: у профиля A раскрыта запись журнала, затем «выход» и
- * вход под B. Требования:
+ * Сценарий владельца: у профиля A раскрыта запись, затем «выход» и вход под B.
+ * Требования:
  *   1) старый текст A исчезает сразу — не после сброса в useEffect, который
  *      выполняется уже после кадра с чужим текстом. Поэтому у поверхностей
  *      истории есть профильная граница (key): при смене профиля состояние
  *      создаётся заново, а не переиспользуется;
  *   2) ответ запроса, начатого для A, не применяется в B (токен профиля).
  *
- * Ниже — модельные проверки на настоящих функциях и контрактные проверки
- * исходников обеих поверхностей: до правки эти проверки падали (сброса в
- * useEffect не хватало).
+ * Старый локальный журнал («Идея / Действие / Анализ / Новый шаг») удалён:
+ * «История» не должна читать journalStorage/journalHistory и не должна
+ * содержать тип записи «Журнал». Эти инварианты проверяются по исходникам
+ * поверхностей ниже.
  *
  * Даты — относительно текущего дня (правило репозитория).
  */
-
-const SCOPED_KEY = userId => `mx-journal-v2:user:${encodeURIComponent(String(userId))}`
-const LEGACY_KEY = 'mx-journal-v2'
-const PROTOTYPE_KEY = 'mx-journal-prototype-v1'
 
 const PROFILE_A = 101
 const PROFILE_B = 202
@@ -44,66 +42,8 @@ function isoDaysAgo(days) {
 const TODAY = isoDaysAgo(0)
 const TWO_DAYS_AGO = isoDaysAgo(2)
 
-function phase(text, status = 'draft') {
-  return { text, status, updatedAt: null }
-}
-
-function dayEntry({ phases = {}, freeWrites = [] } = {}) {
-  return {
-    version: 2,
-    cycle: {
-      idea: phase(''),
-      action: phase(''),
-      analysis: phase(''),
-      newStep: phase(''),
-      ...phases,
-    },
-    freeWrites,
-    updatedAt: null,
-  }
-}
-
-function storageSpy(seed = {}) {
-  const memory = new Map(Object.entries(seed))
-  const calls = { getItem: [], setItem: [], removeItem: [] }
-  return {
-    memory,
-    calls,
-    storage: {
-      getItem: key => {
-        calls.getItem.push(key)
-        return memory.has(key) ? memory.get(key) : null
-      },
-      setItem: (key, value) => {
-        calls.setItem.push(key)
-        memory.set(key, value)
-      },
-      removeItem: key => {
-        calls.removeItem.push(key)
-        memory.delete(key)
-      },
-    },
-  }
-}
-
-/*
- * Мини-модель поверхности истории: снимок принадлежит профилю, а ответ
- * асинхронной загрузки применяется только через acceptsProfileLoad — ровно
- * так устроены обе поверхности (контракт ниже проверяет это по исходникам).
- */
-function mountSurface({ userId, journalEntries }) {
-  return {
-    profileKey: profileScopeKey(userId),
-    userId,
-    journalEntries,
-  }
-}
-
-function collectTexts(entry) {
-  return [
-    ...(entry?.phases || []).map(item => item.text),
-    ...(entry?.freeWrites || []).map(item => item.text),
-  ]
+function diaryEntry(id, date, streamText) {
+  return { id, date, streamText, promptText: '', promptAnswer: '', createdAt: `${date}T09:00:00Z` }
 }
 
 // ── 1. Профильная граница ──
@@ -147,63 +87,52 @@ test('JOURNAL-001 запоздавший ответ A не применяетс�
   assert.equal(acceptsProfileLoad(null, PROFILE_A), false)
 })
 
-// ── 3. Раскрытая запись A → выход → A→B ──
+// ── 3. Записи дневника собираются в ленту без схлопывания по дате ──
 
-test('JOURNAL-001 раскрытая запись A не показывается в B и после выхода', () => {
-  const textA = 'A: раскрытая запись профиля'
-  const textB = 'B: запись другого профиля'
-  const { memory, storage, calls } = storageSpy({
-    [SCOPED_KEY(PROFILE_A)]: JSON.stringify({
-      version: 2,
-      entries: { [TODAY]: dayEntry({ phases: { idea: phase(textA, 'final') } }) },
-    }),
-    [SCOPED_KEY(PROFILE_B)]: JSON.stringify({
-      version: 2,
-      entries: { [TWO_DAYS_AGO]: dayEntry({ phases: { idea: phase(textB, 'final') } }) },
-    }),
-  })
-  globalThis.localStorage = storage
-
-  const surfaceA = mountSurface({
-    userId: PROFILE_A,
-    journalEntries: readJournalHistory(PROFILE_A),
-  })
-  assert.deepEqual(
-    surfaceA.journalEntries.map(entry => entry.date),
-    [TODAY]
+test('JOURNAL-001 дневник кладётся в свою дату, разные записи дня не схлопываются', () => {
+  const days = buildEntriesByDay(
+    [],
+    [],
+    [],
+    [],
+    [
+      diaryEntry('d-2', TODAY, 'A: вторая запись дня'),
+      diaryEntry('d-1', TODAY, 'A: первая запись дня'),
+      diaryEntry('d-0', TWO_DAYS_AGO, 'A: запись другого дня'),
+    ]
   )
-  assert.deepEqual(collectTexts(surfaceA.journalEntries[0]), [textA])
 
-  // A→B: граница профиля другая, снимок создаётся заново — текста A в нём нет.
-  const surfaceB = mountSurface({
-    userId: PROFILE_B,
-    journalEntries: readJournalHistory(PROFILE_B),
-  })
-  assert.notEqual(surfaceB.profileKey, surfaceA.profileKey)
   assert.deepEqual(
-    surfaceB.journalEntries.map(entry => entry.date),
-    [TWO_DAYS_AGO]
+    days.map(day => day.date),
+    [TODAY, TWO_DAYS_AGO]
   )
-  assert.equal(JSON.stringify(surfaceB.journalEntries).includes(textA), false)
-  assert.deepEqual(collectTexts(surfaceB.journalEntries[0]), [textB])
-
-  // «Выход» (нет профиля): поверхность без данных и без чтения общих legacy-ключей.
-  const anonymous = mountSurface({
-    userId: undefined,
-    journalEntries: readJournalHistory(undefined),
-  })
-  assert.notEqual(anonymous.profileKey, surfaceA.profileKey)
-  assert.deepEqual(anonymous.journalEntries, [])
-  assert.equal(calls.getItem.includes(LEGACY_KEY), false)
-  assert.equal(calls.getItem.includes(PROTOTYPE_KEY), false)
-
-  // Чтение истории ничего не записало и не удалило — данные журнала неизменны.
-  assert.deepEqual(calls.setItem, [])
-  assert.deepEqual(calls.removeItem, [])
-  assert.deepEqual([...memory.keys()].sort(), [SCOPED_KEY(PROFILE_A), SCOPED_KEY(PROFILE_B)].sort())
+  assert.equal(days[0].entries.length, 2)
+  assert.ok(days[0].entries.every(entry => entry.type === ENTRY_TYPES.DAILY_JOURNAL))
+  assert.deepEqual(
+    days[0].entries.map(entry => entry.diary.id),
+    ['d-2', 'd-1']
+  )
 })
 
-// ── 4. Контракт обеих поверхностей ──
+test('JOURNAL-001 записи только активного профиля попадают в ленту', () => {
+  const daysA = buildEntriesByDay([], [], [], [], [diaryEntry('a-1', TODAY, 'A: запись')])
+  const daysB = buildEntriesByDay([], [], [], [], [diaryEntry('b-1', TWO_DAYS_AGO, 'B: запись')])
+
+  const textA = JSON.stringify(daysA)
+  const textB = JSON.stringify(daysB)
+  assert.equal(textB.includes('A: запись'), false)
+  assert.equal(textA.includes('B: запись'), false)
+  assert.deepEqual(
+    daysA.map(day => day.date),
+    [TODAY]
+  )
+  assert.deepEqual(
+    daysB.map(day => day.date),
+    [TWO_DAYS_AGO]
+  )
+})
+
+// ── 4. Контракт поверхностей и отсутствие старого журнала ──
 
 const analyticsSource = readFileSync(
   new URL('../../src/screens/Analytics.jsx', import.meta.url),
@@ -211,6 +140,10 @@ const analyticsSource = readFileSync(
 )
 const progressHistorySource = readFileSync(
   new URL('../../src/screens/progress/ProgressHistory.jsx', import.meta.url),
+  'utf8'
+)
+const progressHistoryUtilsSource = readFileSync(
+  new URL('../../src/screens/progress/progressHistoryUtils.js', import.meta.url),
   'utf8'
 )
 const historySource = readFileSync(
@@ -275,6 +208,19 @@ test('JOURNAL-001 обе поверхности отбрасывают запо�
   // Очистка эффекта обнуляет alive — ответ размонтированной поверхности не применяется.
   assert.match(historySource, /return \(\) => \{\n\s+alive = false\n\s+\}/)
   assert.match(progressHistorySource, /return \(\) => \{\n\s+alive = false\n\s+\}/)
+})
+
+test('JOURNAL-001 «История» знает единственный дневник и не читает старый журнал', () => {
+  // Единственный источник записей — api.dailyJournal (тот же, что «Мои записи»).
+  assert.match(progressHistorySource, /api\.dailyJournal\s*\.\s*entries\(user\.id, \{/)
+  // Старый локальный журнал полностью удалён из поверхностей истории.
+  assert.doesNotMatch(progressHistorySource, /journalHistory|readJournalHistory|journalStorage/)
+  assert.doesNotMatch(progressHistorySource, /ENTRY_TYPES\.JOURNAL\b/)
+  assert.doesNotMatch(historySource, /journalHistory|readJournalHistory|journalStorage/)
+  assert.doesNotMatch(historySource, /local-journal-history/)
+  // В утилитах истории нет типа записи «Журнал» — только дневник.
+  assert.doesNotMatch(progressHistoryUtilsSource, /JOURNAL:\s*'journal'/)
+  assert.doesNotMatch(progressHistoryUtilsSource, /'Журнал'/)
 })
 
 test('JOURNAL-001 настройки группировки и фильтра не сбрасываются при смене профиля', () => {

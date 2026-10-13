@@ -6,7 +6,6 @@ import EmptyState from '../components/EmptyState'
 import MarkdownText from '../components/MarkdownText'
 import { buildBadges } from '../lib/badges'
 import { daysSinceRegistration } from '../lib/badgeCatalog'
-import { readJournalHistory } from '../lib/journalHistory'
 import {
   acceptsProfileLoad,
   beginProfileLoad,
@@ -21,17 +20,13 @@ import BackButton from '../components/BackButton'
 import { MENTOR_DRAFT_KEY, MENTOR_PERSONA_KEY, MENTOR_SAFETY_KEY } from './mentalix/personas'
 import { moodPracticeDate } from '../lib/moodPracticeLogic'
 
-// ── История: лента дней из чек-инов, активности и local-only journal, как
+// ── История: лента дней из чек-инов, активности и «Мысли дня», как
 // history. у stoic. ──
 // Утренняя мысль живёт в note, вечерний разбор — в lessons и wins.
 // Каждый блок показывается, только если в нём что-то есть.
 // Вехи и записи по темам — отдельные недатированные блоки ниже ленты:
 // у бейджей и тем нет даты в контракте бэкенда, честного слияния в общую
 // хронологию по датам без этого не сделать (MXL-HISTORY-UNIFIED-FEED-001).
-// Journal — другой случай: у него есть дата (ключ local store), просто
-// источник local-only, не backend — это не мешает слить его в общую
-// датированную ленту наравне с checkin/activity (расширение
-// MXL-HISTORY-UNIFIED-FEED-001, см. TASKS.md).
 
 const MOOD_WORDS = ['тяжко', 'так себе', 'нормально', 'хорошо', 'отлично']
 const MONTHS = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек']
@@ -132,63 +127,6 @@ function OneOffPracticeEntry({ entry }) {
     >
       <span className="font-semibold">{name}</span>
       {time && <span>{time}</span>}
-    </div>
-  )
-}
-
-/*
- * Локальный journal-фрагмент дня — переиспользуется и в карточке ленты, и
- * в HistoryDetail. data-testid/тексты ниже намеренно совпадают с тем, что
- * уже проверяет tests/unit/maintenance-contracts.test.mjs
- * (MXL-JOURNAL-HISTORY-001) — тот тест ищет их по всему файлу, не по
- * конкретному месту в разметке.
- */
-function JournalDayCard({ entry }) {
-  return (
-    <div data-testid="local-journal-history" className="mt-3 border-t border-cream/10 pt-3">
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-[12px] font-semibold text-muted">Локальный журнал</span>
-        <span className="rounded-full bg-gold/10 px-2.5 py-1 text-[11px] font-bold text-gold">
-          {entry.completedCount}/{entry.totalPhases} шага
-        </span>
-        <span className="text-[11px] text-muted">
-          {entry.status === 'final' ? 'завершено' : 'черновик'}
-        </span>
-      </div>
-      <p className="mt-1 text-[12px] leading-snug text-muted">
-        Записи сохранены на этом устройстве и доступны только в этом профиле.
-      </p>
-      <div className="mt-3 space-y-4">
-        {entry.phases.map(phase => (
-          <div key={phase.key}>
-            <div className="mb-1 flex items-center gap-2">
-              <span className="text-[12px] font-bold text-gold">{phase.label}</span>
-              <span className="text-[11px] text-muted">
-                {phase.status === 'final' ? 'завершено' : 'черновик'}
-              </span>
-            </div>
-            <MarkdownText
-              content={phase.text}
-              className="space-y-2 text-[14px] leading-snug text-muted"
-            />
-          </div>
-        ))}
-        {/* Свободные записи дня — отдельными строками, не схлопываем по дате. */}
-        {entry.freeWrites?.map(freeWrite => (
-          <div key={freeWrite.id || freeWrite.text} data-testid="local-journal-freewrite">
-            <div className="mb-1 flex items-center gap-2">
-              <span className="text-[12px] font-bold text-gold">Свободная запись</span>
-              <span className="text-[11px] text-muted">
-                {freeWrite.status === 'final' ? 'завершено' : 'черновик'}
-              </span>
-            </div>
-            <MarkdownText
-              content={freeWrite.text}
-              className="space-y-2 text-[14px] leading-snug text-muted"
-            />
-          </div>
-        ))}
-      </div>
     </div>
   )
 }
@@ -427,7 +365,6 @@ export function HistoryDetail({
             </div>
           )}
 
-          {day.journal && <JournalDayCard entry={day.journal} />}
           {day.oneOffPractices?.length > 0 && (
             <div className="space-y-1.5 border-t border-cream/10 pt-3">
               {day.oneOffPractices.map(p => (
@@ -631,14 +568,6 @@ function HistorySurface({
   const [contextError, setContextError] = useState('')
   const userId = user?.id
   const canManageAiContext = platformName === 'telegram' && Number(user?.id) > 0
-  const journalEntries = useMemo(() => {
-    if (!userId) return []
-    try {
-      return readJournalHistory(user.id)
-    } catch {
-      return []
-    }
-  }, [user, userId])
 
   /*
    * Мысли дня читаются из localStorage-кэша (мгновенно) и обновляются
@@ -670,19 +599,14 @@ function HistorySurface({
 
   /*
    * Единая датированная лента: days (checkin+activity, backend) слит с
-   * journalEntries (local-only) по дате. Оба источника уже независимо
-   * загружены/вычислены выше — здесь только компоновка, ни один из них не
-   * меняется. day.journal остаётся undefined для дней без local-записи —
-   * рендер решает, показывать ли JournalDayCard, по наличию поля.
+   * «Мыслью дня» по дате. Оба источника уже независимо загружены/вычислены
+   * выше — здесь только компоновка, ни один из них не меняется.
    */
   const datedItems = useMemo(() => {
     if (days === null) return null
 
     const byDate = {}
     for (const d of days) byDate[d.date] = { ...d }
-    for (const entry of journalEntries) {
-      byDate[entry.date] = { ...(byDate[entry.date] || { date: entry.date }), journal: entry }
-    }
     for (const thought of dailyThoughts) {
       byDate[thought.date] = {
         ...(byDate[thought.date] || { date: thought.date }),
@@ -690,7 +614,7 @@ function HistorySurface({
       }
     }
     return Object.values(byDate).sort((a, b) => (a.date < b.date ? 1 : -1))
-  }, [days, journalEntries, dailyThoughts])
+  }, [days, dailyThoughts])
 
   /*
    * Загрузки профильные: `token` фиксирует профиль запроса, а ответ
@@ -1129,7 +1053,6 @@ function HistorySurface({
                 </div>
               )}
 
-              {d.journal && <JournalDayCard entry={d.journal} />}
               {d.dailyThought && <DailyThoughtDayCard thought={d.dailyThought} />}
             </button>
           </div>
