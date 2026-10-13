@@ -23,9 +23,10 @@ import { buildEntriesByDay, ENTRY_TYPES } from '../../src/screens/progress/progr
  *   2) ответ запроса, начатого для A, не применяется в B (токен профиля).
  *
  * Старый локальный журнал («Идея / Действие / Анализ / Новый шаг») удалён:
- * «История» не должна читать journalStorage/journalHistory и не должна
- * содержать тип записи «Журнал». Эти инварианты проверяются по исходникам
- * поверхностей ниже.
+ * «История» не должна импортировать legacy-модули journalStorage.js и
+ * journalHistory.js и не должна содержать тип записи «Журнал». Эти инварианты
+ * проверяются по исходникам поверхностей ниже. Новый модуль дневника —
+ * dailyJournalHistory.js — под запрет не попадает.
  *
  * Даты — относительно текущего дня (правило репозитория).
  */
@@ -213,10 +214,16 @@ test('JOURNAL-001 обе поверхности отбрасывают запо�
 test('JOURNAL-001 «История» знает единственный дневник и не читает старый журнал', () => {
   // Единственный источник записей — api.dailyJournal (тот же, что «Мои записи»).
   assert.match(progressHistorySource, /api\.dailyJournal\s*\.\s*entries\(user\.id, \{/)
-  // Старый локальный журнал полностью удалён из поверхностей истории.
-  assert.doesNotMatch(progressHistorySource, /journalHistory|readJournalHistory|journalStorage/)
+  // Старый локальный журнал полностью удалён из поверхностей истории:
+  // проверяются спецификаторы импорта legacy-модулей, а не любые упоминания
+  // слова в прозе. `dailyJournalHistory.js` — действующий модуль дневника,
+  // и под этот запрет он не попадает.
+  const legacyJournalImport = /from ['"][^'"]*\/(?:journalStorage|journalHistory)(?:\.js)?['"]/
+  assert.doesNotMatch(progressHistorySource, legacyJournalImport)
+  assert.doesNotMatch(progressHistorySource, /readJournalHistory/)
   assert.doesNotMatch(progressHistorySource, /ENTRY_TYPES\.JOURNAL\b/)
-  assert.doesNotMatch(historySource, /journalHistory|readJournalHistory|journalStorage/)
+  assert.doesNotMatch(historySource, legacyJournalImport)
+  assert.doesNotMatch(historySource, /readJournalHistory/)
   assert.doesNotMatch(historySource, /local-journal-history/)
   // В утилитах истории нет типа записи «Журнал» — только дневник.
   assert.doesNotMatch(progressHistoryUtilsSource, /JOURNAL:\s*'journal'/)

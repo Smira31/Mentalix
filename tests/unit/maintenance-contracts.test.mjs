@@ -586,8 +586,10 @@ test('MXL-006 публикует единый AI typography baseline без back
 })
 
 test('MXL-TYPE-SYSTEM-001 использует единый Onest baseline без пользовательских serif overrides', () => {
-  const journalFlow = readFileSync(
-    new URL('../../src/screens/JournalFlow.jsx', import.meta.url),
+  // Легаси-экран JournalFlow удалён вместе со старым журналом; живая
+  // пишущая поверхность — JournalTextarea поверх PracticeWritingCanvas.
+  const journalTextarea = readFileSync(
+    new URL('../../src/components/JournalTextarea.jsx', import.meta.url),
     'utf8'
   )
   const sceneLayout = readFileSync(
@@ -603,13 +605,13 @@ test('MXL-TYPE-SYSTEM-001 использует единый Onest baseline бе�
     'utf8'
   )
 
-  assert.match(journalFlow, /PracticeWritingCanvas/)
+  assert.match(journalTextarea, /PracticeWritingCanvas/)
   assert.match(sceneLayout, /font-display/)
   assert.match(journalStart, /font-display/)
   assert.match(analytics, /mx-type-page/)
   assert.match(analytics, /font-display/)
   assert.doesNotMatch(analytics, /Georgia|Times New Roman/)
-  assert.doesNotMatch(journalFlow, /Georgia|Times New Roman/)
+  assert.doesNotMatch(journalTextarea, /Georgia|Times New Roman/)
   assert.doesNotMatch(journalStart, /Georgia|Times New Roman/)
 })
 
