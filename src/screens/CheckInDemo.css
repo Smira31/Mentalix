@@ -127,7 +127,8 @@
   border-radius: 999px;
   background: var(--mx-checkin-neutral-gradient);
   color: #a9aaa3;
-  font-size: max(11px, calc(13px * var(--mx-type-scale)));
+  /* MXL-TYPE-READABLE-001: текст кнопок чек-ина — 16 px. */
+  font-size: var(--mx-read-action);
   font-weight: 600;
 }
 .mx-checkin-chips button.is-selected {
@@ -423,6 +424,9 @@
 .mx-demo-checkin__editor [contenteditable] {
   min-height: 300px;
   background: rgb(var(--c-bg)) !important;
+  /* MXL-TYPE-READABLE-001: поле записи чек-ина — 16 px (перекрывает
+     text-[17px] поля JournalTextarea, сохраняя читаемую шкалу). */
+  font-size: var(--mx-read-read);
   /* Внутренний отступ поля: §5.2 его не задаёт — 16 px, как --mx-screen-x. */
   padding: 4px 16px;
 }
@@ -680,7 +684,8 @@
 .mx-demo-checkin__action-bar > button {
   min-height: 54px;
   border-radius: 27px;
-  font-size: calc(16px * var(--mx-type-scale));
+  /* MXL-TYPE-READABLE-001: текст кнопок чек-ина — 16 px. */
+  font-size: var(--mx-read-action);
   font-weight: 700;
 }
 
@@ -1053,10 +1058,13 @@
   border: 1.5px solid rgb(var(--c-line));
 }
 
+/* MXL-TYPE-READABLE-001: роли читаемой шкалы чек-ина (вопрос 24, пояснение 14,
+   вторичная подпись шкалы 13). Поверхности — демо-чек-ин и полноэкранный
+   чек-ин; остальные разделы сохраняют общий масштаб --mx-type-scale. */
 .mx-demo-checkin .mx-checkin-question > h1,
 .mx-fullscreen-surface .mx-checkin-question > h1 {
   font-family: 'Onest', sans-serif;
-  font-size: calc(29px * var(--mx-type-scale));
+  font-size: var(--mx-read-ask);
   font-weight: 600;
   letter-spacing: -0.025em;
   line-height: 1.15;
@@ -1066,12 +1074,12 @@
 .mx-fullscreen-surface .mx-checkin-question__hint {
   margin-top: 8px;
   color: rgb(var(--c-muted));
-  font-size: calc(15px * var(--mx-type-scale));
+  font-size: var(--mx-read-note);
 }
 
 .mx-demo-checkin .mx-checkin-scale__label,
 .mx-fullscreen-surface .mx-checkin-scale__label {
-  font-size: max(11px, calc(12px * var(--mx-type-scale)));
+  font-size: var(--mx-read-caption);
   font-weight: 500;
 }
 

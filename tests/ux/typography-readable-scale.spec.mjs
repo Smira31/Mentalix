@@ -190,7 +190,9 @@ async function walkCheckIn(page) {
     const overflow = await readOverflow(page)
     steps.push({ index: i, roles, overflow, inventory: await readInventory(page) })
     if (!questionStep && roles.question) questionStep = roles
-    if (!editorStep && roles.input) editorStep = roles
+    // Шаг редактора хранит и роли, и геометрию: assertCheckIn проверяет
+    // на нём не только размер поля, но и горизонтальный выход.
+    if (!editorStep && roles.input) editorStep = { ...roles, overflow }
 
     const input = page.locator('.mx-demo-checkin__editor [contenteditable]')
     if (await input.count()) {
@@ -239,10 +241,18 @@ async function walkJournal(page) {
   // Проходим настройку целиком, чтобы появился экран «Вспомни, куда идёшь».
   // Шаг считается пройденным, когда заполнено хотя бы одно поле шага: до этого
   // круглая кнопка — «назад», а не «далее».
-  const stepLabel = async () =>
-    ((await page.locator('.mx-dj-setup__step-label').first().textContent().catch(() => '')) || '') +
-    ((await page.locator('[data-testid="dj-setup-vision-label"]').textContent().catch(() => '')) || '') +
-    ((await page.locator('[data-testid="dj-setup-reminder-label"]').textContent().catch(() => '')) || '')
+  // Читаем метку шага одним evaluate: locator.textContent() у отсутствующего
+  // селектора ждёт элемент до таймаута, из-за чего expect.poll не успевал
+  // ни разу выполниться. Здесь ожидания нет — только текущее состояние DOM.
+  const stepLabel = () =>
+    page.evaluate(() => {
+      const read = sel => document.querySelector(sel)?.textContent || ''
+      return (
+        read('.mx-dj-setup__step-label') +
+        read('[data-testid="dj-setup-vision-label"]') +
+        read('[data-testid="dj-setup-reminder-label"]')
+      )
+    })
 
   for (let i = 0; i < 14; i += 1) {
     if (await page.locator('.mx-dj-review').count()) break
@@ -298,9 +308,17 @@ async function walkJournal(page) {
     overflow: await readOverflow(page),
   }
 
-  // Сохранённая запись («сегодня»)
+  // Сохранение: после ответа на вопрос дня штатный переход ведёт на экран
+  // завершения. Возвращаемся на вкладку практик и открываем журнал заново —
+  // запись за сегодня уже есть, поэтому журнал открывается на «Сегодня».
   await page.getByTestId('dj-question-input').fill('Один спокойный шаг важнее идеального плана.')
   await page.getByTestId('dj-question-next').click()
+  await expect(page.getByTestId('dj-complete-close')).toBeVisible()
+  await page.getByTestId('dj-complete-close').click()
+  await expect(page.getByTestId('journal-open-cta')).toBeVisible()
+  await page.getByTestId('journal-open-cta').click()
+
+  // Сохранённая запись («сегодня»)
   await expect(page.getByTestId('dj-today')).toBeVisible()
   stages.today = {
     roles: await readRoles(page, JOURNAL_ROLES),

@@ -72,6 +72,12 @@
   font-family: 'Onest', sans-serif;
 }
 
+/* MXL-TYPE-READABLE-001: вторичная подпись «Мысль дня» — 13 px;
+   общий токен --mx-type-meta-size остальных разделов не меняется. */
+.mx-today-affirmation-card .mx-type-meta {
+  font-size: var(--mx-read-caption);
+}
+
 /* Цитата «Мысли дня» — Stoic-шкала размеров: 17/1.3. */
 .mx-today-affirmation-card .mx-type-card {
   font-size: calc(17px * var(--mx-type-scale));
@@ -1496,7 +1502,8 @@
 .mx-today-pulse {
   margin-top: 16px;
   color: rgb(var(--c-muted));
-  font-size: max(11px, calc(12px * var(--mx-type-scale)));
+  /* MXL-TYPE-READABLE-001: вторичная подпись «Сегодня» читается с 13 px. */
+  font-size: var(--mx-read-caption);
   font-weight: 500;
   line-height: 1.2;
   text-align: center;
@@ -1824,7 +1831,8 @@
   display: block;
   margin-top: 16px;
   color: rgb(var(--c-muted));
-  font-size: max(11px, calc(12px * var(--mx-type-scale)));
+  /* MXL-TYPE-READABLE-001: вторичная подпись «Сегодня» читается с 13 px. */
+  font-size: var(--mx-read-caption);
   font-weight: 500;
   line-height: 1.3;
   text-align: center;
