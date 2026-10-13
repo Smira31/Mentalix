@@ -31,9 +31,20 @@ function generateId() {
  * { id, name, situation, situationCustom, qualities: [3], posture, anchor, createdAt, updatedAt }
  */
 
+/*
+ * CloudStorage появился в Bot API 6.9. На старых клиентах объект
+ * существует, но SDK при вызове печатает console.error
+ * («CloudStorage is not supported in version …») до того, как мы
+ * поймаем исключение. Поэтому одной проверки наличия мало —
+ * убеждаемся, что клиент умеет CloudStorage по версии.
+ */
 function isTelegramCloudStorageAvailable() {
   try {
-    return Boolean(window.Telegram?.WebApp?.CloudStorage)
+    const webApp = window.Telegram?.WebApp
+
+    if (!webApp?.CloudStorage) return false
+
+    return typeof webApp.isVersionAtLeast === 'function' && webApp.isVersionAtLeast('6.9')
   } catch {
     return false
   }
