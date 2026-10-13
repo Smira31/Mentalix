@@ -1,11 +1,16 @@
 import { defineConfig } from '@playwright/test'
 
-// JOURNAL-001: профильная изоляция поверхности «История» (Прогресс → История)
-// на синтетических данных демо-режима. Базовый URL и webServer — как в
-// playwright.ux.config.mjs; запуск: npx playwright test --config=playwright.journal-history.config.mjs
+// JOURNAL-001: профильная изоляция поверхности «История» (Прогресс → История).
+// Смена профиля полной загрузкой (?demo=1&guest=1) — journal-history-profile-isolation;
+// смена пропа user в живом React-дереве на настоящих компонентах — journal-history-component-isolation.
+// Базовый URL и webServer — как в playwright.ux.config.mjs; запуск:
+// npx playwright test --config=playwright.journal-history.config.mjs
 export default defineConfig({
   testDir: './tests/ux',
-  testMatch: ['journal-history-profile-isolation.spec.mjs'],
+  testMatch: [
+    'journal-history-profile-isolation.spec.mjs',
+    'journal-history-component-isolation.spec.mjs',
+  ],
   outputDir: 'artifacts/journal-history/playwright-output',
   fullyParallel: false,
   workers: 1,

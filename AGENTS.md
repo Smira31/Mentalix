@@ -275,6 +275,13 @@ screens, and keep article cards unchanged unless the owner explicitly approves t
 - `dist/privacy.html` — статичная страница для BotFather: её генерирует плагин `privacyPagePlugin` в `vite.config.js` из `src/content/privacyPolicy.js` (текст политики не дублируется). Шрифт Onest встроен в HTML, внешних запросов и скриптов нет.
 - В dev-сервере те же адреса отдаёт middleware плагина (`/privacy`, `/privacy/`, `/privacy.html`), в проде — rewrites в `firebase.json` выше общего `**`. Проверка: `/privacy` возвращает `<h1>Политика конфиденциальности Mentalix</h1>` и 12 секций, `/` по-прежнему отдаёт SPA.
 
+### Изоляция профилей в «Истории» (JOURNAL-001)
+
+- Доказательство идёт в три уровня: unit-контракт `tests/unit/journal-history-profile-isolation.test.mjs` (токен профиля + исходники обеих поверхностей); браузерный сценарий `tests/ux/journal-history-profile-isolation.spec.mjs` — смена профиля ПОЛНОЙ ЗАГРУЗКОЙ (`?guest=1`), то есть раздельное отображение после перезагрузки; fixture настоящих компонентов `tests/ux/journal-history-component-isolation.spec.mjs` + `tests/fixtures/journal-history-isolation.html|jsx` — смена пропа `user` в живом дереве без перезагрузки и отложенный ответ `api.checkin.history` (управляемый Promise через `window.__journalIsolation`). Legacy-поверхность `src/screens/History.jsx` в приложении не смонтирована, её покрывает только fixture.
+- Запуск в web-контейнере: `npx playwright test --config=playwright.journal-history.config.mjs` (Chromium; полный `ux:check` остаётся CI).
+- Засев localStorage в браузерном сценарии — один раз, sentinel-ключом `mx-journal-isolation-seeded-v1`: иначе повторный init-script на навигации заново писал бы те же строки и обесценивал сравнение «до/после».
+- Экран записи «Прогресса» (`.mx-progress-entry`) — полноэкранный fixed-оверлей (z-index 100): в fixture legacy-секция кликается до открытия экрана записи, иначе она перехватывает указатель.
+
 ## Context economy
 
 - Читай только файлы из порядка чтения (AGENTS.md → PROJECT_STATE.md → PRODUCT.md →
