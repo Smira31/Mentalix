@@ -192,6 +192,17 @@ test('журнал: сброс настройки → intro → поток бе�
   await expect(page.locator('.mx-dj-review')).toBeVisible()
   await expect(page.getByTestId('dj-review-edit')).toBeVisible()
 
+  // ── «Мои записи» — вторичная кнопка в потоке, а не мелкая ссылка ──
+  const entriesButton = page.getByTestId('dj-review-entries')
+  await expect(entriesButton).toHaveText('Мои записи')
+  await expect(entriesButton).toHaveAttribute('class', /mx-pill-btn/)
+  const entriesBox = await entriesButton.boundingBox()
+  expect(entriesBox.height).toBeGreaterThanOrEqual(44)
+  await entriesButton.click()
+  await expect(page.getByTestId('dj-entries')).toBeVisible()
+  await page.getByTestId('back-button').click()
+  await expect(page.locator('.mx-dj-review')).toBeVisible()
+
   // ── Сбросить и начать заново ──
   await expect(page.getByTestId('dj-review-reset')).toBeVisible()
   page.on('dialog', d => d.accept())

@@ -122,6 +122,12 @@
   cursor: pointer;
 }
 
+/* ── Review: «Мои записи» — заметная вторичная кнопка в потоке, над нижней кнопкой ── */
+.mx-dj-review__entries-btn {
+  width: 100%;
+  margin-top: var(--mx-space-6);
+}
+
 /* ── Review: «Изменить настройку» ── */
 .mx-dj-review__edit-link {
   display: block;

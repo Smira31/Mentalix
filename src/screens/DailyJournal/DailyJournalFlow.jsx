@@ -2,6 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 
 import Screen from '../../components/Screen'
 import CapsLabel from '../../components/ui/CapsLabel'
+import PillButton from '../../components/ui/PillButton'
 import RoundNextButton from '../../components/ui/RoundNextButton'
 import SemanticGlyph from '../../components/SemanticGlyph'
 import CheckInCompletion from '../../components/CheckInCompletion'
@@ -881,6 +882,14 @@ export default function DailyJournalFlow({ userId, onClose, reflectionPrompt = n
               </p>
             </div>
           )}
+          <PillButton
+            variant="dark"
+            testId="dj-review-entries"
+            className="mx-dj-review__entries-btn"
+            onClick={openEntries}
+          >
+            Мои записи
+          </PillButton>
           <button
             type="button"
             className="mx-dj-review__edit-link"
@@ -888,14 +897,6 @@ export default function DailyJournalFlow({ userId, onClose, reflectionPrompt = n
             onClick={() => setStage('setup')}
           >
             Изменить настройку
-          </button>
-          <button
-            type="button"
-            className="mx-dj-review__edit-link"
-            data-testid="dj-review-entries"
-            onClick={openEntries}
-          >
-            Мои записи
           </button>
           <button
             type="button"
