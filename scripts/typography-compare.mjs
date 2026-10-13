@@ -123,6 +123,9 @@ function roleRows(before, after) {
 
     for (const [roleName, reading] of Object.entries(roles)) {
       if (!reading) continue
+      // Шаги чек-ина хранят рядом с ролями служебные поля (overflow) — это не роли,
+      // и в таблицу «до/после» они попадать не должны.
+      if (!reading.role) continue
       const target = ROLE_TARGETS[reading.role] ?? null
       const beforeReading = beforeRoles?.[roleName] || null
       const beforeSize = beforeReading?.size ?? null

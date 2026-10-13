@@ -207,7 +207,44 @@ function assertNoOverflow(overflow, label) {
 /* ── Прохождение поверхностей ── */
 
 async function capture(page, dir, name) {
-  await page.screenshot({ path: path.join(dir, name) })
+  // Экран входа появляется анимацией: снимок сразу после появления элемента
+  // ловит ещё прозрачный кадр, а пока на портале висит атрибут закрытия
+  // (150–170 ms уезда вниз), любая поверхность невидима целиком. Ждём
+  // состояния, а не времени: атрибут закрытия снят, поверхность занимает
+  // экран и её непрозрачность дошла до 1.
+  await page
+    .waitForFunction(
+      () => {
+        if (document.querySelector('[data-fullscreen-exit="true"]')) return false
+        const surface = document.querySelector('.mx-fullscreen-surface')
+        if (!surface) return true
+        if (Number.parseFloat(getComputedStyle(surface).opacity) < 0.99) return false
+        const rect = surface.getBoundingClientRect()
+        return rect.width >= window.innerWidth - 2 && rect.height >= window.innerHeight - 2
+      },
+      null,
+      { timeout: 5_000 }
+    )
+    .catch(() => {})
+
+  fs.mkdirSync(dir, { recursive: true })
+
+  // Смена шага может перемонтировать поверхность уже после ожидания, поэтому
+  // после снимка сверяем состояние и при необходимости повторяем кадр.
+  const settled = () =>
+    page.evaluate(() => {
+      if (document.querySelector('[data-fullscreen-exit="true"]')) return false
+      const surface = document.querySelector('.mx-fullscreen-surface')
+      if (!surface) return true
+      return Number.parseFloat(getComputedStyle(surface).opacity) >= 0.99
+    })
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    // animations: 'disabled' доводит анимации входа до конца на время снимка —
+    // без него кадр ловится в середине 150-миллисекундного появления экрана.
+    await page.screenshot({ path: path.join(dir, name), animations: 'disabled' })
+    if (await settled()) break
+  }
 }
 
 async function surfaceState(page, roles) {
@@ -527,6 +564,9 @@ function assertToday(surface, label) {
 for (const vp of VIEWPORTS) {
   test(`читаемая шкала: измерения и контракт на ${vp.name}`, async ({ page }) => {
     fs.mkdirSync(OUT_DIR, { recursive: true })
+    // Снимки каждого вьюпорта — в своей папке: общий каталог перезаписывал
+    // кадры 393x852 кадрами 360x640, и evidence не совпадал со своей подписью.
+    const dir = path.join(OUT_DIR, vp.name)
     await page.setViewportSize({ width: vp.width, height: vp.height })
 
     const report = {
@@ -546,10 +586,10 @@ for (const vp of VIEWPORTS) {
         JSON.stringify(report, null, 2)
       )
 
-    report.today = await walkToday(page, OUT_DIR)
+    report.today = await walkToday(page, dir)
     persist()
 
-    report.checkinMorning = await walkCheckIn(page, OUT_DIR, {
+    report.checkinMorning = await walkCheckIn(page, dir, {
       filePrefix: '02-morning',
       url: DEMO_TODAY,
       cardTestId: 'today-card-morning',
@@ -557,7 +597,7 @@ for (const vp of VIEWPORTS) {
     })
     persist()
 
-    report.checkinEvening = await walkCheckIn(page, OUT_DIR, {
+    report.checkinEvening = await walkCheckIn(page, dir, {
       filePrefix: '03-evening',
       url: DEMO_EVENING,
       cardTestId: 'today-card-evening',
@@ -565,19 +605,19 @@ for (const vp of VIEWPORTS) {
     })
     persist()
 
-    report.completeMorning = await walkCompletionPreview(page, OUT_DIR, {
+    report.completeMorning = await walkCompletionPreview(page, dir, {
       filePrefix: '04-complete-morning',
       url: DEMO_COMPLETE_MORNING,
     })
     persist()
 
-    report.completeEvening = await walkCompletionPreview(page, OUT_DIR, {
+    report.completeEvening = await walkCompletionPreview(page, dir, {
       filePrefix: '05-complete-evening',
       url: DEMO_COMPLETE_EVENING,
     })
     persist()
 
-    report.journal = await walkJournal(page, OUT_DIR)
+    report.journal = await walkJournal(page, dir)
     persist()
 
     if (!ASSERT) return
