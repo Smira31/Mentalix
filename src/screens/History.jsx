@@ -7,6 +7,11 @@ import MarkdownText from '../components/MarkdownText'
 import { buildBadges } from '../lib/badges'
 import { daysSinceRegistration } from '../lib/badgeCatalog'
 import { readJournalHistory } from '../lib/journalHistory'
+import {
+  acceptsProfileLoad,
+  beginProfileLoad,
+  profileScopeKey,
+} from '../lib/historyProfileScope'
 import { THOUGHT_KIND, loadDailyItems, readCachedDailyItems } from '../lib/dailyThoughtStorage'
 import JourneySearch from './JourneySearch'
 import HistorySkeleton from '../components/HistorySkeleton'
@@ -597,7 +602,16 @@ export function HistoryDetail({
   )
 }
 
-export default function History({
+/*
+ * Профильная граница поверхности: смена профиля размонтирует внутренний
+ * экран, поэтому дни, раскрытая запись и кэш мыслей дня не переносятся в
+ * другой профиль, и старый текст не успевает отрисоваться.
+ */
+export default function History(props) {
+  return <HistorySurface key={profileScopeKey(props.user?.id)} {...props} />
+}
+
+function HistorySurface({
   user,
   initialSelectedDay = null,
   onInitialBack = null,
@@ -678,8 +692,14 @@ export default function History({
     return Object.values(byDate).sort((a, b) => (a.date < b.date ? 1 : -1))
   }, [days, journalEntries, dailyThoughts])
 
+  /*
+   * Загрузки профильные: `token` фиксирует профиль запроса, а ответ
+   * применяется только если этот профиль всё ещё активен.
+   */
   useEffect(() => {
     if (!user) return
+    let alive = true
+    const token = beginProfileLoad(user.id)
     const moodFrom = new Date()
     moodFrom.setDate(moodFrom.getDate() - 30)
     Promise.all([
@@ -692,6 +712,7 @@ export default function History({
         })
         .catch(() => []),
     ]).then(([checkins, analytics, moodPractices]) => {
+      if (!alive || !acceptsProfileLoad(token, user.id)) return
       const byDate = {}
       for (const c of checkins || []) {
         byDate[c.date] = { ...(byDate[c.date] || {}), checkin: c }
@@ -712,15 +733,22 @@ export default function History({
         .sort((a, b) => (a.date < b.date ? 1 : -1))
       setDays(list)
     })
+
+    return () => {
+      alive = false
+    }
   }, [user])
 
   useEffect(() => {
     if (!user) return
+    let alive = true
+    const token = beginProfileLoad(user.id)
     Promise.all([
       api.profile.get(user.id).catch(() => null),
       api.rituals.list(user.id).catch(() => []),
       api.ascezas.list(user.id).catch(() => []),
     ]).then(([stats, rituals, ascezas]) => {
+      if (!alive || !acceptsProfileLoad(token, user.id)) return
       setBadges(
         buildBadges({
           stats,
@@ -730,14 +758,21 @@ export default function History({
         }).filter(b => b.done)
       )
     })
+
+    return () => {
+      alive = false
+    }
   }, [user])
 
   useEffect(() => {
     if (!user) return
+    let alive = true
+    const token = beginProfileLoad(user.id)
     api.themes
       .list(user.id)
       .catch(() => [])
       .then(list => {
+        if (!alive || !acceptsProfileLoad(token, user.id)) return
         const reflected = (list || []).filter(t => t.reflected_days > 0)
         if (reflected.length === 0) {
           setThemeEntries([])
@@ -745,6 +780,7 @@ export default function History({
         }
         Promise.all(reflected.map(t => api.themes.get(t.id, user.id).catch(() => null))).then(
           themes => {
+            if (!alive || !acceptsProfileLoad(token, user.id)) return
             const entries = []
             for (const theme of themes) {
               if (!theme) continue
@@ -763,6 +799,10 @@ export default function History({
           }
         )
       })
+
+    return () => {
+      alive = false
+    }
   }, [user])
 
   async function deleteSelectedCheckin() {

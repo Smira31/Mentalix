@@ -28,6 +28,7 @@ import { platform, platformName } from '../../platform'
 import ScreenBack from '../../components/ScreenBack'
 import { useBackButton } from '../../platform/telegram.hooks'
 import { readJournalHistory } from '../../lib/journalHistory'
+import { acceptsProfileLoad, beginProfileLoad } from '../../lib/historyProfileScope'
 import { moodPracticeDate } from '../../lib/moodPracticeLogic'
 import { getDailyThoughtForDate } from '../../data/dailyThoughts'
 import { THOUGHT_KIND, loadDailyItems, readCachedDailyItems } from '../../lib/dailyThoughtStorage'
@@ -734,9 +735,10 @@ export default function ProgressHistory({
     if (!userId) return
 
     let alive = true
+    const token = beginProfileLoad(user.id)
     loadDailyItems(user.id)
       .then(next => {
-        if (alive) setThoughtItems(next)
+        if (alive && acceptsProfileLoad(token, user.id)) setThoughtItems(next)
       })
       .catch(() => {})
 
@@ -777,6 +779,7 @@ export default function ProgressHistory({
   useEffect(() => {
     if (!user) return
     let alive = true
+    const token = beginProfileLoad(user.id)
     setLoadError(false)
     const moodFrom = new Date()
     moodFrom.setDate(moodFrom.getDate() - 30)
@@ -789,7 +792,7 @@ export default function ProgressHistory({
       }),
     ])
       .then(([checkins, analytics, moodPractices]) => {
-        if (!alive) return
+        if (!alive || !acceptsProfileLoad(token, user.id)) return
         setDays(
           buildEntriesByDay(
             checkins,
@@ -801,7 +804,7 @@ export default function ProgressHistory({
         )
       })
       .catch(() => {
-        if (alive) setLoadError(true)
+        if (alive && acceptsProfileLoad(token, user.id)) setLoadError(true)
       })
     return () => {
       alive = false

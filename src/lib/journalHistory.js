@@ -1,16 +1,11 @@
 import { PHASE_KEYS, readJournalStore } from './journalStorage.js'
+import { normalizeProfileId } from './historyProfileScope.js'
 
 const PHASE_LABELS = {
   idea: 'Идея',
   action: 'Действие',
   analysis: 'Анализ',
   newStep: 'Новый шаг',
-}
-
-function normalizeUserId(userId) {
-  if (typeof userId === 'string' && userId.trim()) return userId.trim()
-  if (typeof userId === 'number' && Number.isFinite(userId)) return String(userId)
-  return null
 }
 
 function phaseHasText(phase) {
@@ -65,7 +60,7 @@ function toHistoryEntry(entry) {
  * path — which may persist a migrated prototype entry — out of a history read.
  */
 function readJournalHistory(userId) {
-  if (!normalizeUserId(userId)) return []
+  if (!normalizeProfileId(userId)) return []
 
   const store = readJournalStore(userId)
 
