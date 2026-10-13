@@ -565,6 +565,8 @@ function WriteScreen({
         formatting={false}
         hideAddAction
         guidedFlow
+        autoFocus
+        autoFocusKey={view}
         onSubmit={handleSubmit}
         submitDisabled={false}
         submitIcon={hasText ? 'chevron' : 'x'}

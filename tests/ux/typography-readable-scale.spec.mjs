@@ -2,6 +2,8 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { test, expect } from '@playwright/test'
 
+import { frameStats } from './typography-evidence.mjs'
+
 /*
  * MXL-TYPE-READABLE-001 — согласованная средняя читаемая шкала Mentalix.
  *
@@ -466,6 +468,11 @@ async function walkJournal(page, dir) {
   // «Мои записи»
   await page.getByTestId('dj-today-entries').click()
   await expect(page.getByTestId('dj-entries')).toBeVisible()
+  // Кадр снимается только по загруженному списку. Пока идёт загрузка, на экране
+  // есть лишь подпись «МОИ ЗАПИСИ» и слово «Загрузка…» — снимок выходит почти
+  // чёрным (прежний дефект evidence: три разных шага дали один и тот же кадр).
+  // Это ожидание состояния, а не задержка: список — то, что должно быть видно.
+  await expect(page.locator('.mx-dj-entries__item').first()).toBeVisible()
   stages.entries = await surfaceState(page, JOURNAL_ROLES)
   await capture(page, dir, '18-journal-entries.png')
 

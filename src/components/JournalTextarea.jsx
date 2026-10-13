@@ -175,6 +175,7 @@ export default function JournalTextarea({
   formatting = true,
   onClose,
   autoFocus = false,
+  autoFocusKey = null,
   keepFocusOnSubmit = false,
   submitIcon = 'check',
   desktopInline = false,
@@ -192,7 +193,10 @@ export default function JournalTextarea({
 
   // MXL-KEYBOARD-001: экран/шаг, основная задача которого — написать текст,
   // открывает клавиатуру сам (см. src/lib/useAutoFocusField.js).
-  useAutoFocusField(editorRef, autoFocus ? 'auto' : null)
+  // autoFocusKey — ключ активации шага для многошаговых потоков: смена ключа
+  // (следующий шаг записи) = «пользователь только что пришёл сюда», фокус
+  // ставится заново. Без ключа действует монтажный autoFocus ('auto').
+  useAutoFocusField(editorRef, autoFocusKey ?? (autoFocus ? 'auto' : null))
   const keyboardOpen =
     guidedFlow &&
     typeof window !== 'undefined' &&
@@ -307,7 +311,6 @@ export default function JournalTextarea({
         role="textbox"
         aria-label={ariaLabel}
         aria-multiline="true"
-        autoFocus={autoFocus}
         contentEditable
         data-testid={testId}
         suppressContentEditableWarning

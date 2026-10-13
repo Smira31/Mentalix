@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Plus, Pencil } from 'lucide-react'
 
 import { platform } from '../platform'
 import { RoundBackButton } from '../components/NestedScreenHeader'
 import JournalTextarea from '../components/JournalTextarea'
+import { useAutoFocusField } from '../lib/useAutoFocusField'
 import { CheckInQuestion, CheckInNextControls } from './CheckIn'
 import {
   useFullscreenSurface,
@@ -98,6 +99,11 @@ function AlterEgoJournal({ initialDraft, editingId, onSave, onCancel }) {
   const isNameStep = question.short
   const canProceed = isNameStep ? draft.name.trim().length > 0 : true
 
+  // MXL-KEYBOARD-001: шаг имени — шаг набора текста, поле получает фокус при
+  // переходе на него (см. src/lib/useAutoFocusField.js), а не на каждом рендере.
+  const nameInputRef = useRef(null)
+  useAutoFocusField(nameInputRef, isNameStep ? 'alter-ego-name' : null)
+
   function handleBack() {
     platform.haptic('light')
     if (step === 0) {
@@ -146,10 +152,10 @@ function AlterEgoJournal({ initialDraft, editingId, onSave, onCancel }) {
                 type="text"
                 className="mx-alter-ego__input"
                 placeholder="Например, Командир"
+                ref={nameInputRef}
                 value={draft.name}
                 onChange={e => update('name', e.target.value)}
                 data-testid="alter-ego-name"
-                autoFocus
               />
             ) : (
               <div className="w-full max-w-md mx-auto flex min-h-0 flex-1 flex-col">
