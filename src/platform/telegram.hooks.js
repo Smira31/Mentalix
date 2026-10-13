@@ -382,12 +382,31 @@ export function confirmAction(message) {
    онбординг, выбранная тема.
    ============================================================ */
 
+/*
+ * SDK требует клиента ≥ 6.9: на старых версиях вызов любого метода
+ * CloudStorage сам пишет console.error и бросает WebAppMethodUnsupported.
+ * Вне Telegram SDK вообще создаёт WebApp с версией «6.0», поэтому без
+ * проверки версии каждый вызов облачного хранилища шумел бы в консоль.
+ * Проверяем версию ДО обращения к методам (см. offerHomeScreen ниже).
+ */
+function cloudStorageUsable(storage, method) {
+  if (!storage || !storage[method]) return false
+
+  const webApp = api()
+
+  if (typeof webApp?.isVersionAtLeast === 'function' && !webApp.isVersionAtLeast('6.9')) {
+    return false
+  }
+
+  return true
+}
+
 export const cloud = {
   get(key) {
     return new Promise(resolve => {
       const storage = api()?.CloudStorage
 
-      if (!storage?.getItem) {
+      if (!cloudStorageUsable(storage, 'getItem')) {
         resolve(null)
 
         return
@@ -404,7 +423,7 @@ export const cloud = {
     return new Promise(resolve => {
       const storage = api()?.CloudStorage
 
-      if (!storage?.setItem) {
+      if (!cloudStorageUsable(storage, 'setItem')) {
         resolve(false)
 
         return
@@ -422,7 +441,7 @@ export const cloud = {
     return new Promise(resolve => {
       const storage = api()?.CloudStorage
 
-      if (!storage?.getKeys || !storage?.removeItems) {
+      if (!cloudStorageUsable(storage, 'getKeys') || !storage?.removeItems) {
         resolve(false)
 
         return
@@ -456,7 +475,7 @@ export const cloud = {
     return new Promise(resolve => {
       const storage = api()?.CloudStorage
 
-      if (!storage?.removeItem) {
+      if (!cloudStorageUsable(storage, 'removeItem')) {
         resolve(false)
 
         return

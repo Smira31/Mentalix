@@ -31,9 +31,20 @@ function generateId() {
  * { id, name, situation, situationCustom, qualities: [3], posture, anchor, createdAt, updatedAt }
  */
 
+/*
+ * SDK требует клиента ≥ 6.9: на старых версиях вызов метода CloudStorage
+ * сам пишет console.error и бросает WebAppMethodUnsupported. Вне Telegram
+ * SDK вообще создаёт WebApp с версией «6.0» — без проверки версии каждая
+ * запись падала бы в облачное хранилище и терялась.
+ */
 function isTelegramCloudStorageAvailable() {
   try {
-    return Boolean(window.Telegram?.WebApp?.CloudStorage)
+    const webApp = window.Telegram?.WebApp
+    if (!webApp?.CloudStorage) return false
+    if (typeof webApp.isVersionAtLeast === 'function' && !webApp.isVersionAtLeast('6.9')) {
+      return false
+    }
+    return true
   } catch {
     return false
   }
