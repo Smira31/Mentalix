@@ -3,7 +3,6 @@ export const PRACTICE_KEYS = Object.freeze({
   ascezas: 'ascezas',
   daimon: 'daimon',
   mood: 'mood',
-  alterEgo: 'alter-ego',
 })
 
 export const AVAILABLE_PRACTICES = Object.freeze([

@@ -105,7 +105,7 @@ function HeroCard({ onOpen }) {
 /* --- 3. Карточка практики в сетке --- */
 function PracticeCard({ practice, isGuest, onOpen, onPin }) {
   const [menuOpen, setMenuOpen] = useState(false)
-  const isNew = practice.key === 'daimon' || practice.key === 'alter-ego'
+  const isNew = practice.key === 'daimon'
   const badge = practice.soon ? null : isNew ? 'НОВОЕ' : 'РЕКОМЕНДУЕМ'
 
   function hide() {
