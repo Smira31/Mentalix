@@ -130,3 +130,114 @@ test('JOURNAL-001: запоздавший ответ A не отображает
 
   expect(runtimeErrors).toEqual([])
 })
+
+/*
+ * Записи настоящего дневника (api.dailyJournal) в «Прогресс → История»:
+ * видны без предварительного открытия дневника, раскрываются в существующем
+ * экране записи и так же изолированы по профилю, как остальные источники.
+ */
+test('JOURNAL-001: записи дневника видны, раскрываются и изолированы по профилю', async ({
+  page,
+}) => {
+  const { runtimeErrors, profiles, texts } = await openFixture(page)
+  const progress = page.locator(SURFACE)
+
+  // ── 1. Профиль A: разрешаем загрузки A — видна запись дневника A ──
+  await page.evaluate(() => {
+    const iso = window.__journalIsolation
+    return Promise.all([
+      iso.setCheckins(iso.profiles.A, []),
+      iso.setDiary(iso.profiles.A, iso.diary.A),
+    ])
+  })
+
+  const diaryRowA = rowNamed(progress, texts.DIARY_A)
+  await expect(diaryRowA).toBeVisible()
+
+  // ── 2. Раскрытие показывает содержимое записи в существующем экране ──
+  await diaryRowA.click()
+  const entryScreen = progress.locator('[data-testid="progress-entry-screen"]')
+  await expect(entryScreen).toContainText(texts.DIARY_A)
+  await expect(entryScreen.locator('[data-testid="progress-diary-entry"]')).toBeVisible()
+  await page.screenshot({ path: 'artifacts/journal-history/component-diary-a-expanded.png' })
+
+  // ── 3. A → B без перезагрузки: запись дневника A исчезает сразу ──
+  const afterB = await page.evaluate(() => {
+    const iso = window.__journalIsolation
+    return { text: iso.setProfile(iso.profiles.B), entryScreens: iso.entryScreens() }
+  })
+  expect(afterB.text).not.toContain(texts.DIARY_A)
+  expect(afterB.entryScreens).toBe(0)
+  await expect(page.getByText(texts.DIARY_A)).toHaveCount(0)
+
+  // ── 4. Профиль B показывает только свой дневник ──
+  await page.evaluate(() => {
+    const iso = window.__journalIsolation
+    return Promise.all([
+      iso.setCheckins(iso.profiles.B, []),
+      iso.setDiary(iso.profiles.B, iso.diary.B),
+    ])
+  })
+  await expect(rowNamed(progress, texts.DIARY_B)).toBeVisible()
+  await expect(page.getByText(texts.DIARY_A)).toHaveCount(0)
+  await page.screenshot({ path: 'artifacts/journal-history/component-diary-b-after-switch.png' })
+
+  // ── 5. «Выход» (user = null) не наследует дневник ни одного профиля ──
+  const afterAnonymous = await page.evaluate(() => {
+    const iso = window.__journalIsolation
+    return { text: iso.setProfile(null), entryScreens: iso.entryScreens() }
+  })
+  expect(afterAnonymous.text).not.toContain(texts.DIARY_A)
+  expect(afterAnonymous.text).not.toContain(texts.DIARY_B)
+  expect(afterAnonymous.entryScreens).toBe(0)
+
+  expect(runtimeErrors).toEqual([])
+  expect(profiles.A).not.toEqual(profiles.B)
+})
+
+test('JOURNAL-001: запоздавший ответ дневника A не применяется в профиле B', async ({ page }) => {
+  const { runtimeErrors, texts } = await openFixture(page)
+  const progress = page.locator(SURFACE)
+
+  // ── 1. Запрос дневника A начат и ещё не разрешён ──
+  const pendingA = await page.evaluate(() => window.__journalIsolation.pendingDiaryProfiles())
+  expect(pendingA).toContain(900001)
+
+  // ── 2. Переключаем профиль на B и разрешаем загрузки B ──
+  await page.evaluate(() => {
+    const iso = window.__journalIsolation
+    iso.setProfile(iso.profiles.B)
+    return Promise.all([
+      iso.setCheckins(iso.profiles.B, []),
+      iso.setDiary(iso.profiles.B, iso.diary.B),
+    ])
+  })
+  await expect(rowNamed(progress, texts.DIARY_B)).toBeVisible()
+
+  // ── 3. Разрешаем запоздавший ответ A — он не должен отрисоваться ──
+  await page.evaluate(() => {
+    const iso = window.__journalIsolation
+    return iso.setDiary(iso.profiles.A, iso.diary.A)
+  })
+  await expect(page.getByText(texts.DIARY_A)).toHaveCount(0)
+  await expect(rowNamed(progress, texts.DIARY_B)).toBeVisible()
+
+  expect(runtimeErrors).toEqual([])
+})
+
+test('JOURNAL-001: ошибка загрузки дневника отличается от «записей нет»', async ({ page }) => {
+  const { runtimeErrors } = await openFixture(page)
+  const progress = page.locator(SURFACE)
+
+  // Чек-инов нет, а загрузка дневника падает: это ошибка, а не пустая история.
+  await page.evaluate(() => {
+    const iso = window.__journalIsolation
+    return Promise.all([iso.setCheckins(iso.profiles.A, []), iso.failDiary(iso.profiles.A)])
+  })
+
+  await expect(progress.getByTestId('progress-history-diary-error')).toBeVisible()
+  await expect(progress.getByTestId('progress-history-diary-retry')).toBeVisible()
+  await page.screenshot({ path: 'artifacts/journal-history/component-diary-load-error.png' })
+
+  expect(runtimeErrors).toEqual([])
+})

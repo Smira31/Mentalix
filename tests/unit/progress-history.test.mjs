@@ -216,14 +216,18 @@ test('entryListName: правильные названия для строки �
   assert.equal(entryListName(ENTRY_TYPES.MORNING), 'Утренний чек-ин')
   assert.equal(entryListName(ENTRY_TYPES.EVENING), 'Вечерний разбор')
   assert.equal(entryListName(ENTRY_TYPES.MOOD), 'Отметка настроения')
-  assert.equal(entryListName(ENTRY_TYPES.JOURNAL), 'Дневник')
+  // Локальный journalStorage — «Журнал» (цикл «Идея / Действие / Анализ /
+  // Новый шаг»); настоящий дневник DailyJournal — «Дневник». Не путаем.
+  assert.equal(entryListName(ENTRY_TYPES.JOURNAL), 'Журнал')
+  assert.equal(entryListName(ENTRY_TYPES.DAILY_JOURNAL), 'Дневник')
 })
 
 test('entryScreenTitle: заголовки экрана записи строчными с точкой', () => {
   assert.equal(entryScreenTitle(ENTRY_TYPES.MORNING), 'утро.')
   assert.equal(entryScreenTitle(ENTRY_TYPES.EVENING), 'вечер.')
   assert.equal(entryScreenTitle(ENTRY_TYPES.MOOD), 'отметка настроения.')
-  assert.equal(entryScreenTitle(ENTRY_TYPES.JOURNAL), 'дневник.')
+  assert.equal(entryScreenTitle(ENTRY_TYPES.JOURNAL), 'журнал.')
+  assert.equal(entryScreenTitle(ENTRY_TYPES.DAILY_JOURNAL), 'дневник.')
 })
 
 test('formatEntryDateCaps: дата капителью для экрана записи', () => {
@@ -344,10 +348,63 @@ test('FILTER_GROUPS: группы «Чек-ины» и «Практики»', ()
   const checkinTypes = FILTER_GROUPS[0].types.map(t => t.id)
   assert.ok(checkinTypes.includes(ENTRY_TYPES.MORNING))
   assert.ok(checkinTypes.includes(ENTRY_TYPES.EVENING))
-  // Практики: настроение, дневник
+  // Практики: настроение, дневник (DailyJournal), журнал (локальный), мысль дня
   const practiceTypes = FILTER_GROUPS[1].types.map(t => t.id)
   assert.ok(practiceTypes.includes(ENTRY_TYPES.MOOD))
+  assert.ok(practiceTypes.includes(ENTRY_TYPES.DAILY_JOURNAL))
   assert.ok(practiceTypes.includes(ENTRY_TYPES.JOURNAL))
+})
+
+test('buildEntriesByDay: записи дневника кладутся в свой день и не схлопываются по дате', () => {
+  // Две разные записи дневника за один день остаются двумя строками.
+  const diaryEntries = [
+    { id: 'd-2', date: '2026-09-25', createdAt: '2026-09-25T21:00:00Z', streamText: 'Вечер' },
+    { id: 'd-1', date: '2026-09-25', createdAt: '2026-09-25T08:00:00Z', streamText: 'Утро' },
+    { id: 'd-3', date: '2026-09-24', createdAt: '', streamText: 'Вчера' },
+  ]
+
+  const days = buildEntriesByDay([], [], [], [], [], diaryEntries)
+
+  assert.equal(days.length, 2)
+  assert.equal(days[0].date, '2026-09-25')
+  assert.equal(days[0].entries.length, 2)
+  assert.ok(days[0].entries.every(e => e.type === ENTRY_TYPES.DAILY_JOURNAL))
+  // Время берётся из createdAt: новые сверху.
+  assert.equal(days[0].entries[0].diary.id, 'd-2')
+  assert.equal(days[0].entries[1].diary.id, 'd-1')
+  assert.equal(days[1].diary === undefined, true)
+  assert.equal(days[1].entries[0].diary.id, 'd-3')
+})
+
+test('buildEntriesByDay: запись дневника без id или даты не попадает в ленту', () => {
+  const days = buildEntriesByDay([], [], [], [], [], [
+    { date: '2026-09-25', streamText: 'Без id' },
+    { id: 'd-9', streamText: 'Без даты' },
+    { id: null, date: null, streamText: 'Пусто' },
+  ])
+  assert.deepEqual(days, [])
+})
+
+test('getEntrySearchableText: ищет по потоку и ответу записи дневника', () => {
+  const text = getEntrySearchableText({
+    type: ENTRY_TYPES.DAILY_JOURNAL,
+    diary: {
+      id: 'd-1',
+      date: '2026-09-25',
+      streamText: 'Мысли о дороге',
+      promptText: 'Что дальше?',
+      promptAnswer: 'Сделать шаг',
+    },
+  })
+  assert.ok(text.includes('мысли о дороге'))
+  assert.ok(text.includes('что дальше?'))
+  assert.ok(text.includes('сделать шаг'))
+
+  const found = searchEntries(
+    [{ date: '2026-09-25', entries: [{ type: ENTRY_TYPES.DAILY_JOURNAL, diary: { streamText: 'Мысли о дороге' } }] }],
+    'дороге'
+  )
+  assert.equal(found.length, 1)
 })
 
 test('getAvailableFilterTypes: возвращает только существующие типы', () => {

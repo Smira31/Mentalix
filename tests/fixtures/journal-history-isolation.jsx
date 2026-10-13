@@ -37,6 +37,8 @@ const TEXT_A = 'JOURNAL-001 A: раскрытая запись профиля A'
 const TEXT_B = 'JOURNAL-001 B: запись профиля B'
 const CHECKIN_A = 'JOURNAL-001 CHECKIN A: заметка профиля A'
 const CHECKIN_B = 'JOURNAL-001 CHECKIN B: заметка профиля B'
+const DIARY_A = 'JOURNAL-001 ДНЕВНИК A: поток записи профиля A'
+const DIARY_B = 'JOURNAL-001 ДНЕВНИК B: поток записи профиля B'
 
 /* Даты считаются относительно текущего дня (правило репозитория). */
 function isoDay(offset) {
@@ -74,6 +76,19 @@ function checkin(date, note) {
   return { date, mood: 4, note, created_at: `${date}T09:00:00Z` }
 }
 
+/* Сырой ответ api.dailyJournal.entries — как у настоящего эндпоинта. */
+function diaryEntry(id, date, streamText) {
+  return {
+    id,
+    date,
+    day_number: 1,
+    stream_text: streamText,
+    prompt_text: 'Что дальше?',
+    prompt_answer: '',
+    created_at: `${date}T09:00:00Z`,
+  }
+}
+
 /* Журнал обоих профилей засевается один раз — до монтирования, без перезагрузки. */
 localStorage.setItem(KEY_A, JSON.stringify(journalStore(DAY_A, TEXT_A)))
 localStorage.setItem(KEY_B, JSON.stringify(journalStore(DAY_B, TEXT_B)))
@@ -108,10 +123,60 @@ async function settleCheckins(profileId, list) {
 }
 
 /*
+ * Дневник (api.dailyJournal.entries): та же управляемая схема, что и у
+ * checkin.history. Ответ можно разрешить (setDiary) или отклонить (failDiary),
+ * чтобы отдельно проверить и изоляцию профилей, и отличие ошибки загрузки от
+ * «записей нет».
+ */
+const diaryLoads = new Map()
+
+function diaryLoad(profileId) {
+  const key = String(profileId)
+  if (!diaryLoads.has(key)) {
+    let resolve
+    let reject
+    const promise = new Promise((next, fail) => {
+      resolve = next
+      reject = fail
+    })
+    diaryLoads.set(key, { promise, resolve, reject, settled: false })
+  }
+  // Один промис на профиль — как у checkinLoad: тест может разрешить его до
+  // того, как эффект компонента обратится к api, и компонент получит тот же
+  // самый ответ.
+  return diaryLoads.get(key).promise
+}
+
+async function settleFrame() {
+  await Promise.resolve()
+  await new Promise(next => requestAnimationFrame(() => next()))
+  await new Promise(next => setTimeout(next, 0))
+}
+
+async function settleDiary(profileId, items) {
+  const key = String(profileId)
+  if (!diaryLoads.has(key)) diaryLoad(profileId)
+  const load = diaryLoads.get(key)
+  load.resolve({ items })
+  load.settled = true
+  await settleFrame()
+}
+
+async function rejectDiaryLoad(profileId) {
+  const key = String(profileId)
+  if (!diaryLoads.has(key)) diaryLoad(profileId)
+  const load = diaryLoads.get(key)
+  load.reject(new Error('dailyJournal недоступен'))
+  load.settled = true
+  await settleFrame()
+}
+
+/*
  * Профильные загрузки подменяются только на границе api: сами компоненты,
  * их эффекты и токены профиля работают как в приложении.
  */
 api.checkin.history = userId => checkinLoad(userId)
+api.dailyJournal.entries = userId => diaryLoad(userId)
 api.analytics.get = () => Promise.resolve({ daily_activity: [] })
 api.moodPractices.list = () => Promise.resolve([])
 api.profile.get = () => Promise.resolve({})
@@ -154,8 +219,21 @@ render()
 
 window.__journalIsolation = {
   profiles: { A: PROFILE_A, B: PROFILE_B },
-  texts: { TEXT_A, TEXT_B, CHECKIN_A, CHECKIN_B },
+  texts: { TEXT_A, TEXT_B, CHECKIN_A, CHECKIN_B, DIARY_A, DIARY_B },
   checkins: { A: [checkin(DAY_A, CHECKIN_A)], B: [checkin(DAY_B, CHECKIN_B)] },
+  diary: {
+    A: [diaryEntry('diary-a-1', DAY_A, DIARY_A)],
+    B: [diaryEntry('diary-b-1', DAY_B, DIARY_B)],
+  },
+  setDiary(profileId, items) {
+    return settleDiary(profileId, items)
+  },
+  failDiary(profileId) {
+    return rejectDiaryLoad(profileId)
+  },
+  pendingDiaryProfiles() {
+    return [...diaryLoads.entries()].filter(([, load]) => !load.settled).map(([id]) => Number(id))
+  },
   dayLabels: { A: formatDayLabel(DAY_A), B: formatDayLabel(DAY_B) },
   setProfile(id) {
     currentUser = id == null ? null : { id: Number(id) }
