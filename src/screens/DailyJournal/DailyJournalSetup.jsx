@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { Plus, X } from 'lucide-react'
 
 import Screen from '../../components/Screen'
@@ -8,6 +8,7 @@ import RoundNextButton from '../../components/ui/RoundNextButton'
 import { useBackButton } from '../../platform/telegram.hooks'
 import { platform } from '../../platform'
 import { api } from '../../lib/api'
+import { useAutoFocusField } from '../../lib/useAutoFocusField'
 import './DailyJournalFlow.css'
 
 const SETUP_STEPS = [
@@ -109,19 +110,13 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
 
   const step = SETUP_STEPS[stepIndex]
   const isLastStep = stepIndex === SETUP_STEPS.length - 1
-  const visionRef = useRef(null)
+  const stepFieldRef = useRef(null)
 
-  // Автофокус textarea на подэкранах «Картинка будущего»
-  useEffect(() => {
-    if (stepIndex !== 2) return
-    const focusField = () => visionRef.current?.focus({ preventScroll: true })
-    const frame = window.requestAnimationFrame(focusField)
-    const retry = window.setTimeout(focusField, 80)
-    return () => {
-      window.cancelAnimationFrame(frame)
-      window.clearTimeout(retry)
-    }
-  }, [stepIndex, visionSubStep])
+  // MXL-KEYBOARD-001: многошаговая форма фокусирует первое актуальное поле
+  // шага — и шаг «Цели», и «Напоминания», и «Мои вопросы», а не только
+  // подэкран «Картинка будущего». Шаг «Напоминание» (плитки времени) поля
+  // ввода не имеет, поэтому фокус туда не ставится.
+  useAutoFocusField(stepFieldRef, `${stepIndex}:${visionSubStep}`)
 
   function hasContent() {
     if (stepIndex === 0) return goals.some(g => g.trim())
@@ -276,6 +271,7 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
           {goals.map((g, i) => (
             <input
               key={i}
+              ref={i === 0 ? stepFieldRef : undefined}
               type="text"
               className="mx-dj-setup__input"
               value={g}
@@ -297,6 +293,7 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
           {reminders.map((r, i) => (
             <div key={i} className="mx-dj-setup__input-row">
               <input
+                ref={i === 0 ? stepFieldRef : undefined}
                 type="text"
                 className="mx-dj-setup__input"
                 value={r}
@@ -336,7 +333,7 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
           </CapsLabel>
           <h2 className="mx-dj-setup__vision-title">{vq.text}</h2>
           <textarea
-            ref={visionRef}
+            ref={stepFieldRef}
             className="mx-dj-setup__vision-field"
             value={vision[vq.key]}
             onChange={e => setVision(prev => ({ ...prev, [vq.key]: e.target.value }))}
@@ -357,6 +354,7 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
           {prompts.map((p, i) => (
             <div key={i} className="mx-dj-setup__input-row">
               <textarea
+                ref={i === 0 ? stepFieldRef : undefined}
                 className="mx-dj-setup__input mx-dj-setup__input--textarea"
                 value={p}
                 onChange={e => updatePrompt(i, e.target.value)}

@@ -21,6 +21,7 @@ import {
 } from '../../lib/dailyJournalDraft'
 import { dispatchTabRefresh } from '../../lib/tabRefresh'
 import { DEFAULT_JOURNAL_PROMPTS } from '../../lib/dailyJournalConstants'
+import { useAutoFocusField } from '../../lib/useAutoFocusField'
 import DailyJournalSetup from './DailyJournalSetup'
 import DailyJournalEntries from './DailyJournalEntries'
 import './DailyJournalFlow.css'
@@ -340,25 +341,19 @@ export default function DailyJournalFlow({ userId, onClose, reflectionPrompt = n
     }
   }, [flushDraft])
 
-  // ── Auto-focus ──
-  useEffect(() => {
-    if (stage !== 'stream' && stage !== 'question') return
-    const ref = stage === 'stream' ? streamRef : answerRef
-    const focusField = () => {
-      ref.current?.focus({ preventScroll: true })
-      if (appendCursorRef.current && ref.current) {
-        const len = ref.current.value.length
-        ref.current.setSelectionRange(len, len)
-        appendCursorRef.current = false
-      }
-    }
-    const frame = window.requestAnimationFrame(focusField)
-    const retry = window.setTimeout(focusField, 80)
-    return () => {
-      window.cancelAnimationFrame(frame)
-      window.clearTimeout(retry)
-    }
-  }, [stage])
+  // ── Auto-focus (MXL-KEYBOARD-001) ──
+  // Шаги «Поток» и «Вопрос дня» — экраны, основная задача которых написать
+  // текст: клавиатура открывается сама. «Дописать» возвращает на «Поток»
+  // и ставит курсор в конец уже сохранённой записи (appendCursorRef).
+  useAutoFocusField(streamRef, stage === 'stream' ? 'stream' : null, {
+    afterFocus: element => {
+      if (!appendCursorRef.current) return
+      const len = element.value.length
+      element.setSelectionRange(len, len)
+      appendCursorRef.current = false
+    },
+  })
+  useAutoFocusField(answerRef, stage === 'question' ? 'question' : null)
 
   // ── Pending complete (wait for keyboard to close) ──
   useEffect(() => {

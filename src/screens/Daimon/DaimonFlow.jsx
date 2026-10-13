@@ -10,6 +10,7 @@ import { findCell, DAIMON_FINAL_CELL, DAIMON_INSIGHT_PROMPT } from '../../lib/da
 import { formatCount } from '../../lib/pluralize'
 import { GuestAiGate } from '../Mentalix'
 import { useVoiceRecorder } from '../../lib/useVoiceRecorder'
+import { useAutoFocusField } from '../../lib/useAutoFocusField'
 import { Mic, Square, LoaderCircle } from 'lucide-react'
 import {
   useVisualViewportGeometry,
@@ -155,15 +156,8 @@ function RequestView({ request, setRequest, onSubmit, onBack, error, creating })
     typeof window !== 'undefined' &&
     window.innerHeight - viewportGeometry.height > 80
 
-  useEffect(() => {
-    const focus = () => fieldRef.current?.focus({ preventScroll: true })
-    const frame = window.requestAnimationFrame(focus)
-    const retry = window.setTimeout(focus, 80)
-    return () => {
-      window.cancelAnimationFrame(frame)
-      window.clearTimeout(retry)
-    }
-  }, [])
+  // MXL-KEYBOARD-001: экран запроса — основная задача написать текст.
+  useAutoFocusField(fieldRef, 'request')
 
   const hasText = request.trim().length > 0
   const overLimit = request.length > REQUEST_MAX
@@ -541,17 +535,8 @@ function CellView({ game, board, userId, onInsight, onBackToBoard, onGuestLogin 
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  // Автофокус на поле вывода
-  useEffect(() => {
-    if (!askInsight) return
-    const focus = () => insightRef.current?.focus({ preventScroll: true })
-    const frame = window.requestAnimationFrame(focus)
-    const retry = window.setTimeout(focus, 80)
-    return () => {
-      window.cancelAnimationFrame(frame)
-      window.clearTimeout(retry)
-    }
-  }, [askInsight])
+  // Автофокус на поле вывода (MXL-KEYBOARD-001)
+  useAutoFocusField(insightRef, askInsight ? 'insight' : null)
 
   async function sendChat(text) {
     if (sendingRef.current) return

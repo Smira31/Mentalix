@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { platform } from '../../platform'
 import { useBackButton } from '../../platform/telegram.hooks'
 import Screen from '../Screen'
 import CapsLabel from '../ui/CapsLabel'
 import JournalField from '../ui/JournalField'
 import RoundNextButton from '../ui/RoundNextButton'
+import { useAutoFocusField } from '../../lib/useAutoFocusField'
 
 /*
  * Экран-поле в стиле журнала: одна колонка вопросов, поле без рамки,
@@ -43,10 +44,9 @@ export default function PracticeFieldFlow({
     setValues(previous => previous.map((item, index) => (index === step ? next : item)))
   }
 
-  useEffect(() => {
-    // автофокус — клавиатура открыта сразу
-    inputRef.current?.focus()
-  }, [step])
+  // MXL-KEYBOARD-001: каждый шаг-поле открывает клавиатуру сразу,
+  // без второго нажатия на поле.
+  useAutoFocusField(inputRef, step)
 
   async function advance() {
     if (!canAdvance || saving) return
