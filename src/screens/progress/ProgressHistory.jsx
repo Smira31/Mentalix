@@ -500,13 +500,23 @@ function MoodBody({ mp }) {
 }
 
 function JournalBody({ entry }) {
-  if (!entry?.phases?.length) return null
+  if (!entry?.phases?.length && !entry?.freeWrites?.length) return null
   return (
     <>
-      {entry.phases.map(phase => (
+      {entry?.phases?.map(phase => (
         <div className="mx-progress-entry__field" key={phase.key}>
           <div className="mx-progress-entry__field-label">{phase.label}</div>
           <MarkdownText content={phase.text} className="mx-progress-entry__field-value" />
+        </div>
+      ))}
+      {entry?.freeWrites?.map(freeWrite => (
+        <div
+          className="mx-progress-entry__field"
+          key={freeWrite.id || freeWrite.text}
+          data-testid="local-journal-freewrite"
+        >
+          <div className="mx-progress-entry__field-label">Свободная запись</div>
+          <MarkdownText content={freeWrite.text} className="mx-progress-entry__field-value" />
         </div>
       ))}
     </>
@@ -542,6 +552,15 @@ function entryPreview(entry) {
       <div className="mx-progress-history__row-preview-text">
         <span className="mx-progress-history__row-preview-q">{phase.label}</span>
         <span className="mx-progress-history__row-preview-a">{phase.text}</span>
+      </div>
+    )
+  }
+  if (entry.type === ENTRY_TYPES.JOURNAL && entry.journal?.freeWrites?.length) {
+    const freeWrite = entry.journal.freeWrites[0]
+    return (
+      <div className="mx-progress-history__row-preview-text">
+        <span className="mx-progress-history__row-preview-q">Свободная запись</span>
+        <span className="mx-progress-history__row-preview-a">{freeWrite.text}</span>
       </div>
     )
   }

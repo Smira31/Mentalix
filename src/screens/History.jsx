@@ -168,6 +168,21 @@ function JournalDayCard({ entry }) {
             />
           </div>
         ))}
+        {/* Свободные записи дня — отдельными строками, не схлопываем по дате. */}
+        {entry.freeWrites?.map(freeWrite => (
+          <div key={freeWrite.id || freeWrite.text} data-testid="local-journal-freewrite">
+            <div className="mb-1 flex items-center gap-2">
+              <span className="text-[12px] font-bold text-gold">Свободная запись</span>
+              <span className="text-[11px] text-muted">
+                {freeWrite.status === 'final' ? 'завершено' : 'черновик'}
+              </span>
+            </div>
+            <MarkdownText
+              content={freeWrite.text}
+              className="space-y-2 text-[14px] leading-snug text-muted"
+            />
+          </div>
+        ))}
       </div>
     </div>
   )

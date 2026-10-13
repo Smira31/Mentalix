@@ -534,6 +534,11 @@ export function getEntrySearchableText(entry) {
       if (phase.label) parts.push(phase.label)
     }
   }
+  if (Array.isArray(j?.freeWrites)) {
+    for (const freeWrite of j.freeWrites) {
+      if (freeWrite.text) parts.push(freeWrite.text)
+    }
+  }
   if (entry.thought?.text) parts.push(entry.thought.text)
   return parts.join(' ').toLowerCase()
 }
