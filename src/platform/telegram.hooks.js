@@ -382,10 +382,26 @@ export function confirmAction(message) {
    онбординг, выбранная тема.
    ============================================================ */
 
+/*
+ * CloudStorage появился в Bot API 6.9. Клиент, который его не знает,
+ * оставляет у SDK version = '6.0', а сам SDK перед вызовом пишет
+ * console.error и бросает WebAppMethodUnsupported. Поэтому одного
+ * наличия метода мало — нужна ещё и версия.
+ */
+function cloudStorage() {
+  const webApp = api()
+
+  if (!webApp?.CloudStorage) return null
+
+  if (typeof webApp.isVersionAtLeast === 'function' && !webApp.isVersionAtLeast('6.9')) return null
+
+  return webApp.CloudStorage
+}
+
 export const cloud = {
   get(key) {
     return new Promise(resolve => {
-      const storage = api()?.CloudStorage
+      const storage = cloudStorage()
 
       if (!storage?.getItem) {
         resolve(null)
@@ -402,7 +418,7 @@ export const cloud = {
 
   set(key, value) {
     return new Promise(resolve => {
-      const storage = api()?.CloudStorage
+      const storage = cloudStorage()
 
       if (!storage?.setItem) {
         resolve(false)
@@ -420,7 +436,7 @@ export const cloud = {
   // Удаляет ВСЕ ключи пользователя из CloudStorage (после удаления аккаунта).
   clearAll() {
     return new Promise(resolve => {
-      const storage = api()?.CloudStorage
+      const storage = cloudStorage()
 
       if (!storage?.getKeys || !storage?.removeItems) {
         resolve(false)
@@ -454,7 +470,7 @@ export const cloud = {
 
   remove(key) {
     return new Promise(resolve => {
-      const storage = api()?.CloudStorage
+      const storage = cloudStorage()
 
       if (!storage?.removeItem) {
         resolve(false)
