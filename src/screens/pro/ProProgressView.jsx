@@ -4,13 +4,18 @@ import { api } from '../../lib/api'
 import PageTitle from '../../components/ui/PageTitle'
 import Card from '../../components/ui/Card'
 import PillButton from '../../components/ui/PillButton'
+import ProStateCard from './ProStateCard'
+import { proBlockedState, proErrorKey } from './proApiState'
 import { STATUS_LABELS, formatDayLabel, formatWeekRange } from './weekLabel'
 
 /*
  * «Прогресс» (PRO-002c-progress): детерминированная сводка выполнения плана —
  * GET /api/pro/progress без AI-вызова. Количество выполненных/пропущенных/
  * неотмеченных действий, доля, состояния дней. Просрочки нет: будущий день
- * (is_future) — нормальное состояние, не провал. plan_required → «К плану».
+ * (is_future) — нормальное состояние, не провал. plan_required → «К плану»;
+ * 402 pro_required и 404 pro_progress_disabled → отдельная карточка, не
+ * бесконечная загрузка; ошибки двух форматов — body.detail и body.code;
+ * поздний ответ загрузки отбрасывается по номеру запроса.
  */
 
 const STATUS_COLORS = {
@@ -22,7 +27,10 @@ const STATUS_COLORS = {
 export default function ProProgressView({ onOpenPlan }) {
   const [state, setState] = useState(null) // null — загрузка
   const [loadFailed, setLoadFailed] = useState(false)
+  const [blocked, setBlocked] = useState(null)
   const aliveRef = useRef(true)
+  // Поздний ответ загрузки не затирает новое состояние экрана.
+  const loadSeqRef = useRef(0)
 
   useEffect(() => {
     aliveRef.current = true
@@ -33,16 +41,23 @@ export default function ProProgressView({ onOpenPlan }) {
   }, [])
 
   function load() {
+    const seq = ++loadSeqRef.current
     setLoadFailed(false)
     api.pro
       .getProgress()
       .then(data => {
-        if (!aliveRef.current) return
+        if (!aliveRef.current || seq !== loadSeqRef.current) return
         setState(data)
+        setBlocked(null)
       })
       .catch(error => {
+        if (!aliveRef.current || seq !== loadSeqRef.current) return
+        const block = proBlockedState(proErrorKey(error))
+        if (block) {
+          setBlocked(block)
+          return
+        }
         console.error(error)
-        if (!aliveRef.current) return
         setLoadFailed(true)
       })
   }
@@ -57,7 +72,13 @@ export default function ProProgressView({ onOpenPlan }) {
     <div>
       <PageTitle>прогресс.</PageTitle>
 
-      {state === null && !loadFailed && <p className="mt-6 text-[13px] text-muted">Загружаем…</p>}
+      {state === null && !loadFailed && !blocked && (
+        <p className="mt-6 text-[13px] text-muted">Загружаем…</p>
+      )}
+
+      {blocked && (
+        <ProStateCard title={blocked.title} text={blocked.text} testId="pro-blocked-state" />
+      )}
 
       {loadFailed && (
         <Card className="mt-4 p-4">
@@ -79,7 +100,17 @@ export default function ProProgressView({ onOpenPlan }) {
         </Card>
       )}
 
-      {state && state.status !== 'plan_required' && (
+      {state && !['plan_required', 'ready', 'partial'].includes(state.status) && (
+        <ProStateCard
+          title="Неожиданное состояние"
+          text="Сервер вернул незнакомый статус прогресса. Попробуй обновить экран."
+          actionLabel="Повторить"
+          onAction={load}
+          testId="pro-unknown-state"
+        />
+      )}
+
+      {state && ['ready', 'partial'].includes(state.status) && (
         <div>
           {state.status === 'partial' && (
             <p className="mt-2 text-[12px] leading-relaxed text-muted">

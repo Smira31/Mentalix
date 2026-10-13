@@ -8,17 +8,25 @@ import { mskDayKey, shiftMskDay } from './mskDate.js'
  * `?proMock=…`; в production-сборке оба условия ложны, код неактивен.
  *
  * Сценарии `proMock`:
- *   ready        (или 1) — обычный путь: согласие → сборка → готово
- *   conflict             — POST отвечает 409 generation_in_progress,
- *                          затем GET через ~3.5 с отдаёт готовый результат
- *   insufficient         — 409 insufficient_data
- *   crisis               — 200 crisis с утверждённым ответом
- *   disabled             — 404 detail pro_report_disabled / pro_plan_disabled
- *   nopro                — 402 detail pro_required
+ *   ready             (или 1) — обычный путь: согласие → сборка → готово
+ *   conflict                  — POST отвечает 409 generation_in_progress,
+ *                               затем GET через ~3.5 с действительно завершает
+ *                               сборку готовым результатом; повторный POST не
+ *                               требуется
+ *   version_conflict          — любой PATCH пункта отвечает 409
+ *                               detail version_conflict (детерминированно)
+ *   rebuild_conflict          — POST плана с rebuild=true отвечает 409
+ *                               code rebuild_conflict с сохранённым планом
+ *   insufficient              — 409 insufficient_data
+ *   crisis                    — 200 crisis с утверждённым ответом
+ *   disabled                  — 404 detail pro_report_disabled / pro_plan_disabled
+ *   nopro                     — 402 detail pro_required
  *
  * Реализует фактический контракт backend/pro/router.py: ошибки двух видов
  * (HTTPException → detail, JSONResponse → code), GET без признака
- * generation_in_progress, статусы действий planned|done|skipped.
+ * generation_in_progress, статусы действий planned|done|skipped. Правка
+ * общей цели (goal_text/goal_source_reflection) повышает версии ВСЕХ дней,
+ * правка действия/критерия — только изменённого дня: как на сервере.
  * Согласие обслуживается через существующий поток GET/PUT /mentalix/consent.
  */
 
@@ -30,9 +38,12 @@ const MOCK_DISCLAIMER =
 const MOCK_CRISIS_REPLY =
   'Похоже, сейчас тебе по-настоящему тяжело. Если есть мысли о причинении себе вреда, обратись за помощью — это можно сделать бесплатно. Разбор в таком состоянии не собирается.'
 
-// Окна «сборки» для сценария conflict: до их истечения GET отдаёт
-// not_generated, POST — 409 generation_in_progress. Сбрасывается перезагрузкой.
-const conflictWindows = { report: 0, plan: 0 }
+// Детерминированная «сборка» для сценария conflict: POST запоминает момент
+// готовности и отвечает 409 generation_in_progress; GET внутри окна отдаёт
+// not_generated, после окна — завершает сборку (создаёт разбор/план) и
+// отдаёт ready. Сбрасывается перезагрузкой (resetProMockState).
+const MOCK_GENERATION_MS = 3500
+const pendingGeneration = { report: 0, plan: 0 } // отметка готовности; 0 — нет
 
 export function isProMockMode() {
   if (typeof window === 'undefined') return false
@@ -45,7 +56,15 @@ export function isProMockMode() {
 
 function mockScenario() {
   const value = new URLSearchParams(window.location.search).get('proMock')
-  return ['conflict', 'insufficient', 'crisis', 'disabled', 'nopro'].includes(value)
+  return [
+    'conflict',
+    'version_conflict',
+    'rebuild_conflict',
+    'insufficient',
+    'crisis',
+    'disabled',
+    'nopro',
+  ].includes(value)
     ? value
     : 'ready'
 }
@@ -220,12 +239,20 @@ function progressResponse(state) {
   }
 }
 
-function maybeConflict(kind) {
-  if (mockScenario() !== 'conflict') return false
-  if (Date.now() >= conflictWindows[kind]) {
-    conflictWindows[kind] = Date.now() + 3500
+/*
+ * Сценарий conflict на POST: если сборка ещё не начата — запоминаем момент
+ * готовности и отвечаем 409 generation_in_progress; если окно истекло —
+ * сборка действительно завершается готовым результатом (без повторного
+ * POST). Внутри окна повторный POST тоже отвечает 409 без перезапуска.
+ */
+function conflictPost(kind, finalize) {
+  const readyAt = pendingGeneration[kind]
+  if (readyAt && Date.now() >= readyAt) {
+    pendingGeneration[kind] = 0
+    return finalize()
   }
-  return true
+  if (!readyAt) pendingGeneration[kind] = Date.now() + MOCK_GENERATION_MS
+  return null
 }
 
 export async function proMockRequest(path, options = {}) {
@@ -277,6 +304,18 @@ export async function proMockRequest(path, options = {}) {
     if (state.report) {
       return { week_start: weekStart, week_end: state.report.week_end, status: 'ready', report: state.report }
     }
+    // Сценарий conflict: сборка идёт — GET отдаёт not_generated (GET не
+    // сообщает generation_in_progress), после окна завершается готовым
+    // результатом, без повторного POST.
+    if (pendingGeneration.report) {
+      if (Date.now() < pendingGeneration.report) {
+        return { week_start: weekStart, week_end: shiftMskDay(weekStart, 6), status: 'not_generated', report: null }
+      }
+      state.report = buildMockReport(weekStart)
+      pendingGeneration.report = 0
+      writeState(state)
+      return { week_start: weekStart, week_end: state.report.week_end, status: 'ready', report: state.report }
+    }
     if (!state.consent) {
       return { week_start: weekStart, week_end: shiftMskDay(weekStart, 6), status: 'consent_required', report: null }
     }
@@ -299,7 +338,19 @@ export async function proMockRequest(path, options = {}) {
     if (scenario === 'crisis') {
       return { status: 'crisis', reply: MOCK_CRISIS_REPLY }
     }
-    if (maybeConflict('report')) {
+    if (scenario === 'conflict') {
+      const done = conflictPost('report', () => {
+        state.report = buildMockReport(weekStart)
+        writeState(state)
+        return {
+          week_start: weekStart,
+          week_end: state.report.week_end,
+          status: 'ready',
+          created: true,
+          report: state.report,
+        }
+      })
+      if (done) return done
       throw new MockApiError(409, {
         code: 'generation_in_progress',
         message: 'Разбор этой недели уже собирается. Повторите запрос позже.',
@@ -315,6 +366,17 @@ export async function proMockRequest(path, options = {}) {
   // ── План на 7 дней (PRO-002c) ──
   if (pathname === '/pro/plan' && method === 'GET') {
     if (state.plan) return { week_start: weekStart, status: 'ready', plan: serializePlan(state) }
+    // Сценарий conflict: сборка идёт — GET отдаёт not_generated, после окна
+    // завершается готовым планом, без повторного POST.
+    if (pendingGeneration.plan) {
+      if (Date.now() < pendingGeneration.plan) {
+        return { week_start: weekStart, status: 'not_generated', plan: null }
+      }
+      state.plan = { days: buildMockPlanDays(weekStart, 1) }
+      pendingGeneration.plan = 0
+      writeState(state)
+      return { week_start: weekStart, status: 'ready', plan: serializePlan(state) }
+    }
     if (!state.report) return { week_start: weekStart, status: 'report_required', plan: null }
     if (!state.consent) return { week_start: weekStart, status: 'consent_required', plan: null }
     return { week_start: weekStart, status: 'not_generated', plan: null }
@@ -336,7 +398,28 @@ export async function proMockRequest(path, options = {}) {
     if (scenario === 'crisis') {
       return { status: 'crisis', reply: MOCK_CRISIS_REPLY }
     }
-    if (maybeConflict('plan')) {
+    if (scenario === 'rebuild_conflict' && body.rebuild === true) {
+      // Детерминированный конфликт пересборки: план уже собран и изменён,
+      // сервер возвращает его в теле ошибки.
+      if (state.plan == null) {
+        state.plan = { days: buildMockPlanDays(weekStart, 1) }
+        writeState(state)
+      }
+      throw new MockApiError(409, {
+        code: 'rebuild_conflict',
+        message: 'План уже собран и изменён. Пересборка не выполнена — посмотри текущий план.',
+        plan: serializePlan(state),
+      })
+    }
+    if (scenario === 'conflict') {
+      const done = conflictPost('plan', () => {
+        if (state.plan == null) {
+          state.plan = { days: buildMockPlanDays(weekStart, 1) }
+        }
+        writeState(state)
+        return { week_start: weekStart, status: 'ready', created: true, plan: serializePlan(state) }
+      })
+      if (done) return done
       throw new MockApiError(409, {
         code: 'generation_in_progress',
         message: 'План этой недели уже собирается. Повторите запрос позже.',
@@ -372,6 +455,11 @@ export async function proMockRequest(path, options = {}) {
     }
 
     if (method === 'PATCH') {
+      // Детерминированный конфликт версий: любой PATCH пункта отвечает 409,
+      // чтобы проверить сохранение ввода и осознанное обновление/повтор.
+      if (scenario === 'version_conflict') {
+        throw new MockApiError(409, { detail: 'version_conflict' })
+      }
       const expected = body.expected_version ?? item.version
       if (expected !== item.version) {
         throw new MockApiError(409, { detail: 'version_conflict' })
@@ -380,12 +468,16 @@ export async function proMockRequest(path, options = {}) {
       if (body.action != null) item.action = body.action
       if (body.done_criteria != null) item.done_criteria = body.done_criteria
       if (hasGoal) {
+        // Общая цель хранится в каждом дне: сервер повышает версии ВСЕХ
+        // изменённых дней — mock делает так же.
         for (const day of state.plan.days) {
           if (body.goal_text != null) day.goal_text = body.goal_text
           if (body.goal_source_reflection != null) day.goal_reflection = body.goal_source_reflection
+          day.version += 1
         }
+      } else {
+        item.version += 1
       }
-      item.version += 1
       writeState(state)
       return {
         id: item.id,
@@ -427,6 +519,6 @@ export function resetProMockState() {
   } catch {
     /* empty */
   }
-  conflictWindows.report = 0
-  conflictWindows.plan = 0
+  pendingGeneration.report = 0
+  pendingGeneration.plan = 0
 }

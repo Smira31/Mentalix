@@ -11,8 +11,15 @@
  * опрос продолжается до лимита попыток.
  */
 
-export const PRO_POLL_INTERVAL_MS = 1500
-export const PRO_POLL_MAX_ATTEMPTS = 8
+/*
+ * Окно ожидания согласовано с таймаутом AI-генерации на клиенте: POST
+ * отчёта/плана идёт с timeoutMs 60_000 (см. api.js), поэтому опрос GET
+ * покрывает те же 60 с (30 попыток × 2 с). Текст таймаута на экранах —
+ * «занимает до минуты».
+ */
+export const PRO_POLL_INTERVAL_MS = 2000
+export const PRO_POLL_MAX_ATTEMPTS = 30
+export const PRO_POLL_WINDOW_MS = PRO_POLL_INTERVAL_MS * PRO_POLL_MAX_ATTEMPTS
 
 // Состояния, на которых опрос останавливается: ready — успех; остальные
 // требуют действия пользователя (включить согласие, собрать разбор) и не

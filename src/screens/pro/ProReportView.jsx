@@ -9,6 +9,8 @@ import PageTitle from '../../components/ui/PageTitle'
 import Card from '../../components/ui/Card'
 import PillButton from '../../components/ui/PillButton'
 import ProConsentCard from './ProConsentCard'
+import ProStateCard from './ProStateCard'
+import { proBlockedState, proErrorKey } from './proApiState'
 import { formatDayList, formatSources, formatWeekRange } from './weekLabel'
 
 /*
@@ -17,12 +19,19 @@ import { formatDayList, formatSources, formatWeekRange } from './weekLabel'
  * Состояния по контракту GET /api/pro/report: consent_required → приглашение
  * включить согласие (существующий поток /api/mentalix/consent); not_generated
  * → кнопка «Собрать разбор» (POST); ready → текст разбора с обязательным
- * дисклеймером и кнопкой «План недели». После POST-ответа 409
- * generation_in_progress — ограниченный опрос GET, повторная POST-генерация
- * не отправляется. Генерация запускается только явным действием пользователя.
+ * дисклеймером и кнопкой «План недели». Терминальные состояния доступа —
+ * 402 pro_required и 404 pro_report_disabled → отдельная карточка, не
+ * бесконечная загрузка; недостаток данных (insufficient_data) — отдельное
+ * состояние. Ошибки двух форматов: body.detail и body.code.
+ * После POST-ответа 409 generation_in_progress — ограниченный опрос GET
+ * (окно — 60 с, как таймаут AI-генерации), повторная POST-генерация не
+ * отправляется. Генерация запускается только явным действием пользователя.
+ * Поздние ответы загрузки отбрасываются по номеру запроса.
  */
 
 const CONFIDENCE_LABELS = { low: 'предположение', medium: 'судя по записям' }
+
+const KNOWN_STATUSES = new Set(['consent_required', 'not_generated', 'ready'])
 
 function Section({ title, children }) {
   return (
@@ -73,11 +82,15 @@ export default function ProReportView({ user, onOpenPlan }) {
   const [report, setReport] = useState(null)
   const [week, setWeek] = useState(null)
   const [loadFailed, setLoadFailed] = useState(false)
+  const [blocked, setBlocked] = useState(null)
+  const [insufficient, setInsufficient] = useState(false)
   const [generating, setGenerating] = useState(false)
   const [consentSaving, setConsentSaving] = useState(false)
   const [message, setMessage] = useState('')
   const [crisisReply, setCrisisReply] = useState(null)
   const aliveRef = useRef(true)
+  // Поздний ответ загрузки не затирает новое состояние экрана.
+  const loadSeqRef = useRef(0)
 
   useEffect(() => {
     aliveRef.current = true
@@ -88,24 +101,32 @@ export default function ProReportView({ user, onOpenPlan }) {
   }, [])
 
   function load() {
+    const seq = ++loadSeqRef.current
     setLoadFailed(false)
+    setInsufficient(false)
     api.pro
       .getReport()
       .then(data => {
-        if (!aliveRef.current) return
+        if (!aliveRef.current || seq !== loadSeqRef.current) return
         setWeek({ start: data.week_start, end: data.week_end })
         setStatus(data.status)
         setReport(data.report || null)
+        setBlocked(null)
       })
       .catch(error => {
+        if (!aliveRef.current || seq !== loadSeqRef.current) return
+        const block = proBlockedState(proErrorKey(error))
+        if (block) {
+          setBlocked(block)
+          return
+        }
         console.error(error)
-        if (!aliveRef.current) return
         setLoadFailed(true)
       })
   }
 
-  function applyResult(data) {
-    if (!aliveRef.current) return
+  function applyResult(data, seq) {
+    if (!aliveRef.current || seq !== loadSeqRef.current) return
     if (data.status === 'crisis') {
       setCrisisReply(data.reply || null)
       return
@@ -117,28 +138,35 @@ export default function ProReportView({ user, onOpenPlan }) {
 
   async function handleGenerate() {
     if (generating) return
+    const seq = ++loadSeqRef.current
     setGenerating(true)
     setMessage('')
+    setInsufficient(false)
     try {
       const res = await api.pro.createReport()
-      applyResult(res)
+      applyResult(res, seq)
     } catch (error) {
-      const key = error?.body?.code || error?.body?.detail
-      if (key === 'generation_in_progress') {
+      const key = proErrorKey(error)
+      if (!aliveRef.current || seq !== loadSeqRef.current) return
+      const block = proBlockedState(key)
+      if (block) {
+        setBlocked(block)
+      } else if (key === 'generation_in_progress') {
         // Повторная POST-генерация не выполняется: ограниченный опрос GET.
         try {
           const final = await pollGenerationReady(() => api.pro.getReport(), {
             isCancelled: () => !aliveRef.current,
           })
-          applyResult(final)
+          applyResult(final, seq)
         } catch (pollError) {
           if (pollError instanceof ProPollCancelledError) return
-          setMessage('Разбор ещё собирается. Открой экран чуть позже.')
+          if (!aliveRef.current) return
+          setMessage('Разбор ещё собирается — это занимает до минуты. Открой экран чуть позже.')
         }
       } else if (key === 'consent_required') {
         setStatus('consent_required')
       } else if (key === 'insufficient_data') {
-        setMessage('За эту неделю слишком мало записей для разбора.')
+        setInsufficient(true)
       } else {
         console.error(error)
         setMessage('Не удалось собрать разбор. Попробуй ещё раз.')
@@ -178,6 +206,8 @@ export default function ProReportView({ user, onOpenPlan }) {
 
       {loading && <p className="mt-6 text-[13px] text-muted">Загружаем…</p>}
 
+      {blocked && <ProStateCard title={blocked.title} text={blocked.text} testId="pro-blocked-state" />}
+
       {loadFailed && (
         <Card className="mt-4 p-4">
           <p className="text-[13px] text-muted">Не удалось загрузить состояние разбора.</p>
@@ -187,11 +217,21 @@ export default function ProReportView({ user, onOpenPlan }) {
         </Card>
       )}
 
-      {!loading && !loadFailed && status === 'consent_required' && (
+      {insufficient && (
+        <ProStateCard
+          title="Недостаточно данных"
+          text="За эту неделю слишком мало записей для разбора. Разбор следующей недели соберётся из новых записей."
+          actionLabel="Понятно"
+          onAction={() => setInsufficient(false)}
+          testId="pro-insufficient-state"
+        />
+      )}
+
+      {!loading && !loadFailed && !blocked && status === 'consent_required' && (
         <ProConsentCard onEnable={handleEnableConsent} saving={consentSaving} note={message} />
       )}
 
-      {!loading && !loadFailed && status === 'not_generated' && (
+      {!loading && !loadFailed && !blocked && status === 'not_generated' && (
         <Card className="mt-4 p-4">
           <p className="text-[14px] leading-relaxed text-cream">
             Разбор этой недели ещё не собран. Он интерпретирует твои записи: темы, повторяющиеся
@@ -207,6 +247,16 @@ export default function ProReportView({ user, onOpenPlan }) {
             {generating ? 'Собираем разбор…' : 'Собрать разбор'}
           </PillButton>
         </Card>
+      )}
+
+      {!loading && !loadFailed && !blocked && status !== null && !KNOWN_STATUSES.has(status) && (
+        <ProStateCard
+          title="Неожиданное состояние"
+          text="Сервер вернул незнакомый статус разбора. Попробуй обновить экран."
+          actionLabel="Повторить"
+          onAction={load}
+          testId="pro-unknown-state"
+        />
       )}
 
       {generating && (

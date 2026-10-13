@@ -9,18 +9,29 @@ import PageTitle from '../../components/ui/PageTitle'
 import Card from '../../components/ui/Card'
 import PillButton from '../../components/ui/PillButton'
 import ProConsentCard from './ProConsentCard'
+import ProStateCard from './ProStateCard'
+import { proBlockedState, proErrorKey } from './proApiState'
 import { STATUS_LABELS, formatDayLabel, formatWeekRange } from './weekLabel'
 
 /*
  * «План недели» (PRO-002c): одна цель, семь действий, привязка к
  * существующим практикам. Состояния GET /api/pro/plan: report_required →
  * сначала разбор; consent_required → приглашение согласия; not_generated →
- * кнопка «Собрать план» (POST); ready → 7 карточек с отметками выполнения
- * (POST status: planned|done|skipped) и правкой текста действия
- * (PATCH с expected_version; 409 version_conflict → перечитываем план).
- * После POST 409 generation_in_progress — ограниченный опрос GET, без
- * повторной POST-генерации. Пересборка — POST с rebuild=true; конфликт
- * пересборки (rebuild_conflict) показывает сообщение и сохранённый план.
+ * кнопка «Собрать план» (POST); ready|partial → карточки с отметками
+ * выполнения (POST status: planned|done|skipped).
+ *
+ * Полный согласованный редактор: правка общей цели недели (PATCH
+ * goal_text + expected_version — общая цель меняет все дни, поэтому после
+ * ответа план перечитывается целиком) и правка действия И критерия
+ * выполнения каждого дня (PATCH action + done_criteria +
+ * expected_version; 409 version_conflict → ввод сохраняется и
+ * предлагается осознанное обновление/повтор, не автосохранение).
+ *
+ * Защита от гонок: один слот сохранения (saving) блокирует повторное
+ * сохранение пункта и повторные смены статуса на время запроса;
+ * поздние ответы загрузки/сохранения отбрасываются по номеру запроса
+ * (loadSeqRef) и размонтированию (aliveRef). Опрос после POST 409
+ * generation_in_progress — ограниченный GET, без повторной POST-генерации.
  */
 
 const STATUS_COLORS = {
@@ -29,16 +40,28 @@ const STATUS_COLORS = {
   planned: 'text-muted',
 }
 
+/* Известные статусы GET /api/pro/plan: любое другое значение — не загрузка. */
+const KNOWN_STATUSES = new Set([
+  'report_required',
+  'consent_required',
+  'not_generated',
+  'ready',
+  'partial',
+])
+
 function DayCard({
   day,
   editing,
   editText,
+  editCriteria,
+  busy,
+  savingThis,
   onEditStart,
   onEditChange,
+  onCriteriaChange,
   onEditSave,
   onEditCancel,
   onStatus,
-  savingStatus,
 }) {
   return (
     <Card className="p-4" testId="pro-plan-day">
@@ -60,30 +83,43 @@ function DayCard({
             className="w-full rounded-2xl bg-cream/5 p-3 text-[14px] leading-relaxed text-cream outline-none"
             data-testid="pro-plan-edit-input"
           />
+          <p className="font-label mt-2 text-[11px] uppercase tracking-wider text-muted">
+            Критерий выполнения
+          </p>
+          <textarea
+            value={editCriteria}
+            onChange={event => onCriteriaChange(event.target.value)}
+            rows={2}
+            className="mt-1 w-full rounded-2xl bg-cream/5 p-3 text-[13px] leading-relaxed text-muted outline-none"
+            data-testid="pro-plan-edit-criteria"
+          />
           <div className="mt-2 flex gap-2">
             <button
               type="button"
               data-testid="pro-plan-edit-save"
+              disabled={busy}
               onClick={onEditSave}
-              className="min-h-10 rounded-full bg-cream/5 px-3 text-[12px] font-semibold text-gold"
+              className="min-h-10 rounded-full bg-cream/5 px-3 text-[12px] font-semibold text-gold disabled:opacity-50"
             >
-              Сохранить
+              {savingThis ? 'Сохраняем…' : 'Сохранить'}
             </button>
             <button
               type="button"
+              disabled={busy}
               onClick={onEditCancel}
-              className="min-h-10 rounded-full px-3 text-[12px] font-semibold text-muted"
+              className="min-h-10 rounded-full px-3 text-[12px] font-semibold text-muted disabled:opacity-50"
             >
               Отмена
             </button>
           </div>
         </div>
       ) : (
-        <p className="mt-2 text-[15px] leading-relaxed text-cream">{day.action}</p>
-      )}
-
-      {day.done_criteria && (
-        <p className="mt-1 text-[12px] leading-relaxed text-muted">{day.done_criteria}</p>
+        <>
+          <p className="mt-2 text-[15px] leading-relaxed text-cream">{day.action}</p>
+          {day.done_criteria && (
+            <p className="mt-1 text-[12px] leading-relaxed text-muted">{day.done_criteria}</p>
+          )}
+        </>
       )}
 
       {day.practice?.title && (
@@ -98,7 +134,7 @@ function DayCard({
             <button
               type="button"
               data-testid={`pro-day-${day.day}-done`}
-              disabled={savingStatus}
+              disabled={busy}
               onClick={() => onStatus(day, 'done')}
               className="min-h-10 rounded-full bg-cream/5 px-3 text-[12px] font-semibold text-gold disabled:opacity-50"
             >
@@ -109,7 +145,7 @@ function DayCard({
             <button
               type="button"
               data-testid={`pro-day-${day.day}-skipped`}
-              disabled={savingStatus}
+              disabled={busy}
               onClick={() => onStatus(day, 'skipped')}
               className="min-h-10 rounded-full bg-cream/5 px-3 text-[12px] font-semibold text-muted disabled:opacity-50"
             >
@@ -120,7 +156,7 @@ function DayCard({
             <button
               type="button"
               data-testid={`pro-day-${day.day}-reset`}
-              disabled={savingStatus}
+              disabled={busy}
               onClick={() => onStatus(day, 'planned')}
               className="min-h-10 rounded-full px-2 text-[12px] font-semibold text-muted disabled:opacity-50"
             >
@@ -130,8 +166,9 @@ function DayCard({
           <button
             type="button"
             data-testid={`pro-day-${day.day}-edit`}
+            disabled={busy}
             onClick={onEditStart}
-            className="min-h-10 rounded-full px-2 text-[12px] font-semibold text-muted"
+            className="min-h-10 rounded-full px-2 text-[12px] font-semibold text-muted disabled:opacity-50"
           >
             Изменить
           </button>
@@ -145,15 +182,30 @@ export default function ProPlanView({ user, onOpenReport, onOpenProgress }) {
   const [status, setStatus] = useState(null) // null — загрузка
   const [plan, setPlan] = useState(null)
   const [loadFailed, setLoadFailed] = useState(false)
+  // Терминальные состояния доступа: 402 pro_required и 404 pro_*_disabled.
+  const [blocked, setBlocked] = useState(null)
+  const [insufficient, setInsufficient] = useState(false)
   const [generating, setGenerating] = useState(false)
   const [consentSaving, setConsentSaving] = useState(false)
+  // Один слот сохранения: {kind: 'edit'|'goal'|'status', id} или null.
+  const [saving, setSaving] = useState(null)
   const [editingId, setEditingId] = useState(null)
   const [editText, setEditText] = useState('')
+  const [editCriteria, setEditCriteria] = useState('')
+  const [editingGoal, setEditingGoal] = useState(false)
+  const [goalText, setGoalText] = useState('')
+  // 409 version_conflict: правка ждёт осознанного решения пользователя.
+  const [conflict, setConflict] = useState(null) // {goal?, id?, text, criteria?}
   const [message, setMessage] = useState('')
   const [crisisReply, setCrisisReply] = useState(null)
   const aliveRef = useRef(true)
-  // Правка, не сохранённая из-за 409 version_conflict: после перечитывания
-  // плана поле правки возвращается с тем же текстом — ввод не теряется.
+  // Номер актуального запроса состояния: поздний ответ (уход с экрана,
+  // смена экрана, повторная загрузка, завершение опроса) не затирает новое
+  // состояние и введённый текст.
+  const loadSeqRef = useRef(0)
+  // Правка, не сохранённая из-за 409 version_conflict: после осознанного
+  // обновления плана поле правки возвращается с тем же текстом — ввод не
+  // теряется. retry — «повторить сохранение» поверх актуальной версии.
   const pendingEditRef = useRef(null)
 
   useEffect(() => {
@@ -165,69 +217,101 @@ export default function ProPlanView({ user, onOpenReport, onOpenProgress }) {
   }, [])
 
   function load() {
+    const seq = ++loadSeqRef.current
     setLoadFailed(false)
+    setInsufficient(false)
     api.pro
       .getPlan()
       .then(data => {
-        if (!aliveRef.current) return
+        // Поздний ответ: экран уже перезагружен или сменился — не применяем.
+        if (!aliveRef.current || seq !== loadSeqRef.current) return
         setStatus(data.status)
         setPlan(data.plan || null)
+        setBlocked(null)
         const pending = pendingEditRef.current
         if (pending) {
           pendingEditRef.current = null
-          const stillThere = (data.plan?.days || []).find(day => day.id === pending.id)
-          if (stillThere) {
-            setEditingId(pending.id)
+          if (pending.goal) {
+            setConflict(null)
+            setEditingGoal(true)
+            setGoalText(pending.text)
+            if (pending.retry) saveGoal(pending.text)
+            return
+          }
+          const day = (data.plan?.days || []).find(item => item.id === pending.id)
+          if (day) {
+            setConflict(null)
+            setEditingId(day.id)
             setEditText(pending.text)
+            setEditCriteria(pending.criteria ?? day.done_criteria ?? '')
+            if (pending.retry) saveEdit(day, pending.text, pending.criteria)
           }
         }
       })
       .catch(error => {
+        if (!aliveRef.current || seq !== loadSeqRef.current) return
+        const block = proBlockedState(proErrorKey(error))
+        if (block) {
+          setBlocked(block)
+          return
+        }
         console.error(error)
-        if (!aliveRef.current) return
         setLoadFailed(true)
       })
   }
 
-  function applyPlan(data, fallbackMessage) {
-    if (!aliveRef.current) return
+  function applyPlan(data, seq, fallbackMessage) {
+    if (!aliveRef.current || seq !== loadSeqRef.current) return
     if (data.status === 'crisis') {
       setCrisisReply(data.reply || null)
       return
     }
-    setStatus(data.status === 'ready' ? 'ready' : null)
+    setStatus(data.status)
     setPlan(data.plan || null)
     if (fallbackMessage) setMessage(fallbackMessage)
   }
 
   async function handleGenerate(rebuild = false) {
-    if (generating) return
+    if (generating || saving) return
     if (rebuild && !window.confirm('Пересобрать план? Текущие отметки и правки будут заменены.')) {
       return
     }
+    const seq = ++loadSeqRef.current
     setGenerating(true)
     setMessage('')
+    setInsufficient(false)
     try {
       const res = await api.pro.createPlan(null, rebuild)
-      applyPlan(res)
+      applyPlan(res, seq)
     } catch (error) {
-      const key = error?.body?.code || error?.body?.detail
-      if (key === 'generation_in_progress') {
+      const key = proErrorKey(error)
+      const block = proBlockedState(key)
+      if (!aliveRef.current || seq !== loadSeqRef.current) return
+      if (block) {
+        setBlocked(block)
+      } else if (key === 'generation_in_progress') {
         try {
           const final = await pollGenerationReady(() => api.pro.getPlan(), {
             isCancelled: () => !aliveRef.current,
           })
-          applyPlan(final)
+          applyPlan(final, seq)
         } catch (pollError) {
           if (pollError instanceof ProPollCancelledError) return
-          setMessage('План ещё собирается. Открой экран чуть позже.')
+          if (!aliveRef.current) return
+          setMessage('План ещё собирается — это занимает до минуты. Открой экран чуть позже.')
         }
       } else if (key === 'report_required') {
         setStatus('report_required')
       } else if (key === 'consent_required') {
         setStatus('consent_required')
+      } else if (key === 'insufficient_data') {
+        setInsufficient(true)
       } else if (key === 'rebuild_conflict') {
-        applyPlan({ status: 'ready', plan: error?.body?.plan }, error?.body?.message)
+        applyPlan(
+          { status: 'ready', plan: error?.body?.plan },
+          seq,
+          error?.body?.message || 'План уже собран и изменён. Пересборка не выполнена.'
+        )
       } else {
         console.error(error)
         setMessage('Не удалось собрать план. Попробуй ещё раз.')
@@ -253,6 +337,8 @@ export default function ProPlanView({ user, onOpenReport, onOpenProgress }) {
   }
 
   async function handleStatus(item, next) {
+    if (saving) return
+    setSaving({ kind: 'status', id: item.id })
     setMessage('')
     try {
       const res = await api.pro.setPlanItemStatus(item.id, next)
@@ -268,29 +354,42 @@ export default function ProPlanView({ user, onOpenReport, onOpenProgress }) {
           : current
       )
     } catch (error) {
-      const key = error?.body?.detail || error?.body?.code
+      if (!aliveRef.current) return
+      const key = proErrorKey(error)
       if (key === 'not_found') {
         setMessage('План обновился на сервере. Загружаем заново…')
-        setEditingId(null)
         load()
       } else {
         console.error(error)
         setMessage('Не удалось сохранить отметку. Попробуй ещё раз.')
       }
+    } finally {
+      if (aliveRef.current) setSaving(null)
     }
   }
 
   function startEdit(item) {
     pendingEditRef.current = null
+    setConflict(null)
     setEditingId(item.id)
     setEditText(item.action)
+    setEditCriteria(item.done_criteria || '')
   }
 
-  async function saveEdit(item) {
+  function cancelEdit(item) {
+    pendingEditRef.current = null
+    setEditingId(null)
+    if (conflict && !conflict.goal && conflict.id === item.id) setConflict(null)
+  }
+
+  async function saveEdit(item, text = editText, criteria = editCriteria) {
+    if (saving) return
+    setSaving({ kind: 'edit', id: item.id })
     setMessage('')
     try {
       const res = await api.pro.patchPlanItem(item.id, {
-        action: editText,
+        action: text,
+        done_criteria: criteria,
         expected_version: item.version,
       })
       if (!aliveRef.current) return
@@ -299,29 +398,101 @@ export default function ProPlanView({ user, onOpenReport, onOpenProgress }) {
           ? {
               ...current,
               days: current.days.map(day =>
-                day.id === res.id ? { ...day, action: res.action, version: res.version } : day
+                day.id === res.id
+                  ? {
+                      ...day,
+                      action: res.action,
+                      done_criteria: res.done_criteria,
+                      version: res.version,
+                    }
+                  : day
               ),
             }
           : current
       )
       setEditingId(null)
+      setConflict(null)
     } catch (error) {
-      const key = error?.body?.detail
+      if (!aliveRef.current) return
+      const key = proErrorKey(error)
       if (key === 'version_conflict') {
-        // Ввод сохраняется: текст правки вернётся в поле после перечитывания.
-        pendingEditRef.current = { id: item.id, text: editText }
-        setMessage('План изменился на сервере. Загружаем актуальную версию…')
+        // Ввод сохраняется в поле и в pendingEditRef: пользователь осознанно
+        // выбирает «Обновить план» или «Повторить сохранение».
+        setConflict({ id: item.id, text, criteria })
+      } else if (key === 'not_found') {
+        setMessage('План обновился на сервере. Загружаем заново…')
+        pendingEditRef.current = { id: item.id, text, criteria }
         load()
       } else {
         console.error(error)
         setMessage('Не удалось сохранить правку. Попробуй ещё раз.')
       }
+    } finally {
+      if (aliveRef.current) setSaving(null)
     }
   }
 
+  function startGoalEdit() {
+    pendingEditRef.current = null
+    setConflict(null)
+    setEditingGoal(true)
+    setGoalText(plan?.goal?.text || '')
+  }
+
+  function cancelGoalEdit() {
+    pendingEditRef.current = null
+    setEditingGoal(false)
+    if (conflict?.goal) setConflict(null)
+  }
+
+  async function saveGoal(text = goalText) {
+    const first = plan?.days?.[0]
+    if (saving || !first) return
+    setSaving({ kind: 'goal', id: first.id })
+    setMessage('')
+    try {
+      await api.pro.patchPlanItem(first.id, {
+        goal_text: text,
+        expected_version: first.version,
+      })
+      if (!aliveRef.current) return
+      setEditingGoal(false)
+      setConflict(null)
+      // Общая цель хранится в каждом дне: сервер повышает версии всех дней —
+      // перечитываем согласованное состояние целиком.
+      load()
+    } catch (error) {
+      if (!aliveRef.current) return
+      const key = proErrorKey(error)
+      if (key === 'version_conflict') {
+        setConflict({ goal: true, text })
+      } else if (key === 'not_found') {
+        setMessage('План обновился на сервере. Загружаем заново…')
+        pendingEditRef.current = { goal: true, text }
+        load()
+      } else {
+        console.error(error)
+        setMessage('Не удалось сохранить цель. Попробуй ещё раз.')
+      }
+    } finally {
+      if (aliveRef.current) setSaving(null)
+    }
+  }
+
+  function resolveConflict(retry) {
+    if (!conflict) return
+    pendingEditRef.current = conflict.goal
+      ? { goal: true, text: conflict.text }
+      : { id: conflict.id, text: conflict.text, criteria: conflict.criteria, retry }
+    setConflict(null)
+    load()
+  }
+
   const loading = status === null
+  const busy = saving !== null
   const days = plan?.days || []
   const doneCount = days.filter(day => day.status === 'done').length
+  const showPlan = (status === 'ready' || status === 'partial') && plan
 
   return (
     <div>
@@ -334,6 +505,8 @@ export default function ProPlanView({ user, onOpenReport, onOpenProgress }) {
 
       {loading && <p className="mt-6 text-[13px] text-muted">Загружаем…</p>}
 
+      {blocked && <ProStateCard title={blocked.title} text={blocked.text} testId="pro-blocked-state" />}
+
       {loadFailed && (
         <Card className="mt-4 p-4">
           <p className="text-[13px] text-muted">Не удалось загрузить план.</p>
@@ -343,22 +516,30 @@ export default function ProPlanView({ user, onOpenReport, onOpenProgress }) {
         </Card>
       )}
 
-      {!loading && !loadFailed && status === 'report_required' && (
-        <Card className="mt-4 p-4">
-          <p className="text-[14px] leading-relaxed text-cream">
-            План строится на разборе недели — сначала собери его.
-          </p>
-          <PillButton variant="light" onClick={onOpenReport} className="mt-3 w-full">
-            К разбору
-          </PillButton>
-        </Card>
+      {insufficient && (
+        <ProStateCard
+          title="Недостаточно данных"
+          text="За эту неделю слишком мало записей. План следующей недели соберётся из новых записей."
+          actionLabel="Понятно"
+          onAction={() => setInsufficient(false)}
+          testId="pro-insufficient-state"
+        />
       )}
 
-      {!loading && !loadFailed && status === 'consent_required' && (
+      {!loading && !loadFailed && !blocked && status === 'report_required' && (
+        <ProStateCard
+          text="План строится на разборе недели — сначала собери его."
+          actionLabel="К разбору"
+          onAction={onOpenReport}
+          testId="pro-plan-report-required"
+        />
+      )}
+
+      {!loading && !loadFailed && !blocked && status === 'consent_required' && (
         <ProConsentCard onEnable={handleEnableConsent} saving={consentSaving} note={message} />
       )}
 
-      {!loading && !loadFailed && status === 'not_generated' && (
+      {!loading && !loadFailed && !blocked && status === 'not_generated' && (
         <Card className="mt-4 p-4">
           <p className="text-[14px] leading-relaxed text-cream">
             Одна цель и семь небольших действий на следующую неделю — по разбору и твоим
@@ -376,19 +557,82 @@ export default function ProPlanView({ user, onOpenReport, onOpenProgress }) {
         </Card>
       )}
 
-      {status === 'ready' && plan && (
+      {!loading && !loadFailed && !blocked && status !== null && !KNOWN_STATUSES.has(status) && (
+        <ProStateCard
+          title="Неожиданное состояние"
+          text="Сервер вернул незнакомый статус плана. Попробуй обновить экран."
+          actionLabel="Повторить"
+          onAction={load}
+          testId="pro-unknown-state"
+        />
+      )}
+
+      {showPlan && (
         <div>
-          <Card className="mt-4 p-4">
-            <p className="font-label text-[11px] uppercase tracking-wider text-muted">Цель недели</p>
-            <p className="mt-2 text-[15px] font-semibold leading-relaxed text-cream">
-              {plan.goal?.text}
+          {status === 'partial' && (
+            <p className="mt-2 text-[12px] leading-relaxed text-muted">
+              План собран не полностью — часть дней ещё появится.
             </p>
-            {plan.goal?.source_reflection && (
-              <p className="mt-1 text-[12px] leading-relaxed text-muted">
-                {plan.goal.source_reflection}
+          )}
+
+          {editingGoal ? (
+            <Card className="mt-4 p-4">
+              <p className="font-label text-[11px] uppercase tracking-wider text-muted">
+                Цель недели
               </p>
-            )}
-          </Card>
+              <textarea
+                value={goalText}
+                onChange={event => setGoalText(event.target.value)}
+                rows={2}
+                className="mt-2 w-full rounded-2xl bg-cream/5 p-3 text-[14px] leading-relaxed text-cream outline-none"
+                data-testid="pro-goal-edit-input"
+              />
+              <div className="mt-2 flex gap-2">
+                <button
+                  type="button"
+                  data-testid="pro-goal-edit-save"
+                  disabled={busy}
+                  onClick={() => saveGoal()}
+                  className="min-h-10 rounded-full bg-cream/5 px-3 text-[12px] font-semibold text-gold disabled:opacity-50"
+                >
+                  {saving?.kind === 'goal' ? 'Сохраняем…' : 'Сохранить'}
+                </button>
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={cancelGoalEdit}
+                  className="min-h-10 rounded-full px-3 text-[12px] font-semibold text-muted disabled:opacity-50"
+                >
+                  Отмена
+                </button>
+              </div>
+            </Card>
+          ) : (
+            <Card className="mt-4 p-4">
+              <div className="flex items-baseline justify-between gap-2">
+                <p className="font-label text-[11px] uppercase tracking-wider text-muted">
+                  Цель недели
+                </p>
+                <button
+                  type="button"
+                  data-testid="pro-goal-edit"
+                  disabled={busy}
+                  onClick={startGoalEdit}
+                  className="min-h-10 text-[12px] font-semibold text-muted disabled:opacity-50"
+                >
+                  Изменить
+                </button>
+              </div>
+              <p className="mt-2 text-[15px] font-semibold leading-relaxed text-cream">
+                {plan.goal?.text}
+              </p>
+              {plan.goal?.source_reflection && (
+                <p className="mt-1 text-[12px] leading-relaxed text-muted">
+                  {plan.goal.source_reflection}
+                </p>
+              )}
+            </Card>
+          )}
 
           <p className="font-label mt-4 text-[12px] text-cream" data-testid="pro-plan-progress">
             Выполнено {doneCount} из {days.length}
@@ -401,18 +645,60 @@ export default function ProPlanView({ user, onOpenReport, onOpenProgress }) {
                 day={day}
                 editing={editingId === day.id}
                 editText={editText}
+                editCriteria={editCriteria}
+                busy={busy}
+                savingThis={saving?.kind === 'edit' && saving.id === day.id}
                 onEditStart={() => startEdit(day)}
                 onEditChange={setEditText}
+                onCriteriaChange={setEditCriteria}
                 onEditSave={() => saveEdit(day)}
-                onEditCancel={() => {
-              pendingEditRef.current = null
-              setEditingId(null)
-            }}
+                onEditCancel={() => cancelEdit(day)}
                 onStatus={handleStatus}
-                savingStatus={false}
               />
             ))}
           </div>
+
+          {conflict && (
+            <Card className="mt-4 p-4" testId="pro-conflict-card">
+              <p className="text-[14px] font-semibold text-cream">План изменился на сервере</p>
+              <p className="mt-1 text-[12px] leading-relaxed text-muted">
+                Твой вариант сохранён в поле правки. Обнови план до последней версии или повтори
+                сохранение поверх актуальной.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  data-testid="pro-conflict-refresh"
+                  disabled={busy}
+                  onClick={() => resolveConflict(false)}
+                  className="min-h-10 rounded-full bg-cream/5 px-3 text-[12px] font-semibold text-gold disabled:opacity-50"
+                >
+                  Обновить план
+                </button>
+                <button
+                  type="button"
+                  data-testid="pro-conflict-retry"
+                  disabled={busy}
+                  onClick={() => resolveConflict(true)}
+                  className="min-h-10 rounded-full bg-cream/5 px-3 text-[12px] font-semibold text-gold disabled:opacity-50"
+                >
+                  Повторить сохранение
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    pendingEditRef.current = null
+                    setConflict(null)
+                    setEditingId(null)
+                    setEditingGoal(false)
+                  }}
+                  className="min-h-10 rounded-full px-3 text-[12px] font-semibold text-muted"
+                >
+                  Отменить правку
+                </button>
+              </div>
+            </Card>
+          )}
 
           <div className="mt-6 flex flex-col gap-2">
             <PillButton variant="light" testId="pro-open-progress" onClick={onOpenProgress} className="w-full">

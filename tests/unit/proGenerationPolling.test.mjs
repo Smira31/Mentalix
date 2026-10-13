@@ -2,7 +2,9 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import {
+  PRO_POLL_INTERVAL_MS,
   PRO_POLL_MAX_ATTEMPTS,
+  PRO_POLL_WINDOW_MS,
   ProPollCancelledError,
   ProPollTimeoutError,
   pollGenerationReady,
@@ -53,6 +55,12 @@ test('опрос ограничен числом попыток и заверш�
   )
   assert.equal(calls, 4)
   assert.ok(PRO_POLL_MAX_ATTEMPTS >= 2)
+})
+
+test('окно опроса покрывает таймаут AI-генерации (60 с, как POST в api.js)', () => {
+  assert.equal(PRO_POLL_WINDOW_MS, 60_000)
+  assert.equal(PRO_POLL_MAX_ATTEMPTS, 30)
+  assert.equal(PRO_POLL_INTERVAL_MS, 2000)
 })
 
 test('терминальные состояния ошибки генерации останавливают опрос', async () => {
