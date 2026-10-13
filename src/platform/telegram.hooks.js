@@ -382,22 +382,10 @@ export function confirmAction(message) {
    онбординг, выбранная тема.
    ============================================================ */
 
-// CloudStorage was added in Telegram 6.9. Accessing the property on an
-// older client itself emits a console error, so verify the version first.
-function cloudStorage() {
-  const webApp = api()
-
-  if (typeof webApp?.isVersionAtLeast !== 'function' || !webApp.isVersionAtLeast('6.9')) {
-    return null
-  }
-
-  return webApp.CloudStorage ?? null
-}
-
 export const cloud = {
   get(key) {
     return new Promise(resolve => {
-      const storage = cloudStorage()
+      const storage = api()?.CloudStorage
 
       if (!storage?.getItem) {
         resolve(null)
@@ -414,7 +402,7 @@ export const cloud = {
 
   set(key, value) {
     return new Promise(resolve => {
-      const storage = cloudStorage()
+      const storage = api()?.CloudStorage
 
       if (!storage?.setItem) {
         resolve(false)
@@ -432,7 +420,7 @@ export const cloud = {
   // Удаляет ВСЕ ключи пользователя из CloudStorage (после удаления аккаунта).
   clearAll() {
     return new Promise(resolve => {
-      const storage = cloudStorage()
+      const storage = api()?.CloudStorage
 
       if (!storage?.getKeys || !storage?.removeItems) {
         resolve(false)
@@ -466,7 +454,7 @@ export const cloud = {
 
   remove(key) {
     return new Promise(resolve => {
-      const storage = cloudStorage()
+      const storage = api()?.CloudStorage
 
       if (!storage?.removeItem) {
         resolve(false)
