@@ -77,11 +77,8 @@ test('buildEntriesByDay: группирует записи по дням', () =>
   const moodPractices = [
     { recorded_at: '2026-09-25T15:00:00Z', mood: 5, emotion: 'радость' },
   ]
-  const journalEntries = [
-    { date: '2026-09-24', phases: [{ key: 'newStep', label: 'Новый шаг', text: 'Текст' }] },
-  ]
 
-  const days = buildEntriesByDay(checkins, moodPractices, journalEntries, [])
+  const days = buildEntriesByDay(checkins, moodPractices, [], [])
 
   // Два дня
   assert.equal(days.length, 2)
@@ -95,15 +92,14 @@ test('buildEntriesByDay: группирует записи по дням', () =>
 
   // 24 сентября — вторая группа
   assert.equal(days[1].date, '2026-09-24')
-  // Две записи: вечерний разбор (20:00) + дневник (без времени — в конце)
-  assert.equal(days[1].entries.length, 2)
+  // Одна запись: вечерний разбор (20:00)
+  assert.equal(days[1].entries.length, 1)
   assert.equal(days[1].entries[0].type, ENTRY_TYPES.EVENING)
-  assert.equal(days[1].entries[1].type, ENTRY_TYPES.JOURNAL)
 })
 
 test('buildEntriesByDay: пустые данные → пустой массив', () => {
-  assert.deepEqual(buildEntriesByDay([], [], [], []), [])
-  assert.deepEqual(buildEntriesByDay(null, null, null, null), [])
+  assert.deepEqual(buildEntriesByDay([], [], [], [], []), [])
+  assert.deepEqual(buildEntriesByDay(null, null, null, null, null), [])
 })
 
 test('buildEntriesByDay: утренний чек-ин читает время из created_at', () => {
@@ -216,14 +212,15 @@ test('entryListName: правильные названия для строки �
   assert.equal(entryListName(ENTRY_TYPES.MORNING), 'Утренний чек-ин')
   assert.equal(entryListName(ENTRY_TYPES.EVENING), 'Вечерний разбор')
   assert.equal(entryListName(ENTRY_TYPES.MOOD), 'Отметка настроения')
-  assert.equal(entryListName(ENTRY_TYPES.JOURNAL), 'Дневник')
+  // Единственный дневник — «Дневник» (записи api.dailyJournal).
+  assert.equal(entryListName(ENTRY_TYPES.DAILY_JOURNAL), 'Дневник')
 })
 
 test('entryScreenTitle: заголовки экрана записи строчными с точкой', () => {
   assert.equal(entryScreenTitle(ENTRY_TYPES.MORNING), 'утро.')
   assert.equal(entryScreenTitle(ENTRY_TYPES.EVENING), 'вечер.')
   assert.equal(entryScreenTitle(ENTRY_TYPES.MOOD), 'отметка настроения.')
-  assert.equal(entryScreenTitle(ENTRY_TYPES.JOURNAL), 'дневник.')
+  assert.equal(entryScreenTitle(ENTRY_TYPES.DAILY_JOURNAL), 'дневник.')
 })
 
 test('formatEntryDateCaps: дата капителью для экрана записи', () => {
@@ -309,7 +306,7 @@ test('groupDaysByYear: группирует дни по годам', () => {
   const pastYear = today.getFullYear() - 1
   const days = [
     { date: today.toISOString().slice(0, 10), entries: [{ type: ENTRY_TYPES.MORNING, date: today.toISOString().slice(0, 10), time: '08:00', checkin: { mood: 4 } }] },
-    { date: `${pastYear}-06-15`, entries: [{ type: ENTRY_TYPES.JOURNAL, date: `${pastYear}-06-15`, time: '', journal: { phases: [] } }] },
+    { date: `${pastYear}-06-15`, entries: [{ type: ENTRY_TYPES.DAILY_JOURNAL, date: `${pastYear}-06-15`, time: '', diary: { id: 'd-old', streamText: 'Прошлый год' } }] },
   ]
 
   const groups = groupDaysByYear(days)
@@ -344,10 +341,63 @@ test('FILTER_GROUPS: группы «Чек-ины» и «Практики»', ()
   const checkinTypes = FILTER_GROUPS[0].types.map(t => t.id)
   assert.ok(checkinTypes.includes(ENTRY_TYPES.MORNING))
   assert.ok(checkinTypes.includes(ENTRY_TYPES.EVENING))
-  // Практики: настроение, дневник
+  // Практики: настроение, дневник (DailyJournal), мысль дня
   const practiceTypes = FILTER_GROUPS[1].types.map(t => t.id)
   assert.ok(practiceTypes.includes(ENTRY_TYPES.MOOD))
-  assert.ok(practiceTypes.includes(ENTRY_TYPES.JOURNAL))
+  assert.ok(practiceTypes.includes(ENTRY_TYPES.DAILY_JOURNAL))
+  assert.ok(practiceTypes.includes(ENTRY_TYPES.THOUGHT))
+})
+
+test('buildEntriesByDay: записи дневника кладутся в свой день и не схлопываются по дате', () => {
+  // Две разные записи дневника за один день остаются двумя строками.
+  const diaryEntries = [
+    { id: 'd-2', date: '2026-09-25', createdAt: '2026-09-25T21:00:00Z', streamText: 'Вечер' },
+    { id: 'd-1', date: '2026-09-25', createdAt: '2026-09-25T08:00:00Z', streamText: 'Утро' },
+    { id: 'd-3', date: '2026-09-24', createdAt: '', streamText: 'Вчера' },
+  ]
+
+  const days = buildEntriesByDay([], [], [], [], diaryEntries)
+
+  assert.equal(days.length, 2)
+  assert.equal(days[0].date, '2026-09-25')
+  assert.equal(days[0].entries.length, 2)
+  assert.ok(days[0].entries.every(e => e.type === ENTRY_TYPES.DAILY_JOURNAL))
+  // Время берётся из createdAt: новые сверху.
+  assert.equal(days[0].entries[0].diary.id, 'd-2')
+  assert.equal(days[0].entries[1].diary.id, 'd-1')
+  assert.equal(days[1].diary === undefined, true)
+  assert.equal(days[1].entries[0].diary.id, 'd-3')
+})
+
+test('buildEntriesByDay: запись дневника без id или даты не попадает в ленту', () => {
+  const days = buildEntriesByDay([], [], [], [], [
+    { date: '2026-09-25', streamText: 'Без id' },
+    { id: 'd-9', streamText: 'Без даты' },
+    { id: null, date: null, streamText: 'Пусто' },
+  ])
+  assert.deepEqual(days, [])
+})
+
+test('getEntrySearchableText: ищет по потоку и ответу записи дневника', () => {
+  const text = getEntrySearchableText({
+    type: ENTRY_TYPES.DAILY_JOURNAL,
+    diary: {
+      id: 'd-1',
+      date: '2026-09-25',
+      streamText: 'Мысли о дороге',
+      promptText: 'Что дальше?',
+      promptAnswer: 'Сделать шаг',
+    },
+  })
+  assert.ok(text.includes('мысли о дороге'))
+  assert.ok(text.includes('что дальше?'))
+  assert.ok(text.includes('сделать шаг'))
+
+  const found = searchEntries(
+    [{ date: '2026-09-25', entries: [{ type: ENTRY_TYPES.DAILY_JOURNAL, diary: { streamText: 'Мысли о дороге' } }] }],
+    'дороге'
+  )
+  assert.equal(found.length, 1)
 })
 
 test('getAvailableFilterTypes: возвращает только существующие типы', () => {
@@ -362,7 +412,7 @@ test('getAvailableFilterTypes: возвращает только существ�
   assert.ok(types.has(ENTRY_TYPES.MORNING))
   assert.ok(types.has(ENTRY_TYPES.MOOD))
   assert.ok(!types.has(ENTRY_TYPES.EVENING))
-  assert.ok(!types.has(ENTRY_TYPES.JOURNAL))
+  assert.ok(!types.has(ENTRY_TYPES.DAILY_JOURNAL))
 })
 
 test('filterDaysByTypes: фильтрует записи по выбранным типам', () => {

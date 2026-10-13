@@ -27,7 +27,14 @@ import { api } from '../../lib/api'
 import { platform, platformName } from '../../platform'
 import ScreenBack from '../../components/ScreenBack'
 import { useBackButton } from '../../platform/telegram.hooks'
-import { readJournalHistory } from '../../lib/journalHistory'
+import {
+  DAILY_JOURNAL_PAGE_SIZE,
+  diaryPageCursor,
+  diaryPageHasMore,
+  mergeDiaryEntries,
+  normalizeDiaryPage,
+} from '../../lib/dailyJournalHistory'
+import { acceptsProfileLoad, beginProfileLoad } from '../../lib/historyProfileScope'
 import { moodPracticeDate } from '../../lib/moodPracticeLogic'
 import { getDailyThoughtForDate } from '../../data/dailyThoughts'
 import { THOUGHT_KIND, loadDailyItems, readCachedDailyItems } from '../../lib/dailyThoughtStorage'
@@ -392,7 +399,7 @@ function EntryBody({ entry }) {
   if (entry.type === ENTRY_TYPES.MORNING) return <MorningBody checkin={entry.checkin} />
   if (entry.type === ENTRY_TYPES.EVENING) return <EveningBody checkin={entry.checkin} />
   if (entry.type === ENTRY_TYPES.MOOD) return <MoodBody mp={entry.moodPractice} />
-  if (entry.type === ENTRY_TYPES.JOURNAL) return <JournalBody entry={entry.journal} />
+  if (entry.type === ENTRY_TYPES.DAILY_JOURNAL) return <DailyJournalBody entry={entry.diary} />
   if (entry.type === ENTRY_TYPES.THOUGHT) return <ThoughtBody entry={entry} />
   return null
 }
@@ -499,19 +506,55 @@ function MoodBody({ mp }) {
   )
 }
 
-function JournalBody({ entry }) {
-  if (!entry?.phases?.length) return null
+/* Запись дневника (api.dailyJournal): поток и ответ на вопрос —
+   тот же состав, что показывает экран «Мои записи». Только чтение. */
+function DailyJournalBody({ entry }) {
+  if (!entry) return null
   return (
-    <>
-      {entry.phases.map(phase => (
-        <div className="mx-progress-entry__field" key={phase.key}>
-          <div className="mx-progress-entry__field-label">{phase.label}</div>
-          <MarkdownText content={phase.text} className="mx-progress-entry__field-value" />
+    <div data-testid="progress-diary-entry">
+      {entry.streamText?.trim() && (
+        <div className="mx-progress-entry__field">
+          <div className="mx-progress-entry__field-label">Поток</div>
+          <MarkdownText content={entry.streamText} className="mx-progress-entry__field-value" />
         </div>
-      ))}
-    </>
+      )}
+      {entry.promptText?.trim() && (
+        <div className="mx-progress-entry__field">
+          <div className="mx-progress-entry__field-label">{entry.promptText}</div>
+          <MarkdownText
+            content={entry.promptAnswer || ''}
+            className="mx-progress-entry__field-value"
+          />
+        </div>
+      )}
+    </div>
   )
 }
+
+/* Ошибка загрузки дневника — отличается от «записей нет». */
+function DiaryLoadNote({ onRetry }) {
+  return (
+    <p
+      role="alert"
+      className="mx-progress-history__diary-note"
+      data-testid="progress-history-diary-error"
+    >
+      <span>Записи дневника временно недоступны.</span>
+      <button
+        type="button"
+        data-testid="progress-history-diary-retry"
+        onClick={() => {
+          platform.haptic('light')
+          onRetry()
+        }}
+      >
+        Повторить
+      </button>
+    </p>
+  )
+}
+
+
 
 /* ── Подкомпоненты группировки (§5.5, шаг 3) ── */
 
@@ -536,12 +579,12 @@ function entryMoodDot(entry) {
 }
 
 function entryPreview(entry) {
-  if (entry.type === ENTRY_TYPES.JOURNAL && entry.journal?.phases?.length) {
-    const phase = entry.journal.phases[0]
+  if (entry.type === ENTRY_TYPES.DAILY_JOURNAL && entry.diary) {
+    const preview = entry.diary.streamText?.trim() || entry.diary.promptAnswer || ''
+    if (!preview) return null
     return (
       <div className="mx-progress-history__row-preview-text">
-        <span className="mx-progress-history__row-preview-q">{phase.label}</span>
-        <span className="mx-progress-history__row-preview-a">{phase.text}</span>
+        <span className="mx-progress-history__row-preview-a">{preview}</span>
       </div>
     )
   }
@@ -661,6 +704,16 @@ export default function ProgressHistory({
   const [savingContext, setSavingContext] = useState(false)
   const [contextError, setContextError] = useState('')
 
+  // ── Настоящий дневник (api.dailyJournal) ──
+  // Отдельно от локального journalStorage: другой источник, другой признак
+  // записи. Страницы грузятся по мере надобности, дублей по id не создаём.
+  const [diaryEntries, setDiaryEntries] = useState([])
+  const [diaryHasMore, setDiaryHasMore] = useState(false)
+  const [diaryLoadingMore, setDiaryLoadingMore] = useState(false)
+  const [diaryLoadError, setDiaryLoadError] = useState(false)
+  const [diaryLoadMoreError, setDiaryLoadMoreError] = useState(false)
+  const [diaryRetryKey, setDiaryRetryKey] = useState(0)
+
   // ── Шаг 3: группировка, фильтр, поиск ──
   const [granularity, setGranularity] = useState(() => {
     try {
@@ -689,15 +742,6 @@ export default function ProgressHistory({
   const userId = user?.id
   const canManageAiContext = platformName === 'telegram' && Number(user?.id) > 0
 
-  const journalEntries = useMemo(() => {
-    if (!userId) return []
-    try {
-      return readJournalHistory(user.id)
-    } catch {
-      return []
-    }
-  }, [user, userId])
-
   /*
    * Свои мысли дня («Мысль дня» → записи /quotes с tag thought:YYYY-MM-DD).
    * Сначала кэш, следом сервер — как на самом экране «Мысль дня».
@@ -715,9 +759,10 @@ export default function ProgressHistory({
     if (!userId) return
 
     let alive = true
+    const token = beginProfileLoad(user.id)
     loadDailyItems(user.id)
       .then(next => {
-        if (alive) setThoughtItems(next)
+        if (alive && acceptsProfileLoad(token, user.id)) setThoughtItems(next)
       })
       .catch(() => {})
 
@@ -725,6 +770,68 @@ export default function ProgressHistory({
       alive = false
     }
   }, [user, userId])
+
+  /*
+   * Записи настоящего дневника — тот же источник, что у экрана «Мои записи»
+   * (api.dailyJournal.entries). Читаем существующим API: без миграций, без
+   * копирования в localStorage и без изменения серверного хранения.
+   *
+   * Без подтверждённого профиля запрос не начинаем; ответ применяется, только
+   * если профиль запроса всё ещё активен. Пока загружена только первая
+   * страница, hasMore не даёт заявить полноту ленты.
+   */
+  useEffect(() => {
+    if (!userId) return
+
+    let alive = true
+    const token = beginProfileLoad(user.id)
+    // Состояние сбрасывается не эффектом, а обработчиком «Повторить», и
+    // заново создаётся монтированием при смене профиля (профильная граница).
+    api.dailyJournal
+      .entries(user.id, { limit: DAILY_JOURNAL_PAGE_SIZE })
+      .then(res => {
+        if (!alive || !acceptsProfileLoad(token, user.id)) return
+        const items = res?.items
+        setDiaryEntries(normalizeDiaryPage(items))
+        setDiaryHasMore(diaryPageHasMore(items))
+      })
+      .catch(error => {
+        console.error('[dailyJournal] history load failed', error)
+        if (alive && acceptsProfileLoad(token, user.id)) setDiaryLoadError(true)
+      })
+
+    return () => {
+      alive = false
+    }
+  }, [user, userId, diaryRetryKey])
+
+  /* «Повторить»: сбрасываем ошибку дневника и перезапускаем его загрузку. */
+  function retryDiary() {
+    setDiaryLoadError(false)
+    setDiaryRetryKey(k => k + 1)
+  }
+
+  /* Следующая страница дневника: курсор — дата последней загруженной записи. */
+  async function loadMoreDiary() {
+    if (!userId || diaryLoadingMore || !diaryHasMore) return
+    const token = beginProfileLoad(user.id)
+    setDiaryLoadingMore(true)
+    setDiaryLoadMoreError(false)
+    try {
+      const res = await api.dailyJournal.entries(user.id, {
+        limit: DAILY_JOURNAL_PAGE_SIZE,
+        before: diaryPageCursor(diaryEntries),
+      })
+      if (!acceptsProfileLoad(token, user.id)) return
+      setDiaryEntries(current => mergeDiaryEntries(current, normalizeDiaryPage(res?.items)))
+      setDiaryHasMore(diaryPageHasMore(res?.items))
+    } catch (error) {
+      console.error('[dailyJournal] history load more failed', error)
+      if (acceptsProfileLoad(token, user.id)) setDiaryLoadMoreError(true)
+    } finally {
+      setDiaryLoadingMore(false)
+    }
+  }
 
   // ── Портал кнопок в сегмент-бар ──
   useEffect(() => {
@@ -758,6 +865,7 @@ export default function ProgressHistory({
   useEffect(() => {
     if (!user) return
     let alive = true
+    const token = beginProfileLoad(user.id)
     setLoadError(false)
     const moodFrom = new Date()
     moodFrom.setDate(moodFrom.getDate() - 30)
@@ -770,24 +878,24 @@ export default function ProgressHistory({
       }),
     ])
       .then(([checkins, analytics, moodPractices]) => {
-        if (!alive) return
+        if (!alive || !acceptsProfileLoad(token, user.id)) return
         setDays(
           buildEntriesByDay(
             checkins,
             moodPractices,
-            journalEntries,
             analytics?.daily_activity || [],
-            thoughts
+            thoughts,
+            diaryEntries
           )
         )
       })
       .catch(() => {
-        if (alive) setLoadError(true)
+        if (alive && acceptsProfileLoad(token, user.id)) setLoadError(true)
       })
     return () => {
       alive = false
     }
-  }, [user, journalEntries, thoughts, reloadKey, retryKey])
+  }, [user, thoughts, diaryEntries, reloadKey, retryKey])
 
   async function deleteSelectedCheckin() {
     const checkin = selectedEntry?.checkin
@@ -1138,6 +1246,7 @@ export default function ProgressHistory({
         {actionButtons}
         <div className="mx-progress-history">
           <h2 className="mx-progress-history__title">история.</h2>
+          {diaryLoadError && <DiaryLoadNote onRetry={retryDiary} />}
           <div className="mx-progress-history__empty">
             {days.length === 0 ? (
               <>
@@ -1186,6 +1295,8 @@ export default function ProgressHistory({
       <div className="mx-progress-history" data-testid="progress-history-list">
         <h2 className="mx-progress-history__title">история.</h2>
 
+        {diaryLoadError && <DiaryLoadNote onRetry={retryDiary} />}
+
         {granularity === 'day' && (
           <>
             <DayList
@@ -1209,6 +1320,33 @@ export default function ProgressHistory({
                   </span>
                 </div>
               </button>
+            )}
+            {/* Пока загружена не вся история дневника, полноту ленты не
+                заявляем — предлагаем догрузить следующие страницы. */}
+            {(diaryHasMore || diaryLoadMoreError) && (
+              <>
+                <button
+                  type="button"
+                  className="mx-progress-history__diary-more"
+                  data-testid="history-diary-load-more"
+                  disabled={diaryLoadingMore}
+                  onClick={() => {
+                    platform.haptic('light')
+                    loadMoreDiary()
+                  }}
+                >
+                  {diaryLoadingMore ? 'Загружаю…' : 'Показать более ранние записи дневника'}
+                </button>
+                {diaryLoadMoreError && (
+                  <p
+                    role="alert"
+                    className="mx-progress-history__diary-error"
+                    data-testid="history-diary-load-more-error"
+                  >
+                    Не удалось загрузить ещё записи дневника. Попробуй ещё раз.
+                  </p>
+                )}
+              </>
             )}
           </>
         )}

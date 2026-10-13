@@ -14,7 +14,7 @@ import { platform } from '../platform'
 import { useBackButton } from '../platform/telegram.hooks'
 import '../components/ui-lab/ProgressRedesignExperiment.css'
 import './Analytics.css'
-import ProgressHistory from './progress/ProgressHistory'
+import ProfileScopedHistory from './progress/ProfileScopedHistory'
 import ScreenBack from '../components/ScreenBack'
 import DemoTelegramHeader from '../components/DemoTelegramHeader'
 import './progress/ProgressScreen.css'
@@ -1160,8 +1160,11 @@ export default function Analytics({
         />
       )}
 
+      {/* Профильная граница: при смене профиля поверхность монтируется
+          заново, поэтому записи, раскрытая запись и фильтр не наследуют
+          состояние другого профиля. */}
       {activeTab === 'history' && (
-        <ProgressHistory
+        <ProfileScopedHistory
           user={user}
           onGoCheckin={onGoCheckin}
           onRedo={onRedo}

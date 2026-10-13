@@ -10,15 +10,6 @@ import {
 import { withQuery } from '../../src/lib/apiQuery.js'
 import { MOOD_CHECK_CHECKIN_ERROR, shouldShowMoodCheckGate } from '../../src/lib/moodCheckGate.js'
 import {
-  clearJournalStore,
-  hasLegacyJournalData,
-  journalStorageKey,
-  migrateLegacyJournalToUser,
-  readJournalEntry,
-  saveJournalPhase,
-} from '../../src/lib/journalStorage.js'
-import { readJournalHistory } from '../../src/lib/journalHistory.js'
-import {
   clearCheckinDraft,
   draftHasContent,
   morningDraftToNote,
@@ -252,29 +243,13 @@ test('MXL-021 связывает Journey с продолжением Today', () 
   assert.match(yearPath, /onContinueToday/)
 })
 
-test('MXL-JOURNAL-001 открывает единственный Journal flow из «Практик»', () => {
-  const journal = readFileSync(
-    new URL('../../src/screens/JournalFlow.jsx', import.meta.url),
-    'utf8'
-  )
+test('MXL-JOURNAL-001 открывает единственный дневник DailyJournal из «Практик»', () => {
   const practices = readFileSync(
     new URL('../../src/screens/Practices.jsx', import.meta.url),
     'utf8'
   )
   const mentalix = readFileSync(new URL('../../src/screens/Mentalix.jsx', import.meta.url), 'utf8')
 
-  assert.match(journal, /Идея/)
-  assert.match(journal, /Действие/)
-  assert.match(journal, /Анализ/)
-  assert.match(journal, /Новый шаг/)
-  assert.match(journal, /PracticeWritingCanvas/)
-  assert.match(journal, /useFullscreenSurface/)
-  assert.match(journal, /JournalArt/)
-  assert.match(journal, /Цикл сохранён/)
-  assert.match(journal, /Вернуться к практикам/)
-  assert.match(journal, /setStage\('complete'\)/)
-  assert.doesNotMatch(journal, /JournalTextarea|SceneLayout|JournalProgress/)
-  assert.doesNotMatch(journal, /<button[\s\S]*>\s*Назад\s*<\/button>/)
   assert.match(practices, /import PracticeCatalogV2 from '\.\.\/components\/PracticeCatalogV2'/)
   assert.match(practices, /import DailyJournalFlow from '\.\/DailyJournal\/DailyJournalFlow'/)
   assert.match(practices, /<PracticeCatalogV2[\s\S]*practices=\{catalogPractices\}/)
@@ -347,167 +322,6 @@ test('Библиотека скрывает guided UI, сохраняя шабл
   assert.match(api, /journalTemplates/)
   assert.match(api, /startOrResume/)
   assert.match(api, /updateSession/)
-})
-
-test('MXL-JOURNAL-PERSISTENCE-001 сохраняет фазы, различает draft/final и мигрирует прототипный формат', () => {
-  const memory = new Map()
-  globalThis.localStorage = {
-    getItem: key => memory.get(key) || null,
-    setItem: (key, value) => memory.set(key, value),
-    removeItem: key => memory.delete(key),
-  }
-
-  memory.set(
-    'mx-journal-prototype-v1',
-    JSON.stringify({
-      date: '2026-08-27',
-      phaseIndex: 1,
-      drafts: { idea: 'Старая идея', action: 'Один шаг' },
-    })
-  )
-
-  const migrated = readJournalEntry('2026-08-27')
-  assert.equal(migrated.cycle.idea.text, 'Старая идея')
-  assert.equal(migrated.cycle.idea.status, 'draft')
-
-  saveJournalPhase({ date: '2026-08-27', phase: 'analysis', text: 'Итог дня' })
-  saveJournalPhase({
-    date: '2026-08-27',
-    phase: 'newStep',
-    text: 'Продолжить завтра',
-    status: 'final',
-  })
-  const saved = readJournalEntry('2026-08-27')
-  assert.equal(saved.cycle.analysis.status, 'draft')
-  assert.equal(saved.cycle.newStep.status, 'final')
-  assert.equal(saved.cycle.newStep.text, 'Продолжить завтра')
-  assert.match(saved.updatedAt, /^\d{4}-\d{2}-\d{2}T/)
-  assert.equal(clearJournalStore(), true)
-})
-
-test('MXL-JOURNAL-PERSISTENCE-001 изолирует новые journal-записи по профилю', () => {
-  const memory = new Map()
-  globalThis.localStorage = {
-    getItem: key => memory.get(key) || null,
-    setItem: (key, value) => memory.set(key, value),
-    removeItem: key => memory.delete(key),
-  }
-
-  saveJournalPhase({
-    userId: 101,
-    date: '2026-08-27',
-    phase: 'idea',
-    text: 'Запись первого профиля',
-  })
-
-  assert.equal(readJournalEntry('2026-08-27', 101).cycle.idea.text, 'Запись первого профиля')
-  assert.equal(readJournalEntry('2026-08-27', 202).cycle.idea.text, '')
-  assert.notEqual(journalStorageKey(101), journalStorageKey(202))
-  assert.equal(clearJournalStore(101), true)
-  assert.equal(readJournalEntry('2026-08-27', 101).cycle.idea.text, '')
-})
-
-test('MXL-JOURNAL-HISTORY-001 показывает только local journal текущего профиля без записи или миграции', () => {
-  const memory = new Map()
-  globalThis.localStorage = {
-    getItem: key => memory.get(key) || null,
-    setItem: (key, value) => memory.set(key, value),
-    removeItem: key => memory.delete(key),
-  }
-
-  saveJournalPhase({ userId: 101, date: '2026-08-25', phase: 'idea', text: 'Первая мысль' })
-  saveJournalPhase({ userId: 101, date: '2026-08-27', phase: 'action', text: 'Малый шаг' })
-  saveJournalPhase({
-    userId: 101,
-    date: '2026-08-27',
-    phase: 'newStep',
-    text: 'Продолжить завтра',
-    status: 'final',
-  })
-  saveJournalPhase({ userId: 202, date: '2026-08-28', phase: 'idea', text: 'Чужая запись' })
-
-  const before = JSON.stringify([...memory.entries()])
-  const history = readJournalHistory(101)
-
-  assert.deepEqual(
-    history.map(entry => entry.date),
-    ['2026-08-27', '2026-08-25']
-  )
-  assert.equal(history[0].completedCount, 2)
-  assert.equal(history[0].status, 'draft')
-  assert.equal(history[0].phases[0].label, 'Действие')
-  assert.equal(history[1].phases[0].text, 'Первая мысль')
-  assert.equal(JSON.stringify([...memory.entries()]), before)
-  assert.equal(readJournalHistory(202)[0].phases[0].text, 'Чужая запись')
-  assert.equal(clearJournalStore(101), true)
-  assert.equal(clearJournalStore(202), true)
-})
-
-test('MXL-JOURNAL-HISTORY-001 сохраняет History-only scope без fullscreen Journal или API', () => {
-  const history = readFileSync(new URL('../../src/screens/History.jsx', import.meta.url), 'utf8')
-  const presenter = readFileSync(
-    new URL('../../src/lib/journalHistory.js', import.meta.url),
-    'utf8'
-  )
-
-  assert.match(history, /readJournalHistory\(user\.id\)/)
-  assert.match(history, /Локальный журнал/)
-  assert.match(history, /data-testid="local-journal-history"/)
-  assert.match(history, /Записи сохранены на этом устройстве и доступны только в этом профиле\./)
-  assert.doesNotMatch(history, /JournalFlow\s+userId/)
-  assert.doesNotMatch(presenter, /saveJournalPhase|migrateLegacyJournalToUser|api\./)
-})
-
-test('MXL-JOURNAL-PERSISTENCE-001 переносит legacy-запись только по явному действию', () => {
-  const memory = new Map()
-  globalThis.localStorage = {
-    getItem: key => memory.get(key) || null,
-    setItem: (key, value) => memory.set(key, value),
-    removeItem: key => memory.delete(key),
-  }
-
-  saveJournalPhase({
-    userId: 101,
-    date: '2026-08-27',
-    phase: 'action',
-    text: 'Новая запись профиля',
-  })
-
-  memory.set(
-    'mx-journal-v2',
-    JSON.stringify({
-      version: 1,
-      entries: {
-        '2026-08-27': {
-          cycle: { idea: { text: 'Старая запись', status: 'draft' } },
-        },
-      },
-    })
-  )
-
-  assert.equal(hasLegacyJournalData(101), true)
-  assert.equal(readJournalEntry('2026-08-27', 101).cycle.idea.text, '')
-  const migrated = migrateLegacyJournalToUser(101)
-  assert.equal(migrated.entries['2026-08-27'].cycle.idea.text, 'Старая запись')
-  assert.equal(migrated.entries['2026-08-27'].cycle.action.text, 'Новая запись профиля')
-  assert.equal(readJournalEntry('2026-08-27', 101).cycle.idea.text, 'Старая запись')
-  assert.equal(memory.has('mx-journal-v2'), false)
-})
-
-test('MXL-JOURNAL-PERSISTENCE-001 сообщает ошибку вместо ложного локального сохранения', () => {
-  globalThis.localStorage = {
-    getItem: () => null,
-    setItem: () => {
-      throw new Error('quota exceeded')
-    },
-    removeItem: () => undefined,
-  }
-
-  assert.throws(
-    () =>
-      saveJournalPhase({ userId: 101, date: '2026-08-27', phase: 'idea', text: 'Не теряй меня' }),
-    /Локальное хранилище недоступно/
-  )
 })
 
 test('MXL-009 ограничивает insights описательными наблюдениями', () => {
@@ -654,8 +468,10 @@ test('MXL-006 публикует единый AI typography baseline без back
 })
 
 test('MXL-TYPE-SYSTEM-001 использует единый Onest baseline без пользовательских serif overrides', () => {
-  const journalFlow = readFileSync(
-    new URL('../../src/screens/JournalFlow.jsx', import.meta.url),
+  // Легаси-экран JournalFlow удалён вместе со старым журналом; живая
+  // пишущая поверхность — JournalTextarea поверх PracticeWritingCanvas.
+  const journalTextarea = readFileSync(
+    new URL('../../src/components/JournalTextarea.jsx', import.meta.url),
     'utf8'
   )
   const sceneLayout = readFileSync(
@@ -671,13 +487,13 @@ test('MXL-TYPE-SYSTEM-001 использует единый Onest baseline бе�
     'utf8'
   )
 
-  assert.match(journalFlow, /PracticeWritingCanvas/)
+  assert.match(journalTextarea, /PracticeWritingCanvas/)
   assert.match(sceneLayout, /font-display/)
   assert.match(journalStart, /font-display/)
   assert.match(analytics, /mx-type-page/)
   assert.match(analytics, /font-display/)
   assert.doesNotMatch(analytics, /Georgia|Times New Roman/)
-  assert.doesNotMatch(journalFlow, /Georgia|Times New Roman/)
+  assert.doesNotMatch(journalTextarea, /Georgia|Times New Roman/)
   assert.doesNotMatch(journalStart, /Georgia|Times New Roman/)
 })
 
@@ -809,10 +625,6 @@ test('MXL-TYPE-CONSISTENCY-001 задаёт единый Onest typography scale 
     new URL('../../src/screens/mentalix/PersonaPicker.jsx', import.meta.url),
     'utf8'
   )
-  const journalHome = readFileSync(
-    new URL('../../src/screens/mentalix/JournalHome.jsx', import.meta.url),
-    'utf8'
-  )
   const courses = readFileSync(new URL('../../src/screens/Courses.jsx', import.meta.url), 'utf8')
 
   assert.match(styles, /--mx-type-page-size:\s*calc\(2\.125rem/)
@@ -858,7 +670,6 @@ test('MXL-TYPE-CONSISTENCY-001 задаёт единый Onest typography scale 
   assert.match(personaPicker, /mx-dialog-card__description/)
   assert.doesNotMatch(personaPicker, /AiFlowIndicator/)
   assert.doesNotMatch(personaPicker, /mx-ai-title/)
-  assert.doesNotMatch(journalHome, /mx-type-page|mx-type-hero/)
   assert.match(courses, /mx-type-list-title/)
   assert.match(courses, /mx-type-flow-action/)
   assert.match(courses, /text-\[16px\]/)

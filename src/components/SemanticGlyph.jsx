@@ -757,7 +757,6 @@ function Drawing({ kind, debugSource }) {
         </>
       )
     case 'template':
-    case 'alter-ego':
       return (
         <>
           <Guide />

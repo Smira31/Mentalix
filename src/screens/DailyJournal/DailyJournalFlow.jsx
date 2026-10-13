@@ -2,6 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 
 import Screen from '../../components/Screen'
 import CapsLabel from '../../components/ui/CapsLabel'
+import PillButton from '../../components/ui/PillButton'
 import RoundNextButton from '../../components/ui/RoundNextButton'
 import SemanticGlyph from '../../components/SemanticGlyph'
 import CheckInCompletion from '../../components/CheckInCompletion'
@@ -642,6 +643,30 @@ export default function DailyJournalFlow({ userId, onClose, reflectionPrompt = n
   } else if (stage === 'today') {
     footerContent = (
       <div className="mx-dj-today__footer">
+        {/* Вторичные действия — заметные кнопки над основной «Дописать» */}
+        <div className="mx-dj-today__secondary">
+          {setupHasData(setup) && (
+            <PillButton
+              variant="dark"
+              testId="dj-today-review"
+              className="mx-dj-today__secondary-btn"
+              onClick={() => {
+                platform.haptic('light')
+                setStage('review')
+              }}
+            >
+              Перечитать
+            </PillButton>
+          )}
+          <PillButton
+            variant="dark"
+            testId="dj-today-entries"
+            className="mx-dj-today__secondary-btn"
+            onClick={openEntries}
+          >
+            Мои записи
+          </PillButton>
+        </div>
         <button
           type="button"
           className="cta-pill mx-dj-today__append-btn"
@@ -661,29 +686,6 @@ export default function DailyJournalFlow({ userId, onClose, reflectionPrompt = n
             Отправить
           </button>
         )}
-        <div className="mx-dj-today__links">
-          {setupHasData(setup) && (
-            <button
-              type="button"
-              className="mx-dj-today__review-link"
-              data-testid="dj-today-review"
-              onClick={() => {
-                platform.haptic('light')
-                setStage('review')
-              }}
-            >
-              Перечитай
-            </button>
-          )}
-          <button
-            type="button"
-            className="mx-dj-today__review-link"
-            data-testid="dj-today-entries"
-            onClick={openEntries}
-          >
-            Мои записи
-          </button>
-        </div>
       </div>
     )
   } else if (stage === 'review') {
@@ -881,6 +883,14 @@ export default function DailyJournalFlow({ userId, onClose, reflectionPrompt = n
               </p>
             </div>
           )}
+          <PillButton
+            variant="dark"
+            testId="dj-review-entries"
+            className="mx-dj-review__entries-btn"
+            onClick={openEntries}
+          >
+            Мои записи
+          </PillButton>
           <button
             type="button"
             className="mx-dj-review__edit-link"
@@ -888,14 +898,6 @@ export default function DailyJournalFlow({ userId, onClose, reflectionPrompt = n
             onClick={() => setStage('setup')}
           >
             Изменить настройку
-          </button>
-          <button
-            type="button"
-            className="mx-dj-review__edit-link"
-            data-testid="dj-review-entries"
-            onClick={openEntries}
-          >
-            Мои записи
           </button>
           <button
             type="button"

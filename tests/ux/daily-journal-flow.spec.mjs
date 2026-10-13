@@ -192,6 +192,17 @@ test('журнал: сброс настройки → intro → поток бе�
   await expect(page.locator('.mx-dj-review')).toBeVisible()
   await expect(page.getByTestId('dj-review-edit')).toBeVisible()
 
+  // ── «Мои записи» — вторичная кнопка в потоке, а не мелкая ссылка ──
+  const entriesButton = page.getByTestId('dj-review-entries')
+  await expect(entriesButton).toHaveText('Мои записи')
+  await expect(entriesButton).toHaveAttribute('class', /mx-pill-btn/)
+  const entriesBox = await entriesButton.boundingBox()
+  expect(entriesBox.height).toBeGreaterThanOrEqual(44)
+  await entriesButton.click()
+  await expect(page.getByTestId('dj-entries')).toBeVisible()
+  await page.getByTestId('back-button').click()
+  await expect(page.locator('.mx-dj-review')).toBeVisible()
+
   // ── Сбросить и начать заново ──
   await expect(page.getByTestId('dj-review-reset')).toBeVisible()
   page.on('dialog', d => d.accept())
@@ -275,4 +286,172 @@ test('журнал: повторный вход — запись сохране�
   await expect(page.getByTestId('dj-today')).toBeVisible()
   await expect(page.getByTestId('dj-today-stream')).toContainText('Утренний текст записи.')
   await expect(page.getByTestId('dj-today-stream')).toContainText('Вечерний текст записи.')
+})
+
+/* ── Экран «Запись сохранена»: три действия и геометрия ── */
+
+/*
+ * Сохраняем синтетическую запись (с настройкой, иначе «Перечитать» скрыта),
+ * затем на экране «Запись сохранена» проверяем:
+ * видимость и доступность трёх действий, области нажатия, геометрию на
+ * 393×852 и 360×640, каждый переход с возвратом и отсутствие дублей записи.
+ */
+
+// Настройка журнала → синтетическая запись → экран «Запись сохранена».
+async function openSavedScreen(page) {
+  await page.getByTestId('dj-intro-setup').click()
+  await page.getByTestId('dj-setup-goal-0').fill('Спокойствие')
+  await page.getByTestId('dj-setup-next').click()
+  await page.getByTestId('dj-setup-reminder-0').fill('Я делаю главное до обеда')
+  await page.getByTestId('dj-setup-next').click()
+  await page.getByTestId('dj-setup-vision-scene').fill('Сижу у окна')
+  await page.getByTestId('dj-setup-next').click()
+  await page.getByTestId('dj-setup-vision-obstacle').fill('Усталость')
+  await page.getByTestId('dj-setup-next').click()
+  await page.getByTestId('dj-setup-vision-plan').fill('Перерыв')
+  await page.getByTestId('dj-setup-next').click()
+  await page.getByTestId('dj-setup-next').click() // шаг 4 · Мои вопросы
+  await page.getByTestId('dj-setup-next').click() // шаг 5 · Напоминание
+
+  await expect(page.locator('.mx-dj-review')).toBeVisible()
+  await page.getByTestId('dj-review-next').click()
+
+  await page.getByTestId('dj-stream-input').fill('Синтетическая запись: утро.')
+  await page.getByTestId('dj-stream-next').click()
+  await expect(page.getByTestId('dj-question-input')).toBeVisible()
+  await page.getByTestId('dj-question-input').fill('Синтетический ответ.')
+  await page.getByTestId('dj-question-next').click()
+  await expect(page.locator('.mx-completion')).toBeVisible()
+  await page.getByTestId('dj-complete-close').click()
+
+  await expect(page.getByTestId('journal-open-cta')).toBeVisible()
+  await page.getByTestId('journal-open-cta').click()
+  await expect(page.getByTestId('dj-today')).toBeVisible()
+  await expect(page.locator('.mx-dj-today__title')).toHaveText('Запись сохранена')
+}
+
+// Геометрия трёх действий и футера относительно текущего экрана.
+async function measureSavedFooter(page) {
+  return page.evaluate(() => {
+    const ids = ['dj-today-review', 'dj-today-entries', 'dj-today-append']
+    const buttons = ids.map(id => {
+      const el = document.querySelector(`[data-testid="${id}"]`)
+      if (!el) return { id, missing: true }
+      const r = el.getBoundingClientRect()
+      return {
+        id,
+        top: r.top,
+        bottom: r.bottom,
+        left: r.left,
+        right: r.right,
+        width: r.width,
+        height: r.height,
+      }
+    })
+    const footerEl = document.querySelector('.mx-screen__footer')
+    const footer = footerEl ? footerEl.getBoundingClientRect() : null
+    const doc = document.documentElement
+    return {
+      viewport: { width: window.innerWidth, height: window.innerHeight },
+      buttons,
+      footer: footer ? { top: footer.top, bottom: footer.bottom } : null,
+      horizontalOverflow: doc.scrollWidth - doc.clientWidth,
+    }
+  })
+}
+
+function assertFitsViewport(geometry, label) {
+  const { viewport, buttons, footer, horizontalOverflow } = geometry
+  expect(horizontalOverflow, `${label}: горизонтальная прокрутка`).toBeLessThanOrEqual(2)
+  expect(footer, `${label}: футер не найден`).not.toBeNull()
+  expect(footer.bottom, `${label}: футер выходит за низ экрана`).toBeLessThanOrEqual(
+    viewport.height + 1
+  )
+  for (const b of buttons) {
+    expect(b.missing, `${label}: ${b.id} отсутствует`).not.toBe(true)
+    expect(b.height, `${label}: ${b.id} ниже 44px`).toBeGreaterThanOrEqual(44)
+    expect(b.left, `${label}: ${b.id} выходит влево`).toBeGreaterThanOrEqual(0)
+    expect(b.right, `${label}: ${b.id} выходит вправо`).toBeLessThanOrEqual(viewport.width + 1)
+    expect(b.bottom, `${label}: ${b.id} ниже экрана`).toBeLessThanOrEqual(viewport.height + 1)
+  }
+  const [review, entries, append] = buttons
+  // Вторичный ряд стоит выше основной кнопки и не перекрывает её.
+  expect(review.bottom, `${label}: «Перечитать» перекрывает «Дописать»`).toBeLessThanOrEqual(
+    append.top
+  )
+  expect(entries.bottom, `${label}: «Мои записи» перекрывает «Дописать»`).toBeLessThanOrEqual(
+    append.top
+  )
+}
+
+test('журнал: «Запись сохранена» — три действия, переходы и отсутствие дублей', async ({ page }) => {
+  await page.goto('/?demo=1&tab=practices')
+
+  await expect(page.getByTestId('journal-open-cta')).toBeVisible()
+  await page.getByTestId('journal-open-cta').click()
+  await openSavedScreen(page)
+
+  // ── Три действия: видимы, доступны, с подписями ──
+  const reviewBtn = page.getByTestId('dj-today-review')
+  const entriesBtn = page.getByTestId('dj-today-entries')
+  const appendBtn = page.getByTestId('dj-today-append')
+
+  await expect(reviewBtn).toBeVisible()
+  await expect(reviewBtn).toBeEnabled()
+  await expect(reviewBtn).toHaveAccessibleName('Перечитать')
+  await expect(entriesBtn).toBeVisible()
+  await expect(entriesBtn).toBeEnabled()
+  await expect(entriesBtn).toHaveAccessibleName('Мои записи')
+  await expect(appendBtn).toBeVisible()
+  await expect(appendBtn).toBeEnabled()
+  await expect(appendBtn).toHaveAccessibleName('Дописать')
+
+  // Вторичные — кнопки дизайн-системы, основное действие — cta-пилюля
+  await expect(reviewBtn).toHaveAttribute('class', /mx-pill-btn/)
+  await expect(entriesBtn).toHaveAttribute('class', /mx-pill-btn/)
+  await expect(appendBtn).toHaveAttribute('class', /cta-pill/)
+
+  // ── Геометрия: 393×852 и 360×640 ──
+  assertFitsViewport(await measureSavedFooter(page), '393×852')
+  await page.setViewportSize({ width: 360, height: 640 })
+  await expect(page.getByTestId('dj-today')).toBeVisible()
+  assertFitsViewport(await measureSavedFooter(page), '360×640')
+  await page.setViewportSize({ width: 393, height: 852 })
+  await expect(page.getByTestId('dj-today')).toBeVisible()
+
+  // ── «Перечитать» → «Вспомни, куда идёшь» → назад ──
+  await reviewBtn.click()
+  await expect(page.locator('.mx-dj-review')).toBeVisible()
+  await expect(page.locator('.mx-dj-review__title')).toHaveText('Вспомни, куда идёшь')
+  await page.getByTestId('back-button').click()
+  await expect(page.getByTestId('dj-today')).toBeVisible()
+
+  // ── «Мои записи» → список записей → назад ──
+  await entriesBtn.click()
+  await expect(page.getByTestId('dj-entries')).toBeVisible()
+  await page.getByTestId('back-button').click()
+  await expect(page.getByTestId('dj-today')).toBeVisible()
+
+  // ── «Дописать» → продолжение той же записи ──
+  await appendBtn.click()
+  await expect(page.getByTestId('dj-stream-input')).toBeVisible()
+  const streamValue = await page.getByTestId('dj-stream-input').inputValue()
+  expect(streamValue).toContain('Синтетическая запись: утро.')
+  await page.getByTestId('dj-stream-input').fill(`${streamValue}Вечерняя дописка.`)
+  await page.getByTestId('dj-stream-next').click()
+  await expect(page.getByTestId('dj-question-input')).toBeVisible()
+  await page.getByTestId('dj-question-next').click()
+  await expect(page.locator('.mx-completion')).toBeVisible()
+  await page.getByTestId('dj-complete-close').click()
+
+  // ── Запись сохранена целиком и не продублирована ──
+  await expect(page.getByTestId('journal-open-cta')).toBeVisible()
+  await page.getByTestId('journal-open-cta').click()
+  await expect(page.getByTestId('dj-today')).toBeVisible()
+  await expect(page.getByTestId('dj-today-stream')).toContainText('Синтетическая запись: утро.')
+  await expect(page.getByTestId('dj-today-stream')).toContainText('Вечерняя дописка.')
+
+  await page.getByTestId('dj-today-entries').click()
+  await expect(page.getByTestId('dj-entries')).toBeVisible()
+  await expect(page.locator('.mx-dj-entries__item')).toHaveCount(1)
 })

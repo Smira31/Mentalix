@@ -109,7 +109,8 @@ export const ENTRY_TYPES = {
   MORNING: 'morning',
   EVENING: 'evening',
   MOOD: 'mood',
-  JOURNAL: 'journal',
+  // Единственный дневник: записи api.dailyJournal (экран «Мои записи»).
+  DAILY_JOURNAL: 'dailyJournal',
   THOUGHT: 'thought',
 }
 
@@ -121,7 +122,7 @@ export function entryListName(type) {
       return 'Вечерний разбор'
     case ENTRY_TYPES.MOOD:
       return 'Отметка настроения'
-    case ENTRY_TYPES.JOURNAL:
+    case ENTRY_TYPES.DAILY_JOURNAL:
       return 'Дневник'
     case ENTRY_TYPES.THOUGHT:
       return 'Мысль дня'
@@ -141,7 +142,7 @@ export function entryScreenTitle(type) {
       return 'вечер.'
     case ENTRY_TYPES.MOOD:
       return 'отметка настроения.'
-    case ENTRY_TYPES.JOURNAL:
+    case ENTRY_TYPES.DAILY_JOURNAL:
       return 'дневник.'
     case ENTRY_TYPES.THOUGHT:
       return 'мысль дня.'
@@ -155,12 +156,12 @@ export function entryScreenTitle(type) {
  *
  * @param {Array} checkins — записи чек-инов (date, mood, note, lessons, wins, review_completed_at, ...)
  * @param {Array} moodPractices — записи практики «Настроение» (recorded_at, mood, emotion, ...)
- * @param {Array} journalEntries — локальные журнальные записи (date, phases, ...)
  * @param {Array} activity — ежедневная активность ритуалов/аскез (date, count, breaks)
  * @param {Array} thoughts — свои мысли дня (/quotes с tag thought:YYYY-MM-DD)
+ * @param {Array} diaryEntries — записи дневника (api.dailyJournal)
  * @returns {Array<{date: string, entries: Array}>} — дни, отсортированные от новых к старым
  */
-export function buildEntriesByDay(checkins, moodPractices, journalEntries, activity, thoughts) {
+export function buildEntriesByDay(checkins, moodPractices, activity, thoughts, diaryEntries) {
   const byDate = {}
 
   function ensureDay(date) {
@@ -206,15 +207,16 @@ export function buildEntriesByDay(checkins, moodPractices, journalEntries, activ
     })
   }
 
-  // Локальный журнал
-  for (const entry of journalEntries || []) {
-    if (!entry?.date) continue
+  // Дневник — записи api.dailyJournal. Каждая запись остаётся
+  // отдельной строкой своего дня: по дате их не схлопываем.
+  for (const entry of diaryEntries || []) {
+    if (!entry?.id || !entry?.date) continue
     const day = ensureDay(entry.date)
     day.entries.push({
-      type: ENTRY_TYPES.JOURNAL,
+      type: ENTRY_TYPES.DAILY_JOURNAL,
       date: entry.date,
-      time: '',
-      journal: entry,
+      time: extractTime(entry.createdAt),
+      diary: entry,
     })
   }
 
@@ -468,7 +470,7 @@ export const FILTER_GROUPS = Object.freeze([
     label: 'Практики',
     types: [
       { id: ENTRY_TYPES.MOOD, label: 'Настроение' },
-      { id: ENTRY_TYPES.JOURNAL, label: 'Дневник' },
+      { id: ENTRY_TYPES.DAILY_JOURNAL, label: 'Дневник' },
       { id: ENTRY_TYPES.THOUGHT, label: 'Мысль дня' },
     ],
   },
@@ -527,12 +529,12 @@ export function getEntrySearchableText(entry) {
     if (mp.emotion) parts.push(mp.emotion)
     if (mp.mood != null) parts.push(MOOD_WORDS_SEARCH[(mp.mood || 3) - 1])
   }
-  const j = entry.journal
-  if (j?.phases) {
-    for (const phase of j.phases) {
-      if (phase.text) parts.push(phase.text)
-      if (phase.label) parts.push(phase.label)
-    }
+  // Дневник: поток и ответ на вопрос — искомый текст записи.
+  const d = entry.diary
+  if (d) {
+    if (d.streamText) parts.push(d.streamText)
+    if (d.promptText) parts.push(d.promptText)
+    if (d.promptAnswer) parts.push(d.promptAnswer)
   }
   if (entry.thought?.text) parts.push(entry.thought.text)
   return parts.join(' ').toLowerCase()
