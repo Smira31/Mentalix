@@ -96,7 +96,6 @@ const MentalixChat = lazyWithRetry(() => import('./screens/Mentalix'))
 const loadSettings = () => import('./screens/Settings')
 const Settings = lazyWithRetry(loadSettings)
 const Library = lazyWithRetry(() => import('./screens/Library'))
-const History = lazyWithRetry(() => import('./screens/History'))
 
 // Код панели попадает в сеть только после проверки демо и отсутствия Telegram.
 const DemoPanel = lazyWithRetry(() => import('./components/DemoPanel'))
@@ -744,44 +743,19 @@ function App() {
     setOverlay('settings')
   })
 
-  useEffect(() => {
-    if (!user) return undefined
-    // Prefetch вкладок — после загрузки данных «Сегодня» (событие из Today.jsx)
-    // или через 3 с, что раньше: чтобы не конкурировать с запросами к API.
-    let started = false
-    let idleId = null
-    const prefetch = () => {
-      if (started) return
-      started = true
-      window.removeEventListener('mentalix:today-loaded', schedule)
-      window.clearTimeout(fallbackId)
-      // Профиль — грузим заранее (нужен чаще всего).
-      loadSettings().catch(() => {})
-      // Остальные вкладки — чтобы первый тап по вкладке не ждал загрузки чанка.
-      import('./screens/Practices').catch(() => {})
-      import('./screens/History').catch(() => {})
-      import('./screens/Library').catch(() => {})
-      import('./screens/Analytics').catch(() => {})
-      import('./screens/Mentalix').catch(() => {})
-    }
-    // requestIdleCallback не блокирует отрисовку, setTimeout — fallback.
-    function schedule() {
-      window.removeEventListener('mentalix:today-loaded', schedule)
-      if (typeof window.requestIdleCallback === 'function') {
-        idleId = window.requestIdleCallback(prefetch, { timeout: 1000 })
-      } else {
-        window.setTimeout(prefetch, 0)
-      }
-    }
-    window.addEventListener('mentalix:today-loaded', schedule)
-    const fallbackId = window.setTimeout(prefetch, 3000)
-    return () => {
-      started = true
-      window.removeEventListener('mentalix:today-loaded', schedule)
-      window.clearTimeout(fallbackId)
-      if (idleId != null) window.cancelIdleCallback?.(idleId)
-    }
-  }, [user])
+  /*
+   * РАЗДЕЛЫ — ТОЛЬКО ПО ТРЕБОВАНИЮ (PERF-002)
+   *
+   * Раньше сразу после первого экрана App одним залпом импортировал
+   * Settings, Practices, History, Library, Analytics и Mentalix: это
+   * добавляло ~39 файлов и ~235 КБ gzip JS и конкурировало с первым
+   * переходом по вкладке за сеть.
+   *
+   * Теперь код раздела грузится в момент перехода (каждый экран —
+   * свой lazyWithRetry), а паузу закрывает скелетон TabSkeleton в
+   * существующей дизайн-системе. Однажды открытые вкладки остаются
+   * смонтированными, поэтому повторный переход уже ничего не грузит.
+   */
 
   /* ============================================================
      ZOOM

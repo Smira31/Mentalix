@@ -837,8 +837,6 @@ export default function Today({
           setLoading(false)
           setConnecting(false)
         }
-        // Сигнал для App: данные «Сегодня» загружены — можно предзагружать вкладки.
-        window.dispatchEvent(new Event('mentalix:today-loaded'))
       }
     })()
 
