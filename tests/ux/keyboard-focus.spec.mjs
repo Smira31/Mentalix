@@ -156,19 +156,23 @@ test('чек-ин: текстовый шаг забирает фокус и не
 
   // Поле появилось из-за перехода на шаг — фокус пришёл сам.
   await expectAutoFocus(page, 'checkin-text-input')
-  await expectActionAvailable(page, 'checkin-next')
+  // Продолжение шага несёт сам редактор (`checkin-complete`), а не отдельная «Далее».
+  await expectActionAvailable(page, 'checkin-complete')
 
   // Пользователь закрыл клавиатуру — поле не отбирает фокус обратно.
   await expectNoFocusRecapture(page, 'checkin-text-input')
 
   // Текст на месте после закрытия клавиатуры, продолжение доступно.
+  // Продолжение текстового шага чек-ина — круглая стрелка самого редактора
+  // (`checkin-complete`): отдельной `checkin-next` на этом шаге нет, поэтому
+  // проверяем именно ту кнопку, которой редактор продолжает шаг.
   const note = 'Тест: спокойное утро и один короткий шаг.'
   await page.locator(CHECKIN_INPUT).fill(note)
   await expect(page.locator(CHECKIN_INPUT)).toContainText('спокойное утро')
-  await expectActionAvailable(page, 'checkin-next')
+  await expectActionAvailable(page, 'checkin-complete')
 
   // Продолжение действительно работает: последний утренний шаг ведёт к финалу.
-  await page.locator('[data-testid="checkin-next"]').click()
+  await page.locator('[data-testid="checkin-complete"]').click()
   await expect(page.locator('.mx-completion')).toBeVisible()
 })
 
@@ -286,4 +290,76 @@ test('дневник: шаги записи забирают фокус, чер�
   await page.getByTestId('dj-question-input').fill('Один спокойный шаг важнее идеального плана.')
   await expectActionAvailable(page, 'dj-question-next')
   await expectNoFocusRecapture(page, 'dj-question-input')
+})
+
+/*
+ * ── 5. Регрессия: отложенный повтор не возвращает фокус после ручного закрытия ──
+ *
+ * Воспроизведение исходного дефекта. Хук ставит фокус синхронно и повторяет
+ * его в requestAnimationFrame и через 120 мс (чтобы клавиатура открылась на
+ * iOS/Telegram WebView). Если пользователь закрывал клавиатуру сразу после
+ * входа в шаг, отложенный повтор ставил фокус обратно — поле «отбирало»
+ * клавиатуру.
+ *
+ * Здесь закрытие происходит сразу после автофокуса, но до отложенного повтора:
+ * обработчик `focusin` снимает фокус на следующем кадре после того, как поле
+ * его получило. Следующий кадр берётся намеренно — в dev-режиме StrictMode
+ * прогоняет эффект монтирования дважды, поэтому синхронный blur в том же тике
+ * приходится на повторную установку эффекта, а не на отложенный повтор.
+ * На исправленном хуке blur отменяет повторы (фокус ровно один), на прежнем —
+ * повтор возвращал фокус и счётчик становился больше единицы.
+ */
+test('регрессия: закрытие клавиатуры сразу после входа в шаг отменяет повторный захват', async ({
+  page,
+}) => {
+  await page.setViewportSize(VIEWPORT)
+
+  // Вооружаем страницу до монтирования поля: первый автофокус сразу закрывается.
+  await page.addInitScript(() => {
+    const state = { focusCount: 0 }
+    window.__mxManualClose = state
+    document.addEventListener('focusin', event => {
+      const field = document.querySelector('[data-testid="mentor-input"]')
+      if (!field || event.target !== field) return
+      state.focusCount += 1
+      if (state.focusCount === 1) {
+        window.requestAnimationFrame(() => field.blur())
+      }
+    })
+  })
+
+  await page.goto(MENTOR)
+
+  const start = page.locator('[data-testid^="mentor-start-"]').first()
+  await expect(start).toBeVisible()
+  await start.click()
+  await expect(page.getByTestId('mentor-input')).toBeVisible()
+
+  // Автофокус случился: поле получило фокус после клика, а не по касанию.
+  await expect
+    .poll(() => page.evaluate(() => window.__mxManualClose.focusCount), {
+      timeout: 4_000,
+      message: 'поле должно получить автофокус после входа в разговор',
+    })
+    .toBeGreaterThanOrEqual(1)
+
+  // Окно отложенных повторов хука (rAF + 120 мс): фокус не возвращается сам.
+  const frames = await page.evaluate(async () => {
+    const field = document.querySelector('[data-testid="mentor-input"]')
+    const out = []
+    for (let i = 0; i < 14; i += 1) {
+      await new Promise(resolve => setTimeout(resolve, 40))
+      out.push(document.activeElement === field)
+    }
+    return out
+  })
+
+  expect(
+    frames.some(Boolean),
+    'поле вернуло себе фокус после того, как пользователь закрыл клавиатуру'
+  ).toBe(false)
+  expect(
+    await page.evaluate(() => window.__mxManualClose.focusCount),
+    'автофокус должен сработать ровно один раз на вход в шаг'
+  ).toBe(1)
 })
