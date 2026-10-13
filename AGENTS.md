@@ -270,6 +270,12 @@ screens, and keep article cards unchanged unless the owner explicitly approves t
 - `Analytics.active` скрывает вынесенную шапку при уходе с вкладки: открытые вкладки остаются смонтированными. На настоящем телефоне и в Telegram компонент возвращает исходную шапку без портала.
 - Целевая проверка: `npx playwright test --config=playwright.ux.config.mjs demo-telegram-header.spec.mjs` внутри web-контейнера; размеры рамок 393/440 на viewport 793. Аппаратные Island/Home Indicator не имитируются.
 
+### Mentalix Pro (PRO-002b/c) в Base44
+
+- Фронтенд-флаг `VITE_PRO_REVIEW_PLAN_ENABLED` — default false (`src/lib/proFlag.js`); в превью включён только через `docker-compose.base44.yml` (sandbox dev). Production-сборка флага не получает; бэкенд-флаги `PRO_WEEKLY_*` здесь не включаются — их решение остаётся в backend-репозитории.
+- Проверка экранов Pro без работающего backend — dev-only mock: `?proMock=1` (сценарии `conflict` — 409 `generation_in_progress` + ограниченный опрос GET, `insufficient`, `crisis`, `disabled`, `nopro`). Включается только при dev-сборке (`import.meta.env.DEV`/`VITE_LOCAL_PREVIEW`); в production-сборке неактивен (`src/lib/proMock.js`).
+- Контракт — фактические роуты `backend/pro/router.py`: GET/POST `/api/pro/report`, GET/POST `/api/pro/plan`, PATCH `/api/pro/plan/{id}`, POST `/api/pro/plan/{id}/status`, GET `/api/pro/progress`. Ошибки двух видов: `detail` (HTTPException) и `code` (JSONResponse). GET не возвращает `generation_in_progress`: после POST 409 выполняется ограниченный опрос GET (`src/lib/proGenerationPolling.js`), повторная POST-генерация не отправляется. Согласие — существующий поток `api.mentalix.setContextConsent` (GET/PUT `/api/mentalix/consent`).
+
 ### Публичная страница политики конфиденциальности (/privacy)
 
 - `dist/privacy.html` — статичная страница для BotFather: её генерирует плагин `privacyPagePlugin` в `vite.config.js` из `src/content/privacyPolicy.js` (текст политики не дублируется). Шрифт Onest встроен в HTML, внешних запросов и скриптов нет.

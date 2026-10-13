@@ -1,6 +1,6 @@
 ---
 status: current
-last_verified: 2026-09-27
+last_verified: 2026-10-13
 ---
 
 # Mentalix — активный task index
@@ -56,3 +56,12 @@ last_verified: 2026-09-27
 | Product priority | Прежний порядок по открытым Issues **заменён решением 27.09**: сначала визуал «как Stoic», затем Telegram-only v1.0; см. очередь выше. |
 | Production       | Публикация только из защищённого `main`.                                                                                               |
 | Manual gate      | iPhone/Telegram проверка обязательна перед product release; для web/PWA действует отдельный release gate.                              |
+
+## Mentalix Pro (PRO-002b/c) — frontend, в работе
+
+Ветка `pro-review-plan`. Контракт передан владельцем (backend/pro/router.py, PRO-002b/c): разбор недели, план на 7 дней, прогресс. Решения владельца: вход через существующий профиль (вложенный `<Screen>`, без новой вкладки), фронтенд-флаг `VITE_PRO_REVIEW_PLAN_ENABLED` (default false), отдельный dev-only mock-режим. Backend-контракты и production-флаги не меняются; merge/deploy/secrets и платные AI-вызовы — только после отдельного разрешения.
+
+- Реализовано: `src/screens/pro/` (ProScreen: разбор → план → выполнение → прогресс), роуты в `src/lib/api.js` (`api.pro`), ограниченный опрос GET после 409 `generation_in_progress` (`src/lib/proGenerationPolling.js`, тесты `tests/unit/proGenerationPolling.test.mjs`), ошибки `detail`/`code`, согласие через существующий поток `api.mentalix.setContextConsent`.
+- Mock: `?proMock=1|conflict|insufficient|crisis|disabled|nopro` — только dev (`src/lib/proMock.js`); сценарий `conflict` проверяет правило «GET не сообщает generation_in_progress → ограниченный опрос GET, без повторной POST».
+- Проверки (2026-10-13, Base44): `check:core` PASS (unit 1019 pass / 0 fail / 2 skip, lint 0 errors, build, docs:check — только advisory). Превью mobile (?proMock=1): согласие → разбор → план → прогресс; 409 `version_conflict` сохраняет ввод правки (новый тест `pro-version-conflict-input`). Production-сборка: `isProMockMode` компилируется в `return!1`, скомпилированный флаг = false. Не проверено в браузере: сценарий `conflict` (409 → опрос GET), состояния insufficient/crisis/disabled/nopro; реальный backend и iPhone/Telegram gate — NOT RUN.
+- Ограничения: реальная интеграция не подтверждена (backend вне этого окружения; `PRO_WEEKLY_*` флаги выключены). При включении контракт-гейта (`CONTRACT_FILE`) список endpoints контракта нужно дополнить Pro-роутами.
