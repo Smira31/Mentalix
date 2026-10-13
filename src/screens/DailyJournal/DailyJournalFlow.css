@@ -356,10 +356,19 @@
   text-align: center;
 }
 
-.mx-dj-today__links {
+/* Вторичные действия «Запись сохранена»: две заметные кнопки над «Дописать» */
+.mx-dj-today__secondary {
   display: flex;
-  justify-content: center;
-  gap: var(--mx-space-4);
+  align-items: stretch;
+  gap: var(--mx-space-2);
+}
+
+.mx-dj-today__secondary-btn {
+  flex: 1 1 0;
+  min-width: 0;
+  padding-inline: var(--mx-space-4);
+  text-align: center;
+  white-space: nowrap;
 }
 
 .mx-dj-today__review-link {

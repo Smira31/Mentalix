@@ -643,6 +643,30 @@ export default function DailyJournalFlow({ userId, onClose, reflectionPrompt = n
   } else if (stage === 'today') {
     footerContent = (
       <div className="mx-dj-today__footer">
+        {/* Вторичные действия — заметные кнопки над основной «Дописать» */}
+        <div className="mx-dj-today__secondary">
+          {setupHasData(setup) && (
+            <PillButton
+              variant="dark"
+              testId="dj-today-review"
+              className="mx-dj-today__secondary-btn"
+              onClick={() => {
+                platform.haptic('light')
+                setStage('review')
+              }}
+            >
+              Перечитать
+            </PillButton>
+          )}
+          <PillButton
+            variant="dark"
+            testId="dj-today-entries"
+            className="mx-dj-today__secondary-btn"
+            onClick={openEntries}
+          >
+            Мои записи
+          </PillButton>
+        </div>
         <button
           type="button"
           className="cta-pill mx-dj-today__append-btn"
@@ -662,29 +686,6 @@ export default function DailyJournalFlow({ userId, onClose, reflectionPrompt = n
             Отправить
           </button>
         )}
-        <div className="mx-dj-today__links">
-          {setupHasData(setup) && (
-            <button
-              type="button"
-              className="mx-dj-today__review-link"
-              data-testid="dj-today-review"
-              onClick={() => {
-                platform.haptic('light')
-                setStage('review')
-              }}
-            >
-              Перечитай
-            </button>
-          )}
-          <button
-            type="button"
-            className="mx-dj-today__review-link"
-            data-testid="dj-today-entries"
-            onClick={openEntries}
-          >
-            Мои записи
-          </button>
-        </div>
       </div>
     )
   } else if (stage === 'review') {
