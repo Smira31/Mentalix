@@ -126,6 +126,10 @@
 .mx-dj-review__entries-btn {
   width: 100%;
   margin-top: var(--mx-space-6);
+  /* MXL-TYPE-READABLE-001: текст кнопок дневника — 16 px. Роль задаётся
+     здесь, а не в общем <PillButton>: тот используется и вне трёх
+     поверхностей этапа. */
+  font-size: var(--mx-read-action);
 }
 
 /* ── Review: «Изменить настройку» ── */
@@ -369,6 +373,8 @@
   padding-inline: var(--mx-space-4);
   text-align: center;
   white-space: nowrap;
+  /* MXL-TYPE-READABLE-001: текст кнопок дневника — 16 px (см. выше). */
+  font-size: var(--mx-read-action);
 }
 
 .mx-dj-today__review-link {

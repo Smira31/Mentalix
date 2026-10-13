@@ -33,7 +33,18 @@ function generateId() {
 
 function isTelegramCloudStorageAvailable() {
   try {
-    return Boolean(window.Telegram?.WebApp?.CloudStorage)
+    const webApp = window.Telegram?.WebApp
+
+    /*
+     * CloudStorage появился в Bot API 6.1. На более старом клиенте и на
+     * веб-заглушке SDK (версия 6.0) обращение к самому свойству печатает
+     * console.error, поэтому сначала спрашиваем версию.
+     */
+    if (typeof webApp?.isVersionAtLeast !== 'function' || !webApp.isVersionAtLeast('6.1')) {
+      return false
+    }
+
+    return Boolean(webApp.CloudStorage)
   } catch {
     return false
   }

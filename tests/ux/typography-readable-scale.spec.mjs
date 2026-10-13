@@ -6,28 +6,52 @@ import { test, expect } from '@playwright/test'
  * MXL-TYPE-READABLE-001 — согласованная средняя читаемая шкала Mentalix.
  *
  * Целевые ФАКТИЧЕСКИЕ размеры (computed, не значения в CSS):
- *  - основной текст, чтение и ввод записей — 16px, межстрочный 1.5–1.6;
+ *  - основной текст, чтение и ввод записей — 16px, межстрочный 1.4–1.7;
  *  - содержательные пояснения — 14px, вторичные подписи — 13px;
- *  - текст кнопок — 16px;
- *  - основной вопрос чек-ина и заголовки дневника — 24px, межстрочный 1.2–1.3.
+ *  - текст кнопок и выбранных плиток — 16px;
+ *  - основной вопрос чек-ина, заголовки дневника и финалов — 24px, межстрочный 1.1–1.35.
  *
- * Первый этап — три реальные поверхности: «Сегодня», утренний/вечерний чек-ин,
- * DailyJournal. Остальные разделы в этом этапе размеров не меняют.
+ * Область этапа — три поверхности: «Сегодня», утренний и вечерний чек-ин
+ * (включая шаг фокуса, шаг эмоций и финал), DailyJournal (включая финал).
+ * Остальные разделы сохраняют общий множитель --mx-type-scale: 0.86.
  *
  * Тест не только проверяет контракт, но и выгружает фактическую таблицу
- * размеров и снимки до/после в qa-evidence/typography-readable/<phase>/.
+ * размеров и снимки одинаковых состояний до/после в
+ * qa-evidence/typography-readable/<phase>/.
+ *
  * Фаза задаётся переменной MX_TYPE_PHASE=before|after (по умолчанию after).
+ * В фазе before контракт НЕ проверяется: baseline собирается целиком, чтобы
+ * сравнение «до/после» охватывало все состояния, а не обрывалось на первой
+ * проверке. Значения baseline сравниваются с целями отчётом
+ * scripts/typography-compare.mjs.
  *
  * Поиск элементов — по селекторам поверхностей и data-testid, без waitForTimeout.
  */
 
 const PHASE = process.env.MX_TYPE_PHASE || 'after'
 const OUT_DIR = path.join('qa-evidence', 'typography-readable', PHASE)
+// Baseline: собираем evidence и не падаем на расхождениях — RED фиксируется сравнением.
+const ASSERT = PHASE !== 'before'
 
 const VIEWPORTS = [
   { name: '393x852', width: 393, height: 852 },
   { name: '360x640', width: 360, height: 640 },
 ]
+
+/* Клавиатура: высота видимой области телефона с поднятой клавиатурой. */
+const KEYBOARD_VIEWPORT = { width: 393, height: 420 }
+
+const DEMO_TODAY = '/?demo=1&frame=0'
+const DEMO_EVENING = '/?demo=1&frame=0&today_state=eveningPrimary&review_open=1'
+const DEMO_COMPLETE_MORNING = '/?demo=1&frame=0&action=complete_morning'
+const DEMO_COMPLETE_EVENING = '/?demo=1&frame=0&action=complete_evening'
+
+/*
+ * Поле записи чек-ина: в демо-разметке data-testid="checkin-text-input" стоит
+ * на самом contenteditable, у вечернего разбора — свой класс на поле.
+ */
+const CHECKIN_INPUT_SELECTOR =
+  '.mx-demo-checkin__editor [contenteditable], [data-testid="checkin-text-input"], .mx-checkin-evening-editor [contenteditable]'
 
 /* Проверяемые роли: селектор → как читать измерение. */
 const CHECKIN_ROLES = {
@@ -35,8 +59,24 @@ const CHECKIN_ROLES = {
   hint: { sel: '.mx-checkin-question__hint', role: 'note' },
   scaleLabel: { sel: '.mx-checkin-scale__label', role: 'caption' },
   chip: { sel: '.mx-checkin-chips button', role: 'action' },
-  input: { sel: '.mx-demo-checkin__editor [contenteditable], [data-testid="checkin-text-input"] [contenteditable]', role: 'read' },
+  focusTile: { sel: '.mx-demo-checkin__focus-grid button span', role: 'action' },
+  input: { sel: CHECKIN_INPUT_SELECTOR, role: 'read' },
   submit: { sel: '[data-testid="checkin-next"], [data-testid="checkin-complete"]', role: 'action' },
+  /* Вечерний «Разбор дня»: свои заголовки, поле и шаг эмоций. */
+  eveningQuestion: { sel: '.mx-checkin-question--evening-card > h2, .mx-checkin-question--emotion > h2', role: 'ask' },
+  eveningHint: { sel: '.mx-checkin-question--evening-card .mx-checkin-question__hint', role: 'note' },
+  eveningInput: { sel: '.mx-checkin-evening-editor [contenteditable]', role: 'read' },
+  emotionTile: { sel: '.mx-emotion-grid__tile', role: 'action' },
+  emotionPill: { sel: '.mx-emotion-pill', role: 'action' },
+}
+
+/* Финал чек-ина — общий компонент CheckInCompletion (утро, вечер, дневник). */
+const COMPLETION_ROLES = {
+  title: { sel: '.mx-completion__title', role: 'ask' },
+  datePill: { sel: '.mx-completion__date-pill', role: 'caption' },
+  question: { sel: '.mx-completion__feedback p', role: 'note' },
+  choice: { sel: '.mx-completion__choices button', role: 'caption' },
+  action: { sel: '.mx-completion-action button, .mx-completion-action .cta-pill', role: 'action' },
 }
 
 const JOURNAL_ROLES = {
@@ -54,6 +94,7 @@ const JOURNAL_ROLES = {
   todayTitle: { sel: '.mx-dj-today__title', role: 'ask' },
   todayText: { sel: '.mx-dj-today__text', role: 'read' },
   todayAppend: { sel: '.mx-dj-today__append-btn', role: 'action' },
+  todayPill: { sel: '.mx-dj-today__secondary-btn', role: 'action' },
   entriesItemStream: { sel: '.mx-dj-entries__item-stream', role: 'read' },
   entriesItemQuestion: { sel: '.mx-dj-entries__item-question', role: 'note' },
 }
@@ -165,42 +206,97 @@ function assertNoOverflow(overflow, label) {
 
 /* ── Прохождение поверхностей ── */
 
-async function walkToday(page) {
-  await page.goto('/?demo=1&frame=0')
-  await expect(page.getByTestId('today-card-morning')).toBeVisible()
+async function capture(page, dir, name) {
+  await page.screenshot({ path: path.join(dir, name) })
+}
+
+async function surfaceState(page, roles) {
+  const rolesRead = roles ? await readRoles(page, roles) : null
+
   return {
-    roles: await readRoles(page, TODAY_ROLES),
+    roles: rolesRead,
     inventory: await readInventory(page),
     overflow: await readOverflow(page),
   }
 }
 
-async function walkCheckIn(page) {
-  await page.goto('/?demo=1&frame=0')
+async function walkToday(page, dir) {
+  await page.goto(DEMO_TODAY)
   await expect(page.getByTestId('today-card-morning')).toBeVisible()
-  await page.getByTestId('today-card-morning').click()
+  const state = await surfaceState(page, TODAY_ROLES)
+  await capture(page, dir, '01-today.png')
+
+  return state
+}
+
+/*
+ * Чек-ин: утренний (?demo=1, карточка утра) и вечерний (today_state=eveningPrimary).
+ * Идём по шагам до экрана финала, снимая состояния шкалы, фокуса, эмоций,
+ * редактора и финала — одинаковый набор в фазах before и after.
+ */
+async function walkCheckIn(page, dir, { filePrefix, url, cardTestId, evening, onEditor }) {
+  await page.goto(url)
+  const card = page.getByTestId(cardTestId)
+  await expect(card).toBeVisible()
+  await card.click()
 
   const steps = []
   let questionStep = null
+  let focusStep = null
+  let emotionStep = null
   let editorStep = null
+  let completion = null
 
-  for (let i = 0; i < 10; i += 1) {
+  for (let i = 0; i < 14; i += 1) {
+    if (await page.locator('.mx-completion').count()) break
+
     await expect(page.locator('.mx-demo-checkin__scene, .mx-checkin-question').first()).toBeVisible()
     const roles = await readRoles(page, CHECKIN_ROLES)
     const overflow = await readOverflow(page)
     steps.push({ index: i, roles, overflow, inventory: await readInventory(page) })
-    if (!questionStep && roles.question) questionStep = roles
-    // Шаг редактора хранит и роли, и геометрию: assertCheckIn проверяет
-    // на нём не только размер поля, но и горизонтальный выход.
-    if (!editorStep && roles.input) editorStep = { ...roles, overflow }
 
-    const input = page.locator('.mx-demo-checkin__editor [contenteditable]')
+    if (!questionStep && (roles.question || roles.eveningQuestion)) {
+      questionStep = roles
+      await capture(page, dir, `${filePrefix}-question.png`)
+    }
+    if (!focusStep && roles.focusTile) {
+      focusStep = { ...roles, overflow }
+      await capture(page, dir, `${filePrefix}-focus.png`)
+    }
+    if (!emotionStep && (roles.emotionTile || roles.emotionPill)) {
+      emotionStep = { ...roles, overflow }
+      await capture(page, dir, `${filePrefix}-emotion.png`)
+    }
+
+    // Шаг фокуса дня: выбираем плитку, чтобы проверить выбранное состояние.
+    const focusTiles = page.locator('[data-testid="checkin-day-focus-option"]')
+    if (await focusTiles.count()) {
+      const first = focusTiles.first()
+      if ((await first.getAttribute('aria-pressed')) !== 'true') {
+        await first.click()
+        await expect(first).toHaveAttribute('aria-pressed', 'true')
+      }
+    }
+
+    // Шаг эмоций: выбираем первую доступную пилюлю.
+    const emotionPills = page.locator('[data-testid="checkin-emotion-pill"]')
+    if (await emotionPills.count()) {
+      const first = emotionPills.first()
+      if ((await first.getAttribute('aria-pressed')) !== 'true') await first.click()
+    }
+
+    const input = page.locator(CHECKIN_INPUT_SELECTOR)
     if (await input.count()) {
+      if (!editorStep) {
+        editorStep = { ...roles, overflow }
+        await capture(page, dir, `${filePrefix}-editor.png`)
+        if (onEditor) await onEditor(page)
+      }
       await input.first().fill('Тестовая запись: спокойный вечер, короткая прогулка и разговор.')
       const finish = page.locator('[data-testid="checkin-complete"]')
       if (await finish.isVisible().catch(() => false)) {
         await finish.click()
-        break
+        continue
       }
     }
 
@@ -219,10 +315,27 @@ async function walkCheckIn(page) {
     break
   }
 
-  return { steps, questionStep, editorStep }
+  // Финал: общий компонент CheckInCompletion.
+  if (await page.locator('.mx-completion').count()) {
+    await expect(page.locator('.mx-completion__title')).toBeVisible()
+    completion = await surfaceState(page, COMPLETION_ROLES)
+    await capture(page, dir, `${filePrefix}-complete.png`)
+  }
+
+  return { evening, steps, questionStep, focusStep, emotionStep, editorStep, completion }
 }
 
-async function walkJournal(page) {
+/* Прямые превью финалов — одинаковое состояние в обеих фазах. */
+async function walkCompletionPreview(page, dir, { filePrefix, url }) {
+  await page.goto(url)
+  await expect(page.locator('.mx-completion__title')).toBeVisible()
+  const state = await surfaceState(page, COMPLETION_ROLES)
+  await capture(page, dir, `${filePrefix}.png`)
+
+  return state
+}
+
+async function walkJournal(page, dir) {
   const stages = {}
   await page.goto('/?demo=1&tab=practices&frame=0')
   await expect(page.getByTestId('journal-open-cta')).toBeVisible()
@@ -232,11 +345,8 @@ async function walkJournal(page) {
   await expect(page.getByTestId('dj-intro-setup')).toBeVisible()
   await page.getByTestId('dj-intro-setup').click()
   await expect(page.locator('.mx-dj-setup').first()).toBeVisible()
-  stages.setup = {
-    roles: await readRoles(page, JOURNAL_ROLES),
-    inventory: await readInventory(page),
-    overflow: await readOverflow(page),
-  }
+  stages.setup = await surfaceState(page, JOURNAL_ROLES)
+  await capture(page, dir, '12-journal-setup.png')
 
   // Проходим настройку целиком, чтобы появился экран «Вспомни, куда идёшь».
   // Шаг считается пройденным, когда заполнено хотя бы одно поле шага: до этого
@@ -282,31 +392,22 @@ async function walkJournal(page) {
   }
 
   await expect(page.locator('.mx-dj-review')).toBeVisible()
-  stages.review = {
-    roles: await readRoles(page, JOURNAL_ROLES),
-    inventory: await readInventory(page),
-    overflow: await readOverflow(page),
-  }
+  stages.review = await surfaceState(page, JOURNAL_ROLES)
+  await capture(page, dir, '13-journal-review.png')
 
   // Ввод: поток
   await expect(page.getByTestId('dj-review-next')).toBeVisible()
   await page.getByTestId('dj-review-next').click()
   await expect(page.getByTestId('dj-stream-input')).toBeVisible()
-  stages.stream = {
-    roles: await readRoles(page, JOURNAL_ROLES),
-    inventory: await readInventory(page),
-    overflow: await readOverflow(page),
-  }
+  stages.stream = await surfaceState(page, JOURNAL_ROLES)
+  await capture(page, dir, '14-journal-stream.png')
 
   // Вопрос дня
   await page.getByTestId('dj-stream-input').fill('Сижу дома, пью чай. Думаю о том, что нужно сделать сегодня.')
   await page.getByTestId('dj-stream-next').click()
   await expect(page.getByTestId('dj-question-input')).toBeVisible()
-  stages.question = {
-    roles: await readRoles(page, JOURNAL_ROLES),
-    inventory: await readInventory(page),
-    overflow: await readOverflow(page),
-  }
+  stages.question = await surfaceState(page, JOURNAL_ROLES)
+  await capture(page, dir, '15-journal-question.png')
 
   // Сохранение: после ответа на вопрос дня штатный переход ведёт на экран
   // завершения. Возвращаемся на вкладку практик и открываем журнал заново —
@@ -314,26 +415,22 @@ async function walkJournal(page) {
   await page.getByTestId('dj-question-input').fill('Один спокойный шаг важнее идеального плана.')
   await page.getByTestId('dj-question-next').click()
   await expect(page.getByTestId('dj-complete-close')).toBeVisible()
+  stages.complete = await surfaceState(page, COMPLETION_ROLES)
+  await capture(page, dir, '16-journal-complete.png')
   await page.getByTestId('dj-complete-close').click()
   await expect(page.getByTestId('journal-open-cta')).toBeVisible()
   await page.getByTestId('journal-open-cta').click()
 
   // Сохранённая запись («сегодня»)
   await expect(page.getByTestId('dj-today')).toBeVisible()
-  stages.today = {
-    roles: await readRoles(page, JOURNAL_ROLES),
-    inventory: await readInventory(page),
-    overflow: await readOverflow(page),
-  }
+  stages.today = await surfaceState(page, JOURNAL_ROLES)
+  await capture(page, dir, '17-journal-today.png')
 
   // «Мои записи»
   await page.getByTestId('dj-today-entries').click()
   await expect(page.getByTestId('dj-entries')).toBeVisible()
-  stages.entries = {
-    roles: await readRoles(page, JOURNAL_ROLES),
-    inventory: await readInventory(page),
-    overflow: await readOverflow(page),
-  }
+  stages.entries = await surfaceState(page, JOURNAL_ROLES)
+  await capture(page, dir, '18-journal-entries.png')
 
   return stages
 }
@@ -343,17 +440,46 @@ async function walkJournal(page) {
 function assertCheckIn(surface, label) {
   const question = surface.questionStep
   expect(question, `${label}: главный вопрос не найден`).not.toBeNull()
-  assertRole(question, 'question', 24, [1.1, 1.35])
-  if (question.hint) assertRole(question, 'hint', 14)
+  assertRole(question, question.eveningQuestion ? 'eveningQuestion' : 'question', 24, [1.1, 1.35])
+  if (question.eveningQuestion && question.eveningHint) {
+    assertRole(question, 'eveningHint', 14)
+  } else if (question.hint) {
+    assertRole(question, 'hint', 14)
+  }
   if (question.scaleLabel) {
     expect(question.scaleLabel.size, `${label}: подпись шкалы`).toBeGreaterThanOrEqual(13)
   }
   if (question.chip) assertRole(question, 'chip', 16)
 
+  if (surface.evening) {
+    // Вечерний «Разбор дня» идёт через шаг эмоций, сетки фокуса дня в нём нет.
+    expect(surface.emotionStep, `${label}: шаг эмоций не найден`).not.toBeNull()
+    if (surface.emotionStep.emotionTile) assertRole(surface.emotionStep, 'emotionTile', 16)
+    else assertRole(surface.emotionStep, 'emotionPill', 16)
+  } else {
+    expect(surface.focusStep, `${label}: шаг «Главный фокус дня» не найден`).not.toBeNull()
+    assertRole(surface.focusStep, 'focusTile', 16)
+  }
+
   const editor = surface.editorStep
   expect(editor, `${label}: поле ввода записи не найдено`).not.toBeNull()
-  assertRole(editor, 'input', 16, [1.4, 1.7])
+  assertRole(editor, editor.eveningInput ? 'eveningInput' : 'input', 16, [1.4, 1.7])
   assertNoOverflow(editor.overflow, `${label}: поле ввода`)
+
+  for (const [name, stage] of Object.entries(surface.steps)) {
+    assertNoOverflow(stage.overflow, `${label}: шаг ${name}`)
+  }
+}
+
+function assertCompletion(completion, label) {
+  expect(completion, `${label}: экран финала не найден`).not.toBeNull()
+  const roles = completion.roles
+  assertRole(roles, 'title', 24, [1.1, 1.4])
+  if (roles.datePill) assertRole(roles, 'datePill', 13)
+  if (roles.question) assertRole(roles, 'question', 14)
+  if (roles.choice) assertRole(roles, 'choice', 13)
+  if (roles.action) assertRole(roles, 'action', 16)
+  assertNoOverflow(completion.overflow, `${label}: финал`)
 }
 
 function assertJournal(stages, label) {
@@ -362,6 +488,7 @@ function assertJournal(stages, label) {
   assertRole(stages.review.roles, 'reviewTitle', 24, [1.15, 1.35])
   assertRole(stages.review.roles, 'reviewItem', 16)
   if (stages.review.roles.reviewNote) assertRole(stages.review.roles, 'reviewNote', 14)
+  if (stages.review.roles.entriesBtn) assertRole(stages.review.roles, 'entriesBtn', 16)
   if (stages.stream.roles.streamHint) assertRole(stages.stream.roles, 'streamHint', 14)
   assertRole(stages.stream.roles, 'streamTitle', 24, [1.15, 1.35])
   assertRole(stages.stream.roles, 'streamField', 16, [1.45, 1.7])
@@ -369,6 +496,7 @@ function assertJournal(stages, label) {
   assertRole(stages.question.roles, 'questionField', 16)
   assertRole(stages.today.roles, 'todayTitle', 24, [1.15, 1.35])
   assertRole(stages.today.roles, 'todayText', 16, [1.45, 1.7])
+  if (stages.today.roles.todayPill) assertRole(stages.today.roles, 'todayPill', 16)
   if (stages.entries.roles.entriesItemStream) assertRole(stages.entries.roles, 'entriesItemStream', 16)
 
   for (const [name, stage] of Object.entries(stages)) {
@@ -401,30 +529,127 @@ for (const vp of VIEWPORTS) {
     fs.mkdirSync(OUT_DIR, { recursive: true })
     await page.setViewportSize({ width: vp.width, height: vp.height })
 
-    const report = { phase: PHASE, viewport: vp, today: null, checkin: null, journal: null }
+    const report = {
+      phase: PHASE,
+      assert: ASSERT,
+      viewport: vp,
+      today: null,
+      checkinMorning: null,
+      checkinEvening: null,
+      completeMorning: null,
+      completeEvening: null,
+      journal: null,
+    }
     const persist = () =>
       fs.writeFileSync(
         path.join(OUT_DIR, `measure-${vp.name}.json`),
         JSON.stringify(report, null, 2)
       )
 
-    const today = await walkToday(page)
-    report.today = today
+    report.today = await walkToday(page, OUT_DIR)
     persist()
-    await page.screenshot({ path: path.join(OUT_DIR, `${vp.name}-01-today.png`) })
 
-    const checkin = await walkCheckIn(page)
-    report.checkin = checkin
+    report.checkinMorning = await walkCheckIn(page, OUT_DIR, {
+      filePrefix: '02-morning',
+      url: DEMO_TODAY,
+      cardTestId: 'today-card-morning',
+      evening: false,
+    })
     persist()
-    await page.screenshot({ path: path.join(OUT_DIR, `${vp.name}-02-checkin.png`) })
 
-    const journal = await walkJournal(page)
-    report.journal = journal
+    report.checkinEvening = await walkCheckIn(page, OUT_DIR, {
+      filePrefix: '03-evening',
+      url: DEMO_EVENING,
+      cardTestId: 'today-card-evening',
+      evening: true,
+    })
     persist()
-    await page.screenshot({ path: path.join(OUT_DIR, `${vp.name}-03-journal.png`) })
 
-    assertToday(today, vp.name)
-    assertCheckIn(checkin, vp.name)
-    assertJournal(journal, vp.name)
+    report.completeMorning = await walkCompletionPreview(page, OUT_DIR, {
+      filePrefix: '04-complete-morning',
+      url: DEMO_COMPLETE_MORNING,
+    })
+    persist()
+
+    report.completeEvening = await walkCompletionPreview(page, OUT_DIR, {
+      filePrefix: '05-complete-evening',
+      url: DEMO_COMPLETE_EVENING,
+    })
+    persist()
+
+    report.journal = await walkJournal(page, OUT_DIR)
+    persist()
+
+    if (!ASSERT) return
+
+    assertToday(report.today, vp.name)
+    assertCheckIn(report.checkinMorning, `${vp.name}: утренний чек-ин`)
+    assertCheckIn(report.checkinEvening, `${vp.name}: вечерний чек-ин`)
+    assertCompletion(report.checkinMorning.completion, `${vp.name}: финал утреннего чек-ина`)
+    assertCompletion(report.checkinEvening.completion, `${vp.name}: финал вечернего чек-ина`)
+    assertCompletion(report.completeMorning, `${vp.name}: превью финала утра`)
+    assertCompletion(report.completeEvening, `${vp.name}: превью финала вечера`)
+    assertJournal(report.journal, vp.name)
   })
 }
+
+/*
+ * Поле записи при открытой клавиатуре: на телефоне клавиатура поднимает
+ * visual viewport. Настоящую клавиатуру Playwright не эмулирует, поэтому
+ * состояние проверяется уменьшением высоты вьюпорта при сфокусированном поле:
+ * поле, кнопка отправки и текст должны остаться в видимой области без обрезки.
+ */
+test('читаемая шкала: поле записи при открытой клавиатуре', async ({ page }) => {
+  fs.mkdirSync(OUT_DIR, { recursive: true })
+  await page.setViewportSize({ width: 393, height: 852 })
+
+  const keyboard = { viewport: KEYBOARD_VIEWPORT, field: null, submit: null }
+
+  await walkCheckIn(page, OUT_DIR, {
+    filePrefix: '06-keyboard',
+    url: DEMO_TODAY,
+    cardTestId: 'today-card-morning',
+    evening: false,
+    onEditor: async editorPage => {
+      const field = editorPage.locator(CHECKIN_INPUT_SELECTOR).first()
+      await field.click()
+      await editorPage.setViewportSize(KEYBOARD_VIEWPORT)
+      const box = await field.boundingBox()
+      const submit = editorPage.locator('[data-testid="checkin-complete"]').first()
+      const submitBox = (await submit.count()) ? await submit.boundingBox() : null
+      const styles = await field.evaluate(el => {
+        const cs = getComputedStyle(el)
+
+        return {
+          size: Math.round(parseFloat(cs.fontSize) * 100) / 100,
+          lh: cs.lineHeight === 'normal' ? null : Math.round((parseFloat(cs.lineHeight) / parseFloat(cs.fontSize)) * 100) / 100,
+        }
+      })
+      const focused = await field.evaluate(el => el.contains(document.activeElement) || document.activeElement === el)
+      const overflow = await readOverflow(editorPage)
+      keyboard.field = { box, focused, ...styles, viewportHeight: KEYBOARD_VIEWPORT.height }
+      keyboard.submit = submitBox
+      keyboard.overflow = overflow
+      await capture(editorPage, OUT_DIR, `07-keyboard-${KEYBOARD_VIEWPORT.width}x${KEYBOARD_VIEWPORT.height}.png`)
+      await editorPage.setViewportSize({ width: 393, height: 852 })
+    },
+  })
+
+  fs.writeFileSync(path.join(OUT_DIR, 'keyboard.json'), JSON.stringify(keyboard, null, 2))
+
+  if (!ASSERT) return
+
+  expect(keyboard.field, 'поле записи не найдено').not.toBeNull()
+  expect(keyboard.field.size, 'поле записи: размер при открытой клавиатуре').toBeCloseTo(16, 1)
+  expect(keyboard.field.box, 'поле записи: геометрия').not.toBeNull()
+  // Поле целиком остаётся в видимой области и не обрезано сверху/снизу.
+  expect(keyboard.field.box.y, 'верх поля не должен уходить за экран').toBeGreaterThanOrEqual(-1)
+  expect(
+    keyboard.field.box.y + keyboard.field.box.height,
+    'низ поля не должен уходить за видимую область'
+  ).toBeLessThanOrEqual(KEYBOARD_VIEWPORT.height + 1)
+  expect(keyboard.submit, 'кнопка завершения не найдена').not.toBeNull()
+  expect(keyboard.submit.width, 'кнопка завершения: доступная ширина').toBeGreaterThanOrEqual(44)
+  expect(keyboard.submit.height, 'кнопка завершения: доступная высота').toBeGreaterThanOrEqual(44)
+  assertNoOverflow(keyboard.overflow, 'поле записи при открытой клавиатуре')
+})

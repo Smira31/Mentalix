@@ -382,10 +382,29 @@ export function confirmAction(message) {
    онбординг, выбранная тема.
    ============================================================ */
 
+/*
+ * Доступ к CloudStorage. Появился в Bot API 6.1: на более старом клиенте
+ * (и на веб-заглушке SDK, которая рапортует версию 6.0) обращение к самому
+ * свойству печатает console.error, даже если хранилищем не пользуются.
+ * Поэтому сначала спрашиваем версию — как это уже сделано для
+ * addToHomeScreen ниже.
+ */
+function cloudStorage() {
+  const webApp = api()
+
+  if (
+    typeof webApp?.isVersionAtLeast !== 'function' ||
+    !webApp.isVersionAtLeast('6.1')
+  )
+    return null
+
+  return webApp.CloudStorage ?? null
+}
+
 export const cloud = {
   get(key) {
     return new Promise(resolve => {
-      const storage = api()?.CloudStorage
+      const storage = cloudStorage()
 
       if (!storage?.getItem) {
         resolve(null)
@@ -402,7 +421,7 @@ export const cloud = {
 
   set(key, value) {
     return new Promise(resolve => {
-      const storage = api()?.CloudStorage
+      const storage = cloudStorage()
 
       if (!storage?.setItem) {
         resolve(false)
@@ -420,7 +439,7 @@ export const cloud = {
   // Удаляет ВСЕ ключи пользователя из CloudStorage (после удаления аккаунта).
   clearAll() {
     return new Promise(resolve => {
-      const storage = api()?.CloudStorage
+      const storage = cloudStorage()
 
       if (!storage?.getKeys || !storage?.removeItems) {
         resolve(false)
@@ -454,7 +473,7 @@ export const cloud = {
 
   remove(key) {
     return new Promise(resolve => {
-      const storage = api()?.CloudStorage
+      const storage = cloudStorage()
 
       if (!storage?.removeItem) {
         resolve(false)

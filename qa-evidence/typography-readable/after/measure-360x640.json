@@ -1,5 +1,6 @@
 {
   "phase": "after",
+  "assert": true,
   "viewport": {
     "name": "360x640",
     "width": 360,
@@ -83,7 +84,7 @@
       },
       {
         "sel": "span.mx-demo-telegram-chrome__time",
-        "text": "17:33",
+        "text": "18:10",
         "size": 14.62,
         "lh": 1.5
       },
@@ -107,7 +108,7 @@
       },
       {
         "sel": "strong.mx-demo-today-greeting",
-        "text": "добрый день.",
+        "text": "добрый вечер.",
         "size": 17.2,
         "lh": 1.1
       },
@@ -397,7 +398,8 @@
       ]
     }
   },
-  "checkin": {
+  "checkinMorning": {
+    "evening": false,
     "steps": [
       {
         "index": 0,
@@ -421,13 +423,19 @@
             "role": "caption"
           },
           "chip": null,
+          "focusTile": null,
           "input": null,
           "submit": {
             "size": 16,
             "lh": 1.5,
             "text": "",
             "role": "action"
-          }
+          },
+          "eveningQuestion": null,
+          "eveningHint": null,
+          "eveningInput": null,
+          "emotionTile": null,
+          "emotionPill": null
         },
         "overflow": {
           "scrollWidth": 360,
@@ -475,7 +483,7 @@
           },
           {
             "sel": "span.mx-demo-telegram-chrome__time",
-            "text": "17:33",
+            "text": "18:10",
             "size": 14.62,
             "lh": 1.5
           },
@@ -539,13 +547,19 @@
             "role": "caption"
           },
           "chip": null,
+          "focusTile": null,
           "input": null,
           "submit": {
             "size": 16,
             "lh": 1.5,
             "text": "",
             "role": "action"
-          }
+          },
+          "eveningQuestion": null,
+          "eveningHint": null,
+          "eveningInput": null,
+          "emotionTile": null,
+          "emotionPill": null
         },
         "overflow": {
           "scrollWidth": 360,
@@ -593,7 +607,7 @@
           },
           {
             "sel": "span.mx-demo-telegram-chrome__time",
-            "text": "17:33",
+            "text": "18:10",
             "size": 14.62,
             "lh": 1.5
           },
@@ -657,13 +671,19 @@
             "role": "caption"
           },
           "chip": null,
+          "focusTile": null,
           "input": null,
           "submit": {
             "size": 16,
             "lh": 1.5,
             "text": "",
             "role": "action"
-          }
+          },
+          "eveningQuestion": null,
+          "eveningHint": null,
+          "eveningInput": null,
+          "emotionTile": null,
+          "emotionPill": null
         },
         "overflow": {
           "scrollWidth": 360,
@@ -711,7 +731,7 @@
           },
           {
             "sel": "span.mx-demo-telegram-chrome__time",
-            "text": "17:33",
+            "text": "18:10",
             "size": 14.62,
             "lh": 1.5
           },
@@ -775,13 +795,19 @@
             "role": "caption"
           },
           "chip": null,
+          "focusTile": null,
           "input": null,
           "submit": {
             "size": 16,
             "lh": 1.5,
             "text": "",
             "role": "action"
-          }
+          },
+          "eveningQuestion": null,
+          "eveningHint": null,
+          "eveningInput": null,
+          "emotionTile": null,
+          "emotionPill": null
         },
         "overflow": {
           "scrollWidth": 360,
@@ -829,7 +855,7 @@
           },
           {
             "sel": "span.mx-demo-telegram-chrome__time",
-            "text": "17:33",
+            "text": "18:10",
             "size": 14.62,
             "lh": 1.5
           },
@@ -893,13 +919,19 @@
             "role": "caption"
           },
           "chip": null,
+          "focusTile": null,
           "input": null,
           "submit": {
             "size": 16,
             "lh": 1.5,
             "text": "",
             "role": "action"
-          }
+          },
+          "eveningQuestion": null,
+          "eveningHint": null,
+          "eveningInput": null,
+          "emotionTile": null,
+          "emotionPill": null
         },
         "overflow": {
           "scrollWidth": 360,
@@ -947,7 +979,7 @@
           },
           {
             "sel": "span.mx-demo-telegram-chrome__time",
-            "text": "17:33",
+            "text": "18:10",
             "size": 14.62,
             "lh": 1.5
           },
@@ -1011,13 +1043,19 @@
             "role": "caption"
           },
           "chip": null,
+          "focusTile": null,
           "input": null,
           "submit": {
             "size": 16,
             "lh": 1.5,
             "text": "",
             "role": "action"
-          }
+          },
+          "eveningQuestion": null,
+          "eveningHint": null,
+          "eveningInput": null,
+          "emotionTile": null,
+          "emotionPill": null
         },
         "overflow": {
           "scrollWidth": 360,
@@ -1065,7 +1103,7 @@
           },
           {
             "sel": "span.mx-demo-telegram-chrome__time",
-            "text": "17:33",
+            "text": "18:10",
             "size": 14.62,
             "lh": 1.5
           },
@@ -1129,13 +1167,19 @@
             "role": "caption"
           },
           "chip": null,
+          "focusTile": null,
           "input": null,
           "submit": {
             "size": 16,
             "lh": 1.5,
             "text": "",
             "role": "action"
-          }
+          },
+          "eveningQuestion": null,
+          "eveningHint": null,
+          "eveningInput": null,
+          "emotionTile": null,
+          "emotionPill": null
         },
         "overflow": {
           "scrollWidth": 360,
@@ -1183,7 +1227,7 @@
           },
           {
             "sel": "span.mx-demo-telegram-chrome__time",
-            "text": "17:33",
+            "text": "18:10",
             "size": 14.62,
             "lh": 1.5
           },
@@ -1247,13 +1291,19 @@
             "role": "caption"
           },
           "chip": null,
+          "focusTile": null,
           "input": null,
           "submit": {
             "size": 16,
             "lh": 1.5,
             "text": "",
             "role": "action"
-          }
+          },
+          "eveningQuestion": null,
+          "eveningHint": null,
+          "eveningInput": null,
+          "emotionTile": null,
+          "emotionPill": null
         },
         "overflow": {
           "scrollWidth": 360,
@@ -1301,7 +1351,7 @@
           },
           {
             "sel": "span.mx-demo-telegram-chrome__time",
-            "text": "17:33",
+            "text": "18:10",
             "size": 14.62,
             "lh": 1.5
           },
@@ -1360,13 +1410,24 @@
           },
           "scaleLabel": null,
           "chip": null,
+          "focusTile": {
+            "size": 16,
+            "lh": 1.2,
+            "text": "Работа",
+            "role": "action"
+          },
           "input": null,
           "submit": {
             "size": 16,
             "lh": 1.5,
             "text": "",
             "role": "action"
-          }
+          },
+          "eveningQuestion": null,
+          "eveningHint": null,
+          "eveningInput": null,
+          "emotionTile": null,
+          "emotionPill": null
         },
         "overflow": {
           "scrollWidth": 360,
@@ -1414,7 +1475,7 @@
           },
           {
             "sel": "span.mx-demo-telegram-chrome__time",
-            "text": "17:33",
+            "text": "18:10",
             "size": 14.62,
             "lh": 1.5
           },
@@ -1439,55 +1500,55 @@
           {
             "sel": "span.",
             "text": "Работа",
-            "size": 14.62,
+            "size": 16,
             "lh": 1.2
           },
           {
             "sel": "span.",
             "text": "Близкие",
-            "size": 14.62,
+            "size": 16,
             "lh": 1.2
           },
           {
             "sel": "span.",
             "text": "Забота о себе",
-            "size": 14.62,
+            "size": 16,
             "lh": 1.2
           },
           {
             "sel": "span.",
             "text": "Тело",
-            "size": 14.62,
+            "size": 16,
             "lh": 1.2
           },
           {
             "sel": "span.",
             "text": "Учёба",
-            "size": 14.62,
+            "size": 16,
             "lh": 1.2
           },
           {
             "sel": "span.",
             "text": "Деньги",
-            "size": 14.62,
+            "size": 16,
             "lh": 1.2
           },
           {
             "sel": "span.",
             "text": "Дом",
-            "size": 14.62,
+            "size": 16,
             "lh": 1.2
           },
           {
             "sel": "span.",
             "text": "Отдых",
-            "size": 14.62,
+            "size": 16,
             "lh": 1.2
           },
           {
             "sel": "span.",
             "text": "Творчество",
-            "size": 14.62,
+            "size": 16,
             "lh": 1.2
           },
           {
@@ -1515,6 +1576,7 @@
           },
           "scaleLabel": null,
           "chip": null,
+          "focusTile": null,
           "input": {
             "size": 16,
             "lh": 1.65,
@@ -1526,7 +1588,12 @@
             "lh": 1.5,
             "text": "",
             "role": "action"
-          }
+          },
+          "eveningQuestion": null,
+          "eveningHint": null,
+          "eveningInput": null,
+          "emotionTile": null,
+          "emotionPill": null
         },
         "overflow": {
           "scrollWidth": 360,
@@ -1574,7 +1641,7 @@
           },
           {
             "sel": "span.mx-demo-telegram-chrome__time",
-            "text": "17:33",
+            "text": "18:10",
             "size": 14.62,
             "lh": 1.5
           },
@@ -1625,14 +1692,68 @@
         "role": "caption"
       },
       "chip": null,
+      "focusTile": null,
       "input": null,
       "submit": {
         "size": 16,
         "lh": 1.5,
         "text": "",
         "role": "action"
+      },
+      "eveningQuestion": null,
+      "eveningHint": null,
+      "eveningInput": null,
+      "emotionTile": null,
+      "emotionPill": null
+    },
+    "focusStep": {
+      "question": {
+        "size": 24,
+        "lh": 1.15,
+        "text": "Главный фокус на сегодня?",
+        "role": "ask"
+      },
+      "hint": {
+        "size": 14,
+        "lh": 1.5,
+        "text": "Выбери одно главное на сегодня.",
+        "role": "note"
+      },
+      "scaleLabel": null,
+      "chip": null,
+      "focusTile": {
+        "size": 16,
+        "lh": 1.2,
+        "text": "Работа",
+        "role": "action"
+      },
+      "input": null,
+      "submit": {
+        "size": 16,
+        "lh": 1.5,
+        "text": "",
+        "role": "action"
+      },
+      "eveningQuestion": null,
+      "eveningHint": null,
+      "eveningInput": null,
+      "emotionTile": null,
+      "emotionPill": null,
+      "overflow": {
+        "scrollWidth": 360,
+        "clientWidth": 360,
+        "scrollHeight": 640,
+        "clientHeight": 640,
+        "offenders": [
+          {
+            "sel": "div.mx-preview-device-switcher",
+            "left": 28,
+            "right": 366
+          }
+        ]
       }
     },
+    "emotionStep": null,
     "editorStep": {
       "question": {
         "size": 24,
@@ -1648,6 +1769,7 @@
       },
       "scaleLabel": null,
       "chip": null,
+      "focusTile": null,
       "input": {
         "size": 16,
         "lh": 1.65,
@@ -1660,6 +1782,11 @@
         "text": "",
         "role": "action"
       },
+      "eveningQuestion": null,
+      "eveningHint": null,
+      "eveningInput": null,
+      "emotionTile": null,
+      "emotionPill": null,
       "overflow": {
         "scrollWidth": 360,
         "clientWidth": 360,
@@ -1673,6 +1800,1864 @@
           }
         ]
       }
+    },
+    "completion": {
+      "roles": {
+        "title": {
+          "size": 24,
+          "lh": 1.33,
+          "text": "Ты прошёлутренний чек-ин.",
+          "role": "ask"
+        },
+        "datePill": {
+          "size": 13,
+          "lh": 1.5,
+          "text": "✓ 13 окт",
+          "role": "caption"
+        },
+        "question": {
+          "size": 14,
+          "lh": 1.5,
+          "text": "Было полезно сегодня?",
+          "role": "note"
+        },
+        "choice": {
+          "size": 13,
+          "lh": 1.5,
+          "text": "Нет",
+          "role": "caption"
+        },
+        "action": {
+          "size": 16,
+          "lh": 1.5,
+          "text": "Сохранить и выйти",
+          "role": "action"
+        }
+      },
+      "inventory": [
+        {
+          "sel": "span.mx-preview-device-switcher__label",
+          "text": "Demo viewport",
+          "size": 11,
+          "lh": 1.5
+        },
+        {
+          "sel": "strong.",
+          "text": "393",
+          "size": 11,
+          "lh": 1.2
+        },
+        {
+          "sel": "small.",
+          "text": "iPhone 15 Pro",
+          "size": 11,
+          "lh": 1.5
+        },
+        {
+          "sel": "strong.",
+          "text": "440",
+          "size": 11,
+          "lh": 1.2
+        },
+        {
+          "sel": "small.",
+          "text": "iPhone 16 Pro Max",
+          "size": 11,
+          "lh": 1.5
+        },
+        {
+          "sel": "span.mx-demo-telegram-chrome__time",
+          "text": "18:10",
+          "size": 14.62,
+          "lh": 1.5
+        },
+        {
+          "sel": "span.",
+          "text": "Назад",
+          "size": 14.62,
+          "lh": 1.5
+        },
+        {
+          "sel": "strong.",
+          "text": "Ты прошёл",
+          "size": 24,
+          "lh": 1.33
+        },
+        {
+          "sel": "span.",
+          "text": "утренний чек-ин.",
+          "size": 24,
+          "lh": 1.33
+        },
+        {
+          "sel": "div.mx-completion__date-pill",
+          "text": "13 окт",
+          "size": 13,
+          "lh": 1.5
+        },
+        {
+          "sel": "span.",
+          "text": "✓",
+          "size": 13,
+          "lh": 1.5
+        },
+        {
+          "sel": "p.",
+          "text": "Было полезно сегодня?",
+          "size": 14,
+          "lh": 1.5
+        },
+        {
+          "sel": "span.",
+          "text": "Нет",
+          "size": 13,
+          "lh": 1.5
+        },
+        {
+          "sel": "span.",
+          "text": "Немного",
+          "size": 13,
+          "lh": 1.5
+        },
+        {
+          "sel": "span.",
+          "text": "Да",
+          "size": 13,
+          "lh": 1.5
+        },
+        {
+          "sel": "span[checkin-streak].sr-only",
+          "text": "5 -дневная серия",
+          "size": 16,
+          "lh": 1.5
+        },
+        {
+          "sel": "button[checkin-back-to-today].cta-pill.w-full",
+          "text": "Сохранить и выйти",
+          "size": 16,
+          "lh": 1.5
+        },
+        {
+          "sel": "button[demo-panel-badge].mx-demo-badge",
+          "text": "Сейчас · Неделя · Нормально",
+          "size": 11,
+          "lh": 1.3
+        }
+      ],
+      "overflow": {
+        "scrollWidth": 360,
+        "clientWidth": 360,
+        "scrollHeight": 640,
+        "clientHeight": 640,
+        "offenders": [
+          {
+            "sel": "div.mx-preview-device-switcher",
+            "left": 28,
+            "right": 366
+          }
+        ]
+      }
+    }
+  },
+  "checkinEvening": {
+    "evening": true,
+    "steps": [
+      {
+        "index": 0,
+        "roles": {
+          "question": {
+            "size": 24,
+            "lh": 1.15,
+            "text": "Как ты сейчас?",
+            "role": "ask"
+          },
+          "hint": {
+            "size": 14,
+            "lh": 1.5,
+            "text": "Честный ответ важнее красивого",
+            "role": "note"
+          },
+          "scaleLabel": {
+            "size": 13,
+            "lh": 1.2,
+            "text": "Тяжко",
+            "role": "caption"
+          },
+          "chip": null,
+          "focusTile": null,
+          "input": null,
+          "submit": {
+            "size": 16,
+            "lh": 1.5,
+            "text": "",
+            "role": "action"
+          },
+          "eveningQuestion": null,
+          "eveningHint": null,
+          "eveningInput": null,
+          "emotionTile": null,
+          "emotionPill": null
+        },
+        "overflow": {
+          "scrollWidth": 360,
+          "clientWidth": 360,
+          "scrollHeight": 640,
+          "clientHeight": 640,
+          "offenders": [
+            {
+              "sel": "div.mx-preview-device-switcher",
+              "left": 28,
+              "right": 366
+            }
+          ]
+        },
+        "inventory": [
+          {
+            "sel": "span.mx-preview-device-switcher__label",
+            "text": "Demo viewport",
+            "size": 11,
+            "lh": 1.5
+          },
+          {
+            "sel": "strong.",
+            "text": "393",
+            "size": 11,
+            "lh": 1.2
+          },
+          {
+            "sel": "small.",
+            "text": "iPhone 15 Pro",
+            "size": 11,
+            "lh": 1.5
+          },
+          {
+            "sel": "strong.",
+            "text": "440",
+            "size": 11,
+            "lh": 1.2
+          },
+          {
+            "sel": "small.",
+            "text": "iPhone 16 Pro Max",
+            "size": 11,
+            "lh": 1.5
+          },
+          {
+            "sel": "span.mx-demo-telegram-chrome__time",
+            "text": "18:10",
+            "size": 14.62,
+            "lh": 1.5
+          },
+          {
+            "sel": "span.",
+            "text": "Назад",
+            "size": 14.62,
+            "lh": 1.5
+          },
+          {
+            "sel": "h1.",
+            "text": "Как ты сейчас?",
+            "size": 24,
+            "lh": 1.15
+          },
+          {
+            "sel": "p.mx-checkin-question__hint",
+            "text": "Честный ответ важнее красивого",
+            "size": 14,
+            "lh": 1.5
+          },
+          {
+            "sel": "span.mx-checkin-scale__label",
+            "text": "Тяжко",
+            "size": 13,
+            "lh": 1.2
+          },
+          {
+            "sel": "span.mx-checkin-scale__label",
+            "text": "Отлично",
+            "size": 13,
+            "lh": 1.2
+          },
+          {
+            "sel": "button[demo-panel-badge].mx-demo-badge",
+            "text": "Сейчас · Неделя · Нормально",
+            "size": 11,
+            "lh": 1.3
+          }
+        ]
+      },
+      {
+        "index": 1,
+        "roles": {
+          "question": {
+            "size": 24,
+            "lh": 1.15,
+            "text": "Как ты сейчас?",
+            "role": "ask"
+          },
+          "hint": {
+            "size": 14,
+            "lh": 1.5,
+            "text": "Честный ответ важнее красивого",
+            "role": "note"
+          },
+          "scaleLabel": {
+            "size": 13,
+            "lh": 1.2,
+            "text": "Тяжко",
+            "role": "caption"
+          },
+          "chip": null,
+          "focusTile": null,
+          "input": null,
+          "submit": {
+            "size": 16,
+            "lh": 1.5,
+            "text": "",
+            "role": "action"
+          },
+          "eveningQuestion": null,
+          "eveningHint": null,
+          "eveningInput": null,
+          "emotionTile": null,
+          "emotionPill": null
+        },
+        "overflow": {
+          "scrollWidth": 360,
+          "clientWidth": 360,
+          "scrollHeight": 640,
+          "clientHeight": 640,
+          "offenders": [
+            {
+              "sel": "div.mx-preview-device-switcher",
+              "left": 28,
+              "right": 366
+            }
+          ]
+        },
+        "inventory": [
+          {
+            "sel": "span.mx-preview-device-switcher__label",
+            "text": "Demo viewport",
+            "size": 11,
+            "lh": 1.5
+          },
+          {
+            "sel": "strong.",
+            "text": "393",
+            "size": 11,
+            "lh": 1.2
+          },
+          {
+            "sel": "small.",
+            "text": "iPhone 15 Pro",
+            "size": 11,
+            "lh": 1.5
+          },
+          {
+            "sel": "strong.",
+            "text": "440",
+            "size": 11,
+            "lh": 1.2
+          },
+          {
+            "sel": "small.",
+            "text": "iPhone 16 Pro Max",
+            "size": 11,
+            "lh": 1.5
+          },
+          {
+            "sel": "span.mx-demo-telegram-chrome__time",
+            "text": "18:10",
+            "size": 14.62,
+            "lh": 1.5
+          },
+          {
+            "sel": "span.",
+            "text": "Назад",
+            "size": 14.62,
+            "lh": 1.5
+          },
+          {
+            "sel": "h1.",
+            "text": "Как ты сейчас?",
+            "size": 24,
+            "lh": 1.15
+          },
+          {
+            "sel": "p.mx-checkin-question__hint",
+            "text": "Честный ответ важнее красивого",
+            "size": 14,
+            "lh": 1.5
+          },
+          {
+            "sel": "span.mx-checkin-scale__label",
+            "text": "Тяжко",
+            "size": 13,
+            "lh": 1.2
+          },
+          {
+            "sel": "span.mx-checkin-scale__label",
+            "text": "Отлично",
+            "size": 13,
+            "lh": 1.2
+          },
+          {
+            "sel": "button[demo-panel-badge].mx-demo-badge",
+            "text": "Сейчас · Неделя · Нормально",
+            "size": 11,
+            "lh": 1.3
+          }
+        ]
+      },
+      {
+        "index": 2,
+        "roles": {
+          "question": {
+            "size": 24,
+            "lh": 1.15,
+            "text": "Сколько в тебе энергии?",
+            "role": "ask"
+          },
+          "hint": {
+            "size": 14,
+            "lh": 1.5,
+            "text": "Прислушайся к телу",
+            "role": "note"
+          },
+          "scaleLabel": {
+            "size": 13,
+            "lh": 1.2,
+            "text": "На нуле",
+            "role": "caption"
+          },
+          "chip": null,
+          "focusTile": null,
+          "input": null,
+          "submit": {
+            "size": 16,
+            "lh": 1.5,
+            "text": "",
+            "role": "action"
+          },
+          "eveningQuestion": null,
+          "eveningHint": null,
+          "eveningInput": null,
+          "emotionTile": null,
+          "emotionPill": null
+        },
+        "overflow": {
+          "scrollWidth": 360,
+          "clientWidth": 360,
+          "scrollHeight": 640,
+          "clientHeight": 640,
+          "offenders": [
+            {
+              "sel": "div.mx-preview-device-switcher",
+              "left": 28,
+              "right": 366
+            }
+          ]
+        },
+        "inventory": [
+          {
+            "sel": "span.mx-preview-device-switcher__label",
+            "text": "Demo viewport",
+            "size": 11,
+            "lh": 1.5
+          },
+          {
+            "sel": "strong.",
+            "text": "393",
+            "size": 11,
+            "lh": 1.2
+          },
+          {
+            "sel": "small.",
+            "text": "iPhone 15 Pro",
+            "size": 11,
+            "lh": 1.5
+          },
+          {
+            "sel": "strong.",
+            "text": "440",
+            "size": 11,
+            "lh": 1.2
+          },
+          {
+            "sel": "small.",
+            "text": "iPhone 16 Pro Max",
+            "size": 11,
+            "lh": 1.5
+          },
+          {
+            "sel": "span.mx-demo-telegram-chrome__time",
+            "text": "18:10",
+            "size": 14.62,
+            "lh": 1.5
+          },
+          {
+            "sel": "span.",
+            "text": "Назад",
+            "size": 14.62,
+            "lh": 1.5
+          },
+          {
+            "sel": "h1.",
+            "text": "Сколько в тебе энергии?",
+            "size": 24,
+            "lh": 1.15
+          },
+          {
+            "sel": "p.mx-checkin-question__hint",
+            "text": "Прислушайся к телу",
+            "size": 14,
+            "lh": 1.5
+          },
+          {
+            "sel": "span.mx-checkin-scale__label",
+            "text": "На нуле",
+            "size": 13,
+            "lh": 1.2
+          },
+          {
+            "sel": "span.mx-checkin-scale__label",
+            "text": "Через край",
+            "size": 13,
+            "lh": 1.2
+          },
+          {
+            "sel": "button[demo-panel-badge].mx-demo-badge",
+            "text": "Сейчас · Неделя · Нормально",
+            "size": 11,
+            "lh": 1.3
+          }
+        ]
+      },
+      {
+        "index": 3,
+        "roles": {
+          "question": {
+            "size": 24,
+            "lh": 1.15,
+            "text": "Сколько в тебе энергии?",
+            "role": "ask"
+          },
+          "hint": {
+            "size": 14,
+            "lh": 1.5,
+            "text": "Прислушайся к телу",
+            "role": "note"
+          },
+          "scaleLabel": {
+            "size": 13,
+            "lh": 1.2,
+            "text": "На нуле",
+            "role": "caption"
+          },
+          "chip": null,
+          "focusTile": null,
+          "input": null,
+          "submit": {
+            "size": 16,
+            "lh": 1.5,
+            "text": "",
+            "role": "action"
+          },
+          "eveningQuestion": null,
+          "eveningHint": null,
+          "eveningInput": null,
+          "emotionTile": null,
+          "emotionPill": null
+        },
+        "overflow": {
+          "scrollWidth": 360,
+          "clientWidth": 360,
+          "scrollHeight": 640,
+          "clientHeight": 640,
+          "offenders": [
+            {
+              "sel": "div.mx-preview-device-switcher",
+              "left": 28,
+              "right": 366
+            }
+          ]
+        },
+        "inventory": [
+          {
+            "sel": "span.mx-preview-device-switcher__label",
+            "text": "Demo viewport",
+            "size": 11,
+            "lh": 1.5
+          },
+          {
+            "sel": "strong.",
+            "text": "393",
+            "size": 11,
+            "lh": 1.2
+          },
+          {
+            "sel": "small.",
+            "text": "iPhone 15 Pro",
+            "size": 11,
+            "lh": 1.5
+          },
+          {
+            "sel": "strong.",
+            "text": "440",
+            "size": 11,
+            "lh": 1.2
+          },
+          {
+            "sel": "small.",
+            "text": "iPhone 16 Pro Max",
+            "size": 11,
+            "lh": 1.5
+          },
+          {
+            "sel": "span.mx-demo-telegram-chrome__time",
+            "text": "18:10",
+            "size": 14.62,
+            "lh": 1.5
+          },
+          {
+            "sel": "span.",
+            "text": "Назад",
+            "size": 14.62,
+            "lh": 1.5
+          },
+          {
+            "sel": "h1.",
+            "text": "Сколько в тебе энергии?",
+            "size": 24,
+            "lh": 1.15
+          },
+          {
+            "sel": "p.mx-checkin-question__hint",
+            "text": "Прислушайся к телу",
+            "size": 14,
+            "lh": 1.5
+          },
+          {
+            "sel": "span.mx-checkin-scale__label",
+            "text": "На нуле",
+            "size": 13,
+            "lh": 1.2
+          },
+          {
+            "sel": "span.mx-checkin-scale__label",
+            "text": "Через край",
+            "size": 13,
+            "lh": 1.2
+          },
+          {
+            "sel": "button[demo-panel-badge].mx-demo-badge",
+            "text": "Сейчас · Неделя · Нормально",
+            "size": 11,
+            "lh": 1.3
+          }
+        ]
+      },
+      {
+        "index": 4,
+        "roles": {
+          "question": {
+            "size": 24,
+            "lh": 1.2,
+            "text": "Что ближе всего к тому, что ты чувствуешь?",
+            "role": "ask"
+          },
+          "hint": null,
+          "scaleLabel": null,
+          "chip": null,
+          "focusTile": null,
+          "input": null,
+          "submit": {
+            "size": 16,
+            "lh": 1.5,
+            "text": "",
+            "role": "action"
+          },
+          "eveningQuestion": {
+            "size": 24,
+            "lh": 1.2,
+            "text": "Что ближе всего к тому, что ты чувствуешь?",
+            "role": "ask"
+          },
+          "eveningHint": null,
+          "eveningInput": null,
+          "emotionTile": {
+            "size": 16,
+            "lh": 1.2,
+            "text": "Ровно",
+            "role": "action"
+          },
+          "emotionPill": null
+        },
+        "overflow": {
+          "scrollWidth": 360,
+          "clientWidth": 360,
+          "scrollHeight": 640,
+          "clientHeight": 640,
+          "offenders": [
+            {
+              "sel": "div.mx-preview-device-switcher",
+              "left": 28,
+              "right": 366
+            }
+          ]
+        },
+        "inventory": [
+          {
+            "sel": "span.mx-preview-device-switcher__label",
+            "text": "Demo viewport",
+            "size": 11,
+            "lh": 1.5
+          },
+          {
+            "sel": "strong.",
+            "text": "393",
+            "size": 11,
+            "lh": 1.2
+          },
+          {
+            "sel": "small.",
+            "text": "iPhone 15 Pro",
+            "size": 11,
+            "lh": 1.5
+          },
+          {
+            "sel": "strong.",
+            "text": "440",
+            "size": 11,
+            "lh": 1.2
+          },
+          {
+            "sel": "small.",
+            "text": "iPhone 16 Pro Max",
+            "size": 11,
+            "lh": 1.5
+          },
+          {
+            "sel": "span.mx-demo-telegram-chrome__time",
+            "text": "18:10",
+            "size": 14.62,
+            "lh": 1.5
+          },
+          {
+            "sel": "span.",
+            "text": "Назад",
+            "size": 14.62,
+            "lh": 1.5
+          },
+          {
+            "sel": "h2.font-display.text-cream",
+            "text": "Что ближе всего к тому, что ты чувствуешь?",
+            "size": 24,
+            "lh": 1.2
+          },
+          {
+            "sel": "button[checkin-emotion-pill].mx-emotion-grid__tile",
+            "text": "Ровно",
+            "size": 16,
+            "lh": 1.2
+          },
+          {
+            "sel": "button[checkin-emotion-pill].mx-emotion-grid__tile",
+            "text": "Спокойно",
+            "size": 16,
+            "lh": 1.2
+          },
+          {
+            "sel": "button[checkin-emotion-pill].mx-emotion-grid__tile",
+            "text": "Задумчиво",
+            "size": 16,
+            "lh": 1.2
+          },
+          {
+            "sel": "button[checkin-emotion-pill].mx-emotion-grid__tile",
+            "text": "Нейтрально",
+            "size": 16,
+            "lh": 1.2
+          },
+          {
+            "sel": "button[checkin-emotion-pill].mx-emotion-grid__tile",
+            "text": "Собранно",
+            "size": 16,
+            "lh": 1.2
+          },
+          {
+            "sel": "button[checkin-emotion-pill].mx-emotion-grid__tile",
+            "text": "Терпимо",
+            "size": 16,
+            "lh": 1.2
+          },
+          {
+            "sel": "button[checkin-emotion-pill].mx-emotion-grid__tile",
+            "text": "Буднично",
+            "size": 16,
+            "lh": 1.2
+          },
+          {
+            "sel": "button[checkin-emotion-pill].mx-emotion-grid__tile",
+            "text": "Обычно",
+            "size": 16,
+            "lh": 1.2
+          },
+          {
+            "sel": "button[checkin-emotion-pill].mx-emotion-grid__tile",
+            "text": "Сдержанно",
+            "size": 16,
+            "lh": 1.2
+          },
+          {
+            "sel": "button[checkin-emotion-pill].mx-emotion-grid__tile",
+            "text": "Уравновешенно",
+            "size": 16,
+            "lh": 1.2
+          },
+          {
+            "sel": "button[demo-panel-badge].mx-demo-badge",
+            "text": "Сейчас · Неделя · Нормально",
+            "size": 11,
+            "lh": 1.3
+          }
+        ]
+      },
+      {
+        "index": 5,
+        "roles": {
+          "question": {
+            "size": 24,
+            "lh": 1.2,
+            "text": "Что получилось?",
+            "role": "ask"
+          },
+          "hint": {
+            "size": 14,
+            "lh": 1.63,
+            "text": "Пара слов — уже разговор с собой. Можно пропусти",
+            "role": "note"
+          },
+          "scaleLabel": null,
+          "chip": null,
+          "focusTile": null,
+          "input": {
+            "size": 16,
+            "lh": 1.5,
+            "text": "",
+            "role": "read"
+          },
+          "submit": {
+            "size": 16,
+            "lh": 1.5,
+            "text": "",
+            "role": "action"
+          },
+          "eveningQuestion": {
+            "size": 24,
+            "lh": 1.2,
+            "text": "Что получилось?",
+            "role": "ask"
+          },
+          "eveningHint": {
+            "size": 14,
+            "lh": 1.63,
+            "text": "Пара слов — уже разговор с собой. Можно пропусти",
+            "role": "note"
+          },
+          "eveningInput": null,
+          "emotionTile": null,
+          "emotionPill": null
+        },
+        "overflow": {
+          "scrollWidth": 360,
+          "clientWidth": 360,
+          "scrollHeight": 640,
+          "clientHeight": 640,
+          "offenders": [
+            {
+              "sel": "div.mx-preview-device-switcher",
+              "left": 28,
+              "right": 366
+            }
+          ]
+        },
+        "inventory": [
+          {
+            "sel": "span.mx-preview-device-switcher__label",
+            "text": "Demo viewport",
+            "size": 11,
+            "lh": 1.5
+          },
+          {
+            "sel": "strong.",
+            "text": "393",
+            "size": 11,
+            "lh": 1.2
+          },
+          {
+            "sel": "small.",
+            "text": "iPhone 15 Pro",
+            "size": 11,
+            "lh": 1.5
+          },
+          {
+            "sel": "strong.",
+            "text": "440",
+            "size": 11,
+            "lh": 1.2
+          },
+          {
+            "sel": "small.",
+            "text": "iPhone 16 Pro Max",
+            "size": 11,
+            "lh": 1.5
+          },
+          {
+            "sel": "span.mx-demo-telegram-chrome__time",
+            "text": "18:10",
+            "size": 14.62,
+            "lh": 1.5
+          },
+          {
+            "sel": "span.",
+            "text": "Назад",
+            "size": 14.62,
+            "lh": 1.5
+          },
+          {
+            "sel": "h2.font-display.text-cream",
+            "text": "Что получилось?",
+            "size": 24,
+            "lh": 1.2
+          },
+          {
+            "sel": "p.mx-checkin-question__hint.text-[14px]",
+            "text": "Пара слов — уже разговор с собой. Можно пропустить.",
+            "size": 14,
+            "lh": 1.63
+          },
+          {
+            "sel": "button[demo-panel-badge].mx-demo-badge",
+            "text": "Сейчас · Неделя · Нормально",
+            "size": 11,
+            "lh": 1.3
+          }
+        ]
+      },
+      {
+        "index": 6,
+        "roles": {
+          "question": {
+            "size": 24,
+            "lh": 1.2,
+            "text": "Что было трудно?",
+            "role": "ask"
+          },
+          "hint": {
+            "size": 14,
+            "lh": 1.63,
+            "text": "Пара слов — уже разговор с собой. Можно пропусти",
+            "role": "note"
+          },
+          "scaleLabel": null,
+          "chip": null,
+          "focusTile": null,
+          "input": {
+            "size": 16,
+            "lh": 1.5,
+            "text": "",
+            "role": "read"
+          },
+          "submit": {
+            "size": 16,
+            "lh": 1.5,
+            "text": "",
+            "role": "action"
+          },
+          "eveningQuestion": {
+            "size": 24,
+            "lh": 1.2,
+            "text": "Что было трудно?",
+            "role": "ask"
+          },
+          "eveningHint": {
+            "size": 14,
+            "lh": 1.63,
+            "text": "Пара слов — уже разговор с собой. Можно пропусти",
+            "role": "note"
+          },
+          "eveningInput": null,
+          "emotionTile": null,
+          "emotionPill": null
+        },
+        "overflow": {
+          "scrollWidth": 360,
+          "clientWidth": 360,
+          "scrollHeight": 640,
+          "clientHeight": 640,
+          "offenders": [
+            {
+              "sel": "div.mx-preview-device-switcher",
+              "left": 28,
+              "right": 366
+            }
+          ]
+        },
+        "inventory": [
+          {
+            "sel": "span.mx-preview-device-switcher__label",
+            "text": "Demo viewport",
+            "size": 11,
+            "lh": 1.5
+          },
+          {
+            "sel": "strong.",
+            "text": "393",
+            "size": 11,
+            "lh": 1.2
+          },
+          {
+            "sel": "small.",
+            "text": "iPhone 15 Pro",
+            "size": 11,
+            "lh": 1.5
+          },
+          {
+            "sel": "strong.",
+            "text": "440",
+            "size": 11,
+            "lh": 1.2
+          },
+          {
+            "sel": "small.",
+            "text": "iPhone 16 Pro Max",
+            "size": 11,
+            "lh": 1.5
+          },
+          {
+            "sel": "span.mx-demo-telegram-chrome__time",
+            "text": "18:10",
+            "size": 14.62,
+            "lh": 1.5
+          },
+          {
+            "sel": "span.",
+            "text": "Назад",
+            "size": 14.62,
+            "lh": 1.5
+          },
+          {
+            "sel": "h2.font-display.text-cream",
+            "text": "Что было трудно?",
+            "size": 24,
+            "lh": 1.2
+          },
+          {
+            "sel": "p.mx-checkin-question__hint.text-[14px]",
+            "text": "Пара слов — уже разговор с собой. Можно пропустить.",
+            "size": 14,
+            "lh": 1.63
+          },
+          {
+            "sel": "button[demo-panel-badge].mx-demo-badge",
+            "text": "Сейчас · Неделя · Нормально",
+            "size": 11,
+            "lh": 1.3
+          }
+        ]
+      },
+      {
+        "index": 7,
+        "roles": {
+          "question": {
+            "size": 24,
+            "lh": 1.2,
+            "text": "Какой вывод забираешь?",
+            "role": "ask"
+          },
+          "hint": {
+            "size": 14,
+            "lh": 1.63,
+            "text": "Пара слов — уже разговор с собой. Можно пропусти",
+            "role": "note"
+          },
+          "scaleLabel": null,
+          "chip": null,
+          "focusTile": null,
+          "input": {
+            "size": 16,
+            "lh": 1.5,
+            "text": "",
+            "role": "read"
+          },
+          "submit": {
+            "size": 16,
+            "lh": 1.5,
+            "text": "",
+            "role": "action"
+          },
+          "eveningQuestion": {
+            "size": 24,
+            "lh": 1.2,
+            "text": "Какой вывод забираешь?",
+            "role": "ask"
+          },
+          "eveningHint": {
+            "size": 14,
+            "lh": 1.63,
+            "text": "Пара слов — уже разговор с собой. Можно пропусти",
+            "role": "note"
+          },
+          "eveningInput": null,
+          "emotionTile": null,
+          "emotionPill": null
+        },
+        "overflow": {
+          "scrollWidth": 360,
+          "clientWidth": 360,
+          "scrollHeight": 640,
+          "clientHeight": 640,
+          "offenders": [
+            {
+              "sel": "div.mx-preview-device-switcher",
+              "left": 28,
+              "right": 366
+            }
+          ]
+        },
+        "inventory": [
+          {
+            "sel": "span.mx-preview-device-switcher__label",
+            "text": "Demo viewport",
+            "size": 11,
+            "lh": 1.5
+          },
+          {
+            "sel": "strong.",
+            "text": "393",
+            "size": 11,
+            "lh": 1.2
+          },
+          {
+            "sel": "small.",
+            "text": "iPhone 15 Pro",
+            "size": 11,
+            "lh": 1.5
+          },
+          {
+            "sel": "strong.",
+            "text": "440",
+            "size": 11,
+            "lh": 1.2
+          },
+          {
+            "sel": "small.",
+            "text": "iPhone 16 Pro Max",
+            "size": 11,
+            "lh": 1.5
+          },
+          {
+            "sel": "span.mx-demo-telegram-chrome__time",
+            "text": "18:10",
+            "size": 14.62,
+            "lh": 1.5
+          },
+          {
+            "sel": "span.",
+            "text": "Назад",
+            "size": 14.62,
+            "lh": 1.5
+          },
+          {
+            "sel": "h2.font-display.text-cream",
+            "text": "Какой вывод забираешь?",
+            "size": 24,
+            "lh": 1.2
+          },
+          {
+            "sel": "p.mx-checkin-question__hint.text-[14px]",
+            "text": "Пара слов — уже разговор с собой. Можно пропустить.",
+            "size": 14,
+            "lh": 1.63
+          },
+          {
+            "sel": "button[demo-panel-badge].mx-demo-badge",
+            "text": "Сейчас · Неделя · Нормально",
+            "size": 11,
+            "lh": 1.3
+          }
+        ]
+      }
+    ],
+    "questionStep": {
+      "question": {
+        "size": 24,
+        "lh": 1.15,
+        "text": "Как ты сейчас?",
+        "role": "ask"
+      },
+      "hint": {
+        "size": 14,
+        "lh": 1.5,
+        "text": "Честный ответ важнее красивого",
+        "role": "note"
+      },
+      "scaleLabel": {
+        "size": 13,
+        "lh": 1.2,
+        "text": "Тяжко",
+        "role": "caption"
+      },
+      "chip": null,
+      "focusTile": null,
+      "input": null,
+      "submit": {
+        "size": 16,
+        "lh": 1.5,
+        "text": "",
+        "role": "action"
+      },
+      "eveningQuestion": null,
+      "eveningHint": null,
+      "eveningInput": null,
+      "emotionTile": null,
+      "emotionPill": null
+    },
+    "focusStep": null,
+    "emotionStep": {
+      "question": {
+        "size": 24,
+        "lh": 1.2,
+        "text": "Что ближе всего к тому, что ты чувствуешь?",
+        "role": "ask"
+      },
+      "hint": null,
+      "scaleLabel": null,
+      "chip": null,
+      "focusTile": null,
+      "input": null,
+      "submit": {
+        "size": 16,
+        "lh": 1.5,
+        "text": "",
+        "role": "action"
+      },
+      "eveningQuestion": {
+        "size": 24,
+        "lh": 1.2,
+        "text": "Что ближе всего к тому, что ты чувствуешь?",
+        "role": "ask"
+      },
+      "eveningHint": null,
+      "eveningInput": null,
+      "emotionTile": {
+        "size": 16,
+        "lh": 1.2,
+        "text": "Ровно",
+        "role": "action"
+      },
+      "emotionPill": null,
+      "overflow": {
+        "scrollWidth": 360,
+        "clientWidth": 360,
+        "scrollHeight": 640,
+        "clientHeight": 640,
+        "offenders": [
+          {
+            "sel": "div.mx-preview-device-switcher",
+            "left": 28,
+            "right": 366
+          }
+        ]
+      }
+    },
+    "editorStep": {
+      "question": {
+        "size": 24,
+        "lh": 1.2,
+        "text": "Что получилось?",
+        "role": "ask"
+      },
+      "hint": {
+        "size": 14,
+        "lh": 1.63,
+        "text": "Пара слов — уже разговор с собой. Можно пропусти",
+        "role": "note"
+      },
+      "scaleLabel": null,
+      "chip": null,
+      "focusTile": null,
+      "input": {
+        "size": 16,
+        "lh": 1.5,
+        "text": "",
+        "role": "read"
+      },
+      "submit": {
+        "size": 16,
+        "lh": 1.5,
+        "text": "",
+        "role": "action"
+      },
+      "eveningQuestion": {
+        "size": 24,
+        "lh": 1.2,
+        "text": "Что получилось?",
+        "role": "ask"
+      },
+      "eveningHint": {
+        "size": 14,
+        "lh": 1.63,
+        "text": "Пара слов — уже разговор с собой. Можно пропусти",
+        "role": "note"
+      },
+      "eveningInput": null,
+      "emotionTile": null,
+      "emotionPill": null,
+      "overflow": {
+        "scrollWidth": 360,
+        "clientWidth": 360,
+        "scrollHeight": 640,
+        "clientHeight": 640,
+        "offenders": [
+          {
+            "sel": "div.mx-preview-device-switcher",
+            "left": 28,
+            "right": 366
+          }
+        ]
+      }
+    },
+    "completion": {
+      "roles": {
+        "title": {
+          "size": 24,
+          "lh": 1.2,
+          "text": "Ты завершилразбор дня.",
+          "role": "ask"
+        },
+        "datePill": {
+          "size": 13,
+          "lh": 1.5,
+          "text": "✓ 13 окт",
+          "role": "caption"
+        },
+        "question": {
+          "size": 14,
+          "lh": 1.5,
+          "text": "Был ли разбор полезен?",
+          "role": "note"
+        },
+        "choice": {
+          "size": 13,
+          "lh": 1.5,
+          "text": "Нет",
+          "role": "caption"
+        },
+        "action": {
+          "size": 16,
+          "lh": 1.5,
+          "text": "Сохранить и выйти",
+          "role": "action"
+        }
+      },
+      "inventory": [
+        {
+          "sel": "span.mx-preview-device-switcher__label",
+          "text": "Demo viewport",
+          "size": 11,
+          "lh": 1.5
+        },
+        {
+          "sel": "strong.",
+          "text": "393",
+          "size": 11,
+          "lh": 1.2
+        },
+        {
+          "sel": "small.",
+          "text": "iPhone 15 Pro",
+          "size": 11,
+          "lh": 1.5
+        },
+        {
+          "sel": "strong.",
+          "text": "440",
+          "size": 11,
+          "lh": 1.2
+        },
+        {
+          "sel": "small.",
+          "text": "iPhone 16 Pro Max",
+          "size": 11,
+          "lh": 1.5
+        },
+        {
+          "sel": "span.mx-demo-telegram-chrome__time",
+          "text": "18:10",
+          "size": 14.62,
+          "lh": 1.5
+        },
+        {
+          "sel": "span.",
+          "text": "Назад",
+          "size": 14.62,
+          "lh": 1.5
+        },
+        {
+          "sel": "strong.",
+          "text": "Ты завершил",
+          "size": 24,
+          "lh": 1.2
+        },
+        {
+          "sel": "span.",
+          "text": "разбор дня.",
+          "size": 24,
+          "lh": 1.2
+        },
+        {
+          "sel": "div.mx-completion__date-pill",
+          "text": "13 окт",
+          "size": 13,
+          "lh": 1.5
+        },
+        {
+          "sel": "span.",
+          "text": "✓",
+          "size": 13,
+          "lh": 1.5
+        },
+        {
+          "sel": "p.",
+          "text": "Был ли разбор полезен?",
+          "size": 14,
+          "lh": 1.5
+        },
+        {
+          "sel": "span.",
+          "text": "Нет",
+          "size": 13,
+          "lh": 1.5
+        },
+        {
+          "sel": "span.",
+          "text": "Немного",
+          "size": 13,
+          "lh": 1.5
+        },
+        {
+          "sel": "span.",
+          "text": "Да",
+          "size": 13,
+          "lh": 1.5
+        },
+        {
+          "sel": "span[checkin-streak].sr-only",
+          "text": "5 -дневная серия",
+          "size": 16,
+          "lh": 1.5
+        },
+        {
+          "sel": "button[checkin-back-to-today].cta-pill.w-full",
+          "text": "Сохранить и выйти",
+          "size": 16,
+          "lh": 1.5
+        },
+        {
+          "sel": "button[demo-panel-badge].mx-demo-badge",
+          "text": "Сейчас · Неделя · Нормально",
+          "size": 11,
+          "lh": 1.3
+        }
+      ],
+      "overflow": {
+        "scrollWidth": 360,
+        "clientWidth": 360,
+        "scrollHeight": 640,
+        "clientHeight": 640,
+        "offenders": [
+          {
+            "sel": "div.mx-preview-device-switcher",
+            "left": 28,
+            "right": 366
+          }
+        ]
+      }
+    }
+  },
+  "completeMorning": {
+    "roles": {
+      "title": {
+        "size": 24,
+        "lh": 1.33,
+        "text": "Ты прошёлутренний чек-ин.",
+        "role": "ask"
+      },
+      "datePill": {
+        "size": 13,
+        "lh": 1.5,
+        "text": "✓ 13 окт",
+        "role": "caption"
+      },
+      "question": {
+        "size": 14,
+        "lh": 1.5,
+        "text": "Было полезно сегодня?",
+        "role": "note"
+      },
+      "choice": {
+        "size": 13,
+        "lh": 1.5,
+        "text": "Нет",
+        "role": "caption"
+      },
+      "action": {
+        "size": 16,
+        "lh": 1.5,
+        "text": "Сохранить и выйти",
+        "role": "action"
+      }
+    },
+    "inventory": [
+      {
+        "sel": "span.mx-preview-device-switcher__label",
+        "text": "Demo viewport",
+        "size": 11,
+        "lh": 1.5
+      },
+      {
+        "sel": "strong.",
+        "text": "393",
+        "size": 11,
+        "lh": 1.2
+      },
+      {
+        "sel": "small.",
+        "text": "iPhone 15 Pro",
+        "size": 11,
+        "lh": 1.5
+      },
+      {
+        "sel": "strong.",
+        "text": "440",
+        "size": 11,
+        "lh": 1.2
+      },
+      {
+        "sel": "small.",
+        "text": "iPhone 16 Pro Max",
+        "size": 11,
+        "lh": 1.5
+      },
+      {
+        "sel": "span.mx-demo-telegram-chrome__time",
+        "text": "18:10",
+        "size": 14.62,
+        "lh": 1.5
+      },
+      {
+        "sel": "span.",
+        "text": "Назад",
+        "size": 14.62,
+        "lh": 1.5
+      },
+      {
+        "sel": "span.mx-type-tab.mt-[1px]",
+        "text": "Сегодня",
+        "size": 9.03,
+        "lh": 1.2
+      },
+      {
+        "sel": "span.mx-type-tab.mt-[1px]",
+        "text": "Шаги",
+        "size": 9.03,
+        "lh": 1.2
+      },
+      {
+        "sel": "span.mx-type-tab.mt-[1px]",
+        "text": "Диалог",
+        "size": 9.03,
+        "lh": 1.2
+      },
+      {
+        "sel": "span.mx-type-tab.mt-[1px]",
+        "text": "Библиотека",
+        "size": 9.03,
+        "lh": 1.2
+      },
+      {
+        "sel": "span.mx-type-tab.mt-[1px]",
+        "text": "Прогресс",
+        "size": 9.03,
+        "lh": 1.2
+      },
+      {
+        "sel": "strong.",
+        "text": "Ты прошёл",
+        "size": 24,
+        "lh": 1.33
+      },
+      {
+        "sel": "span.",
+        "text": "утренний чек-ин.",
+        "size": 24,
+        "lh": 1.33
+      },
+      {
+        "sel": "div.mx-completion__date-pill",
+        "text": "13 окт",
+        "size": 13,
+        "lh": 1.5
+      },
+      {
+        "sel": "span.",
+        "text": "✓",
+        "size": 13,
+        "lh": 1.5
+      },
+      {
+        "sel": "p.",
+        "text": "Было полезно сегодня?",
+        "size": 14,
+        "lh": 1.5
+      },
+      {
+        "sel": "span.",
+        "text": "Нет",
+        "size": 13,
+        "lh": 1.5
+      },
+      {
+        "sel": "span.",
+        "text": "Немного",
+        "size": 13,
+        "lh": 1.5
+      },
+      {
+        "sel": "span.",
+        "text": "Да",
+        "size": 13,
+        "lh": 1.5
+      },
+      {
+        "sel": "button[checkin-back-to-today].cta-pill.w-full",
+        "text": "Сохранить и выйти",
+        "size": 16,
+        "lh": 1.5
+      },
+      {
+        "sel": "button[demo-panel-badge].mx-demo-badge",
+        "text": "Сейчас · Неделя · Нормально",
+        "size": 11,
+        "lh": 1.3
+      }
+    ],
+    "overflow": {
+      "scrollWidth": 360,
+      "clientWidth": 360,
+      "scrollHeight": 640,
+      "clientHeight": 640,
+      "offenders": [
+        {
+          "sel": "div.mx-preview-device-switcher",
+          "left": 28,
+          "right": 366
+        },
+        {
+          "sel": "div.\n.fixed\n",
+          "left": 8,
+          "right": 368
+        }
+      ]
+    }
+  },
+  "completeEvening": {
+    "roles": {
+      "title": {
+        "size": 24,
+        "lh": 1.2,
+        "text": "Ты завершилразбор дня.",
+        "role": "ask"
+      },
+      "datePill": {
+        "size": 13,
+        "lh": 1.5,
+        "text": "✓ 13 окт",
+        "role": "caption"
+      },
+      "question": {
+        "size": 14,
+        "lh": 1.5,
+        "text": "Был ли разбор полезен?",
+        "role": "note"
+      },
+      "choice": {
+        "size": 13,
+        "lh": 1.5,
+        "text": "Нет",
+        "role": "caption"
+      },
+      "action": {
+        "size": 16,
+        "lh": 1.5,
+        "text": "Сохранить и выйти",
+        "role": "action"
+      }
+    },
+    "inventory": [
+      {
+        "sel": "span.mx-preview-device-switcher__label",
+        "text": "Demo viewport",
+        "size": 11,
+        "lh": 1.5
+      },
+      {
+        "sel": "strong.",
+        "text": "393",
+        "size": 11,
+        "lh": 1.2
+      },
+      {
+        "sel": "small.",
+        "text": "iPhone 15 Pro",
+        "size": 11,
+        "lh": 1.5
+      },
+      {
+        "sel": "strong.",
+        "text": "440",
+        "size": 11,
+        "lh": 1.2
+      },
+      {
+        "sel": "small.",
+        "text": "iPhone 16 Pro Max",
+        "size": 11,
+        "lh": 1.5
+      },
+      {
+        "sel": "span.mx-demo-telegram-chrome__time",
+        "text": "18:10",
+        "size": 14.62,
+        "lh": 1.5
+      },
+      {
+        "sel": "span.",
+        "text": "Назад",
+        "size": 14.62,
+        "lh": 1.5
+      },
+      {
+        "sel": "span.mx-type-tab.mt-[1px]",
+        "text": "Сегодня",
+        "size": 9.03,
+        "lh": 1.2
+      },
+      {
+        "sel": "span.mx-type-tab.mt-[1px]",
+        "text": "Шаги",
+        "size": 9.03,
+        "lh": 1.2
+      },
+      {
+        "sel": "span.mx-type-tab.mt-[1px]",
+        "text": "Диалог",
+        "size": 9.03,
+        "lh": 1.2
+      },
+      {
+        "sel": "span.mx-type-tab.mt-[1px]",
+        "text": "Библиотека",
+        "size": 9.03,
+        "lh": 1.2
+      },
+      {
+        "sel": "span.mx-type-tab.mt-[1px]",
+        "text": "Прогресс",
+        "size": 9.03,
+        "lh": 1.2
+      },
+      {
+        "sel": "strong.",
+        "text": "Ты завершил",
+        "size": 24,
+        "lh": 1.2
+      },
+      {
+        "sel": "span.",
+        "text": "разбор дня.",
+        "size": 24,
+        "lh": 1.2
+      },
+      {
+        "sel": "div.mx-completion__date-pill",
+        "text": "13 окт",
+        "size": 13,
+        "lh": 1.5
+      },
+      {
+        "sel": "span.",
+        "text": "✓",
+        "size": 13,
+        "lh": 1.5
+      },
+      {
+        "sel": "p.",
+        "text": "Был ли разбор полезен?",
+        "size": 14,
+        "lh": 1.5
+      },
+      {
+        "sel": "span.",
+        "text": "Нет",
+        "size": 13,
+        "lh": 1.5
+      },
+      {
+        "sel": "span.",
+        "text": "Немного",
+        "size": 13,
+        "lh": 1.5
+      },
+      {
+        "sel": "span.",
+        "text": "Да",
+        "size": 13,
+        "lh": 1.5
+      },
+      {
+        "sel": "button[checkin-back-to-today].cta-pill.w-full",
+        "text": "Сохранить и выйти",
+        "size": 16,
+        "lh": 1.5
+      },
+      {
+        "sel": "button[demo-panel-badge].mx-demo-badge",
+        "text": "Сейчас · Неделя · Нормально",
+        "size": 11,
+        "lh": 1.3
+      }
+    ],
+    "overflow": {
+      "scrollWidth": 360,
+      "clientWidth": 360,
+      "scrollHeight": 640,
+      "clientHeight": 640,
+      "offenders": [
+        {
+          "sel": "div.mx-preview-device-switcher",
+          "left": 28,
+          "right": 366
+        },
+        {
+          "sel": "div.\n.fixed\n",
+          "left": 8,
+          "right": 368
+        }
+      ]
     }
   },
   "journal": {
@@ -1702,6 +3687,7 @@
         "todayTitle": null,
         "todayText": null,
         "todayAppend": null,
+        "todayPill": null,
         "entriesItemStream": null,
         "entriesItemQuestion": null
       },
@@ -1738,7 +3724,7 @@
         },
         {
           "sel": "span.mx-demo-telegram-chrome__time",
-          "text": "17:33",
+          "text": "18:10",
           "size": 14.62,
           "lh": 1.5
         },
@@ -1810,7 +3796,7 @@
           "role": "note"
         },
         "entriesBtn": {
-          "size": 14.62,
+          "size": 16,
           "lh": 1,
           "text": "Мои записи",
           "role": "action"
@@ -1823,6 +3809,7 @@
         "todayTitle": null,
         "todayText": null,
         "todayAppend": null,
+        "todayPill": null,
         "entriesItemStream": null,
         "entriesItemQuestion": null
       },
@@ -1859,7 +3846,7 @@
         },
         {
           "sel": "span.mx-demo-telegram-chrome__time",
-          "text": "17:33",
+          "text": "18:10",
           "size": 14.62,
           "lh": 1.5
         },
@@ -1962,7 +3949,7 @@
         {
           "sel": "button[dj-review-entries].mx-pill-btn.mx-pill-btn--dark",
           "text": "Мои записи",
-          "size": 14.62,
+          "size": 16,
           "lh": 1
         },
         {
@@ -2029,6 +4016,7 @@
         "todayTitle": null,
         "todayText": null,
         "todayAppend": null,
+        "todayPill": null,
         "entriesItemStream": null,
         "entriesItemQuestion": null
       },
@@ -2065,7 +4053,7 @@
         },
         {
           "sel": "span.mx-demo-telegram-chrome__time",
-          "text": "17:33",
+          "text": "18:10",
           "size": 14.62,
           "lh": 1.5
         },
@@ -2077,7 +4065,7 @@
         },
         {
           "sel": "span.font-label.mx-caps-label",
-          "text": "ПОТОК · 13 октября, 17:33",
+          "text": "ПОТОК · 13 октября, 18:10",
           "size": 11,
           "lh": 1.2
         },
@@ -2140,6 +4128,7 @@
         "todayTitle": null,
         "todayText": null,
         "todayAppend": null,
+        "todayPill": null,
         "entriesItemStream": null,
         "entriesItemQuestion": null
       },
@@ -2176,7 +4165,7 @@
         },
         {
           "sel": "span.mx-demo-telegram-chrome__time",
-          "text": "17:33",
+          "text": "18:10",
           "size": 14.62,
           "lh": 1.5
         },
@@ -2197,6 +4186,157 @@
           "text": "Что я откладываю, хотя знаю, что это важно?",
           "size": 24,
           "lh": 1.2
+        },
+        {
+          "sel": "button[demo-panel-badge].mx-demo-badge",
+          "text": "Сейчас · Неделя · Нормально",
+          "size": 11,
+          "lh": 1.3
+        }
+      ],
+      "overflow": {
+        "scrollWidth": 360,
+        "clientWidth": 360,
+        "scrollHeight": 640,
+        "clientHeight": 640,
+        "offenders": [
+          {
+            "sel": "div.mx-preview-device-switcher",
+            "left": 28,
+            "right": 366
+          }
+        ]
+      }
+    },
+    "complete": {
+      "roles": {
+        "title": {
+          "size": 24,
+          "lh": 1.2,
+          "text": "Записьсохранена.",
+          "role": "ask"
+        },
+        "datePill": {
+          "size": 13,
+          "lh": 1.5,
+          "text": "✓ день 1 из 90",
+          "role": "caption"
+        },
+        "question": {
+          "size": 14,
+          "lh": 1.5,
+          "text": "Помогло?",
+          "role": "note"
+        },
+        "choice": {
+          "size": 13,
+          "lh": 1.5,
+          "text": "Нет",
+          "role": "caption"
+        },
+        "action": {
+          "size": 16,
+          "lh": 1.5,
+          "text": "Сохранить и выйти",
+          "role": "action"
+        }
+      },
+      "inventory": [
+        {
+          "sel": "span.mx-preview-device-switcher__label",
+          "text": "Demo viewport",
+          "size": 11,
+          "lh": 1.5
+        },
+        {
+          "sel": "strong.",
+          "text": "393",
+          "size": 11,
+          "lh": 1.2
+        },
+        {
+          "sel": "small.",
+          "text": "iPhone 15 Pro",
+          "size": 11,
+          "lh": 1.5
+        },
+        {
+          "sel": "strong.",
+          "text": "440",
+          "size": 11,
+          "lh": 1.2
+        },
+        {
+          "sel": "small.",
+          "text": "iPhone 16 Pro Max",
+          "size": 11,
+          "lh": 1.5
+        },
+        {
+          "sel": "span.mx-demo-telegram-chrome__time",
+          "text": "18:10",
+          "size": 14.62,
+          "lh": 1.5
+        },
+        {
+          "sel": "span.",
+          "text": "Назад",
+          "size": 14.62,
+          "lh": 1.5
+        },
+        {
+          "sel": "strong.",
+          "text": "Запись",
+          "size": 24,
+          "lh": 1.2
+        },
+        {
+          "sel": "span.",
+          "text": "сохранена.",
+          "size": 24,
+          "lh": 1.2
+        },
+        {
+          "sel": "div.mx-completion__date-pill",
+          "text": "день 1 из 90",
+          "size": 13,
+          "lh": 1.5
+        },
+        {
+          "sel": "span.",
+          "text": "✓",
+          "size": 13,
+          "lh": 1.5
+        },
+        {
+          "sel": "p.",
+          "text": "Помогло?",
+          "size": 14,
+          "lh": 1.5
+        },
+        {
+          "sel": "span.",
+          "text": "Нет",
+          "size": 13,
+          "lh": 1.5
+        },
+        {
+          "sel": "span.",
+          "text": "Немного",
+          "size": 13,
+          "lh": 1.5
+        },
+        {
+          "sel": "span.",
+          "text": "Да",
+          "size": 13,
+          "lh": 1.5
+        },
+        {
+          "sel": "button[dj-complete-close].cta-pill",
+          "text": "Сохранить и выйти",
+          "size": 16,
+          "lh": 1.5
         },
         {
           "sel": "button[demo-panel-badge].mx-demo-badge",
@@ -2250,6 +4390,12 @@
           "text": "Дописать",
           "role": "action"
         },
+        "todayPill": {
+          "size": 16,
+          "lh": 1,
+          "text": "Перечитать",
+          "role": "action"
+        },
         "entriesItemStream": null,
         "entriesItemQuestion": null
       },
@@ -2286,7 +4432,7 @@
         },
         {
           "sel": "span.mx-demo-telegram-chrome__time",
-          "text": "17:33",
+          "text": "18:10",
           "size": 14.62,
           "lh": 1.5
         },
@@ -2295,36 +4441,6 @@
           "text": "Назад",
           "size": 14.62,
           "lh": 1.5
-        },
-        {
-          "sel": "span.mx-type-tab.mt-[1px]",
-          "text": "Сегодня",
-          "size": 9.03,
-          "lh": 1.2
-        },
-        {
-          "sel": "span.mx-type-tab.mt-[1px]",
-          "text": "Шаги",
-          "size": 9.03,
-          "lh": 1.2
-        },
-        {
-          "sel": "span.mx-type-tab.mt-[1px]",
-          "text": "Диалог",
-          "size": 9.03,
-          "lh": 1.2
-        },
-        {
-          "sel": "span.mx-type-tab.mt-[1px]",
-          "text": "Библиотека",
-          "size": 9.03,
-          "lh": 1.2
-        },
-        {
-          "sel": "span.mx-type-tab.mt-[1px]",
-          "text": "Прогресс",
-          "size": 9.03,
-          "lh": 1.2
         },
         {
           "sel": "span.font-label.mx-caps-label",
@@ -2365,13 +4481,13 @@
         {
           "sel": "button[dj-today-review].mx-pill-btn.mx-pill-btn--dark",
           "text": "Перечитать",
-          "size": 14.62,
+          "size": 16,
           "lh": 1
         },
         {
           "sel": "button[dj-today-entries].mx-pill-btn.mx-pill-btn--dark",
           "text": "Мои записи",
-          "size": 14.62,
+          "size": 16,
           "lh": 1
         },
         {
@@ -2417,6 +4533,7 @@
         "todayTitle": null,
         "todayText": null,
         "todayAppend": null,
+        "todayPill": null,
         "entriesItemStream": {
           "size": 16,
           "lh": 1.5,
@@ -2463,7 +4580,7 @@
         },
         {
           "sel": "span.mx-demo-telegram-chrome__time",
-          "text": "17:33",
+          "text": "18:10",
           "size": 14.62,
           "lh": 1.5
         },
