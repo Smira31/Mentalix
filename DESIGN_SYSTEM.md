@@ -182,11 +182,14 @@ MXL-TYPE-CONSISTENCY-001 — их размеры в этом этапе не м�
 «Шагов» и «Диалога» не затрагиваются.
 
 Проверка — контрактный Playwright-тест `tests/ux/typography-readable-scale.spec.mjs`
-(`playwright.typography.config.mjs`): проверяет computed-размеры ролей и отсутствие
-горизонтального выхода на 393x852 и 360x640 и собирает снимки в
+(`playwright.typography.config.mjs`, `npm run ux:typography`): проверяет computed-размеры
+ролей и отсутствие горизонтального выхода на 393x852 и 360x640 и собирает снимки в
 `qa-evidence/typography-readable/<фаза>/<вьюпорт>/`. Сравнение «до/после» —
 `node scripts/typography-compare.mjs --check` → `qa-evidence/typography-readable/REPORT.md`;
 в фазе `MX_TYPE_PHASE=before` тест только собирает baseline и контракт не проверяет.
+Фаза `before` снята на коде `origin/main` до шкалы (`0d95270a`); кадры обеих фаз —
+уникальные и непустые: съёмка ждёт завершения входа полноэкранного слоя и наличия
+признака экрана, а совпадение кадров двух состояний считается ошибкой прогона.
 
 ### Клавиатура и фокус (MXL-KEYBOARD-001)
 
@@ -210,9 +213,14 @@ MXL-TYPE-CONSISTENCY-001 — их размеры в этом этапе не м�
 - Хук не вызывается на экранах чтения, в каталогах, списках и настройках: там
   клавиатура не должна открываться сама.
 
-Проверка: контрактный Playwright-тест (фокус шага записи) и ручной gate на iPhone в
+Проверка: контрактный Playwright-тест `tests/ux/keyboard-focus.spec.mjs`
+(`playwright.keyboard.config.mjs`, `npm run ux:keyboard`) и ручной gate на iPhone в
 Telegram — открытие клавиатуры программным фокусом на реальном устройстве
 автопроверкой не покрывается и в отчёте идёт как NOT RUN.
+
+Карта всех полей ввода, их ключей активации и сценариев ручного gate —
+[`docs/KEYBOARD_FOCUS.md`](docs/KEYBOARD_FOCUS.md). Оба целевых прогона подключены к CI
+шагами «Run keyboard focus contract gate» и «Run read-scale typography contract gate».
 
 ## 4. Семантика цвета
 

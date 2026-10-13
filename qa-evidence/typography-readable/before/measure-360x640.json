@@ -84,7 +84,7 @@
       },
       {
         "sel": "span.mx-demo-telegram-chrome__time",
-        "text": "18:11",
+        "text": "19:27",
         "size": 14.62,
         "lh": 1.5
       },
@@ -229,14 +229,14 @@
       {
         "sel": "span.mx-today-day-card__title.mx-type-checkin-title",
         "text": "Разбор дня",
-        "size": 15.48,
+        "size": 17.2,
         "lh": 1.25
       },
       {
-        "sel": "span.mx-today-day-card__locked",
-        "text": "Откроется в 19:00",
-        "size": 12.04,
-        "lh": 1.3
+        "sel": "span[today-card-start-evening].mx-today-day-card__start",
+        "text": "Начать",
+        "size": 14.62,
+        "lh": 1.5
       },
       {
         "sel": "span.block.mx-type-meta",
@@ -483,7 +483,7 @@
           },
           {
             "sel": "span.mx-demo-telegram-chrome__time",
-            "text": "18:11",
+            "text": "19:27",
             "size": 14.62,
             "lh": 1.5
           },
@@ -607,7 +607,7 @@
           },
           {
             "sel": "span.mx-demo-telegram-chrome__time",
-            "text": "18:11",
+            "text": "19:27",
             "size": 14.62,
             "lh": 1.5
           },
@@ -731,7 +731,7 @@
           },
           {
             "sel": "span.mx-demo-telegram-chrome__time",
-            "text": "18:11",
+            "text": "19:27",
             "size": 14.62,
             "lh": 1.5
           },
@@ -855,7 +855,7 @@
           },
           {
             "sel": "span.mx-demo-telegram-chrome__time",
-            "text": "18:11",
+            "text": "19:27",
             "size": 14.62,
             "lh": 1.5
           },
@@ -979,7 +979,7 @@
           },
           {
             "sel": "span.mx-demo-telegram-chrome__time",
-            "text": "18:11",
+            "text": "19:27",
             "size": 14.62,
             "lh": 1.5
           },
@@ -1103,7 +1103,7 @@
           },
           {
             "sel": "span.mx-demo-telegram-chrome__time",
-            "text": "18:11",
+            "text": "19:27",
             "size": 14.62,
             "lh": 1.5
           },
@@ -1227,7 +1227,7 @@
           },
           {
             "sel": "span.mx-demo-telegram-chrome__time",
-            "text": "18:11",
+            "text": "19:27",
             "size": 14.62,
             "lh": 1.5
           },
@@ -1351,7 +1351,7 @@
           },
           {
             "sel": "span.mx-demo-telegram-chrome__time",
-            "text": "18:11",
+            "text": "19:27",
             "size": 14.62,
             "lh": 1.5
           },
@@ -1475,7 +1475,7 @@
           },
           {
             "sel": "span.mx-demo-telegram-chrome__time",
-            "text": "18:11",
+            "text": "19:27",
             "size": 14.62,
             "lh": 1.5
           },
@@ -1641,7 +1641,7 @@
           },
           {
             "sel": "span.mx-demo-telegram-chrome__time",
-            "text": "18:11",
+            "text": "19:27",
             "size": 14.62,
             "lh": 1.5
           },
@@ -1867,7 +1867,7 @@
         },
         {
           "sel": "span.mx-demo-telegram-chrome__time",
-          "text": "18:11",
+          "text": "19:27",
           "size": 14.62,
           "lh": 1.5
         },
@@ -2044,7 +2044,7 @@
           },
           {
             "sel": "span.mx-demo-telegram-chrome__time",
-            "text": "18:11",
+            "text": "19:27",
             "size": 14.62,
             "lh": 1.5
           },
@@ -2168,7 +2168,7 @@
           },
           {
             "sel": "span.mx-demo-telegram-chrome__time",
-            "text": "18:11",
+            "text": "19:27",
             "size": 14.62,
             "lh": 1.5
           },
@@ -2292,7 +2292,7 @@
           },
           {
             "sel": "span.mx-demo-telegram-chrome__time",
-            "text": "18:11",
+            "text": "19:27",
             "size": 14.62,
             "lh": 1.5
           },
@@ -2416,7 +2416,7 @@
           },
           {
             "sel": "span.mx-demo-telegram-chrome__time",
-            "text": "18:11",
+            "text": "19:27",
             "size": 14.62,
             "lh": 1.5
           },
@@ -2540,7 +2540,7 @@
           },
           {
             "sel": "span.mx-demo-telegram-chrome__time",
-            "text": "18:11",
+            "text": "19:27",
             "size": 14.62,
             "lh": 1.5
           },
@@ -2716,7 +2716,7 @@
           },
           {
             "sel": "span.mx-demo-telegram-chrome__time",
-            "text": "18:11",
+            "text": "19:27",
             "size": 14.62,
             "lh": 1.5
           },
@@ -2838,7 +2838,7 @@
           },
           {
             "sel": "span.mx-demo-telegram-chrome__time",
-            "text": "18:11",
+            "text": "19:27",
             "size": 14.62,
             "lh": 1.5
           },
@@ -2960,7 +2960,7 @@
           },
           {
             "sel": "span.mx-demo-telegram-chrome__time",
-            "text": "18:11",
+            "text": "19:27",
             "size": 14.62,
             "lh": 1.5
           },
@@ -3196,7 +3196,7 @@
         },
         {
           "sel": "span.mx-demo-telegram-chrome__time",
-          "text": "18:11",
+          "text": "19:27",
           "size": 14.62,
           "lh": 1.5
         },
@@ -3354,7 +3354,7 @@
       },
       {
         "sel": "span.mx-demo-telegram-chrome__time",
-        "text": "18:12",
+        "text": "19:27",
         "size": 14.62,
         "lh": 1.5
       },
@@ -3540,7 +3540,7 @@
       },
       {
         "sel": "span.mx-demo-telegram-chrome__time",
-        "text": "18:12",
+        "text": "19:27",
         "size": 14.62,
         "lh": 1.5
       },
@@ -3724,7 +3724,7 @@
         },
         {
           "sel": "span.mx-demo-telegram-chrome__time",
-          "text": "18:12",
+          "text": "19:27",
           "size": 14.62,
           "lh": 1.5
         },
@@ -3846,7 +3846,7 @@
         },
         {
           "sel": "span.mx-demo-telegram-chrome__time",
-          "text": "18:12",
+          "text": "19:27",
           "size": 14.62,
           "lh": 1.5
         },
@@ -4053,7 +4053,7 @@
         },
         {
           "sel": "span.mx-demo-telegram-chrome__time",
-          "text": "18:12",
+          "text": "19:27",
           "size": 14.62,
           "lh": 1.5
         },
@@ -4065,7 +4065,7 @@
         },
         {
           "sel": "span.font-label.mx-caps-label",
-          "text": "ПОТОК · 13 октября, 18:12",
+          "text": "ПОТОК · 13 октября, 19:27",
           "size": 11,
           "lh": 1.2
         },
@@ -4165,7 +4165,7 @@
         },
         {
           "sel": "span.mx-demo-telegram-chrome__time",
-          "text": "18:12",
+          "text": "19:27",
           "size": 14.62,
           "lh": 1.5
         },
@@ -4274,7 +4274,7 @@
         },
         {
           "sel": "span.mx-demo-telegram-chrome__time",
-          "text": "18:12",
+          "text": "19:27",
           "size": 14.62,
           "lh": 1.5
         },
@@ -4432,7 +4432,7 @@
         },
         {
           "sel": "span.mx-demo-telegram-chrome__time",
-          "text": "18:12",
+          "text": "19:27",
           "size": 14.62,
           "lh": 1.5
         },
@@ -4441,36 +4441,6 @@
           "text": "Назад",
           "size": 14.62,
           "lh": 1.5
-        },
-        {
-          "sel": "span.mx-type-tab.mt-[1px]",
-          "text": "Сегодня",
-          "size": 9.03,
-          "lh": 1.2
-        },
-        {
-          "sel": "span.mx-type-tab.mt-[1px]",
-          "text": "Шаги",
-          "size": 9.03,
-          "lh": 1.2
-        },
-        {
-          "sel": "span.mx-type-tab.mt-[1px]",
-          "text": "Диалог",
-          "size": 9.03,
-          "lh": 1.2
-        },
-        {
-          "sel": "span.mx-type-tab.mt-[1px]",
-          "text": "Библиотека",
-          "size": 9.03,
-          "lh": 1.2
-        },
-        {
-          "sel": "span.mx-type-tab.mt-[1px]",
-          "text": "Прогресс",
-          "size": 9.03,
-          "lh": 1.2
         },
         {
           "sel": "span.font-label.mx-caps-label",
@@ -4610,7 +4580,7 @@
         },
         {
           "sel": "span.mx-demo-telegram-chrome__time",
-          "text": "18:12",
+          "text": "19:27",
           "size": 14.62,
           "lh": 1.5
         },
