@@ -25,8 +25,7 @@ export default function GuestSaveReminder({ user, hasEntries, onOpenSettings }) 
   }, [user?.id, user?.is_guest, hasEntries])
 
   const localEntries = user?.is_guest && Object.values(readJournalStore(user.id).entries).some(
-    entry => entry.freeWrites?.some(item => item.text?.trim()) ||
-      Object.values(entry.cycle || {}).some(phase => phase.text?.trim())
+    entry => entry.freeWrites?.some(item => item.text?.trim())
   )
   const visible = !dismissed && shouldShowGuestSaveReminder({
     user,

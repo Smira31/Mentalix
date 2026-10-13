@@ -33,13 +33,7 @@ function generateId() {
 
 function isTelegramCloudStorageAvailable() {
   try {
-    const webApp = window.Telegram?.WebApp
-
-    if (typeof webApp?.isVersionAtLeast !== 'function' || !webApp.isVersionAtLeast('6.9')) {
-      return false
-    }
-
-    return Boolean(webApp.CloudStorage)
+    return Boolean(window.Telegram?.WebApp?.CloudStorage)
   } catch {
     return false
   }

@@ -382,22 +382,10 @@ export function confirmAction(message) {
    онбординг, выбранная тема.
    ============================================================ */
 
-// CloudStorage есть с Bot API 6.9; на старых клиентах обращение к полю
-// пишет console.error, поэтому сначала проверяем версию.
-function cloudStorage() {
-  const webApp = api()
-
-  if (typeof webApp?.isVersionAtLeast !== 'function' || !webApp.isVersionAtLeast('6.9')) {
-    return undefined
-  }
-
-  return webApp.CloudStorage
-}
-
 export const cloud = {
   get(key) {
     return new Promise(resolve => {
-      const storage = cloudStorage()
+      const storage = api()?.CloudStorage
 
       if (!storage?.getItem) {
         resolve(null)
@@ -414,7 +402,7 @@ export const cloud = {
 
   set(key, value) {
     return new Promise(resolve => {
-      const storage = cloudStorage()
+      const storage = api()?.CloudStorage
 
       if (!storage?.setItem) {
         resolve(false)
@@ -432,7 +420,7 @@ export const cloud = {
   // Удаляет ВСЕ ключи пользователя из CloudStorage (после удаления аккаунта).
   clearAll() {
     return new Promise(resolve => {
-      const storage = cloudStorage()
+      const storage = api()?.CloudStorage
 
       if (!storage?.getKeys || !storage?.removeItems) {
         resolve(false)
@@ -466,7 +454,7 @@ export const cloud = {
 
   remove(key) {
     return new Promise(resolve => {
-      const storage = cloudStorage()
+      const storage = api()?.CloudStorage
 
       if (!storage?.removeItem) {
         resolve(false)
