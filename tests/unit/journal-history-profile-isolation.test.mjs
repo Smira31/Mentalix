@@ -100,7 +100,10 @@ function mountSurface({ userId, journalEntries }) {
 }
 
 function collectTexts(entry) {
-  return [...(entry?.phases || []).map(item => item.text), ...(entry?.freeWrites || []).map(item => item.text)]
+  return [
+    ...(entry?.phases || []).map(item => item.text),
+    ...(entry?.freeWrites || []).map(item => item.text),
+  ]
 }
 
 // ── 1. Профильная граница ──
@@ -161,19 +164,34 @@ test('JOURNAL-001 раскрытая запись A не показываетс�
   })
   globalThis.localStorage = storage
 
-  const surfaceA = mountSurface({ userId: PROFILE_A, journalEntries: readJournalHistory(PROFILE_A) })
-  assert.deepEqual(surfaceA.journalEntries.map(entry => entry.date), [TODAY])
+  const surfaceA = mountSurface({
+    userId: PROFILE_A,
+    journalEntries: readJournalHistory(PROFILE_A),
+  })
+  assert.deepEqual(
+    surfaceA.journalEntries.map(entry => entry.date),
+    [TODAY]
+  )
   assert.deepEqual(collectTexts(surfaceA.journalEntries[0]), [textA])
 
   // A→B: граница профиля другая, снимок создаётся заново — текста A в нём нет.
-  const surfaceB = mountSurface({ userId: PROFILE_B, journalEntries: readJournalHistory(PROFILE_B) })
+  const surfaceB = mountSurface({
+    userId: PROFILE_B,
+    journalEntries: readJournalHistory(PROFILE_B),
+  })
   assert.notEqual(surfaceB.profileKey, surfaceA.profileKey)
-  assert.deepEqual(surfaceB.journalEntries.map(entry => entry.date), [TWO_DAYS_AGO])
+  assert.deepEqual(
+    surfaceB.journalEntries.map(entry => entry.date),
+    [TWO_DAYS_AGO]
+  )
   assert.equal(JSON.stringify(surfaceB.journalEntries).includes(textA), false)
   assert.deepEqual(collectTexts(surfaceB.journalEntries[0]), [textB])
 
   // «Выход» (нет профиля): поверхность без данных и без чтения общих legacy-ключей.
-  const anonymous = mountSurface({ userId: undefined, journalEntries: readJournalHistory(undefined) })
+  const anonymous = mountSurface({
+    userId: undefined,
+    journalEntries: readJournalHistory(undefined),
+  })
   assert.notEqual(anonymous.profileKey, surfaceA.profileKey)
   assert.deepEqual(anonymous.journalEntries, [])
   assert.equal(calls.getItem.includes(LEGACY_KEY), false)
@@ -195,13 +213,41 @@ const progressHistorySource = readFileSync(
   new URL('../../src/screens/progress/ProgressHistory.jsx', import.meta.url),
   'utf8'
 )
-const historySource = readFileSync(new URL('../../src/screens/History.jsx', import.meta.url), 'utf8')
+const historySource = readFileSync(
+  new URL('../../src/screens/History.jsx', import.meta.url),
+  'utf8'
+)
+const profileScopedHistorySource = readFileSync(
+  new URL('../../src/screens/progress/ProfileScopedHistory.jsx', import.meta.url),
+  'utf8'
+)
+const fixtureSource = readFileSync(
+  new URL('../fixtures/journal-history-isolation.jsx', import.meta.url),
+  'utf8'
+)
 
 test('JOURNAL-001 поверхность «История» в «Прогрессе» ограничена профилем', () => {
+  // Граница профиля живёт в одном общем компоненте: его монтирует Analytics,
+  // и его же использует стенд — в тестах граница не дублируется.
+  assert.match(
+    profileScopedHistorySource,
+    /<ProgressHistory key=\{profileScopeKey\(user\?\.id\)\} user=\{user\} \{\.\.\.rest\} \/>/,
+    'общая профильная граница должна монтировать ProgressHistory с ключом профиля'
+  )
   assert.match(
     analyticsSource,
-    /<ProgressHistory\n\s+key=\{profileScopeKey\(user\?\.id\)\}/,
-    'ProgressHistory должен монтироваться заново при смене профиля'
+    /<ProfileScopedHistory/,
+    'Analytics должен использовать общую профильную границу'
+  )
+  assert.doesNotMatch(
+    analyticsSource,
+    /<ProgressHistory/,
+    'Analytics не дублирует границу: ProgressHistory монтируется только в ProfileScopedHistory'
+  )
+  assert.match(
+    fixtureSource,
+    /<ProfileScopedHistory user=\{currentUser\} \/>/,
+    'стенд обязан использовать ту же профильную границу, что и приложение'
   )
 })
 
@@ -238,5 +284,8 @@ test('JOURNAL-001 настройки группировки и фильтра н
   // ремоунт по профильной границе.
   assert.match(progressHistorySource, /localStorage\.getItem\(GRANULARITY_KEY\)/)
   assert.match(progressHistorySource, /localStorage\.getItem\(FILTER_KEY\)/)
-  assert.match(progressHistorySource, /localStorage\.setItem\(FILTER_KEY, JSON\.stringify\(\[\.\.\.filterTypes\]\)\)/)
+  assert.match(
+    progressHistorySource,
+    /localStorage\.setItem\(FILTER_KEY, JSON\.stringify\(\[\.\.\.filterTypes\]\)\)/
+  )
 })

@@ -182,6 +182,9 @@ jobs:
       - name: Run tap areas and «Назад» offset gate in WebKit
         run: npm run ux:tap-areas -- --retries=1
 
+      - name: Run journal history profile isolation gate
+        run: npm run ux:journal-history -- --retries=1
+
       - name: Upload Playwright artifacts on failure
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
@@ -192,6 +195,7 @@ jobs:
             artifacts/telegram-react-update-depth/
             artifacts/react-185-checkin/
             artifacts/tap-areas/
+            artifacts/journal-history/
             test-results/
           if-no-files-found: ignore
 

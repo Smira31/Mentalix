@@ -4,9 +4,11 @@
  * Отличие от tests/ux/journal-history-profile-isolation.spec.mjs: тот сценарий
  * меняет профиль полной загрузкой приложения (?guest=1) и потому доказывает
  * раздельное отображение ПОСЛЕ перезагрузки. Здесь в одном документе
- * смонтированы настоящие компоненты (ProgressHistory из «Прогресса» и
+ * смонтированы настоящие компоненты (ProfileScopedHistory из «Прогресса» и
  * legacy-поверхность History), а смена профиля — это смена пропа `user` в
- * живом React-дереве, без перезагрузки страницы.
+ * живом React-дереве, без перезагрузки страницы. Граница профиля не
+ * дублируется: стенд использует тот же компонент ProfileScopedHistory, что и
+ * Analytics.jsx.
  *
  * Управляемый Promise: api.checkin.history каждого профиля отдаёт отложенный
  * промис, которым управляет тест через window.__journalIsolation.setCheckins.
@@ -21,11 +23,10 @@ import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { flushSync } from 'react-dom'
 
-import ProgressHistory from '../../src/screens/progress/ProgressHistory.jsx'
+import ProfileScopedHistory from '../../src/screens/progress/ProfileScopedHistory.jsx'
 import History from '../../src/screens/History.jsx'
 import { formatDayLabel } from '../../src/screens/progress/progressHistoryUtils.js'
 import { api } from '../../src/lib/api.js'
-import { profileScopeKey } from '../../src/lib/historyProfileScope.js'
 
 const PROFILE_A = 900001
 const PROFILE_B = 900002
@@ -127,8 +128,9 @@ function fixture() {
       <section data-testid="surface-progress">
         <div className="fixture-label">Прогресс → История</div>
         <div className="mx-progress-actions-row" />
-        {/* Ключ ровно как в Analytics.jsx — профильная граница ремонта. */}
-        <ProgressHistory key={profileScopeKey(currentUser?.id)} user={currentUser} />
+        {/* Та же профильная граница, что и в приложении: общий компонент
+            ProfileScopedHistory (его же монтирует Analytics.jsx). */}
+        <ProfileScopedHistory user={currentUser} />
       </section>
       <section data-testid="surface-legacy">
         <div className="fixture-label">History (legacy)</div>
@@ -164,9 +166,7 @@ window.__journalIsolation = {
     return settleCheckins(profileId, list)
   },
   pendingProfiles() {
-    return [...checkinLoads.entries()]
-      .filter(([, load]) => !load.settled)
-      .map(([id]) => Number(id))
+    return [...checkinLoads.entries()].filter(([, load]) => !load.settled).map(([id]) => Number(id))
   },
   text() {
     return document.getElementById('root').textContent || ''
