@@ -382,28 +382,10 @@ export function confirmAction(message) {
    онбординг, выбранная тема.
    ============================================================ */
 
-/*
- * CloudStorage появился в Bot API 6.9. На более старых клиентах SDK
- * не просто отказывает: он успевает напечатать console.error
- * («CloudStorage is not supported in version …») до того, как мы
- * поймаем исключение. Поэтому проверяем версию заранее — как в
- * offerHomeScreen — и молча живём без облака: локальное хранилище
- * остаётся, экраны не знают разницы.
- */
-function cloudStorage() {
-  const webApp = api()
-
-  if (!webApp?.CloudStorage) return null
-
-  return typeof webApp.isVersionAtLeast === 'function' && webApp.isVersionAtLeast('6.9')
-    ? webApp.CloudStorage
-    : null
-}
-
 export const cloud = {
   get(key) {
     return new Promise(resolve => {
-      const storage = cloudStorage()
+      const storage = api()?.CloudStorage
 
       if (!storage?.getItem) {
         resolve(null)
@@ -420,7 +402,7 @@ export const cloud = {
 
   set(key, value) {
     return new Promise(resolve => {
-      const storage = cloudStorage()
+      const storage = api()?.CloudStorage
 
       if (!storage?.setItem) {
         resolve(false)
@@ -438,7 +420,7 @@ export const cloud = {
   // Удаляет ВСЕ ключи пользователя из CloudStorage (после удаления аккаунта).
   clearAll() {
     return new Promise(resolve => {
-      const storage = cloudStorage()
+      const storage = api()?.CloudStorage
 
       if (!storage?.getKeys || !storage?.removeItems) {
         resolve(false)
@@ -472,7 +454,7 @@ export const cloud = {
 
   remove(key) {
     return new Promise(resolve => {
-      const storage = cloudStorage()
+      const storage = api()?.CloudStorage
 
       if (!storage?.removeItem) {
         resolve(false)
