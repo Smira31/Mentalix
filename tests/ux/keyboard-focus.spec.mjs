@@ -23,7 +23,7 @@ import { openDayCard } from './checkin-helpers.mjs'
 
 const TODAY = '/?demo=1&frame=0'
 const PRACTICES = '/?demo=1&tab=practices&frame=0'
-const LIBRARY = '/?demo=1&tab=library&frame=0'
+const HERO_JOURNEY = '/?demo=1&tab=library&action=hero_journey&frame=0'
 const MENTOR = '/?demo=1&tab=mentor&frame=0'
 
 const VIEWPORT = { width: 393, height: 852 }
@@ -92,8 +92,36 @@ async function expectActionAvailable(page, testId) {
   )
 }
 
+/**
+ * Переход шага завершён. Пока идёт анимация смены шага, в DOM одновременно
+ * живут два экрана шага (~330 мс): старый ещё не размонтирован, и его кнопки
+ * остаются в разметке. Клик по такому «призраку» ничего не выбирает в новом
+ * шаге, поэтому ждём состояние — в DOM остался один экран шага.
+ */
+async function waitForSingleStep(page) {
+  await expect
+    .poll(
+      () =>
+        page.evaluate(
+          () => document.querySelectorAll('.mx-checkin-question, .mx-completion').length
+        ),
+      { timeout: 5_000, message: 'смена шага: в DOM должен остаться один экран шага' }
+    )
+    .toBe(1)
+}
+
+/** Нажать «Далее» и дождаться, что новый шаг действительно смонтирован. */
+async function goToNextStep(page) {
+  const next = page.locator('[data-testid="checkin-next"]')
+  await expect(next).toBeEnabled()
+  await next.click()
+  await waitForSingleStep(page)
+}
+
 /** Дойти до текстового шага чек-ина, не касаясь поля. */
 async function reachCheckinTextStep(page) {
+  await waitForSingleStep(page)
+
   for (let step = 0; step < 14; step += 1) {
     if (await page.locator(CHECKIN_INPUT).count()) return
     if (await page.locator('.mx-completion').count()) {
@@ -107,9 +135,7 @@ async function reachCheckinTextStep(page) {
     const emotion = page.locator('[data-testid="checkin-emotion-pill"][aria-pressed="false"]')
     if (await emotion.count()) await emotion.first().click()
 
-    const next = page.locator('[data-testid="checkin-next"]')
-    await expect(next).toBeEnabled()
-    await next.click()
+    await goToNextStep(page)
   }
 
   throw new Error('текстовый шаг чек-ина не найден')
@@ -135,9 +161,15 @@ test('чек-ин: текстовый шаг забирает фокус и не
   // Пользователь закрыл клавиатуру — поле не отбирает фокус обратно.
   await expectNoFocusRecapture(page, 'checkin-text-input')
 
-  // Действие продолжения остаётся доступным: набираем текст и идём дальше.
-  await page.locator(CHECKIN_INPUT).fill('Тест: спокойное утро и один короткий шаг.')
+  // Текст на месте после закрытия клавиатуры, продолжение доступно.
+  const note = 'Тест: спокойное утро и один короткий шаг.'
+  await page.locator(CHECKIN_INPUT).fill(note)
+  await expect(page.locator(CHECKIN_INPUT)).toContainText('спокойное утро')
   await expectActionAvailable(page, 'checkin-next')
+
+  // Продолжение действительно работает: последний утренний шаг ведёт к финалу.
+  await page.locator('[data-testid="checkin-next"]').click()
+  await expect(page.locator('.mx-completion')).toBeVisible()
 })
 
 /*
@@ -145,19 +177,27 @@ test('чек-ин: текстовый шаг забирает фокус и не
  */
 test('курс: поле шага записи получает фокус после «Начать шаг»', async ({ page }) => {
   await page.setViewportSize(VIEWPORT)
-  await page.goto(LIBRARY)
-  await page.getByTestId('hero-about-open').click().catch(() => {})
-  await page.getByTestId('back-button').click().catch(() => {})
+  await page.goto(HERO_JOURNEY)
 
-  const stepCard = page.locator('[data-testid^="hero-step-"]:not([data-testid="hero-step-start"])')
-  await expect(stepCard.first()).toBeVisible()
-  await stepCard.first().click()
+  // Первый шаг курса открывается по своему testid, а не «первой карточкой»:
+  // набор доступных шагов зависит от прогресса профиля.
+  const stepCard = page.getByTestId('hero-step-uncertainty')
+  await expect(stepCard).toBeVisible()
+  await stepCard.click()
 
   await expect(page.getByTestId('hero-step-start')).toBeVisible()
   await page.getByTestId('hero-step-start').click()
 
   await expect(page.getByTestId('hero-write-input')).toBeVisible()
   await expectAutoFocus(page, 'hero-write-input')
+  await expectActionAvailable(page, 'hero-write-next')
+
+  // Текст, набранный до закрытия клавиатуры, сохраняется, продолжение доступно.
+  const entry = 'Тест: назову то, что пока не знаю.'
+  await page.getByTestId('hero-write-input').fill(entry)
+  await expect(page.getByTestId('hero-write-input')).toContainText('назову то, что')
+  await expectNoFocusRecapture(page, 'hero-write-input')
+  await expect(page.getByTestId('hero-write-input')).toContainText('назову то, что')
   await expectActionAvailable(page, 'hero-write-next')
 })
 

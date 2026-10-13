@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { test, expect } from '@playwright/test'
 
-import { frameStats } from './typography-evidence.mjs'
+import { createEvidenceWriter, describeFrames } from './typography-evidence.mjs'
 
 /*
  * MXL-TYPE-READABLE-001 — согласованная средняя читаемая шкала Mentalix.
@@ -208,47 +208,6 @@ function assertNoOverflow(overflow, label) {
 
 /* ── Прохождение поверхностей ── */
 
-async function capture(page, dir, name) {
-  // Экран входа появляется анимацией: снимок сразу после появления элемента
-  // ловит ещё прозрачный кадр, а пока на портале висит атрибут закрытия
-  // (150–170 ms уезда вниз), любая поверхность невидима целиком. Ждём
-  // состояния, а не времени: атрибут закрытия снят, поверхность занимает
-  // экран и её непрозрачность дошла до 1.
-  await page
-    .waitForFunction(
-      () => {
-        if (document.querySelector('[data-fullscreen-exit="true"]')) return false
-        const surface = document.querySelector('.mx-fullscreen-surface')
-        if (!surface) return true
-        if (Number.parseFloat(getComputedStyle(surface).opacity) < 0.99) return false
-        const rect = surface.getBoundingClientRect()
-        return rect.width >= window.innerWidth - 2 && rect.height >= window.innerHeight - 2
-      },
-      null,
-      { timeout: 5_000 }
-    )
-    .catch(() => {})
-
-  fs.mkdirSync(dir, { recursive: true })
-
-  // Смена шага может перемонтировать поверхность уже после ожидания, поэтому
-  // после снимка сверяем состояние и при необходимости повторяем кадр.
-  const settled = () =>
-    page.evaluate(() => {
-      if (document.querySelector('[data-fullscreen-exit="true"]')) return false
-      const surface = document.querySelector('.mx-fullscreen-surface')
-      if (!surface) return true
-      return Number.parseFloat(getComputedStyle(surface).opacity) >= 0.99
-    })
-
-  for (let attempt = 0; attempt < 3; attempt += 1) {
-    // animations: 'disabled' доводит анимации входа до конца на время снимка —
-    // без него кадр ловится в середине 150-миллисекундного появления экрана.
-    await page.screenshot({ path: path.join(dir, name), animations: 'disabled' })
-    if (await settled()) break
-  }
-}
-
 async function surfaceState(page, roles) {
   const rolesRead = roles ? await readRoles(page, roles) : null
 
@@ -259,11 +218,15 @@ async function surfaceState(page, roles) {
   }
 }
 
-async function walkToday(page, dir) {
+async function walkToday(page, writer) {
   await page.goto(DEMO_TODAY)
   await expect(page.getByTestId('today-card-morning')).toBeVisible()
   const state = await surfaceState(page, TODAY_ROLES)
-  await capture(page, dir, '01-today.png')
+  await writer.capture(page, {
+    name: '01-today.png',
+    marker: '.mx-today-day-card__title',
+    markerLabel: 'Сегодня: карточка дня',
+  })
 
   return state
 }
@@ -273,7 +236,7 @@ async function walkToday(page, dir) {
  * Идём по шагам до экрана финала, снимая состояния шкалы, фокуса, эмоций,
  * редактора и финала — одинаковый набор в фазах before и after.
  */
-async function walkCheckIn(page, dir, { filePrefix, url, cardTestId, evening, onEditor }) {
+async function walkCheckIn(page, writer, { filePrefix, url, cardTestId, evening, onEditor }) {
   await page.goto(url)
   const card = page.getByTestId(cardTestId)
   await expect(card).toBeVisible()
@@ -296,15 +259,27 @@ async function walkCheckIn(page, dir, { filePrefix, url, cardTestId, evening, on
 
     if (!questionStep && (roles.question || roles.eveningQuestion)) {
       questionStep = roles
-      await capture(page, dir, `${filePrefix}-question.png`)
+      await writer.capture(page, {
+        name: `${filePrefix}-question.png`,
+        marker: '.mx-checkin-question h1, .mx-checkin-question h2',
+        markerLabel: 'чек-ин: вопрос шага',
+      })
     }
     if (!focusStep && roles.focusTile) {
       focusStep = { ...roles, overflow }
-      await capture(page, dir, `${filePrefix}-focus.png`)
+      await writer.capture(page, {
+        name: `${filePrefix}-focus.png`,
+        marker: '[data-testid="checkin-day-focus-option"]',
+        markerLabel: 'чек-ин: сетка «Главный фокус дня»',
+      })
     }
     if (!emotionStep && (roles.emotionTile || roles.emotionPill)) {
       emotionStep = { ...roles, overflow }
-      await capture(page, dir, `${filePrefix}-emotion.png`)
+      await writer.capture(page, {
+        name: `${filePrefix}-emotion.png`,
+        marker: '.mx-emotion-grid__tile, .mx-emotion-pill',
+        markerLabel: 'чек-ин: шаг эмоций',
+      })
     }
 
     // Шаг фокуса дня: выбираем плитку, чтобы проверить выбранное состояние.
@@ -328,7 +303,11 @@ async function walkCheckIn(page, dir, { filePrefix, url, cardTestId, evening, on
     if (await input.count()) {
       if (!editorStep) {
         editorStep = { ...roles, overflow }
-        await capture(page, dir, `${filePrefix}-editor.png`)
+        await writer.capture(page, {
+          name: `${filePrefix}-editor.png`,
+          marker: CHECKIN_INPUT_SELECTOR,
+          markerLabel: 'чек-ин: поле записи',
+        })
         if (onEditor) await onEditor(page)
       }
       await input.first().fill('Тестовая запись: спокойный вечер, короткая прогулка и разговор.')
@@ -358,23 +337,31 @@ async function walkCheckIn(page, dir, { filePrefix, url, cardTestId, evening, on
   if (await page.locator('.mx-completion').count()) {
     await expect(page.locator('.mx-completion__title')).toBeVisible()
     completion = await surfaceState(page, COMPLETION_ROLES)
-    await capture(page, dir, `${filePrefix}-complete.png`)
+    await writer.capture(page, {
+      name: `${filePrefix}-complete.png`,
+      marker: '.mx-completion__title',
+      markerLabel: 'чек-ин: финал',
+    })
   }
 
   return { evening, steps, questionStep, focusStep, emotionStep, editorStep, completion }
 }
 
 /* Прямые превью финалов — одинаковое состояние в обеих фазах. */
-async function walkCompletionPreview(page, dir, { filePrefix, url }) {
+async function walkCompletionPreview(page, writer, { filePrefix, url }) {
   await page.goto(url)
   await expect(page.locator('.mx-completion__title')).toBeVisible()
   const state = await surfaceState(page, COMPLETION_ROLES)
-  await capture(page, dir, `${filePrefix}.png`)
+  await writer.capture(page, {
+    name: `${filePrefix}.png`,
+    marker: '.mx-completion__title',
+    markerLabel: `превью финала (${filePrefix})`,
+  })
 
   return state
 }
 
-async function walkJournal(page, dir) {
+async function walkJournal(page, writer) {
   const stages = {}
   await page.goto('/?demo=1&tab=practices&frame=0')
   await expect(page.getByTestId('journal-open-cta')).toBeVisible()
@@ -385,7 +372,11 @@ async function walkJournal(page, dir) {
   await page.getByTestId('dj-intro-setup').click()
   await expect(page.locator('.mx-dj-setup').first()).toBeVisible()
   stages.setup = await surfaceState(page, JOURNAL_ROLES)
-  await capture(page, dir, '12-journal-setup.png')
+  await writer.capture(page, {
+    name: '12-journal-setup.png',
+    marker: '.mx-dj-setup__field-group .mx-journal-field__question',
+    markerLabel: 'дневник: вопрос шага настройки',
+  })
 
   // Проходим настройку целиком, чтобы появился экран «Вспомни, куда идёшь».
   // Шаг считается пройденным, когда заполнено хотя бы одно поле шага: до этого
@@ -432,21 +423,33 @@ async function walkJournal(page, dir) {
 
   await expect(page.locator('.mx-dj-review')).toBeVisible()
   stages.review = await surfaceState(page, JOURNAL_ROLES)
-  await capture(page, dir, '13-journal-review.png')
+  await writer.capture(page, {
+    name: '13-journal-review.png',
+    marker: '.mx-dj-review__title',
+    markerLabel: 'дневник: «Вспомни, куда идёшь»',
+  })
 
   // Ввод: поток
   await expect(page.getByTestId('dj-review-next')).toBeVisible()
   await page.getByTestId('dj-review-next').click()
   await expect(page.getByTestId('dj-stream-input')).toBeVisible()
   stages.stream = await surfaceState(page, JOURNAL_ROLES)
-  await capture(page, dir, '14-journal-stream.png')
+  await writer.capture(page, {
+    name: '14-journal-stream.png',
+    marker: '.mx-dj-stream__title',
+    markerLabel: 'дневник: шаг «поток»',
+  })
 
   // Вопрос дня
   await page.getByTestId('dj-stream-input').fill('Сижу дома, пью чай. Думаю о том, что нужно сделать сегодня.')
   await page.getByTestId('dj-stream-next').click()
   await expect(page.getByTestId('dj-question-input')).toBeVisible()
   stages.question = await surfaceState(page, JOURNAL_ROLES)
-  await capture(page, dir, '15-journal-question.png')
+  await writer.capture(page, {
+    name: '15-journal-question.png',
+    marker: '.mx-dj-question__text',
+    markerLabel: 'дневник: вопрос дня',
+  })
 
   // Сохранение: после ответа на вопрос дня штатный переход ведёт на экран
   // завершения. Возвращаемся на вкладку практик и открываем журнал заново —
@@ -455,7 +458,11 @@ async function walkJournal(page, dir) {
   await page.getByTestId('dj-question-next').click()
   await expect(page.getByTestId('dj-complete-close')).toBeVisible()
   stages.complete = await surfaceState(page, COMPLETION_ROLES)
-  await capture(page, dir, '16-journal-complete.png')
+  await writer.capture(page, {
+    name: '16-journal-complete.png',
+    marker: '.mx-completion__title',
+    markerLabel: 'дневник: финал записи',
+  })
   await page.getByTestId('dj-complete-close').click()
   await expect(page.getByTestId('journal-open-cta')).toBeVisible()
   await page.getByTestId('journal-open-cta').click()
@@ -463,18 +470,25 @@ async function walkJournal(page, dir) {
   // Сохранённая запись («сегодня»)
   await expect(page.getByTestId('dj-today')).toBeVisible()
   stages.today = await surfaceState(page, JOURNAL_ROLES)
-  await capture(page, dir, '17-journal-today.png')
+  await writer.capture(page, {
+    name: '17-journal-today.png',
+    marker: '.mx-dj-today__title',
+    markerLabel: 'дневник: «Запись сохранена»',
+  })
 
   // «Мои записи»
   await page.getByTestId('dj-today-entries').click()
   await expect(page.getByTestId('dj-entries')).toBeVisible()
-  // Кадр снимается только по загруженному списку. Пока идёт загрузка, на экране
-  // есть лишь подпись «МОИ ЗАПИСИ» и слово «Загрузка…» — снимок выходит почти
-  // чёрным (прежний дефект evidence: три разных шага дали один и тот же кадр).
-  // Это ожидание состояния, а не задержка: список — то, что должно быть видно.
+  // Признак этого экрана — загруженный список. Пока идёт загрузка, на экране
+  // есть лишь подпись «МОИ ЗАПИСИ» и слово «Загрузка…». Это ожидание
+  // состояния, а не задержка: снимается то, что должно быть видно.
   await expect(page.locator('.mx-dj-entries__item').first()).toBeVisible()
   stages.entries = await surfaceState(page, JOURNAL_ROLES)
-  await capture(page, dir, '18-journal-entries.png')
+  await writer.capture(page, {
+    name: '18-journal-entries.png',
+    marker: '.mx-dj-entries__item-stream',
+    markerLabel: 'дневник: «мои записи»',
+  })
 
   return stages
 }
@@ -573,7 +587,7 @@ for (const vp of VIEWPORTS) {
     fs.mkdirSync(OUT_DIR, { recursive: true })
     // Снимки каждого вьюпорта — в своей папке: общий каталог перезаписывал
     // кадры 393x852 кадрами 360x640, и evidence не совпадал со своей подписью.
-    const dir = path.join(OUT_DIR, vp.name)
+    const writer = createEvidenceWriter({ dir: path.join(OUT_DIR, vp.name) })
     await page.setViewportSize({ width: vp.width, height: vp.height })
 
     const report = {
@@ -593,10 +607,10 @@ for (const vp of VIEWPORTS) {
         JSON.stringify(report, null, 2)
       )
 
-    report.today = await walkToday(page, dir)
+    report.today = await walkToday(page, writer)
     persist()
 
-    report.checkinMorning = await walkCheckIn(page, dir, {
+    report.checkinMorning = await walkCheckIn(page, writer, {
       filePrefix: '02-morning',
       url: DEMO_TODAY,
       cardTestId: 'today-card-morning',
@@ -604,7 +618,7 @@ for (const vp of VIEWPORTS) {
     })
     persist()
 
-    report.checkinEvening = await walkCheckIn(page, dir, {
+    report.checkinEvening = await walkCheckIn(page, writer, {
       filePrefix: '03-evening',
       url: DEMO_EVENING,
       cardTestId: 'today-card-evening',
@@ -612,20 +626,25 @@ for (const vp of VIEWPORTS) {
     })
     persist()
 
-    report.completeMorning = await walkCompletionPreview(page, dir, {
+    report.completeMorning = await walkCompletionPreview(page, writer, {
       filePrefix: '04-complete-morning',
       url: DEMO_COMPLETE_MORNING,
     })
     persist()
 
-    report.completeEvening = await walkCompletionPreview(page, dir, {
+    report.completeEvening = await walkCompletionPreview(page, writer, {
       filePrefix: '05-complete-evening',
       url: DEMO_COMPLETE_EVENING,
     })
     persist()
 
-    report.journal = await walkJournal(page, dir)
+    report.journal = await walkJournal(page, writer)
     persist()
+
+    // Снятые кадры — часть доказательства: печатаем их хеши, чтобы совпадение
+    // двух состояний было видно в логе, а не только в падении проверки.
+    console.log(`снято кадров ${vp.name}: ${writer.frames.length}`)
+    console.log(describeFrames(writer))
 
     if (!ASSERT) return
 
@@ -647,12 +666,16 @@ for (const vp of VIEWPORTS) {
  * поле, кнопка отправки и текст должны остаться в видимой области без обрезки.
  */
 test('читаемая шкала: поле записи при открытой клавиатуре', async ({ page }) => {
-  fs.mkdirSync(OUT_DIR, { recursive: true })
+  // Кадры клавиатурного прогона — в своей папке: раньше они писались в корень
+  // фазы рядом с кадрами вьюпортов и смешивались с ними.
+  const keyboardDir = path.join(OUT_DIR, 'keyboard')
+  const writer = createEvidenceWriter({ dir: keyboardDir })
+  fs.mkdirSync(keyboardDir, { recursive: true })
   await page.setViewportSize({ width: 393, height: 852 })
 
   const keyboard = { viewport: KEYBOARD_VIEWPORT, field: null, submit: null }
 
-  await walkCheckIn(page, OUT_DIR, {
+  await walkCheckIn(page, writer, {
     filePrefix: '06-keyboard',
     url: DEMO_TODAY,
     cardTestId: 'today-card-morning',
@@ -677,7 +700,11 @@ test('читаемая шкала: поле записи при открытой
       keyboard.field = { box, focused, ...styles, viewportHeight: KEYBOARD_VIEWPORT.height }
       keyboard.submit = submitBox
       keyboard.overflow = overflow
-      await capture(editorPage, OUT_DIR, `07-keyboard-${KEYBOARD_VIEWPORT.width}x${KEYBOARD_VIEWPORT.height}.png`)
+      await writer.capture(editorPage, {
+        name: `07-keyboard-${KEYBOARD_VIEWPORT.width}x${KEYBOARD_VIEWPORT.height}.png`,
+        marker: CHECKIN_INPUT_SELECTOR,
+        markerLabel: 'чек-ин: поле записи при уменьшенной высоте вьюпорта',
+      })
       await editorPage.setViewportSize({ width: 393, height: 852 })
     },
   })
