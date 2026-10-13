@@ -16,6 +16,29 @@ import { expect, test } from '@playwright/test'
  *   4) чтение истории не меняет данные журнала.
  *
  * Даты считаются относительно текущего дня (правило репозитория).
+ *
+ * Почему viewport 793×1196 и демо-рамка: на телефонной ширине без рамки
+ * (frame=0) плашка демо-панели (`demo-panel-badge`, position: fixed,
+ * top/right 12px, z-index 9999) ложится на центр вкладки «История» — замер
+ * 393×852: вкладка x=197…289, y=8…48, плашка x=202…381, y=12…42,
+ * elementFromPoint в центре вкладки возвращает плашку, поэтому тап по вкладке
+ * недоступен. Штатного способа скрыть плашку нет: её рендер зависит только от
+ * isPreviewDemoMode() и не-Telegram платформы, ?panel=1 открывает панель,
+ * ?frame=0 и ?toolbar=0 плашку не убирают. Это отдельный дефект демо-оверлея
+ * (не продуктового), здесь не чинится; сценарий идёт в демо-рамке на 793×1196 —
+ * плашка остаётся за рамкой (x=602), а поверхность внутри рамки та же
+ * телефонная 393×852.
+ *
+ * Ограничения покрытия:
+ *   — запоздавший ответ A («не появляется в B») покрыт unit-тестом
+ *     journal-history-profile-isolation.test.mjs: в демо-режиме API считается
+ *     в процессе (src/lib/demoMode.js) и не проходит через сеть, которую можно
+ *     притормозить page.route, а смена профиля в приложении возможна только
+ *     полной загрузкой (?guest=1) — окна, в котором ответ A приходит уже в B,
+ *     у браузерного сценария нет;
+ *   — legacy-поверхность src/screens/History.jsx в приложении не смонтирована
+ *     (в App.jsx только предзагрузка), поэтому её изоляция тоже проверяется
+ *     unit-тестом и вручную.
  */
 
 const PROFILE_A = 900001
@@ -28,7 +51,7 @@ const FILTER_KEY = 'mx-history-filter'
 const TEXT_A = 'JOURNAL-001 A: раскрытая запись профиля A'
 const TEXT_B = 'JOURNAL-001 B: запись профиля B'
 
-test.use({ viewport: { width: 393, height: 852 } })
+test.use({ viewport: { width: 793, height: 1196 } })
 
 /*
  * Синтетический local-журнал: одна запись дня в фазе «Идея».
@@ -89,7 +112,7 @@ test('JOURNAL-001: раскрытая запись A исчезает после
   await page.addInitScript(seed.script, seed)
 
   // ── 1. Профиль A: «Прогресс» → «История» ──
-  await openHistoryTab(page, '/?demo=1&frame=0&tab=trends')
+  await openHistoryTab(page, '/?demo=1&tab=trends')
 
   const rowA = page.locator('[data-testid="progress-history-row"]').filter({ hasText: TEXT_A })
   await expect(rowA).toBeVisible()
@@ -105,7 +128,7 @@ test('JOURNAL-001: раскрытая запись A исчезает после
   await page.screenshot({ path: 'artifacts/journal-history/a-history-expanded.png' })
 
   // ── 3. Смена профиля (выход из A → вход под демо-гостем B) ──
-  await openHistoryTab(page, '/?demo=1&guest=1&frame=0&tab=trends')
+  await openHistoryTab(page, '/?demo=1&guest=1&tab=trends')
 
   // Текст раскрытой записи A не показывается, раскрытая запись не осталась открытой.
   await expect(page.getByTestId('progress-entry-screen')).toHaveCount(0)
@@ -129,7 +152,7 @@ test('JOURNAL-001: группировка и фильтр сохраняются
   ])
   await page.addInitScript(seed.script, seed)
 
-  await openHistoryTab(page, '/?demo=1&frame=0&tab=trends')
+  await openHistoryTab(page, '/?demo=1&tab=trends')
 
   // Группировка «Недели»
   await page.getByTestId('history-grouping-pill').click()
@@ -147,7 +170,7 @@ test('JOURNAL-001: группировка и фильтр сохраняются
   expect(JSON.parse(savedFilter)).toEqual(['journal'])
 
   // ── Смена профиля: настройки остаются теми же ──
-  await openHistoryTab(page, '/?demo=1&guest=1&frame=0&tab=trends')
+  await openHistoryTab(page, '/?demo=1&guest=1&tab=trends')
 
   await expect(page.getByTestId('history-grouping-pill')).toContainText('Недели')
   const filterAfterSwitch = await page.evaluate(key => localStorage.getItem(key), FILTER_KEY)

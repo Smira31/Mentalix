@@ -33,12 +33,7 @@ function generateId() {
 
 function isTelegramCloudStorageAvailable() {
   try {
-    const webApp = window.Telegram?.WebApp
-    if (!webApp?.CloudStorage) return false
-    // CloudStorage появился в Bot API 6.9: на клиенте без него SDK оставляет
-    // version = '6.0' и пишет console.error перед броском WebAppMethodUnsupported.
-    if (typeof webApp.isVersionAtLeast === 'function') return webApp.isVersionAtLeast('6.9')
-    return true
+    return Boolean(window.Telegram?.WebApp?.CloudStorage)
   } catch {
     return false
   }
