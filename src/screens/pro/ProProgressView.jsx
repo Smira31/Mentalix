@@ -5,7 +5,7 @@ import PageTitle from '../../components/ui/PageTitle'
 import Card from '../../components/ui/Card'
 import PillButton from '../../components/ui/PillButton'
 import ProStateCard from './ProStateCard'
-import { proBlockedState, proErrorKey } from './proApiState'
+import { proBlockedState, proErrorKey, proStatePayload } from './proApiState'
 import { STATUS_LABELS, formatDayLabel, formatWeekRange } from './weekLabel'
 
 /*
@@ -47,7 +47,14 @@ export default function ProProgressView({ onOpenPlan }) {
       .getProgress()
       .then(data => {
         if (!aliveRef.current || seq !== loadSeqRef.current) return
-        setState(data)
+        const payload = proStatePayload(data)
+        if (!payload) {
+          // Ответ без состояния Pro (пусто, массив, чужой формат): данные не
+          // доставлены — состояние ошибки с повтором, ничего не форматируем.
+          setLoadFailed(true)
+          return
+        }
+        setState(payload)
         setBlocked(null)
       })
       .catch(error => {
@@ -67,6 +74,15 @@ export default function ProProgressView({ onOpenPlan }) {
     typeof state?.completion_rate === 'number'
       ? `${Math.round(state.completion_rate * 100)}%`
       : null
+  /*
+   * Диапазон недели — только из распознанных дат: если сервер не прислал
+   * plan_week_start (или она не распознана), в карточке остаётся одна
+   * подпись «Неделя действий» без выдуманных чисел.
+   */
+  const weekTitle = formatWeekRange(
+    state?.plan_week_start,
+    state?.days?.[state.days.length - 1]?.date
+  )
 
   return (
     <div>
@@ -132,8 +148,7 @@ export default function ProProgressView({ onOpenPlan }) {
           {completion && (
             <Card className="mt-4 p-4" testId="pro-progress-completion">
               <p className="font-label text-[11px] uppercase tracking-wider text-muted">
-                Неделя действий ·{' '}
-                {formatWeekRange(state.plan_week_start, state.days?.[state.days.length - 1]?.date)}
+                Неделя действий{weekTitle ? ` · ${weekTitle}` : ''}
               </p>
               <p className="mt-2 text-[26px] font-bold text-cream">
                 {completion.done} из {completion.planned}
@@ -173,7 +188,7 @@ export default function ProProgressView({ onOpenPlan }) {
                   {state.days.map(day => (
                     <li key={day.id || day.day} className="flex items-baseline justify-between gap-2">
                       <span className="text-[13px] text-cream">
-                        {formatDayLabel(day.date)} · {day.action}
+                        {[formatDayLabel(day.date), day.action].filter(Boolean).join(' · ')}
                       </span>
                       <span
                         className={`font-label shrink-0 text-[11px] ${STATUS_COLORS[day.status] || 'text-muted'}`}

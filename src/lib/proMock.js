@@ -21,6 +21,11 @@ import { mskDayKey, shiftMskDay } from './mskDate.js'
  *   crisis                    — 200 crisis с утверждённым ответом
  *   disabled                  — 404 detail pro_report_disabled / pro_plan_disabled
  *   nopro                     — 402 detail pro_required
+ *   network                   — сбой сети: состояние ошибки с повтором, без
+ *                               повторных POST
+ *   nopayload                 — GET отвечает не состоянием Pro (пустой массив)
+ *   nodates                   — дат недели нет (разбор, прогресс) или дата
+ *                               нераспознана (план): метка недели не строится
  *
  * Реализует фактический контракт backend/pro/router.py: ошибки двух видов
  * (HTTPException → detail, JSONResponse → code), GET без признака
@@ -64,9 +69,24 @@ function mockScenario() {
     'crisis',
     'disabled',
     'nopro',
+    'network',
+    'nopayload',
+    'nodates',
   ].includes(value)
     ? value
     : 'ready'
+}
+
+/*
+ * Счётчики запросов mock (только для прогонов): регрессии проверяют, что
+ * экран в отказе не отправляет повторных POST и что «Повторить» действительно
+ * перезапрашивает состояние.
+ */
+function countMockRequest(method) {
+  if (typeof window === 'undefined') return
+
+  const key = method === 'POST' ? '__mxProMockPosts' : '__mxProMockGets'
+  window[key] = (window[key] || 0) + 1
 }
 
 class MockApiError extends Error {
@@ -255,6 +275,46 @@ function conflictPost(kind, finalize) {
   return null
 }
 
+/*
+ * Сценарий nodates: состояние валидно, но дат недели сервер не дал (разбор,
+ * прогресс) или дал нераспознанную дату (план). Метка недели в интерфейсе
+ * строиться не должна; остальное содержимое остаётся.
+ * Возвращает ответ только для GET-состояний, иначе undefined.
+ */
+function nodatesResponse(pathname, method, state, weekStart) {
+  if (method !== 'GET') return undefined
+
+  if (pathname === '/pro/report') {
+    if (!state.report) {
+      state.report = buildMockReport(weekStart)
+      writeState(state)
+    }
+    return { week_start: null, week_end: null, status: 'ready', report: state.report }
+  }
+
+  if (pathname === '/pro/plan') {
+    if (!state.plan) {
+      state.plan = { days: buildMockPlanDays(weekStart, 1) }
+      writeState(state)
+    }
+    return {
+      week_start: weekStart,
+      status: 'ready',
+      plan: { ...serializePlan(state), plan_week_start: '2026-13-45' },
+    }
+  }
+
+  if (pathname === '/pro/progress') {
+    if (!state.plan) {
+      state.plan = { days: buildMockPlanDays(weekStart, 1) }
+      writeState(state)
+    }
+    return { ...progressResponse(state), plan_week_start: null }
+  }
+
+  return undefined
+}
+
 export async function proMockRequest(path, options = {}) {
   const url = new URL(path, 'https://pro-mock.invalid')
   const pathname = url.pathname
@@ -263,6 +323,8 @@ export async function proMockRequest(path, options = {}) {
   const isProPath = pathname.startsWith('/pro/')
   const isConsentPath = pathname === '/mentalix/consent'
   if (!isProPath && !isConsentPath) return undefined
+
+  countMockRequest(method)
 
   let body = {}
   if (options.body && typeof options.body === 'string') {
@@ -297,6 +359,33 @@ export async function proMockRequest(path, options = {}) {
         ? 'pro_plan_disabled'
         : 'pro_report_disabled'
     throw new MockApiError(404, { detail })
+  }
+
+  /*
+   * Сценарии недоставленных данных (регрессии экранов Pro):
+   *   network   — сбой сети на любом запросе Pro (как ApiError kind
+   *               'network'): экран показывает состояние ошибки с повтором и
+   *               повторных POST не отправляет;
+   *   nopayload — GET отвечает не состоянием Pro (пустой массив) — так
+   *               выглядит чужой или прокси-ответ: UI не форматирует
+   *               отсутствующие поля;
+   *   nodates   — состояние валидно, но дат недели нет (разбор, прогресс)
+   *               или дата нераспознана (план): название недели не строится.
+   */
+  if (scenario === 'network') {
+    const error = new Error('Pro mock: сеть недоступна')
+    error.kind = 'network'
+    throw error
+  }
+
+  if (scenario === 'nopayload') {
+    return method === 'GET' ? [] : { ok: true }
+  }
+
+  if (scenario === 'nodates') {
+    const withoutDates = nodatesResponse(pathname, method, state, weekStart)
+
+    if (withoutDates) return withoutDates
   }
 
   // ── Разбор недели (PRO-002b) ──

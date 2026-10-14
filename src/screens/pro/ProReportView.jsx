@@ -10,8 +10,8 @@ import Card from '../../components/ui/Card'
 import PillButton from '../../components/ui/PillButton'
 import ProConsentCard from './ProConsentCard'
 import ProStateCard from './ProStateCard'
-import { proBlockedState, proErrorKey } from './proApiState'
-import { formatDayList, formatSources, formatWeekRange } from './weekLabel'
+import { proBlockedState, proErrorKey, proStatePayload } from './proApiState'
+import { formatDayList, formatSources, formatWeekRange, isoDay } from './weekLabel'
 
 /*
  * «Мой разбор» (PRO-002b): недельный AI-разбор.
@@ -32,6 +32,18 @@ import { formatDayList, formatSources, formatWeekRange } from './weekLabel'
 const CONFIDENCE_LABELS = { low: 'предположение', medium: 'судя по записям' }
 
 const KNOWN_STATUSES = new Set(['consent_required', 'not_generated', 'ready'])
+
+/*
+ * Диапазон недели строится только из двух распознанных ISO-дней. Если дату
+ * сервер не прислал (или она не распознана), заголовка недели нет вовсе —
+ * «неделя NaN undefined» в интерфейсе не появляется.
+ */
+function weekRange(payload) {
+  const start = isoDay(payload.week_start)
+  const end = isoDay(payload.week_end)
+
+  return start && end ? { start, end } : null
+}
 
 function Section({ title, children }) {
   return (
@@ -108,9 +120,17 @@ export default function ProReportView({ user, onOpenPlan }) {
       .getReport()
       .then(data => {
         if (!aliveRef.current || seq !== loadSeqRef.current) return
-        setWeek({ start: data.week_start, end: data.week_end })
-        setStatus(data.status)
-        setReport(data.report || null)
+        const payload = proStatePayload(data)
+        if (!payload) {
+          // Ответ без состояния Pro (пусто, массив, чужой формат): данные не
+          // доставлены. Показываем состояние ошибки с повтором, ничего не
+          // форматируем и не запускаем сборку.
+          setLoadFailed(true)
+          return
+        }
+        setWeek(weekRange(payload))
+        setStatus(payload.status)
+        setReport(payload.report || null)
         setBlocked(null)
       })
       .catch(error => {
@@ -127,13 +147,21 @@ export default function ProReportView({ user, onOpenPlan }) {
 
   function applyResult(data, seq) {
     if (!aliveRef.current || seq !== loadSeqRef.current) return
-    if (data.status === 'crisis') {
-      setCrisisReply(data.reply || null)
+    const payload = proStatePayload(data)
+    if (!payload) {
+      // Ответ на сборку без состояния Pro: состояние перечитывается GET-ом
+      // (та же ручка, что и при «сервер обновился»); повторная POST-генерация
+      // не отправляется.
+      load()
       return
     }
-    setWeek({ start: data.week_start, end: data.week_end })
-    setStatus(data.status)
-    setReport(data.report || null)
+    if (payload.status === 'crisis') {
+      setCrisisReply(payload.reply || null)
+      return
+    }
+    setWeek(weekRange(payload))
+    setStatus(payload.status)
+    setReport(payload.report || null)
   }
 
   async function handleGenerate() {
@@ -193,13 +221,15 @@ export default function ProReportView({ user, onOpenPlan }) {
     }
   }
 
-  const loading = status === null
+  // Недоставленное состояние или отказ доступа — не «загрузка»: экран уже
+  // показывает карточку состояния с действием.
+  const loading = status === null && !loadFailed && !blocked
 
   return (
     <div>
       <PageTitle>мой разбор.</PageTitle>
       {week && !crisisReply && (
-        <p className="font-label mt-2 text-[12px] text-muted">
+        <p className="font-label mt-2 text-[12px] text-muted" data-testid="pro-report-week">
           {formatWeekRange(week.start, week.end)}
         </p>
       )}

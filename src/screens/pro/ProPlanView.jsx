@@ -11,7 +11,7 @@ import Card from '../../components/ui/Card'
 import PillButton from '../../components/ui/PillButton'
 import ProConsentCard from './ProConsentCard'
 import ProStateCard from './ProStateCard'
-import { proBlockedState, proErrorKey } from './proApiState'
+import { proBlockedState, proErrorKey, proStatePayload } from './proApiState'
 import { STATUS_LABELS, formatDayLabel, formatWeekRange } from './weekLabel'
 
 /*
@@ -78,7 +78,7 @@ function DayCard({
     <Card className="p-4" testId="pro-plan-day">
       <div className="flex items-baseline justify-between gap-2">
         <span className="font-label text-[12px] text-muted">
-          День {day.day} · {formatDayLabel(day.date)}
+          {[`День ${day.day}`, formatDayLabel(day.date)].filter(Boolean).join(' · ')}
         </span>
         <span className={`font-label text-[11px] ${STATUS_COLORS[day.status] || 'text-muted'}`}>
           {STATUS_LABELS[day.status] || day.status}
@@ -242,8 +242,16 @@ export default function ProPlanView({ user, onOpenReport, onOpenProgress }) {
       .then(data => {
         // Поздний ответ: экран уже перезагружен или сменился — не применяем.
         if (!aliveRef.current || seq !== loadSeqRef.current) return
-        setStatus(data.status)
-        setPlan(data.plan || null)
+        const payload = proStatePayload(data)
+        if (!payload) {
+          // Ответ без состояния Pro (пусто, массив, чужой формат): данные не
+          // доставлены. Показываем состояние ошибки с повтором; уже загруженный
+          // план и введённый текст правки не стираются, сборка не запускается.
+          setLoadFailed(true)
+          return
+        }
+        setStatus(payload.status)
+        setPlan(payload.plan || null)
         setBlocked(null)
         const pending = pendingEditRef.current
         if (pending) {
@@ -279,12 +287,20 @@ export default function ProPlanView({ user, onOpenReport, onOpenProgress }) {
 
   function applyPlan(data, seq, fallbackMessage) {
     if (!aliveRef.current || seq !== loadSeqRef.current) return
-    if (data.status === 'crisis') {
-      setCrisisReply(data.reply || null)
+    const payload = proStatePayload(data)
+    if (!payload) {
+      // Ответ на сборку без состояния Pro: состояние перечитывается GET-ом
+      // (та же ручка, что и при «сервер обновился»); повторная POST-генерация
+      // не отправляется.
+      load()
       return
     }
-    setStatus(data.status)
-    setPlan(data.plan || null)
+    if (payload.status === 'crisis') {
+      setCrisisReply(payload.reply || null)
+      return
+    }
+    setStatus(payload.status)
+    setPlan(payload.plan || null)
     if (fallbackMessage) setMessage(fallbackMessage)
   }
 
@@ -505,18 +521,23 @@ export default function ProPlanView({ user, onOpenReport, onOpenProgress }) {
     load()
   }
 
-  const loading = status === null
+  // Недоставленное состояние или отказ доступа — не «загрузка»: экран уже
+  // показывает карточку состояния с действием.
+  const loading = status === null && !loadFailed && !blocked
   const busy = saving !== null
   const days = plan?.days || []
   const doneCount = days.filter(day => day.status === 'done').length
+  // Метка недели строится только из распознанных дат: без plan_week_start
+  // (или с нераспознанной) заголовка нет вовсе.
+  const weekTitle = formatWeekRange(plan?.plan_week_start, days[days.length - 1]?.date)
   const showPlan = (status === 'ready' || status === 'partial') && plan
 
   return (
     <div>
       <PageTitle>план недели.</PageTitle>
-      {plan && (
-        <p className="font-label mt-2 text-[12px] text-muted">
-          Неделя действий: {formatWeekRange(plan.plan_week_start, days[days.length - 1]?.date)}
+      {plan && weekTitle && (
+        <p className="font-label mt-2 text-[12px] text-muted" data-testid="pro-plan-week">
+          Неделя действий: {weekTitle}
         </p>
       )}
 

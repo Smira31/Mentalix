@@ -1,23 +1,52 @@
 /*
  * Метки недель и дней для экранов Mentalix Pro.
  * Даты приходят от backend как ISO-дни (week_start/week_end, dates плана).
+ *
+ * Отсутствующая или нераспознанная дата — не текст: метка тогда просто не
+ * строится (пустая строка), а экран показывает своё состояние (загрузка,
+ * ошибка с повтором, пусто). Поэтому «неделя NaN undefined» в интерфейсе
+ * появиться не может: форматируется только распознанный ISO-день.
  */
 const MONTHS_SHORT = [
   'янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек',
 ]
 
-export function formatDayLabel(iso) {
-  const value = new Date(`${iso}T00:00:00`)
+const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/
+
+/** Распознанный ISO-день или пустая строка, если даты нет/она не ISO-день. */
+export function isoDay(value) {
+  if (typeof value !== 'string' || !ISO_DAY.test(value)) return ''
+
+  return Number.isNaN(new Date(`${value}T00:00:00`).getTime()) ? '' : value
+}
+
+function dayLabel(iso) {
+  const day = isoDay(iso)
+
+  if (!day) return ''
+
+  const value = new Date(`${day}T00:00:00`)
+
   return `${value.getDate()} ${MONTHS_SHORT[value.getMonth()]}`
 }
 
+export function formatDayLabel(iso) {
+  return dayLabel(iso)
+}
+
 export function formatWeekRange(start, end) {
-  if (!end || end === start) return `неделя ${formatDayLabel(start)}`
-  return `неделя ${formatDayLabel(start)} — ${formatDayLabel(end)}`
+  const from = dayLabel(start)
+
+  // Без начального дня неделя не называется: пустая метка вместо выдумки.
+  if (!from) return ''
+
+  const to = end === start ? '' : dayLabel(end)
+
+  return to ? `неделя ${from} — ${to}` : `неделя ${from}`
 }
 
 export function formatDayList(days) {
-  return Array.isArray(days) ? days.map(formatDayLabel).join(', ') : ''
+  return Array.isArray(days) ? days.map(dayLabel).filter(Boolean).join(', ') : ''
 }
 
 export const STATUS_LABELS = {
