@@ -58,9 +58,10 @@
 }
 
 /* Длинные названия («Разобраться с Даймоном») — две строки целиком,
-   без «…»: 14px гарантирует перенос в две строки, anywhere — без обрезки. */
+   без «…»: подпись плитки читается с --mx-read-caption (MXL-TYPE-READABLE-001,
+   «Сегодня»), anywhere — без обрезки. */
 .mx-pinned-practices__rail > .mx-pinned-practice-card .mx-pinned-practice-card__title {
-  font-size: calc(14px * var(--mx-type-scale));
+  font-size: var(--mx-read-caption);
   line-height: 1.2;
   overflow-wrap: anywhere;
 }

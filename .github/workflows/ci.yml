@@ -185,6 +185,12 @@ jobs:
       - name: Run journal history profile isolation gate
         run: npm run ux:journal-history -- --retries=1
 
+      - name: Run read-scale typography contract gate
+        run: npm run ux:typography -- --retries=1
+
+      - name: Run keyboard focus contract gate
+        run: npm run ux:keyboard -- --retries=1
+
       - name: Upload Playwright artifacts on failure
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
@@ -196,6 +202,8 @@ jobs:
             artifacts/react-185-checkin/
             artifacts/tap-areas/
             artifacts/journal-history/
+            artifacts/typography-readable/
+            artifacts/keyboard-focus/
             test-results/
           if-no-files-found: ignore
 

@@ -8,6 +8,7 @@ import {
   isTelegramRuntime,
   useVisualViewportGeometry,
 } from '../lib/visualViewport'
+import { useAutoFocusField } from '../lib/useAutoFocusField'
 import PracticeWritingCanvas from './PracticeWritingCanvas'
 import RoundSubmitButton from './RoundSubmitButton'
 import './WritingControls.css'
@@ -174,6 +175,7 @@ export default function JournalTextarea({
   formatting = true,
   onClose,
   autoFocus = false,
+  autoFocusKey = null,
   keepFocusOnSubmit = false,
   submitIcon = 'check',
   desktopInline = false,
@@ -188,30 +190,13 @@ export default function JournalTextarea({
   const [formatOpen, setFormatOpen] = useState(false)
   const [addOpen, setAddOpen] = useState(false)
   const viewportGeometry = useVisualViewportGeometry()
-  useEffect(() => {
-    if (!autoFocus || !editorRef.current) return undefined
 
-    const focusEditor = () => {
-      const editor = editorRef.current
-      if (!editor) return
-      // На iOS/Telegram WebView программный focus на contentEditable
-      // не всегда открывает клавиатуру, если вызов отложен через rAF.
-      // Синхронный вызов в том же tick эффекта работает надёжнее.
-      editor.focus({ preventScroll: true })
-    }
-
-    // Синхронный вызов — сразу при монтировании шага.
-    focusEditor()
-
-    // Повторные попытки: после отрисовки кадра и с задержкой,
-    // на случай если элемент ещё не был готов в момент эффекта.
-    const frame = window.requestAnimationFrame(focusEditor)
-    const retry = window.setTimeout(focusEditor, 120)
-    return () => {
-      window.cancelAnimationFrame(frame)
-      window.clearTimeout(retry)
-    }
-  }, [autoFocus])
+  // MXL-KEYBOARD-001: экран/шаг, основная задача которого — написать текст,
+  // открывает клавиатуру сам (см. src/lib/useAutoFocusField.js).
+  // autoFocusKey — ключ активации шага для многошаговых потоков: смена ключа
+  // (следующий шаг записи) = «пользователь только что пришёл сюда», фокус
+  // ставится заново. Без ключа действует монтажный autoFocus ('auto').
+  useAutoFocusField(editorRef, autoFocusKey ?? (autoFocus ? 'auto' : null))
   const keyboardOpen =
     guidedFlow &&
     typeof window !== 'undefined' &&
@@ -326,7 +311,6 @@ export default function JournalTextarea({
         role="textbox"
         aria-label={ariaLabel}
         aria-multiline="true"
-        autoFocus={autoFocus}
         contentEditable
         data-testid={testId}
         suppressContentEditableWarning

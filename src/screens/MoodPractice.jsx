@@ -13,6 +13,7 @@ import {
 } from '../lib/fullscreenSurface'
 import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
 import { useBackButton } from '../platform/telegram.hooks'
+import { useAutoFocusField } from '../lib/useAutoFocusField'
 import {
   SCALE_STEPS,
   CheckInQuestion,
@@ -127,6 +128,10 @@ export default function MoodPractice({ user, onDone }) {
   }
 
   const screenRef = useRef(null)
+  const noteRef = useRef(null)
+
+  // MXL-KEYBOARD-001: шаг «Что происходит?» — основная задача написать текст.
+  useAutoFocusField(noteRef, step === STEP_CONTEXT ? 'context' : null)
 
   /*
    * Тот же переход-хендофф, что в CheckIn.jsx (openListener):
@@ -346,6 +351,7 @@ export default function MoodPractice({ user, onDone }) {
                 hintClassName="mt-1.5 text-[15px] text-muted"
               />
               <textarea
+                ref={noteRef}
                 value={note}
                 onChange={e => setNote(e.target.value.slice(0, 2000))}
                 placeholder="Начни писать…"

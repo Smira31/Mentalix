@@ -289,6 +289,13 @@ screens, and keep article cards unchanged unless the owner explicitly approves t
 - Единственный дневник — DailyJournal (api.dailyJournal). Браузерный сценарий сравнивает записи демо-API до и после чтения; локальный цикл не засевается. Fixture проверяет смену профиля и отложенный ответ дневника. journalStorage.js сохранён только для чтения прежних мыслей и их существующего переноса: API цикла и prototype-миграция удалены.
 - Экран записи «Прогресса» (`.mx-progress-entry`) — полноэкранный fixed-оверлей (z-index 100): в fixture legacy-секция кликается до открытия экрана записи, иначе она перехватывает указатель.
 
+### Читаемая шкала и автофокус (MXL-TYPE-READABLE-001 / MXL-KEYBOARD-001)
+
+- Правила шкалы трёх поверхностей и клавиатуры — в `DESIGN_SYSTEM.md` §3. Единственная реализация фокуса — `src/lib/useAutoFocusField.js`; новые локальные `autoFocus`/`focus()` в компонентах не добавлять.
+- Целевая проверка в web-контейнере: `npx playwright test --config=playwright.typography.config.mjs` (перед первым прогоном — `npx playwright install --with-deps chromium`), сравнение «до/после» — `node scripts/typography-compare.mjs --check`.
+- Снимки каждого вьюпорта лежат в `qa-evidence/typography-readable/<фаза>/<вьюпорт>/`; файлы в корне фазы — от прежних диагностических прогонов. Снимок делается только после завершения анимаций входа, иначе кадр пустой.
+- Открытие клавиатуры программным фокусом на реальном iPhone в Telegram автопроверкой не покрывается: это ручной gate, в отчёте он идёт как NOT RUN, а не PASS.
+
 ## Context economy
 
 - Читай только файлы из порядка чтения (AGENTS.md → PROJECT_STATE.md → PRODUCT.md →
