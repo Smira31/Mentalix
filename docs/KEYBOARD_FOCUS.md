@@ -44,8 +44,14 @@ last_verified: 2026-10-13
 | «Сегодня»: первый шаг            | `src/screens/TodayFocusFlow.jsx` → `JournalTextarea`    | «Первый шаг»                   | нет (aria-label)                                                | `autoFocus`                         | —                                                            |
 | Мысль дня: запись                | `src/screens/DailyThoughtInput.jsx` → `JournalTextarea` | поле записи                    | `daily-thought-input-field`                                     | `autoFocus`                         | —                                                            |
 | Направленный поток «Шагов»       | `src/screens/GuidedJournals.jsx` → `JournalTextarea`    | шаг записи шаблона             | нет (aria-label)                                                | `autoFocus`                         | —                                                            |
+| Pro: правка действия дня         | `src/screens/pro/ProPlanView.jsx` → `DayCard`           | действие дня                   | `pro-plan-edit-input`                                            | `editing` (id дня)                   | `pro-review-states.spec.mjs`                                 |
+| Pro: правка общей цели недели    | `src/screens/pro/ProPlanView.jsx`                       | цель недели                    | `pro-goal-edit-input`                                            | `editingGoal`                        | `pro-review-states.spec.mjs`                                 |
 
 Карта фиксирует фактическое применение `useAutoFocusField` в коде. Часть поверхностей доступна только в отдельных режимах или за флагами; сама карта от этого не меняется.
+
+Поля Pro входят в этап читаемой шкалы: фактический размер ввода в обоих полях правки — 16px
+(роль «основной текст и поля ввода»). Проверка — `tests/unit/pro-keyboard-focus.test.mjs` и
+прогон `npm run ux:pro-states`.
 
 ## 3. Поля без автофокуса (осознанно)
 
@@ -60,6 +66,7 @@ last_verified: 2026-10-13
 | `theme-text-input`       | `src/screens/ThemeScreen.jsx`                            | размышление по теме: фокус вручную |
 | `daimon-chat-input`      | `src/screens/Daimon/DaimonFlow.jsx`                      | продолжение диалога по желанию     |
 | поля демо-панели         | `src/components/DemoPanel.jsx`                           | служебные поля                     |
+| `pro-plan-edit-criteria` | Pro: правка дня (`src/screens/pro/ProPlanView.jsx`)      | второе поле шага: фокус остаётся в поле действия |
 
 ## 4. Автоматизированная регрессия
 
@@ -79,6 +86,17 @@ node scripts/typography-compare.mjs --check
 ```
 
 Тест проверяет computed-размеры ролей и отсутствие горизонтального выхода на 393×852 и 360×640, снимает кадры в `qa-evidence/typography-readable/<фаза>/<вьюпорт>/` и пишет измерения `measure-<вьюпорт>.json`; сравнение «до/после» собирается в `qa-evidence/typography-readable/REPORT.md`.
+
+**Экраны Pro.** `tests/ux/pro-review-states.spec.mjs`, конфиг `playwright.pro-states.config.mjs`:
+
+```bash
+npm run ux:pro-states
+```
+
+Прогон идёт с `VITE_PRO_REVIEW_PLAN_ENABLED=true` и dev-only mock `?proMock=…`: снимает состояния
+разбора, плана, прогресса, ограничений доступа и конфликтов на 393×852 и 360×640, проверяет
+отсутствие горизонтального выхода, автофокус полей правки и фактический размер ввода 16px.
+Кадры — `qa-evidence/pro-review-plan/`, разбор — `qa-evidence/pro-review-plan/report.md`.
 
 **Правило evidence.** Кадр снимается только после завершения анимации входа полноэкранного слоя и при наличии уникального признака текущего экрана; пустой кадр и кадр, совпавший с другим состоянием, — ошибка прогона, а не «особенность рендера». Поэтому набор кадров фаз `before` и `after` состоит из уникальных непустых кадров, а расхождение видно в логе теста.
 

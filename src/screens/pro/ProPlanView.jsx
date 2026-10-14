@@ -5,6 +5,7 @@ import {
   ProPollCancelledError,
   pollGenerationReady,
 } from '../../lib/proGenerationPolling'
+import { useAutoFocusField } from '../../lib/useAutoFocusField'
 import PageTitle from '../../components/ui/PageTitle'
 import Card from '../../components/ui/Card'
 import PillButton from '../../components/ui/PillButton'
@@ -63,6 +64,16 @@ function DayCard({
   onEditCancel,
   onStatus,
 }) {
+  /*
+   * MXL-KEYBOARD-001: «Изменить» — явный вход в шаг записи, поэтому основное
+   * поле правки получает фокус само, без второго нажатия по полю. Ключ
+   * активации — день: выход из правки снимает попытку, повторный вход в тот
+   * же день даёт новую. Второе поле шага (критерий) фокус не забирает.
+   */
+  const actionRef = useRef(null)
+
+  useAutoFocusField(actionRef, editing ? day.id : null)
+
   return (
     <Card className="p-4" testId="pro-plan-day">
       <div className="flex items-baseline justify-between gap-2">
@@ -77,10 +88,11 @@ function DayCard({
       {editing ? (
         <div className="mt-2">
           <textarea
+            ref={actionRef}
             value={editText}
             onChange={event => onEditChange(event.target.value)}
             rows={2}
-            className="w-full rounded-2xl bg-cream/5 p-3 text-[14px] leading-relaxed text-cream outline-none"
+            className="w-full rounded-2xl bg-cream/5 p-3 text-[16px] leading-relaxed text-cream outline-none"
             data-testid="pro-plan-edit-input"
           />
           <p className="font-label mt-2 text-[11px] uppercase tracking-wider text-muted">
@@ -90,7 +102,7 @@ function DayCard({
             value={editCriteria}
             onChange={event => onCriteriaChange(event.target.value)}
             rows={2}
-            className="mt-1 w-full rounded-2xl bg-cream/5 p-3 text-[13px] leading-relaxed text-muted outline-none"
+            className="mt-1 w-full rounded-2xl bg-cream/5 p-3 text-[16px] leading-relaxed text-muted outline-none"
             data-testid="pro-plan-edit-criteria"
           />
           <div className="mt-2 flex gap-2">
@@ -207,6 +219,11 @@ export default function ProPlanView({ user, onOpenReport, onOpenProgress }) {
   // обновления плана поле правки возвращается с тем же текстом — ввод не
   // теряется. retry — «повторить сохранение» поверх актуальной версии.
   const pendingEditRef = useRef(null)
+  // MXL-KEYBOARD-001: вход в правку общей цели — шаг записи, поле получает
+  // фокус само. Ключ активации — сама правка цели.
+  const goalRef = useRef(null)
+
+  useAutoFocusField(goalRef, editingGoal ? 'pro-goal-edit' : null)
 
   useEffect(() => {
     aliveRef.current = true
@@ -581,10 +598,11 @@ export default function ProPlanView({ user, onOpenReport, onOpenProgress }) {
                 Цель недели
               </p>
               <textarea
+                ref={goalRef}
                 value={goalText}
                 onChange={event => setGoalText(event.target.value)}
                 rows={2}
-                className="mt-2 w-full rounded-2xl bg-cream/5 p-3 text-[14px] leading-relaxed text-cream outline-none"
+                className="mt-2 w-full rounded-2xl bg-cream/5 p-3 text-[16px] leading-relaxed text-cream outline-none"
                 data-testid="pro-goal-edit-input"
               />
               <div className="mt-2 flex gap-2">
