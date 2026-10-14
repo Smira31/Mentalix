@@ -151,6 +151,26 @@ export async function goBack(page) {
 }
 
 /**
+ * Закрыть чек-ин крестиком (выход на «Сегодня» с сохранением черновика).
+ * @param {import('@playwright/test').Page} page
+ */
+export async function closeCheckin(page) {
+  const close = page.locator('[data-testid="checkin-close"]')
+  await expect(close).toBeVisible()
+  await close.click()
+}
+
+/**
+ * Подтвердить закрытие с несохранённым черновиком (диалог «Закрыть запись?»).
+ * @param {import('@playwright/test').Page} page
+ */
+export async function confirmCloseWithDraft(page) {
+  const closeBtn = page.locator('[data-testid="checkin-close-draft-confirm"]')
+  await expect(closeBtn).toBeVisible()
+  await closeBtn.click()
+}
+
+/**
  * Проверить, что неделя отрисована (7 дней).
  * @param {import('@playwright/test').Page} page
  */

@@ -776,6 +776,31 @@
   padding: 12px var(--mx-screen-x) calc(var(--app-safe-bottom) + 16px);
 }
 
+/* Крестик выхода — отличим от «Назад» (шеврон).
+   Та же форма, что у mx-nested-screen-back: 43×43, круглая, стекло. */
+.mx-checkin-close-btn {
+  display: grid;
+  width: 43px;
+  height: 43px;
+  padding: 0;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+  background: var(--mx-glass-bg);
+  color: rgb(var(--c-text));
+  transition: transform 140ms ease;
+  flex-shrink: 0;
+}
+
+.mx-checkin-close-btn:active {
+  transform: scale(0.95);
+}
+
+.mx-checkin-close-btn:focus,
+.mx-checkin-close-btn:focus-visible {
+  outline: none;
+}
+
 .mx-demo-checkin__scene--complete {
   transform: none;
 }

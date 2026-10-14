@@ -24,6 +24,7 @@ import {
   ThumbsUp,
   Users,
   Wallet,
+  X,
 } from 'lucide-react'
 import BackButton from '../components/BackButton'
 import JournalTextarea from '../components/JournalTextarea'
@@ -139,6 +140,25 @@ const CHECKIN_HEADER_CLASS = `${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center 
 const FULLSCREEN_COMPLETION_CLASS =
   'mx-fullscreen-completion w-full flex-1 min-h-0 flex flex-col overflow-hidden'
 
+/*
+ * Крестик выхода — отличим от «Назад» (шеврон): «Назад» идёт на предыдущий
+ * шаг, крестик закрывает поток с сохранением черновика. Тот же размер
+ * и форма, что у mx-nested-screen-back (43×43, круглая, стекло).
+ */
+export function CheckInCloseButton({ onClick, testId = 'checkin-close' }) {
+  return (
+    <button
+      type="button"
+      data-testid={testId}
+      aria-label="Закрыть"
+      className="mx-checkin-close-btn mx-tap-target"
+      onClick={onClick}
+    >
+      <X size={22} strokeWidth={2.2} />
+    </button>
+  )
+}
+
 // Одна круглая «→» справа внизу — та же кнопка, что в редакторе «Что на уме?».
 export function CheckInNextControls({ onNext, disabled = false, variant = 'scale' }) {
   return (
@@ -219,7 +239,10 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
     focus: redo ? null : (existing?.focus ?? null),
     sleep_quality: redo ? null : (existing?.sleep_quality ?? null),
   }))
-  const [note, setNote] = useState('')
+  const [note, setNote] = useState(() => {
+    const draft = readCheckinDraft({ userId: user.id })
+    return draftHasContent(draft) ? morningDraftToNote(draft) : ''
+  })
   const [selectedFocus, setSelectedFocus] = useState(() =>
     !redo && DAY_FOCUS_OPTIONS.some(option => option.label === existing?.day_focus)
       ? existing.day_focus
@@ -287,10 +310,13 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
   function handleBack() {
     platform.haptic('light')
 
-    if (step === doneStep || step === 0) {
+    if (step === doneStep) {
       onDone()
       return
     }
+
+    // На первом шаге некуда идти назад — выход осуществляется крестиком.
+    if (step === 0) return
 
     goToStep(current => Math.max(0, current - 1))
   }
@@ -298,6 +324,24 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
   function pick(key, level) {
     platform.haptic('light')
     setValues(current => ({ ...current, [key]: level }))
+  }
+
+  // Debounced-сохранение утренней мысли в черновик — текст не теряется
+  // при выходе крестиком или закрытии вкладки.
+  useEffect(() => {
+    if (!note.trim()) return undefined
+    const timeoutId = window.setTimeout(() => {
+      saveCheckinDraft({ userId: user.id, draft: { mode: 'brief', brief: note } })
+    }, 500)
+    return () => window.clearTimeout(timeoutId)
+  }, [note, user.id])
+
+  function handleClose() {
+    platform.haptic('light')
+    if (note.trim()) {
+      saveCheckinDraft({ userId: user.id, draft: { mode: 'brief', brief: note } })
+    }
+    onDone()
   }
 
   async function finish() {
@@ -332,6 +376,7 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
       )
       setSavedMorningId(savedMorning?.id ?? null)
       onCompleted?.()
+      clearCheckinDraft({ userId: user.id })
       platform.haptic('success')
       /*
        * Canonical streak (GET /api/streak) — primary source числа серии
@@ -423,7 +468,12 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
   return createPortal(
     <div ref={screenRef} className="mx-demo-checkin" style={demoSurfaceStyle}>
       <header className="mx-demo-checkin__header">
-        <BackButton onClick={handleBack} label="Сегодня" />
+        {step > 0 && step !== doneStep ? (
+          <BackButton onClick={handleBack} />
+        ) : (
+          <span aria-hidden="true" />
+        )}
+        <CheckInCloseButton onClick={handleClose} />
       </header>
 
       <main
@@ -457,8 +507,8 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
                 guidedFlow
                 autoFocus
                 keepFocusOnSubmit
-                submitIcon="arrow"
-                submitLabel="Далее"
+                submitIcon="check"
+                submitLabel="Завершить"
                 submitTestId="checkin-complete"
                 onSubmit={finish}
                 submitLoading={saving}
@@ -1372,12 +1422,22 @@ function CheckInCore({
       return
     }
 
-    if (step === 0) {
-      requestClose()
-      return
-    }
+    // На первом шаге некуда идти назад — выход осуществляется крестиком.
+    if (step === 0) return
 
     goToStep(current => current - 1)
+  }
+
+  // Крестик выхода: если есть несохранённые уроки, показываем подтверждение.
+  // Черновик уже сохранён в localStorage (saveEveningDraft), подтверждение
+  // нужно только чтобы пользователь знал, что запись не отправлена на сервер.
+  function handleClose() {
+    platform.haptic('light')
+    if (eveningDraftHasContent(lessons)) {
+      setCloseConfirmationOpen(true)
+      return
+    }
+    onDone()
   }
 
   const screenRef = useRef(null)
@@ -1637,12 +1697,19 @@ function CheckInCore({
     >
       {!(isEvening && isCard) && (
         <div className={CHECKIN_HEADER_CLASS}>
-          <BackButton onClick={handleBack} />
-          {recovery && (
-            <span className="text-[13px] text-muted" data-testid="streak-recovery-date">
-              {yesterdayLabel(recovery.date)}
-            </span>
+          {step > 0 && !isFinal ? (
+            <BackButton onClick={handleBack} />
+          ) : (
+            <span aria-hidden="true" />
           )}
+          <div className="flex items-center gap-2">
+            {recovery && (
+              <span className="text-[13px] text-muted" data-testid="streak-recovery-date">
+                {yesterdayLabel(recovery.date)}
+              </span>
+            )}
+            <CheckInCloseButton onClick={handleClose} />
+          </div>
         </div>
       )}
 
@@ -1654,11 +1721,14 @@ function CheckInCore({
             {isEvening && isCard && (
               <div className="w-full flex items-center justify-between pb-2">
                 <BackButton onClick={handleBack} />
-                {recovery && (
-                  <span className="text-[13px] text-muted" data-testid="streak-recovery-date">
-                    {yesterdayLabel(recovery.date)}
-                  </span>
-                )}
+                <div className="flex items-center gap-2">
+                  {recovery && (
+                    <span className="text-[13px] text-muted" data-testid="streak-recovery-date">
+                      {yesterdayLabel(recovery.date)}
+                    </span>
+                  )}
+                  <CheckInCloseButton onClick={handleClose} />
+                </div>
               </div>
             )}
             {!isScaleStep && (
@@ -1750,8 +1820,14 @@ function CheckInCore({
                         guidedFlow
                         autoFocus
                         keepFocusOnSubmit
-                        submitIcon="arrow"
-                        submitLabel={recovery && cardIdx === cardCount - 1 ? 'Сохранить' : 'Далее'}
+                        submitIcon={cardIdx === cardCount - 1 ? 'check' : 'arrow'}
+                        submitLabel={
+                          cardIdx === cardCount - 1
+                            ? recovery
+                              ? 'Сохранить'
+                              : 'Закрыть день'
+                            : 'Далее'
+                        }
                         submitTestId={
                           recovery && cardIdx === cardCount - 1 ? 'checkin-save' : 'checkin-next'
                         }
@@ -1841,6 +1917,7 @@ function CheckInCore({
               </button>
               <button
                 type="button"
+                data-testid="checkin-close-draft-confirm"
                 onClick={closeWithDraft}
                 className="min-h-12 rounded-full border border-cream/15 px-4 text-[14px] font-semibold text-cream"
               >
