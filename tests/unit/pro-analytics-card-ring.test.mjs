@@ -47,11 +47,7 @@ test('готовность разбора читается только из GET
 
 test('состояния кольца названы словами владельца, процентов сборки нет', () => {
   assert.match(cardSource, /'Подведи итоги недели'/)
-  assert.match(cardSource, /'Собираем разбор'/)
   assert.match(cardSource, /'Разбор готов'/)
-
-  // Состояние сборки — подтверждённое состояние контракта (код 409 POST).
-  assert.match(cardSource, /generation_in_progress/)
 
   // Заполненность кольца — факт готовности, а не вычисленная доля.
   const cardCode = code(cardSource)
@@ -60,6 +56,24 @@ test('состояния кольца названы словами владел
 
   // Внутри кольца нет иллюстрации — только состояние.
   assert.doesNotMatch(cardCss, /mx-card-system-glyph/)
+})
+
+test('состояние сборки не трактуется как статус GET', () => {
+  // GET /api/pro/report не сообщает generation_in_progress: этот код приходит
+  // только ошибкой POST 409, а разбирает его экран разбора ограниченным
+  // опросом GET. Карточка состояние сборки не показывает и статусом GET не
+  // считает — «Собираем разбор» и индикатор сборки из неё убраны.
+  const cardCode = code(cardSource)
+  assert.doesNotMatch(cardCode, /generation_in_progress/)
+  assert.doesNotMatch(cardCode, /generating/)
+  assert.doesNotMatch(cardCode, /Собираем разбор/)
+  assert.doesNotMatch(cardCss, /spinner/)
+  assert.doesNotMatch(cardCss, /@keyframes/)
+
+  // Ограничение контракта остаётся документированным в самой карточке.
+  assert.match(cardSource, /generation_in_progress/)
+  assert.match(cardSource, /POST 409/)
+  assert.match(cardSource, /proGenerationPolling/)
 })
 
 test('период — по датам разбора, а не «за текущую неделю»', () => {

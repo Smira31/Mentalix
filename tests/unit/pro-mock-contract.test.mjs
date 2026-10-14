@@ -36,6 +36,15 @@ test('сценарии покрывают конфликт генерации, �
   )
 })
 
+test('сценарий longtext подаёт в разбор длинные русские тексты', () => {
+  // Длинные строки живут в отдельном модуле: те же данные читает браузерный
+  // сценарий, поэтому ожидание и mock не расходятся.
+  assert.match(mockSource, /import \{ MOCK_LONG_REPORT_TEXT \} from '\.\/proMockLongText\.js'/)
+  assert.match(mockSource, /'longtext',/)
+  assert.match(mockSource, /function buildMockReport\(weekStart, longText = false\)/)
+  assert.match(mockSource, /buildMockReport\(weekStart, scenario === 'longtext'\)/)
+})
+
 test('правка общей цели повышает версии всех дней, правка дня — только его', () => {
   // Цель: версия растёт у всех дней внутри цикла.
   assert.match(

@@ -3,8 +3,9 @@
    `.mx-progress-card` + блок «кольцо слева, текст справа»
    (`.mx-progress-practices__empty*`, §5.5 DESIGN_SYSTEM). Своих отступов,
    радиусов и типографики здесь нет — они берутся из классов образца; ниже
-   только состояния кольца готовности разбора, индикатор сборки и сброс
-   браузерных стилей кнопок. */
+   только состояния кольца готовности разбора и сброс браузерных стилей
+   кнопок: состояние сборки кольцо не показывает — GET его не сообщает
+   (см. комментарий карточки). */
 
 /* Строки шапки: у образца это div и заголовки, здесь — содержимое карточки. */
 .mx-pro-analytics-card__head,
@@ -43,16 +44,6 @@
   border-color: rgb(var(--c-gold));
 }
 
-/* Идёт сборка — индикатор загрузки внутри кольца. */
-.mx-pro-analytics-card__spinner {
-  width: 46px;
-  height: 46px;
-  border: 3px solid rgb(var(--c-card3));
-  border-top-color: rgb(var(--c-gold));
-  border-radius: 999px;
-  animation: mx-pro-analytics-spin 0.9s linear infinite;
-}
-
 /* Ошибка запроса — нейтральное состояние: пунктир, не «разбора нет». */
 .mx-pro-analytics-card--error .mx-pro-analytics-card__ring {
   border-style: dashed;
@@ -74,18 +65,8 @@
   cursor: pointer;
 }
 
-@keyframes mx-pro-analytics-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .mx-pro-analytics-card__open {
     transition: none;
-  }
-
-  .mx-pro-analytics-card__spinner {
-    animation: none;
   }
 }

@@ -1,6 +1,7 @@
 import path from 'node:path'
 import { test, expect } from '@playwright/test'
 
+import { MOCK_LONG_REPORT_TEXT } from '../../src/lib/proMockLongText.js'
 import { createEvidenceWriter, describeFrames } from './typography-evidence.mjs'
 
 /*
@@ -13,7 +14,9 @@ import { createEvidenceWriter, describeFrames } from './typography-evidence.mjs'
  *     конфликт версий и конфликт пересборки;
  *  2) геометрия на 393×852 и 360×640: нет горизонтального выхода;
  *  3) MXL-KEYBOARD-001 в Pro: вход в правку («Изменить») ставит фокус в
- *     основное поле сам, фактический размер ввода — 16px.
+ *     основное поле сам, фактический размер ввода — 16px;
+ *  4) длинные русские тексты разбора переносятся, а не обрезаются (сценарий
+ *     `longtext`), и возврат в аналитику сохраняет выбранный период и прокрутку.
  *
  * Кадр снимается через общий писатель доказательств: он требует уникальный
  * признак экрана, ждёт завершения анимации входа, отклоняет пустой кадр и
@@ -70,6 +73,76 @@ function assertNoOverflow(overflow, label) {
     overflow.scrollWidth,
     `${label}: горизонтальный выход (виновники: ${overflow.offenders.join(', ')})`
   ).toBeLessThanOrEqual(overflow.clientWidth + 2)
+}
+
+/**
+ * Состояние аналитики, которое не должно теряться при входе в Pro и возврате:
+ * выбранный период и позиция прокрутки вкладки.
+ */
+async function readAnalyticsState(page) {
+  return page.evaluate(() => {
+    const trigger = document.querySelector('[data-testid="progress-period-trigger"]')
+    const scrollRoot = document.querySelector('.mx-app-scroll-root')
+
+    return {
+      period: trigger ? trigger.textContent.trim() : null,
+      scrollTop: scrollRoot ? Math.round(scrollRoot.scrollTop) : null,
+    }
+  })
+}
+
+/**
+ * Как отрисован текст: переносится ли он и не режется ли — ни самим
+ * элементом, ни предком с overflow: hidden. Многоточие и -webkit-line-clamp
+ * считаются обрезкой независимо от фактической высоты.
+ */
+async function readTextFit(page, selector) {
+  return page.evaluate(sel => {
+    const el = document.querySelector(sel)
+    if (!el) return null
+
+    const style = getComputedStyle(el)
+    const rect = el.getBoundingClientRect()
+    const lineHeight = parseFloat(style.lineHeight) || parseFloat(style.fontSize) * 1.4
+
+    const clippedBy = []
+    for (let node = el; node && node !== document.documentElement; node = node.parentElement) {
+      const s = getComputedStyle(node)
+      if (s.overflowY === 'hidden' && node.scrollHeight > node.clientHeight + 1) {
+        clippedBy.push(`${node.tagName.toLowerCase()}.${node.className}`)
+      }
+      if (s.overflowX === 'hidden' && node.scrollWidth > node.clientWidth + 1) {
+        clippedBy.push(`${node.tagName.toLowerCase()}.${node.className}`)
+      }
+    }
+
+    return {
+      text: el.textContent,
+      textOverflow: style.textOverflow,
+      lineClamp: style.webkitLineClamp ?? '',
+      whiteSpace: style.whiteSpace,
+      scrollWidth: el.scrollWidth,
+      clientWidth: el.clientWidth,
+      scrollHeight: el.scrollHeight,
+      clientHeight: el.clientHeight,
+      lines: Math.round(rect.height / lineHeight),
+      clippedBy,
+    }
+  }, selector)
+}
+
+/** Текст показан целиком: без многоточия, обрезки по строкам и клиппинга. */
+function expectNoClipping(fit, label) {
+  expect(fit, `${label}: элемент найден`).not.toBeNull()
+  expect(fit.textOverflow, `${label}: многоточие не используется`).not.toBe('ellipsis')
+  expect(
+    fit.lineClamp === '' || fit.lineClamp === 'none',
+    `${label}: текст не обрезан по числу строк (${fit.lineClamp})`
+  ).toBe(true)
+  expect(fit.whiteSpace, `${label}: текст переносится`).not.toBe('nowrap')
+  expect(fit.scrollWidth, `${label}: ширина не обрезана`).toBeLessThanOrEqual(fit.clientWidth + 1)
+  expect(fit.scrollHeight, `${label}: высота не обрезана`).toBeLessThanOrEqual(fit.clientHeight + 1)
+  expect(fit.clippedBy, `${label}: предки не обрезают текст`).toEqual([])
 }
 
 /* ── Прохождение экранов Pro ── */
@@ -389,6 +462,113 @@ for (const viewport of VIEWPORTS) {
         await page.evaluate(() => window.__mxProMockPosts || 0),
         'карточка не запускает генерацию'
       ).toBe(0)
+    })
+
+    /*
+     * Разбор недели — свободный текст от AI: он бывает заметно длиннее
+     * образца. Сценарий `longtext` подаёт длинные русские строки и проверяет,
+     * что экран их переносит (полное совпадение с данными mock, без многоточия,
+     * -webkit-line-clamp и клиппинга у предков).
+     *
+     * Тем же проходом проверяется возврат в аналитику: выбранный период и
+     * прокрутка — состояние вкладки, которое вход в Pro не должен терять.
+     */
+    test('длинный русский текст не обрезается, возврат хранит период и прокрутку', async ({
+      page,
+    }) => {
+      const writer = createEvidenceWriter({ dir: path.join(OUT_DIR, viewport.name) })
+      const long = MOCK_LONG_REPORT_TEXT
+
+      await openAnalytics(page, 'longtext')
+
+      // 1. Период аналитики — состояние вкладки, а не экрана Pro.
+      await page.getByTestId('progress-period-trigger').click()
+      await page.getByRole('menuitemradio', { name: 'Месяцы' }).click()
+      await expect(page.getByTestId('progress-period-trigger')).toContainText('Месяцы')
+
+      // 2. Прокручиваем аналитику: карточка входа остаётся в кадре (её и
+      //    нажимаем), а позиция прокрутки — не нулевая, иначе проверять
+      //    сохранение было бы нечем.
+      const scrolled = await page.evaluate(() => {
+        const root = document.querySelector('.mx-app-scroll-root')
+        const card = document.querySelector('[data-testid="progress-pro-card"]')
+        if (!root || !card) return null
+
+        const rootRect = root.getBoundingClientRect()
+        const cardTop = card.getBoundingClientRect().top - rootRect.top + root.scrollTop
+        root.scrollTop = Math.max(0, cardTop - root.clientHeight / 3)
+
+        const after = card.getBoundingClientRect()
+
+        return {
+          scrollTop: Math.round(root.scrollTop),
+          cardVisible: after.top < window.innerHeight && after.bottom > 0,
+        }
+      })
+      expect(scrolled?.cardVisible, 'карточка входа осталась в кадре').toBe(true)
+      const before = await readAnalyticsState(page)
+      expect(before.scrollTop, 'аналитика прокручена').toBeGreaterThan(0)
+
+      // 3. Разбор с длинными текстами.
+      await page.getByTestId('pro-card-open').click()
+      await buildReport(page)
+      await expect(page.getByTestId('pro-report-direction')).toBeVisible()
+
+      // 4. Направление на неделю — целиком, с переносом на несколько строк.
+      const direction = await readTextFit(
+        page,
+        '[data-testid="pro-report-direction"] .mx-pro-report__direction-text'
+      )
+      expect(direction.text.trim(), 'направление показано целиком').toBe(long.direction)
+      expectNoClipping(direction, 'направление на неделю')
+      expect(direction.lines, 'направление занимает несколько строк').toBeGreaterThan(1)
+
+      await capture(page, writer, {
+        name: '3b-report-long-text.png',
+        marker: '[data-testid="pro-report-direction"]',
+        label: 'Pro: длинный текст разбора без обрезки',
+      })
+
+      // 5. Раскрытые подробности: длинные тема, трудность и закономерность.
+      const theme = await readTextFit(
+        page,
+        '[data-testid="pro-details-themes"] .mx-pro-report__chip'
+      )
+      expect(theme.text.trim(), 'тема показана целиком').toBe(long.theme)
+      expectNoClipping(theme, 'тема недели')
+
+      await page.getByTestId('pro-details-difficulties').locator('summary').click()
+      const difficulty = await readTextFit(
+        page,
+        '[data-testid="pro-details-difficulties"] .mx-pro-text'
+      )
+      expect(difficulty.text.trim(), 'трудность показана целиком').toBe(long.difficulty)
+      expectNoClipping(difficulty, 'трудность недели')
+
+      await page.getByTestId('pro-details-patterns').locator('summary').click()
+      const pattern = await readTextFit(
+        page,
+        '[data-testid="pro-details-patterns"] .mx-pro-text'
+      )
+      expect(pattern.text.trim(), 'закономерность показана целиком').toBe(long.pattern)
+      expectNoClipping(pattern, 'закономерность недели')
+
+      await capture(page, writer, {
+        name: '3c-report-long-details.png',
+        marker: '[data-testid="pro-details-patterns"]',
+        label: 'Pro: длинные подробности разбора раскрыты',
+      })
+
+      // 6. «Назад» возвращает в аналитику: период и прокрутка на месте.
+      await page.getByTestId('pro-back-button').click()
+      await expect(page.getByTestId('progress-pro-card')).toBeVisible()
+      const after = await readAnalyticsState(page)
+      expect(after.period, 'выбранный период сохранён').toBe(before.period)
+      expect(Math.abs(after.scrollTop - before.scrollTop), 'прокрутка сохранена').toBeLessThanOrEqual(
+        2
+      )
+
+      console.log(`Pro длинный текст ${viewport.name}:\n${describeFrames(writer)}`)
     })
   })
 }

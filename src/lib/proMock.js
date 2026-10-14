@@ -1,5 +1,6 @@
 import { now } from './clock.js'
 import { mskDayKey, shiftMskDay } from './mskDate.js'
+import { MOCK_LONG_REPORT_TEXT } from './proMockLongText.js'
 
 /*
  * Dev-only mock-режим Mentalix Pro (PRO-002b/c) — для проверки экранов без
@@ -31,6 +32,9 @@ import { mskDayKey, shiftMskDay } from './mskDate.js'
  *   nopayload                 — GET отвечает не состоянием Pro (пустой массив)
  *   nodates                   — дат недели нет (разбор, прогресс) или дата
  *                               нераспознана (план): метка недели не строится
+ *   longtext                  — разбор идёт с длинными русскими текстами
+ *                               (src/lib/proMockLongText.js): проверка переноса
+ *                               без обрезки, кадр в прогоне ux:pro-states
  *
  * Реализует фактический контракт backend/pro/router.py: ошибки двух видов
  * (HTTPException → detail, JSONResponse → code), GET без признака
@@ -89,6 +93,7 @@ function mockScenario() {
     'network',
     'nopayload',
     'nodates',
+    'longtext',
   ].includes(value)
     ? value
     : 'ready'
@@ -124,14 +129,21 @@ function lastCompletedWeekStart() {
   return shiftMskDay(today, -(dayOfWeek + 7))
 }
 
-function buildMockReport(weekStart) {
+/*
+ * Разбор недели. При longText (сценарий longtext) тексты берутся длинные:
+ * разбор — свободный текст AI, и экран обязан переносить его, а не обрезать.
+ */
+function buildMockReport(weekStart, longText = false) {
+  const long = MOCK_LONG_REPORT_TEXT
   return {
     week_start: weekStart,
     week_end: shiftMskDay(weekStart, 6),
-    themes: ['Внимание и усталость', 'Спокойное утро'],
+    themes: longText
+      ? [long.theme, 'Спокойное утро']
+      : ['Внимание и усталость', 'Спокойное утро'],
     difficulties: [
       {
-        text: 'Вечером было трудно удержать внимание на одном деле',
+        text: longText ? long.difficulty : 'Вечером было трудно удержать внимание на одном деле',
         days: [shiftMskDay(weekStart, 1), shiftMskDay(weekStart, 3)],
       },
       { text: 'После долгих встреч трудно было заснуть', days: [shiftMskDay(weekStart, 4)] },
@@ -145,7 +157,7 @@ function buildMockReport(weekStart) {
     ],
     patterns: [
       {
-        text: 'Возможно, короткий вечерний разбор помогает раньше засыпать',
+        text: longText ? long.pattern : 'Возможно, короткий вечерний разбор помогает раньше засыпать',
         confidence: 'low',
         based_on: [shiftMskDay(weekStart, 2), shiftMskDay(weekStart, 3)],
       },
@@ -159,7 +171,7 @@ function buildMockReport(weekStart) {
       'Что помогало возвращаться к одному делу?',
       'Что вечером забирает внимание сильнее всего?',
     ],
-    focus_next_week: 'Один небольшой шаг за вечер, без догоняния за весь день.',
+    focus_next_week: longText ? long.direction : 'Один небольшой шаг за вечер, без догоняния за весь день.',
     sources: { checkins: 5, habits: 3, themes: 1 },
     disclaimer: MOCK_DISCLAIMER,
   }
@@ -417,7 +429,7 @@ export async function proMockRequest(path, options = {}) {
       if (Date.now() < pendingGeneration.report) {
         return { week_start: weekStart, week_end: shiftMskDay(weekStart, 6), status: 'not_generated', report: null }
       }
-      state.report = buildMockReport(weekStart)
+      state.report = buildMockReport(weekStart, scenario === 'longtext')
       pendingGeneration.report = 0
       writeState(state)
       return { week_start: weekStart, week_end: state.report.week_end, status: 'ready', report: state.report }
@@ -446,7 +458,7 @@ export async function proMockRequest(path, options = {}) {
     }
     if (scenario === 'conflict') {
       const done = conflictPost('report', () => {
-        state.report = buildMockReport(weekStart)
+        state.report = buildMockReport(weekStart, scenario === 'longtext')
         writeState(state)
         return {
           week_start: weekStart,
@@ -464,7 +476,7 @@ export async function proMockRequest(path, options = {}) {
     }
     const created = state.report == null
     await delay(900)
-    state.report = buildMockReport(weekStart)
+    state.report = buildMockReport(weekStart, scenario === 'longtext')
     writeState(state)
     return { week_start: weekStart, week_end: state.report.week_end, status: 'ready', created, report: state.report }
   }

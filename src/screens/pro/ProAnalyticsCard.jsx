@@ -18,7 +18,6 @@ import './ProAnalyticsCard.css'
  * Кольцо показывает готовность РАЗБОРА (не выполнение плана) по данным
  * существующего контракта — GET /api/pro/report:
  *   not_generated / consent_required — пустое кольцо, «Подведи итоги недели»;
- *   generation_in_progress           — индикатор загрузки, «Собираем разбор»;
  *   ready                            — кольцо целиком в акценте, «Разбор готов»;
  *   отказ доступа (402/404)          — нейтральное кольцо без ложного «разбора нет»;
  *   ошибка запроса                   — нейтральное кольцо и повтор загрузки.
@@ -30,17 +29,17 @@ import './ProAnalyticsCard.css'
  * профиля перемонтирует карточку (key по профилю в Analytics) — чужой разбор
  * показать нельзя.
  *
- * Ограничение контракта: GET /api/pro/report не сообщает состояние сборки —
- * generation_in_progress приходит только кодом ошибки POST 409. Поэтому из
- * аналитики состояние «Собираем разбор» недостижимо, пока в GET-ответе нет
- * признака сборки; новый endpoint для этого не выдумывается, а сообщается
- * как блокер (backend-контракт).
+ * Состояние сборки карточка статусом GET не трактует: GET /api/pro/report его
+ * не сообщает — generation_in_progress приходит только кодом ошибки POST 409,
+ * а разбирает его экран разбора ограниченным опросом GET
+ * (`src/lib/proGenerationPolling.js`). Это задокументированное ограничение
+ * backend-контракта: пока в GET-ответе нет признака сборки, «идёт сборка» из
+ * аналитики недостижимо, и новый endpoint для этого не выдумывается.
  */
 
 const RING_COPY = {
   loading: { title: 'Разбор недели', hint: 'Проверяем готовность разбора' },
   not_generated: { title: 'Подведи итоги недели', hint: 'Разбор соберётся из записей недели' },
-  generating: { title: 'Собираем разбор', hint: 'Обычно это занимает до минуты' },
   ready: { title: 'Разбор готов', hint: 'Посмотри, что получилось за неделю' },
   blocked: { title: 'Разбор недели', hint: 'Открой, чтобы узнать подробнее' },
   error: { title: 'Не удалось загрузить', hint: 'Проверь связь и повтори загрузку' },
@@ -49,7 +48,6 @@ const RING_COPY = {
 /* Состояние данных → состояние кольца. Незнакомый статус — не готовность. */
 function ringState(status) {
   if (status === 'ready') return 'ready'
-  if (status === 'generation_in_progress') return 'generating'
   if (status === 'not_generated' || status === 'consent_required') return 'not_generated'
   return 'error'
 }
@@ -133,9 +131,7 @@ export default function ProAnalyticsCard({ onOpen, refreshToken = 0 }) {
         <span
           className="mx-progress-practices__empty-ring mx-pro-analytics-card__ring"
           aria-hidden="true"
-        >
-          {state === 'generating' && <span className="mx-pro-analytics-card__spinner" />}
-        </span>
+        ></span>
         <span className="mx-progress-practices__empty-text">
           <span className="mx-progress-practices__empty-dot" aria-hidden="true" />
           <span className="mx-progress-practices__empty-title" data-testid="pro-card-title">
