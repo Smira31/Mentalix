@@ -384,6 +384,28 @@ function assertFitsViewport(geometry, label) {
   )
 }
 
+/*
+ * setViewportSize меняет окно сразу, а поверхность <Screen> пересчитывает
+ * высоту от visualViewport через ре-рендер подписки на resize. Замер,
+ * сделанный сразу после resize, ловит прошлую геометрию (оболочка 852 px в
+ * окне 640 px) и падает по футеру, хотя экран помещается целиком.
+ * Ждём событиями, пока оболочка совпадёт с новым окном, — повторяемое
+ * ожидание корректной геометрии вместо раннего замера и без фиксированного sleep.
+ */
+async function waitForSurfaceSettled(page) {
+  await page.waitForFunction(() => {
+    const shell = document.querySelector('[data-testid="mx-screen-shell"]')
+    if (!shell) return false
+    const rect = shell.getBoundingClientRect()
+    const near = (actual, expected) => Math.abs(actual - expected) <= 1
+    return (
+      near(rect.width, window.innerWidth) &&
+      near(rect.height, window.innerHeight) &&
+      near(rect.bottom, window.innerHeight)
+    )
+  })
+}
+
 test('журнал: «Запись сохранена» — три действия, переходы и отсутствие дублей', async ({ page }) => {
   await page.goto('/?demo=1&tab=practices')
 
@@ -414,9 +436,11 @@ test('журнал: «Запись сохранена» — три действ�
   // ── Геометрия: 393×852 и 360×640 ──
   assertFitsViewport(await measureSavedFooter(page), '393×852')
   await page.setViewportSize({ width: 360, height: 640 })
+  await waitForSurfaceSettled(page)
   await expect(page.getByTestId('dj-today')).toBeVisible()
   assertFitsViewport(await measureSavedFooter(page), '360×640')
   await page.setViewportSize({ width: 393, height: 852 })
+  await waitForSurfaceSettled(page)
   await expect(page.getByTestId('dj-today')).toBeVisible()
 
   // ── «Перечитать» → «Вспомни, куда идёшь» → назад ──
