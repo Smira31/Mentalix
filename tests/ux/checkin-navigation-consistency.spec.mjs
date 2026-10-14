@@ -357,4 +357,62 @@ test.describe('Check-in navigation consistency (UX audit pack 1)', () => {
 
     await context.close()
   })
+
+  test('evening: успешное сохранение — крестик и отложенная запись не создают черновик заново', async ({
+    browser,
+    baseURL,
+  }) => {
+    const fixtures = buildFixtureRouter()
+    const { context, page } = await openPage(browser, baseURL, fixtures, 19)
+
+    await openDayCard(page, 'evening')
+    await goToEveningLesson(page)
+
+    const input = page.locator('[data-testid="checkin-text-input"]')
+    await input.fill('Фактический результат')
+    await page.locator('[data-testid="checkin-next"]').click()
+    await expect(input).toBeVisible()
+    await input.fill('Что было трудно')
+    await page.locator('[data-testid="checkin-next"]').click()
+    await expect(input).toBeVisible()
+    await input.fill('Вывод дня')
+    // Завершаем сразу: отложенная запись (500 мс) ещё в очереди.
+    await page.locator('[data-testid="checkin-next"]').click()
+
+    await expect(page.getByRole('heading', { name: 'Ты завершил разбор дня.' })).toBeVisible()
+    expect(fixtures.checkinPosts).toBe(1)
+
+    // Крестик на экране завершения: черновик не должен появиться.
+    await closeCheckin(page)
+    await expect(page.locator('[data-testid="today-card-evening"]')).toBeVisible()
+    await expectStorageStays(page, eveningDraftKey(), null)
+
+    await context.close()
+  })
+
+  test('evening: сбой API сохраняет текст урока в черновике', async ({ browser, baseURL }) => {
+    const fixtures = buildFixtureRouter({ failFirstCheckin: true })
+    const { context, page } = await openPage(browser, baseURL, fixtures, 19)
+
+    await openDayCard(page, 'evening')
+    await goToEveningLesson(page)
+
+    const input = page.locator('[data-testid="checkin-text-input"]')
+    await input.fill('Фактический результат')
+    await page.locator('[data-testid="checkin-next"]').click()
+    await expect(input).toBeVisible()
+    await input.fill('Что было трудно')
+    await page.locator('[data-testid="checkin-next"]').click()
+    await expect(input).toBeVisible()
+    await input.fill('Вывод дня')
+    await page.locator('[data-testid="checkin-next"]').click()
+
+    await expect(page.getByText('Не получилось сохранить — проверь связь')).toBeVisible()
+    expect(fixtures.checkinPosts).toBe(1)
+
+    // Сбой API не теряет текст: он остаётся на устройстве.
+    await expect.poll(() => readStorage(page, eveningDraftKey())).not.toBeNull()
+
+    await context.close()
+  })
 })

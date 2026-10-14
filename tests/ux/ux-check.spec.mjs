@@ -601,8 +601,9 @@ test('локальный UX smoke по основному маршруту', asy
       runtimeErrors,
       results,
       check: async () => {
-        await assertClickable(page.getByTestId('back-button'))
-        await expect(page.getByTestId('back-button')).toHaveCount(1)
+        // Первый шаг: «Назад» скрыта (нет предыдущего шага), выход — крестик.
+        await expect(page.getByTestId('back-button')).toHaveCount(0)
+        await assertClickable(page.getByTestId('checkin-close'))
         await expect(page.getByText(/‹\s*Назад|К каталогу/)).toHaveCount(0)
         await expect(page.getByRole('heading', { name: 'Как ты сейчас?' })).toBeVisible()
       },
@@ -674,7 +675,9 @@ test('локальный UX smoke по основному маршруту', asy
     await expect(page.getByRole('heading', { name: 'Как ты спал?' })).toBeVisible()
     await checkinBackButton.click()
     await expect(page.getByRole('heading', { name: 'Как ты сейчас?' })).toBeVisible()
-    await checkinBackButton.click()
+    // На первом шаге «Назад» скрыта — выходим крестиком.
+    await expect(checkinBackButton).toHaveCount(0)
+    await page.getByTestId('checkin-close').click()
 
     const draftDialog = page.locator(
       '[role="dialog"][aria-labelledby="checkin-draft-dialog-title"]'

@@ -24,6 +24,13 @@ const SCREEN_X_TOLERANCE_PT = 1
 
 const IPHONE_15_PRO_VIEWPORT = { width: 393, height: 852 }
 
+/** Сегодняшний день в заданный локальный час (даты — только относительно текущего дня). */
+function todayAt(hour) {
+  const date = new Date()
+  date.setHours(hour, 0, 0, 0)
+  return date
+}
+
 // Подсказки на «Сегодня» видны по одной: сначала о серии, после её
 // закрытия — о карточках. Обе области нажатия проверяются по очереди.
 const TODAY_TAP_TARGETS = ['series-tooltip-close', 'pinned-practices-manage']
@@ -153,10 +160,15 @@ test.describe('Области нажатия и отступ «Назад»', ()
 
     const checkinContext = await fixtureContext(browser, baseURL)
     const checkin = await checkinContext.newPage()
-    await checkin.clock.setFixedTime('2026-09-23T08:00:00+03:00')
+    await checkin.clock.setFixedTime(todayAt(8))
     await checkin.goto('/')
     await checkin.locator('[data-testid="today-card-morning"]').click()
     await expect(checkin.getByRole('heading', { name: 'Как ты сейчас?' })).toBeVisible()
+    // На первом шаге «Назад» скрыта (выход — крестик): переходим на шаг 1,
+    // где капсула «Назад» появляется, и меряем её отступ.
+    await checkin.locator('[data-testid="checkin-scale-option"][data-level="3"]').click()
+    await checkin.locator('[data-testid="checkin-next"]').click()
+    await expect(checkin.getByRole('heading', { name: 'Как ты спал?' })).toBeVisible()
     await expectBackPillOffset(checkin)
     await checkinContext.close()
   })

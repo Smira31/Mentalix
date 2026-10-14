@@ -301,13 +301,13 @@ test('ошибка сохранения чек-ина: понятное сооб
  * Навигация чек-ина (UX-аудит, пакет 1): крестик выхода повторяет
  * геометрию круглой навигации DailyJournal (токен --mx-header-control,
  * 43×43, круглая, стекло), а «Далее» — общий размер круглой кнопки
- * 45×45. Клавиатурный focus-visible остаётся доступным. Снимки — 393×852
- * и 360×640; геометрия дополнительно проверяется на 430×932.
+ * 45×45. Клавиатурный focus-visible остаётся доступным. Снимки и геометрия —
+ * 393×852, 360×640 и 430×932.
  */
 const NAV_VIEWPORTS = [
   { name: '393x852', width: 393, height: 852, screenshot: true },
   { name: '360x640', width: 360, height: 640, screenshot: true },
-  { name: '430x932', width: 430, height: 932, screenshot: false },
+  { name: '430x932', width: 430, height: 932, screenshot: true },
 ]
 
 const NAV_EVIDENCE_DIR = 'qa-evidence/checkin-navigation-ux'

@@ -1600,10 +1600,9 @@ function CheckInCore({
         className={`${FULLSCREEN_SHELL_CLASS} ${previewDemoMode ? 'mx-checkin-demo' : ''}`}
         style={viewportStyle}
       >
-        <div
-          className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`}
-        >
-          <BackButton onClick={handleBack} />
+        <div className={CHECKIN_HEADER_CLASS}>
+          <span aria-hidden="true" />
+          <CheckInCloseButton onClick={handleClose} />
         </div>
 
         <div className={FULLSCREEN_COMPLETION_CLASS}>
