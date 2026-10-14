@@ -655,9 +655,10 @@ test('локальный UX smoke по основному маршруту', asy
         await expect(page.getByRole('button', { name: 'Жирный текст' })).toHaveCount(0)
         await expect(page.getByRole('button', { name: 'Дополнительные действия' })).toHaveCount(0)
         await expect(page.locator('[data-testid="checkin-skip"]')).toHaveCount(0)
+        // Последний шаг утра завершается галочкой с подписью «Завершить».
         await expect(page.locator('[data-testid="checkin-complete"]')).toHaveAttribute(
           'aria-label',
-          'Далее'
+          'Завершить'
         )
         await assertClickable(page.locator('[data-testid="checkin-complete"]'))
       },

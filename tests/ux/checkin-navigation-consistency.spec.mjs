@@ -261,6 +261,37 @@ test.describe('Check-in navigation consistency (UX audit pack 1)', () => {
     await context.close()
   })
 
+  test('evening: полностью стёртый урок не восстанавливается из старого черновика', async ({
+    browser,
+    baseURL,
+  }) => {
+    const fixtures = buildFixtureRouter()
+    const { context, page } = await openPage(browser, baseURL, fixtures, 19)
+
+    await openDayCard(page, 'evening')
+    await goToEveningLesson(page)
+
+    const input = page.locator('[data-testid="checkin-text-input"]')
+    await input.fill('Текст, который сотрут')
+    // Дебаунс черновика — 500 мс: сначала он записывает текст.
+    await expect.poll(() => readStorage(page, eveningDraftKey())).not.toBeNull()
+
+    // Полностью стираем урок — старый черновик не должен остаться.
+    await input.fill('')
+    await expectStorageStays(page, eveningDraftKey(), null)
+
+    // Пустой черновик: крестик закрывает без подтверждения.
+    await closeCheckin(page)
+    await expect(page.locator('[data-testid="today-card-evening"]')).toBeVisible()
+
+    // Повторный вход: поле пустое, удалённый текст не воскрес.
+    await openDayCard(page, 'evening')
+    await goToEveningLesson(page)
+    await expect(page.locator('[data-testid="checkin-text-input"]')).toBeEmpty()
+
+    await context.close()
+  })
+
   test('morning: успешное сохранение — крестик и отложенная запись не создают черновик заново', async ({
     browser,
     baseURL,

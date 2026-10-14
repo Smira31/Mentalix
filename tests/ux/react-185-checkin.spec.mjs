@@ -93,7 +93,7 @@ async function newPage(browser) {
     localStorage.setItem('mx-app-lock-enabled', '0')
   }, TEST_USER)
   const page = await context.newPage()
-  await page.clock.setFixedTime('2026-09-26T08:00:00+03:00')
+  await page.clock.setFixedTime(todayAt(8))
   await mockApi(page)
   return { page, context }
 }
