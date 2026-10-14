@@ -777,11 +777,12 @@
 }
 
 /* Крестик выхода — отличим от «Назад» (шеврон).
-   Та же форма, что у mx-nested-screen-back: 43×43, круглая, стекло. */
+   Та же форма и токен размера, что у mx-nested-screen-back:
+   --mx-header-control (43 px), круглая, стекло. */
 .mx-checkin-close-btn {
   display: grid;
-  width: 43px;
-  height: 43px;
+  width: var(--mx-header-control);
+  height: var(--mx-header-control);
   padding: 0;
   place-items: center;
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -796,8 +797,10 @@
   transform: scale(0.95);
 }
 
-.mx-checkin-close-btn:focus,
-.mx-checkin-close-btn:focus-visible {
+/* Клавиатурный фокус остаётся доступным: золотое кольцо рисует общий
+   button:focus-visible из index.css, мы его не гасим. Убираем только
+   фокус-рамку от клика мышью/тапом. */
+.mx-checkin-close-btn:focus:not(:focus-visible) {
   outline: none;
 }
 

@@ -327,11 +327,15 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
   }
 
   // Debounced-сохранение утренней мысли в черновик — текст не теряется
-  // при выходе крестиком или закрытии вкладки.
+  // при выходе крестиком или закрытии вкладки. Полностью стёртый текст
+  // убирает и старый черновик: возврат не воскрешает удалённое.
   useEffect(() => {
-    if (!note.trim()) return undefined
     const timeoutId = window.setTimeout(() => {
-      saveCheckinDraft({ userId: user.id, draft: { mode: 'brief', brief: note } })
+      if (note.trim()) {
+        saveCheckinDraft({ userId: user.id, draft: { mode: 'brief', brief: note } })
+      } else {
+        clearCheckinDraft({ userId: user.id })
+      }
     }, 500)
     return () => window.clearTimeout(timeoutId)
   }, [note, user.id])
@@ -340,6 +344,8 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
     platform.haptic('light')
     if (note.trim()) {
       saveCheckinDraft({ userId: user.id, draft: { mode: 'brief', brief: note } })
+    } else {
+      clearCheckinDraft({ userId: user.id })
     }
     onDone()
   }
@@ -376,7 +382,10 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
       )
       setSavedMorningId(savedMorning?.id ?? null)
       onCompleted?.()
+      // Сохранено — черновик убран, а пустая заметка не даёт ни крестику,
+      // ни отложенному таймеру воссоздать его после успеха.
       clearCheckinDraft({ userId: user.id })
+      setNote('')
       platform.haptic('success')
       /*
        * Canonical streak (GET /api/streak) — primary source числа серии
@@ -412,6 +421,11 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
       setStep(doneStep)
     } catch (saveError) {
       console.error(saveError)
+      // Сбой API не теряет текст: черновик остаётся на устройстве,
+      // и повторный вход восстановит написанное.
+      if (note.trim()) {
+        saveCheckinDraft({ userId: user.id, draft: { mode: 'brief', brief: note } })
+      }
       setError('Не удалось сохранить. Попробуй ещё раз.')
     } finally {
       setSaving(false)
@@ -1014,11 +1028,14 @@ function CheckInCore({
       return undefined
     }
 
-    if (!draftHasContent(morningDraft)) {
-      return undefined
-    }
-
     const timeoutId = window.setTimeout(() => {
+      // Пустой черновик убираем: стёртый текст не возвращается при входе.
+      if (!draftHasContent(morningDraft)) {
+        clearCheckinDraft({ userId: user.id })
+        setDraftStatus('idle')
+        return
+      }
+
       const saved = saveCheckinDraft({
         userId: user.id,
         draft: morningDraft,
@@ -1040,13 +1057,18 @@ function CheckInCore({
     }))
   }
 
-  // Debounced-сохранение черновика вечернего разбора (#3)
+  // Debounced-сохранение черновика вечернего разбора (#3).
+  // Полностью очищенные уроки убирают и старый черновик — возврат
+  // не воскрешает удалённое; пустой черновик не пишется вовсе.
   useEffect(() => {
     if (!isEvening) return undefined
-    if (!eveningDraftHasContent(lessons)) return undefined
 
     const timeoutId = window.setTimeout(() => {
-      saveEveningDraft({ userId: user.id, lessons })
+      if (eveningDraftHasContent(lessons)) {
+        saveEveningDraft({ userId: user.id, lessons })
+      } else {
+        clearEveningDraft({ userId: user.id })
+      }
     }, 500)
 
     return () => window.clearTimeout(timeoutId)
@@ -1148,8 +1170,10 @@ function CheckInCore({
         })
         setDraftStatus('idle')
       } else {
-        // Вечерний разбор сохранён — очищаем черновик (#3)
+        // Вечерний разбор сохранён — очищаем черновик и уроки: ни крестик,
+        // ни отложенный таймер не воссоздадут черновик после успеха (#3).
         clearEveningDraft({ userId: user.id })
+        setLessons({})
       }
 
       platform.haptic('success')
@@ -1434,9 +1458,14 @@ function CheckInCore({
   function handleClose() {
     platform.haptic('light')
     if (eveningDraftHasContent(lessons)) {
+      // Дебаунс мог ещё не сработать — пишем черновик до подтверждения,
+      // чтобы текст гарантированно пережил выход и вернулся при входе.
+      saveEveningDraft({ userId: user.id, lessons })
       setCloseConfirmationOpen(true)
       return
     }
+    // Пустые уроки: старый черновик не должен вернуться после выхода.
+    clearEveningDraft({ userId: user.id })
     onDone()
   }
 
