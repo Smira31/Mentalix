@@ -122,7 +122,9 @@ test('morning flow uses the shared Telegram BackButton; streak screen is StreakC
     checkinSource.indexOf('function MorningCheckInFlow'),
     checkinSource.indexOf('// ── Чек-ин и вечерний')
   )
-  assert.match(morningFlow, /<BackButton onClick=\{handleBack\} label="Сегодня" \/>/)
+  // Навигация шага: шеврон «назад» (без подписи) + отдельный крестик выхода.
+  assert.match(morningFlow, /<BackButton onClick=\{handleBack\} \/>/)
+  assert.match(morningFlow, /<CheckInCloseButton onClick=\{handleClose\} \/>/)
   // Росток заменён экраном серии с лепестками (один компонент, без второго экрана).
   assert.doesNotMatch(checkinSource, /function StreakFlower\(\)/)
   assert.match(morningFlow, /<StreakCelebration/)
@@ -188,9 +190,11 @@ test('scale steps never auto-advance — «Далее» is the only way forward'
     checkinSource.indexOf('function MorningCheckInFlow'),
     checkinSource.indexOf('// ── Чек-ин и вечерний')
   )
+  // Регион ограничен самим обработчиком pick: дебаунс черновика ниже —
+  // не навигация, и его таймер шаг не двигает.
   const morningPick = morningFlow.slice(
     morningFlow.indexOf('function pick('),
-    morningFlow.indexOf('async function finish()')
+    morningFlow.indexOf('// Debounced-сохранение')
   )
   assert.doesNotMatch(morningPick, /setStep/, 'утренний pick не должен двигать шаг')
   assert.doesNotMatch(morningPick, /setTimeout/)

@@ -57,7 +57,9 @@ function buildFixtureRouter() {
       if (pathname === '/api/rituals') return route.fulfill(jsonResponse([]))
       if (pathname === '/api/ascezas') return route.fulfill(jsonResponse([]))
       if (pathname === '/api/quotes/today') return route.fulfill(jsonResponse({ text: 'Fixture.' }))
-      if (pathname === '/api/profile/settings') return route.fulfill(jsonResponse({ review_hour: 24 }))
+      // review_hour 0 — вечерняя карточка открыта в любое время: сценарий
+      // проверяет навигацию чек-ина, а не гейт времени разбора.
+      if (pathname === '/api/profile/settings') return route.fulfill(jsonResponse({ review_hour: 0 }))
       if (pathname === '/api/analytics/pulse') return route.fulfill(jsonResponse({ active_today: 0 }))
       if (pathname === '/api/analytics')
         return route.fulfill(jsonResponse({ period_days: 14, rituals: [], ascezas: [], insights: [], daily_activity: [] }))
@@ -114,10 +116,12 @@ test.describe('Check-in navigation consistency (UX audit pack 1)', () => {
     await expect(page.locator('[data-testid="back-button"]')).toHaveCount(0)
 
     // ── Дойти до текстового шага, ввести текст, выйти крестиком ──
+    // Настроение уже выбрано на шаге 0 — сразу вперёд, затем оставшиеся шкалы.
+    await page.locator('[data-testid="checkin-next"]').click()
     await scaleStep(page, 3)
     await scaleStep(page, 3)
     await scaleStep(page, 3)
-    // Шаг фокуса — пропускаем (checkin-next всегда активен)
+    // Шаг фокуса дня — пропускаем (checkin-next всегда активен)
     await page.locator('[data-testid="checkin-next"]').click()
 
     // Текстовый шаг: последний — галочка, не стрелка
@@ -168,7 +172,12 @@ test.describe('Check-in navigation consistency (UX audit pack 1)', () => {
     await expect(page.getByTestId('checkin-close')).toBeVisible()
     await expect(page.locator('[data-testid="back-button"]')).toHaveCount(0)
 
-    // Шаг эмоций — есть предыдущий шаг (шкала), BackButton появляется после выбора
+    // Вечер без готовой утренней записи начинается со шкал — проходим их
+    // до шага эмоций (шаг эмоций идёт третьим).
+    await scaleStep(page, 3)
+    await scaleStep(page, 3)
+
+    // Шаг эмоций — есть предыдущий шаг (шкала), BackButton виден.
     await page.locator('[data-testid="checkin-emotion-pill"][data-emotion="ровно"]').click()
     await page.locator('[data-testid="checkin-next"]').click()
 
