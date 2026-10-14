@@ -18,6 +18,17 @@ test('mock недоступен в production-сборке', () => {
   assert.match(mockSource, /import\.meta\.env\?\.DEV === true \|\| import\.meta\.env\?\.VITE_LOCAL_PREVIEW === 'true'/)
 })
 
+test('сценарий тестового окружения задаётся VITE_PRO_MOCK, URL-параметр приоритетен', () => {
+  assert.match(mockSource, /import\.meta\.env\?\.VITE_PRO_MOCK/)
+  // Параметр URL проверяется первым и выигрывает у переменной окружения.
+  assert.match(
+    mockSource,
+    /const fromUrl = new URLSearchParams\(window\.location\.search\)\.get\('proMock'\)\s*if \(fromUrl != null\) return fromUrl/
+  )
+  // Пустая переменная mock не включает.
+  assert.match(mockSource, /typeof fromEnv === 'string' && fromEnv !== '' \? fromEnv : null/)
+})
+
 test('сценарии покрывают конфликт генерации, версии и пересборки', () => {
   assert.match(
     mockSource,

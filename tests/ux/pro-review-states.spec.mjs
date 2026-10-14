@@ -74,7 +74,7 @@ function assertNoOverflow(overflow, label) {
 
 /* ── Прохождение экранов Pro ── */
 
-/** «Сегодня» → настройки → «Разбор недели». Вход тот же, что у пользователя. */
+/** «Прогресс» → «Аналитика» → карточка «Разбор и план недели». Вход тот же, что у пользователя. */
 async function openPro(page, scenario) {
   /*
    * Состояние mock живёт в localStorage: согласие, собранный разбор и план
@@ -90,9 +90,10 @@ async function openPro(page, scenario) {
   }, MOCK_STATE_KEY)
 
   await page.goto(`/?demo=1&frame=0&proMock=${scenario}`)
-  await expect(page.getByTestId('today-profile-button')).toBeVisible()
-  await page.getByTestId('today-profile-button').click()
-  await page.getByTestId('profile-row-pro').click()
+  await expect(page.getByRole('button', { name: 'Прогресс' })).toBeVisible({ timeout: 15_000 })
+  await page.getByRole('button', { name: 'Прогресс' }).click()
+  await expect(page.getByTestId('progress-pro-card')).toBeVisible()
+  await page.getByTestId('progress-pro-card').click()
   await expect(page.locator('.mx-page-title')).toContainText('мой разбор.')
 }
 

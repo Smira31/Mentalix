@@ -4,8 +4,13 @@ import { mskDayKey, shiftMskDay } from './mskDate.js'
 /*
  * Dev-only mock-режим Mentalix Pro (PRO-002b/c) — для проверки экранов без
  * рабочего backend. Недоступен в production: включается только при dev-сборке
- * (import.meta.env.DEV или VITE_LOCAL_PREVIEW) и только явным параметром URL
- * `?proMock=…`; в production-сборке оба условия ложны, код неактивен.
+ * (import.meta.env.DEV или VITE_LOCAL_PREVIEW); в production-сборке оба условия
+ * ложны, код неактивен.
+ *
+ * Сценарий задаётся параметром URL `?proMock=…`; в тестовом окружении он может
+ * быть задан переменной `VITE_PRO_MOCK` (docker-compose.base44.yml): оболочка
+ * превью подменяет адрес своими служебными параметрами, поэтому `?proMock=…`
+ * из выданной ссылки до приложения не доходит. URL-параметр приоритетен.
  *
  * Сценарии `proMock`:
  *   ready             (или 1) — обычный путь: согласие → сборка → готово
@@ -56,11 +61,23 @@ export function isProMockMode() {
   const devRuntime =
     import.meta.env?.DEV === true || import.meta.env?.VITE_LOCAL_PREVIEW === 'true'
   if (!devRuntime) return false
-  return new URLSearchParams(window.location.search).get('proMock') != null
+  return mockScenarioValue() != null
+}
+
+/*
+ * Значение сценария: параметр URL приоритетен, иначе — переменная тестового
+ * окружения. Отсутствие параметра и пустая переменная означают «mock выключен».
+ */
+function mockScenarioValue() {
+  const fromUrl = new URLSearchParams(window.location.search).get('proMock')
+  if (fromUrl != null) return fromUrl
+
+  const fromEnv = import.meta.env?.VITE_PRO_MOCK
+  return typeof fromEnv === 'string' && fromEnv !== '' ? fromEnv : null
 }
 
 function mockScenario() {
-  const value = new URLSearchParams(window.location.search).get('proMock')
+  const value = mockScenarioValue()
   return [
     'conflict',
     'version_conflict',

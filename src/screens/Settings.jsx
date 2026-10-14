@@ -30,8 +30,6 @@ import { DEFAULT_REVIEW_HOUR } from '../lib/todayCardState'
 import { pluralize } from '../lib/pluralize'
 import { previewProfileAction } from '../lib/demoMode'
 import SubscriptionManager from './SubscriptionManager'
-import { PRO_REVIEW_PLAN_ENABLED } from '../lib/proFlag'
-import ProScreen from './pro/ProScreen'
 import DonateScreen from './DonateScreen'
 import LinkWebAccount from './LinkWebAccount'
 import AppLock from './AppLock'
@@ -511,7 +509,7 @@ export default function Settings({
     if (action === 'profile_wtp') return 'wtp-test'
     if (action === 'privacy') return 'privacy-notice'
     return null
-  }) // null | 'pro-review-plan' | 'quotes' | 'subscription' | 'donate' | 'link-web' | 'privacy-notice' | 'app-lock-setup' | 'wtp-test'
+  }) // null | 'quotes' | 'subscription' | 'donate' | 'link-web' | 'privacy-notice' | 'app-lock-setup' | 'wtp-test'
   // null — тариф ещё не загружен: «подписка.» показывает скелетон.
   const [tier, setTier] = useState(null)
   // Под-экран профиля: null — корень «твой профиль.».
@@ -558,10 +556,6 @@ export default function Settings({
         setTier(current => current ?? 'base')
       })
   }, [user, screen])
-
-  if (screen === 'pro-review-plan') {
-    return <ProScreen user={user} onBack={() => setScreen(null)} />
-  }
 
   if (screen === 'subscription') {
     return <SubscriptionManager user={user} tier={tier} onBack={() => setScreen(null)} />
@@ -1174,14 +1168,6 @@ export default function Settings({
               value={tierLabel}
               onClick={() => setScreen('subscription')}
             />
-            {PRO_REVIEW_PLAN_ENABLED && !guest && user && (
-              <ProfileRow
-                title="Разбор недели"
-                subtitle="AI-разбор, план и прогресс — для Pro"
-                onClick={() => setScreen('pro-review-plan')}
-                testId="profile-row-pro"
-              />
-            )}
           </ProfileCard>
         </ProfileGroup>
 

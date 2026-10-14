@@ -32,6 +32,10 @@ import { ProgressGlassMenu, ProgressGlassMenuItem } from '../components/Progress
 import MilestoneProgress from './progress/MilestoneProgress'
 import { countActiveDays } from './progress/weeklySummary'
 import { Eye, SlidersHorizontal } from 'lucide-react'
+import { PRO_REVIEW_PLAN_ENABLED } from '../lib/proFlag'
+import { isGuestUser } from '../lib/guestAuth'
+import ProAnalyticsCard from './pro/ProAnalyticsCard'
+import ProScreen from './pro/ProScreen'
 
 const CALENDAR_WEEKDAYS = ['П', 'В', 'С', 'Ч', 'П', 'С', 'В']
 
@@ -768,6 +772,11 @@ export default function Analytics({
   const [view, setView] = useState('analytics') // 'analytics' | 'calendar' | 'customize'
   const [cardPreferences, setCardPreferences] = useState(readCardPreferences)
   const [openCardMenu, setOpenCardMenu] = useState(null)
+  // Вход в Mentalix Pro открывается вложенным <Screen> поверх аналитики:
+  // состояние вкладки, фильтров и прокрутки не теряется, «Назад» возвращает
+  // сюда же. Доступ проверяет backend — frontend его не имитирует.
+  const [proOpen, setProOpen] = useState(false)
+  const proAvailable = PRO_REVIEW_PLAN_ENABLED && Boolean(user) && !isGuestUser(user)
 
   useEffect(() => {
     writeCardPreferences(cardPreferences)
@@ -1090,6 +1099,12 @@ export default function Analytics({
               Прогресс несёт веха, отметку — карточка «Как ты сейчас?» выше. */}
           <MilestoneProgress totalDays={totalDays} />
 
+          {/* Одна карточка входа в Pro над графиками. В настройку графиков не
+              входит: порядок, скрытие и фильтры аналитики не затрагивает. */}
+          {activeTab === 'analytics' && proAvailable && (
+            <ProAnalyticsCard onOpen={() => setProOpen(true)} />
+          )}
+
           {cardPreferences.order.filter(
             id => !cardPreferences.hidden.includes(id) && ANALYTICS_CARDS.some(c => c.id === id)
           ).length === 0 ? (
@@ -1172,6 +1187,11 @@ export default function Analytics({
           reloadKey={reloadKey}
         />
       )}
+
+      {/* Pro — вложенный экран поверх аналитики (разбор → план → прогресс).
+          Пока он открыт, аналитика остаётся смонтированной: возврат «Назад»
+          показывает её в прежнем состоянии. */}
+      {proAvailable && proOpen && <ProScreen user={user} onBack={() => setProOpen(false)} />}
     </div>
   )
 }
