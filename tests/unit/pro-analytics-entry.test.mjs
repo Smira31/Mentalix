@@ -33,7 +33,8 @@ const proFlagSource = await readFile(new URL('../../src/lib/proFlag.js', import.
 
 test('карточка входа в Pro живёт в аналитике, над графиками', () => {
   assert.match(analyticsSource, /import ProAnalyticsCard from '\.\/pro\/ProAnalyticsCard'/)
-  assert.match(analyticsSource, /<ProAnalyticsCard onOpen=\{\(\) => setProOpen\(true\)\} \/>/)
+  assert.match(analyticsSource, /<ProAnalyticsCard/)
+  assert.match(analyticsSource, /onOpen=\{\(\) => setProOpen\(true\)\}/)
 
   // Карточка идёт до блока графиков (cardPreferences.order), а не после него.
   const cardIndex = analyticsSource.indexOf('<ProAnalyticsCard')
@@ -46,10 +47,10 @@ test('карточка входа в Pro живёт в аналитике, на�
 test('карточка открывает существующий путь Pro возвратом в аналитику', () => {
   // Один и тот же компонент ProScreen, никакого дублирующего экрана.
   assert.match(analyticsSource, /import ProScreen from '\.\/pro\/ProScreen'/)
-  assert.match(
-    analyticsSource,
-    /proAvailable && proOpen && <ProScreen user=\{user\} onBack=\{\(\) => setProOpen\(false\)\} \/>/
-  )
+  assert.match(analyticsSource, /<ProScreen/)
+  assert.match(analyticsSource, /setProOpen\(false\)/)
+  // Возврат из Pro перечитывает готовность разбора по данным, не по нажатию.
+  assert.match(analyticsSource, /setProRefresh\(value => value \+ 1\)/)
   assert.match(cardSource, /data-testid="progress-pro-card"/)
   assert.match(cardSource, /Разбор и план недели/)
 })
@@ -57,7 +58,7 @@ test('карточка открывает существующий путь Pro 
 test('карточка Pro — та же оболочка и композиция, что у карточек аналитики', () => {
   // Размеры берутся из образца владельца (карточка «Твои практики» и её
   // пустое состояние «кольцо слева, текст справа»), а не задаются заново.
-  assert.match(cardSource, /className="mx-progress-card mx-pro-analytics-card"/)
+  assert.match(cardSource, /mx-progress-card mx-pro-analytics-card/)
   assert.match(cardSource, /mx-progress-card__head/)
   assert.match(cardSource, /mx-progress-card__title/)
   assert.match(cardSource, /mx-progress-card__subtitle/)
@@ -65,11 +66,12 @@ test('карточка Pro — та же оболочка и композици�
   assert.match(cardSource, /mx-progress-practices__empty-title/)
   assert.match(cardSource, /mx-progress-practices__empty-hint/)
 
-  // Значок недели — из общего реестра, без отдельной SVG-системы.
-  assert.match(cardSource, /<CardSystemGlyph kind="week-review" \/>/)
+  // Иллюстрации внутри кольца нет: кольцо показывает готовность разбора.
+  assert.doesNotMatch(cardSource, /CardSystemGlyph/)
 
-  // Вся карточка — одна кнопка: открывается с клавиатуры.
-  assert.match(cardSource, /<button\s+type="button"/)
+  // Вход в разбор — нативная кнопка, открывается с клавиатуры.
+  assert.match(cardSource, /data-testid="pro-card-open"/)
+  assert.match(cardSource, /type="button"/)
   assert.match(cardSource, /onClick=\{onOpen\}/)
 
   // Ни фиктивного процента прогресса, ни неработающего меню «…».

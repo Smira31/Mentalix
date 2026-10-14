@@ -74,8 +74,8 @@ function assertNoOverflow(overflow, label) {
 
 /* ── Прохождение экранов Pro ── */
 
-/** «Прогресс» → «Аналитика» → карточка «Разбор и план недели». Вход тот же, что у пользователя. */
-async function openPro(page, scenario) {
+/** «Прогресс» → «Аналитика» с карточкой «Разбор и план недели» на экране. */
+async function openAnalytics(page, scenario) {
   /*
    * Состояние mock живёт в localStorage: согласие, собранный разбор и план
    * переживают перезагрузку страницы, поэтому каждый сценарий начинается с
@@ -93,7 +93,12 @@ async function openPro(page, scenario) {
   await expect(page.getByRole('button', { name: 'Прогресс' })).toBeVisible({ timeout: 15_000 })
   await page.getByRole('button', { name: 'Прогресс' }).click()
   await expect(page.getByTestId('progress-pro-card')).toBeVisible()
-  await page.getByTestId('progress-pro-card').click()
+}
+
+/** Вход в разбор — тот же, что у пользователя: карточка в аналитике. */
+async function openPro(page, scenario) {
+  await openAnalytics(page, scenario)
+  await page.getByTestId('pro-card-open').click()
   await expect(page.locator('.mx-page-title')).toContainText('мой разбор.')
 }
 
@@ -159,12 +164,26 @@ for (const viewport of VIEWPORTS) {
         label: 'Pro: разбор не собран',
       })
 
-      // 3. Готовый разбор.
+      // 3. Готовый разбор: направление и достижения видны сразу.
       await page.getByTestId('pro-generate-report').click()
+      await expect(page.getByTestId('pro-report-direction')).toBeVisible()
+      await expect(page.getByTestId('pro-report-achievements')).toBeVisible()
+      await expect(page.getByText('Три дня подряд день начинался со стакана воды')).toBeVisible()
       await capture(page, writer, {
         name: '3-report-ready.png',
         marker: '[data-testid="pro-open-plan"]',
         label: 'Pro: разбор недели готов',
+      })
+
+      // 3a. Подробности свёрнуты, но не потеряны: раскрытие показывает текст.
+      const difficulty = 'Вечером было трудно удержать внимание на одном деле'
+      await expect(page.getByText(difficulty)).toBeHidden()
+      await page.getByTestId('pro-details-difficulties').locator('summary').click()
+      await expect(page.getByText(difficulty)).toBeVisible()
+      await capture(page, writer, {
+        name: '3a-report-details.png',
+        marker: '[data-testid="pro-details-difficulties"]',
+        label: 'Pro: подробности разбора раскрыты',
       })
 
       // 4. План ещё не собран.
@@ -242,8 +261,9 @@ for (const viewport of VIEWPORTS) {
 
       // Вкладка «Прогресс» открывается на «Аналитике» — карточка Pro уже на
       // экране; сегмент не нажимаем (на 360×640 его перекрывает переключатель
-      // размера экрана демо-панели).
-      await page.goto('/?demo=1&frame=0')
+      // размера экрана демо-панели). Сценарий mock нужен, чтобы карточка
+      // получила состояние разбора, а не ответ демо-фолбэка.
+      await page.goto('/?demo=1&frame=0&proMock=ready')
       await page.getByRole('button', { name: 'Прогресс' }).click()
       await expect(page.getByTestId('progress-pro-card')).toBeVisible()
       await expect(page.getByTestId('progress-practices')).toBeVisible()
@@ -302,6 +322,73 @@ for (const viewport of VIEWPORTS) {
       console.log(
         `Pro карточка ${viewport.name}: ${measured.pro.width}×${measured.pro.height}, образец ${measured.sample.width}×${measured.sample.height}`
       )
+    })
+
+    /*
+     * Кольцо карточки показывает готовность РАЗБОРА по данным, а не по
+     * нажатию кнопки: до сборки — пустое, после сборки и возврата «Назад» —
+     * заполненное. Процентов сборки в интерфейсе нет, период — по датам.
+     */
+    test('карточка: кольцо готовности разбора по данным', async ({ page }) => {
+      const writer = createEvidenceWriter({ dir: path.join(OUT_DIR, viewport.name) })
+
+      await openAnalytics(page, 'ready')
+      const card = page.getByTestId('progress-pro-card')
+
+      await expect(card).toHaveAttribute('data-state', 'not_generated')
+      await expect(page.getByTestId('pro-card-title')).toHaveText('Подведи итоги недели')
+      await expect(page.getByTestId('pro-card-period')).toContainText('неделя')
+      await expect(page.getByTestId('pro-card-retry')).toHaveCount(0)
+      await capture(page, writer, {
+        name: '0a-pro-card-waiting.png',
+        marker: '[data-testid="progress-pro-card"][data-state="not_generated"]',
+        label: 'Pro: карточка ждёт разбор',
+      })
+
+      // Разбор собирается на своём экране; карточка читает готовность по данным.
+      await page.getByTestId('pro-card-open').click()
+      await expect(page.locator('.mx-page-title')).toContainText('мой разбор.')
+      await buildReport(page)
+      // Дожидаемся готового разбора: карточка читает данные, а не нажатие.
+      await expect(page.getByTestId('pro-open-plan')).toBeVisible()
+      await page.getByTestId('pro-back-button').click()
+      await expect(card).toHaveAttribute('data-state', 'ready')
+      await expect(page.getByTestId('pro-card-title')).toHaveText('Разбор готов')
+      await capture(page, writer, {
+        name: '0b-pro-card-ready.png',
+        marker: '[data-testid="progress-pro-card"][data-state="ready"]',
+        label: 'Pro: карточка с готовым разбором',
+      })
+    })
+
+    /*
+     * Ошибка запроса — не «разбора нет»: нейтральное кольцо, повтор грузит
+     * состояние заново и не запускает генерацию.
+     */
+    test('карточка: ошибка запроса с повтором, без генерации', async ({ page }) => {
+      const writer = createEvidenceWriter({ dir: path.join(OUT_DIR, viewport.name) })
+
+      await openAnalytics(page, 'network')
+      const card = page.getByTestId('progress-pro-card')
+
+      await expect(card).toHaveAttribute('data-state', 'error')
+      await expect(page.getByTestId('pro-card-title')).toHaveText('Не удалось загрузить')
+      await expect(page.getByTestId('pro-card-retry')).toBeVisible()
+      await capture(page, writer, {
+        name: '0c-pro-card-error.png',
+        marker: '[data-testid="progress-pro-card"][data-state="error"]',
+        label: 'Pro: карточка не загрузилась',
+      })
+
+      const before = await page.evaluate(() => window.__mxProMockGets || 0)
+      await page.getByTestId('pro-card-retry').click()
+      await expect(card).toHaveAttribute('data-state', 'error')
+      const after = await page.evaluate(() => window.__mxProMockGets || 0)
+      expect(after, 'повтор карточки заново запрашивает состояние').toBeGreaterThan(before)
+      expect(
+        await page.evaluate(() => window.__mxProMockPosts || 0),
+        'карточка не запускает генерацию'
+      ).toBe(0)
     })
   })
 }

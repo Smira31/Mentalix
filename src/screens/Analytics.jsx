@@ -34,6 +34,7 @@ import { countActiveDays } from './progress/weeklySummary'
 import { Eye, SlidersHorizontal } from 'lucide-react'
 import { PRO_REVIEW_PLAN_ENABLED } from '../lib/proFlag'
 import { isGuestUser } from '../lib/guestAuth'
+import { profileScopeKey } from '../lib/historyProfileScope'
 import ProAnalyticsCard from './pro/ProAnalyticsCard'
 import ProScreen from './pro/ProScreen'
 
@@ -776,6 +777,9 @@ export default function Analytics({
   // состояние вкладки, фильтров и прокрутки не теряется, «Назад» возвращает
   // сюда же. Доступ проверяет backend — frontend его не имитирует.
   const [proOpen, setProOpen] = useState(false)
+  // Возврат из Pro перечитывает готовность разбора: карточка показывает
+  // состояние по данным, а не по факту открытия экрана.
+  const [proRefresh, setProRefresh] = useState(0)
   const proAvailable = PRO_REVIEW_PLAN_ENABLED && Boolean(user) && !isGuestUser(user)
 
   useEffect(() => {
@@ -1102,7 +1106,11 @@ export default function Analytics({
           {/* Одна карточка входа в Pro над графиками. В настройку графиков не
               входит: порядок, скрытие и фильтры аналитики не затрагивает. */}
           {activeTab === 'analytics' && proAvailable && (
-            <ProAnalyticsCard onOpen={() => setProOpen(true)} />
+            <ProAnalyticsCard
+              key={profileScopeKey(user.id)}
+              refreshToken={proRefresh}
+              onOpen={() => setProOpen(true)}
+            />
           )}
 
           {cardPreferences.order.filter(
@@ -1191,7 +1199,15 @@ export default function Analytics({
       {/* Pro — вложенный экран поверх аналитики (разбор → план → прогресс).
           Пока он открыт, аналитика остаётся смонтированной: возврат «Назад»
           показывает её в прежнем состоянии. */}
-      {proAvailable && proOpen && <ProScreen user={user} onBack={() => setProOpen(false)} />}
+      {proAvailable && proOpen && (
+        <ProScreen
+          user={user}
+          onBack={() => {
+            setProOpen(false)
+            setProRefresh(value => value + 1)
+          }}
+        />
+      )}
     </div>
   )
 }

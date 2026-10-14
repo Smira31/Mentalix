@@ -33,7 +33,7 @@ async function openPro(page, scenario) {
   await expect(page.getByRole('button', { name: 'Прогресс' })).toBeVisible({ timeout: 15_000 })
   await page.getByRole('button', { name: 'Прогресс' }).click()
   await expect(page.getByTestId('progress-pro-card')).toBeVisible()
-  await page.getByTestId('progress-pro-card').click()
+  await page.getByTestId('pro-card-open').click()
   await expect(page.locator('.mx-page-title')).toContainText('мой разбор.')
 }
 
@@ -78,7 +78,7 @@ test('сбой сети: состояние ошибки с повтором, б
   await expectNoBrokenNumbers(page, 'сбой сети')
 
   const before = await mockCounters(page)
-  await page.getByRole('button', { name: 'Повторить' }).click()
+  await page.getByTestId('pro-report-retry').click()
   await expect(errorCard).toBeVisible()
 
   const after = await mockCounters(page)
@@ -103,7 +103,7 @@ test('отсутствующие и нераспознанные даты: на�
   await openPro(page, 'nodates')
 
   // Разбор: содержимое есть, дат недели сервер не прислал.
-  await expect(page.getByText('Направление на неделю')).toBeVisible()
+  await expect(page.getByTestId('pro-report-direction')).toContainText('Направление на неделю')
   await expect(page.getByTestId('pro-report-week')).toHaveCount(0)
   await expectNoBrokenNumbers(page, 'разбор без дат')
 

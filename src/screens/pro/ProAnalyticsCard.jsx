@@ -1,63 +1,162 @@
-import CardSystemGlyph from '../../components/CardSystemGlyph'
+import { useCallback, useEffect, useRef, useState } from 'react'
+
+import { api } from '../../lib/api'
+import { proBlockedState, proErrorKey, proStatePayload } from './proApiState'
+import { formatWeekRange, isoDay } from './weekLabel'
 
 import './ProAnalyticsCard.css'
 
 /*
- * Mentalix Pro (PRO-002b/c): вход в разбор недели из аналитики.
+ * Mentalix Pro: карточка входа в разбор недели («Прогресс → Аналитика»).
  *
- * Одна карточка над графиками в разделе «Аналитика» (вкладка «Прогресс»):
- * открывает уже реализованный путь ProScreen — разбор → план → прогресс
- * плана, вложенным <Screen>, без новой вкладки и дублирующего экрана.
- * Прежний вход из профиля убран; подписка, тарифы и согласие остаются в
- * профиле. Карточка не входит в настройку графиков: порядок, скрытие и
- * фильтры аналитики не затрагивает. Доступ (флаг Pro, согласие,
- * ограничения) по-прежнему проверяет backend.
+ * Оболочка и композиция — образец владельца, карточка «Твои практики»:
+ * те же классы `.mx-progress-card` и та же композиция «кольцо слева, текст
+ * справа» (`.mx-progress-practices__empty*`, §5.5 DESIGN_SYSTEM). Своих
+ * отступов, радиусов и типографики карточка не задаёт — они берутся из
+ * классов образца.
  *
- * Геометрия — по образцу владельца, карточке «Твои практики» в этой же
- * аналитике: та же оболочка `.mx-progress-card` и та же композиция
- * «кольцо слева, текст справа» (`.mx-progress-practices__empty*`, §5.5).
- * Размеры здесь не задаются заново: переиспользуются классы образца,
- * поэтому ширина, высота, отступы, скругление и типографика совпадают с
- * ним. Значок недели — из общего реестра `CardSystemGlyph`; фиктивного
- * процента и меню «…» в карточке нет.
+ * Кольцо показывает готовность РАЗБОРА (не выполнение плана) по данным
+ * существующего контракта — GET /api/pro/report:
+ *   not_generated / consent_required — пустое кольцо, «Подведи итоги недели»;
+ *   generation_in_progress           — индикатор загрузки, «Собираем разбор»;
+ *   ready                            — кольцо целиком в акценте, «Разбор готов»;
+ *   отказ доступа (402/404)          — нейтральное кольцо без ложного «разбора нет»;
+ *   ошибка запроса                   — нейтральное кольцо и повтор загрузки.
  *
- * Вся поверхность — одна кнопка: Pro открывается тапом, с клавиатуры —
- * Tab + Enter/пробел (обводка фокуса общая, см. `button:focus-visible`).
+ * Процентов сборки нет: готовность — это состояние данных, а не нажатие
+ * кнопки. Карточка делает только GET; генерация (POST) и включение согласия
+ * остаются экранам Pro. Незнакомый статус не выдаётся ни за «готово», ни за
+ * «разбора нет». Поздние ответы отбрасываются по номеру запроса, а смена
+ * профиля перемонтирует карточку (key по профилю в Analytics) — чужой разбор
+ * показать нельзя.
+ *
+ * Ограничение контракта: GET /api/pro/report не сообщает состояние сборки —
+ * generation_in_progress приходит только кодом ошибки POST 409. Поэтому из
+ * аналитики состояние «Собираем разбор» недостижимо, пока в GET-ответе нет
+ * признака сборки; новый endpoint для этого не выдумывается, а сообщается
+ * как блокер (backend-контракт).
  */
-export default function ProAnalyticsCard({ onOpen }) {
+
+const RING_COPY = {
+  loading: { title: 'Разбор недели', hint: 'Проверяем готовность разбора' },
+  not_generated: { title: 'Подведи итоги недели', hint: 'Разбор соберётся из записей недели' },
+  generating: { title: 'Собираем разбор', hint: 'Обычно это занимает до минуты' },
+  ready: { title: 'Разбор готов', hint: 'Посмотри, что получилось за неделю' },
+  blocked: { title: 'Разбор недели', hint: 'Открой, чтобы узнать подробнее' },
+  error: { title: 'Не удалось загрузить', hint: 'Проверь связь и повтори загрузку' },
+}
+
+/* Состояние данных → состояние кольца. Незнакомый статус — не готовность. */
+function ringState(status) {
+  if (status === 'ready') return 'ready'
+  if (status === 'generation_in_progress') return 'generating'
+  if (status === 'not_generated' || status === 'consent_required') return 'not_generated'
+  return 'error'
+}
+
+/* Диапазон недели — только из двух распознанных ISO-дней разбора. */
+function weekRange(payload) {
+  const start = isoDay(payload.week_start)
+  const end = isoDay(payload.week_end)
+
+  return start && end ? { start, end } : null
+}
+
+export default function ProAnalyticsCard({ onOpen, refreshToken = 0 }) {
+  const [state, setState] = useState('loading')
+  const [week, setWeek] = useState(null)
+  const aliveRef = useRef(true)
+  // Поздний ответ загрузки не затирает новое состояние карточки.
+  const loadSeqRef = useRef(0)
+
+  const load = useCallback(() => {
+    const seq = ++loadSeqRef.current
+    api.pro
+      .getReport()
+      .then(data => {
+        if (!aliveRef.current || seq !== loadSeqRef.current) return
+        const payload = proStatePayload(data)
+        if (!payload) {
+          // Ответ без состояния Pro: данные не доставлены — нейтральное
+          // состояние с повтором, а не «разбора нет».
+          setWeek(null)
+          setState('error')
+          return
+        }
+        setWeek(weekRange(payload))
+        setState(ringState(payload.status))
+      })
+      .catch(error => {
+        if (!aliveRef.current || seq !== loadSeqRef.current) return
+        setWeek(null)
+        setState(proBlockedState(proErrorKey(error)) ? 'blocked' : 'error')
+      })
+  }, [])
+
+  useEffect(() => {
+    aliveRef.current = true
+    load()
+    return () => {
+      aliveRef.current = false
+    }
+  }, [load, refreshToken])
+
+  const copy = RING_COPY[state]
+  // Период — по датам разбора; без них подпись нейтральная, а не «за неделю».
+  const period = week ? formatWeekRange(week.start, week.end) : 'Итоги недели'
+
   return (
-    <button
-      type="button"
-      className="mx-progress-card mx-pro-analytics-card"
+    <article
+      className={`mx-progress-card mx-pro-analytics-card mx-pro-analytics-card--${state}`}
       data-testid="progress-pro-card"
-      aria-label="Разбор и план недели. Взгляни на свою неделю"
-      onClick={onOpen}
+      data-state={state}
     >
       <span className="mx-progress-card__head mx-pro-analytics-card__head">
         <span className="mx-progress-card__title mx-pro-analytics-card__title">
           Разбор и план недели
         </span>
-        <span className="mx-progress-card__subtitle mx-pro-analytics-card__subtitle">
-          За текущую неделю
+        <span
+          className="mx-progress-card__subtitle mx-pro-analytics-card__subtitle"
+          data-testid="pro-card-period"
+        >
+          {period}
         </span>
       </span>
 
-      <span className="mx-progress-practices__empty">
+      <button
+        type="button"
+        className="mx-progress-practices__empty mx-pro-analytics-card__open"
+        data-testid="pro-card-open"
+        aria-label={`Разбор и план недели. ${copy.title}`}
+        onClick={onOpen}
+      >
         <span
           className="mx-progress-practices__empty-ring mx-pro-analytics-card__ring"
           aria-hidden="true"
         >
-          <CardSystemGlyph kind="week-review" />
+          {state === 'generating' && <span className="mx-pro-analytics-card__spinner" />}
         </span>
-
         <span className="mx-progress-practices__empty-text">
           <span className="mx-progress-practices__empty-dot" aria-hidden="true" />
-          <span className="mx-progress-practices__empty-title">Взгляни на свою неделю</span>
-          <span className="mx-progress-practices__empty-hint">
-            Заметь главное в записях и выбери следующий шаг
+          <span className="mx-progress-practices__empty-title" data-testid="pro-card-title">
+            {copy.title}
+          </span>
+          <span className="mx-progress-practices__empty-hint" data-testid="pro-card-hint">
+            {copy.hint}
           </span>
         </span>
-      </span>
-    </button>
+      </button>
+
+      {state === 'error' && (
+        <button
+          type="button"
+          className="mx-pro-analytics-card__retry"
+          data-testid="pro-card-retry"
+          onClick={load}
+        >
+          Повторить загрузку
+        </button>
+      )}
+    </article>
   )
 }
