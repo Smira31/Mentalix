@@ -1,0 +1,49 @@
+/* ── Карточка входа в Pro (аналитика, вкладка «Прогресс») ──
+   Оболочка и композиция — образец владельца, карточка «Твои практики»:
+   `.mx-progress-card` + блок «кольцо слева, текст справа»
+   (`.mx-progress-practices__empty*`, §5.5 DESIGN_SYSTEM). Своих отступов,
+   радиусов и типографики здесь нет — они берутся из классов образца; ниже
+   только то, чего у образца не было: сброс браузерных стилей кнопки,
+   блочные строки шапки и размер значка недели внутри кольца. */
+
+.mx-pro-analytics-card {
+  display: block;
+  width: 100%;
+  border: 0;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  transition: transform 0.15s ease;
+}
+
+.mx-pro-analytics-card:active {
+  transform: scale(0.99);
+}
+
+/* Строки шапки: у образца это div и заголовки, здесь — содержимое кнопки. */
+.mx-pro-analytics-card__head,
+.mx-pro-analytics-card__title,
+.mx-pro-analytics-card__subtitle {
+  display: block;
+}
+
+/* Кольцо образца растягивается на текст; значок недели стоит по центру. */
+.mx-pro-analytics-card__ring {
+  display: grid;
+  place-items: center;
+}
+
+/* Значок недели внутри кольца 90 px (светлое поле кольца — 70 px). */
+.mx-pro-analytics-card__ring .mx-card-system-glyph {
+  width: 40px;
+  height: 40px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-pro-analytics-card {
+    transition: none;
+  }
+}

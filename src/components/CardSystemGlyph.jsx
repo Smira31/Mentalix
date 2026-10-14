@@ -68,6 +68,13 @@ function GlyphShape({ kind }) {
           <circle cx="32" cy="32" r="4" className="mx-card-system-glyph__accent" />
         </>
       )
+    case 'week-review':
+      return (
+        <>
+          <path d="M12 42v6M19 34v14M26 38v10M33 27v21M40 33v15M47 29v19M54 41v7" />
+          <circle cx="33" cy="20" r="3" className="mx-card-system-glyph__accent" />
+        </>
+      )
     case 'path-corridor':
     default:
       return (

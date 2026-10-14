@@ -225,6 +225,84 @@ for (const viewport of VIEWPORTS) {
 
       console.log(`Pro ${viewport.name}:\n${describeFrames(writer)}`)
     })
+
+    /*
+     * Карточка входа в Pro — по образцу владельца, карточке «Твои практики»
+     * в этой же аналитике: та же оболочка `.mx-progress-card` и композиция
+     * «кольцо слева, текст справа». Проверяем не «на глаз», а числами:
+     * ширина, высота, отступы, скругление и размеры заголовка совпадают с
+     * образцом. В демо без данных образец показывает пустое состояние
+     * (185 px) — это предусловие проверяется отдельно, иначе падение
+     * читалось бы как расхождение геометрии вместо изменения данных.
+     */
+    test('карточка входа в Pro совпадает по геометрии с образцом «Твои практики»', async ({
+      page,
+    }) => {
+      const writer = createEvidenceWriter({ dir: path.join(OUT_DIR, viewport.name) })
+
+      // Вкладка «Прогресс» открывается на «Аналитике» — карточка Pro уже на
+      // экране; сегмент не нажимаем (на 360×640 его перекрывает переключатель
+      // размера экрана демо-панели).
+      await page.goto('/?demo=1&frame=0')
+      await page.getByRole('button', { name: 'Прогресс' }).click()
+      await expect(page.getByTestId('progress-pro-card')).toBeVisible()
+      await expect(page.getByTestId('progress-practices')).toBeVisible()
+
+      await expect(
+        page.getByTestId('progress-practices'),
+        'образец в демо — пустое состояние (данных о практиках нет)'
+      ).toContainText('Пока нет данных')
+
+      const measured = await page.evaluate(() => {
+        const read = id => {
+          const el = document.querySelector(`[data-testid="${id}"]`)
+          const rect = el.getBoundingClientRect()
+          const style = getComputedStyle(el)
+          return {
+            width: Math.round(rect.width),
+            height: Math.round(rect.height),
+            padding: style.padding,
+            borderRadius: style.borderRadius,
+            background: style.backgroundColor,
+            titleFont: getComputedStyle(el.querySelector('.mx-progress-card__title')).fontSize,
+            subtitleFont: getComputedStyle(el.querySelector('.mx-progress-card__subtitle'))
+              .fontSize,
+          }
+        }
+
+        return { pro: read('progress-pro-card'), sample: read('progress-practices') }
+      })
+
+      expect(measured.pro.width, 'ширина карточки Pro как у образца').toBe(measured.sample.width)
+      expect(measured.pro.height, 'высота карточки Pro как у образца').toBe(measured.sample.height)
+      expect(measured.pro.padding, 'отступы карточки Pro как у образца').toBe(
+        measured.sample.padding
+      )
+      expect(measured.pro.borderRadius, 'скругление карточки Pro как у образца').toBe(
+        measured.sample.borderRadius
+      )
+      expect(measured.pro.background, 'фон карточки Pro как у образца').toBe(
+        measured.sample.background
+      )
+      expect(measured.pro.titleFont, 'размер заголовка как у образца').toBe(measured.sample.titleFont)
+      expect(measured.pro.subtitleFont, 'размер подписи как у образца').toBe(
+        measured.sample.subtitleFont
+      )
+
+      // Обе карточки в одном кадре — визуальное сравнение рядом.
+      await page.locator('[data-testid="progress-practices"]').scrollIntoViewIfNeeded()
+      await expect(page.getByTestId('progress-pro-card')).toBeVisible()
+      assertNoOverflow(await readOverflow(page), `карточка Pro ${viewport.name}`)
+      await writer.capture(page, {
+        name: '0-pro-analytics-card.png',
+        marker: '[data-testid="progress-pro-card"]',
+        markerLabel: 'Аналитика: карточка Pro рядом с образцом «Твои практики»',
+      })
+
+      console.log(
+        `Pro карточка ${viewport.name}: ${measured.pro.width}×${measured.pro.height}, образец ${measured.sample.width}×${measured.sample.height}`
+      )
+    })
   })
 }
 
