@@ -55,7 +55,6 @@ import {
   clearEveningDraft,
   eveningDraftHasContent,
 } from '../lib/todayDrafts'
-import { toLocalCalendarDate } from '../lib/dateTimezonePolicy'
 import { readCanonicalCurrentStreak, readCanonicalStreakStats } from '../lib/canonicalStreak'
 import { buildStreakDays, shouldCelebrateStreak } from '../lib/streakCelebration'
 import { useStreakBaseline } from '../lib/useStreakBaseline'
