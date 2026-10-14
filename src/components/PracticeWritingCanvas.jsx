@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import './PracticeWritingCanvas.css'
 import './WritingControls.css'
 import { getKeyboardViewportHeight, isTelegramRuntime } from '../lib/visualViewport'
+import { useAutoFocusField } from '../lib/useAutoFocusField'
 
 const DEMO_KEY_ROWS = [
   ['й', 'ц', 'у', 'к', 'е', 'н', 'г', 'ш', 'щ', 'з', 'х'],
@@ -80,17 +81,8 @@ export default function PracticeWritingCanvas({
   const [focused, setFocused] = useState(autoFocus)
   const [demoKeyboard, setDemoKeyboard] = useState(false)
   const metrics = useVisualViewportMetrics()
-  useEffect(() => {
-    if (!autoFocus || !fieldRef.current) return undefined
-
-    const focusField = () => fieldRef.current?.focus({ preventScroll: true })
-    const frame = window.requestAnimationFrame(focusField)
-    const retry = window.setTimeout(focusField, 80)
-    return () => {
-      window.cancelAnimationFrame(frame)
-      window.clearTimeout(retry)
-    }
-  }, [autoFocus])
+  // MXL-KEYBOARD-001: шаг-поле открывает клавиатуру сам.
+  useAutoFocusField(fieldRef, autoFocus ? 'auto' : null)
   const demoPreview = isDemoPreview()
   const telegramVisibleHeight = getKeyboardViewportHeight({
     isTelegram: isTelegramRuntime(),

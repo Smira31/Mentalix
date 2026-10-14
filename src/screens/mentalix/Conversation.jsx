@@ -17,6 +17,7 @@ import {
   FULLSCREEN_SCROLL_CLASS,
 } from '../../lib/fullscreenSurface'
 
+import { useAutoFocusField } from '../../lib/useAutoFocusField'
 import { PERSONAS } from './personas'
 import MessageText from './MessageText'
 import {
@@ -108,6 +109,15 @@ export default function Conversation({
   useEffect(() => {
     sendingRef.current = sending
   }, [sending])
+
+  /*
+   * MXL-KEYBOARD-001: разговор с наставником — экран, основная задача которого
+   * написать сообщение. При входе в разговор поле ввода получает фокус сам
+   * (см. src/lib/useAutoFocusField.js). Ключ активации — persona: фокус ставится
+   * при входе в разговор и при смене собеседника, а не на каждом рендере, и не
+   * возвращается, если человек сам закрыл клавиатуру.
+   */
+  useAutoFocusField(inputRef, persona)
 
   const hasText = Boolean(input.trim())
 

@@ -127,7 +127,8 @@
   border-radius: 999px;
   background: var(--mx-checkin-neutral-gradient);
   color: #a9aaa3;
-  font-size: max(11px, calc(13px * var(--mx-type-scale)));
+  /* MXL-TYPE-READABLE-001: текст кнопок чек-ина — 16 px. */
+  font-size: var(--mx-read-action);
   font-weight: 600;
 }
 .mx-checkin-chips button.is-selected {
@@ -423,6 +424,9 @@
 .mx-demo-checkin__editor [contenteditable] {
   min-height: 300px;
   background: rgb(var(--c-bg)) !important;
+  /* MXL-TYPE-READABLE-001: поле записи чек-ина — 16 px (перекрывает
+     text-[17px] поля JournalTextarea, сохраняя читаемую шкалу). */
+  font-size: var(--mx-read-read);
   /* Внутренний отступ поля: §5.2 его не задаёт — 16 px, как --mx-screen-x. */
   padding: 4px 16px;
 }
@@ -680,7 +684,8 @@
 .mx-demo-checkin__action-bar > button {
   min-height: 54px;
   border-radius: 27px;
-  font-size: calc(16px * var(--mx-type-scale));
+  /* MXL-TYPE-READABLE-001: текст кнопок чек-ина — 16 px. */
+  font-size: var(--mx-read-action);
   font-weight: 700;
 }
 
@@ -911,7 +916,8 @@
   border-radius: var(--mx-radius-pill);
   background: rgb(var(--c-card2));
   color: rgb(var(--c-text));
-  font-size: calc(15px * var(--mx-type-scale));
+  /* MXL-TYPE-READABLE-001: пилюля эмоции — выбор, 16 px (как чипы чек-ина). */
+  font-size: var(--mx-read-action);
   font-weight: 500;
   white-space: nowrap;
   transition:
@@ -930,7 +936,8 @@
   border: 0;
   background: transparent;
   color: rgb(var(--c-gold));
-  font-size: calc(15px * var(--mx-type-scale));
+  /* MXL-TYPE-READABLE-001: тихая ссылка шага эмоций — пояснение, 14 px. */
+  font-size: var(--mx-read-note);
   font-weight: 600;
 }
 
@@ -1053,10 +1060,13 @@
   border: 1.5px solid rgb(var(--c-line));
 }
 
+/* MXL-TYPE-READABLE-001: роли читаемой шкалы чек-ина (вопрос 24, пояснение 14,
+   вторичная подпись шкалы 13). Поверхности — демо-чек-ин и полноэкранный
+   чек-ин; остальные разделы сохраняют общий масштаб --mx-type-scale. */
 .mx-demo-checkin .mx-checkin-question > h1,
 .mx-fullscreen-surface .mx-checkin-question > h1 {
   font-family: 'Onest', sans-serif;
-  font-size: calc(29px * var(--mx-type-scale));
+  font-size: var(--mx-read-ask);
   font-weight: 600;
   letter-spacing: -0.025em;
   line-height: 1.15;
@@ -1066,12 +1076,12 @@
 .mx-fullscreen-surface .mx-checkin-question__hint {
   margin-top: 8px;
   color: rgb(var(--c-muted));
-  font-size: calc(15px * var(--mx-type-scale));
+  font-size: var(--mx-read-note);
 }
 
 .mx-demo-checkin .mx-checkin-scale__label,
 .mx-fullscreen-surface .mx-checkin-scale__label {
-  font-size: max(11px, calc(12px * var(--mx-type-scale)));
+  font-size: var(--mx-read-caption);
   font-weight: 500;
 }
 
@@ -1136,8 +1146,9 @@
 
 .mx-demo-checkin .mx-demo-checkin__focus-grid button span {
   margin: 0;
-  /* Подпись ≈ 17 pt / 500, text-muted ≈ #8A8A8A */
-  font-size: calc(17px * var(--mx-type-scale));
+  /* Подпись плитки фокуса — та же роль, что у чипов выбора: текст
+     действия. MXL-TYPE-READABLE-001: 16 px без повторного масштабирования. */
+  font-size: var(--mx-read-action);
   font-weight: 500;
   color: rgb(var(--c-muted));
 }
@@ -1225,7 +1236,9 @@
 /* Текстовые вопросы разбора: заголовок 24/700, подсказка 13 muted
    (правило h2 с clamp(…36px) выше перебивало inline-типографику). */
 .mx-checkin-question--evening-card > h2 {
-  font-size: calc(24px * var(--mx-type-scale));
+  /* MXL-TYPE-READABLE-001: вопрос вечернего разбора — роль вопроса, 24 px
+     (замысел «24/700» из комментария; множитель 0.86 давал 20.64). */
+  font-size: var(--mx-read-ask);
   font-weight: 700;
   line-height: 1.2;
 }
@@ -1234,21 +1247,25 @@
    Базовое .mx-checkin-question > h2 с clamp(…36px) перебивает inline-класс
    и множит заголовок в 3 строки — это правило выше по специфичности. */
 .mx-checkin-question--emotion > h2 {
-  font-size: calc(24px * var(--mx-type-scale));
+  /* MXL-TYPE-READABLE-001: вопрос шага эмоций — роль вопроса, 24 px. */
+  font-size: var(--mx-read-ask);
   font-weight: 700;
   line-height: 1.2;
   text-align: center;
 }
 
 .mx-checkin-question--evening-card .mx-checkin-question__hint {
-  font-size: max(11px, calc(13px * var(--mx-type-scale)));
+  /* MXL-TYPE-READABLE-001: подсказка вечернего вопроса — пояснение, 14 px. */
+  font-size: var(--mx-read-note);
   color: rgb(var(--c-muted));
 }
 
 /* Поле разбора — 17/1.5 */
 .mx-checkin-evening-editor,
 .mx-checkin-evening-editor [contenteditable] {
-  font-size: calc(17px * var(--mx-type-scale));
+  /* MXL-TYPE-READABLE-001: поле вечернего разбора — 16 px, как и поле
+     утреннего чек-ина. */
+  font-size: var(--mx-read-read);
   line-height: 1.5;
 }
 
@@ -1274,7 +1291,8 @@
   background: #111;
   color: rgb(var(--c-text));
   font-family: 'Onest', sans-serif;
-  font-size: calc(17px * var(--mx-type-scale));
+  /* MXL-TYPE-READABLE-001: подпись плитки эмоции — роль действия, 16 px. */
+  font-size: var(--mx-read-action);
   font-weight: 600;
   line-height: 1.2;
   text-align: center;

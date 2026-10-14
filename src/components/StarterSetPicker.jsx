@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { api } from '../lib/api'
 import { platform } from '../platform'
+import { useAutoFocusField } from '../lib/useAutoFocusField'
 import { isLinkedWebWriteBlocked, LINKED_WEB_WRITE_NOTICE } from '../lib/webAuthLimits'
 
 /*
@@ -68,6 +69,11 @@ export default function StarterSetPicker({ user, onCreated, onSkip }) {
   const [name, setName] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
+
+  // MXL-KEYBOARD-001: переименование практики — шаг набора текста; поле
+  // получает фокус при входе в режим правки (см. src/lib/useAutoFocusField.js).
+  const nameInputRef = useRef(null)
+  useAutoFocusField(nameInputRef, editingName ? 'starter-set-name' : null)
 
   const context = CONTEXTS.find(c => c.key === contextKey) || null
 
@@ -160,11 +166,11 @@ export default function StarterSetPicker({ user, onCreated, onSkip }) {
 
       {editingName ? (
         <input
+          ref={nameInputRef}
           type="text"
           value={name}
           onChange={e => setName(e.target.value)}
           onBlur={() => setEditingName(false)}
-          autoFocus
           className="w-full rounded-xl bg-emerald-light px-3 py-2 text-cream mx-type-list-body mb-3 text-center"
         />
       ) : (

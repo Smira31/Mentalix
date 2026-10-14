@@ -38,6 +38,7 @@ last_verified: 2026-09-22
 | [`INDEX.md`](INDEX.md)                                                 | `current` / 2026-09-11    | Открыть для полного каталога документации и статусов.         |
 | [`MENTALIX_CHAT_OPERATING_MODEL.md`](MENTALIX_CHAT_OPERATING_MODEL.md) | `working` / 2026-09-11    | Открыть для контекста и деталей, относящихся к этому разделу. |
 | [`TASK_INDEX.md`](TASK_INDEX.md)                                       | `current` / 2026-09-11    | Открыть для контекста и деталей, относящихся к этому разделу. |
+| [`KEYBOARD_FOCUS.md`](KEYBOARD_FOCUS.md)                               | `current` / 2026-10-13    | Карта полей ввода, автофокуса и клавиатуры.                   |
 | [`ui-audit-2026-08-13.md`](ui-audit-2026-08-13.md)                     | `working` / 2026-09-11    | Открыть для UI/UX-решения и визуальных ограничений.           |
 
 ### `architecture`
