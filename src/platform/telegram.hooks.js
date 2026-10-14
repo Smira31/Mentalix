@@ -382,16 +382,32 @@ export function confirmAction(message) {
    онбординг, выбранная тема.
    ============================================================ */
 
+/*
+ * CloudStorage появился в Bot API 8.0. На старых клиентах SDK
+ * определяет методы на объекте, но при вызове пишет console.error
+ * и не вызывает callback — Promise зависнет. Проверяем версию до
+ * вызова, как уже делаем в offerHomeScreen.
+ */
+function cloudStorageSupported() {
+  const webApp = api()
+
+  if (!webApp?.CloudStorage) return false
+
+  if (typeof webApp.isVersionAtLeast === 'function' && !webApp.isVersionAtLeast('8.0')) return false
+
+  return true
+}
+
 export const cloud = {
   get(key) {
     return new Promise(resolve => {
-      const storage = api()?.CloudStorage
-
-      if (!storage?.getItem) {
+      if (!cloudStorageSupported()) {
         resolve(null)
 
         return
       }
+
+      const storage = api().CloudStorage
 
       safely(
         () => storage.getItem(key, (error, value) => resolve(error ? null : value || null)),
@@ -402,13 +418,13 @@ export const cloud = {
 
   set(key, value) {
     return new Promise(resolve => {
-      const storage = api()?.CloudStorage
-
-      if (!storage?.setItem) {
+      if (!cloudStorageSupported()) {
         resolve(false)
 
         return
       }
+
+      const storage = api().CloudStorage
 
       safely(
         () => storage.setItem(key, String(value ?? ''), error => resolve(!error)),
@@ -420,9 +436,15 @@ export const cloud = {
   // Удаляет ВСЕ ключи пользователя из CloudStorage (после удаления аккаунта).
   clearAll() {
     return new Promise(resolve => {
-      const storage = api()?.CloudStorage
+      if (!cloudStorageSupported()) {
+        resolve(false)
 
-      if (!storage?.getKeys || !storage?.removeItems) {
+        return
+      }
+
+      const storage = api().CloudStorage
+
+      if (!storage.getKeys || !storage.removeItems) {
         resolve(false)
 
         return
@@ -454,9 +476,15 @@ export const cloud = {
 
   remove(key) {
     return new Promise(resolve => {
-      const storage = api()?.CloudStorage
+      if (!cloudStorageSupported()) {
+        resolve(false)
 
-      if (!storage?.removeItem) {
+        return
+      }
+
+      const storage = api().CloudStorage
+
+      if (!storage.removeItem) {
         resolve(false)
 
         return
