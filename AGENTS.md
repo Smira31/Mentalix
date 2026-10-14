@@ -269,7 +269,6 @@ screens, and keep article cards unchanged unless the owner explicitly approves t
 - Сегменты аналитики и значков в рамке выводятся `DemoTelegramHeader` порталом непосредственно в shell. Отрицательный отступ внутри `mx-app-scroll-root` обрезает сегмент и делает его невидимым; не возвращать этот приём для демо.
 - `Analytics.active` скрывает вынесенную шапку при уходе с вкладки: открытые вкладки остаются смонтированными. На настоящем телефоне и в Telegram компонент возвращает исходную шапку без портала.
 - Целевая проверка: `npx playwright test --config=playwright.ux.config.mjs demo-telegram-header.spec.mjs` внутри web-контейнера; размеры рамок 393/440 на viewport 793. Аппаратные Island/Home Indicator не имитируются.
-- В браузере SDK создаёт `window.Telegram.WebApp` с версией «6.0» (без `initData`), поэтому `cloud.*` из `src/platform/telegram.hooks.js` проверяет версию клиента (≥ 6.9) до вызова методов: без этой проверки любой вызов облака писал в консоль `[Telegram.WebApp] CloudStorage is not supported in version 6.0`. Вне Telegram облако просто не используется, значения остаются в localStorage (`src/lib/store.js`); для настоящего Telegram поведение не меняется.
 
 ### Mentalix Pro (PRO-002b/c) в Base44
 
