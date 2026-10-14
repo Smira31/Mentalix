@@ -1,6 +1,6 @@
 ---
 status: current
-last_verified: 2026-10-13
+last_verified: 2026-10-14
 ---
 
 # Mentalix — активный task index
@@ -59,9 +59,10 @@ last_verified: 2026-10-13
 
 ## Mentalix Pro (PRO-002b/c) — frontend, в работе
 
-Ветка `pro-review-plan`. Контракт передан владельцем (backend/pro/router.py, PRO-002b/c): разбор недели, план на 7 дней, прогресс. Решения владельца: вход через существующий профиль (вложенный `<Screen>`, без новой вкладки), фронтенд-флаг `VITE_PRO_REVIEW_PLAN_ENABLED` (default false), отдельный dev-only mock-режим. Backend-контракты и production-флаги не меняются; merge/deploy/secrets и платные AI-вызовы — только после отдельного разрешения.
+Ветка `mentalix-pro-review` (очищенный scope; PR #1044 пока смотрит на `pro-review-plan`). Контракт передан владельцем (backend/pro/router.py, PRO-002b/c): разбор недели, план на 7 дней, прогресс. Решения владельца: вход через существующий профиль (вложенный `<Screen>`, без новой вкладки), фронтенд-флаг `VITE_PRO_REVIEW_PLAN_ENABLED` (default false), отдельный dev-only mock-режим. Backend-контракты и production-флаги не меняются; merge/deploy/secrets и платные AI-вызовы — только после отдельного разрешения.
 
 - Реализовано: `src/screens/pro/` (ProScreen: разбор → план → выполнение → прогресс), роуты в `src/lib/api.js` (`api.pro`), ограниченный опрос GET после 409 `generation_in_progress` (`src/lib/proGenerationPolling.js`, тесты `tests/unit/proGenerationPolling.test.mjs`), ошибки `detail`/`code`, согласие через существующий поток `api.mentalix.setContextConsent`.
 - Mock: `?proMock=1|conflict|insufficient|crisis|disabled|nopro` — только dev (`src/lib/proMock.js`); сценарий `conflict` проверяет правило «GET не сообщает generation_in_progress → ограниченный опрос GET, без повторной POST».
-- Проверки (2026-10-13, Base44): `check:core` PASS (unit 1019 pass / 0 fail / 2 skip, lint 0 errors, build, docs:check — только advisory). Превью mobile (?proMock=1): согласие → разбор → план → прогресс; 409 `version_conflict` сохраняет ввод правки (новый тест `pro-version-conflict-input`). Production-сборка: `isProMockMode` компилируется в `return!1`, скомпилированный флаг = false. Не проверено в браузере: сценарий `conflict` (409 → опрос GET), состояния insufficient/crisis/disabled/nopro; реальный backend и iPhone/Telegram gate — NOT RUN.
+- Проверки (2026-10-14, Base44, очищенный scope): `check:core` PASS — unit 1040 (1037 pass / 0 fail / 3 skip), lint 0 errors, build, docs:check (только advisory). `npm run ux:pro-states` PASS — 5 сценариев, 23 кадра заново сняты в `qa-evidence/pro-review-plan/`; `npm run ux:keyboard` PASS (5). Состояния conflict (409 → ограниченный опрос GET), insufficient, crisis, disabled и nopro покрыты автопрогоном `ux:pro-states`, а не только прежней ручной проверкой; сам набор подключён к CI шагом «Run Pro review states evidence gate» (job «Playwright Chromium smoke»). Production-сборка: `isProMockMode` компилируется в `return!1`, скомпилированный флаг = false (код mock с тех пор не менялся). NOT RUN: реальная интеграция с backend (вне этого окружения), ручной iPhone/Telegram gate, WebKit локально — его PASS нужен в CI на итоговом SHA.
+- Scope: относительно свежего `main` (`29d5b99e`) diff содержит только Pro — экраны `src/screens/pro/`, `api.pro`, dev-mock, фронтенд-флаг, тесты, документация и evidence. Наследованные из main читаемая шкала (MXL-TYPE-READABLE-001) и контракт автофокуса/клавиатуры (MXL-KEYBOARD-001) работой Pro не считаются — они уже в main. Несвязанный с Pro Telegram-фикс CloudStorage (версионный гейт) исключён из этой ветки и сохранён отдельно коммитом `9beffe16` в истории `mentalix-pro-review`: `src/platform/telegram.hooks.js` и `tests/unit/telegram-cloudstorage-version-gate.test.mjs` вернулись к состоянию main.
 - Ограничения: реальная интеграция не подтверждена (backend вне этого окружения; `PRO_WEEKLY_*` флаги выключены). При включении контракт-гейта (`CONTRACT_FILE`) список endpoints контракта нужно дополнить Pro-роутами.
