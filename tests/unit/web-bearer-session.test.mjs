@@ -10,7 +10,7 @@ const { webAdapter } = await load(adapterSource.replaceAll('import.meta.env', 'g
 const apiModule = apiSource
   .replace(/^import .*\n/gm, '')
   .replaceAll('import.meta.env', 'globalThis.__webTestEnv')
-  .replace("const BASE =", "const { platform, withQuery, demoRequest, isPreviewDemoMode, resetGuestState, dispatchGuestMerged } = globalThis.__webTestDeps\nconst BASE =")
+  .replace("const BASE =", "const { platform, withQuery, demoRequest, isPreviewDemoMode, resetGuestState, dispatchGuestMerged, isProMockMode, proMockRequest } = globalThis.__webTestDeps\nconst BASE =")
 
 function storage() {
   const items = new Map()
@@ -37,6 +37,9 @@ test('web bearer session: login, restore, 401, logout and legacy cookie fallback
     isPreviewDemoMode: () => demo,
     resetGuestState: () => {},
     dispatchGuestMerged: () => {},
+    // Pro mock по умолчанию выключен: тест проверяет обычный HTTP-клиент.
+    isProMockMode: () => false,
+    proMockRequest: () => undefined,
   }
   const { api } = await load(apiModule)
   const calls = []

@@ -191,6 +191,12 @@ jobs:
       - name: Run keyboard focus contract gate
         run: npm run ux:keyboard -- --retries=1
 
+      - name: Run Pro review states evidence gate
+        run: npm run ux:pro-states -- --retries=1
+
+      - name: Run Pro failure states gate
+        run: npm run ux:pro-failure-states -- --retries=1
+
       - name: Upload Playwright artifacts on failure
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
@@ -204,6 +210,7 @@ jobs:
             artifacts/journal-history/
             artifacts/typography-readable/
             artifacts/keyboard-focus/
+            artifacts/pro-states/
             test-results/
           if-no-files-found: ignore
 

@@ -13,6 +13,9 @@ services:
       - NODE_ENV=development
       - VITE_TG_SHELL=1
       - VITE_LOCAL_PREVIEW=true
+      # Sandbox-only включение фронтенд-флага Mentalix Pro для проверки превью.
+      # Production-сборка флаг не получает: default — выключено (src/lib/proFlag.js).
+      - VITE_PRO_REVIEW_PLAN_ENABLED=true
       - CHOKIDAR_USEPOLLING=true
       - __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS
       - BASE44_PUBLIC_HOST_SUFFIX

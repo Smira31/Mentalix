@@ -1,6 +1,7 @@
 import { platform } from '../platform'
 import { withQuery } from './apiQuery'
 import { demoRequest, isPreviewDemoMode } from './demoMode'
+import { isProMockMode, proMockRequest } from './proMock'
 import { resetGuestState, dispatchGuestMerged } from './guestAuth'
 
 const BASE = import.meta.env.VITE_API_BASE_URL || '/api'
@@ -205,6 +206,16 @@ function notifyActivity(path, options) {
 }
 
 async function request(path, options = {}) {
+  // Dev-only mock Mentalix Pro (?proMock=…): перехватывает только свои пути
+  // (/pro/* и /mentalix/consent) и существует лишь в dev-сборке — см. proMock.js.
+  if (isProMockMode()) {
+    const mocked = await proMockRequest(path, options)
+    if (mocked !== undefined) {
+      notifyActivity(path, options)
+      return mocked
+    }
+  }
+
   if (isPreviewDemoMode()) {
     const result = await demoRequest(path, options)
     notifyActivity(path, options)
@@ -1145,6 +1156,60 @@ export const api = {
           currency,
         }),
       }),
+  },
+
+  /*
+   * Mentalix Pro (PRO-002b/c): разбор недели, план на 7 дней, прогресс.
+   * Контракт — backend/pro/router.py. Ошибки двух видов:
+   *   HTTPException → body.detail ('pro_required', 'pro_report_disabled',
+   *     'pro_plan_disabled', 'invalid_week_start', 'version_conflict', …);
+   *   JSONResponse → body.code ('consent_required', 'insufficient_data',
+   *     'generation_in_progress', 'report_required', 'rebuild_conflict', …).
+   * У GET отчёта/плана нет признака generation_in_progress и нет ETag/версии:
+   * после POST-ответа 409 generation_in_progress выполняется ограниченный
+   * опрос GET до ready (proGenerationPolling), повторная POST-генерация
+   * не отправляется. week_start не передаётся — backend берёт последнюю
+   * завершённую неделю; неделю разбора и неделю действий разделяет
+   * plan_week_start.
+   */
+  pro: {
+    getReport: weekStart =>
+      request(withQuery('/pro/report', weekStart ? { week_start: weekStart } : {})),
+
+    createReport: weekStart =>
+      request('/pro/report', {
+        method: 'POST',
+        timeoutMs: 60_000,
+        body: JSON.stringify(weekStart ? { week_start: weekStart } : {}),
+      }),
+
+    getPlan: weekStart =>
+      request(withQuery('/pro/plan', weekStart ? { week_start: weekStart } : {})),
+
+    createPlan: (weekStart, rebuild = false) =>
+      request('/pro/plan', {
+        method: 'POST',
+        timeoutMs: 60_000,
+        body: JSON.stringify({
+          ...(weekStart ? { week_start: weekStart } : {}),
+          ...(rebuild ? { rebuild: true } : {}),
+        }),
+      }),
+
+    patchPlanItem: (itemId, patch) =>
+      request(`/pro/plan/${itemId}`, {
+        method: 'PATCH',
+        body: JSON.stringify(patch),
+      }),
+
+    setPlanItemStatus: (itemId, status) =>
+      request(`/pro/plan/${itemId}/status`, {
+        method: 'POST',
+        body: JSON.stringify({ status }),
+      }),
+
+    getProgress: weekStart =>
+      request(withQuery('/pro/progress', weekStart ? { week_start: weekStart } : {})),
   },
 
   // MXL-EVENTS: только факт действия (event_type/entity_type/entity_id) —
