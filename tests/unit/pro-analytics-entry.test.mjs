@@ -25,6 +25,10 @@ const cardSource = await readFile(
   new URL('../../src/screens/pro/ProAnalyticsCard.jsx', import.meta.url),
   'utf8'
 )
+const cardsSource = await readFile(
+  new URL('../../src/screens/progress/analyticsCardPreferences.js', import.meta.url),
+  'utf8'
+)
 const proFlagSource = await readFile(new URL('../../src/lib/proFlag.js', import.meta.url), 'utf8')
 
 test('карточка входа в Pro живёт в аналитике, над графиками', () => {
@@ -62,9 +66,14 @@ test('доступность карточки — флаг Pro, пользова
 test('карточка не входит в настройку графиков аналитики', () => {
   // Порядок/скрытие графиков знает только список ANALYTICS_CARDS: карточка Pro
   // не должна попасть ни в него, ни в сохранённые предпочтения.
-  assert.doesNotMatch(cardSource, /analyticsCardPreferences|ANALYTICS_CARDS/)
-  assert.match(analyticsSource, /id: 'practices'/)
-  assert.doesNotMatch(analyticsSource, /ANALYTICS_CARDS\s*=\s*\[[^\]]*progress-pro-card/)
+  // Комментарий карточки намеренно называет эту настройку по имени, поэтому
+  // проверяем код, а не прозу: комментарии перед проверкой убираем.
+  const cardCode = cardSource.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '')
+  assert.doesNotMatch(cardCode, /analyticsCardPreferences|ANALYTICS_CARDS/)
+  // Реестр графиков живёт в analyticsCardPreferences, а не в Analytics.jsx:
+  // проверяем именно его.
+  assert.match(cardsSource, /id: 'practices'/)
+  assert.doesNotMatch(cardsSource, /progress-pro-card/)
 })
 
 test('прежний вход «Разбор недели» из профиля убран, подписка остаётся', () => {
