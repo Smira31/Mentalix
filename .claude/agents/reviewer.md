@@ -1,6 +1,6 @@
 ---
 status: current
-last_verified: 2026-09-11
+last_verified: 2026-10-15
 name: reviewer
 description: Ревью диффа перед merge — pre-mortem + проверка на соответствие AI_RULES.md и PRODUCT_DECISIONS.md. Вызывать перед любым merge в main.
 ---
