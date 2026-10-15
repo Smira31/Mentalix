@@ -250,7 +250,13 @@ test('вход по возврату подключён в App: вызов, эк
   assert.ok(app.includes('stripPaymentReturnParam('), 'App должен убирать служебный параметр')
   assert.ok(app.includes('markPaymentStarted('), 'App должен отмечать момент возврата')
   assert.ok(
-    app.includes("'mx-settings-initial-screen', 'subscription'"),
-    'возврат должен открывать экран подписки'
+    app.includes("'mx-settings-initial-screen'"),
+    'возврат должен открывать экран настроек'
   )
+  // Pro открывает подписку, донат — экран доната с благодарностью.
+  assert.ok(
+    app.includes("'subscription'") && app.includes("'donate'"),
+    'возврат открывает подписку для Pro и донат для доната'
+  )
+  assert.ok(app.includes('beginDonationReturn('), 'возврат с доната распознаётся')
 })

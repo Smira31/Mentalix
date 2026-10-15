@@ -32,6 +32,7 @@ import {
 import { parseContextualDeepLink } from './lib/contextualDeepLink'
 import { PAYMENT_UI_ENABLED } from './lib/paymentConfig'
 import { isPaymentReturn, markPaymentStarted, stripPaymentReturnParam } from './lib/yookassaCheckout'
+import { beginDonationReturn } from './lib/donation'
 import { isRemovedLibraryAddress, redirectRemovedLibraryAddress } from './lib/libraryNavigation'
 import {
   DEMO_USER,
@@ -472,17 +473,25 @@ function App() {
    * он сам перечитывает GET /api/subscription, — отмечаем момент возврата и
    * убираем служебный параметр из адресной строки. Сам возврат оплатой не
    * считается: экран успеха решает только свежий has_pro.
+   *
+   * Донат («Поддержать проект») возвращается по тому же адресу: отметку о его
+   * начале ставит DonateScreen, поэтому при свежей отметке открываем экран
+   * доната с благодарностью, а не подписку.
    */
   useEffect(() => {
     if (!PAYMENT_UI_ENABLED) return
     if (!isPaymentReturn(window.location.search)) return
 
+    const donationReturn = beginDonationReturn()
     try {
-      sessionStorage.setItem('mx-settings-initial-screen', 'subscription')
+      sessionStorage.setItem(
+        'mx-settings-initial-screen',
+        donationReturn ? 'donate' : 'subscription'
+      )
     } catch {
       /* приватный режим: экран откроется на списке настроек */
     }
-    markPaymentStarted()
+    if (!donationReturn) markPaymentStarted()
     setOverlay('settings')
 
     const cleaned = stripPaymentReturnParam(window.location.search)

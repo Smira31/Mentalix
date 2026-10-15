@@ -55,3 +55,38 @@
   font-size: max(11px, calc(12px * var(--mx-type-scale)));
   line-height: 1.4;
 }
+
+/* Низ экрана: одна круглая кнопка справа (как шаг чек-ина). */
+.mx-donate-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+  width: 100%;
+}
+
+/* Текст ошибки над кнопкой — без технических кодов. */
+.mx-donate-error {
+  align-self: stretch;
+  margin: 0;
+  color: rgb(var(--c-muted));
+  font-size: calc(14px * var(--mx-type-scale));
+  line-height: 1.4;
+}
+
+/* Гость: приглашение войти — тихая строка в теле экрана. */
+.mx-donate-guest-note {
+  margin: 12px 0 0;
+  padding-inline: 4px;
+  color: rgb(var(--c-text));
+  font-size: calc(14px * var(--mx-type-scale));
+  line-height: 1.45;
+}
+
+/* Благодарность после возврата — без статуса подписки. */
+.mx-donate-thanks {
+  margin: 0 0 var(--mx-space-2);
+  color: rgb(var(--c-text));
+  font-size: calc(22px * var(--mx-type-scale));
+  font-weight: 700;
+}
