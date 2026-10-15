@@ -776,32 +776,12 @@
   padding: 12px var(--mx-screen-x) calc(var(--app-safe-bottom) + 16px);
 }
 
-/* Крестик выхода — отличим от «Назад» (шеврон).
-   Та же форма и токен размера, что у mx-nested-screen-back:
-   --mx-header-control (43 px), круглая, стекло. */
-.mx-checkin-close-btn {
-  display: grid;
-  width: var(--mx-header-control);
-  height: var(--mx-header-control);
-  padding: 0;
-  place-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 50%;
-  background: var(--mx-glass-bg);
-  color: rgb(var(--c-text));
-  transition: transform 140ms ease;
-  flex-shrink: 0;
-}
-
-.mx-checkin-close-btn:active {
-  transform: scale(0.95);
-}
-
-/* Клавиатурный фокус остаётся доступным: золотое кольцо рисует общий
-   button:focus-visible из index.css, мы его не гасим. Убираем только
-   фокус-рамку от клика мышью/тапом. */
-.mx-checkin-close-btn:focus:not(:focus-visible) {
-  outline: none;
+/* Шапка шага без своих кнопок. Возврат — системная «Назад» Telegram,
+   выход — круглая кнопка шага, поэтому в шапке нечего показывать; высоту
+   строки управления держим прежней (контрол + вертикальные отступы),
+   иначе геометрия шага сдвигается. */
+.mx-demo-checkin__header:empty {
+  min-height: calc(var(--mx-header-control) + 12px);
 }
 
 .mx-demo-checkin__scene--complete {

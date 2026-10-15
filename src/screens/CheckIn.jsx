@@ -24,14 +24,12 @@ import {
   ThumbsUp,
   Users,
   Wallet,
-  X,
 } from 'lucide-react'
-import BackButton from '../components/BackButton'
 import JournalTextarea from '../components/JournalTextarea'
 import RoundSubmitButton from '../components/RoundSubmitButton'
 import WebActionBar from '../components/WebActionBar'
 import { pickByDay, MORNING_NOTE_PROMPTS, LESSON_PROMPTS } from '../data/prompts'
-import { useMainButton, useSecondaryButton } from '../platform/telegram.hooks'
+import { useBackButton, useMainButton, useSecondaryButton } from '../platform/telegram.hooks'
 import {
   useFullscreenSurface,
   FULLSCREEN_SHELL_CLASS,
@@ -140,31 +138,27 @@ const FULLSCREEN_COMPLETION_CLASS =
   'mx-fullscreen-completion w-full flex-1 min-h-0 flex flex-col overflow-hidden'
 
 /*
- * Крестик выхода — отличим от «Назад» (шеврон): «Назад» идёт на предыдущий
- * шаг, крестик закрывает поток с сохранением черновика. Тот же размер
- * и форма, что у mx-nested-screen-back (43×43, круглая, стекло).
+ * Одна круглая кнопка шага — та же, что в редакторе «Что на уме?».
+ * Пока на шаге ничего не выбрано и не введено, в ней «✕», и нажатие
+ * закрывает чек-ин с сохранением черновика (вечером — с подтверждением).
+ * После выбора или ввода это «→» («Далее») и переход на следующий шаг.
+ * Своих «назад» и «закрыть» в шапке экрана нет: возврат — системная
+ * кнопка «Назад» Telegram (useBackButton).
  */
-export function CheckInCloseButton({ onClick, testId = 'checkin-close' }) {
-  return (
-    <button
-      type="button"
-      data-testid={testId}
-      aria-label="Закрыть"
-      className="mx-checkin-close-btn mx-tap-target"
-      onClick={onClick}
-    >
-      <X size={22} strokeWidth={2.2} />
-    </button>
-  )
-}
+export function CheckInNextControls({ mode = 'next', onNext, onClose, variant = 'scale' }) {
+  const closing = mode === 'close'
 
-// Одна круглая «→» справа внизу — та же кнопка, что в редакторе «Что на уме?».
-export function CheckInNextControls({ onNext, disabled = false, variant = 'scale' }) {
   return (
     <div
       className={`mx-checkin-next-controls${variant === 'emotion' ? ' mx-checkin-next-controls--emotion' : ''}`}
     >
-      <RoundSubmitButton label="Далее" testId="checkin-next" onClick={onNext} disabled={disabled} />
+      <RoundSubmitButton
+        label={closing ? 'Закрыть' : 'Далее'}
+        testId="checkin-next"
+        icon={closing ? 'x' : 'arrow'}
+        crossfade
+        onClick={closing ? onClose : onNext}
+      />
     </div>
   )
 }
@@ -314,8 +308,12 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
       return
     }
 
-    // На первом шаге некуда идти назад — выход осуществляется крестиком.
-    if (step === 0) return
+    // С первого шага возвращаться некуда: «Назад» закрывает чек-ин так же,
+    // как круглая «✕» на шаге, — черновик остаётся на устройстве.
+    if (step === 0) {
+      handleClose()
+      return
+    }
 
     goToStep(current => Math.max(0, current - 1))
   }
@@ -440,6 +438,12 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
     onDone()
   }
 
+  /*
+   * Что читает нижняя круглая кнопка: неотвеченная шкала или фокус без
+   * плитки — «✕» (выход с черновиком), выбранный ответ — «→» («Далее»).
+   */
+  const stepAnswered = scale ? Boolean(values[scale.key]) : Boolean(selectedFocus)
+
   const action =
     step === doneStep
       ? { text: 'Сохранить и выйти', testId: 'checkin-back-to-today', onClick: exitCompletion }
@@ -461,6 +465,13 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
 
   useSecondaryButton({ text: '', onClick: () => {}, visible: false })
 
+  /*
+   * Системная «Назад» Telegram: со второго и дальнейших шагов — на
+   * предыдущий шаг, с первого — выход с сохранением черновика.
+   * Демо-шапка Telegram (?demo=1) вызывает тот же обработчик.
+   */
+  useBackButton(handleBack)
+
   const screenRef = useRef(null)
 
   if (celebrating) {
@@ -480,14 +491,10 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
 
   return createPortal(
     <div ref={screenRef} className="mx-demo-checkin" style={demoSurfaceStyle}>
-      <header className="mx-demo-checkin__header">
-        {step > 0 && step !== doneStep ? (
-          <BackButton onClick={handleBack} />
-        ) : (
-          <span aria-hidden="true" />
-        )}
-        <CheckInCloseButton onClick={handleClose} />
-      </header>
+      {/* Своих кнопок «назад» и «закрыть» здесь нет: возврат — системная
+          «Назад» Telegram, выход — круглая «✕» на шаге. Пустая шапка держит
+          прежнюю высоту строки: она часть геометрии шага. */}
+      <header className="mx-demo-checkin__header" aria-hidden="true" />
 
       <main
         className={`mx-demo-checkin__body ${step === doneStep ? 'is-complete' : step === noteStep || step === dayFocusStep ? 'is-editor' : ''}`}
@@ -585,10 +592,11 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
         </StepSlide>
       </main>
       {step < noteStep ? (
-        // Шкалы: «→» активна после выбора кружка. Фокус дня: всегда активна.
+        // Ничего не выбрано на шаге — «✕» (выход с черновиком), выбор — «→».
         <CheckInNextControls
+          mode={stepAnswered ? 'next' : 'close'}
           onNext={() => goToStep(current => Math.min(doneStep, current + 1))}
-          disabled={scale ? !values[scale.key] : false}
+          onClose={handleClose}
         />
       ) : null}
       {step === doneStep ? (
@@ -1435,8 +1443,6 @@ function CheckInCore({
     onDone()
   }
 
-  const isFinal = isCompletion || isStreakStep
-
   function handleBack() {
     platform.haptic('light')
 
@@ -1445,8 +1451,13 @@ function CheckInCore({
       return
     }
 
-    // На первом шаге некуда идти назад — выход осуществляется крестиком.
-    if (step === 0) return
+    // С первого шага возвращаться некуда: «Назад» закрывает разбор так же,
+    // как круглая «✕» на шаге. Несохранённый урок вечером подтверждается
+    // диалогом, пустой — просто оставляет черновик в прежнем виде.
+    if (step === 0) {
+      handleClose()
+      return
+    }
 
     goToStep(current => current - 1)
   }
@@ -1549,6 +1560,14 @@ function CheckInCore({
     visible: Boolean(skipAction) && !saving && !isMorningNoteStep && !isStreakStep,
   })
 
+  /*
+   * Системная «Назад» Telegram: со второго шага — на предыдущий, с первого —
+   * выход из разбора (несохранённый урок подтверждается диалогом). На финале
+   * и экране серии — возврат в «Сегодня». Демо-шапка Telegram (?demo=1)
+   * вызывает тот же обработчик.
+   */
+  useBackButton(handleBack)
+
   const webAction =
     effectiveMainAction && isCompletion
       ? {
@@ -1565,16 +1584,18 @@ function CheckInCore({
 
   const webSecondaryAction = null
 
-  const compactStepAction = isEmotionStep
-    ? () => goToStep(current => current + 1)
-    : isScaleStep
-      ? () => goToStep(current => current + 1)
-      : null
+  const compactStepAction =
+    isEmotionStep || isScaleStep ? () => goToStep(current => current + 1) : null
 
-  const compactStepDisabled = isEmotionStep
-    ? !emotion
+  /*
+   * Без ответа на шаге (нет эмоции или уровня шкалы) кнопка показывает «✕»:
+   * нажатие закрывает разбор так же, как прежний крестик в шапке. Ответ
+   * есть — «→» («Далее»).
+   */
+  const compactStepAnswered = isEmotionStep
+    ? Boolean(emotion)
     : isScaleStep
-      ? !values[MORNING_SCALE_STEPS[step]?.key]
+      ? Boolean(values[MORNING_SCALE_STEPS[step]?.key])
       : false
 
   if (isStreakStep && eveningStreakStats) {
@@ -1599,10 +1620,9 @@ function CheckInCore({
         className={`${FULLSCREEN_SHELL_CLASS} ${previewDemoMode ? 'mx-checkin-demo' : ''}`}
         style={viewportStyle}
       >
-        <div className={CHECKIN_HEADER_CLASS}>
-          <span aria-hidden="true" />
-          <CheckInCloseButton onClick={handleClose} />
-        </div>
+        {/* Финалу свои «назад» и «закрыть» не нужны: возврат — системная
+            «Назад» Telegram, выход — пилюля «Сохранить и выйти» внизу. */}
+        <div className={CHECKIN_HEADER_CLASS} aria-hidden="true" />
 
         <div className={FULLSCREEN_COMPLETION_CLASS}>
           <CheckInCompletion
@@ -1716,46 +1736,42 @@ function CheckInCore({
             : 'Пара слов — уже разговор с собой.'
           : 'Три пункта. Мелочи считаются — из них и состоит день.')
 
+  /*
+   * Текущий урок: заполненное поле — «→» («Далее»), пустое — «✕» (выход
+   * с черновиком, как прежний крестик в шапке). Последний урок остаётся
+   * галочкой завершения и не меняется.
+   */
+  const lessonStepHasText = Boolean((lessons[eveningQuestion?.key] || '').trim())
+
   return createPortal(
     <div
       ref={screenRef}
       className={`${FULLSCREEN_SHELL_CLASS} ${previewDemoMode ? 'mx-checkin-demo' : ''}`}
       style={viewportStyle}
     >
+      {/* Своих «назад» и «закрыть» в шапке нет: возврат — системная «Назад»
+          Telegram, выход — круглая «✕» на шаге. Высоту строки управления
+          держит сам CHECKIN_HEADER_CLASS. */}
       {!(isEvening && isCard) && (
         <div className={CHECKIN_HEADER_CLASS}>
-          {step > 0 && !isFinal ? (
-            <BackButton onClick={handleBack} />
-          ) : (
-            <span aria-hidden="true" />
-          )}
-          <div className="flex items-center gap-2">
-            {recovery && (
-              <span className="text-[13px] text-muted" data-testid="streak-recovery-date">
-                {yesterdayLabel(recovery.date)}
-              </span>
-            )}
-            <CheckInCloseButton onClick={handleClose} />
-          </div>
+          {recovery ? (
+            <span className="text-[13px] text-muted" data-testid="streak-recovery-date">
+              {yesterdayLabel(recovery.date)}
+            </span>
+          ) : null}
         </div>
       )}
 
       <div className={FULLSCREEN_SCROLL_CLASS} style={interactiveStyle}>
         <StepSlide stepKey={step} onAnimatingChange={handleAnimatingChange}>
           <div className={isCard || isEmotionStep ? CHECKIN_LONG_CLASS : CHECKIN_CENTER_CLASS}>
-            {/* Текстовые вопросы вечера — BackButton внутри контента (как
-               «Твоя мысль»): вопрос начинается сразу под шапкой, отступ 16. */}
-            {isEvening && isCard && (
+            {/* Текстовые вопросы вечера: своих «назад» и «закрыть» нет —
+                возврат системный, выход — круглая «✕» внизу шага. */}
+            {isEvening && isCard && recovery && (
               <div className="w-full flex items-center justify-between pb-2">
-                <BackButton onClick={handleBack} />
-                <div className="flex items-center gap-2">
-                  {recovery && (
-                    <span className="text-[13px] text-muted" data-testid="streak-recovery-date">
-                      {yesterdayLabel(recovery.date)}
-                    </span>
-                  )}
-                  <CheckInCloseButton onClick={handleClose} />
-                </div>
+                <span className="text-[13px] text-muted" data-testid="streak-recovery-date">
+                  {yesterdayLabel(recovery.date)}
+                </span>
               </div>
             )}
             {!isScaleStep && (
@@ -1847,19 +1863,28 @@ function CheckInCore({
                         guidedFlow
                         autoFocus
                         keepFocusOnSubmit
-                        submitIcon={cardIdx === cardCount - 1 ? 'check' : 'arrow'}
+                        submitIcon={
+                          cardIdx === cardCount - 1 ? 'check' : lessonStepHasText ? 'arrow' : 'x'
+                        }
+                        submitIconCrossfade
                         submitLabel={
                           cardIdx === cardCount - 1
                             ? recovery
                               ? 'Сохранить'
                               : 'Закрыть день'
-                            : 'Далее'
+                            : lessonStepHasText
+                              ? 'Далее'
+                              : 'Закрыть'
                         }
                         submitTestId={
                           recovery && cardIdx === cardCount - 1 ? 'checkin-save' : 'checkin-next'
                         }
                         onSubmit={() =>
-                          cardIdx < cardCount - 1 ? goToStep(current => current + 1) : submit()
+                          cardIdx < cardCount - 1
+                            ? lessonStepHasText
+                              ? goToStep(current => current + 1)
+                              : handleClose()
+                            : submit()
                         }
                         submitLoading={saving}
                         formatting={false}
@@ -1957,8 +1982,9 @@ function CheckInCore({
 
       {!isCompletion && compactStepAction ? (
         <CheckInNextControls
+          mode={compactStepAnswered ? 'next' : 'close'}
           onNext={compactStepAction}
-          disabled={compactStepDisabled}
+          onClose={handleClose}
           variant={isEmotionStep ? 'emotion' : 'scale'}
         />
       ) : null}
@@ -1978,14 +2004,20 @@ function DemoCompletionScreen({ evening, onDone }) {
     onClick: onDone,
   }
 
+  // Системная «Назад» Telegram на демо-финале делает то же, что кнопка ниже.
+  useBackButton(onDone)
+
   return createPortal(
     <div
       className={`${FULLSCREEN_SHELL_CLASS} ${isPreviewDemoMode() ? 'mx-checkin-demo' : ''}`}
       style={viewportStyle}
     >
-      <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`}>
-        <BackButton onClick={onDone} />
-      </div>
+      {/* Своей «назад» здесь нет: возврат — системная кнопка Telegram.
+          Слот держит высоту шапки, поэтому остаётся пустым. */}
+      <div
+        className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`}
+        aria-hidden="true"
+      />
       <div className={FULLSCREEN_COMPLETION_CLASS}>
         <CheckInCompletion
           evening={evening}

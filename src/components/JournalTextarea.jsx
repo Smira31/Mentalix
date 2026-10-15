@@ -178,6 +178,7 @@ export default function JournalTextarea({
   autoFocusKey = null,
   keepFocusOnSubmit = false,
   submitIcon = 'check',
+  submitIconCrossfade = false,
   desktopInline = false,
   writingCanvas = false,
   guidedFlow = false,
@@ -446,6 +447,7 @@ export default function JournalTextarea({
                 label={submitLabel}
                 testId={submitTestId}
                 icon={submitIcon}
+                crossfade={submitIconCrossfade}
                 onClick={() => {
                   if (!keepFocusOnSubmit) {
                     editorRef.current?.blur()
