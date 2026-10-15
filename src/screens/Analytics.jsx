@@ -192,7 +192,7 @@ function CardShell({ title, subtitle, children, testId }) {
         <>
           <button
             type="button"
-            className="mx-progress-card__menu"
+            className="mx-progress-card__menu mx-tap-target"
             aria-label={`Меню графика: ${title}`}
             aria-expanded={menuOpen}
             onClick={() => actions.setOpenId(menuOpen ? null : actions.id)}
@@ -337,7 +337,12 @@ function MoodCalendarCard({ periodCheckins, granularity, window, onOpenFull }) {
             ))}
           </div>
           <div className="mx-progress-mood-calendar__line" aria-hidden="true" />
-          <button type="button" className="mx-progress-mood-calendar__all" onClick={onOpenFull}>
+          <button
+            type="button"
+            className="mx-progress-mood-calendar__all mx-tap-target"
+            data-testid="progress-mood-calendar-all"
+            onClick={onOpenFull}
+          >
             Все дни ›
           </button>
         </div>
@@ -1022,7 +1027,7 @@ export default function Analytics({
           {activeTab === 'analytics' && (
             <button
               type="button"
-              className="mx-progress-period-trigger"
+              className="mx-progress-period-trigger mx-tap-target"
               data-testid="progress-period-trigger"
               aria-expanded={periodMenuOpen}
               aria-controls="progress-period-menu"

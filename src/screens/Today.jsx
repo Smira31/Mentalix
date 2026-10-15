@@ -1729,7 +1729,7 @@ export default function Today({
             <h2 className="mx-today-weekly-theme__heading">Тема недели</h2>
             <button
               type="button"
-              className="mx-today-weekly-theme__all"
+              className="mx-today-weekly-theme__all mx-tap-target"
               data-testid="today-theme-all"
               aria-label="Все темы"
               onClick={() => {

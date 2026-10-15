@@ -34,6 +34,7 @@ const TRACED_GLYPHS_SMALL = {
   daimon: CatalogDieSmallArt,
 }
 import { api } from '../lib/api'
+import { hasCanonicalUserId } from '../lib/guestAuth'
 import { buildPracticeViewModels, PRACTICE_RAIL_KEYS } from '../lib/practiceCatalogRegistry'
 import { getFullscreenPortalTarget, useFullscreenSurface } from '../lib/fullscreenSurface'
 import { isTelegramRuntime } from '../lib/visualViewport'
@@ -182,6 +183,8 @@ export default function PinnedPractices({
   )
   const undoTimerRef = useRef(null)
   const soonTimerRef = useRef(null)
+  // AUD-010: «Повторить» — один запрос на нажатие, автоцикла нет.
+  const [retryKey, setRetryKey] = useState(0)
   const railRef = useRef(null)
 
   useEffect(() => {
@@ -191,7 +194,18 @@ export default function PinnedPractices({
     }
   }, [])
 
+  /*
+   * AUD-001: отрицательный гостевой id не canonical users row — запрос
+   * /pinned-practices с ним отвечает HTTP 500. Для такого пользователя
+   * запрос не отправляем и показываем пустое состояние, а не ошибку.
+   */
+  const canQueryPinned = hasCanonicalUserId(user)
+
   useEffect(() => {
+    if (!canQueryPinned) {
+      setLoading(false)
+      return undefined
+    }
     let active = true
     fetchPinnedPractices(user.id, { force: true })
       .then(items => {
@@ -208,7 +222,13 @@ export default function PinnedPractices({
     return () => {
       active = false
     }
-  }, [user.id])
+  }, [user.id, canQueryPinned, retryKey])
+
+  function retryPinned() {
+    setLoading(true)
+    setError(false)
+    setRetryKey(key => key + 1)
+  }
 
   const catalog = useMemo(
     () => buildPracticeViewModels({}).filter(practice => practice.available),
@@ -229,6 +249,9 @@ export default function PinnedPractices({
 
   async function togglePinned(practice, { undoable = true } = {}) {
     const key = practice.key
+
+    // AUD-001: закрепление недоступно без canonical id — запрос не отправляем.
+    if (!canQueryPinned) return
 
     // Per-practice guard: ignore taps while this practice's request is in flight
     if (busyKeys.has(key)) return
@@ -377,7 +400,17 @@ export default function PinnedPractices({
       {loading ? (
         <PinnedPracticesSkeleton />
       ) : error && pinnedPractices.length === 0 ? (
-        <p className="mx-type-list-body text-muted mt-3">Не получилось загрузить практики.</p>
+        <div className="mt-3 flex flex-wrap items-center gap-3" role="alert">
+          <p className="mx-type-list-body text-muted">Не получилось загрузить практики.</p>
+          <button
+            type="button"
+            className="cta-pill mx-type-control px-6 py-2"
+            data-testid="pinned-practices-retry"
+            onClick={retryPinned}
+          >
+            Повторить
+          </button>
+        </div>
       ) : pinnedPractices.length === 0 ? (
         <p className="mx-type-list-body text-muted mt-3">
           Здесь пока пусто. Добавь любимые практики кнопкой настройки или скрой раздел.
