@@ -34,6 +34,9 @@ export default defineConfig({
     'hero-journey-reliability.spec.mjs',
     'checkin-navigation-consistency.spec.mjs',
     'theme-week-carousel.spec.mjs',
+    // AUD-015: осиротевший спек; актуализирован (ключ демо-состояния v6,
+    // текстовые шаги вечернего разбора через checkin-helpers) и прогоняется здесь.
+    'morning-review.spec.mjs',
   ],
   outputDir: 'artifacts/ux-check/playwright-output',
   fullyParallel: false,
