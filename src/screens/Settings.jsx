@@ -1096,9 +1096,8 @@ export default function Settings({
                   onClick={() => setScreen('privacy-notice')}
                 />
                 <div className="mx-profile-inset text-[13px] leading-relaxed text-muted">
-                  Экспорт и удаление аккаунта сейчас доступны через Telegram Mini App с проверенной
-                  подписью. Веб-вход доступен, но эти действия пока не предлагаются в
-                  веб-интерфейсе.
+                  Экспорт и удаление аккаунта сейчас доступны в Telegram Mini App. Веб-вход доступен,
+                  но эти действия пока не предлагаются в веб-интерфейсе.
                 </div>
               </>
             )}

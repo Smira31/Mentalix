@@ -31,10 +31,9 @@ test('Journey закрывает private API для legacy web-ID до server-si
     /const canUsePrivateJourney = platformName === 'telegram' && Number\(user\?\.id\) > 0/
   )
   assert.match(journeySource, /if \(!canUsePrivateJourney\) return undefined/)
-  assert.match(
-    journeySource,
-    /Личные записи и теги доступны в Telegram Mini App с проверенной подписью\./
-  )
+  // AUD-PRIVACY-001 / AUD-004: без обещания «проверенной подписи».
+  assert.match(journeySource, /Личные записи и теги доступны в Telegram Mini App\./)
+  assert.doesNotMatch(journeySource, /проверенной подписью/)
   assert.match(journeySource, /пока для неё не появятся server-side\s+sessions\./)
 })
 

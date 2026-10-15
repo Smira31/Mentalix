@@ -398,7 +398,7 @@ export function HistoryDetail({
                 </button>
               ) : (
                 <p className="mt-2 text-[12px] leading-relaxed text-muted">
-                  Выбор контекста доступен в Telegram Mini App с проверенной подписью.
+                  Выбор контекста доступен в Telegram Mini App.
                 </p>
               )}
               {contextError && (
