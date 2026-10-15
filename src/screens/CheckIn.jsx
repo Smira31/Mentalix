@@ -25,12 +25,11 @@ import {
   Users,
   Wallet,
 } from 'lucide-react'
-import BackButton from '../components/BackButton'
 import JournalTextarea from '../components/JournalTextarea'
 import RoundSubmitButton from '../components/RoundSubmitButton'
 import WebActionBar from '../components/WebActionBar'
 import { pickByDay, MORNING_NOTE_PROMPTS, LESSON_PROMPTS } from '../data/prompts'
-import { useMainButton, useSecondaryButton } from '../platform/telegram.hooks'
+import { useBackButton, useMainButton, useSecondaryButton } from '../platform/telegram.hooks'
 import {
   useFullscreenSurface,
   FULLSCREEN_SHELL_CLASS,
@@ -54,7 +53,6 @@ import {
   clearEveningDraft,
   eveningDraftHasContent,
 } from '../lib/todayDrafts'
-import { toLocalCalendarDate } from '../lib/dateTimezonePolicy'
 import { readCanonicalCurrentStreak, readCanonicalStreakStats } from '../lib/canonicalStreak'
 import { buildStreakDays, shouldCelebrateStreak } from '../lib/streakCelebration'
 import { useStreakBaseline } from '../lib/useStreakBaseline'
@@ -139,13 +137,35 @@ const CHECKIN_HEADER_CLASS = `${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center 
 const FULLSCREEN_COMPLETION_CLASS =
   'mx-fullscreen-completion w-full flex-1 min-h-0 flex flex-col overflow-hidden'
 
-// Одна круглая «→» справа внизу — та же кнопка, что в редакторе «Что на уме?».
-export function CheckInNextControls({ onNext, disabled = false, variant = 'scale' }) {
+/*
+ * Одна круглая кнопка шага — та же, что в редакторе «Что на уме?».
+ * Пока на шаге ничего не выбрано и не введено, в ней «✕», и нажатие
+ * закрывает чек-ин с сохранением черновика (вечером — с подтверждением).
+ * После выбора или ввода это «→» («Далее») и переход на следующий шаг.
+ * Своих «назад» и «закрыть» в шапке экрана нет: возврат — системная
+ * кнопка «Назад» Telegram (useBackButton).
+ */
+export function CheckInNextControls({
+  mode = 'next',
+  onNext,
+  onClose,
+  variant = 'scale',
+  disabled = false,
+}) {
+  const closing = mode === 'close'
+
   return (
     <div
       className={`mx-checkin-next-controls${variant === 'emotion' ? ' mx-checkin-next-controls--emotion' : ''}`}
     >
-      <RoundSubmitButton label="Далее" testId="checkin-next" onClick={onNext} disabled={disabled} />
+      <RoundSubmitButton
+        label={closing ? 'Закрыть' : 'Далее'}
+        testId="checkin-next"
+        icon={closing ? 'x' : 'arrow'}
+        crossfade
+        disabled={disabled}
+        onClick={closing ? onClose : onNext}
+      />
     </div>
   )
 }
@@ -219,7 +239,10 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
     focus: redo ? null : (existing?.focus ?? null),
     sleep_quality: redo ? null : (existing?.sleep_quality ?? null),
   }))
-  const [note, setNote] = useState('')
+  const [note, setNote] = useState(() => {
+    const draft = readCheckinDraft({ userId: user.id })
+    return draftHasContent(draft) ? morningDraftToNote(draft) : ''
+  })
   const [selectedFocus, setSelectedFocus] = useState(() =>
     !redo && DAY_FOCUS_OPTIONS.some(option => option.label === existing?.day_focus)
       ? existing.day_focus
@@ -287,8 +310,15 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
   function handleBack() {
     platform.haptic('light')
 
-    if (step === doneStep || step === 0) {
+    if (step === doneStep) {
       onDone()
+      return
+    }
+
+    // С первого шага возвращаться некуда: «Назад» закрывает чек-ин так же,
+    // как круглая «✕» на шаге, — черновик остаётся на устройстве.
+    if (step === 0) {
+      handleClose()
       return
     }
 
@@ -298,6 +328,30 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
   function pick(key, level) {
     platform.haptic('light')
     setValues(current => ({ ...current, [key]: level }))
+  }
+
+  // Debounced-сохранение утренней мысли в черновик — текст не теряется
+  // при выходе крестиком или закрытии вкладки. Полностью стёртый текст
+  // убирает и старый черновик: возврат не воскрешает удалённое.
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      if (note.trim()) {
+        saveCheckinDraft({ userId: user.id, draft: { mode: 'brief', brief: note } })
+      } else {
+        clearCheckinDraft({ userId: user.id })
+      }
+    }, 500)
+    return () => window.clearTimeout(timeoutId)
+  }, [note, user.id])
+
+  function handleClose() {
+    platform.haptic('light')
+    if (note.trim()) {
+      saveCheckinDraft({ userId: user.id, draft: { mode: 'brief', brief: note } })
+    } else {
+      clearCheckinDraft({ userId: user.id })
+    }
+    onDone()
   }
 
   async function finish() {
@@ -332,6 +386,10 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
       )
       setSavedMorningId(savedMorning?.id ?? null)
       onCompleted?.()
+      // Сохранено — черновик убран, а пустая заметка не даёт ни крестику,
+      // ни отложенному таймеру воссоздать его после успеха.
+      clearCheckinDraft({ userId: user.id })
+      setNote('')
       platform.haptic('success')
       /*
        * Canonical streak (GET /api/streak) — primary source числа серии
@@ -367,6 +425,11 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
       setStep(doneStep)
     } catch (saveError) {
       console.error(saveError)
+      // Сбой API не теряет текст: черновик остаётся на устройстве,
+      // и повторный вход восстановит написанное.
+      if (note.trim()) {
+        saveCheckinDraft({ userId: user.id, draft: { mode: 'brief', brief: note } })
+      }
       setError('Не удалось сохранить. Попробуй ещё раз.')
     } finally {
       setSaving(false)
@@ -381,6 +444,12 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
     }
     onDone()
   }
+
+  /*
+   * Что читает нижняя круглая кнопка: неотвеченная шкала или фокус без
+   * плитки — «✕» (выход с черновиком), выбранный ответ — «→» («Далее»).
+   */
+  const stepAnswered = scale ? Boolean(values[scale.key]) : Boolean(selectedFocus)
 
   const action =
     step === doneStep
@@ -403,6 +472,13 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
 
   useSecondaryButton({ text: '', onClick: () => {}, visible: false })
 
+  /*
+   * Системная «Назад» Telegram: со второго и дальнейших шагов — на
+   * предыдущий шаг, с первого — выход с сохранением черновика.
+   * Демо-шапка Telegram (?demo=1) вызывает тот же обработчик.
+   */
+  useBackButton(handleBack)
+
   const screenRef = useRef(null)
 
   if (celebrating) {
@@ -422,9 +498,10 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
 
   return createPortal(
     <div ref={screenRef} className="mx-demo-checkin" style={demoSurfaceStyle}>
-      <header className="mx-demo-checkin__header">
-        <BackButton onClick={handleBack} label="Сегодня" />
-      </header>
+      {/* Своих кнопок «назад» и «закрыть» здесь нет: возврат — системная
+          «Назад» Telegram, выход — круглая «✕» на шаге. Пустая шапка держит
+          прежнюю высоту строки: она часть геометрии шага. */}
+      <header className="mx-demo-checkin__header" aria-hidden="true" />
 
       <main
         className={`mx-demo-checkin__body ${step === doneStep ? 'is-complete' : step === noteStep || step === dayFocusStep ? 'is-editor' : ''}`}
@@ -457,8 +534,8 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
                 guidedFlow
                 autoFocus
                 keepFocusOnSubmit
-                submitIcon="arrow"
-                submitLabel="Далее"
+                submitIcon="check"
+                submitLabel="Завершить"
                 submitTestId="checkin-complete"
                 onSubmit={finish}
                 submitLoading={saving}
@@ -522,10 +599,11 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
         </StepSlide>
       </main>
       {step < noteStep ? (
-        // Шкалы: «→» активна после выбора кружка. Фокус дня: всегда активна.
+        // Ничего не выбрано на шаге — «✕» (выход с черновиком), выбор — «→».
         <CheckInNextControls
+          mode={stepAnswered ? 'next' : 'close'}
           onNext={() => goToStep(current => Math.min(doneStep, current + 1))}
-          disabled={scale ? !values[scale.key] : false}
+          onClose={handleClose}
         />
       ) : null}
       {step === doneStep ? (
@@ -964,11 +1042,14 @@ function CheckInCore({
       return undefined
     }
 
-    if (!draftHasContent(morningDraft)) {
-      return undefined
-    }
-
     const timeoutId = window.setTimeout(() => {
+      // Пустой черновик убираем: стёртый текст не возвращается при входе.
+      if (!draftHasContent(morningDraft)) {
+        clearCheckinDraft({ userId: user.id })
+        setDraftStatus('idle')
+        return
+      }
+
       const saved = saveCheckinDraft({
         userId: user.id,
         draft: morningDraft,
@@ -990,13 +1071,18 @@ function CheckInCore({
     }))
   }
 
-  // Debounced-сохранение черновика вечернего разбора (#3)
+  // Debounced-сохранение черновика вечернего разбора (#3).
+  // Полностью очищенные уроки убирают и старый черновик — возврат
+  // не воскрешает удалённое; пустой черновик не пишется вовсе.
   useEffect(() => {
     if (!isEvening) return undefined
-    if (!eveningDraftHasContent(lessons)) return undefined
 
     const timeoutId = window.setTimeout(() => {
-      saveEveningDraft({ userId: user.id, lessons })
+      if (eveningDraftHasContent(lessons)) {
+        saveEveningDraft({ userId: user.id, lessons })
+      } else {
+        clearEveningDraft({ userId: user.id })
+      }
     }, 500)
 
     return () => window.clearTimeout(timeoutId)
@@ -1098,8 +1184,10 @@ function CheckInCore({
         })
         setDraftStatus('idle')
       } else {
-        // Вечерний разбор сохранён — очищаем черновик (#3)
+        // Вечерний разбор сохранён — очищаем черновик и уроки: ни крестик,
+        // ни отложенный таймер не воссоздадут черновик после успеха (#3).
         clearEveningDraft({ userId: user.id })
+        setLessons({})
       }
 
       platform.haptic('success')
@@ -1362,8 +1450,6 @@ function CheckInCore({
     onDone()
   }
 
-  const isFinal = isCompletion || isStreakStep
-
   function handleBack() {
     platform.haptic('light')
 
@@ -1372,12 +1458,32 @@ function CheckInCore({
       return
     }
 
+    // С первого шага возвращаться некуда: «Назад» закрывает разбор так же,
+    // как круглая «✕» на шаге. Несохранённый урок вечером подтверждается
+    // диалогом, пустой — просто оставляет черновик в прежнем виде.
     if (step === 0) {
-      requestClose()
+      handleClose()
       return
     }
 
     goToStep(current => current - 1)
+  }
+
+  // Крестик выхода: если есть несохранённые уроки, показываем подтверждение.
+  // Черновик уже сохранён в localStorage (saveEveningDraft), подтверждение
+  // нужно только чтобы пользователь знал, что запись не отправлена на сервер.
+  function handleClose() {
+    platform.haptic('light')
+    if (eveningDraftHasContent(lessons)) {
+      // Дебаунс мог ещё не сработать — пишем черновик до подтверждения,
+      // чтобы текст гарантированно пережил выход и вернулся при входе.
+      saveEveningDraft({ userId: user.id, lessons })
+      setCloseConfirmationOpen(true)
+      return
+    }
+    // Пустые уроки: старый черновик не должен вернуться после выхода.
+    clearEveningDraft({ userId: user.id })
+    onDone()
   }
 
   const screenRef = useRef(null)
@@ -1461,6 +1567,14 @@ function CheckInCore({
     visible: Boolean(skipAction) && !saving && !isMorningNoteStep && !isStreakStep,
   })
 
+  /*
+   * Системная «Назад» Telegram: со второго шага — на предыдущий, с первого —
+   * выход из разбора (несохранённый урок подтверждается диалогом). На финале
+   * и экране серии — возврат в «Сегодня». Демо-шапка Telegram (?demo=1)
+   * вызывает тот же обработчик.
+   */
+  useBackButton(handleBack)
+
   const webAction =
     effectiveMainAction && isCompletion
       ? {
@@ -1477,16 +1591,18 @@ function CheckInCore({
 
   const webSecondaryAction = null
 
-  const compactStepAction = isEmotionStep
-    ? () => goToStep(current => current + 1)
-    : isScaleStep
-      ? () => goToStep(current => current + 1)
-      : null
+  const compactStepAction =
+    isEmotionStep || isScaleStep ? () => goToStep(current => current + 1) : null
 
-  const compactStepDisabled = isEmotionStep
-    ? !emotion
+  /*
+   * Без ответа на шаге (нет эмоции или уровня шкалы) кнопка показывает «✕»:
+   * нажатие закрывает разбор так же, как прежний крестик в шапке. Ответ
+   * есть — «→» («Далее»).
+   */
+  const compactStepAnswered = isEmotionStep
+    ? Boolean(emotion)
     : isScaleStep
-      ? !values[MORNING_SCALE_STEPS[step]?.key]
+      ? Boolean(values[MORNING_SCALE_STEPS[step]?.key])
       : false
 
   if (isStreakStep && eveningStreakStats) {
@@ -1511,11 +1627,9 @@ function CheckInCore({
         className={`${FULLSCREEN_SHELL_CLASS} ${previewDemoMode ? 'mx-checkin-demo' : ''}`}
         style={viewportStyle}
       >
-        <div
-          className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`}
-        >
-          <BackButton onClick={handleBack} />
-        </div>
+        {/* Финалу свои «назад» и «закрыть» не нужны: возврат — системная
+            «Назад» Telegram, выход — пилюля «Сохранить и выйти» внизу. */}
+        <div className={CHECKIN_HEADER_CLASS} aria-hidden="true" />
 
         <div className={FULLSCREEN_COMPLETION_CLASS}>
           <CheckInCompletion
@@ -1629,36 +1743,42 @@ function CheckInCore({
             : 'Пара слов — уже разговор с собой.'
           : 'Три пункта. Мелочи считаются — из них и состоит день.')
 
+  /*
+   * Текущий урок: заполненное поле — «→» («Далее»), пустое — «✕» (выход
+   * с черновиком, как прежний крестик в шапке). Последний урок остаётся
+   * галочкой завершения и не меняется.
+   */
+  const lessonStepHasText = Boolean((lessons[eveningQuestion?.key] || '').trim())
+
   return createPortal(
     <div
       ref={screenRef}
       className={`${FULLSCREEN_SHELL_CLASS} ${previewDemoMode ? 'mx-checkin-demo' : ''}`}
       style={viewportStyle}
     >
+      {/* Своих «назад» и «закрыть» в шапке нет: возврат — системная «Назад»
+          Telegram, выход — круглая «✕» на шаге. Высоту строки управления
+          держит сам CHECKIN_HEADER_CLASS. */}
       {!(isEvening && isCard) && (
         <div className={CHECKIN_HEADER_CLASS}>
-          <BackButton onClick={handleBack} />
-          {recovery && (
+          {recovery ? (
             <span className="text-[13px] text-muted" data-testid="streak-recovery-date">
               {yesterdayLabel(recovery.date)}
             </span>
-          )}
+          ) : null}
         </div>
       )}
 
       <div className={FULLSCREEN_SCROLL_CLASS} style={interactiveStyle}>
         <StepSlide stepKey={step} onAnimatingChange={handleAnimatingChange}>
           <div className={isCard || isEmotionStep ? CHECKIN_LONG_CLASS : CHECKIN_CENTER_CLASS}>
-            {/* Текстовые вопросы вечера — BackButton внутри контента (как
-               «Твоя мысль»): вопрос начинается сразу под шапкой, отступ 16. */}
-            {isEvening && isCard && (
+            {/* Текстовые вопросы вечера: своих «назад» и «закрыть» нет —
+                возврат системный, выход — круглая «✕» внизу шага. */}
+            {isEvening && isCard && recovery && (
               <div className="w-full flex items-center justify-between pb-2">
-                <BackButton onClick={handleBack} />
-                {recovery && (
-                  <span className="text-[13px] text-muted" data-testid="streak-recovery-date">
-                    {yesterdayLabel(recovery.date)}
-                  </span>
-                )}
+                <span className="text-[13px] text-muted" data-testid="streak-recovery-date">
+                  {yesterdayLabel(recovery.date)}
+                </span>
               </div>
             )}
             {!isScaleStep && (
@@ -1750,13 +1870,28 @@ function CheckInCore({
                         guidedFlow
                         autoFocus
                         keepFocusOnSubmit
-                        submitIcon="arrow"
-                        submitLabel={recovery && cardIdx === cardCount - 1 ? 'Сохранить' : 'Далее'}
+                        submitIcon={
+                          cardIdx === cardCount - 1 ? 'check' : lessonStepHasText ? 'arrow' : 'x'
+                        }
+                        submitIconCrossfade
+                        submitLabel={
+                          cardIdx === cardCount - 1
+                            ? recovery
+                              ? 'Сохранить'
+                              : 'Закрыть день'
+                            : lessonStepHasText
+                              ? 'Далее'
+                              : 'Закрыть'
+                        }
                         submitTestId={
                           recovery && cardIdx === cardCount - 1 ? 'checkin-save' : 'checkin-next'
                         }
                         onSubmit={() =>
-                          cardIdx < cardCount - 1 ? goToStep(current => current + 1) : submit()
+                          cardIdx < cardCount - 1
+                            ? lessonStepHasText
+                              ? goToStep(current => current + 1)
+                              : handleClose()
+                            : submit()
                         }
                         submitLoading={saving}
                         formatting={false}
@@ -1841,6 +1976,7 @@ function CheckInCore({
               </button>
               <button
                 type="button"
+                data-testid="checkin-close-draft-confirm"
                 onClick={closeWithDraft}
                 className="min-h-12 rounded-full border border-cream/15 px-4 text-[14px] font-semibold text-cream"
               >
@@ -1853,8 +1989,9 @@ function CheckInCore({
 
       {!isCompletion && compactStepAction ? (
         <CheckInNextControls
+          mode={compactStepAnswered ? 'next' : 'close'}
           onNext={compactStepAction}
-          disabled={compactStepDisabled}
+          onClose={handleClose}
           variant={isEmotionStep ? 'emotion' : 'scale'}
         />
       ) : null}
@@ -1874,14 +2011,20 @@ function DemoCompletionScreen({ evening, onDone }) {
     onClick: onDone,
   }
 
+  // Системная «Назад» Telegram на демо-финале делает то же, что кнопка ниже.
+  useBackButton(onDone)
+
   return createPortal(
     <div
       className={`${FULLSCREEN_SHELL_CLASS} ${isPreviewDemoMode() ? 'mx-checkin-demo' : ''}`}
       style={viewportStyle}
     >
-      <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`}>
-        <BackButton onClick={onDone} />
-      </div>
+      {/* Своей «назад» здесь нет: возврат — системная кнопка Telegram.
+          Слот держит высоту шапки, поэтому остаётся пустым. */}
+      <div
+        className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`}
+        aria-hidden="true"
+      />
       <div className={FULLSCREEN_COMPLETION_CLASS}>
         <CheckInCompletion
           evening={evening}

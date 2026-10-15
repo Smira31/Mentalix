@@ -108,11 +108,15 @@ test('day_focus шаг находится перед note и перед done', (
   assert.match(morningFlow, /const doneStep = noteStep \+ 1/)
 })
 
-test('утренние шаги: одна круглая «→» без «Пропустить»; на шкале она неактивна до выбора', () => {
+test('утренние шаги: одна круглая кнопка без «Пропустить»; без ответа — «✕», после выбора — «→»', () => {
   assert.doesNotMatch(checkinSource, /Пропустить/)
   assert.doesNotMatch(checkinSource, /checkin-skip/)
   assert.doesNotMatch(morningFlow, /onSkip/)
-  assert.match(morningFlow, /disabled=\{scale \? !values\[scale\.key\] : false\}/)
+  assert.match(
+    morningFlow,
+    /const stepAnswered = scale \? Boolean\(values\[scale\.key\]\) : Boolean\(selectedFocus\)/,
+  )
+  assert.match(morningFlow, /mode=\{stepAnswered \? 'next' : 'close'\}/)
 })
 
 test('плитка фокуса — один выбор, повторный тап снимает выбор', () => {

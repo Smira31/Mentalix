@@ -383,15 +383,14 @@ export function confirmAction(message) {
    ============================================================ */
 
 /*
- * CloudStorage появился в Bot API 6.9: SDK 8 определяет объект всегда, но на
- * клиенте старее вызов любого метода сам пишет console.error и бросает
- * WebAppMethodUnsupported. Вне Telegram SDK создаёт WebApp с версией «6.0» —
- * в том числе в веб-превью, поэтому без проверки версии каждый вызов облака
- * шумит в консоль ошибкой. Версию проверяем ДО обращения к методам —
- * тот же приём, что в offerHomeScreen ниже.
+ * SDK требует клиента ≥ 6.9: на старых версиях вызов любого метода
+ * CloudStorage сам пишет console.error и бросает WebAppMethodUnsupported.
+ * Вне Telegram SDK создаёт WebApp с версией «6.0» — в том числе в нашем
+ * веб-превью, поэтому без проверки версии каждый вызов облачного хранилища
+ * шумит в консоль ошибкой. Версию проверяем ДО обращения к методам.
  */
 function cloudStorageUsable(storage, method) {
-  if (!storage?.[method]) return false
+  if (!storage || !storage[method]) return false
 
   const webApp = api()
 

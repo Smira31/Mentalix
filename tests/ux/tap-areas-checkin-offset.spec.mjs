@@ -10,9 +10,9 @@ import { expect, test } from '@playwright/test'
  *    это в демо-режиме (?demo=1): крестики подсказок на «Сегодня»,
  *    «Настроить твои практики», круглая «→» в чек-ине, вкладки и
  *    «Закрыть» на странице серии.
- * 2) Вне Telegram у чек-ина и «Настроения» своя капсула «Назад»: её левый
- *    край стоит на 16 pt от края экрана (--mx-screen-x), на одной линии с
- *    левым краем текста. Допуск ±1 pt.
+ * 2) Своей капсулы «Назад» у чек-ина больше нет: возврат — системная кнопка
+ *    Telegram. Одна круглая кнопка шага стоит на 16 pt от правого края
+ *    экрана (--mx-screen-x) в обоих состояниях «✕» и «→». Допуск ±1 pt.
  *
  * Поиск — только по data-testid; вместо ожиданий таймером — ожидание
  * состояния (expect.poll / toBeVisible).
@@ -23,6 +23,13 @@ const SCREEN_X_PT = 16
 const SCREEN_X_TOLERANCE_PT = 1
 
 const IPHONE_15_PRO_VIEWPORT = { width: 393, height: 852 }
+
+/** Сегодняшний день в заданный локальный час (даты — только относительно текущего дня). */
+function todayAt(hour) {
+  const date = new Date()
+  date.setHours(hour, 0, 0, 0)
+  return date
+}
 
 // Подсказки на «Сегодня» видны по одной: сначала о серии, после её
 // закрытия — о карточках. Обе области нажатия проверяются по очереди.
@@ -80,15 +87,17 @@ async function expectTapArea(page, testId) {
     .toBe(0)
 }
 
-/** Левый край капсулы «Назад» = 16 pt от края экрана (±1 pt). */
-async function expectBackPillOffset(page) {
-  const pill = page.locator('[data-testid="back-button"]')
-  await expect(pill).toBeVisible()
-  const box = await pill.boundingBox()
-  expect(box, 'капсула «Назад» должна иметь bounding box').not.toBeNull()
+/** Правый край круглой кнопки шага = 16 pt от правого края экрана (±1 pt). */
+async function expectStepButtonOffset(page, label) {
+  const button = page.locator(`[data-testid="checkin-next"][aria-label="${label}"]`)
+  await expect(button).toBeVisible()
+  const box = await button.boundingBox()
+  expect(box, `круглая кнопка «${label}» должна иметь bounding box`).not.toBeNull()
+  const screenWidth = await page.evaluate(() => window.innerWidth)
+  const rightGap = screenWidth - (box.x + box.width)
   expect(
-    Math.abs(box.x - SCREEN_X_PT),
-    `левый край капсулы «Назад» ${box.x} pt ≠ ${SCREEN_X_PT} pt (±${SCREEN_X_TOLERANCE_PT})`
+    Math.abs(rightGap - SCREEN_X_PT),
+    `правый край круглой кнопки «${label}» ${rightGap} pt от края ≠ ${SCREEN_X_PT} pt (±${SCREEN_X_TOLERANCE_PT})`
   ).toBeLessThanOrEqual(SCREEN_X_TOLERANCE_PT)
 }
 
@@ -131,8 +140,8 @@ test.describe('Области нажатия и отступ «Назад»', ()
     await page.locator('[data-testid="series-close"]').click()
     await expect(page.locator('[data-testid="series-tab-badges"]')).toBeHidden()
 
-    // Чек-ин: «Пропустить» нет, одна круглая «→». Выбираем mood,
-    // переходим к sleep_quality и проверяем область нажатия «→».
+    // Чек-ин: «Пропустить» нет, одна круглая кнопка шага («✕» без ответа,
+    // «→» после ответа). Выбираем mood, переходим к sleep_quality и меряем её.
     await page.locator('[data-testid="today-card-morning"]').click()
     await expect(page.getByRole('heading', { name: 'Как ты сейчас?' })).toBeVisible()
     await page.locator('[data-testid="checkin-scale-option"][data-level="3"]').click()
@@ -145,7 +154,7 @@ test.describe('Области нажатия и отступ «Назад»', ()
     await context.close()
   })
 
-  test('капсула «Назад» в чек-ине стоит на 16 pt от левого края', async ({
+  test('круглая кнопка шага стоит на 16 pt от правого края в обоих состояниях («✕»/«→»)', async ({
     browser,
     baseURL,
   }) => {
@@ -153,11 +162,24 @@ test.describe('Области нажатия и отступ «Назад»', ()
 
     const checkinContext = await fixtureContext(browser, baseURL)
     const checkin = await checkinContext.newPage()
-    await checkin.clock.setFixedTime('2026-09-23T08:00:00+03:00')
+    await checkin.clock.setFixedTime(todayAt(8))
     await checkin.goto('/')
     await checkin.locator('[data-testid="today-card-morning"]').click()
     await expect(checkin.getByRole('heading', { name: 'Как ты сейчас?' })).toBeVisible()
-    await expectBackPillOffset(checkin)
+
+    // Своей капсулы «Назад» и крестика в шапке у чек-ина нет: возврат —
+    // системная кнопка Telegram, выход — круглая кнопка шага.
+    await expect(checkin.locator('[data-testid="back-button"]')).toHaveCount(0)
+    await expect(checkin.locator('[data-testid="checkin-close"]')).toHaveCount(0)
+
+    await expectStepButtonOffset(checkin, 'Закрыть')
+    await checkin.locator('[data-testid="checkin-scale-option"][data-level="3"]').click()
+    // Ответ выбран: та же кнопка показывает «→» и стоит там же.
+    await expectStepButtonOffset(checkin, 'Далее')
+
+    await checkin.locator('[data-testid="checkin-next"][aria-label="Далее"]').click()
+    await expect(checkin.getByRole('heading', { name: 'Как ты спал?' })).toBeVisible()
+    await expect(checkin.locator('[data-testid="back-button"]')).toHaveCount(0)
     await checkinContext.close()
   })
 })
