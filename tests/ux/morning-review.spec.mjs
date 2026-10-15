@@ -5,10 +5,11 @@ import {
   dayFocusOptionStep,
   openDayCard,
   scaleStep,
+  textStep,
 } from './checkin-helpers.mjs'
 
 const card = (page, kind) => page.getByTestId(`today-card-${kind}`)
-const DEMO_KEY = 'mentalix_preview_demo_state_v5:day_closed'
+const DEMO_KEY = 'mentalix_preview_demo_state_v6:day_closed'
 
 for (const viewport of [{ width: 390, height: 844 }, { width: 789, height: 1024 }]) {
   test(`демо: закрытый день переживает повтор утра (${viewport.width})`, async ({ browser, baseURL }) => {
@@ -38,7 +39,7 @@ for (const viewport of [{ width: 390, height: 844 }, { width: 789, height: 1024 
     await expect(card(page, 'evening')).toHaveAttribute('data-state', 'done')
 
     // После redo состояние записано в localStorage (PUT триггерит writeState).
-    const after = await page.evaluate(() => JSON.parse(localStorage.getItem('mentalix_preview_demo_state_v5:day_closed')))
+    const after = await page.evaluate(key => JSON.parse(localStorage.getItem(key)), DEMO_KEY)
     expect(after).toBeTruthy()
 
     // Вечерний разбор не сброшен — review_completed_at на месте.
@@ -65,11 +66,8 @@ test('демо: вечер открыт днём и проходится до з
   await openDayCard(page, 'evening')
   // Эмоция «ровно» уже предзаполнена из утреннего чек-ина — просто идём далее
   await page.getByTestId('checkin-next').click()
-  for (let index = 0; index < 4; index += 1) {
-    const next = page.getByTestId('checkin-next')
-    if (await next.count()) await next.click()
-    else break
-  }
+  // Вечерние текстовые шаги — по помощникам, а не «слепыми» нажатиями «Далее».
+  for (const value of ['Результат', 'Трудность', 'Вывод']) await textStep(page, value)
   await expect(page.getByTestId('checkin-feedback-option').first()).toBeVisible()
   await closeCompletion(page)
   await expect(card(page, 'evening')).toHaveAttribute('data-state', 'done')
