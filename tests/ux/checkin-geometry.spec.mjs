@@ -1,3 +1,4 @@
+import fs from 'node:fs'
 import { expect, test } from '@playwright/test'
 
 /*
@@ -152,8 +153,9 @@ test('ряды шкал центрированы по экрану на 393 и 4
       await page.locator('[data-testid="checkin-next"]').click()
     }
 
-    // Шаг «Главный фокус дня» — необязательный, пропускаем.
-    await page.locator('[data-testid="checkin-next"]').click()
+    // Шаг «Главный фокус дня»: без выбора плитки вперёд не идёт — выбираем.
+    await page.locator('[data-testid="checkin-day-focus-option"][data-value="Работа"]').click()
+    await page.locator('[data-testid="checkin-next"][aria-label="Далее"]').click()
 
     // Текстовый шаг → экран завершения.
     const editor = page.getByRole('textbox', { name: 'Что на уме' })
@@ -215,9 +217,8 @@ test('история «Сегодня»: «…» у правого края ка
     await page.clock.setFixedTime('2026-09-23T08:00:00+03:00')
     await page.goto('/')
     await page.locator('[data-testid="today-card-morning"]').click()
-    // В Telegram своей кнопки «Назад» нет (BackButton → null, системная
-    // кнопка Telegram). Убираем веб-кнопку из раскладки так же, как там.
-    await page.addStyleTag({ content: '[data-testid="back-button"]{display:none!important}' })
+    // Своей кнопки «Назад» у чек-ина больше нет: возврат — системная кнопка
+    // Telegram, поэтому из раскладки ничего убирать не нужно.
 
     const button = page.locator('[data-testid="history-redo-button"]')
     const card = page.locator('[data-testid="history-today-card"]')
@@ -277,8 +278,9 @@ test('ошибка сохранения чек-ина: понятное сооб
     await page.locator(`[data-testid="checkin-scale-option"][data-level="${level}"]`).click()
     await page.locator('[data-testid="checkin-next"]').click()
   }
-  // Шаг «Главный фокус дня» — пропускаем.
-  await page.locator('[data-testid="checkin-next"]').click()
+  // Шаг «Главный фокус дня»: без выбора плитки вперёд не идёт — выбираем.
+  await page.locator('[data-testid="checkin-day-focus-option"][data-value="Работа"]').click()
+  await page.locator('[data-testid="checkin-next"][aria-label="Далее"]').click()
 
   const editor = page.getByRole('textbox', { name: 'Что на уме' })
   await editor.pressSequentially('Спокойное утро')
@@ -292,6 +294,110 @@ test('ошибка сохранения чек-ина: понятное сооб
   await expect.poll(() => bodies.length).toBe(2)
   expect(bodies[1]).toEqual(bodies[0])
   expect(bodies[0]).toMatchObject({ mood: 4, sleep_quality: 3, energy: 2, focus: 3, note: 'Спокойное утро' })
+
+  await context.close()
+})
+
+/*
+ * Навигация чек-ина (UX-аудит, пакет 1): крестик выхода повторяет
+ * геометрию круглой навигации DailyJournal (токен --mx-header-control,
+ * 43×43, круглая, стекло), а «Далее» — общий размер круглой кнопки
+ * 45×45. Клавиатурный focus-visible остаётся доступным. Снимки и геометрия —
+ * 393×852, 360×640 и 430×932.
+ */
+const NAV_VIEWPORTS = [
+  { name: '393x852', width: 393, height: 852, screenshot: true },
+  { name: '360x640', width: 360, height: 640, screenshot: true },
+  { name: '430x932', width: 430, height: 932, screenshot: true },
+]
+
+const NAV_EVIDENCE_DIR = 'qa-evidence/checkin-navigation-ux'
+
+/** Сегодняшний день в заданный локальный час (даты — только относительно текущего дня). */
+function todayAt(hour) {
+  const date = new Date()
+  date.setHours(hour, 0, 0, 0)
+  return date
+}
+
+async function boxSize(locator, label) {
+  const box = await locator.boundingBox()
+  expect(box, `${label}: нужен bounding box`).not.toBeNull()
+  return [Math.round(box.width), Math.round(box.height)]
+}
+
+test('навигация чек-ина: одна круглая кнопка шага 45×45 («✕»/«→»), focus-visible доступен', async ({
+  browser,
+  baseURL,
+}) => {
+  test.setTimeout(240_000)
+
+  fs.mkdirSync(NAV_EVIDENCE_DIR, { recursive: true })
+
+  for (const viewport of NAV_VIEWPORTS) {
+    const context = await newMobileContext(browser, baseURL, viewport, fixtureFor)
+    const page = await context.newPage()
+    await page.clock.setFixedTime(todayAt(8))
+    await page.goto('/')
+    await page.getByRole('button', { name: /Утренний чек-ин/ }).click()
+    await expect(page.getByRole('heading', { name: 'Как ты сейчас?' })).toBeVisible()
+
+    // Одна круглая кнопка шага: без ответа «✕», после ответа «→» — в обоих
+    // состояниях та же геометрия 45×45, разметка кнопки не перестраивается.
+    const stepButton = page.locator('[data-testid="checkin-next"]')
+    await expect(stepButton).toHaveAttribute('aria-label', 'Закрыть')
+    expect(await boxSize(stepButton, `кнопка шага (✕) ${viewport.name}`)).toEqual([45, 45])
+
+    await page.locator('[data-testid="checkin-scale-option"][data-level="3"]').click()
+    await expect(stepButton).toHaveAttribute('aria-label', 'Далее')
+    expect(await boxSize(stepButton, `кнопка шага (→) ${viewport.name}`)).toEqual([45, 45])
+
+    // Клавиатурный фокус: после Tab-модальности :focus-visible совпадает,
+    // и золотое кольцо из index.css не погашено.
+    await page.keyboard.press('Tab')
+    const ring = await page.evaluate(() => {
+      const el = document.querySelector('[data-testid="checkin-next"]')
+      el.focus()
+      const style = getComputedStyle(el)
+      return {
+        focusVisible: el.matches(':focus-visible'),
+        outlineStyle: style.outlineStyle,
+        outlineWidth: style.outlineWidth,
+      }
+    })
+    expect(ring.focusVisible, `focus-visible круглой кнопки на ${viewport.name}`).toBe(true)
+    expect(ring.outlineStyle, `обводка фокуса на ${viewport.name}`).toBe('solid')
+    expect(parseFloat(ring.outlineWidth), `толщина обводки на ${viewport.name}`).toBeGreaterThan(0)
+
+    if (viewport.screenshot) {
+      await page.screenshot({ path: `${NAV_EVIDENCE_DIR}/checkin-nav-${viewport.name}.png` })
+    }
+
+    await context.close()
+  }
+
+  // ── Сравнение с DailyJournal: та же круглая навигация и та же «→» ──
+  const context = await newMobileContext(browser, baseURL, { width: 393, height: 852 }, request => {
+    const pathname = new URL(request.url()).pathname
+    if (pathname.startsWith('/api/daily-journal/entries')) return jsonResponse([])
+    if (pathname.startsWith('/api/daily-journal')) return jsonResponse({})
+    return fixtureFor(request)
+  })
+  const page = await context.newPage()
+  await page.clock.setFixedTime(todayAt(8))
+  await page.goto('/?tab=practices')
+
+  await expect(page.getByTestId('journal-open-cta')).toBeVisible()
+  await page.getByTestId('journal-open-cta').click()
+  await expect(page.getByTestId('dj-intro-skip')).toBeVisible()
+
+  const djBack = page.locator('[data-testid="back-button"]')
+  await expect(djBack).toBeVisible()
+  expect(await boxSize(djBack, 'навигация DailyJournal')).toEqual([43, 43])
+
+  await page.getByTestId('dj-intro-skip').click()
+  await expect(page.getByTestId('dj-stream-next')).toBeVisible()
+  expect(await boxSize(page.getByTestId('dj-stream-next'), '«→» DailyJournal')).toEqual([45, 45])
 
   await context.close()
 })

@@ -776,6 +776,14 @@
   padding: 12px var(--mx-screen-x) calc(var(--app-safe-bottom) + 16px);
 }
 
+/* Шапка шага без своих кнопок. Возврат — системная «Назад» Telegram,
+   выход — круглая кнопка шага, поэтому в шапке нечего показывать; высоту
+   строки управления держим прежней (контрол + вертикальные отступы),
+   иначе геометрия шага сдвигается. */
+.mx-demo-checkin__header:empty {
+  min-height: calc(var(--mx-header-control) + 12px);
+}
+
 .mx-demo-checkin__scene--complete {
   transform: none;
 }

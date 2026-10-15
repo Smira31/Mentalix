@@ -8,6 +8,7 @@ import {
   backToToday,
   openDayCard,
   goBack,
+  closeCheckin,
   expectWeekStrip,
   dayFocusOptionStep,
 } from './checkin-helpers.mjs'
@@ -285,8 +286,11 @@ test.describe('MXL-010 automated technical gate', () => {
     // ── Утренний чек-ин ──
     await openDayCard(page, 'morning')
     await expect(page.getByRole('radiogroup', { name: 'Как ты сейчас?' })).toBeVisible()
-    await expect(page.getByRole('button', { name: /^(Назад|Сегодня)$/ })).toBeVisible()
-    await expect(page.locator('[data-testid="checkin-next"]')).toBeVisible()
+    // Своих «назад»/«закрыть» в шапке нет: возврат — системная кнопка Telegram,
+    // а без ответа круглая кнопка шага показывает «✕».
+    await expect(page.getByTestId('checkin-close')).toHaveCount(0)
+    await expect(page.locator('[data-testid="back-button"]')).toHaveCount(0)
+    await expect(page.locator('[data-testid="checkin-next"][aria-label="Закрыть"]')).toBeVisible()
 
     // Все пять кружков показывают уровень заливки 0/25/50/75/100%.
     const circles = page.locator('[data-testid="checkin-scale-option"] .mx-checkin-scale__inner')
@@ -296,6 +300,8 @@ test.describe('MXL-010 automated technical gate', () => {
     }
     // Шкалы: mood=3, sleep_quality=3, energy=3, focus=3
     await scaleStep(page, 3)
+    // Возврат на предыдущий шаг — системная кнопка Telegram; своей в шапке нет.
+    await expect(page.locator('[data-testid="back-button"]')).toHaveCount(0)
     await scaleStep(page, 3)
     await scaleStep(page, 3)
     await scaleStep(page, 3)
@@ -304,6 +310,8 @@ test.describe('MXL-010 automated technical gate', () => {
     await dayFocusOptionStep(page, 'Работа')
 
     // Текстовый шаг → завершение (submitTestId=checkin-complete вызывает finish)
+    // Последнее действие — галочка (check), не стрелка: aria-label «Завершить».
+    await expect(page.locator('[data-testid="checkin-complete"]')).toHaveAttribute('aria-label', 'Завершить')
     await textStep(page, 'Fixture morning note', 'checkin-complete')
 
     // Экран завершения
@@ -342,13 +350,17 @@ test.describe('MXL-010 automated technical gate', () => {
     await expect(
       page.getByRole('heading', { name: 'Что ближе всего к тому, что ты чувствуешь?' })
     ).toBeVisible()
+    // И в вечернем потоке своих «назад»/«закрыть» в шапке нет.
+    await expect(page.getByTestId('checkin-close')).toHaveCount(0)
+    await expect(page.locator('[data-testid="back-button"]')).toHaveCount(0)
     await emotionStep(page, 'ровно')
     await page.locator('[data-testid="checkin-next"]').click()
 
-    // Три текстовых шага
-    for (const value of ['Fixture result', 'Fixture difficulty', 'Fixture lesson']) {
-      await textStep(page, value)
-    }
+    // Три текстовых шага. Последний — «Закрыть день» (галочка, не стрелка).
+    await textStep(page, 'Fixture result')
+    await textStep(page, 'Fixture difficulty')
+    await expect(page.locator('[data-testid="checkin-next"]')).toHaveAttribute('aria-label', 'Закрыть день')
+    await textStep(page, 'Fixture lesson')
 
     // Экран завершения вечернего разбора
     await expect(page.getByRole('heading', { name: 'Ты завершил разбор дня.' })).toBeVisible()

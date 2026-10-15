@@ -117,12 +117,17 @@ test('completion screen uses traced owl silhouette art (morning done, evening do
   assert.doesNotMatch(component, /checkin-bird-reference|cardMorningDone/)
 })
 
-test('morning flow uses the shared Telegram BackButton; streak screen is StreakCelebration petals', () => {
+test('morning flow uses the system Telegram back; streak screen is StreakCelebration petals', () => {
   const morningFlow = checkinSource.slice(
     checkinSource.indexOf('function MorningCheckInFlow'),
     checkinSource.indexOf('// ── Чек-ин и вечерний')
   )
-  assert.match(morningFlow, /<BackButton onClick=\{handleBack\} label="Сегодня" \/>/)
+  // Своих кнопок «назад» и «закрыть» у шага нет: возврат — системная «Назад»
+  // Telegram, выход — круглая кнопка шага («✕» без ответа, «→» после ответа).
+  assert.doesNotMatch(morningFlow, /<BackButton/)
+  assert.doesNotMatch(morningFlow, /<CheckInCloseButton/)
+  assert.match(morningFlow, /useBackButton\(handleBack\)/)
+  assert.match(morningFlow, /mode=\{stepAnswered \? 'next' : 'close'\}/)
   // Росток заменён экраном серии с лепестками (один компонент, без второго экрана).
   assert.doesNotMatch(checkinSource, /function StreakFlower\(\)/)
   assert.match(morningFlow, /<StreakCelebration/)
@@ -188,9 +193,11 @@ test('scale steps never auto-advance — «Далее» is the only way forward'
     checkinSource.indexOf('function MorningCheckInFlow'),
     checkinSource.indexOf('// ── Чек-ин и вечерний')
   )
+  // Регион ограничен самим обработчиком pick: дебаунс черновика ниже —
+  // не навигация, и его таймер шаг не двигает.
   const morningPick = morningFlow.slice(
     morningFlow.indexOf('function pick('),
-    morningFlow.indexOf('async function finish()')
+    morningFlow.indexOf('// Debounced-сохранение')
   )
   assert.doesNotMatch(morningPick, /setStep/, 'утренний pick не должен двигать шаг')
   assert.doesNotMatch(morningPick, /setTimeout/)

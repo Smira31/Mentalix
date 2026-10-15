@@ -2,6 +2,7 @@ import { devices, expect, test } from '@playwright/test'
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { DAIMON_CELLS, DAIMON_LEVELS } from '../../src/lib/daimonBoard.js'
+import { edgeSwipeBack } from './checkin-helpers.mjs'
 
 const ARTIFACT_ROOT = path.resolve('artifacts/ux-check')
 
@@ -601,8 +602,13 @@ test('локальный UX smoke по основному маршруту', asy
       runtimeErrors,
       results,
       check: async () => {
-        await assertClickable(page.getByTestId('back-button'))
-        await expect(page.getByTestId('back-button')).toHaveCount(1)
+        // Своих «назад» и «закрыть» в шапке нет: возврат — системная кнопка
+        // Telegram, а без ответа круглая кнопка шага показывает «✕».
+        await expect(page.getByTestId('back-button')).toHaveCount(0)
+        await expect(page.getByTestId('checkin-close')).toHaveCount(0)
+        await assertClickable(
+          page.locator('[data-testid="checkin-next"][aria-label="Закрыть"]')
+        )
         await expect(page.getByText(/‹\s*Назад|К каталогу/)).toHaveCount(0)
         await expect(page.getByRole('heading', { name: 'Как ты сейчас?' })).toBeVisible()
       },
@@ -615,21 +621,26 @@ test('локальный UX smoke по основному маршруту', asy
       await expect(answer).toBeVisible()
       await expect(answer).toBeEnabled()
       await expect(page.getByTestId('checkin-skip')).toHaveCount(0)
-      await expect(page.getByTestId('checkin-next')).toBeDisabled()
+      // Без ответа кнопка не выключена, а показывает «✕» (выход с черновиком).
+      await expect(
+        page.locator('[data-testid="checkin-next"][aria-label="Закрыть"]')
+      ).toBeVisible()
       await answer.click()
       await assertClickable(page.getByRole('button', { name: 'Далее' }))
       await page.getByRole('button', { name: 'Далее' }).click()
     }
 
     // Главный фокус дня: девять плиток, один выбор, без собственного ввода.
-    // «→» активна и без выбора плитки.
+    // Без выбора плитки шаг вперёд не идёт: кнопка показывает «✕».
     const focusTiles = page.getByTestId('checkin-day-focus-option')
     await expect(focusTiles).toHaveCount(9)
     await expect(page.getByText('Выбери одно главное на сегодня.')).toBeVisible()
     await expect(page.getByTestId('checkin-day-focus-input')).toHaveCount(0)
     await expect(page.getByTestId('checkin-day-focus-counter')).toHaveCount(0)
     await expect(page.getByTestId('checkin-skip')).toHaveCount(0)
-    await expect(page.getByTestId('checkin-next')).toBeEnabled()
+    await expect(
+      page.locator('[data-testid="checkin-next"][aria-label="Закрыть"]')
+    ).toBeVisible()
     await focusTiles.first().click()
     await expect(focusTiles.first()).toHaveAttribute('aria-pressed', 'true')
     await expect(page.getByTestId('checkin-day-focus-show-all')).toHaveCount(0)
@@ -654,27 +665,30 @@ test('локальный UX smoke по основному маршруту', asy
         await expect(page.getByRole('button', { name: 'Жирный текст' })).toHaveCount(0)
         await expect(page.getByRole('button', { name: 'Дополнительные действия' })).toHaveCount(0)
         await expect(page.locator('[data-testid="checkin-skip"]')).toHaveCount(0)
+        // Последний шаг утра завершается галочкой с подписью «Завершить».
         await expect(page.locator('[data-testid="checkin-complete"]')).toHaveAttribute(
           'aria-label',
-          'Далее'
+          'Завершить'
         )
         await assertClickable(page.locator('[data-testid="checkin-complete"]'))
       },
     })
-    const checkinBackButton = page.getByTestId('back-button')
-    await expect(checkinBackButton).toBeVisible()
-    await expect(checkinBackButton).toBeEnabled()
-    await checkinBackButton.click()
-    await expect(page.getByRole('heading', { name: 'Главный фокус на сегодня?' })).toBeVisible()
-    await checkinBackButton.click()
-    await expect(page.getByRole('heading', { name: 'Уровень концентрации' })).toBeVisible()
-    await checkinBackButton.click()
-    await expect(page.getByRole('heading', { name: 'Сколько в тебе энергии?' })).toBeVisible()
-    await checkinBackButton.click()
-    await expect(page.getByRole('heading', { name: 'Как ты спал?' })).toBeVisible()
-    await checkinBackButton.click()
-    await expect(page.getByRole('heading', { name: 'Как ты сейчас?' })).toBeVisible()
-    await checkinBackButton.click()
+    // «Назад» — системная кнопка Telegram; в веб-превью тот же обработчик
+    // вызывает свайп от левого края. Идём по шагам до первого.
+    await expect(page.getByTestId('back-button')).toHaveCount(0)
+    await expect(page.getByTestId('checkin-close')).toHaveCount(0)
+    for (const heading of [
+      'Главный фокус на сегодня?',
+      'Уровень концентрации',
+      'Сколько в тебе энергии?',
+      'Как ты спал?',
+      'Как ты сейчас?',
+    ]) {
+      await edgeSwipeBack(page)
+      await expect(page.getByRole('heading', { name: heading })).toBeVisible()
+    }
+    // С первого шага «Назад» закрывает чек-ин: черновик остаётся на устройстве.
+    await edgeSwipeBack(page)
 
     const draftDialog = page.locator(
       '[role="dialog"][aria-labelledby="checkin-draft-dialog-title"]'

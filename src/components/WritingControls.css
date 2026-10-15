@@ -113,6 +113,34 @@
   box-shadow: none;
 }
 
+/* Круглая кнопка шага чек-ина меняет иконку по ходу шага (✕ ↔ →).
+   Обе иконки стоят в одной ячейке, видимая переключается прозрачностью
+   и масштабом: смена плавная, разметка при этом не перестраивается. */
+.mx-round-submit-swap {
+  display: grid;
+  place-items: center;
+}
+
+.mx-round-submit-swap > svg {
+  grid-area: 1 / 1;
+  opacity: 0;
+  transform: scale(0.6);
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+.mx-round-submit-swap > svg.is-on {
+  opacity: 1;
+  transform: scale(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-round-submit-swap > svg {
+    transition: none;
+  }
+}
+
 @media (max-width: 360px) {
   .journal-textarea__floating-actions .mx-keyboard-deepen {
     padding-right: 14px !important;

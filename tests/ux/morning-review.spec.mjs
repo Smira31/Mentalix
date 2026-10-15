@@ -1,5 +1,11 @@
 import { expect, test } from '@playwright/test'
-import { backToToday, closeCompletion, openDayCard, scaleStep } from './checkin-helpers.mjs'
+import {
+  backToToday,
+  closeCompletion,
+  dayFocusOptionStep,
+  openDayCard,
+  scaleStep,
+} from './checkin-helpers.mjs'
 
 const card = (page, kind) => page.getByTestId(`today-card-${kind}`)
 const DEMO_KEY = 'mentalix_preview_demo_state_v5:day_closed'
@@ -20,7 +26,8 @@ for (const viewport of [{ width: 390, height: 844 }, { width: 789, height: 1024 
     // Подтверждение в диалоге «Пройти заново?»
     await page.getByRole('dialog').getByRole('button', { name: 'Пройти заново' }).click()
     for (const level of [4, 3, 2, 3]) await scaleStep(page, level)
-    await page.getByTestId('checkin-next').click()
+    // Фокус дня: без выбора плитки шаг вперёд не идёт — выбираем вариант.
+    await dayFocusOptionStep(page, 'Работа')
     await page.getByTestId('checkin-complete').click()
     await expect(page.getByTestId('checkin-feedback-option').first()).toBeVisible()
     await expect(page.getByTestId('checkin-streak')).toBeVisible()

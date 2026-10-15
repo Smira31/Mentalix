@@ -9,7 +9,7 @@ import { expect, test, devices } from '@playwright/test'
  * «Maximum update depth» / «#185» → тест падает с понятным сообщением.
  *
  * Чек-ин: открыть → дождаться первого шага (шкала настроения) →
- * закрыть через кнопку «Назад» (data-testid="back-button") →
+ * закрыть круглой «✕» на шаге (data-testid="checkin-next", aria-label="Закрыть") →
  * проверить отсутствие pageerror. Если открытие нестабильно —
  * test.fixme с комментарием, без потери итераций.
  */
@@ -21,6 +21,13 @@ const TEST_USER = {
 }
 
 const ERROR_PATTERNS = /Maximum update depth|Minified React error #185|#185/i
+
+/** Сегодняшний день в заданный локальный час (даты — только относительно текущего дня). */
+function todayAt(hour) {
+  const date = new Date()
+  date.setHours(hour, 0, 0, 0)
+  return date
+}
 
 /** Собрать runtime-ошибки, связанные с #185. */
 function collectDepthErrors(page) {
@@ -86,7 +93,7 @@ async function newPage(browser) {
     localStorage.setItem('mx-app-lock-enabled', '0')
   }, TEST_USER)
   const page = await context.newPage()
-  await page.clock.setFixedTime('2026-09-26T08:00:00+03:00')
+  await page.clock.setFixedTime(todayAt(8))
   await mockApi(page)
   return { page, context }
 }
@@ -130,13 +137,13 @@ test('чек-ин: открыть, дождаться первого шага, �
 
     assertNoUpdateDepth(errors, 'после открытия чек-ина')
 
-    // Закрыть через кнопку «Назад» (web-fallback кнопка, data-testid="back-button").
-    const backButton = page.locator('[data-testid="back-button"]')
-    const backVisible = await backButton.isVisible({ timeout: 5_000 }).catch(() => false)
-    if (backVisible) {
-      await backButton.click()
+    // Первый шаг: своих «назад»/«закрыть» в шапке нет, выход — круглая «✕»
+    // на шаге (data-testid="checkin-next", aria-label="Закрыть"). Фолбэк — Escape.
+    const closeButton = page.locator('[data-testid="checkin-next"][aria-label="Закрыть"]')
+    const closeVisible = await closeButton.isVisible({ timeout: 5_000 }).catch(() => false)
+    if (closeVisible) {
+      await closeButton.click()
     } else {
-      // В Telegram-режиме кнопки нет — эмулируем через Escape или свайп.
       await page.keyboard.press('Escape')
     }
 
