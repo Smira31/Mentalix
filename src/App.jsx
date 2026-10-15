@@ -30,6 +30,8 @@ import {
   returnFlowOccurredAt,
 } from './lib/returnFlow'
 import { parseContextualDeepLink } from './lib/contextualDeepLink'
+import { PAYMENT_UI_ENABLED } from './lib/paymentConfig'
+import { isPaymentReturn, markPaymentStarted, stripPaymentReturnParam } from './lib/yookassaCheckout'
 import { isRemovedLibraryAddress, redirectRemovedLibraryAddress } from './lib/libraryNavigation'
 import {
   DEMO_USER,
@@ -462,6 +464,34 @@ function App() {
       url.searchParams.set('tab', 'trends')
       window.history.replaceState(null, '', url)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  /*
+   * PAY-UI-001: возврат с ЮKassa (?payment=return). Открываем экран подписки —
+   * он сам перечитывает GET /api/subscription, — отмечаем момент возврата и
+   * убираем служебный параметр из адресной строки. Сам возврат оплатой не
+   * считается: экран успеха решает только свежий has_pro.
+   */
+  useEffect(() => {
+    if (!PAYMENT_UI_ENABLED) return
+    if (!isPaymentReturn(window.location.search)) return
+
+    try {
+      sessionStorage.setItem('mx-settings-initial-screen', 'subscription')
+    } catch {
+      /* приватный режим: экран откроется на списке настроек */
+    }
+    markPaymentStarted()
+    setOverlay('settings')
+
+    const cleaned = stripPaymentReturnParam(window.location.search)
+    window.history.replaceState(
+      null,
+      '',
+      `${window.location.pathname}${cleaned}${window.location.hash}`
+    )
+    // Вход по возврату разбирается один раз за загрузку страницы.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

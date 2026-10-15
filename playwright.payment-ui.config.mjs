@@ -1,16 +1,21 @@
 import { defineConfig } from '@playwright/test'
 
 /*
- * PAY-UI-001 — состояния экрана «Подписка» (guest/base/pro/pending/expired).
+ * PAY-UI-001 — состояния экрана «Подписка» (guest/base/pro/success/expired/
+ * pending), возврат с ЮKassa (?payment=return) и вход «Оформить Pro» из
+ * карточки «Прогресс».
  *
  * Экраны состояний существуют только при включённом фронтенд-флаге
  * VITE_PAYMENT_UI_ENABLED=true (src/lib/paymentConfig.js): без флага
  * показывается прежний статичный экран, и проверки состояний падают.
+ * Карточка «Разбор и план недели» в «Прогрессе» — за своим флагом
+ * VITE_PRO_REVIEW_PLAN_ENABLED=true.
  *
  * Поэтому набор идёт отдельно от `ux:check` со своим dev-сервером на 4179:
- * общий smoke запускается без флага, его поведение не меняется.
- * Production-сборка флаг не получает — выключен по умолчанию.
- * Backend не требуется: состояние задаётся dev-параметром `?demo=1&payState=…`.
+ * общий smoke запускается без флагов, его поведение не меняется.
+ * Production-сборка флагов не получает — выключены по умолчанию.
+ * Backend не требуется: состояние задаётся dev-параметром `?demo=1&payState=…`,
+ * ответ /api/subscription в сценарии возврата подменяется моком.
  */
 export default defineConfig({
   testDir: './tests/ux',
@@ -31,7 +36,8 @@ export default defineConfig({
     video: 'off',
   },
   webServer: {
-    command: 'VITE_PAYMENT_UI_ENABLED=true npm run dev -- --host 127.0.0.1 --port 4179',
+    command:
+      'VITE_PAYMENT_UI_ENABLED=true VITE_PRO_REVIEW_PLAN_ENABLED=true npm run dev -- --host 127.0.0.1 --port 4179',
     url: 'http://127.0.0.1:4179',
     reuseExistingServer: false,
     timeout: 120_000,

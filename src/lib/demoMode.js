@@ -1059,6 +1059,16 @@ function respond(path, options = {}) {
   const body = bodyOf(options)
   const state = readState()
 
+  // PAY-UI-001: в демо-режиме реального провайдера оплаты нет. Ответ повторяет
+  // контракт 503 yookassa_disabled, чтобы превью показывало честное
+  // «Оплата скоро будет доступна», а не сбой или редирект на чужой адрес.
+  if (pathname === '/payments/yookassa/create' && method === 'POST') {
+    const error = new Error('Демо: HTTP 503')
+    error.status = 503
+    error.body = { code: 'yookassa_disabled' }
+    throw error
+  }
+
   // Считаем попытки отправки — UX-тест проверяет «0 лишних POST» при лимите.
   if (pathname === '/mentalix/messages' && method === 'POST' && typeof window !== 'undefined') {
     window.__mxDemoMessagePosts = (window.__mxDemoMessagePosts || 0) + 1
