@@ -7,7 +7,28 @@ import { platform, platformName } from '../platform'
 import { isPreviewDemoMode } from '../lib/demoMode'
 import { PAYMENT_UI_ENABLED, PRO_PRICE, PRO_DURATION_LABEL, TRIBUTE_TG_LINK } from '../lib/paymentConfig'
 import { getSubscriptionState, getDemoPayState } from '../lib/subscriptionState'
+import { openSupportChat } from '../lib/support'
+import {
+  CHECKOUT_ACTIONS,
+  CHECKOUT_AUTH,
+  CHECKOUT_COPY,
+  CHECKOUT_CREATING,
+  CHECKOUT_FAILED,
+  CHECKOUT_GUEST,
+  CHECKOUT_OK,
+  CHECKOUT_UNAVAILABLE,
+  beginGuestCheckout,
+  checkoutAvailable,
+  clearPaymentStarted,
+  consumeGuestCheckout,
+  paymentReturnState,
+  readPaymentStarted,
+  startCheckout,
+} from '../lib/yookassaCheckout'
 import './SubscriptionManager.css'
+
+/* Единственная кнопка оплаты: цена и срок — из paymentConfig, не хардкодим. */
+const PAY_CTA = `Оформить Pro — ${PRO_PRICE} на ${PRO_DURATION_LABEL}`
 
 /*
  * «подписка.» — единственный тариф Mentalix Pro.
@@ -16,20 +37,24 @@ import './SubscriptionManager.css'
  * статичный экран с описанием Pro и неактивной кнопкой «Оплата скоро появится».
  *
  * При включённом флаге — состояния экрана по ответу /api/subscription:
- *   guest   — «Сначала сохрани прогресс по email» + кнопка в сценарий
- *             «Сохранить прогресс по email», кнопки оплаты нет
+ *   guest   — «Сначала сохрани прогресс по email» + кнопка оплаты, которая
+ *             ведёт в существующий флоу «Сохранить прогресс по email»
  *   base    — описание Pro + кнопка «Оформить Pro — 990 ₽ на 30 дней»
  *   pro     — «Pro до <дата>», «осталось N дн.»
  *   expired — «Срок Pro закончился» + кнопка продления
  *   pending — «Оплата обрабатывается, это может занять несколько минут»
  *             + кнопка «Проверить оплату»
+ *   success — «Оплата прошла»: только по свежему has_pro от /api/subscription
  *
- * Оплата идёт ВНЕ приложения, на стороне Tribute. Фронтенд не подтверждает
- * оплату локально, не отправляет платёжные данные и не кэширует has_pro
- * как истину: опирается только на свежий ответ /api/subscription.
+ * В Telegram оплата идёт ВНЕ приложения, на стороне Tribute (ссылка
+ * открывается внутри Telegram) — этот путь не менялся. В вебе оплата идёт
+ * через ЮKassa: POST /api/payments/yookassa/create → редирект в текущей
+ * вкладке (src/lib/yookassaCheckout.js). Повторная оплата при активном Pro
+ * разрешена — период продлевается, кнопка не блокируется.
  *
- * Вне Telegram (обычный браузер) кнопка оплаты не показывается, вместо неё —
- * «Оплата доступна в приложении Mentalix в Telegram».
+ * Возврат с ЮKassa сам по себе оплатой не считается: решение принимает
+ * только свежий ответ /api/subscription (has_pro). Фронтенд ничего не
+ * подтверждает локально, платёжные данные не вводит и не хранит.
  */
 const FEATURES = [
   [Users, 'Спутники без ограничений', 'Наставник и другие спутники отвечают глубже и без лимита'],
@@ -120,7 +145,16 @@ function SubscriptionManagerEnabled({ user, onBack, onGuestLogin }) {
   const [loading, setLoading] = useState(true)
   const [localPending, setLocalPending] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
+  // Состояние оплаты ЮKassa: null — обычный экран, иначе состояние кнопки.
+  const [checkoutState, setCheckoutState] = useState(null)
+  // Начатая оплата переживает редирект на ЮKassa и обратную загрузку страницы.
+  const [startedAt, setStartedAt] = useState(() => readPaymentStarted())
   const aliveRef = useRef(true)
+  const paidRef = useRef(false)
+
+  const inTelegram = platformName === 'telegram'
+  // ЮKassa — только в вебе и только при включённом флаге: в Telegram путь Tribute.
+  const webCheckout = checkoutAvailable({ enabled: PAYMENT_UI_ENABLED, platform: platformName })
 
   const fetchSubscription = useCallback(() => {
     if (!user) return
@@ -171,6 +205,22 @@ function SubscriptionManagerEnabled({ user, onBack, onGuestLogin }) {
     }
   }, [])
 
+  // Возврат с ЮKassa: оплатой считается только свежий has_pro.
+  const returnState = paymentReturnState({ subscription, startedAt })
+
+  useEffect(() => {
+    if (returnState === 'success') paidRef.current = true
+  }, [returnState])
+
+  // Отметку о начатой оплате снимаем при уходе с экрана: экран успеха
+  // показывается до конца визита, следующий вход видит обычное состояние Pro.
+  useEffect(
+    () => () => {
+      if (paidRef.current) clearPaymentStarted()
+    },
+    []
+  )
+
   // Демо-режим: ?payState= переопределяет состояние
   const demoPayState = getDemoPayState(isPreviewDemoMode)
 
@@ -182,15 +232,46 @@ function SubscriptionManagerEnabled({ user, onBack, onGuestLogin }) {
     displayState = 'loading'
   } else if (localPending && subscription && !subscription.has_pro) {
     displayState = 'pending'
+  } else if (returnState) {
+    displayState = returnState
   } else {
     displayState = getSubscriptionState(subscription, isGuest)
   }
 
-  const inTelegram = platformName === 'telegram'
+  /* Гость: сначала «Сохранить прогресс по email», после входа — возврат к оплате. */
+  function beginGuestFlow() {
+    beginGuestCheckout()
+    onGuestLogin?.()
+  }
 
-  function handlePay() {
+  /* Веб: POST create → редирект на ЮKassa в текущей вкладке. */
+  async function handleWebPay() {
+    if (isGuest) {
+      beginGuestFlow()
+      return
+    }
+
+    setCheckoutState(CHECKOUT_CREATING)
+    const result = await startCheckout({
+      platform: platformName,
+      enabled: PAYMENT_UI_ENABLED,
+      create: () => api.payments.yookassa.create(),
+    })
+
+    // Успех — страница уже уходит на оплату, состояние не меняем.
+    if (result.state === CHECKOUT_OK) return
+    if (result.state === CHECKOUT_GUEST) {
+      setCheckoutState(null)
+      beginGuestFlow()
+      return
+    }
+
+    setCheckoutState(result.state)
+  }
+
+  /* Telegram: прежний путь — ссылка Tribute открывается внутри Telegram. */
+  function handleTributePay() {
     setLocalPending(true)
-    // Открываем ссылку Tribute внутри Telegram
     platform.openTelegramLink(TRIBUTE_TG_LINK)
   }
 
@@ -198,12 +279,29 @@ function SubscriptionManagerEnabled({ user, onBack, onGuestLogin }) {
     setRefreshKey(k => k + 1)
   }
 
+  // Гость сохранил прогресс по email — продолжаем оплату без второго нажатия.
+  useEffect(() => {
+    if (!webCheckout || isGuest || loading) return
+    if (!consumeGuestCheckout()) return
+    handleWebPay()
+    // handleWebPay меняется вместе с isGuest; намерение одноразовое, повтор невозможен.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [webCheckout, isGuest, loading])
+
   return (
     <ProfilePage
       title="подписка."
       onBack={onBack}
       testId="profile-screen-subscription"
-      footer={renderFooter(displayState, inTelegram, handlePay, handleCheckPayment, onGuestLogin)}
+      footer={renderFooter({
+        state: displayState,
+        webCheckout,
+        checkoutState,
+        onTributePay: handleTributePay,
+        onWebPay: handleWebPay,
+        onCheckPayment: handleCheckPayment,
+        onLogin: onGuestLogin,
+      })}
     >
       <ProfileBody>
         {displayState === 'loading' && (
@@ -218,8 +316,15 @@ function SubscriptionManagerEnabled({ user, onBack, onGuestLogin }) {
           <BaseState />
         )}
 
-        {displayState === 'pro' && (
-          <ProState subscription={demoPayState === 'pro' ? { expires_at: null, days_left: 30 } : subscription} />
+        {(displayState === 'pro' || displayState === 'success') && (
+          <ProState
+            paid={displayState === 'success'}
+            subscription={
+              demoPayState === 'pro' || demoPayState === 'success'
+                ? { expires_at: null, days_left: 30 }
+                : subscription
+            }
+          />
         )}
 
         {displayState === 'expired' && (
@@ -227,20 +332,38 @@ function SubscriptionManagerEnabled({ user, onBack, onGuestLogin }) {
         )}
 
         {displayState === 'pending' && (
-          <PendingState />
+          <PendingState showSupportHint={webCheckout} />
         )}
       </ProfileBody>
     </ProfilePage>
   )
 }
 
-function renderFooter(state, inTelegram, handlePay, handleCheckPayment, onGuestLogin) {
+function renderFooter({
+  state,
+  webCheckout,
+  checkoutState,
+  onTributePay,
+  onWebPay,
+  onCheckPayment,
+  onLogin,
+}) {
   if (state === 'guest') {
+    // В вебе кнопка оплаты гостя ведёт в флоу «Сохранить прогресс по email»,
+    // после успеха возвращаемся к оплате.
+    if (webCheckout) {
+      return (
+        <button type="button" data-testid="subscription-pay-button" onClick={onWebPay}>
+          {PAY_CTA}
+        </button>
+      )
+    }
+    // Telegram: прежний сценарий, кнопка открывает экран входа по email.
     return (
       <button
         type="button"
         data-testid="subscription-save-progress"
-        onClick={onGuestLogin}
+        onClick={onLogin}
       >
         Сохранить прогресс по email
       </button>
@@ -248,20 +371,55 @@ function renderFooter(state, inTelegram, handlePay, handleCheckPayment, onGuestL
   }
 
   if (state === 'base' || state === 'expired') {
-    if (!inTelegram) {
+    if (!webCheckout) {
       return (
-        <p className="mx-subscription-web-note" data-testid="subscription-web-note">
-          Оплата доступна в приложении Mentalix в Telegram
+        <button
+          type="button"
+          data-testid="subscription-pay-button"
+          onClick={onTributePay}
+        >
+          {PAY_CTA}
+        </button>
+      )
+    }
+
+    // Оплата недоступна на стороне провайдера — без технических слов.
+    if (checkoutState === CHECKOUT_UNAVAILABLE) {
+      return (
+        <p className="mx-subscription-web-note" data-testid="subscription-payment-unavailable">
+          {CHECKOUT_COPY[CHECKOUT_UNAVAILABLE]}
         </p>
       )
     }
+
+    // Сбой или нужен вход: сообщение + одно действие.
+    if (checkoutState === CHECKOUT_FAILED || checkoutState === CHECKOUT_AUTH) {
+      const needLogin = checkoutState === CHECKOUT_AUTH
+      return (
+        <div
+          className="mx-subscription-pay-error"
+          data-testid={needLogin ? 'subscription-login-required' : 'subscription-pay-failed'}
+        >
+          <p className="mx-subscription-web-note">{CHECKOUT_COPY[checkoutState]}</p>
+          <button
+            type="button"
+            data-testid={needLogin ? 'subscription-login' : 'subscription-pay-retry'}
+            onClick={needLogin ? onLogin : onWebPay}
+          >
+            {CHECKOUT_ACTIONS[checkoutState]}
+          </button>
+        </div>
+      )
+    }
+
     return (
       <button
         type="button"
         data-testid="subscription-pay-button"
-        onClick={handlePay}
+        disabled={checkoutState === CHECKOUT_CREATING}
+        onClick={onWebPay}
       >
-        Оформить Pro — {PRO_PRICE} на {PRO_DURATION_LABEL}
+        {checkoutState === CHECKOUT_CREATING ? CHECKOUT_COPY[CHECKOUT_CREATING] : PAY_CTA}
       </button>
     )
   }
@@ -271,14 +429,14 @@ function renderFooter(state, inTelegram, handlePay, handleCheckPayment, onGuestL
       <button
         type="button"
         data-testid="subscription-check-payment"
-        onClick={handleCheckPayment}
+        onClick={onCheckPayment}
       >
         Проверить оплату
       </button>
     )
   }
 
-  // pro, loading — без кнопки
+  // pro, success, loading — без кнопки
   return null
 }
 
