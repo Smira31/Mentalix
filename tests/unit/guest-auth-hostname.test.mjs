@@ -105,3 +105,39 @@ test('canAutoCreateGuest: флаг __MX_TEST_ALLOW_GUEST=false не обходи
   assert.equal(canAutoCreateGuest(), false)
   clearTestFlag()
 })
+
+/*
+ * AUD-001: с отрицательным гостевым id запросы вида /pinned-practices
+ * отвечают HTTP 500 — такой id не является canonical `users` row.
+ * Guard hasCanonicalUserId пропускает только положительный id, поэтому
+ * демо-гость с положительным id не блокируется, а боевой веб-гость
+ * с отрицательным — блокируется.
+ */
+
+test('hasCanonicalUserId: пользователь с положительным id → true', async () => {
+  const { hasCanonicalUserId } = await import(moduleUrl)
+  assert.equal(hasCanonicalUserId({ id: 900001 }), true)
+})
+
+test('hasCanonicalUserId: демо-гость с положительным id 900002 → true', async () => {
+  const { hasCanonicalUserId } = await import(moduleUrl)
+  assert.equal(hasCanonicalUserId({ id: 900002, is_guest: true }), true)
+})
+
+test('hasCanonicalUserId: боевой веб-гость с отрицательным id → false', async () => {
+  const { hasCanonicalUserId } = await import(moduleUrl)
+  assert.equal(hasCanonicalUserId({ id: -145327, is_guest: true }), false)
+})
+
+test('hasCanonicalUserId: id строкой → true', async () => {
+  const { hasCanonicalUserId } = await import(moduleUrl)
+  assert.equal(hasCanonicalUserId({ id: '12345' }), true)
+})
+
+test('hasCanonicalUserId: нулевой, нечисловой и отсутствующий id → false', async () => {
+  const { hasCanonicalUserId } = await import(moduleUrl)
+  assert.equal(hasCanonicalUserId({ id: 0 }), false)
+  assert.equal(hasCanonicalUserId({ id: 'abc' }), false)
+  assert.equal(hasCanonicalUserId({}), false)
+  assert.equal(hasCanonicalUserId(null), false)
+})
