@@ -1422,6 +1422,15 @@ function App() {
                             }
                             setOverlay('settings')
                           }}
+                          onOpenSubscription={() => {
+                            platform.haptic('light')
+                            try {
+                              sessionStorage.setItem('mx-settings-initial-screen', 'subscription')
+                            } catch {
+                              /* */
+                            }
+                            setOverlay('settings')
+                          }}
                           onRedo={goToday}
                           onRedoReview={goToday}
                         />

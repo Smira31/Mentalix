@@ -197,6 +197,11 @@ jobs:
       - name: Run Pro failure states gate
         run: npm run ux:pro-failure-states -- --retries=1
 
+      # Экранам состояний подписки нужен VITE_PAYMENT_UI_ENABLED=true, поэтому
+      # у набора свой dev-сервер (playwright.payment-ui.config.mjs), а не ux:check.
+      - name: Run payment UI states gate
+        run: npm run ux:payment-ui -- --retries=1
+
       - name: Upload Playwright artifacts on failure
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
@@ -211,6 +216,7 @@ jobs:
             artifacts/typography-readable/
             artifacts/keyboard-focus/
             artifacts/pro-states/
+            artifacts/payment-ui/
             test-results/
           if-no-files-found: ignore
 

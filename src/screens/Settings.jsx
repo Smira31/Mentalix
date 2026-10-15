@@ -551,6 +551,16 @@ export default function Settings({
   }
 
   const [screen, setScreen] = useState(() => {
+    // Открытие экрана подписки из Аналитики (ProAnalyticsCard → «Оформить Pro»)
+    try {
+      const initialScreen = sessionStorage.getItem('mx-settings-initial-screen')
+      if (initialScreen) {
+        sessionStorage.removeItem('mx-settings-initial-screen')
+        return initialScreen
+      }
+    } catch {
+      /* */
+    }
     const action = previewProfileAction()
     if (action === 'profile_wtp') return 'wtp-test'
     if (action === 'privacy') return 'privacy-notice'
@@ -604,7 +614,7 @@ export default function Settings({
   }, [user, screen])
 
   if (screen === 'subscription') {
-    return <SubscriptionManager user={user} tier={tier} onBack={() => setScreen(null)} />
+    return <SubscriptionManager user={user} tier={tier} onBack={() => setScreen(null)} onGuestLogin={onGuestLogin} />
   }
 
   if (screen === 'donate') {

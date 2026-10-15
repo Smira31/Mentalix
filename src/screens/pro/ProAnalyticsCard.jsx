@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { api } from '../../lib/api'
 import { proBlockedState, proErrorKey, proStatePayload } from './proApiState'
 import { formatWeekRange, isoDay } from './weekLabel'
+import { PAYMENT_UI_ENABLED } from '../../lib/paymentConfig'
 
 import './ProAnalyticsCard.css'
 
@@ -60,9 +61,10 @@ function weekRange(payload) {
   return start && end ? { start, end } : null
 }
 
-export default function ProAnalyticsCard({ onOpen, refreshToken = 0 }) {
+export default function ProAnalyticsCard({ onOpen, onOpenSubscription, refreshToken = 0 }) {
   const [state, setState] = useState('loading')
   const [week, setWeek] = useState(null)
+  const [hasPro, setHasPro] = useState(null)
   const aliveRef = useRef(true)
   // Поздний ответ загрузки не затирает новое состояние карточки.
   const loadSeqRef = useRef(0)
@@ -90,6 +92,17 @@ export default function ProAnalyticsCard({ onOpen, refreshToken = 0 }) {
         setState(proBlockedState(proErrorKey(error)) ? 'blocked' : 'error')
       })
   }, [])
+
+  // PAY-UI-001: при включённом флаге проверяем has_pro для кнопки «Оформить Pro»
+  useEffect(() => {
+    if (!PAYMENT_UI_ENABLED) return
+    api.subscription
+      .get()
+      .then(s => {
+        if (aliveRef.current) setHasPro(Boolean(s?.has_pro))
+      })
+      .catch(() => {})
+  }, [refreshToken])
 
   useEffect(() => {
     aliveRef.current = true
@@ -151,6 +164,19 @@ export default function ProAnalyticsCard({ onOpen, refreshToken = 0 }) {
           onClick={load}
         >
           Повторить загрузку
+        </button>
+      )}
+
+      {/* PAY-UI-001: кнопка «Оформить Pro» — только при включённом флаге
+          и без активного Pro. Остальное в карточке не меняется. */}
+      {PAYMENT_UI_ENABLED && hasPro === false && onOpenSubscription && (
+        <button
+          type="button"
+          className="mx-pro-analytics-card__buy-pro"
+          data-testid="pro-card-buy-pro"
+          onClick={onOpenSubscription}
+        >
+          Оформить Pro
         </button>
       )}
     </article>

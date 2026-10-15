@@ -756,6 +756,7 @@ export default function Analytics({
   onRedoReview,
   onStartMood,
   onOpenNotifications,
+  onOpenSubscription,
   historyTrigger = 0,
 }) {
   const rootRef = useRef(null)
@@ -1115,6 +1116,7 @@ export default function Analytics({
               key={profileScopeKey(user.id)}
               refreshToken={proRefresh}
               onOpen={() => setProOpen(true)}
+              onOpenSubscription={onOpenSubscription}
             />
           )}
 

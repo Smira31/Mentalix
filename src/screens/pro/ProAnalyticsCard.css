@@ -65,6 +65,23 @@
   cursor: pointer;
 }
 
+/* PAY-UI-001: небольшая кнопка «Оформить Pro» в карточке. */
+.mx-pro-analytics-card__buy-pro {
+  display: block;
+  width: 100%;
+  margin-top: var(--mx-space-2);
+  padding: 8px 16px;
+  min-height: 36px;
+  border: 1px solid rgb(var(--c-gold));
+  border-radius: 999px;
+  background: transparent;
+  color: rgb(var(--c-gold));
+  font: inherit;
+  font-size: var(--mx-read-note);
+  font-weight: 600;
+  cursor: pointer;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .mx-pro-analytics-card__open {
     transition: none;
