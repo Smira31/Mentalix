@@ -1,5 +1,5 @@
 ---
-status: current
+status: working
 last_verified: 2026-09-11
 ---
 # MXL-HOME-TYPE-FOUNDATION-001 — тихий Home и единая типографика

@@ -1,5 +1,5 @@
 ---
-status: current
+status: historical
 last_verified: 2026-09-11
 ---
 # MXL-JOURNAL-HISTORY-001 — техническая архитектура

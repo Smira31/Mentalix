@@ -1,5 +1,5 @@
 ---
-status: current
+status: working
 last_verified: 2026-09-11
 ---
 # MXL-100 — Mentalix prompt library

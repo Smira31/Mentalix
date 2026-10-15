@@ -1,5 +1,5 @@
 ---
-status: current
+status: working
 last_verified: 2026-09-11
 ---
 # MXL-JOURNAL-PRIVACY-001 — черновик privacy и AI consent

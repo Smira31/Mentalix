@@ -1,6 +1,6 @@
 ---
 status: current
-last_verified: 2026-09-11
+last_verified: 2026-10-15
 ---
 # Contract/regression harness
 
@@ -12,11 +12,16 @@ last_verified: 2026-09-11
 
 ## Зачем skip, а не fail
 
+**Обновление 15.10.2026 (AUD-014):** состояние harness проверено прогоном
+`node --test tests/unit/contract-regression.test.mjs` — 5 тестов, 4 pass, 1 skipped,
+0 failed. Пропущен импорт `src/lib/journalEntryContract.js`: модуля в `main` нет, и
+проверка остаётся `t.skip` до его появления. Проверки четырёх practice-completion
+логов из harness удалены вместе с практиками (см. «Известные ограничения»).
+
 **Обновление 29.08.2026:** `MXL-JOURNAL-PERSISTENCE-001` (#315) и `MXL-date-policy`
-(#316) смёржены в `main`. После rebase этой ветки на актуальный `main` все 5 ранее
-`t.skip`-тестов реально исполняются и проходят — `node --test tests/unit/contract-regression.test.mjs`
-даёт 11/11 pass, 0 skipped, 0 failed. Секция ниже описана в прошедшем времени как
-контекст решения, не текущее состояние.
+(#316) были смёржены в `main`; после rebase этой ветки часть ранее `t.skip`-тестов
+исполнялась. Секция ниже описана в прошедшем времени как контекст решения, не текущее
+состояние.
 
 Эта ветка была создана от `main` независимо от `MXL-JOURNAL-PERSISTENCE-001` (frontend
 adapter) и `MXL-date-policy` — оба тогда ещё открытые PR, не смёрженные. Часть проверок
@@ -29,14 +34,8 @@ adapter) и `MXL-date-policy` — оба тогда ещё открытые PR, 
 ошибка при импорте остаётся настоящим failure. Дизайн подтвердился: после мерджа
 обоих PR проверки заработали без единой правки самого harness.
 
-## Что проверяется уже сейчас, без зависимости от неслитых PR
+## Что проверяется сейчас
 
-- Единый allowlist `outcome`/`reflection` у всех четырёх existing practice-completion
-  логов (`firstStepPractice.js`/`noBlamePractice.js`/`oneFinishPractice.js`/`narrowFocusPractice.js`)
-  и защита от появления пятого нерецензированного лога с другим `STORAGE_PREFIX`.
-- `outcome`/`reflection` значения этих логов проходят существующий фильтр
-  `isDescriptiveInsight` (`src/lib/descriptiveInsights.js`) — без диагностических/
-  лечебных формулировок.
 - `src/lib/api.js` не содержит терминов ещё не подтверждённых backend-концепций
   entry-контракта (`entry_id`, `practice_completion`, `one_shot_practice`,
   `checkin_reflection`, `sync_status`) — защита от преждевременно выдуманного endpoint.
@@ -44,24 +43,26 @@ adapter) и `MXL-date-policy` — оба тогда ещё открытые PR, 
   идентификаторы journal/practice полей (`reflection`/`outcome`/`next_action`/
   `freeWrites`/...) как есть.
 
-## Что проверяется теперь, что раньше skip-алось до мерджа Track 1/2
+## Timezone/date policy и entry-контракт
 
-- Entry schema и обязательные поля (`ENTRY_KEY_ORDER`, `normalizeEntry` требует
-  `entry_id`/`user_id`/`entry_type`).
-- Idempotency (`dedupeEntries` схлопывает дубли по `entry_id`).
-- Deterministic ordering (`readJournalEntries` стабилен между вызовами).
 - Timezone/date policy (`toLocalCalendarDate` не возвращает `NaN`-строки,
   `resolveCalendarDate({policy:'server'})` кидает `UnimplementedDatePolicyError`,
-  не выдумывает backend).
-- Malformed/legacy entry handling (`normalizeEntry`/`deserializeEntry` не падают на
-  мусорном вводе).
+  не выдумывает backend) — `src/lib/dateTimezonePolicy.js` в `main` есть, проверка
+  исполняется.
+- Entry schema и обязательные поля (`ENTRY_KEY_ORDER`, `normalizeEntry` требует
+  `entry_id`/`user_id`/`entry_type`), idempotency (`dedupeEntries` схлопывает дубли по
+  `entry_id`), deterministic ordering (`readJournalEntries` стабилен между вызовами) и
+  malformed/legacy handling (`normalizeEntry`/`deserializeEntry` не падают на мусорном
+  вводе) — всё это про `src/lib/journalEntryContract.js`, которого в `main` нет:
+  проверки пропускаются как `t.skip`.
 
 ## Известные ограничения
 
-- Idempotency/upsert для четырёх practice-completion логов **не проверяется** —
-  они сегодня действительно не upsert'ят (см.
-  `docs/architecture/PRACTICE-COMPLETION-ADAPTER_CONFLICT_NOTE.md`), и это не
-  тестовый баг, а честное отражение текущего кода.
+- Проверки четырёх practice-completion логов удалены из harness вместе с практиками
+  (2026-09-22, см. `docs/audit/archive/2026-09-22-practices-removal-inventory.md`):
+  `src/lib/firstStepPractice.js`, `noBlamePractice.js`, `oneFinishPractice.js` и
+  `narrowFocusPractice.js` в `main` больше нет, поэтому прежнее ограничение об
+  отсутствии idempotency у этих логов больше не относится к текущему коду.
 - Проверка «нет journal/practice текста в AI/Telegram payload» — статический скан
   сигнатуры вызова, не runtime data-flow анализ; не ловит непрямую передачу через
   промежуточную переменную с другим именем.
