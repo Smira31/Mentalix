@@ -288,7 +288,7 @@ function EntryScreen({
             </button>
           ) : (
             <p className="mx-progress-entry__ai-hint">
-              Выбор контекста доступен в Telegram Mini App с проверенной подписью.
+              Выбор контекста доступен в Telegram Mini App.
             </p>
           )}
           {contextError && (

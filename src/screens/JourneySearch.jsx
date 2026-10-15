@@ -197,7 +197,7 @@ export default function JourneySearch({ user }) {
         <div className="rounded-3xl bg-emerald p-5">
           <h2 className="font-display text-[23px] text-cream">Поиск по Journey</h2>
           <p className="mt-3 text-[14px] leading-relaxed text-muted">
-            Личные записи и теги доступны в Telegram Mini App с проверенной подписью.
+            Личные записи и теги доступны в Telegram Mini App.
           </p>
           <p className="mt-2 text-[12px] leading-relaxed text-faint">
             Веб-версия временно не открывает этот раздел, пока для неё не появятся server-side
