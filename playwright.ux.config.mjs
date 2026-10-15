@@ -33,6 +33,7 @@ export default defineConfig({
     'guided-journals-reliability.spec.mjs',
     'hero-journey-reliability.spec.mjs',
     'checkin-navigation-consistency.spec.mjs',
+    'theme-week-carousel.spec.mjs',
   ],
   outputDir: 'artifacts/ux-check/playwright-output',
   fullyParallel: false,
