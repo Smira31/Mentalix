@@ -1,5 +1,8 @@
 // PAY-UI-001: экран «Подписка» в каждом demo payState показывает ожидаемый
-// заголовок и кнопку/плашку. Флаг VITE_PAYMENT_UI_ENABLED=true в sandbox.
+// заголовок и кнопку/плашку.
+// Нужен флаг VITE_PAYMENT_UI_ENABLED=true, поэтому набор запускается своим
+// dev-сервером: `npm run ux:payment-ui` (playwright.payment-ui.config.mjs).
+// В песочнице флаг задан docker-compose.base44.yml.
 // Web-контекст (не Telegram): base/expired показывают плашку, а не кнопку оплаты.
 
 import { expect, test } from '@playwright/test'

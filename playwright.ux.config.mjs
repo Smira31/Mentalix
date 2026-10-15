@@ -13,7 +13,10 @@ export default defineConfig({
     'profile-stoic.spec.mjs',
     'profile-wave2.spec.mjs',
     'profile-wave3.spec.mjs',
-    'subscription-states.spec.mjs',
+    // subscription-states.spec.mjs сознательно не здесь: экраны состояний
+    // подписки рисуются только при VITE_PAYMENT_UI_ENABLED=true
+    // (src/lib/paymentConfig.js), а ux:check запускается без флага.
+    // Свой dev-сервер с флагом — `ux:payment-ui` (playwright.payment-ui.config.mjs).
     'profile-canonical-streak.spec.mjs',
     'demo-phone.spec.mjs',
     'demo-telegram-header.spec.mjs',
