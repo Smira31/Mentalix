@@ -1,24 +1,35 @@
 // PAY-UI-001: экран «Подписка» в каждом demo payState показывает ожидаемый
-// заголовок и кнопку/плашку.
+// заголовок и кнопку/плашку; возврат с ЮKassa (?payment=return) открывает
+// экран подписки и решает состояние только по свежему has_pro; кнопка
+// «Оформить Pro» в карточке «Прогресс» ведёт в тот же путь оплаты.
 // Нужен флаг VITE_PAYMENT_UI_ENABLED=true, поэтому набор запускается своим
 // dev-сервером: `npm run ux:payment-ui` (playwright.payment-ui.config.mjs).
-// В песочнице флаг задан docker-compose.base44.yml.
-// Web-контекст (не Telegram): base/expired показывают плашку, а не кнопку оплаты.
+// Флаг VITE_PRO_REVIEW_PLAN_ENABLED=true в том же конфиге нужен только для
+// карточки «Разбор и план недели».
+// В песочнице флаги заданы docker-compose.base44.yml.
+// Web-контекст (не Telegram): базовая кнопка оплаты ведёт на ЮKassa.
 
 import { expect, test } from '@playwright/test'
 import { openWeb } from './profile-helpers.mjs'
 
 const VIEWPORT = { width: 390, height: 844 }
 
+// Тест-иды кнопок — те же, что в SubscriptionManager (renderFooter).
 const CASES = [
-  { payState: 'guest', title: 'Сначала сохрани прогресс по email', testId: 'subscription-save-progress' },
-  { payState: 'base', title: 'Готов открыть свой потенциал?', testId: 'subscription-web-note' },
+  { payState: 'guest', title: 'Сначала сохрани прогресс по email', testId: 'subscription-pay-button' },
+  { payState: 'base', title: 'Готов открыть свой потенциал?', testId: 'subscription-pay-button' },
   { payState: 'pro', title: 'Pro активен', testId: null },
-  { payState: 'expired', title: 'Срок Pro закончился', testId: 'subscription-web-note' },
-  { payState: 'pending', title: 'Оплата обрабатывается', testId: 'subscription-check-payment' },
+  { payState: 'success', title: 'Оплата прошла', testId: null, success: true },
+  { payState: 'expired', title: 'Срок Pro закончился', testId: 'subscription-pay-button' },
+  {
+    payState: 'pending',
+    title: 'Оплата обрабатывается',
+    testId: 'subscription-check-payment',
+    support: true,
+  },
 ]
 
-for (const { payState, title, testId } of CASES) {
+for (const { payState, title, testId, success, support } of CASES) {
   test(`экран «Подписка» — payState=${payState}`, async ({ browser, baseURL }) => {
     const { context, page } = await openWeb(browser, baseURL, VIEWPORT)
     try {
@@ -31,11 +42,96 @@ for (const { payState, title, testId } of CASES) {
       if (testId) {
         await expect(page.getByTestId(testId)).toBeVisible()
       } else {
-        // pro — кнопки оплаты нет
+        // pro/success — кнопки оплаты нет
         await expect(page.getByTestId('subscription-pay-button')).not.toBeVisible()
+      }
+      if (success) {
+        await expect(page.getByTestId('subscription-paid-success')).toBeVisible()
+      }
+      if (support) {
+        // Подсказка про поддержку — тихая ссылка под состоянием.
+        await expect(page.getByTestId('subscription-support-hint')).toBeVisible()
       }
     } finally {
       await context.close()
     }
   })
 }
+
+/*
+ * Возврат с ЮKassa: ЮKassa отправляет пользователя на ?payment=return.
+ * Приложение открывает экран подписки, само читает GET /api/subscription и
+ * убирает служебный параметр из адреса. Сам возврат оплатой не считается:
+ * has_pro=true → «Оплата прошла», иначе «Оплата обрабатывается» + кнопка.
+ */
+const RETURN_CASES = [
+  { hasPro: false, title: 'Оплата обрабатывается', buttonId: 'subscription-check-payment' },
+  { hasPro: true, title: 'Оплата прошла', buttonId: null },
+]
+
+for (const { hasPro, title, buttonId } of RETURN_CASES) {
+  test(`возврат с ЮKassa (?payment=return) — has_pro=${hasPro}`, async ({ browser, baseURL }) => {
+    const { context, page } = await openWeb(browser, baseURL, VIEWPORT)
+    try {
+      // Свежий ответ /api/subscription — единственный источник истины.
+      await context.route('**/api/subscription**', route =>
+        route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify(
+            hasPro
+              ? {
+                  tier: 'pro',
+                  has_pro: true,
+                  expires_at: '2026-11-15T00:00:00Z',
+                  days_left: 30,
+                }
+              : { tier: 'base', has_pro: false }
+          ),
+        })
+      )
+
+      await page.goto('/?payment=return')
+
+      await expect(page.getByTestId('profile-screen-subscription')).toBeVisible()
+      await expect(page.getByText(title)).toBeVisible()
+      if (buttonId) {
+        await expect(page.getByTestId(buttonId)).toBeVisible()
+      }
+      // Служебный параметр возврата убран из адресной строки.
+      expect(new URL(page.url()).searchParams.has('payment')).toBe(false)
+    } finally {
+      await context.close()
+    }
+  })
+}
+
+/*
+ * Кнопка «Оформить Pro» в карточке «Прогресс» — тот же путь ЮKassa:
+ * ведёт на экран подписки с кнопкой оплаты.
+ */
+test('карточка «Прогресс»: «Оформить Pro» ведёт в тот же путь ЮKassa', async ({
+  browser,
+  baseURL,
+}) => {
+  const context = await browser.newContext({
+    baseURL,
+    viewport: VIEWPORT,
+    colorScheme: 'dark',
+    reducedMotion: 'reduce',
+    serviceWorkers: 'block',
+  })
+  try {
+    const page = await context.newPage()
+    await page.goto('/?demo=1&frame=0')
+    await page.getByRole('button', { name: 'Прогресс' }).click()
+    await expect(page.getByTestId('progress-pro-card')).toBeVisible()
+
+    await page.getByTestId('pro-card-buy-pro').click()
+
+    await expect(page.getByTestId('profile-screen-subscription')).toBeVisible()
+    await expect(page.getByTestId('subscription-pay-button')).toBeVisible()
+  } finally {
+    await context.close()
+  }
+})

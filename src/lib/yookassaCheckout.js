@@ -131,6 +131,37 @@ const SETTINGS_SCREEN_KEY = 'mx-settings-initial-screen'
 /* Возврат с оплаты старше суток оплатой уже не считается. */
 export const PAYMENT_RETURN_WINDOW_MS = 24 * 60 * 60 * 1000
 
+/* ЮKassa возвращает пользователя на этот адрес: ?payment=return. */
+export const PAYMENT_RETURN_PARAM = 'payment'
+export const PAYMENT_RETURN_VALUE = 'return'
+export const PAYMENT_RETURN_URL = `https://mentalix-production.web.app/?${PAYMENT_RETURN_PARAM}=${PAYMENT_RETURN_VALUE}`
+
+/*
+ * Открытие приложения по возврату с ЮKassa: в адресе есть ?payment=return.
+ * Служебный параметр — единственный признак возврата; сам он оплатой не
+ * считается (см. paymentReturnState). Остальные параметры не мешают.
+ */
+export function isPaymentReturn(search) {
+  if (typeof search !== 'string') return false
+  try {
+    return new URLSearchParams(search).get(PAYMENT_RETURN_PARAM) === PAYMENT_RETURN_VALUE
+  } catch {
+    return false
+  }
+}
+
+/*
+ * Адрес без служебного параметра возврата: остальные параметры сохраняются.
+ * Возвращает query-строку с ведущим «?» или пустую строку.
+ */
+export function stripPaymentReturnParam(search) {
+  if (typeof search !== 'string') return ''
+  const params = new URLSearchParams(search)
+  params.delete(PAYMENT_RETURN_PARAM)
+  const query = params.toString()
+  return query ? `?${query}` : ''
+}
+
 /*
  * Состояние экрана после возврата с ЮKassa.
  * null — оплату не начинали (или возврат слишком старый): экран показывает

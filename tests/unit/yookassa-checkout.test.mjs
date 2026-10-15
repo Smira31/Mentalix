@@ -22,16 +22,19 @@ const {
   CHECKOUT_OK,
   CHECKOUT_SKIPPED,
   CHECKOUT_UNAVAILABLE,
+  PAYMENT_RETURN_URL,
   beginGuestCheckout,
   checkoutAvailable,
   confirmationUrl,
   consumeGuestCheckout,
   createResponseState,
+  isPaymentReturn,
   markPaymentStarted,
   paymentReturnState,
   readPaymentStarted,
   clearPaymentStarted,
   startCheckout,
+  stripPaymentReturnParam,
 } = await import(new URL('../../src/lib/yookassaCheckout.js', import.meta.url))
 
 const CONFIRMATION_URL = 'https://yoomoney.ru/api-pages/v2/checkout/12345'
@@ -195,4 +198,59 @@ test('намерение гостя одноразовое (без sessionStorag
   assert.equal(consumeGuestCheckout(5678), false)
   clearPaymentStarted()
   assert.equal(readPaymentStarted(), null)
+})
+
+/* ── Возврат с ЮKassa: ?payment=return ─────────────────────────────────── */
+
+test('возврат с ЮKassa распознаётся по ?payment=return', () => {
+  const url = new URL(PAYMENT_RETURN_URL)
+  assert.equal(url.host, 'mentalix-production.web.app')
+  assert.equal(url.searchParams.get('payment'), 'return')
+
+  assert.equal(isPaymentReturn(url.search), true)
+  assert.equal(isPaymentReturn('?payment=return&tab=trends'), true)
+
+  // Другое значение параметра и отсутствие параметра — не возврат.
+  assert.equal(isPaymentReturn('?payment=other'), false)
+  assert.equal(isPaymentReturn('?tab=trends'), false)
+  assert.equal(isPaymentReturn(''), false)
+  assert.equal(isPaymentReturn(null), false)
+})
+
+test('служебный параметр возврата убирается, остальные сохраняются', () => {
+  assert.equal(stripPaymentReturnParam('?payment=return'), '')
+  assert.equal(stripPaymentReturnParam('?payment=return&tab=trends'), '?tab=trends')
+  assert.equal(stripPaymentReturnParam('?tab=trends'), '?tab=trends')
+  assert.equal(stripPaymentReturnParam(''), '')
+  assert.equal(stripPaymentReturnParam(null), '')
+})
+
+test('сценарий возврата: успех только по свежему has_pro, иначе «обрабатывается»', () => {
+  const startedAt = 1_000_000
+  const now = startedAt + 30_000
+
+  // Приложение открыли по ?payment=return, отметка возврата есть.
+  assert.equal(isPaymentReturn('?payment=return'), true)
+
+  // has_pro=false → «Оплата обрабатывается» + кнопка «Проверить оплату».
+  assert.equal(paymentReturnState({ subscription: { has_pro: false }, startedAt, now }), 'pending')
+  // Ответа ещё нет — тоже ожидание, а не успех.
+  assert.equal(paymentReturnState({ subscription: null, startedAt, now }), 'pending')
+  // has_pro=true → экран успеха «Оплата прошла».
+  assert.equal(paymentReturnState({ subscription: { has_pro: true }, startedAt, now }), 'success')
+  // Возврата не было — обычное состояние экрана.
+  assert.equal(paymentReturnState({ subscription: { has_pro: true }, startedAt: null, now }), null)
+})
+
+test('вход по возврату подключён в App: вызов, экран подписки, очистка адреса', async () => {
+  const { readFile } = await import('node:fs/promises')
+  const app = await readFile(new URL('../../src/App.jsx', import.meta.url), 'utf8')
+
+  assert.ok(app.includes('isPaymentReturn('), 'App должен распознавать ?payment=return')
+  assert.ok(app.includes('stripPaymentReturnParam('), 'App должен убирать служебный параметр')
+  assert.ok(app.includes('markPaymentStarted('), 'App должен отмечать момент возврата')
+  assert.ok(
+    app.includes("'mx-settings-initial-screen', 'subscription'"),
+    'возврат должен открывать экран подписки'
+  )
 })

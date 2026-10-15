@@ -38,7 +38,8 @@ export function getSubscriptionState(subscription, isGuest) {
 }
 
 /*
- * Демо-режим: ?payState=guest|base|pro|expired|pending
+ * Демо-режим: ?payState=guest|base|pro|expired|pending|success
+ * (success — экран «Оплата прошла»).
  * Только в dev/демо-сборке (как proMock); в production-сборке неактивно.
  *
  * @param {function} isPreviewDemoModeFn — функция isPreviewDemoMode (инъекция для тестов)
@@ -54,5 +55,5 @@ export function getDemoPayState(isPreviewDemoModeFn) {
   if (!import.meta.env?.DEV && import.meta.env?.VITE_LOCAL_PREVIEW !== 'true') return null
 
   const value = new URLSearchParams(window.location.search).get('payState')
-  return ['guest', 'base', 'pro', 'expired', 'pending'].includes(value) ? value : null
+  return ['guest', 'base', 'pro', 'expired', 'pending', 'success'].includes(value) ? value : null
 }

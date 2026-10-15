@@ -5,7 +5,7 @@ import { PotentialLockArt } from './settings/ProfileBannerArt'
 import { api } from '../lib/api'
 import { platform, platformName } from '../platform'
 import { isPreviewDemoMode } from '../lib/demoMode'
-import { PAYMENT_UI_ENABLED, PRO_PRICE, PRO_DURATION_LABEL, TRIBUTE_TG_LINK } from '../lib/paymentConfig'
+import { PAYMENT_UI_ENABLED, PRO_PRICE, PRO_PERIOD_LABEL, TRIBUTE_TG_LINK } from '../lib/paymentConfig'
 import { getSubscriptionState, getDemoPayState } from '../lib/subscriptionState'
 import { openSupportChat } from '../lib/support'
 import {
@@ -27,8 +27,8 @@ import {
 } from '../lib/yookassaCheckout'
 import './SubscriptionManager.css'
 
-/* Единственная кнопка оплаты: цена и срок — из paymentConfig, не хардкодим. */
-const PAY_CTA = `Оформить Pro — ${PRO_PRICE} на ${PRO_DURATION_LABEL}`
+/* Единственная кнопка оплаты: цена и период — из paymentConfig, не хардкодим. */
+const PAY_CTA = `Оформить Pro — ${PRO_PRICE} ${PRO_PERIOD_LABEL}`
 
 /*
  * «подписка.» — единственный тариф Mentalix Pro.
@@ -39,7 +39,7 @@ const PAY_CTA = `Оформить Pro — ${PRO_PRICE} на ${PRO_DURATION_LABEL
  * При включённом флаге — состояния экрана по ответу /api/subscription:
  *   guest   — «Сначала сохрани прогресс по email» + кнопка оплаты, которая
  *             ведёт в существующий флоу «Сохранить прогресс по email»
- *   base    — описание Pro + кнопка «Оформить Pro — 990 ₽ на 30 дней»
+ *   base    — описание Pro + кнопка «Оформить Pro» (цена из paymentConfig)
  *   pro     — «Pro до <дата>», «осталось N дн.»
  *   expired — «Срок Pro закончился» + кнопка продления
  *   pending — «Оплата обрабатывается, это может занять несколько минут»
@@ -114,7 +114,7 @@ function LegacySubscriptionManager({ onBack }) {
           Спутники без ограничений, практикумы и полная аналитика — в одном тарифе.
         </p>
 
-        <p className="mx-subscription-price">690 ₽<span>/мес</span></p>
+        <p className="mx-subscription-price">{PRO_PRICE}<span>{PRO_PERIOD_LABEL}</span></p>
 
         <ul className="mx-subscription-features">
           {FEATURES.map(([Icon, title, description]) => (
@@ -353,7 +353,12 @@ function renderFooter({
     // после успеха возвращаемся к оплате.
     if (webCheckout) {
       return (
-        <button type="button" data-testid="subscription-pay-button" onClick={onWebPay}>
+        <button
+          type="button"
+          className="mx-profile-primary"
+          data-testid="subscription-pay-button"
+          onClick={onWebPay}
+        >
           {PAY_CTA}
         </button>
       )
@@ -362,6 +367,7 @@ function renderFooter({
     return (
       <button
         type="button"
+        className="mx-profile-primary"
         data-testid="subscription-save-progress"
         onClick={onLogin}
       >
@@ -375,6 +381,7 @@ function renderFooter({
       return (
         <button
           type="button"
+          className="mx-profile-primary"
           data-testid="subscription-pay-button"
           onClick={onTributePay}
         >
@@ -400,9 +407,10 @@ function renderFooter({
           className="mx-subscription-pay-error"
           data-testid={needLogin ? 'subscription-login-required' : 'subscription-pay-failed'}
         >
-          <p className="mx-subscription-web-note">{CHECKOUT_COPY[checkoutState]}</p>
+          <p className="mx-subscription-pay-error__text">{CHECKOUT_COPY[checkoutState]}</p>
           <button
             type="button"
+            className="mx-profile-primary"
             data-testid={needLogin ? 'subscription-login' : 'subscription-pay-retry'}
             onClick={needLogin ? onLogin : onWebPay}
           >
@@ -415,6 +423,7 @@ function renderFooter({
     return (
       <button
         type="button"
+        className="mx-profile-primary"
         data-testid="subscription-pay-button"
         disabled={checkoutState === CHECKOUT_CREATING}
         onClick={onWebPay}
@@ -428,6 +437,7 @@ function renderFooter({
     return (
       <button
         type="button"
+        className="mx-profile-primary"
         data-testid="subscription-check-payment"
         onClick={onCheckPayment}
       >
@@ -466,7 +476,7 @@ function BaseState() {
       <p className="mx-subscription-pitch">
         Спутники без ограничений, практикумы и полная аналитика — в одном тарифе.
       </p>
-      <p className="mx-subscription-price">{PRO_PRICE}<span> на {PRO_DURATION_LABEL}</span></p>
+      <p className="mx-subscription-price">{PRO_PRICE}<span>{PRO_PERIOD_LABEL}</span></p>
       <ul className="mx-subscription-features">
         {FEATURES.map(([Icon, title, description]) => (
           <li key={title} className="mx-subscription-feature">
@@ -487,8 +497,8 @@ function BaseState() {
   )
 }
 
-/* ── Состояние: Pro активен ── */
-function ProState({ subscription }) {
+/* ── Состояние: Pro активен / оплата прошла ── */
+function ProState({ paid = false, subscription }) {
   const proDate = formatProDate(subscription?.expires_at)
   const daysLeft = subscription?.days_left
 
@@ -497,7 +507,12 @@ function ProState({ subscription }) {
       <div className="mx-subscription-art" aria-hidden="true">
         <PotentialLockArt />
       </div>
-      <h2 className="mx-subscription-promise">Pro активен</h2>
+      <h2 className="mx-subscription-promise">{paid ? 'Оплата прошла' : 'Pro активен'}</h2>
+      {paid && (
+        <p className="mx-subscription-pitch mx-subscription-success" data-testid="subscription-paid-success">
+          Спасибо! Оплата прошла — Pro активен.
+        </p>
+      )}
       {proDate && (
         <p className="mx-subscription-pitch">
           Pro до {proDate}
@@ -536,13 +551,13 @@ function ExpiredState() {
       <p className="mx-subscription-pitch">
         Спутники без ограничений, практикумы и полная аналитика — продли, чтобы вернуть доступ.
       </p>
-      <p className="mx-subscription-price">{PRO_PRICE}<span> на {PRO_DURATION_LABEL}</span></p>
+      <p className="mx-subscription-price">{PRO_PRICE}<span>{PRO_PERIOD_LABEL}</span></p>
     </>
   )
 }
 
 /* ── Состояние: оплата обрабатывается ── */
-function PendingState() {
+function PendingState({ showSupportHint = false }) {
   return (
     <>
       <div className="mx-subscription-art" aria-hidden="true">
@@ -552,6 +567,17 @@ function PendingState() {
       <p className="mx-subscription-pitch">
         Это может занять несколько минут. Нажмите «Проверить оплату», когда вернётесь.
       </p>
+      {/* Подсказка про поддержку — только в вебе, где оплата идёт через ЮKassa. */}
+      {showSupportHint && (
+        <button
+          type="button"
+          className="mx-subscription-support"
+          data-testid="subscription-support-hint"
+          onClick={openSupportChat}
+        >
+          Оплата не пришла? Напишите в поддержку
+        </button>
+      )}
     </>
   )
 }
