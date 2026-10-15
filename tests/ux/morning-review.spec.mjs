@@ -21,8 +21,8 @@ import {
  * Шаги утреннего чек-ина (CheckIn.jsx):
  *   1. «Как ты сейчас?»       — шкала (mood)
  *   2. «Как ты спал?»         — шкала (sleep_quality)
- *   3. «Уровень концентрации»  — шкала (focus)
- *   4. «Сколько в тебе энергии?» — шкала (energy)
+ *   3. «Сколько в тебе энергии?» — шкала (energy)
+ *   4. «Уровень концентрации»  — шкала (focus)
  *   5. «Главный фокус на сегодня?» — выбор плитки (day_focus)
  *   6. Текстовый шаг (note)   — завершение кнопкой-галочкой
  *   7. Экран завершения: feedback, streak, «Вернуться в Сегодня»
@@ -50,12 +50,12 @@ test('утренний чек-ин: прохождение шагов до за�
   await expect(page.getByRole('heading', { name: 'Как ты спал?' })).toBeVisible()
   await scaleStep(page, 3)
 
-  // Шаг 3: «Уровень концентрации» — шкала
-  await expect(page.getByRole('heading', { name: 'Уровень концентрации' })).toBeVisible()
+  // Шаг 3: «Сколько в тебе энергии?» — шкала
+  await expect(page.getByRole('heading', { name: 'Сколько в тебе энергии?' })).toBeVisible()
   await scaleStep(page, 3)
 
-  // Шаг 4: «Сколько в тебе энергии?» — шкала
-  await expect(page.getByRole('heading', { name: 'Сколько в тебе энергии?' })).toBeVisible()
+  // Шаг 4: «Уровень концентрации» — шкала
+  await expect(page.getByRole('heading', { name: 'Уровень концентрации' })).toBeVisible()
   await scaleStep(page, 3)
 
   // Шаг 5: «Главный фокус на сегодня?» — выбор плитки

@@ -34,6 +34,10 @@ export default defineConfig({
     'hero-journey-reliability.spec.mjs',
     'checkin-navigation-consistency.spec.mjs',
     'theme-week-carousel.spec.mjs',
+    // AUD-015: переписаны под текущий интерфейс «Прогресса» и утреннего
+    // чек-ина; каждый стабильно проходит на Chromium дважды подряд.
+    'analytics-card-order.spec.mjs',
+    'morning-review.spec.mjs',
   ],
   outputDir: 'artifacts/ux-check/playwright-output',
   fullyParallel: false,

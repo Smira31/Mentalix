@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { edgeSwipeBack } from './checkin-helpers.mjs'
 
 /*
  * AUD-015: переписан под текущий «Прогресс» (Analytics.jsx).
@@ -38,16 +39,23 @@ test('скрыть график из меню и вернуть через «Н�
 
   // Скрыть через меню карточки
   await card.getByRole('button', { name: 'Меню графика: Календарь настроения' }).click()
-  await card.getByRole('button', { name: 'Скрыть этот график' }).click()
+  await card.getByRole('menuitem', { name: 'Скрыть этот график' }).click()
   await expect(card).toHaveCount(0)
 
   // Вернуть через слой «Настроить»
   await page.getByTestId('progress-customize-pill').click()
   await expect(page.getByTestId('progress-customize')).toBeVisible()
-  await page.getByRole('checkbox', { name: 'Показывать: Календарь настроения' }).check()
+  // Визуальный toggle — скрытый input под стилизованным span: обычный клик
+  // Playwright перехватывает span. force промахивается мимо проверки
+  // перекрытия, но клик всё равно идёт в реальный input внутри label.
+  const calendarToggle = page.getByRole('checkbox', { name: 'Показывать: Календарь настроения' })
+  await calendarToggle.check({ force: true })
+  await expect(calendarToggle).toBeChecked()
 
-  // Вернуться в аналитику через пилюлю «Назад» демо-шапки
-  await page.getByTestId('demo-chrome-back').click()
+  // Возврат из слоя — жестом «назад» от левого края (DESIGN_SYSTEM §6):
+  // слой «Настроить» перекрывает пилюлю демо-шапки (z-index 100 против 80),
+  // системная кнопка Telegram в web-режиме недоступна.
+  await edgeSwipeBack(page, '[data-testid="progress-customize"]')
   await expect(page.getByRole('heading', { name: 'аналитика.' })).toBeVisible()
   await expect(card).toBeVisible()
 })
