@@ -1,6 +1,6 @@
 ---
 status: current
-last_verified: 2026-09-11
+last_verified: 2026-10-15
 ---
 # MXL-99 — Canonical character library
 

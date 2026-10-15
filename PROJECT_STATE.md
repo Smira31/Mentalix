@@ -1,21 +1,29 @@
 ---
 status: current
-last_verified: 2026-10-05
+last_verified: 2026-10-15
 ---
 
 # PROJECT_STATE — подтверждённое состояние Mentalix
 
 Этот файл содержит только проверенные факты о репозиториях, окружениях, release provenance и активных GitHub-треках. Активный backlog находится в [`docs/TASK_INDEX.md`](docs/TASK_INDEX.md). История решений находится в [`TASKS.md`](TASKS.md), [`CHANGES.md`](CHANGES.md) и `docs/archive/`.
 
-**Последняя сверка репозитория и конфигурации:** 05.10.2026. Frontend baseline — `main` `b1fdfb2fff939fb515afb878f72a40a14328fc03` после PR #1003. Это снимок перед новым документационным пакетом, не SHA этого пакета и не exact-SHA Production. Прочитана backend deployment/proxy-документация на `0a48f04111515df0bf19a3f40f8051110bc17155`; backend runtime и deployed SHA не проверены. Решения владельца от 27.09 сохраняются, назначения исполнителей не менялись. Предыдущий snapshot после #905 (`1daa58b0ffe8fc742c936d6b226e74c72f52e53a`) и #904 (`767a3b55e69d670cb3ea9b2adbd6704f0d734a70`) — исторический контекст, не подтверждение текущего production.
+**Последняя сверка репозитория и конфигурации:** 15.10.2026. Frontend baseline — `main` `c271ba19174c321f7ae2242acf535ba18c42c598` после PR #1057. Это снимок исходников, не exact-SHA Production. Прочитана backend deployment/proxy-документация на `0a48f04111515df0bf19a3f40f8051110bc17155`; backend runtime и deployed SHA не проверены. Решения владельца от 27.09 сохраняются, назначения исполнителей не менялись. Предыдущий snapshot после #1003 (`b1fdfb2fff939fb515afb878f72a40a14328fc03`) — исторический контекст, не подтверждение текущего production.
 
-## Сверка 05.10.2026: подтверждено и не проверено
+## Сверка 15.10.2026: подтверждено и не проверено
 
-- Проверены последние пять frontend-коммитов и слияние #1003. На момент pre-flight перед этим пакетом открытых frontend PR не было; это не постоянный статус очереди.
-- Последние продуктовые изменения в истории `main`: #1002 — история/настроение, #1001 — viewport/scroll, #1000 — библиотека и движок курсов. Названия и факт слияния не доказывают ручную приёмку или deployment.
-- В CI PR #1003 на candidate `39f28e1303545cadff96754b87773393909d2cc8` завершились 14 jobs: 13 success, Backend health skipped для docs-only diff. Результаты push-CI на merge SHA и Firebase deploy отдельно не проверены.
-- Проверены `package.json`, `firebase.json`, `.github/workflows/ci.yml`, `.github/workflows/firebase-hosting.yml`, backend `RENDER.md` и `proxy/README.md`. Объявленные версии стека — в `package.json`, разрешённые точные версии — в `package-lock.json`; lockfile и установленное окружение в этой сверке не анализировались.
-- Production frontend SHA, Cloud Run runtime/upstream, Render health/version, данные и ручной Telegram/iPhone gate — NOT RUN. Локальные unit/lint/build/docs/UX также не запускались: доступна документационная копия, не полный проект с зависимостями.
+- Проверены frontend-коммиты от #1003 (`b1fdfb2f`) до #1057 (`c271ba19`): 20 PR в `main` (с #1028 по #1057). Ниже перечислены ключевые продуктовые изменения по git log; факт слияния не доказывает ручную приёмку или deployment.
+- **Путь героя** (#1034–#1038): иллюстрации глав I и III, глава IV, обложка, return; тексты v2, пролог «О курсе», финал; контраст подписи шага (faint → muted); вступление шага без скролла.
+- **Privacy** (#1039): статичная страница `/privacy` для BotFather через плагин `privacyPagePlugin` из `src/content/privacyPolicy.js`.
+- **Performance** (#1040–#1041): удаление `react-query` из стартового бандла; убрана фоновая предзагрузка вкладок.
+- **Журнал** (#1042–#1043): один дневник DailyJournal, безопасная история записей (JOURNAL-001); заметная кнопка «Мои записи» на экране «Вспомни, куда идёшь».
+- **Mentalix Pro** (#1044, #1050, #1055): экраны разбора, плана недели и прогресса (PRO-002b/c); карточка «Разбор и план недели» в аналитике; интерфейс подписки и оплата через Tribute (PAY-UI-001, за флагом `VITE_PAYMENT_UI_ENABLED`).
+- **Удаление практики «Альтер-эго»** (#1048): код и ассеты удалены, данные и deep-link сохранены.
+- **Читаемая шкала и контракт клавиатуры** (#1049): MXL-TYPE-READABLE-001 и MXL-KEYBOARD-001.
+- **UX чек-инов** (#1052): единая навигация и сохранение черновиков (утро и вечер).
+- **Полный аудит** (#1053): AUDIT-FULL-001 — отчёт `docs/audits/FULL_AUDIT_2026-10-15.md`, 20 находок (0 P0, 2 P1, 10 P2, 8 P3), только документация.
+- **Исправления по аудиту** (#1054, #1056, #1057): гостевой guard `pinned_practices` (AUD-001), тап-зоны 44 px (AUD-006/007), честные состояния ошибок (AUD-009/010), ограничение `?debug=api` (AUD-013), CloudStorage version gate (AUD-003); удаление упоминаний «проверенной подписи» и черновик правовых документов (AUD-004); тап-зоны «Прогресс» ≥43×43 pt (AUD-007).
+- Проверены `package.json`, `firebase.json`, `.github/workflows/ci.yml`. Объявленные версии стека — в `package.json`, разрешённые точные версии — в `package-lock.json`; lockfile и установленное окружение в этой сверке не анализировались.
+- Production frontend SHA, Cloud Run runtime/upstream, Render health/version, данные и ручной Telegram/iPhone gate — NOT RUN. Локальные unit-тесты не запускались (4 известных локальных падения, в CI зелёные); lint, build и docs:check проверены в контейнере.
 - Разделы ниже с датами 27.09 и 03.10 сохраняют прежние решения и evidence; они не переаттестованы как текущее состояние продукта или базы данных.
 
 ## Настроенный маршрут production API
@@ -39,7 +47,7 @@ last_verified: 2026-10-05
 | Card System v2      | Нормативная спецификация в `DESIGN_SYSTEM.md` §5.1, решение владельца от 22.09.2026                                                | [`DESIGN_SYSTEM.md`](DESIGN_SYSTEM.md) §5.1                                                                                                                |
 | Card System v1      | [`docs/archive/CARD_SYSTEM_V1_2026-09-22.md`](docs/archive/CARD_SYSTEM_V1_2026-09-22.md), статус `archived`                        | Архив; не текущий источник истины                                                                                                                          |
 | Frontend            | `Smira31/Mentalix`, default branch `main`                                                                                          | [GitHub](https://github.com/Smira31/Mentalix)                                                                                                              |
-| Frontend `main`     | baseline `b1fdfb2fff939fb515afb878f72a40a14328fc03` после PR #1003 на момент сверки 05.10.2026; не deployed SHA                    | [commit](https://github.com/Smira31/Mentalix/commit/b1fdfb2fff939fb515afb878f72a40a14328fc03), [PR #1003](https://github.com/Smira31/Mentalix/pull/1003)   |
+| Frontend `main`     | baseline `c271ba19174c321f7ae2242acf535ba18c42c598` после PR #1057 на момент сверки 15.10.2026; не deployed SHA                    | [commit](https://github.com/Smira31/Mentalix/commit/c271ba19174c321f7ae2242acf535ba18c42c598), [PR #1057](https://github.com/Smira31/Mentalix/pull/1057)   |
 | Production frontend | Настройки: успешный push-CI `main` → Firebase Hosting Live; ручной запуск также предусмотрен. Текущий deployed SHA не проверен     | [Firebase workflow](https://github.com/Smira31/Mentalix/actions/workflows/firebase-hosting.yml); исторический run 35119350799 не доказывает текущий deploy |
 | Backend             | `Smira31/mentalix-bot`, `main`                                                                                                     | [GitHub](https://github.com/Smira31/mentalix-bot)                                                                                                          |
 | Backend runtime     | Исторический адрес health: `https://mentalix-bot.onrender.com/api/health`; текущий статус backend не проверялся в этой docs-сверке | Приватный `mentalix-bot` и отдельная runtime-проверка обязательны для актуального статуса                                                                  |
