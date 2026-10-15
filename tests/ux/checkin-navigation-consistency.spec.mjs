@@ -213,13 +213,19 @@ async function backOutOfMorning(page) {
   await expect(page.locator('[data-testid="today-card-morning"]')).toBeVisible()
 }
 
-/** Вечерний путь «Назад» до первого шага: урок → эмоция → энергия → настроение. */
+/*
+ * Вечерний путь «Назад» до первого шага: урок → эмоция → энергия → настроение.
+ * Вечерний флоу живёт в полноэкранной поверхности (mx-fullscreen-surface),
+ * а не в демо-обёртке утра (mx-demo-checkin) — свайп идёт по своему классу.
+ */
+const EVENING_SURFACE = '.mx-fullscreen-surface'
+
 async function backOutOfEvening(page) {
-  await edgeSwipeBack(page)
+  await edgeSwipeBack(page, EVENING_SURFACE)
   await expect(page.locator('[data-testid="checkin-emotion-pill"]').first()).toBeVisible()
-  await edgeSwipeBack(page)
+  await edgeSwipeBack(page, EVENING_SURFACE)
   await expect(page.getByRole('heading', { name: 'Сколько в тебе энергии?' })).toBeVisible()
-  await edgeSwipeBack(page)
+  await edgeSwipeBack(page, EVENING_SURFACE)
   await expect(page.getByRole('heading', { name: 'Как ты сейчас?' })).toBeVisible()
 }
 
@@ -430,7 +436,7 @@ test.describe('Check-in navigation consistency (UX audit pack 1)', () => {
     // В уроке есть текст — на шаге «→»; выходим «Назад» до первого шага,
     // где «Назад» закрывает разбор и просит подтверждение.
     await backOutOfEvening(page)
-    await edgeSwipeBack(page)
+    await edgeSwipeBack(page, EVENING_SURFACE)
     const dialog = page.locator('[role="dialog"]')
     await expect(dialog).toBeVisible()
     await expect(page.getByText('Закрыть запись?')).toBeVisible()
