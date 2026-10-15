@@ -47,6 +47,6 @@ test('гейт отдаёт недоступность и не бросает в
   )
 
   // Нет метода — недоступно; нет SDK (веб) — проверка версии не мешает.
-  assert.match(gate, /if \(!storage\?\.\[method\]\) return false/)
+  assert.match(gate, /if \(!storage \|\| !storage\[method\]\) return false/)
   assert.match(gate, /typeof webApp\?\.isVersionAtLeast === 'function'/)
 })
