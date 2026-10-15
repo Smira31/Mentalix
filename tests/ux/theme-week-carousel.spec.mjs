@@ -52,13 +52,14 @@ test.describe('Тема недели: вход с «Сегодня» и кару
     const question = closed.locator('.mx-tqc-card__question')
     await expect(question).toBeVisible()
     await expect(question).toHaveCSS('opacity', '0.35')
-    await expect(closed.locator('.mx-tqc-card__prompt')).toHaveCount(0)
+    // Закрытые карточки не показывают prompt вопроса, только opening-label
+    await expect(closed.locator('[data-testid="theme-card-prompt"]')).toHaveCount(0)
+    await expect(closed.locator('[data-testid="theme-opening-label"]')).toBeVisible()
 
     // Прокрутка к закрытой карточке — CTA отражает её состояние
     await closed.scrollIntoViewIfNeeded()
-    await page.waitForTimeout(300)
     const cta = page.getByTestId('theme-carousel-cta')
-    await expect(cta).toContainText('После вопроса')
+    await expect(cta).toContainText('Откроется')
 
     // Все состояния кнопки — без обрезки и переноса
     for (const width of [393, 440]) {
