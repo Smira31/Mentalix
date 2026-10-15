@@ -1,0 +1,72 @@
+/* ── Карточка входа в Pro (аналитика, вкладка «Прогресс») ──
+   Оболочка и композиция — образец владельца, карточка «Твои практики»:
+   `.mx-progress-card` + блок «кольцо слева, текст справа»
+   (`.mx-progress-practices__empty*`, §5.5 DESIGN_SYSTEM). Своих отступов,
+   радиусов и типографики здесь нет — они берутся из классов образца; ниже
+   только состояния кольца готовности разбора и сброс браузерных стилей
+   кнопок: состояние сборки кольцо не показывает — GET его не сообщает
+   (см. комментарий карточки). */
+
+/* Строки шапки: у образца это div и заголовки, здесь — содержимое карточки. */
+.mx-pro-analytics-card__head,
+.mx-pro-analytics-card__title,
+.mx-pro-analytics-card__subtitle {
+  display: block;
+}
+
+/* Нижняя часть карточки — кнопка входа в разбор: та же композиция образца. */
+.mx-pro-analytics-card__open {
+  display: flex;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  transition: transform 0.15s ease;
+}
+
+.mx-pro-analytics-card__open:active {
+  transform: scale(0.99);
+}
+
+.mx-pro-analytics-card__ring {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+/* Разбор готов — кольцо целиком в акценте: заполненность без процентов сборки. */
+.mx-pro-analytics-card--ready .mx-pro-analytics-card__ring {
+  border-color: rgb(var(--c-gold));
+}
+
+/* Ошибка запроса — нейтральное состояние: пунктир, не «разбора нет». */
+.mx-pro-analytics-card--error .mx-pro-analytics-card__ring {
+  border-style: dashed;
+}
+
+/* Повтор загрузки — только в состоянии ошибки, отдельно от входа в разбор. */
+.mx-pro-analytics-card__retry {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  min-height: 44px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgb(var(--c-text));
+  font: inherit;
+  font-size: var(--mx-read-note);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-pro-analytics-card__open {
+    transition: none;
+  }
+}

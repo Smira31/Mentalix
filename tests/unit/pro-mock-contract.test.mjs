@@ -18,11 +18,31 @@ test('mock недоступен в production-сборке', () => {
   assert.match(mockSource, /import\.meta\.env\?\.DEV === true \|\| import\.meta\.env\?\.VITE_LOCAL_PREVIEW === 'true'/)
 })
 
+test('сценарий тестового окружения задаётся VITE_PRO_MOCK, URL-параметр приоритетен', () => {
+  assert.match(mockSource, /import\.meta\.env\?\.VITE_PRO_MOCK/)
+  // Параметр URL проверяется первым и выигрывает у переменной окружения.
+  assert.match(
+    mockSource,
+    /const fromUrl = new URLSearchParams\(window\.location\.search\)\.get\('proMock'\)\s*if \(fromUrl != null\) return fromUrl/
+  )
+  // Пустая переменная mock не включает.
+  assert.match(mockSource, /typeof fromEnv === 'string' && fromEnv !== '' \? fromEnv : null/)
+})
+
 test('сценарии покрывают конфликт генерации, версии и пересборки', () => {
   assert.match(
     mockSource,
     /'conflict',\s*'version_conflict',\s*'rebuild_conflict',\s*'insufficient',\s*'crisis',\s*'disabled',\s*'nopro'/
   )
+})
+
+test('сценарий longtext подаёт в разбор длинные русские тексты', () => {
+  // Длинные строки живут в отдельном модуле: те же данные читает браузерный
+  // сценарий, поэтому ожидание и mock не расходятся.
+  assert.match(mockSource, /import \{ MOCK_LONG_REPORT_TEXT \} from '\.\/proMockLongText\.js'/)
+  assert.match(mockSource, /'longtext',/)
+  assert.match(mockSource, /function buildMockReport\(weekStart, longText = false\)/)
+  assert.match(mockSource, /buildMockReport\(weekStart, scenario === 'longtext'\)/)
 })
 
 test('правка общей цели повышает версии всех дней, правка дня — только его', () => {

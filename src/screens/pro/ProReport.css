@@ -1,0 +1,160 @@
+/* ── Экраны разбора Pro: внутренний дизайн ──
+   Характер Mentalix и композиционная ясность образцов Stoic, практик и
+   ритуалов: Onest, смысловые токены читаемой шкалы (--mx-read-*: основной
+   текст 16px, пояснения 14px, подписи 13px), больше расстояния между
+   смысловыми разделами и меньше вложенных рамок. Глобальная дизайн-система
+   не меняется — всё локально для Pro. */
+
+.mx-pro-text {
+  font-size: var(--mx-read-read);
+  line-height: 1.45;
+  color: rgb(var(--c-text));
+}
+
+.mx-pro-note {
+  font-size: var(--mx-read-note);
+  line-height: 1.45;
+  color: rgb(var(--c-muted));
+}
+
+.mx-pro-caption {
+  font-size: var(--mx-read-caption);
+  line-height: 1.4;
+  color: rgb(var(--c-muted));
+}
+
+/* ── Разбор ещё не собран ── */
+.mx-pro-intro {
+  margin-top: var(--mx-space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--mx-space-4);
+}
+
+.mx-pro-intro__action {
+  margin-top: var(--mx-space-2);
+}
+
+/* ── Готовый разбор ── */
+.mx-pro-report {
+  margin-top: var(--mx-space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--mx-space-10);
+}
+
+.mx-pro-report__direction {
+  padding: var(--mx-space-6) var(--mx-space-5);
+  border: 1px solid rgb(var(--c-border) / 0.72);
+  border-radius: var(--mx-radius-card);
+  background: rgb(var(--c-card2));
+}
+
+.mx-pro-report__direction-text {
+  margin-top: var(--mx-space-3);
+  font-size: var(--mx-read-read);
+  font-weight: 600;
+  line-height: 1.4;
+  color: rgb(var(--c-text));
+}
+
+.mx-pro-report__section-title {
+  font-size: var(--mx-read-read);
+  font-weight: 600;
+  line-height: 1.3;
+  color: rgb(var(--c-text));
+}
+
+.mx-pro-report__list {
+  margin-top: var(--mx-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--mx-space-5);
+}
+
+.mx-pro-report__item-days {
+  margin-top: var(--mx-space-1);
+  font-size: var(--mx-read-caption);
+  line-height: 1.4;
+  color: rgb(var(--c-muted));
+}
+
+.mx-pro-report__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--mx-space-2);
+}
+
+.mx-pro-report__chip {
+  padding: var(--mx-space-1) var(--mx-space-3);
+  border-radius: var(--mx-radius-pill);
+  background: rgb(var(--c-card3) / 0.6);
+  font-size: var(--mx-read-caption);
+  color: rgb(var(--c-text));
+}
+
+.mx-pro-report__questions {
+  padding: var(--mx-space-6) var(--mx-space-5);
+  border-radius: var(--mx-radius-card);
+  background: rgb(var(--c-card2) / 0.5);
+}
+
+.mx-pro-report__meta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mx-space-1);
+}
+
+.mx-pro-report__action {
+  margin-top: var(--mx-space-2);
+}
+
+/* ── Раскрываемые подробности ── */
+.mx-pro-details {
+  border-top: 1px solid rgb(var(--c-border));
+}
+
+.mx-pro-details__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--mx-space-4);
+  min-height: 52px;
+  list-style: none;
+  cursor: pointer;
+}
+
+.mx-pro-details__summary::-webkit-details-marker {
+  display: none;
+}
+
+.mx-pro-details__title {
+  font-size: var(--mx-read-read);
+  font-weight: 600;
+  color: rgb(var(--c-text));
+}
+
+.mx-pro-details__chevron {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  margin-right: 2px;
+  border-right: 2px solid rgb(var(--c-muted));
+  border-bottom: 2px solid rgb(var(--c-muted));
+  transform: rotate(45deg);
+  transition: transform 0.2s ease;
+}
+
+.mx-pro-details[open] .mx-pro-details__chevron {
+  transform: rotate(-135deg);
+}
+
+.mx-pro-details__body {
+  padding-bottom: var(--mx-space-5);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-pro-details__chevron {
+    transition: none;
+  }
+}

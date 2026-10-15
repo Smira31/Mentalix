@@ -10,8 +10,11 @@ import Card from '../../components/ui/Card'
 import PillButton from '../../components/ui/PillButton'
 import ProConsentCard from './ProConsentCard'
 import ProStateCard from './ProStateCard'
+import ProDetails from './ProDetails'
 import { proBlockedState, proErrorKey, proStatePayload } from './proApiState'
 import { formatDayList, formatSources, formatWeekRange, isoDay } from './weekLabel'
+
+import './ProReport.css'
 
 /*
  * «Мой разбор» (PRO-002b): недельный AI-разбор.
@@ -45,47 +48,34 @@ function weekRange(payload) {
   return start && end ? { start, end } : null
 }
 
-function Section({ title, children }) {
+function ReportList({ items }) {
   return (
-    <div className="mt-5">
-      <p className="font-label text-[11px] uppercase tracking-wider text-muted">{title}</p>
-      <div className="mt-2">{children}</div>
-    </div>
-  )
-}
-
-function DatedList({ items }) {
-  return (
-    <Card className="p-4">
-      <ul className="space-y-3">
-        {items.map((item, index) => (
-          <li key={`${item.text}-${index}`}>
-            <p className="text-[14px] leading-relaxed text-cream">{item.text}</p>
-            {item.days?.length > 0 && (
-              <p className="mt-1 text-[11px] text-muted">{formatDayList(item.days)}</p>
-            )}
-          </li>
-        ))}
-      </ul>
-    </Card>
+    <ul className="mx-pro-report__list">
+      {items.map((item, index) => (
+        <li key={`${item.text}-${index}`}>
+          <p className="mx-pro-text">{item.text}</p>
+          {item.days?.length > 0 && (
+            <p className="mx-pro-report__item-days">{formatDayList(item.days)}</p>
+          )}
+        </li>
+      ))}
+    </ul>
   )
 }
 
 function PatternList({ items }) {
   return (
-    <Card className="p-4">
-      <ul className="space-y-3">
-        {items.map((item, index) => (
-          <li key={`${item.text}-${index}`}>
-            <p className="text-[14px] leading-relaxed text-cream">{item.text}</p>
-            <p className="mt-1 text-[11px] text-muted">
-              {CONFIDENCE_LABELS[item.confidence] || 'предположение'}
-              {item.based_on?.length > 0 ? ` · ${formatDayList(item.based_on)}` : ''}
-            </p>
-          </li>
-        ))}
-      </ul>
-    </Card>
+    <ul className="mx-pro-report__list">
+      {items.map((item, index) => (
+        <li key={`${item.text}-${index}`}>
+          <p className="mx-pro-text">{item.text}</p>
+          <p className="mx-pro-report__item-days">
+            {CONFIDENCE_LABELS[item.confidence] || 'предположение'}
+            {item.based_on?.length > 0 ? ` · ${formatDayList(item.based_on)}` : ''}
+          </p>
+        </li>
+      ))}
+    </ul>
   )
 }
 
@@ -229,19 +219,24 @@ export default function ProReportView({ user, onOpenPlan }) {
     <div>
       <PageTitle>мой разбор.</PageTitle>
       {week && !crisisReply && (
-        <p className="font-label mt-2 text-[12px] text-muted" data-testid="pro-report-week">
+        <p className="font-label mx-pro-caption mt-2" data-testid="pro-report-week">
           {formatWeekRange(week.start, week.end)}
         </p>
       )}
 
-      {loading && <p className="mt-6 text-[13px] text-muted">Загружаем…</p>}
+      {loading && <p className="mx-pro-note mt-6">Загружаем…</p>}
 
       {blocked && <ProStateCard title={blocked.title} text={blocked.text} testId="pro-blocked-state" />}
 
       {loadFailed && (
         <Card className="mt-4 p-4">
-          <p className="text-[13px] text-muted">Не удалось загрузить состояние разбора.</p>
-          <PillButton variant="dark" onClick={load} className="mt-3 w-full">
+          <p className="mx-pro-note">Не удалось загрузить состояние разбора.</p>
+          <PillButton
+            variant="dark"
+            testId="pro-report-retry"
+            onClick={load}
+            className="mt-3 w-full"
+          >
             Повторить
           </PillButton>
         </Card>
@@ -262,21 +257,24 @@ export default function ProReportView({ user, onOpenPlan }) {
       )}
 
       {!loading && !loadFailed && !blocked && status === 'not_generated' && (
-        <Card className="mt-4 p-4">
-          <p className="text-[14px] leading-relaxed text-cream">
-            Разбор этой недели ещё не собран. Он интерпретирует твои записи: темы, повторяющиеся
-            трудности и достижения.
+        <section className="mx-pro-intro" data-testid="pro-report-intro">
+          <p className="mx-pro-text">
+            Разбор недели собирает твои записи — темы, повторяющиеся трудности и достижения — и
+            предлагает направление на следующую неделю.
+          </p>
+          <p className="mx-pro-note">
+            Пока разбор не собран. Ты можешь собрать его сейчас или вернуться к нему позже.
           </p>
           <PillButton
             variant="light"
             testId="pro-generate-report"
             onClick={handleGenerate}
             disabled={generating}
-            className="mt-3 w-full"
+            className="mx-pro-intro__action w-full"
           >
             {generating ? 'Собираем разбор…' : 'Собрать разбор'}
           </PillButton>
-        </Card>
+        </section>
       )}
 
       {!loading && !loadFailed && !blocked && status !== null && !KNOWN_STATUSES.has(status) && (
@@ -290,95 +288,96 @@ export default function ProReportView({ user, onOpenPlan }) {
       )}
 
       {generating && (
-        <p role="status" className="mt-3 text-[12px] text-muted">
+        <p role="status" className="mx-pro-note mt-3">
           Собираем разбор — это занимает до минуты.
         </p>
       )}
 
       {crisisReply && (
         <Card className="mt-4 p-4">
-          <p className="text-[14px] leading-relaxed text-cream">{crisisReply}</p>
+          <p className="mx-pro-text">{crisisReply}</p>
         </Card>
       )}
 
       {status === 'ready' && report && (
-        <div>
-          <Section title="Направление на неделю">
-            <Card className="p-4">
-              <p className="text-[15px] font-semibold leading-relaxed text-cream">
-                {report.focus_next_week}
-              </p>
-            </Card>
-          </Section>
-
-          {report.themes?.length > 0 && (
-            <Section title="Темы">
-              <div className="flex flex-wrap gap-2">
-                {report.themes.map(theme => (
-                  <span
-                    key={theme}
-                    className="rounded-full bg-cream/5 px-3 py-1.5 text-[12px] text-cream"
-                  >
-                    {theme}
-                  </span>
-                ))}
-              </div>
-            </Section>
-          )}
-
-          {report.difficulties?.length > 0 && (
-            <Section title="Трудности">
-              <DatedList items={report.difficulties} />
-            </Section>
-          )}
+        <div className="mx-pro-report">
+          {/* Направление — главный блок сверху: это ориентир на следующую
+              неделю, а не доказанная закономерность. */}
+          <section className="mx-pro-report__direction" data-testid="pro-report-direction">
+            <p className="mx-pro-caption">Направление на неделю</p>
+            <p className="mx-pro-report__direction-text">{report.focus_next_week}</p>
+          </section>
 
           {report.achievements?.length > 0 && (
-            <Section title="Достижения">
-              <DatedList items={report.achievements} />
-            </Section>
+            <section data-testid="pro-report-achievements">
+              <h2 className="mx-pro-report__section-title">Достижения</h2>
+              <ReportList items={report.achievements} />
+            </section>
           )}
 
-          {report.patterns?.length > 0 && (
-            <Section title="Закономерности">
-              <PatternList items={report.patterns} />
-            </Section>
+          {(report.themes?.length > 0 ||
+            report.difficulties?.length > 0 ||
+            report.patterns?.length > 0) && (
+            <div data-testid="pro-report-details">
+              {report.themes?.length > 0 && (
+                <ProDetails title="Темы" testId="pro-details-themes">
+                  <div className="mx-pro-report__chips">
+                    {report.themes.map(theme => (
+                      <span key={theme} className="mx-pro-report__chip">
+                        {theme}
+                      </span>
+                    ))}
+                  </div>
+                </ProDetails>
+              )}
+
+              {report.difficulties?.length > 0 && (
+                <ProDetails title="Трудности" testId="pro-details-difficulties">
+                  <ReportList items={report.difficulties} />
+                </ProDetails>
+              )}
+
+              {report.patterns?.length > 0 && (
+                <ProDetails title="Закономерности" testId="pro-details-patterns">
+                  <PatternList items={report.patterns} />
+                </ProDetails>
+              )}
+            </div>
           )}
 
           {report.reflection_questions?.length > 0 && (
-            <Section title="Вопросы для рефлексии">
-              <Card className="p-4">
-                <ul className="space-y-2">
-                  {report.reflection_questions.map(question => (
-                    <li key={question} className="text-[14px] leading-relaxed text-muted">
-                      {question}
-                    </li>
-                  ))}
-                </ul>
-              </Card>
-            </Section>
+            <section className="mx-pro-report__questions" data-testid="pro-report-questions">
+              <h2 className="mx-pro-report__section-title">Вопросы для размышления</h2>
+              <ul className="mx-pro-report__list">
+                {report.reflection_questions.map(question => (
+                  <li key={question} className="mx-pro-note">
+                    {question}
+                  </li>
+                ))}
+              </ul>
+            </section>
           )}
 
-          <p className="mt-4 text-[11px] leading-relaxed text-muted">
-            {formatSources(report.sources)}
-          </p>
+          <div className="mx-pro-report__meta">
+            <p className="mx-pro-caption">{formatSources(report.sources)}</p>
+            <p className="mx-pro-caption">{report.disclaimer}</p>
+          </div>
 
-          <p className="mt-2 text-[11px] leading-relaxed text-muted">{report.disclaimer}</p>
-
-          <div className="mt-6">
+          <div className="mx-pro-report__action">
             <PillButton
               variant="light"
               testId="pro-open-plan"
               onClick={onOpenPlan}
               className="w-full"
             >
-              План недели
+              Перейти к плану недели
             </PillButton>
           </div>
         </div>
       )}
 
       {message && !crisisReply && (
-        <p role="status" className="mt-3 text-[12px] leading-relaxed text-muted">
+        <p role="status" className="mx-pro-note mt-3">
           {message}
         </p>
       )}
