@@ -16,6 +16,9 @@ services:
       # Sandbox-only включение фронтенд-флага Mentalix Pro для проверки превью.
       # Production-сборка флаг не получает: default — выключено (src/lib/proFlag.js).
       - VITE_PRO_REVIEW_PLAN_ENABLED=true
+      # Sandbox-only включение фронтенд-флага интерфейса оплаты.
+      # Production-сборка флаг не получает: default — выключен (src/lib/paymentConfig.js).
+      - VITE_PAYMENT_UI_ENABLED=true
       # Sandbox-only сценарий dev-mock Pro без параметра URL: оболочка превью
       # подменяет адрес своими служебными параметрами, поэтому `?proMock=…`
       # из ссылки до приложения не доходит. URL-параметр приоритетен.

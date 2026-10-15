@@ -13,6 +13,7 @@ export default defineConfig({
     'profile-stoic.spec.mjs',
     'profile-wave2.spec.mjs',
     'profile-wave3.spec.mjs',
+    'subscription-states.spec.mjs',
     'profile-canonical-streak.spec.mjs',
     'demo-phone.spec.mjs',
     'demo-telegram-header.spec.mjs',
