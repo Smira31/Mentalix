@@ -1178,6 +1178,22 @@ export const api = {
   },
 
   /*
+   * Донат («Поддержать проект») через ЮKassa.
+   * POST /api/donations — Authorization: Bearer <session_token>, тело
+   * { amount } — рубли, целое, 50…50000.
+   * 200 → { confirmation_url, payment_id } — открыть confirmation_url;
+   * 401 (unauthorized | verified_identity_required) — нужен вход;
+   * 403 guest_payment_forbidden — гость;
+   * 400 donation_amount_below_min / donation_amount_above_max — сумма;
+   * 422 — сумма не целое; 503 yookassa_disabled / yookassa_not_configured;
+   * 500 / 502 yookassa_create_failed — сбой, можно повторить.
+   * Донат НЕ даёт Pro. Тексты ошибок — src/lib/donation.js.
+   */
+  donations: {
+    create: amount => request('/donations', { method: 'POST', body: JSON.stringify({ amount }) }),
+  },
+
+  /*
    * Mentalix Pro (PRO-002b/c): разбор недели, план на 7 дней, прогресс.
    * Контракт — backend/pro/router.py. Ошибки двух видов:
    *   HTTPException → body.detail ('pro_required', 'pro_report_disabled',

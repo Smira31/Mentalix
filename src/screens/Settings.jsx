@@ -636,7 +636,13 @@ export default function Settings({
   }
 
   if (screen === 'donate') {
-    return <DonateScreen onBack={() => setScreen(null)} />
+    return (
+      <DonateScreen
+        user={user}
+        onBack={() => setScreen(null)}
+        onGuestLogin={onGuestLogin}
+      />
+    )
   }
 
   if (screen === 'link-web') {

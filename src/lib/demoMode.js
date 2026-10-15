@@ -1069,6 +1069,15 @@ function respond(path, options = {}) {
     throw error
   }
 
+  // Донат («Поддержать проект») в демо: реального провайдера тоже нет —
+  // тот же честный 503 yookassa_disabled, что и для Pro выше.
+  if (pathname === '/donations' && method === 'POST') {
+    const error = new Error('Демо: HTTP 503')
+    error.status = 503
+    error.body = { code: 'yookassa_disabled' }
+    throw error
+  }
+
   // Считаем попытки отправки — UX-тест проверяет «0 лишних POST» при лимите.
   if (pathname === '/mentalix/messages' && method === 'POST' && typeof window !== 'undefined') {
     window.__mxDemoMessagePosts = (window.__mxDemoMessagePosts || 0) + 1

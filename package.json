@@ -46,6 +46,7 @@
     "ux:pro-states": "playwright test --config=playwright.pro-states.config.mjs",
     "ux:pro-failure-states": "playwright test --config=playwright.pro-failure-states.config.mjs",
     "ux:payment-ui": "playwright test --config=playwright.payment-ui.config.mjs",
+    "ux:donation": "playwright test --config=playwright.donation.config.mjs",
     "ux:telegram-p0": "playwright test --config=playwright.telegram-p0.config.mjs",
     "ux:daimon": "playwright test --config=playwright.daimon.config.mjs",
     "ux:today-drafts": "playwright test --config=playwright.today-drafts.config.mjs",
