@@ -6,6 +6,7 @@ import SemanticGlyph from './SemanticGlyph'
 import { PRACTICE_COLLECTIONS } from '../lib/practiceCatalogRegistry'
 import { isPreviewDemoMode } from '../lib/demoMode'
 import { api } from '../lib/api'
+import { hasCanonicalUserId } from '../lib/guestAuth'
 import { illustrations } from '../assets/illustrations'
 
 import './StepsExplore.css'
@@ -596,6 +597,9 @@ export default function StepsExplore({
 
   async function handlePin(practice) {
     if (!user) return
+    // AUD-001: с отрицательным гостевым id запрос не отправляем —
+    // POST /pinned-practices с ним отвечает HTTP 500.
+    if (!hasCanonicalUserId(user)) return
     try {
       await api.pinnedPractices.add(user.id, practice.key)
     } catch {

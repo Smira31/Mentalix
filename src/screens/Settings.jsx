@@ -64,6 +64,34 @@ function Toggle({ checked, label, onChange }) {
   )
 }
 
+/*
+ * AUD-009: настройки профиля не загрузились. Показываем ошибку с повтором,
+ * а не дефолты: они выглядели бы как сохранённые значения, и следующее
+ * сохранение затёрло бы реальные.
+ */
+function SettingsLoadError({ onRetry }) {
+  return (
+    <div
+      role="alert"
+      className="flex flex-wrap items-center gap-3"
+      data-testid="profile-settings-error"
+    >
+      <p className="text-[13px] leading-relaxed text-muted">
+        Настройки не загрузились. Показывать или менять их сейчас небезопасно: дефолты могли бы
+        затереть твои значения.
+      </p>
+      <button
+        type="button"
+        onClick={onRetry}
+        className="mx-profile-text-button"
+        data-testid="profile-settings-retry"
+      >
+        Повторить
+      </button>
+    </div>
+  )
+}
+
 const SAVE_FAILED = 'Не удалось сохранить. Попробуй ещё раз'
 
 const hh = hour => `${String(hour).padStart(2, '0')}:00`
@@ -126,6 +154,11 @@ export default function Settings({
   const [profileLoading, setProfileLoading] = useState(true)
   const [profileError, setProfileError] = useState(false)
   const [profileReloadToken, setProfileReloadToken] = useState(0)
+  // AUD-009: settingsLoaded отличает «не загружено» от «загружено»,
+  // settingsError — состояние ошибки с повтором вместо дефолтов.
+  const [settingsLoaded, setSettingsLoaded] = useState(false)
+  const [settingsError, setSettingsError] = useState(false)
+  const [settingsReloadToken, setSettingsReloadToken] = useState(0)
 
   useEffect(() => {
     if (!user) return
@@ -153,6 +186,11 @@ export default function Settings({
     setProfileReloadToken(token => token + 1)
   }
 
+  function retrySettings() {
+    setSettingsError(false)
+    setSettingsReloadToken(token => token + 1)
+  }
+
   const [reminderHour, setReminderHour] = useState(null)
   const [reminderOn, setReminderOn] = useState(false)
   const [reviewHour, setReviewHour] = useState(DEFAULT_REVIEW_HOUR)
@@ -177,10 +215,13 @@ export default function Settings({
   const privacyProtectedByTelegram = platformName === 'telegram' && Number(user?.id) > 0
 
   useEffect(() => {
-    if (!user) return
+    if (!user) return undefined
+    let active = true
+    setSettingsError(false)
     api.profile
       .getSettings(user.id)
       .then(s => {
+        if (!active) return
         setReminderHour(s?.reminder_hour ?? DEFAULT_REVIEW_HOUR)
         setReminderOn(!!s?.reminder_enabled)
         setReviewHour(s?.review_hour ?? DEFAULT_REVIEW_HOUR)
@@ -191,11 +232,16 @@ export default function Settings({
         setWritingGoalOn(!!s?.writing_goal_enabled)
         setWritingGoalCount(s?.writing_goal_weekly_count || 3)
         setInsightsEnabled(s?.insights_enabled !== false)
+        setSettingsLoaded(true)
       })
       .catch(() => {
-        setReminderHour(DEFAULT_REVIEW_HOUR)
+        // Дефолты как «сохранённые значения» не подставляем (AUD-009).
+        if (active) setSettingsError(true)
       })
-  }, [user])
+    return () => {
+      active = false
+    }
+  }, [user, settingsReloadToken])
 
   const loadWritingGoalProgress = useCallback(async () => {
     if (!user) return
@@ -641,6 +687,14 @@ export default function Settings({
   }
 
   function renderCheckins() {
+    // AUD-009: без загруженных настроек — ошибка с повтором вместо дефолтов.
+    if (settingsError) {
+      return (
+        <ProfileBody>
+          <SettingsLoadError onRetry={retrySettings} />
+        </ProfileBody>
+      )
+    }
     return (
       <ProfileBody>
         <ProfileGroup label="Разбор дня">
@@ -847,6 +901,14 @@ export default function Settings({
   }
 
   function renderNotifications() {
+    // AUD-009: без загруженных настроек — ошибка с повтором вместо дефолтов.
+    if (settingsError) {
+      return (
+        <ProfileBody>
+          <SettingsLoadError onRetry={retrySettings} />
+        </ProfileBody>
+      )
+    }
     return (
       <ProfileBody>
         <ProfileGroup label="Напоминания">
@@ -1121,11 +1183,12 @@ export default function Settings({
           onOpenDonate={() => setScreen('donate')}
           onOpenWeb={openWebBanner}
         />
+        {settingsError && <SettingsLoadError onRetry={retrySettings} />}
         <ProfileGroup label="Настрой">
           <ProfileCard testId="profile-card-setup">
             <ProfileRow
               title="Чек-ины"
-              value={hh(reviewHour)}
+              value={settingsLoaded ? hh(reviewHour) : undefined}
               onClick={() => openSub('checkins')}
               testId="profile-row-checkins"
             />
@@ -1160,7 +1223,7 @@ export default function Settings({
             )}
             <ProfileRow
               title="Уведомления"
-              value={reminderOn ? 'Вкл.' : 'Выкл.'}
+              value={settingsLoaded ? (reminderOn ? 'Вкл.' : 'Выкл.') : undefined}
               onClick={() => openSub('notifications')}
               testId="profile-row-notifications"
             />

@@ -9,10 +9,12 @@ const API_TIMEOUT_MS = 10_000
 const API_MAX_RETRIES = 1
 const RETRYABLE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS'])
 const RETRYABLE_STATUS_CODES = new Set([408, 425, 429])
-const API_DIAGNOSTICS_ENABLED =
-  import.meta.env.DEV ||
-  (typeof window !== 'undefined' &&
-    new URLSearchParams(window.location.search).get('debug') === 'api')
+/*
+ * AUD-013: диагностика API — только dev-сборка. Раньше ветка ?debug=api не
+ * была ограничена DEV, и в production по простому параметру URL в консоль
+ * попадало тело ответа API (до 500 символов: текст записи, значения чек-ина).
+ */
+const API_DIAGNOSTICS_ENABLED = import.meta.env.DEV
 export const MAX_JOURNEY_TAGS_PER_ENTRY = 8
 
 function emitApiDiagnostic(detail) {

@@ -46,6 +46,21 @@ export function isGuestUser(user) {
   return Boolean(user?.is_guest)
 }
 
+/**
+ * Есть ли у пользователя canonical users row в бэкенде.
+ *
+ * AUD-001: отрицательный гостевой id такой строкой не является, и запросы с
+ * ним (например, /pinned-practices) отвечают HTTP 500. Положительный id —
+ * обычная строка: демо-гость 900002 не блокируется.
+ *
+ * @param {{ id?: number|string }|null} user
+ * @returns {boolean}
+ */
+export function hasCanonicalUserId(user) {
+  const id = Number(user?.id)
+  return Number.isFinite(id) && id > 0
+}
+
 /*
  * In-flight промис гостевого входа на уровне модуля.
  *
