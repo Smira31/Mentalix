@@ -145,7 +145,13 @@ const FULLSCREEN_COMPLETION_CLASS =
  * Своих «назад» и «закрыть» в шапке экрана нет: возврат — системная
  * кнопка «Назад» Telegram (useBackButton).
  */
-export function CheckInNextControls({ mode = 'next', onNext, onClose, variant = 'scale' }) {
+export function CheckInNextControls({
+  mode = 'next',
+  onNext,
+  onClose,
+  variant = 'scale',
+  disabled = false,
+}) {
   const closing = mode === 'close'
 
   return (
@@ -157,6 +163,7 @@ export function CheckInNextControls({ mode = 'next', onNext, onClose, variant = 
         testId="checkin-next"
         icon={closing ? 'x' : 'arrow'}
         crossfade
+        disabled={disabled}
         onClick={closing ? onClose : onNext}
       />
     </div>

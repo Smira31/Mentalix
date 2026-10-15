@@ -1,13 +1,25 @@
 import { expect, test } from '@playwright/test'
-import { closeCheckin, confirmCloseWithDraft, openDayCard, scaleStep } from './checkin-helpers.mjs'
+import {
+  backToToday,
+  closeCheckin,
+  closeStepButton,
+  confirmCloseWithDraft,
+  dayFocusOptionStep,
+  edgeSwipeBack,
+  nextStepButton,
+  openDayCard,
+  scaleStep,
+} from './checkin-helpers.mjs'
 
 /*
  * UX-аудит, пакет 1: навигация утреннего и вечернего чек-ина.
  *
  * Проверяет:
  *  — единое визуальное оформление продолжения (стрелка вперёд, галочка завершение);
- *  — понятный выход крестиком с сохранностью введённого текста;
- *  — выход отличим от возврата на предыдущий шаг;
+ *  — круглую кнопку шага: без ответа «✕» (закрыть с черновиком), с ответом «→»;
+ *  — отсутствие своих «назад»/«закрыть» в шапке: возврат — системная кнопка
+ *    Telegram, в веб-превью — свайп от левого края (тот же обработчик);
+ *  — сохранность введённого текста при выходе;
  *  — повторный вход восстанавливает черновик;
  *  — полностью стёртый текст не воскрешает старый черновик;
  *  — успешное сохранение не даёт крестику или отложенной записи
@@ -141,12 +153,12 @@ async function openPage(browser, baseURL, fixtures, hour) {
   return { context, page }
 }
 
-/** Утренний текстовый шаг: четыре шкалы и необязательный «Главный фокус дня». */
+/** Утренний текстовый шаг: четыре шкалы и «Главный фокус дня» с выбором плитки. */
 async function goToMorningNote(page) {
   for (let index = 0; index < 4; index += 1) {
     await scaleStep(page, 3)
   }
-  await page.locator('[data-testid="checkin-next"]').click()
+  await dayFocusOptionStep(page, 'Работа')
   await expect(page.locator('[data-testid="checkin-text-input"]')).toBeVisible()
 }
 
@@ -177,47 +189,94 @@ async function expectStorageStays(page, key, expected, { afterMs = 800, timeout 
     .toBe(expected)
 }
 
+/*
+ * Выход из шагов «Назад» (свайп от левого края — тот же обработчик, что у
+ * системной кнопки Telegram): со второго и дальнейших шагов это шаг назад,
+ * с первого — закрытие чек-ина с черновиком. Заголовки — то, что видно
+ * после каждого шага: без них проверка не отличит возврат от закрытия.
+ */
+async function backOutOfMorning(page) {
+  const headings = [
+    'Главный фокус на сегодня?',
+    'Уровень концентрации',
+    'Сколько в тебе энергии?',
+    'Как ты спал?',
+    'Как ты сейчас?',
+  ]
+
+  for (const heading of headings) {
+    await edgeSwipeBack(page)
+    await expect(page.getByRole('heading', { name: heading })).toBeVisible()
+  }
+
+  await edgeSwipeBack(page)
+  await expect(page.locator('[data-testid="today-card-morning"]')).toBeVisible()
+}
+
+/** Вечерний путь «Назад» до первого шага: урок → эмоция → энергия → настроение. */
+async function backOutOfEvening(page) {
+  await edgeSwipeBack(page)
+  await expect(page.locator('[data-testid="checkin-emotion-pill"]').first()).toBeVisible()
+  await edgeSwipeBack(page)
+  await expect(page.getByRole('heading', { name: 'Сколько в тебе энергии?' })).toBeVisible()
+  await edgeSwipeBack(page)
+  await expect(page.getByRole('heading', { name: 'Как ты сейчас?' })).toBeVisible()
+}
+
 test.describe('Check-in navigation consistency (UX audit pack 1)', () => {
-  test('morning: X exit preserves note draft, back goes to previous step, last action is check', async ({
+  test('morning: «Назад» идёт шаг за шагом, «✕» на шаге закрывает с черновиком, последнее действие — галочка', async ({
     browser,
     baseURL,
   }) => {
     const fixtures = buildFixtureRouter()
     const { context, page } = await openPage(browser, baseURL, fixtures, 8)
 
-    // ── Шаг 0: крестик виден, BackButton скрыт ──
+    // ── Шаг 0: своих «назад» и «закрыть» в шапке нет; без ответа круглая — «✕» ──
     await openDayCard(page, 'morning')
-    await expect(page.getByTestId('checkin-close')).toBeVisible()
+    await expect(page.locator('[data-testid="checkin-close"]')).toHaveCount(0)
     await expect(page.locator('[data-testid="back-button"]')).toHaveCount(0)
+    await expect(page.getByRole('heading', { name: 'Как ты сейчас?' })).toBeVisible()
+    await expect(closeStepButton(page)).toBeVisible()
 
-    // ── Переход на шаг 1: BackButton появляется ──
-    await scaleStep(page, 3)
-    await expect(page.locator('[data-testid="back-button"]')).toBeVisible()
-    await expect(page.getByTestId('checkin-close')).toBeVisible()
+    // ── Ответ выбран — та же круглая кнопка становится «→» ──
+    await page.locator('[data-testid="checkin-scale-option"][data-level="4"]').click()
+    await expect(nextStepButton(page)).toBeVisible()
+    await nextStepButton(page).click()
+    await expect(page.getByRole('heading', { name: 'Как ты спал?' })).toBeVisible()
 
-    // ── Возврат на шаг 0: BackButton снова скрыт ──
-    await page.locator('[data-testid="back-button"]').click()
-    await expect(page.locator('[data-testid="back-button"]')).toHaveCount(0)
+    // ── «Назад» возвращает на предыдущий шаг, ответ сохраняется ──
+    await edgeSwipeBack(page)
+    await expect(page.getByRole('heading', { name: 'Как ты сейчас?' })).toBeVisible()
+    await expect(page.locator('[data-testid="checkin-scale-option"][data-level="4"]')).toHaveAttribute(
+      'aria-checked',
+      'true'
+    )
+    await expect(nextStepButton(page)).toBeVisible()
 
-    // ── Дойти до текстового шага, ввести текст, выйти крестиком ──
-    // Настроение уже выбрано на шаге 0 — сразу вперёд, затем оставшиеся шкалы.
-    await page.locator('[data-testid="checkin-next"]').click()
+    // ── Остальные шкалы, затем фокус дня: без плитки шаг вперёд не идёт ──
+    await nextStepButton(page).click()
     await scaleStep(page, 3)
     await scaleStep(page, 3)
     await scaleStep(page, 3)
-    // Шаг фокуса дня — пропускаем (checkin-next всегда активен)
-    await page.locator('[data-testid="checkin-next"]').click()
+    await expect(page.getByRole('heading', { name: 'Главный фокус на сегодня?' })).toBeVisible()
+    await expect(closeStepButton(page)).toBeVisible()
+    await dayFocusOptionStep(page, 'Работа')
 
-    // Текстовый шаг: последний — галочка, не стрелка
+    // ── Текстовый шаг: последнее действие — галочка «Завершить», а не стрелка ──
     await expect(page.locator('[data-testid="checkin-complete"]')).toBeVisible()
-    await expect(page.locator('[data-testid="checkin-complete"]')).toHaveAttribute('aria-label', 'Завершить')
+    await expect(page.locator('[data-testid="checkin-complete"]')).toHaveAttribute(
+      'aria-label',
+      'Завершить'
+    )
+    // Галочка остаётся при пустом поле и активна: чек-ин завершается и без текста.
+    await expect(page.locator('[data-testid="checkin-complete"]')).toBeEnabled()
+    await expect(page.locator('[data-testid="checkin-next"]')).toHaveCount(0)
 
     const input = page.locator('[data-testid="checkin-text-input"]')
     await input.fill('Draft note for exit test')
 
-    // Выходим крестиком — текст должен сохраниться в черновик
-    await closeCheckin(page)
-    await expect(page.locator('[data-testid="today-card-morning"]')).toBeVisible()
+    // ── Выход «Назад» с последнего шага: шаг за шагом до первого, затем закрытие ──
+    await backOutOfMorning(page)
     await expect.poll(() => readStorage(page, morningDraftKey())).not.toBeNull()
 
     // ── Повторный вход: черновик восстанавливается ──
@@ -250,8 +309,7 @@ test.describe('Check-in navigation consistency (UX audit pack 1)', () => {
     await input.fill('')
     await expectStorageStays(page, morningDraftKey(), null)
 
-    await closeCheckin(page)
-    await expect(page.locator('[data-testid="today-card-morning"]')).toBeVisible()
+    await backOutOfMorning(page)
 
     // Повторный вход: поле пустое, удалённый текст не воскрес.
     await openDayCard(page, 'morning')
@@ -280,7 +338,7 @@ test.describe('Check-in navigation consistency (UX audit pack 1)', () => {
     await input.fill('')
     await expectStorageStays(page, eveningDraftKey(), null)
 
-    // Пустой черновик: крестик закрывает без подтверждения.
+    // Пустой урок: круглая «✕» на шаге закрывает разбор без подтверждения.
     await closeCheckin(page)
     await expect(page.locator('[data-testid="today-card-evening"]')).toBeVisible()
 
@@ -310,8 +368,9 @@ test.describe('Check-in navigation consistency (UX audit pack 1)', () => {
     await expect(page.getByRole('heading', { name: /Ты прошёл утренний чек-ин/ })).toBeVisible()
     expect(fixtures.checkinPosts).toBe(1)
 
-    // Крестик на экране завершения: черновик не должен появиться.
-    await closeCheckin(page)
+    // Выход с экрана завершения пилюлей «Сохранить и выйти»:
+    // черновик не должен появиться.
+    await backToToday(page)
     await expect(page.locator('[data-testid="today-card-morning"]')).toBeVisible()
 
     // Отложенный таймер не возвращает черновик после сохранения.
@@ -340,9 +399,8 @@ test.describe('Check-in navigation consistency (UX audit pack 1)', () => {
     await expect(input).toContainText('Текст при сбое')
     expect(fixtures.checkinPosts).toBe(1)
 
-    // Выход крестиком после сбоя — текст остаётся на устройстве.
-    await closeCheckin(page)
-    await expect(page.locator('[data-testid="today-card-morning"]')).toBeVisible()
+    // Выход «Назад» после сбоя — текст остаётся на устройстве.
+    await backOutOfMorning(page)
     await expect.poll(() => readStorage(page, morningDraftKey())).not.toBeNull()
 
     // Повторный вход восстанавливает написанное.
@@ -353,7 +411,7 @@ test.describe('Check-in navigation consistency (UX audit pack 1)', () => {
     await context.close()
   })
 
-  test('evening: выход крестиком подтверждается, повторный вход возвращает текст урока', async ({
+  test('evening: выход «Назад» с несохранённым уроком подтверждается, повторный вход возвращает текст урока', async ({
     browser,
     baseURL,
   }) => {
@@ -361,7 +419,7 @@ test.describe('Check-in navigation consistency (UX audit pack 1)', () => {
     const { context, page } = await openPage(browser, baseURL, fixtures, 19)
 
     await openDayCard(page, 'evening')
-    await expect(page.getByTestId('checkin-close')).toBeVisible()
+    await expect(page.locator('[data-testid="checkin-close"]')).toHaveCount(0)
     await expect(page.locator('[data-testid="back-button"]')).toHaveCount(0)
 
     await goToEveningLesson(page)
@@ -369,8 +427,10 @@ test.describe('Check-in navigation consistency (UX audit pack 1)', () => {
     const input = page.locator('[data-testid="checkin-text-input"]')
     await input.fill('Черновик вечернего урока')
 
-    // Выход крестиком с несохранённым текстом — диалог подтверждения
-    await closeCheckin(page)
+    // В уроке есть текст — на шаге «→»; выходим «Назад» до первого шага,
+    // где «Назад» закрывает разбор и просит подтверждение.
+    await backOutOfEvening(page)
+    await edgeSwipeBack(page)
     const dialog = page.locator('[role="dialog"]')
     await expect(dialog).toBeVisible()
     await expect(page.getByText('Закрыть запись?')).toBeVisible()
@@ -401,10 +461,10 @@ test.describe('Check-in navigation consistency (UX audit pack 1)', () => {
 
     const input = page.locator('[data-testid="checkin-text-input"]')
     await input.fill('Фактический результат')
-    await page.locator('[data-testid="checkin-next"]').click()
+    await nextStepButton(page).click()
     await expect(input).toBeVisible()
     await input.fill('Что было трудно')
-    await page.locator('[data-testid="checkin-next"]').click()
+    await nextStepButton(page).click()
     await expect(input).toBeVisible()
     await input.fill('Вывод дня')
     // Завершаем сразу: отложенная запись (500 мс) ещё в очереди.
@@ -413,8 +473,9 @@ test.describe('Check-in navigation consistency (UX audit pack 1)', () => {
     await expect(page.getByRole('heading', { name: 'Ты завершил разбор дня.' })).toBeVisible()
     expect(fixtures.checkinPosts).toBe(1)
 
-    // Крестик на экране завершения: черновик не должен появиться.
-    await closeCheckin(page)
+    // Выход с экрана завершения пилюлей «Сохранить и выйти»:
+    // черновик не должен появиться.
+    await backToToday(page)
     await expect(page.locator('[data-testid="today-card-evening"]')).toBeVisible()
     await expectStorageStays(page, eveningDraftKey(), null)
 
@@ -430,10 +491,10 @@ test.describe('Check-in navigation consistency (UX audit pack 1)', () => {
 
     const input = page.locator('[data-testid="checkin-text-input"]')
     await input.fill('Фактический результат')
-    await page.locator('[data-testid="checkin-next"]').click()
+    await nextStepButton(page).click()
     await expect(input).toBeVisible()
     await input.fill('Что было трудно')
-    await page.locator('[data-testid="checkin-next"]').click()
+    await nextStepButton(page).click()
     await expect(input).toBeVisible()
     await input.fill('Вывод дня')
     await page.locator('[data-testid="checkin-next"]').click()

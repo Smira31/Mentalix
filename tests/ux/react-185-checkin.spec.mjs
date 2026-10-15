@@ -9,7 +9,7 @@ import { expect, test, devices } from '@playwright/test'
  * «Maximum update depth» / «#185» → тест падает с понятным сообщением.
  *
  * Чек-ин: открыть → дождаться первого шага (шкала настроения) →
- * закрыть крестиком (data-testid="checkin-close") →
+ * закрыть круглой «✕» на шаге (data-testid="checkin-next", aria-label="Закрыть") →
  * проверить отсутствие pageerror. Если открытие нестабильно —
  * test.fixme с комментарием, без потери итераций.
  */
@@ -137,9 +137,9 @@ test('чек-ин: открыть, дождаться первого шага, �
 
     assertNoUpdateDepth(errors, 'после открытия чек-ина')
 
-    // Первый шаг: «Назад» скрыта (нет предыдущего шага), выход — крестик
-    // (data-testid="checkin-close"). Фолбэк — системный Escape.
-    const closeButton = page.locator('[data-testid="checkin-close"]')
+    // Первый шаг: своих «назад»/«закрыть» в шапке нет, выход — круглая «✕»
+    // на шаге (data-testid="checkin-next", aria-label="Закрыть"). Фолбэк — Escape.
+    const closeButton = page.locator('[data-testid="checkin-next"][aria-label="Закрыть"]')
     const closeVisible = await closeButton.isVisible({ timeout: 5_000 }).catch(() => false)
     if (closeVisible) {
       await closeButton.click()

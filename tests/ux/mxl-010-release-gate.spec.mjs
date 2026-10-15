@@ -286,10 +286,11 @@ test.describe('MXL-010 automated technical gate', () => {
     // ── Утренний чек-ин ──
     await openDayCard(page, 'morning')
     await expect(page.getByRole('radiogroup', { name: 'Как ты сейчас?' })).toBeVisible()
-    // Крестик выхода виден на первом шаге, BackButton скрыт (нет предыдущего шага).
-    await expect(page.getByTestId('checkin-close')).toBeVisible()
+    // Своих «назад»/«закрыть» в шапке нет: возврат — системная кнопка Telegram,
+    // а без ответа круглая кнопка шага показывает «✕».
+    await expect(page.getByTestId('checkin-close')).toHaveCount(0)
     await expect(page.locator('[data-testid="back-button"]')).toHaveCount(0)
-    await expect(page.locator('[data-testid="checkin-next"]')).toBeVisible()
+    await expect(page.locator('[data-testid="checkin-next"][aria-label="Закрыть"]')).toBeVisible()
 
     // Все пять кружков показывают уровень заливки 0/25/50/75/100%.
     const circles = page.locator('[data-testid="checkin-scale-option"] .mx-checkin-scale__inner')
@@ -299,8 +300,8 @@ test.describe('MXL-010 automated technical gate', () => {
     }
     // Шкалы: mood=3, sleep_quality=3, energy=3, focus=3
     await scaleStep(page, 3)
-    // После перехода на шаг 1+ BackButton появляется (есть предыдущий шаг).
-    await expect(page.locator('[data-testid="back-button"]')).toBeVisible()
+    // Возврат на предыдущий шаг — системная кнопка Telegram; своей в шапке нет.
+    await expect(page.locator('[data-testid="back-button"]')).toHaveCount(0)
     await scaleStep(page, 3)
     await scaleStep(page, 3)
     await scaleStep(page, 3)
@@ -349,8 +350,9 @@ test.describe('MXL-010 automated technical gate', () => {
     await expect(
       page.getByRole('heading', { name: 'Что ближе всего к тому, что ты чувствуешь?' })
     ).toBeVisible()
-    // Крестик выхода виден и в вечернем потоке.
-    await expect(page.getByTestId('checkin-close')).toBeVisible()
+    // И в вечернем потоке своих «назад»/«закрыть» в шапке нет.
+    await expect(page.getByTestId('checkin-close')).toHaveCount(0)
+    await expect(page.locator('[data-testid="back-button"]')).toHaveCount(0)
     await emotionStep(page, 'ровно')
     await page.locator('[data-testid="checkin-next"]').click()
 

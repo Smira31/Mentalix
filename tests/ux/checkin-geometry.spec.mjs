@@ -153,8 +153,9 @@ test('ряды шкал центрированы по экрану на 393 и 4
       await page.locator('[data-testid="checkin-next"]').click()
     }
 
-    // Шаг «Главный фокус дня» — необязательный, пропускаем.
-    await page.locator('[data-testid="checkin-next"]').click()
+    // Шаг «Главный фокус дня»: без выбора плитки вперёд не идёт — выбираем.
+    await page.locator('[data-testid="checkin-day-focus-option"][data-value="Работа"]').click()
+    await page.locator('[data-testid="checkin-next"][aria-label="Далее"]').click()
 
     // Текстовый шаг → экран завершения.
     const editor = page.getByRole('textbox', { name: 'Что на уме' })
@@ -216,9 +217,8 @@ test('история «Сегодня»: «…» у правого края ка
     await page.clock.setFixedTime('2026-09-23T08:00:00+03:00')
     await page.goto('/')
     await page.locator('[data-testid="today-card-morning"]').click()
-    // В Telegram своей кнопки «Назад» нет (BackButton → null, системная
-    // кнопка Telegram). Убираем веб-кнопку из раскладки так же, как там.
-    await page.addStyleTag({ content: '[data-testid="back-button"]{display:none!important}' })
+    // Своей кнопки «Назад» у чек-ина больше нет: возврат — системная кнопка
+    // Telegram, поэтому из раскладки ничего убирать не нужно.
 
     const button = page.locator('[data-testid="history-redo-button"]')
     const card = page.locator('[data-testid="history-today-card"]')
@@ -278,8 +278,9 @@ test('ошибка сохранения чек-ина: понятное сооб
     await page.locator(`[data-testid="checkin-scale-option"][data-level="${level}"]`).click()
     await page.locator('[data-testid="checkin-next"]').click()
   }
-  // Шаг «Главный фокус дня» — пропускаем.
-  await page.locator('[data-testid="checkin-next"]').click()
+  // Шаг «Главный фокус дня»: без выбора плитки вперёд не идёт — выбираем.
+  await page.locator('[data-testid="checkin-day-focus-option"][data-value="Работа"]').click()
+  await page.locator('[data-testid="checkin-next"][aria-label="Далее"]').click()
 
   const editor = page.getByRole('textbox', { name: 'Что на уме' })
   await editor.pressSequentially('Спокойное утро')
@@ -325,7 +326,7 @@ async function boxSize(locator, label) {
   return [Math.round(box.width), Math.round(box.height)]
 }
 
-test('навигация чек-ина: крестик 43×43 как у DailyJournal, «Далее» 45×45, focus-visible доступен', async ({
+test('навигация чек-ина: одна круглая кнопка шага 45×45 («✕»/«→»), focus-visible доступен', async ({
   browser,
   baseURL,
 }) => {
@@ -341,18 +342,21 @@ test('навигация чек-ина: крестик 43×43 как у DailyJou
     await page.getByRole('button', { name: /Утренний чек-ин/ }).click()
     await expect(page.getByRole('heading', { name: 'Как ты сейчас?' })).toBeVisible()
 
-    expect(
-      await boxSize(page.locator('.mx-checkin-close-btn'), `крестик ${viewport.name}`)
-    ).toEqual([43, 43])
-    expect(
-      await boxSize(page.locator('[data-testid="checkin-next"]'), `«Далее» ${viewport.name}`)
-    ).toEqual([45, 45])
+    // Одна круглая кнопка шага: без ответа «✕», после ответа «→» — в обоих
+    // состояниях та же геометрия 45×45, разметка кнопки не перестраивается.
+    const stepButton = page.locator('[data-testid="checkin-next"]')
+    await expect(stepButton).toHaveAttribute('aria-label', 'Закрыть')
+    expect(await boxSize(stepButton, `кнопка шага (✕) ${viewport.name}`)).toEqual([45, 45])
+
+    await page.locator('[data-testid="checkin-scale-option"][data-level="3"]').click()
+    await expect(stepButton).toHaveAttribute('aria-label', 'Далее')
+    expect(await boxSize(stepButton, `кнопка шага (→) ${viewport.name}`)).toEqual([45, 45])
 
     // Клавиатурный фокус: после Tab-модальности :focus-visible совпадает,
     // и золотое кольцо из index.css не погашено.
     await page.keyboard.press('Tab')
     const ring = await page.evaluate(() => {
-      const el = document.querySelector('.mx-checkin-close-btn')
+      const el = document.querySelector('[data-testid="checkin-next"]')
       el.focus()
       const style = getComputedStyle(el)
       return {
@@ -361,7 +365,7 @@ test('навигация чек-ина: крестик 43×43 как у DailyJou
         outlineWidth: style.outlineWidth,
       }
     })
-    expect(ring.focusVisible, `focus-visible крестика на ${viewport.name}`).toBe(true)
+    expect(ring.focusVisible, `focus-visible круглой кнопки на ${viewport.name}`).toBe(true)
     expect(ring.outlineStyle, `обводка фокуса на ${viewport.name}`).toBe('solid')
     expect(parseFloat(ring.outlineWidth), `толщина обводки на ${viewport.name}`).toBeGreaterThan(0)
 

@@ -7,6 +7,23 @@ import { expect } from '@playwright/test'
  */
 
 /**
+ * Круглая кнопка шага после ответа: «→» («Далее»).
+ * @param {import('@playwright/test').Page} page
+ */
+export function nextStepButton(page) {
+  return page.locator('[data-testid="checkin-next"][aria-label="Далее"]')
+}
+
+/**
+ * Круглая кнопка шага без ответа: «✕» («Закрыть») — выход с черновиком.
+ * Прежней заблокированной «→» на неотвеченном шаге больше нет.
+ * @param {import('@playwright/test').Page} page
+ */
+export function closeStepButton(page) {
+  return page.locator('[data-testid="checkin-next"][aria-label="Закрыть"]')
+}
+
+/**
  * Шаг шкалы: выбрать значение level и нажать «Далее», если кнопка видна и активна.
  * @param {import('@playwright/test').Page} page
  * @param {number} level — уровень шкалы (1–5)
@@ -15,12 +32,13 @@ export async function scaleStep(page, level) {
   const option = page.locator(`[data-testid="checkin-scale-option"][data-level="${level}"]`)
   await expect(option).toBeVisible()
   await expect(page.locator('[data-testid="checkin-skip"]')).toHaveCount(0)
-  await expect(page.locator('[data-testid="checkin-next"]')).toBeDisabled()
+  // Пока ответа нет, круглая кнопка — «✕»: нажатие закрывает чек-ин с черновиком.
+  await expect(closeStepButton(page)).toBeVisible()
   await option.click()
   await expect(option).toHaveAttribute('aria-checked', 'true')
   await expect(page.locator('[data-testid="checkin-scale-option"][aria-checked="true"]')).toHaveCount(1)
 
-  const next = page.locator('[data-testid="checkin-next"]')
+  const next = nextStepButton(page)
   if (await next.isVisible()) {
     await expect(next).toBeEnabled()
     await next.click()
@@ -67,15 +85,56 @@ export async function completeCheckin(page) {
 }
 
 /**
- * Пройти шаг без ответа: «Пропустить» нет, круглая «→» активна
- * (шаг «Главный фокус дня» и «Что на уме?»).
+ * «Назад» в веб-превью — свайп от левого края (полоса 24px, порог 35% ширины
+ * экрана): на шаге ≥ 1 возвращает на предыдущий шаг, на первом шаге закрывает
+ * чек-ин так же, как «✕» на шаге. Системная кнопка Telegram и пилюля демо-шапки
+ * вызывают тот же обработчик.
  * @param {import('@playwright/test').Page} page
+ * @param {string} [selector=".mx-demo-checkin"] — поверхность чек-ина
  */
-export async function skipStep(page) {
-  await expect(page.locator('[data-testid="checkin-skip"]')).toHaveCount(0)
-  const next = page.locator('[data-testid="checkin-next"]')
-  await expect(next).toBeEnabled()
-  await next.click()
+export async function edgeSwipeBack(page, selector = '.mx-demo-checkin') {
+  await page.evaluate(selector => {
+    const el = document.querySelector(selector)
+    if (!el) throw new Error(`Элемент не найден: ${selector}`)
+
+    const startX = 0 // левый край, в полосе EDGE_WIDTH (24px)
+    const rect = el.getBoundingClientRect()
+    const startY = rect.top + rect.height / 2
+    const distance = window.innerWidth * 0.5 // 50% ширины > порога 35%
+
+    function makeTouch(x, y) {
+      return new Touch({
+        identifier: 0,
+        target: el,
+        clientX: x,
+        clientY: y,
+        radiusX: 1,
+        radiusY: 1,
+        rotationAngle: 0,
+        force: 1,
+      })
+    }
+
+    function dispatch(type, touch) {
+      const event = new TouchEvent(type, {
+        touches: type === 'touchend' ? [] : [touch],
+        targetTouches: type === 'touchend' ? [] : [touch],
+        changedTouches: [touch],
+        bubbles: true,
+        cancelable: true,
+      })
+      el.dispatchEvent(event)
+    }
+
+    dispatch('touchstart', makeTouch(startX, startY))
+
+    const steps = 12
+    for (let i = 1; i <= steps; i += 1) {
+      dispatch('touchmove', makeTouch(startX + (distance * i) / steps, startY))
+    }
+
+    dispatch('touchend', makeTouch(startX + distance, startY))
+  }, selector)
 }
 
 /**
@@ -86,13 +145,15 @@ export async function dayFocusOptionStep(page, label) {
   const tiles = page.locator('[data-testid="checkin-day-focus-option"]')
   await expect(tiles).toHaveCount(9)
   await expect(page.locator('[data-testid="checkin-day-focus-show-all"]')).toHaveCount(0)
+  // Пока плитка не выбрана, круглая кнопка — «✕»: шаг вперёд без выбора больше не пропускается.
+  await expect(closeStepButton(page)).toBeVisible()
   const tile = page.locator(`[data-testid="checkin-day-focus-option"][data-value="${label}"]`)
   await expect(tile).toBeVisible()
   await tile.click()
   await expect(tile).toHaveAttribute('aria-pressed', 'true')
   await expect(page.locator('[data-testid="checkin-day-focus-input"]')).toHaveCount(0)
   await expect(page.locator('[data-testid="checkin-day-focus-option"][aria-pressed="true"]')).toHaveCount(1)
-  const next = page.locator('[data-testid="checkin-next"]')
+  const next = nextStepButton(page)
   await expect(next).toBeEnabled()
   await next.click()
 }
@@ -151,11 +212,13 @@ export async function goBack(page) {
 }
 
 /**
- * Закрыть чек-ин крестиком (выход на «Сегодня» с сохранением черновика).
+ * Закрыть чек-ин круглой «✕» на шаге (выход на «Сегодня» с сохранением черновика).
+ * Своей кнопки закрытия в шапке экрана больше нет: без ответа на шаге «✕» стоит
+ * на месте «Далее», а на экране завершения выход даёт пилюля WebActionBar.
  * @param {import('@playwright/test').Page} page
  */
 export async function closeCheckin(page) {
-  const close = page.locator('[data-testid="checkin-close"]')
+  const close = closeStepButton(page)
   await expect(close).toBeVisible()
   await close.click()
 }
