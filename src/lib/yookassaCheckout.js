@@ -94,6 +94,11 @@ export function confirmationUrl(value) {
  * Запуск оплаты: гейт → POST create → редирект в текущей вкладке.
  * create и navigate передаются вызывающим компонентом, поэтому
  * в Telegram ни запрос, ни редирект не выполняются.
+ *
+ * navigate обязателен: create(200) без функции перехода оплатой не является.
+ * Раньше отсутствующий navigate молча пропускал редирект — экран оставался
+ * в «Открываем оплату…», а вызывающий получал успех (CHECKOUT_OK).
+ * Теперь это CHECKOUT_FAILED, и сбой виден в интерфейсе и в тестах.
  */
 export async function startCheckout({ create, navigate, platform = 'web', enabled = false } = {}) {
   if (!checkoutAvailable({ enabled, platform })) return { state: CHECKOUT_SKIPPED }
@@ -117,8 +122,14 @@ export async function startCheckout({ create, navigate, platform = 'web', enable
   const url = confirmationUrl(data.confirmation_url)
   if (!url) return { state: CHECKOUT_FAILED }
 
+  // Перейти на оплату нечем — это сбой, а не успех: иначе кнопка «ничего не
+  // делает», а экран навсегда остаётся в состоянии «Открываем оплату…».
+  if (typeof navigate !== 'function') return { state: CHECKOUT_FAILED }
+
+  // Отметку о начатой оплате ставим только после реального перехода:
+  // по ней потом решается, показывать ли возврат с ЮKassa.
+  navigate(url)
   markPaymentStarted()
-  if (typeof navigate === 'function') navigate(url)
   return { state: CHECKOUT_OK, url }
 }
 

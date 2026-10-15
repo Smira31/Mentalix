@@ -54,6 +54,84 @@ test('200 с confirmation_url → открываем оплату (редире�
   assert.deepEqual(navigated, [CONFIRMATION_URL])
 })
 
+test('без navigate успех create — сбой, а не успех', async () => {
+  const result = await startCheckout({
+    platform: 'web',
+    enabled: true,
+    create: async () => ({ confirmation_url: CONFIRMATION_URL }),
+  })
+
+  assert.equal(result.state, CHECKOUT_FAILED)
+  assert.equal(result.url, undefined)
+})
+
+test('не-https confirmation_url — сбой, редиректа нет', async () => {
+  const navigated = []
+  const result = await startCheckout({
+    platform: 'web',
+    enabled: true,
+    create: async () => ({ confirmation_url: 'http://yoomoney.ru/api-pages/v2/checkout/12345' }),
+    navigate: url => navigated.push(url),
+  })
+
+  assert.equal(result.state, CHECKOUT_FAILED)
+  assert.deepEqual(navigated, [], 'на не-https адрес не переходим')
+})
+
+/*
+ * Отметка о начатой оплате (sessionStorage) нужна для показа возврата с
+ * ЮKassa, поэтому ставится только при реальном переходе. В Node window нет —
+ * на время проверки подставляем свой и убираем его после.
+ */
+test('markPaymentStarted вызывается только при реальном переходе', async () => {
+  const storage = new Map()
+  globalThis.window = {
+    sessionStorage: {
+      setItem: (key, value) => storage.set(key, value),
+      getItem: key => (storage.has(key) ? storage.get(key) : null),
+      removeItem: key => storage.delete(key),
+    },
+  }
+
+  try {
+    // Успех create без navigate: перехода нет — отметки тоже.
+    const failed = await startCheckout({
+      platform: 'web',
+      enabled: true,
+      create: async () => ({ confirmation_url: CONFIRMATION_URL }),
+    })
+    assert.equal(failed.state, CHECKOUT_FAILED)
+    assert.equal(readPaymentStarted(), null, 'без перехода отметка не ставится')
+
+    // Не-https адрес: перехода нет.
+    await startCheckout({
+      platform: 'web',
+      enabled: true,
+      create: async () => ({ confirmation_url: 'http://yoomoney.ru/api-pages/v2/checkout/12345' }),
+      navigate: () => assert.fail('перехода на не-https адрес быть не должно'),
+    })
+    assert.equal(readPaymentStarted(), null)
+
+    // Реальный переход — отметка появилась.
+    const navigated = []
+    const result = await startCheckout({
+      platform: 'web',
+      enabled: true,
+      create: async () => ({ confirmation_url: CONFIRMATION_URL }),
+      navigate: url => navigated.push(url),
+    })
+
+    assert.deepEqual(result, { state: CHECKOUT_OK, url: CONFIRMATION_URL })
+    assert.deepEqual(navigated, [CONFIRMATION_URL])
+    assert.equal(typeof readPaymentStarted(), 'number')
+
+    clearPaymentStarted()
+    assert.equal(readPaymentStarted(), null)
+  } finally {
+    delete globalThis.window
+  }
+})
+
 test('200 без confirmation_url — сбой, а не оплата', () => {
   assert.equal(createResponseState(200, {}), CHECKOUT_FAILED)
   assert.equal(createResponseState(200, { confirmation_url: null }), CHECKOUT_FAILED)
