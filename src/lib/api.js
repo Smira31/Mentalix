@@ -1161,6 +1161,23 @@ export const api = {
   },
 
   /*
+   * PAY-UI-001 (веб): оплата Pro через ЮKassa.
+   * POST /api/payments/yookassa/create — без тела; user_id не передаём,
+   * авторизация сессией веб-пользователя (cookie или Authorization: Bearer).
+   * 200 → { confirmation_url } — редирект в текущей вкладке;
+   * 401 (unauthorized | verified_identity_required) — нужен вход;
+   * 403 guest_payment_forbidden — гость;
+   * 503 (yookassa_disabled | yookassa_not_configured) — оплата недоступна;
+   * 502 yookassa_create_failed — сбой, можно повторить.
+   * Состояния по ответу выбирает src/lib/yookassaCheckout.js.
+   */
+  payments: {
+    yookassa: {
+      create: () => request('/payments/yookassa/create', { method: 'POST' }),
+    },
+  },
+
+  /*
    * Mentalix Pro (PRO-002b/c): разбор недели, план на 7 дней, прогресс.
    * Контракт — backend/pro/router.py. Ошибки двух видов:
    *   HTTPException → body.detail ('pro_required', 'pro_report_disabled',
