@@ -1,5 +1,5 @@
 ---
-status: current
+status: historical
 last_verified: 2026-09-11
 ---
 # MXL-271 — Canonical CI rollout
