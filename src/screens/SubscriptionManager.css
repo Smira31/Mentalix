@@ -104,3 +104,13 @@
   font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.35;
 }
+
+/* PAY-UI-001: веб-заметка — вне Telegram кнопка оплаты не показывается. */
+.mx-subscription-web-note {
+  margin: 0;
+  padding: 0 4px;
+  color: rgb(var(--c-muted));
+  font-size: calc(14px * var(--mx-type-scale));
+  line-height: 1.4;
+  text-align: center;
+}
