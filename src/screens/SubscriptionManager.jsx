@@ -510,7 +510,7 @@ function ProState({ paid = false, subscription }) {
       <h2 className="mx-subscription-promise">{paid ? 'Оплата прошла' : 'Pro активен'}</h2>
       {paid && (
         <p className="mx-subscription-pitch mx-subscription-success" data-testid="subscription-paid-success">
-          Спасибо! Оплата прошла — Pro активен.
+          Спасибо! Pro активен.
         </p>
       )}
       {proDate && (

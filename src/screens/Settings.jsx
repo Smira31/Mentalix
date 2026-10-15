@@ -136,6 +136,35 @@ function timezoneLabel(value) {
   return TIMEZONES.find(([id]) => id === value)?.[1] || value
 }
 
+/*
+ * PAY-UI-001: намерение открыть конкретный экран профиля задаётся ключом
+ * sessionStorage перед открытием профиля — экран подписки из карточки
+ * «Прогресс» и возврата с ЮKassa («mx-settings-initial-screen»), раздел
+ * уведомлений («mx-settings-initial-sub»).
+ *
+ * Ключ читается в инициализаторе useState, но снимается только после
+ * монтирования: StrictMode вызывает инициализатор дважды, и удаление внутри
+ * него съедало намерение до того, как состояние применялось, — профиль
+ * открывался на корне вместо нужного экрана.
+ */
+const PROFILE_INTENT_KEYS = ['mx-settings-initial-screen', 'mx-settings-initial-sub']
+
+function readProfileIntent(key) {
+  try {
+    return sessionStorage.getItem(key)
+  } catch {
+    return null
+  }
+}
+
+function clearProfileIntents() {
+  try {
+    for (const key of PROFILE_INTENT_KEYS) sessionStorage.removeItem(key)
+  } catch {
+    /* приватный режим: намерение просто останется до конца сессии */
+  }
+}
+
 export default function Settings({
   user,
   onBack,
@@ -552,15 +581,8 @@ export default function Settings({
 
   const [screen, setScreen] = useState(() => {
     // Открытие экрана подписки из Аналитики (ProAnalyticsCard → «Оформить Pro»)
-    try {
-      const initialScreen = sessionStorage.getItem('mx-settings-initial-screen')
-      if (initialScreen) {
-        sessionStorage.removeItem('mx-settings-initial-screen')
-        return initialScreen
-      }
-    } catch {
-      /* */
-    }
+    const initialScreen = readProfileIntent('mx-settings-initial-screen')
+    if (initialScreen) return initialScreen
     const action = previewProfileAction()
     if (action === 'profile_wtp') return 'wtp-test'
     if (action === 'privacy') return 'privacy-notice'
@@ -570,20 +592,16 @@ export default function Settings({
   const [tier, setTier] = useState(null)
   // Под-экран профиля: null — корень «твой профиль.».
   const [sub, setSub] = useState(() => {
-    try {
-      const initial = sessionStorage.getItem('mx-settings-initial-sub')
-      sessionStorage.removeItem('mx-settings-initial-sub')
-      return (
-        initial ||
-        { profile_checkins: 'checkins', profile_about: 'about' }[previewProfileAction()] ||
-        null
-      )
-    } catch {
-      return (
-        { profile_checkins: 'checkins', profile_about: 'about' }[previewProfileAction()] || null
-      )
-    }
+    const initial = readProfileIntent('mx-settings-initial-sub')
+    return (
+      initial ||
+      { profile_checkins: 'checkins', profile_about: 'about' }[previewProfileAction()] ||
+      null
+    )
   }) // null | 'checkins' | 'about' | 'prefs' | 'appearance' | 'notifications' | 'data' | 'timezone'
+
+  // Прочитанное намерение одноразовое: снимаем ключи после монтирования.
+  useEffect(clearProfileIntents, [])
 
   function openSub(next) {
     setSub(next)
