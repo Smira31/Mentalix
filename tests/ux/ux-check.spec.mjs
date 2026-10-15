@@ -293,8 +293,10 @@ function sanitizeReason(error) {
 // ошибками приложения и не должны валить UX smoke. WebKit, в отличие от
 // Chromium, не поддерживает viewport-свойство interactive-widget и
 // логирует предупреждение — это шум, а не баг.
+// CloudStorage здесь больше не исключается: cloudStorage() в
+// src/platform/telegram.hooks.js спрашивает версию клиента до вызова,
+// поэтому этого console.error в web-режиме быть не должно.
 const IGNORED_CONSOLE_ERRORS = [
-  'CloudStorage is not supported in version 6.0',
   'Viewport argument key "interactive-widget" not recognized and ignored.',
 ]
 

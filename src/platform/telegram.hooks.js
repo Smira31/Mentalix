@@ -382,10 +382,27 @@ export function confirmAction(message) {
    онбординг, выбранная тема.
    ============================================================ */
 
+/*
+ * CloudStorage появился в Bot API 6.9. На более старом клиенте — и вне
+ * Telegram, где SDK считает версию 6.0 — SDK на каждый вызов пишет
+ * console.error и бросает WebAppMethodUnsupported. Поэтому сначала
+ * спрашиваем клиент, поддерживает ли он метод, и только потом зовём:
+ * в остальных случаях хранилище считаем недоступным и молчим.
+ */
+function cloudStorage() {
+  const webApp = api()
+  const storage = webApp?.CloudStorage
+
+  if (!storage) return null
+  if (typeof webApp.isVersionAtLeast === 'function' && !webApp.isVersionAtLeast('6.9')) return null
+
+  return storage
+}
+
 export const cloud = {
   get(key) {
     return new Promise(resolve => {
-      const storage = api()?.CloudStorage
+      const storage = cloudStorage()
 
       if (!storage?.getItem) {
         resolve(null)
@@ -402,7 +419,7 @@ export const cloud = {
 
   set(key, value) {
     return new Promise(resolve => {
-      const storage = api()?.CloudStorage
+      const storage = cloudStorage()
 
       if (!storage?.setItem) {
         resolve(false)
@@ -420,7 +437,7 @@ export const cloud = {
   // Удаляет ВСЕ ключи пользователя из CloudStorage (после удаления аккаунта).
   clearAll() {
     return new Promise(resolve => {
-      const storage = api()?.CloudStorage
+      const storage = cloudStorage()
 
       if (!storage?.getKeys || !storage?.removeItems) {
         resolve(false)
@@ -454,7 +471,7 @@ export const cloud = {
 
   remove(key) {
     return new Promise(resolve => {
-      const storage = api()?.CloudStorage
+      const storage = cloudStorage()
 
       if (!storage?.removeItem) {
         resolve(false)
