@@ -164,6 +164,35 @@ test('успех: 200 с confirmation_url открывается в текуще
   assert.deepEqual(navigated, [CONFIRMATION_URL])
 })
 
+test('200 без navigate — сбой: отсутствие перехода не считается успехом', async () => {
+  let created = 0
+  const result = await startDonation({
+    amount: 500,
+    create: async () => {
+      created += 1
+      return { confirmation_url: CONFIRMATION_URL, payment_id: 'd-2' }
+    },
+    // navigate не передан — перехода на ЮKassa не будет.
+  })
+
+  assert.equal(created, 1, 'запрос отправляется, но без навигации успеха нет')
+  assert.equal(result.state, 'failed')
+  assert.equal(result.url, undefined)
+})
+
+test('navigate упал — сбой, успеха нет', async () => {
+  const result = await startDonation({
+    amount: 500,
+    create: async () => ({ confirmation_url: CONFIRMATION_URL, payment_id: 'd-3' }),
+    navigate: () => {
+      throw new Error('навигация недоступна')
+    },
+  })
+
+  assert.equal(result.state, 'failed')
+  assert.equal(result.url, undefined)
+})
+
 test('200 без confirmation_url — сбой, редиректа нет', async () => {
   const navigated = []
   const result = await startDonation({

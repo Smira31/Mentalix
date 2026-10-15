@@ -91,9 +91,13 @@ export function donationErrorMessage({ status = null, code = null } = {}) {
 
 /*
  * Запуск доната: гость запроса не отправляет; сумма проверяется на клиенте;
- * успех → отметка возврата и открытие confirmation_url в текущей вкладке.
- * create и navigate передаются вызывающим компонентом, поэтому в тестах
- * ни запроса, ни редиректа не происходит без явной подстановки.
+ * успех → открытие confirmation_url в текущей вкладке и только затем отметка
+ * возврата. create и navigate передаются вызывающим компонентом, поэтому
+ * в тестах ни запроса, ни редиректа не происходит без явной подстановки.
+ *
+ * Навигация обязательна: ответ 200 сам по себе успехом не считается (в
+ * Pro-оплате пропущенный navigate давал «успех» без перехода на ЮKassa).
+ * Без navigate — сбой, отметка возврата не ставится.
  */
 export async function startDonation({ create, navigate, amount, isGuest = false } = {}) {
   if (isGuest) return { state: 'guest' }
@@ -118,8 +122,20 @@ export async function startDonation({ create, navigate, amount, isGuest = false 
   const url = confirmationUrl(data?.confirmation_url)
   if (!url) return { state: 'failed', message: DONATION_ERROR_COPY.generic }
 
+  // Навигация обязательна: 200 без перехода — не успех. Проверяем явно,
+  // чтобы отсутствие navigate не выглядело как начатая оплата.
+  if (typeof navigate !== 'function') {
+    return { state: 'failed', message: DONATION_ERROR_COPY.generic }
+  }
+
+  try {
+    navigate(url)
+  } catch {
+    return { state: 'failed', message: DONATION_ERROR_COPY.generic }
+  }
+
+  // Отметку возврата ставим только после фактического перехода на ЮKassa.
   markDonationStarted()
-  if (typeof navigate === 'function') navigate(url)
   return { state: 'ok', url }
 }
 
