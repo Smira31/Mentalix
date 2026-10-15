@@ -9,7 +9,8 @@ import { expect, test } from '@playwright/test'
  *    43×43 вокруг центра кнопки должно попадать в саму кнопку. Проверяем
  *    это в демо-режиме (?demo=1): крестики подсказок на «Сегодня»,
  *    «Настроить твои практики», круглая «→» в чек-ине, вкладки и
- *    «Закрыть» на странице серии.
+ *    «Закрыть» на странице серии, а также меню графиков, «Все дни ›» и
+ *    переключатель периода на вкладке «Прогресс».
  * 2) Своей капсулы «Назад» у чек-ина больше нет: возврат — системная кнопка
  *    Telegram. Одна круглая кнопка шага стоит на 16 pt от правого края
  *    экрана (--mx-screen-x) в обоих состояниях «✕» и «→». Допуск ±1 pt.
@@ -40,14 +41,28 @@ const SERIES_TAP_TARGETS = ['series-tab-badges', 'series-tab-stats', 'series-clo
 
 const CHECKIN_TAP_TARGETS = ['checkin-next']
 
+// Вкладка «Прогресс»: переключатель периода и «Все дни ›» ищутся по
+// data-testid. У меню графика data-testid нет, поэтому берём его класс, но
+// в пределах карточки календаря настроения — так селектор остаётся уникальным.
+const PROGRESS_PERIOD_TRIGGER = 'progress-period-trigger'
+const PROGRESS_ALL_DAYS = 'progress-mood-calendar-all'
+const PROGRESS_CARD_MENU_SELECTOR =
+  '[data-testid="progress-mood-calendar"] .mx-progress-card__menu'
+
+/** Селектор по data-testid — основной способ поиска элементов в этом тесте. */
+function testIdSelector(testId) {
+  return `[data-testid="${testId}"]`
+}
+
 /**
- * Сколько точек у краёв квадрата MIN_TAP_PT вокруг центра кнопки не
- * попадают в саму кнопку. 0 — область нажатия не меньше MIN_TAP_PT.
+ * Сколько точек у краёв квадрата MIN_TAP_PT вокруг центра элемента,
+ * найденного селектором, не попадают в сам элемент. 0 — область нажатия
+ * не меньше MIN_TAP_PT. index — номер совпадения селектора (0 — первый).
  */
-async function tapAreaMisses(page, testId) {
+async function tapAreaMisses(page, selector, index = 0) {
   return page.evaluate(
-    ({ testId, min }) => {
-      const el = document.querySelector(`[data-testid="${testId}"]`)
+    ({ selector, index, min }) => {
+      const el = document.querySelectorAll(selector)[index]
       if (!el) return { found: false, misses: null, size: null }
 
       const rect = el.getBoundingClientRect()
@@ -73,18 +88,32 @@ async function tapAreaMisses(page, testId) {
 
       return { found: true, misses, size: [Math.round(rect.width), Math.round(rect.height)] }
     },
-    { testId, min: MIN_TAP_PT }
+    { selector, index, min: MIN_TAP_PT }
   )
 }
 
-/** Ждём состояние: нажатие у краёв квадрата 43×43 попадает в кнопку. */
-async function expectTapArea(page, testId) {
-  await expect(page.locator(`[data-testid="${testId}"]`)).toBeVisible()
+/**
+ * Ждём состояние: нажатие у краёв квадрата 43×43 попадает в элемент.
+ * scroll — прокрутить элемент в видимую область перед замером (для
+ * элементов ниже сгиба); label — человекочитаемое имя для сообщения.
+ */
+async function expectTapAreaForSelector(page, selector, { label, scroll = false, index = 0 } = {}) {
+  const locator = page.locator(selector).nth(index)
+  await expect(locator).toBeVisible()
+  if (scroll) await locator.scrollIntoViewIfNeeded()
   await expect
-    .poll(async () => (await tapAreaMisses(page, testId)).misses, {
-      message: `Область нажатия [data-testid="${testId}"] меньше ${MIN_TAP_PT}×${MIN_TAP_PT} pt`,
+    .poll(async () => (await tapAreaMisses(page, selector, index)).misses, {
+      message: `Область нажатия ${label || selector} меньше ${MIN_TAP_PT}×${MIN_TAP_PT} pt`,
     })
     .toBe(0)
+}
+
+/** Ждём состояние для элемента по data-testid. */
+async function expectTapArea(page, testId, options = {}) {
+  await expectTapAreaForSelector(page, testIdSelector(testId), {
+    label: `[data-testid="${testId}"]`,
+    ...options,
+  })
 }
 
 /** Правый край круглой кнопки шага = 16 pt от правого края экрана (±1 pt). */
@@ -150,6 +179,40 @@ test.describe('Области нажатия и отступ «Назад»', ()
     for (const testId of CHECKIN_TAP_TARGETS) {
       await expectTapArea(page, testId)
     }
+
+    await context.close()
+  })
+
+  test('тап-зоны на вкладке «Прогресс» ≥43×43 pt (?demo=1)', async ({ browser, baseURL }) => {
+    const context = await browser.newContext({
+      baseURL,
+      viewport: IPHONE_15_PRO_VIEWPORT,
+      colorScheme: 'dark',
+      reducedMotion: 'reduce',
+      serviceWorkers: 'block',
+    })
+    await context.addInitScript(() => {
+      localStorage.clear()
+      sessionStorage.clear()
+    })
+
+    const page = await context.newPage()
+    await page.goto('/?demo=1')
+
+    // Переход на «Прогресс» — как в соседнем progress-тесте: нижняя навигация.
+    await expect(page.getByRole('button', { name: 'Прогресс' })).toBeVisible()
+    await page.getByRole('button', { name: 'Прогресс' }).click()
+    await expect(page.getByTestId('progress-tab-analytics')).toBeVisible()
+
+    // Переключатель периода — в строке действий сверху вкладки.
+    await expectTapArea(page, PROGRESS_PERIOD_TRIGGER)
+
+    // «Все дни ›» и меню графика — в карточке календаря настроения ниже сгиба.
+    await expectTapArea(page, PROGRESS_ALL_DAYS, { scroll: true })
+    await expectTapAreaForSelector(page, PROGRESS_CARD_MENU_SELECTOR, {
+      label: 'меню графика (.mx-progress-card__menu)',
+      scroll: true,
+    })
 
     await context.close()
   })
