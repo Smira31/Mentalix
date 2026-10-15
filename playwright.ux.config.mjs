@@ -34,6 +34,11 @@ export default defineConfig({
     'hero-journey-reliability.spec.mjs',
     'checkin-navigation-consistency.spec.mjs',
     'theme-week-carousel.spec.mjs',
+    // AUD-015: осиротевшие спеки, которые не запускались ни одним конфигом.
+    // Проверены прогоном в этом же наборе — продуктовые сценарии, не устаревшие.
+    'analytics-card-order.spec.mjs',
+    'morning-review.spec.mjs',
+    'scout-review-handoff.spec.mjs',
   ],
   outputDir: 'artifacts/ux-check/playwright-output',
   fullyParallel: false,
