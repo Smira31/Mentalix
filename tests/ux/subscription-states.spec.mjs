@@ -10,7 +10,7 @@
 // Web-контекст (не Telegram): базовая кнопка оплаты ведёт на ЮKassa.
 
 import { expect, test } from '@playwright/test'
-import { openWeb } from './profile-helpers.mjs'
+import { TEST_USER, json, mockApi, openWeb } from './profile-helpers.mjs'
 
 const VIEWPORT = { width: 390, height: 844 }
 
@@ -57,6 +57,63 @@ for (const { payState, title, testId, success, support } of CASES) {
     }
   })
 }
+
+/*
+ * Кнопка «Оформить Pro» в вебе действительно уводит на страницу оплаты.
+ * Ответ POST /api/payments/yookassa/create подменяется моком, проверяется
+ * фактический переход в текущей вкладке: без него экран оставался в
+ * «Открываем оплату…» и оплата не открывалась.
+ *
+ * Проверка идёт без ?demo=1: демо-перехват отвечает на create честным 503
+ * (yookassa_disabled), поэтому настоящий путь оплаты проверяется на моке
+ * ответа, как в остальных сценариях возврата. Пользователь — не гость
+ * (у гостя кнопка ведёт в «Сохранить прогресс по email»), поэтому вход
+ * задаётся тем же способом, что и в помощнике openWeb, но с email.
+ */
+test('веб: кнопка «Оформить Pro» уводит на страницу оплаты', async ({ browser, baseURL }) => {
+  const context = await browser.newContext({
+    baseURL,
+    viewport: VIEWPORT,
+    colorScheme: 'dark',
+    reducedMotion: 'reduce',
+    serviceWorkers: 'block',
+  })
+  try {
+    const confirmationUrl = 'https://yoomoney.ru/api-pages/v2/checkout/pay-ui-001'
+    await context.addInitScript(user => {
+      localStorage.clear()
+      sessionStorage.clear()
+      localStorage.setItem('mentalix_web_user', JSON.stringify(user))
+      localStorage.setItem('mx-onboarded-v2', '1')
+      localStorage.setItem('mx-app-lock-enabled', '0')
+    }, { ...TEST_USER, email: 'pay-ui@example.invalid' })
+    await mockApi(context)
+    // Ответ create подменяем: настоящий платёж в проверке не создаётся.
+    await context.route('**/api/payments/yookassa/create', route =>
+      route.fulfill(json({ confirmation_url: confirmationUrl }))
+    )
+    await context.route('https://yoomoney.ru/**', route =>
+      route.fulfill({ contentType: 'text/html', body: '<h1>ЮKassa</h1>' })
+    )
+
+    const page = await context.newPage()
+    await page.goto('/')
+    await expect(page.getByTestId('today-profile-button')).toBeVisible()
+
+    await page.getByTestId('today-profile-button').click()
+    await page.getByTestId('profile-screen').getByText('Подписка').click()
+    await expect(page.getByTestId('profile-screen-subscription')).toBeVisible()
+
+    const payButton = page.getByTestId('subscription-pay-button')
+    await expect(payButton).toBeVisible()
+    await payButton.click()
+
+    await page.waitForURL('https://yoomoney.ru/**', { timeout: 15_000 })
+    expect(page.url()).toBe(confirmationUrl)
+  } finally {
+    await context.close()
+  }
+})
 
 /*
  * Возврат с ЮKassa: ЮKassa отправляет пользователя на ?payment=return.

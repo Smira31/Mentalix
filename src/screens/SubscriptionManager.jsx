@@ -256,6 +256,8 @@ function SubscriptionManagerEnabled({ user, onBack, onGuestLogin }) {
       platform: platformName,
       enabled: PAYMENT_UI_ENABLED,
       create: () => api.payments.yookassa.create(),
+      // Переход на ЮKassa — в текущей вкладке, без нового окна.
+      navigate: url => window.location.assign(url),
     })
 
     // Успех — страница уже уходит на оплату, состояние не меняем.
