@@ -318,15 +318,19 @@ async function walkCheckIn(page, writer, { filePrefix, url, cardTestId, evening,
       }
     }
 
+    // Шаг шкалы: сначала отвечаем. Пока ответа нет, круглая кнопка — «✕»
+    // и закрыла бы чек-ин вместо перехода вперёд; «Далее» появляется после выбора.
+    const scaleOption = page.locator('[data-testid="checkin-scale-option"][data-level="3"]')
+    if (await scaleOption.count()) {
+      if ((await scaleOption.first().getAttribute('aria-checked')) !== 'true') {
+        await scaleOption.first().click()
+      }
+    }
+
     const next = page.locator('[data-testid="checkin-next"]')
     if (await next.isVisible().catch(() => false)) {
       if (await next.isEnabled()) {
         await next.click()
-        continue
-      }
-      const option = page.locator('[data-testid="checkin-scale-option"][data-level="3"]')
-      if (await option.count()) {
-        await option.first().click()
         continue
       }
     }
