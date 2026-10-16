@@ -36,6 +36,13 @@ export function formatDayLabel(iso) {
   return dayLabel(iso)
 }
 
+/* Месяц распознанного ISO-дня — для сравнения концов недели. */
+function monthShort(iso) {
+  const day = isoDay(iso)
+  if (!day) return null
+  return MONTHS_SHORT[new Date(`${day}T00:00:00`).getMonth()]
+}
+
 export function formatWeekRange(start, end) {
   const from = dayLabel(start)
 
@@ -43,18 +50,27 @@ export function formatWeekRange(start, end) {
   if (!from) return ''
 
   const to = end === start ? '' : dayLabel(end)
+  if (!to) return from
 
-  return to ? `неделя ${from} — ${to}` : `неделя ${from}`
+  // Один месяц — «13–19 окт», переход через месяц — «28 окт – 3 ноя»
+  // (консилиум: слово «неделя» из метки убрано).
+  if (monthShort(start) === monthShort(end)) {
+    const fromDay = new Date(`${isoDay(start)}T00:00:00`).getDate()
+    return `${fromDay}–${to}`
+  }
+
+  return `${from} – ${to}`
 }
 
 export function formatDayList(days) {
   return Array.isArray(days) ? days.map(dayLabel).filter(Boolean).join(', ') : ''
 }
 
+/* «не вышло» — нейтральная формулировка без красного (консилиум). */
 export const STATUS_LABELS = {
   planned: 'ещё впереди',
   done: 'выполнено',
-  skipped: 'пропущено',
+  skipped: 'не вышло',
 }
 
 export const SOURCE_LABELS = {
