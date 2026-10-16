@@ -1,3 +1,5 @@
+import { pluralize } from '../../lib/pluralize'
+
 /*
  * Метки недель и дней для экранов Mentalix Pro.
  * Даты приходят от backend как ISO-дни (week_start/week_end, dates плана).
@@ -50,7 +52,7 @@ export function formatDayList(days) {
 }
 
 export const STATUS_LABELS = {
-  planned: 'не отмечено',
+  planned: 'ещё впереди',
   done: 'выполнено',
   skipped: 'пропущено',
 }
@@ -69,9 +71,27 @@ export const SOURCE_LABELS = {
   quotes: 'мысли',
 }
 
+/* Родительный падеж после «На основе N …»: одна строка подписи разбора. */
+const SOURCE_FORMS = {
+  checkins: ['чек-ина', 'чек-инов', 'чек-инов'],
+  habits: ['привычки', 'привычек', 'привычек'],
+  themes: ['темы', 'тем', 'тем'],
+  goals: ['цели', 'целей', 'целей'],
+  rituals: ['ритуала', 'ритуалов', 'ритуалов'],
+  ascezas: ['аскезы', 'аскез', 'аскез'],
+  journal: ['записи журнала', 'записей журнала', 'записей журнала'],
+  mood: ['отметки настроения', 'отметок настроения', 'отметок настроения'],
+  focus: ['фокуса', 'фокусов', 'фокусов'],
+  brain: ['заметки о мозге', 'заметок о мозге', 'заметок о мозге'],
+  quotes: ['мысли', 'мыслей', 'мыслей'],
+}
+
 export function formatSources(sources) {
   if (!sources || typeof sources !== 'object') return ''
-  return Object.entries(sources)
-    .map(([key, count]) => `${SOURCE_LABELS[key] || key}: ${count}`)
-    .join(', ')
+  const parts = Object.entries(sources).map(([key, count]) => {
+    const forms = SOURCE_FORMS[key]
+    if (!forms) return `${SOURCE_LABELS[key] || key}: ${count}`
+    return `${count} ${pluralize(count, forms)}`
+  })
+  return parts.length > 0 ? `На основе: ${parts.join(', ')}` : ''
 }
