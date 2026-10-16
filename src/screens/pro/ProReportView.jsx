@@ -354,7 +354,7 @@ export default function ProReportView({ user, onOpenPlan }) {
               )}
 
               {report.patterns?.length > 0 && (
-                <ProDetails title="Закономерности" testId="pro-details-patterns">
+                <ProDetails title="Наблюдения" testId="pro-details-patterns">
                   <PatternList items={report.patterns} />
                 </ProDetails>
               )}
