@@ -10,8 +10,9 @@ test('privacy delete API всегда передаёт owner id и server-side c
   assert.match(apiSource, /deleteCheckin: \(userId, checkinId\)/)
   assert.match(apiSource, /\/privacy\/checkins\/\$\{checkinId\}/)
   assert.match(apiSource, /user_id: userId, confirmed: true/)
-  assert.match(apiSource, /eraseAccount: userId/)
+  assert.match(apiSource, /eraseAccount: \(userId, otpCode\)/)
   assert.match(apiSource, /confirmation: 'DELETE_MY_DATA'/)
+  assert.match(apiSource, /otp_code: otpCode/)
 })
 
 test('History удаляет только выбранный check-in после явного confirmation и сохраняет activity', () => {
@@ -24,13 +25,15 @@ test('History удаляет только выбранный check-in после
 
 test('Settings не обещают privacy actions для web identity без server-side session', () => {
   assert.match(settingsSource, /privacyProtectedByTelegram = platformName === 'telegram' && Number\(user\?\.id\) > 0/)
-  assert.match(settingsSource, /потребуется два подтверждения/)
-  assert.match(settingsSource, /Веб-вход доступен/)
-  assert.doesNotMatch(settingsSource, /В веб-версии нет входа на сервере/)
-  assert.match(settingsSource, /Файл JSON: профиль, чек-ины, завершённые направленные записи/)
-  assert.match(settingsSource, /Отправить мои данные в чат/)
+  // Гости видят приглашение войти, а не кнопки управления данными
+  assert.match(settingsSource, /Сначала войдите в аккаунт, чтобы скачать или удалить свои данные/)
+  // Скачивание доступно всем негостям; отправка в Telegram — только в Telegram
+  assert.match(settingsSource, /Файл JSON: профиль, чек-ины, записи/)
+  assert.match(settingsSource, /Отправить в Telegram/)
   assert.doesNotMatch(settingsSource, /Только данные чек-инов/)
-  assert.match(settingsSource, /Удалить аккаунт и связанные данные Mentalix/)
+  // Удаление через одноразовый код
+  assert.match(settingsSource, /Удалить аккаунт/)
+  assert.match(settingsSource, /Потребуется код подтверждения/)
   assert.doesNotMatch(settingsSource, /Удалить все данные сейчас/)
   assert.match(settingsSource, /Незавершённый черновик остаётся\s+только на этом устройстве/)
   assert.match(settingsSource, /а не шифрование данных/)

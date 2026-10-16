@@ -241,6 +241,19 @@ export default function Settings({
   const [accountEraseError, setAccountEraseError] = useState('')
   const privacyProtectedByTelegram = platformName === 'telegram' && Number(user?.id) > 0
 
+  // ── «Мои данные»: скачивание экспорта (загрузка / успех / ошибка).
+  const [downloadState, setDownloadState] = useState('idle')
+  const [downloadStatus, setDownloadStatus] = useState('')
+
+  // ── «Удалить аккаунт»: пошаговый поток с одноразовым кодом.
+  // 'idle' — предупреждение + кнопка запроса кода;
+  // 'code-requested' — поле ввода кода + финальная кнопка;
+  // 'error' — сообщение об ошибке + повтор.
+  const [erasureStep, setErasureStep] = useState('idle')
+  const [erasureCode, setErasureCode] = useState('')
+  const [erasureHint, setErasureHint] = useState('')
+  const [codeRequesting, setCodeRequesting] = useState(false)
+
   useEffect(() => {
     if (!user) return undefined
     let active = true
@@ -429,37 +442,91 @@ export default function Settings({
   // Telegram: бот присылает файл в личный чат. Web: прежнее скачивание (таймаут 30 с в api.js).
   async function exportPersonalData(format = 'json') {
     if (exporting) return
-    const viaTelegram = platformName === 'telegram'
-    const confirmed = await platform.showConfirm(
-      viaTelegram
-        ? 'Отправить копию личных данных в твой чат с Mentalix? Файл придёт только тебе.'
-        : 'Скачать копию личных данных на это устройство? Файл не будет отправлен третьей стороне.'
-    )
-    if (!confirmed) return
     setExporting(format)
     setExportStatus('')
     setExportChatReady(false)
     try {
-      if (viaTelegram) {
-        const result = await api.privacy.sendExportToTelegram(user.id)
-        if (result.ok) {
-          setExportStatus('Отправили файл в чат с Mentalix')
-          setExportChatReady(true)
-        } else {
-          setExportStatus(EXPORT_SEND_MESSAGES[result.reason] || EXPORT_SEND_FAILED)
-        }
+      const result = await api.privacy.sendExportToTelegram(user.id)
+      if (result.ok) {
+        setExportStatus('Отправили файл в чат с Mentalix')
+        setExportChatReady(true)
       } else {
-        await api.privacy.downloadExport(user.id, { format })
-        setExportStatus('Файл подготовлен для скачивания на этом устройстве.')
+        setExportStatus(EXPORT_SEND_MESSAGES[result.reason] || EXPORT_SEND_FAILED)
       }
     } catch {
-      setExportStatus(
-        viaTelegram
-          ? EXPORT_SEND_FAILED
-          : 'Не удалось подготовить файл. Проверь соединение и попробуй ещё раз.'
-      )
+      setExportStatus(EXPORT_SEND_FAILED)
     } finally {
       setExporting(false)
+    }
+  }
+
+  // «Скачать мои данные» — прямое скачивание файла (доступно везде, не только в Telegram).
+  async function downloadMyData() {
+    if (downloadState === 'loading') return
+    setDownloadState('loading')
+    setDownloadStatus('')
+    try {
+      await api.privacy.downloadExport(user.id, { format: 'json' })
+      setDownloadState('success')
+      setDownloadStatus('Файл с данными скачан.')
+    } catch {
+      setDownloadState('error')
+      setDownloadStatus('Не удалось подготовить файл. Проверь соединение и попробуй ещё раз.')
+    }
+  }
+
+  // «Удалить аккаунт» — шаг 1: запрос одноразового кода подтверждения.
+  async function requestErasureCode() {
+    if (codeRequesting) return
+    setCodeRequesting(true)
+    setAccountEraseError('')
+    try {
+      const result = await api.privacy.requestErasureCode(user.id)
+      // Подсказка о способе доставки кода — если бэкенд вернул его.
+      const method = result?.delivery_method || result?.sent_via
+      if (method === 'email') {
+        setErasureHint('Код подтверждения отправлен на ваш email.')
+      } else if (method === 'telegram') {
+        setErasureHint('Код подтверждения отправлен в чат с Mentalix.')
+      } else {
+        setErasureHint('Код подтверждения отправлен.')
+      }
+      setErasureStep('code-requested')
+    } catch {
+      setErasureStep('error')
+      setAccountEraseError(
+        'Не удалось отправить код подтверждения. Проверь соединение и попробуй ещё раз.'
+      )
+    } finally {
+      setCodeRequesting(false)
+    }
+  }
+
+  // «Удалить аккаунт» — шаг 2: финальное удаление с кодом и повторным подтверждением.
+  async function eraseAccountAndData() {
+    if (erasingAccount) return
+    const finalConfirmation = await platform.showConfirm(
+      'Это последнее подтверждение. Аккаунт и связанные данные Mentalix будут удалены безвозвратно.'
+    )
+    if (!finalConfirmation) return
+
+    setErasingAccount(true)
+    setAccountEraseError('')
+    try {
+      await api.privacy.eraseAccount(user.id, erasureCode)
+      // Все локальные данные пользователя: черновики, дата рождения, опросы,
+      // тема/акцент, блокировка, гостевой токен и облачные ключи Telegram.
+      clearAllLocalUserData()
+      await cloud.clearAll()
+      platform.clearUser?.()
+      platform.clearSessionToken?.()
+      setAccountErased(true)
+    } catch {
+      setAccountEraseError(
+        'Не удалось удалить данные. Проверь код и соединение, затем попробуй ещё раз.'
+      )
+    } finally {
+      setErasingAccount(false)
     }
   }
 
@@ -474,37 +541,6 @@ export default function Settings({
         ? 'Локальный черновик очищен. Сохранённые записи не затронуты.'
         : 'Не удалось очистить локальный черновик.'
     )
-  }
-
-  async function eraseAccountAndData() {
-    if (!privacyProtectedByTelegram || erasingAccount) return
-    const firstConfirmation = await platform.showConfirm(
-      'Удалить аккаунт и связанные данные из активной базы Mentalix? Это нельзя отменить. Резервные копии и журналы провайдеров могут храниться отдельно.'
-    )
-    if (!firstConfirmation) return
-    const finalConfirmation = await platform.showConfirm(
-      'Это последнее подтверждение. Удалить аккаунт и связанные данные Mentalix?'
-    )
-    if (!finalConfirmation) return
-
-    setErasingAccount(true)
-    setAccountEraseError('')
-    try {
-      await api.privacy.eraseAccount(user.id)
-      // Все локальные данные пользователя: черновики, дата рождения, опросы,
-      // тема/акцент, блокировка, гостевой токен и облачные ключи Telegram.
-      clearAllLocalUserData()
-      await cloud.clearAll()
-      platform.clearUser?.()
-      platform.clearSessionToken?.()
-      setAccountErased(true)
-    } catch {
-      setAccountEraseError(
-        'Не удалось удалить данные. Ничего не было подтверждено как удалённое — проверь соединение и попробуй ещё раз.'
-      )
-    } finally {
-      setErasingAccount(false)
-    }
   }
 
   async function clearAllReminderSettings() {
@@ -1074,6 +1110,8 @@ export default function Settings({
   }
 
   function renderData() {
+    const guest = isGuestUser(user)
+
     return (
       <ProfileBody>
         <ProfileGroup label="Защита">
@@ -1097,54 +1135,49 @@ export default function Settings({
         </ProfileGroup>
         <ProfileGroup label="Личные данные">
           <ProfileCard>
-            {privacyProtectedByTelegram ? (
-              <>
-                <ProfileRow
-                  title="Политика и данные"
-                  subtitle="Хранение, черновики, синхронизация и ограничения"
-                  onClick={() => setScreen('privacy-notice')}
-                />
-                <ProfileRow
-                  title={exporting ? 'Подготовка…' : 'Отправить мои данные в чат'}
-                  subtitle="Файл JSON: профиль, чек-ины, завершённые направленные записи"
-                  onClick={() => exportPersonalData()}
-                  disabled={Boolean(exporting)}
-                  testId="profile-row-export"
-                />
-              </>
+            <ProfileRow
+              title="Политика и данные"
+              subtitle="Хранение, черновики, синхронизация и ограничения"
+              onClick={() => setScreen('privacy-notice')}
+            />
+            {guest ? (
+              <div
+                className="mx-profile-inset text-[13px] leading-relaxed text-muted"
+                data-testid="profile-data-guest-notice"
+              >
+                Сначала войдите в аккаунт, чтобы скачать или удалить свои данные.
+              </div>
             ) : (
               <>
                 <ProfileRow
-                  title="Политика и данные"
-                  subtitle="Хранение, черновики, синхронизация и ограничения"
-                  onClick={() => setScreen('privacy-notice')}
+                  title={downloadState === 'loading' ? 'Подготовка…' : 'Скачать мои данные'}
+                  subtitle="Файл JSON: профиль, чек-ины, записи"
+                  onClick={downloadMyData}
+                  disabled={downloadState === 'loading'}
+                  testId="profile-row-download-data"
                 />
-                <div className="mx-profile-inset text-[13px] leading-relaxed text-muted">
-                  Экспорт и удаление аккаунта сейчас доступны в Telegram Mini App. Веб-вход доступен,
-                  но эти действия пока не предлагаются в веб-интерфейсе.
-                </div>
+                {privacyProtectedByTelegram && (
+                  <ProfileRow
+                    title={exporting ? 'Отправка…' : 'Отправить в Telegram'}
+                    subtitle="Файл придёт в чат с Mentalix"
+                    onClick={() => exportPersonalData('json')}
+                    disabled={Boolean(exporting)}
+                    testId="profile-row-send-telegram"
+                  />
+                )}
               </>
             )}
           </ProfileCard>
-        </ProfileGroup>
-        <ProfileGroup label="Удаление">
-          <ProfileCard>
-            <ProfileRow
-              title="Очистить черновик"
-              subtitle="Только незавершённый текст на этом устройстве"
-              onClick={clearLocalDraft}
-              danger
-            />
-            {privacyProtectedByTelegram && (
-              <ProfileRow
-                title={erasingAccount ? 'Удаляем данные…' : 'Удалить аккаунт и данные'}
-                subtitle="Необратимо; потребуется два подтверждения"
-                onClick={eraseAccountAndData}
-                danger
-              />
-            )}
-          </ProfileCard>
-          {exportStatus && <ProfileNote role="status">{exportStatus}</ProfileNote>}
+          {!guest && downloadStatus && (
+            <ProfileNote
+              role="status"
+              danger={downloadState === 'error'}
+              data-testid="profile-download-status"
+            >
+              {downloadStatus}
+            </ProfileNote>
+          )}
+          {!guest && exportStatus && <ProfileNote role="status">{exportStatus}</ProfileNote>}
           {exportChatReady && (
             <button
               type="button"
@@ -1155,8 +1188,74 @@ export default function Settings({
               Открыть чат
             </button>
           )}
+        </ProfileGroup>
+        <ProfileGroup label="Удаление">
+          <ProfileCard>
+            <ProfileRow
+              title="Очистить черновик"
+              subtitle="Только незавершённый текст на этом устройстве"
+              onClick={clearLocalDraft}
+              danger
+              testId="profile-row-clear-draft"
+            />
+            {!guest && (
+              <>
+                <div
+                  className="mx-profile-inset text-[13px] leading-relaxed text-muted"
+                  data-testid="profile-erasure-warning"
+                >
+                  Удаление аккаунта необратимо. Будут удалены: профиль, чек-ины, записи дневника,
+                  настройки и связанные серверные данные. Локальные данные на этом устройстве
+                  также будут очищены.
+                </div>
+                {erasureStep === 'idle' && (
+                  <ProfileRow
+                    title={codeRequesting ? 'Отправляем код…' : 'Удалить аккаунт'}
+                    subtitle="Потребуется код подтверждения"
+                    onClick={requestErasureCode}
+                    disabled={codeRequesting}
+                    danger
+                    testId="profile-row-erasure-start"
+                  />
+                )}
+                {erasureStep === 'code-requested' && (
+                  <div className="mx-profile-inset" data-testid="profile-erasure-code-input">
+                    <p className="text-[13px] leading-relaxed text-muted">{erasureHint}</p>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                      placeholder="Код подтверждения"
+                      value={erasureCode}
+                      onChange={e => setErasureCode(e.target.value)}
+                      className="mx-profile-input"
+                      data-testid="profile-erasure-code-field"
+                    />
+                    <button
+                      type="button"
+                      onClick={eraseAccountAndData}
+                      disabled={erasingAccount || !erasureCode.trim()}
+                      className="mx-profile-text-button mx-profile-text-button--danger"
+                      data-testid="profile-erasure-confirm"
+                    >
+                      {erasingAccount ? 'Удаляем данные…' : 'Удалить безвозвратно'}
+                    </button>
+                  </div>
+                )}
+                {erasureStep === 'error' && (
+                  <ProfileRow
+                    title="Запросить код повторно"
+                    onClick={requestErasureCode}
+                    disabled={codeRequesting}
+                    danger
+                    testId="profile-row-erasure-retry"
+                  />
+                )}
+              </>
+            )}
+          </ProfileCard>
           {accountEraseError && (
-            <ProfileNote role="alert" danger>
+            <ProfileNote role="alert" danger data-testid="profile-erasure-error">
               {accountEraseError}
             </ProfileNote>
           )}
