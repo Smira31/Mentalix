@@ -107,6 +107,13 @@ test('витрина не показывает статус разбора «Р�
   assert.doesNotMatch(showcaseSource, /RING_COPY/)
 })
 
+test('витрина описывает Pro и не рисует пустое серое кольцо', () => {
+  // Описание — что даёт Pro, а не статус разбора.
+  assert.match(showcaseSource, /Направление на неделю, достижения и план на 7 дней/)
+  // Пустого серого кольца (намёка на «готовность») в витрине нет.
+  assert.doesNotMatch(showcaseSource, /mx-pro-showcase-card__ring/)
+})
+
 test('кнопка витрины ведёт на экран подписки, не в Pro', () => {
   assert.match(showcaseSource, /data-testid="pro-showcase-open"/)
   assert.match(showcaseSource, /onClick=\{onOpenSubscription\}/)

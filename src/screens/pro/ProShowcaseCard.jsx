@@ -35,17 +35,13 @@ export default function ProShowcaseCard({ onOpenSubscription }) {
       </span>
 
       <div className="mx-progress-practices__empty mx-pro-showcase-card__body">
-        <span
-          className="mx-progress-practices__empty-ring mx-pro-showcase-card__ring"
-          aria-hidden="true"
-        />
         <span className="mx-progress-practices__empty-text">
           <span className="mx-progress-practices__empty-dot" aria-hidden="true" />
           <span
             className="mx-progress-practices__empty-title"
             data-testid="pro-showcase-title"
           >
-            Разбор недели и план на 7 дней
+            Направление на неделю, достижения и план на 7 дней
           </span>
           <span
             className="mx-progress-practices__empty-hint"
