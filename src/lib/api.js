@@ -1006,10 +1006,20 @@ export const api = {
       }
     },
 
-    eraseAccount: userId =>
+    requestErasureCode: userId =>
+      request('/privacy/account-erasure/request-code', {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId }),
+      }),
+
+    eraseAccount: (userId, otpCode) =>
       request('/privacy/account-erasure', {
         method: 'POST',
-        body: JSON.stringify({ user_id: userId, confirmation: 'DELETE_MY_DATA' }),
+        body: JSON.stringify({
+          user_id: userId,
+          confirmation: 'DELETE_MY_DATA',
+          otp_code: otpCode,
+        }),
       }),
   },
 
