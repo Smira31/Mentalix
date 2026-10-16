@@ -2,6 +2,9 @@
 // заголовок и кнопку/плашку; возврат с ЮKassa (?payment=return) открывает
 // экран подписки и решает состояние только по свежему has_pro; кнопка
 // «Оформить Pro» в карточке «Прогресс» ведёт в тот же путь оплаты.
+// Гость в вебе вместо тупика «Сначала сохрани прогресс по email» получает вход
+// через Telegram и возврат к оплате без второго нажатия — набор идёт в той же
+// конфигурации, что и продакшн: VITE_EMAIL_LOGIN_ENABLED=false (см. конфиг).
 // Нужен флаг VITE_PAYMENT_UI_ENABLED=true, поэтому набор запускается своим
 // dev-сервером: `npm run ux:payment-ui` (playwright.payment-ui.config.mjs).
 // Флаг VITE_PRO_REVIEW_PLAN_ENABLED=true в том же конфиге нужен только для
@@ -16,7 +19,7 @@ const VIEWPORT = { width: 390, height: 844 }
 
 // Тест-иды кнопок — те же, что в SubscriptionManager (renderFooter).
 const CASES = [
-  { payState: 'guest', title: 'Сначала сохрани прогресс по email', testId: 'subscription-pay-button' },
+  { payState: 'guest', title: 'Войди через Telegram, чтобы оформить Pro', testId: 'subscription-pay-button' },
   { payState: 'base', title: 'Готов открыть свой потенциал?', testId: 'subscription-pay-button' },
   { payState: 'pro', title: 'Pro активен', testId: null },
   { payState: 'success', title: 'Оплата прошла', testId: null, success: true },
@@ -67,8 +70,8 @@ for (const { payState, title, testId, success, support } of CASES) {
  * Проверка идёт без ?demo=1: демо-перехват отвечает на create честным 503
  * (yookassa_disabled), поэтому настоящий путь оплаты проверяется на моке
  * ответа, как в остальных сценариях возврата. Пользователь — не гость
- * (у гостя кнопка ведёт в «Сохранить прогресс по email»), поэтому вход
- * задаётся тем же способом, что и в помощнике openWeb, но с email.
+ * (у гостя кнопка ведёт во вход через Telegram), поэтому вход задаётся тем
+ * же способом, что и в помощнике openWeb, но с email.
  */
 test('веб: кнопка «Оформить Pro» уводит на страницу оплаты', async ({ browser, baseURL }) => {
   const context = await browser.newContext({
@@ -188,6 +191,100 @@ test('карточка «Прогресс»: «Оформить Pro» ведёт
 
     await expect(page.getByTestId('profile-screen-subscription')).toBeVisible()
     await expect(page.getByTestId('subscription-pay-button')).toBeVisible()
+  } finally {
+    await context.close()
+  }
+})
+
+/*
+ * Гость в вебе: оплата начинается со входа через Telegram и сама возвращается
+ * к оплате — второго нажатия нет.
+ *
+ * Экран гостя не упоминает email (вход по email выключен в прод-конфигурации
+ * набора), а кнопка «Войти через Telegram» открывает существующий экран входа
+ * WebAuthScreen с Telegram Login — тот же флоу, что и по кнопке доната.
+ *
+ * Саму авторизацию в Telegram автоматизировать нельзя: она происходит на
+ * стороне Telegram и требует боевого домена бота — это ручной gate. Поэтому
+ * виджет подменяем и вызываем тот же window.onTelegramAuth, которым настоящий
+ * виджет отвечает приложению; вход отвечает так же, как реальный
+ * POST /api/auth/telegram/login — аккаунт есть, email нет.
+ */
+test('гость в вебе: вход через Telegram возвращает к оплате без второго нажатия', async ({
+  browser,
+  baseURL,
+}) => {
+  const context = await browser.newContext({
+    baseURL,
+    viewport: VIEWPORT,
+    colorScheme: 'dark',
+    reducedMotion: 'reduce',
+    serviceWorkers: 'block',
+  })
+  try {
+    const guest = { id: 900002, first_name: 'Гость', is_guest: true, email: null }
+    await context.addInitScript(user => {
+      localStorage.clear()
+      sessionStorage.clear()
+      localStorage.setItem('mentalix_web_user', JSON.stringify(user))
+      localStorage.setItem('mx-onboarded-v2', '1')
+      localStorage.setItem('mx-app-lock-enabled', '0')
+    }, guest)
+    await mockApi(context)
+
+    // Вошедший через Telegram: аккаунт есть, email нет.
+    const signedIn = { id: 900619, first_name: 'Гость', is_guest: false, email: null }
+    await context.route('**/api/auth/telegram/login', route =>
+      route.fulfill(json({ ok: true, user: signedIn }))
+    )
+    // Виджет Telegram подменяем: настоящая авторизация — ручной gate.
+    await context.route('https://telegram.org/js/telegram-widget.js*', route =>
+      route.fulfill({
+        contentType: 'application/javascript',
+        body: 'window.__answerTelegramLogin = () => window.onTelegramAuth({ id: 900619, first_name: "Гость", auth_date: 1, hash: "test-hash" })',
+      })
+    )
+
+    const confirmationUrl = 'https://yoomoney.ru/api-pages/v2/checkout/guest-telegram'
+    let createRequests = 0
+    await context.route('**/api/payments/yookassa/create', route => {
+      createRequests += 1
+      return route.fulfill(json({ confirmation_url: confirmationUrl }))
+    })
+    await context.route('https://yoomoney.ru/**', route =>
+      route.fulfill({ contentType: 'text/html', body: '<h1>ЮKassa</h1>' })
+    )
+
+    const page = await context.newPage()
+    await page.goto('/')
+    await expect(page.getByTestId('today-profile-button')).toBeVisible()
+    await page.getByTestId('today-profile-button').click()
+    await page.getByTestId('profile-screen').getByText('Подписка').click()
+    await expect(page.getByTestId('profile-screen-subscription')).toBeVisible()
+
+    // 1. Экран гостя: про email — ни слова, вход предлагается через Telegram.
+    await expect(page.getByText('Войди через Telegram, чтобы оформить Pro')).toBeVisible()
+    await expect(
+      page.getByText('Так подписка привяжется к твоему аккаунту, а записи не потеряются.')
+    ).toBeVisible()
+    await expect(page.getByTestId('profile-screen-subscription').getByText(/email/i)).toHaveCount(0)
+
+    const payButton = page.getByTestId('subscription-pay-button')
+    await expect(payButton).toHaveText('Войти через Telegram')
+
+    // 2. Кнопка открывает существующий экран входа; Telegram — основной способ.
+    await payButton.click()
+    await expect(page.getByTestId('web-auth-guest-button')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Войти через Telegram' })).toBeVisible()
+
+    // 3. Telegram ответил — приложение само возвращается на экран подписки
+    // и само начинает оплату: ни одного дополнительного нажатия.
+    await page.evaluate(() => window.__answerTelegramLogin())
+
+    await expect(page.getByTestId('profile-screen-subscription')).toBeVisible()
+    await page.waitForURL('https://yoomoney.ru/**', { timeout: 15_000 })
+    expect(page.url()).toBe(confirmationUrl)
+    expect(createRequests).toBe(1)
   } finally {
     await context.close()
   }
