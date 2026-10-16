@@ -29,7 +29,13 @@ async function openPro(page, scenario) {
     }
   }, MOCK_STATE_KEY)
 
-  await page.goto(`/?demo=1&frame=0&proMock=${scenario}`)
+  /*
+   * ?proStatus=pro — существующий dev-параметр (src/screens/pro/ProAnalyticsEntry.jsx):
+   * в демо пользователь non-Pro, и в аналитике показывается витрина
+   * (progress-pro-showcase), а не карточка Pro. Сценарии проверяют отказы
+   * API Pro, поэтому статус Pro задаётся тем же способом, что в ux:pro-states.
+   */
+  await page.goto(`/?demo=1&frame=0&proStatus=pro&proMock=${scenario}`)
   await expect(page.getByRole('button', { name: 'Прогресс' })).toBeVisible({ timeout: 15_000 })
   await page.getByRole('button', { name: 'Прогресс' }).click()
   await expect(page.getByTestId('progress-pro-card')).toBeVisible()
