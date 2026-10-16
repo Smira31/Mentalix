@@ -183,7 +183,14 @@ test('карточка «Прогресс»: «Оформить Pro» ведёт
   })
   try {
     const page = await context.newPage()
-    await page.goto('/?demo=1&frame=0')
+    /*
+     * ?proStatus=pro — существующий dev-параметр (src/screens/pro/ProAnalyticsEntry.jsx):
+     * в демо пользователь non-Pro, и в «Прогрессе» теперь показывается витрина
+     * (progress-pro-showcase), а не карточка Pro. Кнопка «Оформить Pro» живёт
+     * в карточке Pro, поэтому статус Pro задаётся тем же способом, что в
+     * ux:pro-states / ux:pro-failure-states.
+     */
+    await page.goto('/?demo=1&frame=0&proStatus=pro')
     await page.getByRole('button', { name: 'Прогресс' }).click()
     await expect(page.getByTestId('progress-pro-card')).toBeVisible()
 
