@@ -74,17 +74,103 @@ function DayCard({
    * же день даёт новую. Второе поле шага (критерий) фокус не забирает.
    */
   const actionRef = useRef(null)
+  const menuRef = useRef(null)
+  const [menuOpen, setMenuOpen] = useState(false)
 
   useAutoFocusField(actionRef, editing ? day.id : null)
 
+  /*
+   * Меню «⋯» закрывается кликом вне меню и по Escape — слушатели живут,
+   * только пока меню открыто, и снимаются при закрытии/размонтировании.
+   */
+  useEffect(() => {
+    if (!menuOpen) return
+    const close = event => {
+      if (event.key === 'Escape' || !menuRef.current?.contains(event.target)) {
+        setMenuOpen(false)
+      }
+    }
+    document.addEventListener('pointerdown', close)
+    document.addEventListener('keydown', close)
+    return () => {
+      document.removeEventListener('pointerdown', close)
+      document.removeEventListener('keydown', close)
+    }
+  }, [menuOpen])
+
   return (
     <article className="mx-pro-plan__day" data-testid="pro-plan-day">
-      <div className="flex items-baseline justify-between gap-2">
-        <span className="mx-pro-caption">
+      <div className="mx-pro-plan__day-head">
+        <span className="mx-pro-caption mx-pro-plan__day-caption">
           {[`День ${day.day}`, formatDayLabel(day.date)].filter(Boolean).join(' · ')}
         </span>
-        <span className={`font-label text-[11px] ${STATUS_COLORS[day.status] || 'text-muted'}`}>
-          {STATUS_LABELS[day.status] || day.status}
+        <span className="mx-pro-plan__day-side">
+          <span className={`mx-pro-plan__status ${STATUS_COLORS[day.status] || 'text-muted'}`}>
+            {STATUS_LABELS[day.status] || day.status}
+          </span>
+          {!editing && (
+            <span className="mx-pro-plan__menu" ref={menuRef}>
+              <button
+                type="button"
+                data-testid={`pro-day-${day.day}-menu`}
+                aria-label="Действия дня"
+                aria-haspopup="menu"
+                aria-expanded={menuOpen}
+                disabled={busy}
+                onClick={() => setMenuOpen(open => !open)}
+                className="mx-pro-plan__menu-trigger"
+              >
+                ⋯
+              </button>
+              {menuOpen && (
+                <span className="mx-pro-plan__menu-list" role="menu" data-testid={`pro-day-${day.day}-menu-list`}>
+                  {day.status !== 'skipped' && (
+                    <button
+                      type="button"
+                      role="menuitem"
+                      data-testid={`pro-day-${day.day}-skipped`}
+                      disabled={busy}
+                      onClick={() => {
+                        setMenuOpen(false)
+                        onStatus(day, 'skipped')
+                      }}
+                      className="mx-pro-plan__menu-item"
+                    >
+                      Пропустить
+                    </button>
+                  )}
+                  {day.status !== 'planned' && (
+                    <button
+                      type="button"
+                      role="menuitem"
+                      data-testid={`pro-day-${day.day}-reset`}
+                      disabled={busy}
+                      onClick={() => {
+                        setMenuOpen(false)
+                        onStatus(day, 'planned')
+                      }}
+                      className="mx-pro-plan__menu-item"
+                    >
+                      Сбросить
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    role="menuitem"
+                    data-testid={`pro-day-${day.day}-edit`}
+                    disabled={busy}
+                    onClick={() => {
+                      setMenuOpen(false)
+                      onEditStart()
+                    }}
+                    className="mx-pro-plan__menu-item"
+                  >
+                    Изменить
+                  </button>
+                </span>
+              )}
+            </span>
+          )}
         </span>
       </div>
 
@@ -139,49 +225,18 @@ function DayCard({
         </p>
       )}
 
-      {!editing && (
-        <div className="mt-3 flex flex-wrap gap-2">
-          {day.status !== 'done' && (
-            <button
-              type="button"
-              data-testid={`pro-day-${day.day}-done`}
-              disabled={busy}
-              onClick={() => onStatus(day, 'done')}
-              className="min-h-10 rounded-full bg-cream/5 px-3 text-[12px] font-semibold text-gold disabled:opacity-50"
-            >
-              Выполнено
-            </button>
-          )}
-          {day.status !== 'skipped' && (
-            <button
-              type="button"
-              data-testid={`pro-day-${day.day}-skipped`}
-              disabled={busy}
-              onClick={() => onStatus(day, 'skipped')}
-              className="min-h-10 rounded-full bg-cream/5 px-3 text-[12px] font-semibold text-muted disabled:opacity-50"
-            >
-              Пропустить
-            </button>
-          )}
-          {day.status !== 'planned' && (
-            <button
-              type="button"
-              data-testid={`pro-day-${day.day}-reset`}
-              disabled={busy}
-              onClick={() => onStatus(day, 'planned')}
-              className="min-h-10 rounded-full px-2 text-[12px] font-semibold text-muted disabled:opacity-50"
-            >
-              Сбросить
-            </button>
-          )}
+      {/* Консилиум: одна основная кнопка — «Выполнено», пока день не
+          отмечен выполненным; остальные действия — в меню «⋯» сверху. */}
+      {!editing && day.status !== 'done' && (
+        <div className="mt-3">
           <button
             type="button"
-            data-testid={`pro-day-${day.day}-edit`}
+            data-testid={`pro-day-${day.day}-done`}
             disabled={busy}
-            onClick={onEditStart}
-            className="min-h-10 rounded-full px-2 text-[12px] font-semibold text-muted disabled:opacity-50"
+            onClick={() => onStatus(day, 'done')}
+            className="min-h-10 rounded-full bg-cream/5 px-3 text-[12px] font-semibold text-gold disabled:opacity-50"
           >
-            Изменить
+            Выполнено
           </button>
         </div>
       )}
@@ -732,19 +787,21 @@ export default function ProPlanView({ user, onOpenReport, onOpenProgress }) {
             </Card>
           )}
 
+          {/* Консилиум: «Прогресс» — главное действие; «Пересобрать план» —
+              самая тихая кнопка (контурная), действие подтверждается. */}
           <div className="mt-6 flex flex-col gap-2">
             <PillButton variant="light" testId="pro-open-progress" onClick={onOpenProgress} className="w-full">
               Прогресс
             </PillButton>
-            <PillButton
-              variant="dark"
-              testId="pro-rebuild-plan"
-              onClick={() => handleGenerate(true)}
+            <button
+              type="button"
+              data-testid="pro-rebuild-plan"
               disabled={generating}
-              className="w-full"
+              onClick={() => handleGenerate(true)}
+              className="mx-pro-plan__quiet-button w-full"
             >
               {generating ? 'Собираем план…' : 'Пересобрать план'}
-            </PillButton>
+            </button>
           </div>
         </div>
       )}
