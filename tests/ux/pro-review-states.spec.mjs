@@ -532,7 +532,7 @@ for (const viewport of VIEWPORTS) {
       // 5. Раскрытые подробности: длинные тема, трудность и закономерность.
       const theme = await readTextFit(
         page,
-        '[data-testid="pro-details-themes"] .mx-pro-report__chip'
+        '[data-testid="pro-details-themes"] .mx-pro-text'
       )
       expect(theme.text.trim(), 'тема показана целиком').toBe(long.theme)
       expectNoClipping(theme, 'тема недели')
