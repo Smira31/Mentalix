@@ -6,26 +6,22 @@ import Card from '../../components/ui/Card'
 import PillButton from '../../components/ui/PillButton'
 import ProStateCard from './ProStateCard'
 import { proBlockedState, proErrorKey, proStatePayload } from './proApiState'
-import { STATUS_LABELS, formatDayLabel, formatWeekRange } from './weekLabel'
+import { formatWeekRange } from './weekLabel'
 
 import './proText.css'
 import './ProProgress.css'
 
 /*
  * «Прогресс» (PRO-002c-progress): детерминированная сводка выполнения плана —
- * GET /api/pro/progress без AI-вызова. Количество выполненных/пропущенных/
- * неотмеченных действий, доля, состояния дней. Просрочки нет: будущий день
+ * GET /api/pro/progress без AI-вызова. Счётчик выполненных/пропущенных/
+ * неотмеченных действий, доля и список выполненных (консилиум: цель недели
+ * и повторный список дней остаются на экране плана — дублей нет).
+ * Просрочки нет: будущий день
  * (is_future) — нормальное состояние, не провал. plan_required → «К плану»;
  * 402 pro_required и 404 pro_progress_disabled → отдельная карточка, не
  * бесконечная загрузка; ошибки двух форматов — body.detail и body.code;
  * поздний ответ загрузки отбрасывается по номеру запроса.
  */
-
-const STATUS_COLORS = {
-  done: 'text-cream',
-  skipped: 'text-muted',
-  planned: 'text-muted',
-}
 
 export default function ProProgressView({ onOpenPlan }) {
   const [state, setState] = useState(null) // null — загрузка
@@ -137,13 +133,9 @@ export default function ProProgressView({ onOpenPlan }) {
             </p>
           )}
 
-          {state.goal?.text && (
-            <div className="mx-pro-progress__card mt-4">
-              <p className="mx-pro-progress__label">Цель недели</p>
-              <p className="mx-pro-progress__goal-text">{state.goal.text}</p>
-            </div>
-          )}
-
+          {/* Консилиум: цель недели и повторный список дней не дублируются —
+              они на экране плана; здесь только счётчик и выполненные
+              действия. */}
           {completion && (
             <div className="mx-pro-progress__card mt-4" data-testid="pro-progress-completion">
               <p className="mx-pro-progress__label">
@@ -154,7 +146,7 @@ export default function ProProgressView({ onOpenPlan }) {
                 {rate && <span className="ml-2 text-[16px] font-semibold text-muted">{rate}</span>}
               </p>
               <p className="mx-pro-caption mt-1">
-                выполнено {completion.done} · пропущено {completion.skipped} · ещё впереди{' '}
+                выполнено {completion.done} · не вышло {completion.skipped} · ещё впереди{' '}
                 {completion.unmarked}
               </p>
             </div>
@@ -173,29 +165,7 @@ export default function ProProgressView({ onOpenPlan }) {
             </div>
           )}
 
-          {state.days?.length > 0 && (
-            <div className="mt-5">
-              <p className="mx-pro-progress__label">Дни недели действий</p>
-              <ul className="mx-pro-progress__list">
-                {state.days.map(day => (
-                  <li key={day.id || day.day} className="mx-pro-progress__row">
-                    <span className="mx-pro-text">
-                      {[formatDayLabel(day.date), day.action].filter(Boolean).join(' · ')}
-                    </span>
-                    <span
-                      className={`font-label shrink-0 text-[11px] ${STATUS_COLORS[day.status] || 'text-muted'}`}
-                    >
-                      {STATUS_LABELS[day.status] || day.status}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          <p className="mx-pro-caption mt-4">
-            Сводка построена по отметкам плана: без оценок личности и выводов о тебе.
-          </p>
+          <p className="mx-pro-caption mt-4">Это только твои отметки плана, без оценок</p>
         </div>
       )}
     </div>
