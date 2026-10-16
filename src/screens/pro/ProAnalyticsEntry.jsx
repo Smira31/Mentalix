@@ -105,7 +105,7 @@ export default function ProAnalyticsEntry({
       .get()
       .then(s => {
         if (!alive) return
-        setProStatus(Boolean(s?.has_pro) ? 'pro' : 'non-pro')
+        setProStatus(s?.has_pro ? 'pro' : 'non-pro')
       })
       .catch(() => {
         if (!alive) return
@@ -132,5 +132,10 @@ export default function ProAnalyticsEntry({
     )
   }
 
-  return <ProShowcaseCard onOpenSubscription={onOpenSubscription} />
+  // non-pro (включая гостей) — витрина без запросов к /api/pro/*.
+  if (proStatus === 'non-pro') {
+    return <ProShowcaseCard onOpenSubscription={onOpenSubscription} />
+  }
+
+  return null
 }
