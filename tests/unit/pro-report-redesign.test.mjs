@@ -54,7 +54,7 @@ test('подробности разбора раскрываются, но не 
 
   assert.match(viewSource, /<ProDetails title="Темы" testId="pro-details-themes">/)
   assert.match(viewSource, /<ProDetails title="Трудности" testId="pro-details-difficulties">/)
-  assert.match(viewSource, /<ProDetails title="Закономерности" testId="pro-details-patterns">/)
+  assert.match(viewSource, /<ProDetails title="Наблюдения" testId="pro-details-patterns">/)
 
   // Содержимое подробностей по-прежнему рендерится — сворачивается, не исчезает.
   assert.match(viewSource, /<ReportList items=\{report\.difficulties\} \/>/)
