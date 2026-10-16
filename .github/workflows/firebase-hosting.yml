@@ -25,6 +25,9 @@ env:
   VITE_EMAIL_LOGIN_ENABLED: 'false'
   # Веб-оплата Mentalix Pro включена в прод-сборке (читается в src/lib/paymentConfig.js).
   VITE_PAYMENT_UI_ENABLED: 'true'
+  # Pro «Разбор и план недели»: витрина и экраны включены в прод-сборке (src/lib/proFlag.js).
+  # Бэкенд-флаги PRO_WEEKLY_* на Render уже включены.
+  VITE_PRO_REVIEW_PLAN_ENABLED: 'true'
 
 jobs:
   build-and-deploy:
