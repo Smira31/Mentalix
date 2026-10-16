@@ -23,6 +23,11 @@ import { createEvidenceWriter, describeFrames } from './typography-evidence.mjs'
  * кадр, совпавший с другим состоянием. Поэтому «FAIL-» заглушки здесь
  * невозможны: состояние либо снято как доказательство, либо прогон падает.
  *
+ * Pro-статус задаёт dev-параметр `?proStatus=pro`: карточка входа выбирается
+ * по ответу /api/subscription (ProAnalyticsEntry), а в демо без него Pro нет —
+ * тогда вместо карточки Pro рисуется витрина для не-Pro. `?proMock=…` мокает
+ * только API Pro, не статус подписки.
+ *
  * Запуск в web-контейнере (VITE_PRO_REVIEW_PLAN_ENABLED=true задаёт конфиг):
  *   npm run ux:pro-states
  */
@@ -162,7 +167,7 @@ async function openAnalytics(page, scenario) {
     }
   }, MOCK_STATE_KEY)
 
-  await page.goto(`/?demo=1&frame=0&proMock=${scenario}`)
+  await page.goto(`/?demo=1&frame=0&proStatus=pro&proMock=${scenario}`)
   await expect(page.getByRole('button', { name: 'Прогресс' })).toBeVisible({ timeout: 15_000 })
   await page.getByRole('button', { name: 'Прогресс' }).click()
   await expect(page.getByTestId('progress-pro-card')).toBeVisible()
@@ -348,7 +353,7 @@ for (const viewport of VIEWPORTS) {
       // экране; сегмент не нажимаем (на 360×640 его перекрывает переключатель
       // размера экрана демо-панели). Сценарий mock нужен, чтобы карточка
       // получила состояние разбора, а не ответ демо-фолбэка.
-      await page.goto('/?demo=1&frame=0&proMock=ready')
+      await page.goto('/?demo=1&frame=0&proStatus=pro&proMock=ready')
       await page.getByRole('button', { name: 'Прогресс' }).click()
       await expect(page.getByTestId('progress-pro-card')).toBeVisible()
       await expect(page.getByTestId('progress-practices')).toBeVisible()

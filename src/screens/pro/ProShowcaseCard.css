@@ -1,0 +1,65 @@
+/* ── Витрина Pro (аналитика, вкладка «Прогресс») ──
+   Та же оболочка (.mx-progress-card) и композиция «кольцо слева, текст
+   справа» (.mx-progress-practices__empty*), что у карточки Pro. Своих
+   отступов, радиусов и типографики нет — они берутся из классов образца;
+   ниже только бейдж «Pro» и кнопка «Открыть Pro». Пустого серого кольца
+   нет: витрина не показывает «готовность», у неё нет данных разбора. */
+
+/* Шапка: заголовок + бейдж «Pro» в одну строку. */
+.mx-pro-showcase-card__head {
+  display: flex;
+  align-items: center;
+  gap: var(--mx-space-2);
+}
+
+.mx-pro-showcase-card__title {
+  display: block;
+}
+
+.mx-pro-showcase-card__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--mx-radius-pill);
+  background: rgb(var(--c-gold) / 0.15);
+  color: rgb(var(--c-gold));
+  font-size: var(--mx-read-note);
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+/* Тело — та же композиция «кольцо слева, текст справа», без кнопки. */
+.mx-pro-showcase-card__body {
+  display: flex;
+  width: 100%;
+}
+
+/* Кнопка «Открыть Pro» — тот же стиль, что у «Оформить Pro» в карточке Pro. */
+.mx-pro-showcase-card__cta {
+  display: block;
+  width: 100%;
+  margin-top: var(--mx-space-2);
+  padding: 8px 16px;
+  min-height: 36px;
+  border: 1px solid rgb(var(--c-gold));
+  border-radius: var(--mx-radius-pill);
+  background: transparent;
+  color: rgb(var(--c-gold));
+  font: inherit;
+  font-size: var(--mx-read-note);
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.mx-pro-showcase-card__cta:active {
+  transform: scale(0.99);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-pro-showcase-card__cta {
+    transition: none;
+  }
+}
