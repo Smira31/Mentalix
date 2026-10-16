@@ -1,4 +1,4 @@
-import { pluralize } from '../../lib/pluralize'
+import { pluralize } from '../../lib/pluralize.js'
 
 /*
  * Метки недель и дней для экранов Mentalix Pro.

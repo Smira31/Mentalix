@@ -1,4 +1,4 @@
-import { isoDay } from './weekLabel'
+import { isoDay } from './weekLabel.js'
 
 /*
  * Мини-неделя достижения разбора (PRO-002b, редизайн Stoic): 7 точек Пн–Вс.

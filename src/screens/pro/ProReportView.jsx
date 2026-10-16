@@ -15,6 +15,7 @@ import ProAchievementCard from './ProAchievementCard'
 import { proBlockedState, proErrorKey, proStatePayload } from './proApiState'
 import { formatDayList, formatSources, formatWeekRange, isoDay } from './weekLabel'
 
+import './proText.css'
 import './ProReport.css'
 
 /*

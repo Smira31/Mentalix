@@ -1,0 +1,63 @@
+/* ── План недели Pro: геометрия Stoic (DESIGN_SYSTEM §5.5) ──
+   Карточки --c-card2 без рамки, радиус 16, поля 16–20; строки-карточки
+   дней h ≥ 53, зазор 8; подпись раздела капсом 11/600, разрядка 0.2em,
+   muted. Текстовые стили общие — proText.css. */
+
+/* ── План ещё не собран ── */
+.mx-pro-plan__intro {
+  margin-top: var(--mx-space-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--mx-space-4);
+}
+
+/* Подпись раздела: капсом 11/600, разрядка 0.2em, muted (§5.5). */
+.mx-pro-plan__label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  line-height: 1.4;
+  color: rgb(var(--c-muted));
+}
+
+/* ── Цель недели: карточка без рамки ── */
+.mx-pro-plan__card {
+  border-radius: var(--mx-radius-control);
+  background: rgb(var(--c-card2));
+  padding: var(--mx-space-4) var(--mx-space-5);
+}
+
+.mx-pro-plan__goal-text {
+  margin-top: var(--mx-space-2);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: rgb(var(--c-text));
+}
+
+.mx-pro-plan__goal-source {
+  margin-top: var(--mx-space-1);
+}
+
+/* ── Счётчик выполнения ── */
+.mx-pro-plan__progress {
+  font-size: var(--mx-read-note);
+  font-weight: 600;
+  line-height: 1.4;
+  color: rgb(var(--c-text));
+}
+
+/* ── Дни плана: строки-карточки, зазор 8 (§5.5) ── */
+.mx-pro-plan__days {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mx-space-2);
+}
+
+.mx-pro-plan__day {
+  min-height: 53px;
+  padding: var(--mx-space-4) var(--mx-space-5);
+  border-radius: var(--mx-radius-control);
+  background: rgb(var(--c-card2));
+}

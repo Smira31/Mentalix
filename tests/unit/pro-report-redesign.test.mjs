@@ -30,6 +30,11 @@ const detailsSource = await readFile(
   new URL('../../src/screens/pro/ProDetails.jsx', import.meta.url),
   'utf8'
 )
+/* Текстовые стили экранов Pro общие — вынесены из ProReport.css в proText.css. */
+const textCssSource = await readFile(
+  new URL('../../src/screens/pro/proText.css', import.meta.url),
+  'utf8'
+)
 
 test('направление — главный блок сверху, достижения видны сразу', () => {
   assert.match(viewSource, /data-testid="pro-report-direction"/)
@@ -96,8 +101,10 @@ test('состояния доступа, загрузки, отказа, пус�
 })
 
 test('типографика Pro — токены читаемой шкалы, без пиксельных размеров', () => {
-  assert.match(cssSource, /--mx-read-read/)
-  assert.match(cssSource, /--mx-read-note/)
-  assert.match(cssSource, /--mx-read-caption/)
+  // Текстовые стили .mx-pro-* — один источник: proText.css с токенами
+  // читаемой шкалы; в геометрии экрана они не дублируются.
+  assert.match(textCssSource, /--mx-read-read/)
+  assert.match(textCssSource, /--mx-read-note/)
+  assert.match(textCssSource, /--mx-read-caption/)
   assert.doesNotMatch(viewSource, /text-\[\d+px\]/)
 })

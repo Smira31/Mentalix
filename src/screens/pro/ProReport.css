@@ -4,23 +4,8 @@
    календарные точки ≈15 px. Одна мысль на карточку. Типографика читаемой
    шкалы (--mx-read-*) сохранена; глобальная дизайн-система не меняется. */
 
-.mx-pro-text {
-  font-size: var(--mx-read-read);
-  line-height: 1.45;
-  color: rgb(var(--c-text));
-}
-
-.mx-pro-note {
-  font-size: var(--mx-read-note);
-  line-height: 1.45;
-  color: rgb(var(--c-muted));
-}
-
-.mx-pro-caption {
-  font-size: var(--mx-read-caption);
-  line-height: 1.4;
-  color: rgb(var(--c-muted));
-}
+/* Текстовые стили .mx-pro-text / .mx-pro-note / .mx-pro-caption — общие
+   для экранов Pro, вынесены в proText.css (импортируется каждым экраном). */
 
 /* Подпись раздела: капсом 11/600, разрядка 0.2em, muted (§5.5). */
 .mx-pro-report__section-label {

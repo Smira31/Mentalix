@@ -1,0 +1,21 @@
+/* ── Общие текстовые стили экранов Pro (Stoic, DESIGN_SYSTEM §5.5) ──
+   Используются разбором, планом и прогрессом; вынесены из ProReport.css,
+   чтобы каждый экран импортировал только нужные ему стили. */
+
+.mx-pro-text {
+  font-size: var(--mx-read-read);
+  line-height: 1.45;
+  color: rgb(var(--c-text));
+}
+
+.mx-pro-note {
+  font-size: var(--mx-read-note);
+  line-height: 1.45;
+  color: rgb(var(--c-muted));
+}
+
+.mx-pro-caption {
+  font-size: var(--mx-read-caption);
+  line-height: 1.4;
+  color: rgb(var(--c-muted));
+}

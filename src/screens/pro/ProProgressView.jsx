@@ -8,6 +8,9 @@ import ProStateCard from './ProStateCard'
 import { proBlockedState, proErrorKey, proStatePayload } from './proApiState'
 import { STATUS_LABELS, formatDayLabel, formatWeekRange } from './weekLabel'
 
+import './proText.css'
+import './ProProgress.css'
+
 /*
  * «Прогресс» (PRO-002c-progress): детерминированная сводка выполнения плана —
  * GET /api/pro/progress без AI-вызова. Количество выполненных/пропущенных/
@@ -129,80 +132,68 @@ export default function ProProgressView({ onOpenPlan }) {
       {state && ['ready', 'partial'].includes(state.status) && (
         <div>
           {state.status === 'partial' && (
-            <p className="mt-2 text-[12px] leading-relaxed text-muted">
+            <p className="mx-pro-note mt-2">
               План недели собран не полностью — часть действий ещё не появилась.
             </p>
           )}
 
           {state.goal?.text && (
-            <Card className="mt-4 p-4">
-              <p className="font-label text-[11px] uppercase tracking-wider text-muted">
-                Цель недели
-              </p>
-              <p className="mt-2 text-[15px] font-semibold leading-relaxed text-cream">
-                {state.goal.text}
-              </p>
-            </Card>
+            <div className="mx-pro-progress__card mt-4">
+              <p className="mx-pro-progress__label">Цель недели</p>
+              <p className="mx-pro-progress__goal-text">{state.goal.text}</p>
+            </div>
           )}
 
           {completion && (
-            <Card className="mt-4 p-4" testId="pro-progress-completion">
-              <p className="font-label text-[11px] uppercase tracking-wider text-muted">
+            <div className="mx-pro-progress__card mt-4" data-testid="pro-progress-completion">
+              <p className="mx-pro-progress__label">
                 Неделя действий{weekTitle ? ` · ${weekTitle}` : ''}
               </p>
-              <p className="mt-2 text-[26px] font-bold text-cream">
+              <p className="mx-pro-progress__title">
                 {completion.done} из {completion.planned}
                 {rate && <span className="ml-2 text-[16px] font-semibold text-muted">{rate}</span>}
               </p>
-              <p className="mt-1 text-[12px] text-muted">
-                выполнено {completion.done} · пропущено {completion.skipped} · не отмечено{' '}
+              <p className="mx-pro-caption mt-1">
+                выполнено {completion.done} · пропущено {completion.skipped} · ещё впереди{' '}
                 {completion.unmarked}
               </p>
-            </Card>
+            </div>
           )}
 
           {state.done_actions?.length > 0 && (
             <div className="mt-5">
-              <p className="font-label text-[11px] uppercase tracking-wider text-muted">
-                Выполнено
-              </p>
-              <Card className="mt-2 p-4">
-                <ul className="space-y-2">
-                  {state.done_actions.map(action => (
-                    <li key={action} className="text-[14px] leading-relaxed text-cream">
-                      {action}
-                    </li>
-                  ))}
-                </ul>
-              </Card>
+              <p className="mx-pro-progress__label">Выполнено</p>
+              <ul className="mx-pro-progress__list">
+                {state.done_actions.map(action => (
+                  <li key={action} className="mx-pro-progress__row">
+                    <p className="mx-pro-text">{action}</p>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
 
           {state.days?.length > 0 && (
             <div className="mt-5">
-              <p className="font-label text-[11px] uppercase tracking-wider text-muted">
-                Дни недели действий
-              </p>
-              <Card className="mt-2 p-4">
-                <ul className="space-y-2">
-                  {state.days.map(day => (
-                    <li key={day.id || day.day} className="flex items-baseline justify-between gap-2">
-                      <span className="text-[13px] text-cream">
-                        {[formatDayLabel(day.date), day.action].filter(Boolean).join(' · ')}
-                      </span>
-                      <span
-                        className={`font-label shrink-0 text-[11px] ${STATUS_COLORS[day.status] || 'text-muted'}`}
-                      >
-                        {STATUS_LABELS[day.status] || day.status}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </Card>
+              <p className="mx-pro-progress__label">Дни недели действий</p>
+              <ul className="mx-pro-progress__list">
+                {state.days.map(day => (
+                  <li key={day.id || day.day} className="mx-pro-progress__row">
+                    <span className="mx-pro-text">
+                      {[formatDayLabel(day.date), day.action].filter(Boolean).join(' · ')}
+                    </span>
+                    <span
+                      className={`font-label shrink-0 text-[11px] ${STATUS_COLORS[day.status] || 'text-muted'}`}
+                    >
+                      {STATUS_LABELS[day.status] || day.status}
+                    </span>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
 
-          <p className="mt-4 text-[11px] leading-relaxed text-muted">
+          <p className="mx-pro-caption mt-4">
             Сводка построена по отметкам плана: без оценок личности и выводов о тебе.
           </p>
         </div>
