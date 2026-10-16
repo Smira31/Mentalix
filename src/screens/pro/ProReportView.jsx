@@ -11,6 +11,7 @@ import PillButton from '../../components/ui/PillButton'
 import ProConsentCard from './ProConsentCard'
 import ProStateCard from './ProStateCard'
 import ProDetails from './ProDetails'
+import ProAchievementCard from './ProAchievementCard'
 import { proBlockedState, proErrorKey, proStatePayload } from './proApiState'
 import { formatDayList, formatSources, formatWeekRange, isoDay } from './weekLabel'
 
@@ -304,30 +305,44 @@ export default function ProReportView({ user, onOpenPlan }) {
           {/* Направление — главный блок сверху: это ориентир на следующую
               неделю, а не доказанная закономерность. */}
           <section className="mx-pro-report__direction" data-testid="pro-report-direction">
-            <p className="mx-pro-caption">Направление на неделю</p>
+            <p className="mx-pro-report__section-label">Направление на неделю</p>
             <p className="mx-pro-report__direction-text">{report.focus_next_week}</p>
           </section>
 
-          {report.achievements?.length > 0 && (
-            <section data-testid="pro-report-achievements">
-              <h2 className="mx-pro-report__section-title">Достижения</h2>
-              <ReportList items={report.achievements} />
-            </section>
-          )}
+          {/* Достижения — отдельная карточка на каждое: одна мысль на
+              карточку. Без достижений — спокойный текст, не пустой блок. */}
+          <section data-testid="pro-report-achievements">
+            <h2 className="mx-pro-report__section-label">Достижения</h2>
+            {report.achievements?.length > 0 ? (
+              <div className="mx-pro-report__cards">
+                {report.achievements.map((item, index) => (
+                  <ProAchievementCard
+                    key={`${item.text}-${index}`}
+                    achievement={item}
+                    weekStart={week?.start}
+                  />
+                ))}
+              </div>
+            ) : (
+              <p className="mx-pro-note mx-pro-report__empty">
+                На этой неделе достижений не нашлось.
+              </p>
+            )}
+          </section>
 
           {(report.themes?.length > 0 ||
             report.difficulties?.length > 0 ||
             report.patterns?.length > 0) && (
-            <div data-testid="pro-report-details">
+            <div className="mx-pro-report__details" data-testid="pro-report-details">
               {report.themes?.length > 0 && (
                 <ProDetails title="Темы" testId="pro-details-themes">
-                  <div className="mx-pro-report__chips">
+                  <ul className="mx-pro-report__list">
                     {report.themes.map(theme => (
-                      <span key={theme} className="mx-pro-report__chip">
-                        {theme}
-                      </span>
+                      <li key={theme}>
+                        <p className="mx-pro-text">{theme}</p>
+                      </li>
                     ))}
-                  </div>
+                  </ul>
                 </ProDetails>
               )}
 
@@ -347,10 +362,10 @@ export default function ProReportView({ user, onOpenPlan }) {
 
           {report.reflection_questions?.length > 0 && (
             <section className="mx-pro-report__questions" data-testid="pro-report-questions">
-              <h2 className="mx-pro-report__section-title">Вопросы для размышления</h2>
-              <ul className="mx-pro-report__list">
+              <h2 className="mx-pro-report__section-label">Вопросы для размышления</h2>
+              <ul className="mx-pro-report__question-list">
                 {report.reflection_questions.map(question => (
-                  <li key={question} className="mx-pro-note">
+                  <li key={question} className="mx-pro-report__question">
                     {question}
                   </li>
                 ))}
