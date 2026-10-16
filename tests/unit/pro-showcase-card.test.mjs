@@ -99,6 +99,14 @@ test('витрина не вызывает /api/pro/* и /api/subscription', () 
   assert.doesNotMatch(showcaseCode, /request/)
 })
 
+test('витрина не показывает статус разбора «Разбор готов»', () => {
+  // Витрина — не состояние разбора: у неё нейтральный заголовок, статуса
+  // готовности в ней нет (это карточка Pro, а не её данные). Копии состояний
+  // кольца Pro витрина не переиспользует.
+  assert.doesNotMatch(showcaseSource, /Разбор готов/)
+  assert.doesNotMatch(showcaseSource, /RING_COPY/)
+})
+
 test('кнопка витрины ведёт на экран подписки, не в Pro', () => {
   assert.match(showcaseSource, /data-testid="pro-showcase-open"/)
   assert.match(showcaseSource, /onClick=\{onOpenSubscription\}/)
