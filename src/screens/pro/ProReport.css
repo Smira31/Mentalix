@@ -119,18 +119,22 @@
   gap: 3px;
 }
 
-/* Календарная точка ≈15 px: день достижения закрашен акцентом, остальные — контуром. */
+/* Календарная точка ≈15 px: день достижения — светлая и чуть крупнее,
+   пустая — почти погасшая, чтобы разница читалась на тёмной и светлой
+   темах (консилиум). Крупнее — масштабом: раскладка подписей дней
+   не сдвигается. */
 .mx-pro-achievement__dot {
   width: 15px;
   height: 15px;
   border-radius: 999px;
-  border: 1px solid rgb(var(--c-border));
+  border: 1px solid rgb(var(--c-faint));
   box-sizing: border-box;
 }
 
 .mx-pro-achievement__dot--filled {
-  border-color: rgb(var(--c-gold));
-  background: rgb(var(--c-gold));
+  border-color: rgb(var(--c-text));
+  background: rgb(var(--c-text));
+  transform: scale(1.2);
 }
 
 .mx-pro-achievement__day-label {
@@ -189,7 +193,9 @@
 .mx-pro-report__details {
   display: flex;
   flex-direction: column;
-  gap: var(--mx-space-2);
+  /* Воздух между секциями подробностей: 16 (консилиум); записи
+     внутри списка разделяет сам список — 8 (ниже, __list). */
+  gap: var(--mx-space-4);
 }
 
 .mx-pro-details {
