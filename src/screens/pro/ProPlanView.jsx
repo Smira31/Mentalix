@@ -14,6 +14,9 @@ import ProStateCard from './ProStateCard'
 import { proBlockedState, proErrorKey, proStatePayload } from './proApiState'
 import { STATUS_LABELS, formatDayLabel, formatWeekRange } from './weekLabel'
 
+import './proText.css'
+import './ProPlan.css'
+
 /*
  * «План недели» (PRO-002c): одна цель, семь действий, привязка к
  * существующим практикам. Состояния GET /api/pro/plan: report_required →
@@ -71,17 +74,103 @@ function DayCard({
    * же день даёт новую. Второе поле шага (критерий) фокус не забирает.
    */
   const actionRef = useRef(null)
+  const menuRef = useRef(null)
+  const [menuOpen, setMenuOpen] = useState(false)
 
   useAutoFocusField(actionRef, editing ? day.id : null)
 
+  /*
+   * Меню «⋯» закрывается кликом вне меню и по Escape — слушатели живут,
+   * только пока меню открыто, и снимаются при закрытии/размонтировании.
+   */
+  useEffect(() => {
+    if (!menuOpen) return
+    const close = event => {
+      if (event.key === 'Escape' || !menuRef.current?.contains(event.target)) {
+        setMenuOpen(false)
+      }
+    }
+    document.addEventListener('pointerdown', close)
+    document.addEventListener('keydown', close)
+    return () => {
+      document.removeEventListener('pointerdown', close)
+      document.removeEventListener('keydown', close)
+    }
+  }, [menuOpen])
+
   return (
-    <Card className="p-4" testId="pro-plan-day">
-      <div className="flex items-baseline justify-between gap-2">
-        <span className="font-label text-[12px] text-muted">
+    <article className="mx-pro-plan__day" data-testid="pro-plan-day">
+      <div className="mx-pro-plan__day-head">
+        <span className="mx-pro-caption mx-pro-plan__day-caption">
           {[`День ${day.day}`, formatDayLabel(day.date)].filter(Boolean).join(' · ')}
         </span>
-        <span className={`font-label text-[11px] ${STATUS_COLORS[day.status] || 'text-muted'}`}>
-          {STATUS_LABELS[day.status] || day.status}
+        <span className="mx-pro-plan__day-side">
+          <span className={`mx-pro-plan__status ${STATUS_COLORS[day.status] || 'text-muted'}`}>
+            {STATUS_LABELS[day.status] || day.status}
+          </span>
+          {!editing && (
+            <span className="mx-pro-plan__menu" ref={menuRef}>
+              <button
+                type="button"
+                data-testid={`pro-day-${day.day}-menu`}
+                aria-label="Действия дня"
+                aria-haspopup="menu"
+                aria-expanded={menuOpen}
+                disabled={busy}
+                onClick={() => setMenuOpen(open => !open)}
+                className="mx-pro-plan__menu-trigger"
+              >
+                ⋯
+              </button>
+              {menuOpen && (
+                <span className="mx-pro-plan__menu-list" role="menu" data-testid={`pro-day-${day.day}-menu-list`}>
+                  {day.status !== 'skipped' && (
+                    <button
+                      type="button"
+                      role="menuitem"
+                      data-testid={`pro-day-${day.day}-skipped`}
+                      disabled={busy}
+                      onClick={() => {
+                        setMenuOpen(false)
+                        onStatus(day, 'skipped')
+                      }}
+                      className="mx-pro-plan__menu-item"
+                    >
+                      Пропустить
+                    </button>
+                  )}
+                  {day.status !== 'planned' && (
+                    <button
+                      type="button"
+                      role="menuitem"
+                      data-testid={`pro-day-${day.day}-reset`}
+                      disabled={busy}
+                      onClick={() => {
+                        setMenuOpen(false)
+                        onStatus(day, 'planned')
+                      }}
+                      className="mx-pro-plan__menu-item"
+                    >
+                      Сбросить
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    role="menuitem"
+                    data-testid={`pro-day-${day.day}-edit`}
+                    disabled={busy}
+                    onClick={() => {
+                      setMenuOpen(false)
+                      onEditStart()
+                    }}
+                    className="mx-pro-plan__menu-item"
+                  >
+                    Изменить
+                  </button>
+                </span>
+              )}
+            </span>
+          )}
         </span>
       </div>
 
@@ -95,9 +184,7 @@ function DayCard({
             className="w-full rounded-2xl bg-cream/5 p-3 text-[16px] leading-relaxed text-cream outline-none"
             data-testid="pro-plan-edit-input"
           />
-          <p className="font-label mt-2 text-[11px] uppercase tracking-wider text-muted">
-            Критерий выполнения
-          </p>
+          <p className="mx-pro-plan__label mt-2">Критерий выполнения</p>
           <textarea
             value={editCriteria}
             onChange={event => onCriteriaChange(event.target.value)}
@@ -127,10 +214,8 @@ function DayCard({
         </div>
       ) : (
         <>
-          <p className="mt-2 text-[15px] leading-relaxed text-cream">{day.action}</p>
-          {day.done_criteria && (
-            <p className="mt-1 text-[12px] leading-relaxed text-muted">{day.done_criteria}</p>
-          )}
+          <p className="mx-pro-text mt-2">{day.action}</p>
+          {day.done_criteria && <p className="mx-pro-caption mt-1">{day.done_criteria}</p>}
         </>
       )}
 
@@ -140,53 +225,22 @@ function DayCard({
         </p>
       )}
 
-      {!editing && (
-        <div className="mt-3 flex flex-wrap gap-2">
-          {day.status !== 'done' && (
-            <button
-              type="button"
-              data-testid={`pro-day-${day.day}-done`}
-              disabled={busy}
-              onClick={() => onStatus(day, 'done')}
-              className="min-h-10 rounded-full bg-cream/5 px-3 text-[12px] font-semibold text-gold disabled:opacity-50"
-            >
-              Выполнено
-            </button>
-          )}
-          {day.status !== 'skipped' && (
-            <button
-              type="button"
-              data-testid={`pro-day-${day.day}-skipped`}
-              disabled={busy}
-              onClick={() => onStatus(day, 'skipped')}
-              className="min-h-10 rounded-full bg-cream/5 px-3 text-[12px] font-semibold text-muted disabled:opacity-50"
-            >
-              Пропустить
-            </button>
-          )}
-          {day.status !== 'planned' && (
-            <button
-              type="button"
-              data-testid={`pro-day-${day.day}-reset`}
-              disabled={busy}
-              onClick={() => onStatus(day, 'planned')}
-              className="min-h-10 rounded-full px-2 text-[12px] font-semibold text-muted disabled:opacity-50"
-            >
-              Сбросить
-            </button>
-          )}
+      {/* Консилиум: одна основная кнопка — «Выполнено», пока день не
+          отмечен выполненным; остальные действия — в меню «⋯» сверху. */}
+      {!editing && day.status !== 'done' && (
+        <div className="mt-3">
           <button
             type="button"
-            data-testid={`pro-day-${day.day}-edit`}
+            data-testid={`pro-day-${day.day}-done`}
             disabled={busy}
-            onClick={onEditStart}
-            className="min-h-10 rounded-full px-2 text-[12px] font-semibold text-muted disabled:opacity-50"
+            onClick={() => onStatus(day, 'done')}
+            className="min-h-10 rounded-full bg-cream/5 px-3 text-[12px] font-semibold text-gold disabled:opacity-50"
           >
-            Изменить
+            Выполнено
           </button>
         </div>
       )}
-    </Card>
+    </article>
   )
 }
 
@@ -536,7 +590,7 @@ export default function ProPlanView({ user, onOpenReport, onOpenProgress }) {
     <div>
       <PageTitle>план недели.</PageTitle>
       {plan && weekTitle && (
-        <p className="font-label mt-2 text-[12px] text-muted" data-testid="pro-plan-week">
+        <p className="mx-pro-caption mt-2" data-testid="pro-plan-week">
           Неделя действий: {weekTitle}
         </p>
       )}
@@ -578,8 +632,8 @@ export default function ProPlanView({ user, onOpenReport, onOpenProgress }) {
       )}
 
       {!loading && !loadFailed && !blocked && status === 'not_generated' && (
-        <Card className="mt-4 p-4">
-          <p className="text-[14px] leading-relaxed text-cream">
+        <section className="mx-pro-plan__intro">
+          <p className="mx-pro-text">
             Одна цель и семь небольших действий на следующую неделю — по разбору и твоим
             существующим практикам.
           </p>
@@ -588,11 +642,11 @@ export default function ProPlanView({ user, onOpenReport, onOpenProgress }) {
             testId="pro-generate-plan"
             onClick={() => handleGenerate(false)}
             disabled={generating}
-            className="mt-3 w-full"
+            className="w-full"
           >
             {generating ? 'Собираем план…' : 'Собрать план'}
           </PillButton>
-        </Card>
+        </section>
       )}
 
       {!loading && !loadFailed && !blocked && status !== null && !KNOWN_STATUSES.has(status) && (
@@ -608,16 +662,14 @@ export default function ProPlanView({ user, onOpenReport, onOpenProgress }) {
       {showPlan && (
         <div>
           {status === 'partial' && (
-            <p className="mt-2 text-[12px] leading-relaxed text-muted">
+            <p className="mx-pro-note mt-2">
               План собран не полностью — часть дней ещё появится.
             </p>
           )}
 
           {editingGoal ? (
-            <Card className="mt-4 p-4">
-              <p className="font-label text-[11px] uppercase tracking-wider text-muted">
-                Цель недели
-              </p>
+            <div className="mx-pro-plan__card mt-4">
+              <p className="mx-pro-plan__label">Цель недели</p>
               <textarea
                 ref={goalRef}
                 value={goalText}
@@ -645,13 +697,11 @@ export default function ProPlanView({ user, onOpenReport, onOpenProgress }) {
                   Отмена
                 </button>
               </div>
-            </Card>
+            </div>
           ) : (
-            <Card className="mt-4 p-4">
+            <div className="mx-pro-plan__card mt-4">
               <div className="flex items-baseline justify-between gap-2">
-                <p className="font-label text-[11px] uppercase tracking-wider text-muted">
-                  Цель недели
-                </p>
+                <p className="mx-pro-plan__label">Цель недели</p>
                 <button
                   type="button"
                   data-testid="pro-goal-edit"
@@ -662,22 +712,20 @@ export default function ProPlanView({ user, onOpenReport, onOpenProgress }) {
                   Изменить
                 </button>
               </div>
-              <p className="mt-2 text-[15px] font-semibold leading-relaxed text-cream">
-                {plan.goal?.text}
-              </p>
+              <p className="mx-pro-plan__goal-text">{plan.goal?.text}</p>
               {plan.goal?.source_reflection && (
-                <p className="mt-1 text-[12px] leading-relaxed text-muted">
+                <p className="mx-pro-caption mx-pro-plan__goal-source">
                   {plan.goal.source_reflection}
                 </p>
               )}
-            </Card>
+            </div>
           )}
 
-          <p className="font-label mt-4 text-[12px] text-cream" data-testid="pro-plan-progress">
+          <p className="mx-pro-plan__progress mt-4" data-testid="pro-plan-progress">
             Выполнено {doneCount} из {days.length}
           </p>
 
-          <div className="mt-2">
+          <div className="mx-pro-plan__days mt-2">
             {days.map(day => (
               <DayCard
                 key={day.id}
@@ -739,19 +787,21 @@ export default function ProPlanView({ user, onOpenReport, onOpenProgress }) {
             </Card>
           )}
 
+          {/* Консилиум: «Прогресс» — главное действие; «Пересобрать план» —
+              самая тихая кнопка (контурная), действие подтверждается. */}
           <div className="mt-6 flex flex-col gap-2">
             <PillButton variant="light" testId="pro-open-progress" onClick={onOpenProgress} className="w-full">
               Прогресс
             </PillButton>
-            <PillButton
-              variant="dark"
-              testId="pro-rebuild-plan"
-              onClick={() => handleGenerate(true)}
+            <button
+              type="button"
+              data-testid="pro-rebuild-plan"
               disabled={generating}
-              className="w-full"
+              onClick={() => handleGenerate(true)}
+              className="mx-pro-plan__quiet-button w-full"
             >
               {generating ? 'Собираем план…' : 'Пересобрать план'}
-            </PillButton>
+            </button>
           </div>
         </div>
       )}

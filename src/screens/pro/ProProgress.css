@@ -1,0 +1,64 @@
+/* ── Прогресс недели Pro: геометрия Stoic (DESIGN_SYSTEM §5.5) ──
+   Карточки --c-card2 без рамки, радиус 16, поля 16–20; строки-карточки
+   h ≥ 53, зазор 8; подпись раздела капсом 11/600, разрядка 0.2em, muted.
+   Текстовые стили общие — proText.css. */
+
+/* Подпись раздела: капсом 11/600, разрядка 0.2em, muted (§5.5). */
+.mx-pro-progress__label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  line-height: 1.4;
+  color: rgb(var(--c-muted));
+}
+
+/* ── Карточка сводки и цели: без рамки ── */
+.mx-pro-progress__card {
+  border-radius: var(--mx-radius-control);
+  background: rgb(var(--c-card2));
+  padding: var(--mx-space-4) var(--mx-space-5);
+}
+
+.mx-pro-progress__goal-text {
+  margin-top: var(--mx-space-2);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: rgb(var(--c-text));
+}
+
+/* Крупная цифра сводки: 28/700. */
+.mx-pro-progress__title {
+  margin-top: var(--mx-space-2);
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: rgb(var(--c-text));
+}
+
+/* ── Списки: строки-карточки, зазор 8, название как в истории (§5.5) ── */
+.mx-pro-progress__list {
+  margin-top: var(--mx-space-2);
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--mx-space-2);
+}
+
+.mx-pro-progress__row {
+  min-height: 53px;
+  padding: var(--mx-space-2) var(--mx-space-5);
+  border-radius: var(--mx-radius-control);
+  background: rgb(var(--c-card2));
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--mx-space-4);
+}
+
+/* Название строки — как в истории: читаемый размер, 600 (§5.5). */
+.mx-pro-progress__row .mx-pro-text {
+  font-weight: 600;
+}

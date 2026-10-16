@@ -1,31 +1,25 @@
-/* ── Экраны разбора Pro: внутренний дизайн ──
-   Характер Mentalix и композиционная ясность образцов Stoic, практик и
-   ритуалов: Onest, смысловые токены читаемой шкалы (--mx-read-*: основной
-   текст 16px, пояснения 14px, подписи 13px), больше расстояния между
-   смысловыми разделами и меньше вложенных рамок. Глобальная дизайн-система
-   не меняется — всё локально для Pro. */
+/* ── Экраны разбора Pro: геометрия Stoic (DESIGN_SYSTEM §5.5) ──
+   Карточки --c-card2 без рамки, радиус 16, поля 16–20; подпись раздела
+   капсом 11/600, разрядка 0.2em, muted; строки-карточки h 53, зазор 8;
+   календарные точки ≈15 px. Одна мысль на карточку. Типографика читаемой
+   шкалы (--mx-read-*) сохранена; глобальная дизайн-система не меняется. */
 
-.mx-pro-text {
-  font-size: var(--mx-read-read);
-  line-height: 1.45;
-  color: rgb(var(--c-text));
-}
+/* Текстовые стили .mx-pro-text / .mx-pro-note / .mx-pro-caption — общие
+   для экранов Pro, вынесены в proText.css (импортируется каждым экраном). */
 
-.mx-pro-note {
-  font-size: var(--mx-read-note);
-  line-height: 1.45;
-  color: rgb(var(--c-muted));
-}
-
-.mx-pro-caption {
-  font-size: var(--mx-read-caption);
+/* Подпись раздела: капсом 11/600, разрядка 0.2em, muted (§5.5). */
+.mx-pro-report__section-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
   line-height: 1.4;
   color: rgb(var(--c-muted));
 }
 
 /* ── Разбор ещё не собран ── */
 .mx-pro-intro {
-  margin-top: var(--mx-space-6);
+  margin-top: var(--mx-space-8);
   display: flex;
   flex-direction: column;
   gap: var(--mx-space-4);
@@ -35,41 +29,60 @@
   margin-top: var(--mx-space-2);
 }
 
-/* ── Готовый разбор ── */
+/* ── Готовый разбор: между секциями 32–40 ── */
 .mx-pro-report {
-  margin-top: var(--mx-space-6);
+  margin-top: var(--mx-space-8);
   display: flex;
   flex-direction: column;
   gap: var(--mx-space-10);
 }
 
+/* «Направление на неделю» — карточка без рамки, текст 20/700. */
 .mx-pro-report__direction {
-  padding: var(--mx-space-6) var(--mx-space-5);
-  border: 1px solid rgb(var(--c-border) / 0.72);
-  border-radius: var(--mx-radius-card);
+  padding: var(--mx-space-5);
+  border-radius: var(--mx-radius-control);
   background: rgb(var(--c-card2));
 }
 
 .mx-pro-report__direction-text {
   margin-top: var(--mx-space-3);
-  font-size: var(--mx-read-read);
-  font-weight: 600;
-  line-height: 1.4;
-  color: rgb(var(--c-text));
-}
-
-.mx-pro-report__section-title {
-  font-size: var(--mx-read-read);
-  font-weight: 600;
+  font-size: 20px;
+  font-weight: 700;
   line-height: 1.3;
   color: rgb(var(--c-text));
 }
 
-.mx-pro-report__list {
-  margin-top: var(--mx-space-4);
+/* Список карточек одной секции: строки-карточки, зазор 8. */
+.mx-pro-report__cards {
+  margin-top: var(--mx-space-2);
   display: flex;
   flex-direction: column;
-  gap: var(--mx-space-5);
+  gap: var(--mx-space-2);
+}
+
+/* Строка-карточка: h ≥ 53, фон --c-card2, радиус 16, без рамки. */
+.mx-pro-report__list {
+  margin-top: var(--mx-space-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--mx-space-2);
+  padding: 0;
+  list-style: none;
+}
+
+.mx-pro-report__list > li {
+  min-height: 53px;
+  padding: var(--mx-space-2) var(--mx-space-5);
+  border-radius: var(--mx-radius-control);
+  background: rgb(var(--c-card2));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Название строки — как в истории: 16/600. */
+.mx-pro-report__list .mx-pro-text {
+  font-weight: 600;
 }
 
 .mx-pro-report__item-days {
@@ -79,26 +92,93 @@
   color: rgb(var(--c-muted));
 }
 
-.mx-pro-report__chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--mx-space-2);
+/* ── Достижение: карточка с мини-неделей из 7 точек ── */
+.mx-pro-achievement {
+  padding: var(--mx-space-4) var(--mx-space-5);
+  border-radius: var(--mx-radius-control);
+  background: rgb(var(--c-card2));
 }
 
-.mx-pro-report__chip {
-  padding: var(--mx-space-1) var(--mx-space-3);
-  border-radius: var(--mx-radius-pill);
-  background: rgb(var(--c-card3) / 0.6);
-  font-size: var(--mx-read-caption);
+.mx-pro-achievement__title {
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.35;
   color: rgb(var(--c-text));
 }
 
-.mx-pro-report__questions {
-  padding: var(--mx-space-6) var(--mx-space-5);
-  border-radius: var(--mx-radius-card);
-  background: rgb(var(--c-card2) / 0.5);
+.mx-pro-achievement__week {
+  display: flex;
+  gap: var(--mx-space-3);
+  margin-top: var(--mx-space-3);
 }
 
+.mx-pro-achievement__day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+/* Календарная точка ≈15 px: день достижения — светлая и чуть крупнее,
+   пустая — почти погасшая, чтобы разница читалась на тёмной и светлой
+   темах (консилиум). Крупнее — масштабом: раскладка подписей дней
+   не сдвигается. */
+.mx-pro-achievement__dot {
+  width: 15px;
+  height: 15px;
+  border-radius: 999px;
+  border: 1px solid rgb(var(--c-faint));
+  box-sizing: border-box;
+}
+
+.mx-pro-achievement__dot--filled {
+  border-color: rgb(var(--c-text));
+  background: rgb(var(--c-text));
+  transform: scale(1.2);
+}
+
+.mx-pro-achievement__day-label {
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+  color: rgb(var(--c-muted));
+}
+
+.mx-pro-achievement__dates {
+  margin-top: var(--mx-space-2);
+  font-size: var(--mx-read-caption);
+  line-height: 1.4;
+  color: rgb(var(--c-muted));
+}
+
+.mx-pro-report__empty {
+  margin-top: var(--mx-space-2);
+}
+
+/* ── Вопросы для размышления: карточка, вопросы 17/400 ── */
+.mx-pro-report__questions {
+  padding: var(--mx-space-5);
+  border-radius: var(--mx-radius-control);
+  background: rgb(var(--c-card2));
+}
+
+.mx-pro-report__question-list {
+  margin: var(--mx-space-3) 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--mx-space-3);
+}
+
+.mx-pro-report__question {
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: rgb(var(--c-text));
+}
+
+/* ── Подпись источников и оговорка: 13 muted, контраст к фону ≥ 4.5 ── */
 .mx-pro-report__meta {
   display: flex;
   flex-direction: column;
@@ -109,9 +189,17 @@
   margin-top: var(--mx-space-2);
 }
 
-/* ── Раскрываемые подробности ── */
+/* ── Раскрываемые подробности: строка-карточка, без разделительных линий ── */
+.mx-pro-report__details {
+  display: flex;
+  flex-direction: column;
+  /* Воздух между секциями подробностей: 16 (консилиум); записи
+     внутри списка разделяет сам список — 8 (ниже, __list). */
+  gap: var(--mx-space-4);
+}
+
 .mx-pro-details {
-  border-top: 1px solid rgb(var(--c-border));
+  border-top: 0;
 }
 
 .mx-pro-details__summary {
@@ -119,7 +207,10 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--mx-space-4);
-  min-height: 52px;
+  min-height: 53px;
+  padding: var(--mx-space-2) var(--mx-space-5);
+  border-radius: var(--mx-radius-control);
+  background: rgb(var(--c-card2));
   list-style: none;
   cursor: pointer;
 }
@@ -150,7 +241,8 @@
 }
 
 .mx-pro-details__body {
-  padding-bottom: var(--mx-space-5);
+  padding-top: var(--mx-space-2);
+  padding-bottom: var(--mx-space-2);
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -30,6 +30,11 @@ const detailsSource = await readFile(
   new URL('../../src/screens/pro/ProDetails.jsx', import.meta.url),
   'utf8'
 )
+/* Текстовые стили экранов Pro общие — вынесены из ProReport.css в proText.css. */
+const textCssSource = await readFile(
+  new URL('../../src/screens/pro/proText.css', import.meta.url),
+  'utf8'
+)
 
 test('направление — главный блок сверху, достижения видны сразу', () => {
   assert.match(viewSource, /data-testid="pro-report-direction"/)
@@ -49,7 +54,7 @@ test('подробности разбора раскрываются, но не 
 
   assert.match(viewSource, /<ProDetails title="Темы" testId="pro-details-themes">/)
   assert.match(viewSource, /<ProDetails title="Трудности" testId="pro-details-difficulties">/)
-  assert.match(viewSource, /<ProDetails title="Закономерности" testId="pro-details-patterns">/)
+  assert.match(viewSource, /<ProDetails title="Наблюдения" testId="pro-details-patterns">/)
 
   // Содержимое подробностей по-прежнему рендерится — сворачивается, не исчезает.
   assert.match(viewSource, /<ReportList items=\{report\.difficulties\} \/>/)
@@ -96,8 +101,10 @@ test('состояния доступа, загрузки, отказа, пус�
 })
 
 test('типографика Pro — токены читаемой шкалы, без пиксельных размеров', () => {
-  assert.match(cssSource, /--mx-read-read/)
-  assert.match(cssSource, /--mx-read-note/)
-  assert.match(cssSource, /--mx-read-caption/)
+  // Текстовые стили .mx-pro-* — один источник: proText.css с токенами
+  // читаемой шкалы; в геометрии экрана они не дублируются.
+  assert.match(textCssSource, /--mx-read-read/)
+  assert.match(textCssSource, /--mx-read-note/)
+  assert.match(textCssSource, /--mx-read-caption/)
   assert.doesNotMatch(viewSource, /text-\[\d+px\]/)
 })

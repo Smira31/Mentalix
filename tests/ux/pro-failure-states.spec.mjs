@@ -137,6 +137,7 @@ test('ввод правки сохраняется при отказе сохр�
   await buildPlan(page)
 
   const draft = 'Проверка сохранения ввода при отказе'
+  await page.getByTestId('pro-day-1-menu').click()
   await page.getByTestId('pro-day-1-edit').click()
   await page.getByTestId('pro-plan-edit-input').fill(draft)
   await page.getByTestId('pro-plan-edit-save').click()
