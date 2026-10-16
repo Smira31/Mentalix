@@ -26,6 +26,12 @@ import { clearAllLocalUserData } from '../lib/localUserData'
 import { openExternal } from '../lib/externalLinks'
 import { THEMES } from '../lib/theme'
 import { isGuestUser } from '../lib/guestAuth'
+import {
+  ERASURE_HINTS,
+  ERASURE_INIT_DATA_SUFFICIENT,
+  erasureDeliveryHint,
+  erasureRequestErrorText,
+} from '../lib/erasureCode'
 import { DEFAULT_REVIEW_HOUR } from '../lib/todayCardState'
 import { pluralize } from '../lib/pluralize'
 import { previewProfileAction } from '../lib/demoMode'
@@ -248,6 +254,7 @@ export default function Settings({
   // ── «Удалить аккаунт»: пошаговый поток с одноразовым кодом.
   // 'idle' — предупреждение + кнопка запроса кода;
   // 'code-requested' — поле ввода кода + финальная кнопка;
+  // 'no-code' — код не нужен (Mini App) + финальная кнопка без поля ввода;
   // 'error' — сообщение об ошибке + повтор.
   const [erasureStep, setErasureStep] = useState('idle')
   const [erasureCode, setErasureCode] = useState('')
@@ -482,21 +489,22 @@ export default function Settings({
     setAccountEraseError('')
     try {
       const result = await api.privacy.requestErasureCode(user.id)
-      // Подсказка о способе доставки кода — если бэкенд вернул его.
-      const method = result?.delivery_method || result?.sent_via
-      if (method === 'email') {
-        setErasureHint('Код подтверждения отправлен на ваш email.')
-      } else if (method === 'telegram') {
-        setErasureHint('Код подтверждения отправлен в чат с Mentalix.')
-      } else {
-        setErasureHint('Код подтверждения отправлен.')
+      if (result.ok) {
+        // Подсказка о канале доставки: точная, если бэкенд его назвал,
+        // иначе нейтральная (см. src/lib/erasureCode.js).
+        setErasureHint(erasureDeliveryHint(result.delivery))
+        setErasureStep('code-requested')
+        return
       }
-      setErasureStep('code-requested')
-    } catch {
+      if (result.reason === ERASURE_INIT_DATA_SUFFICIENT) {
+        // Mini App подтверждает себя подписанным initData — код не нужен,
+        // сразу финальное подтверждение.
+        setErasureHint(ERASURE_HINTS.noCode)
+        setErasureStep('no-code')
+        return
+      }
       setErasureStep('error')
-      setAccountEraseError(
-        'Не удалось отправить код подтверждения. Проверь соединение и попробуй ещё раз.'
-      )
+      setAccountEraseError(erasureRequestErrorText(result.reason))
     } finally {
       setCodeRequesting(false)
     }
@@ -1172,7 +1180,7 @@ export default function Settings({
             <ProfileNote
               role="status"
               danger={downloadState === 'error'}
-              data-testid="profile-download-status"
+              testId="profile-download-status"
             >
               {downloadStatus}
             </ProfileNote>
@@ -1218,23 +1226,34 @@ export default function Settings({
                     testId="profile-row-erasure-start"
                   />
                 )}
-                {erasureStep === 'code-requested' && (
-                  <div className="mx-profile-inset" data-testid="profile-erasure-code-input">
+                {(erasureStep === 'code-requested' || erasureStep === 'no-code') && (
+                  <div
+                    className="mx-profile-inset"
+                    data-testid={
+                      erasureStep === 'code-requested'
+                        ? 'profile-erasure-code-input'
+                        : 'profile-erasure-no-code'
+                    }
+                  >
                     <p className="text-[13px] leading-relaxed text-muted">{erasureHint}</p>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      autoComplete="one-time-code"
-                      placeholder="Код подтверждения"
-                      value={erasureCode}
-                      onChange={e => setErasureCode(e.target.value)}
-                      className="mx-profile-input"
-                      data-testid="profile-erasure-code-field"
-                    />
+                    {erasureStep === 'code-requested' && (
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        autoComplete="one-time-code"
+                        placeholder="Код подтверждения"
+                        value={erasureCode}
+                        onChange={e => setErasureCode(e.target.value)}
+                        className="mx-profile-input"
+                        data-testid="profile-erasure-code-field"
+                      />
+                    )}
                     <button
                       type="button"
                       onClick={eraseAccountAndData}
-                      disabled={erasingAccount || !erasureCode.trim()}
+                      disabled={
+                        erasingAccount || (erasureStep === 'code-requested' && !erasureCode.trim())
+                      }
                       className="mx-profile-text-button mx-profile-text-button--danger"
                       data-testid="profile-erasure-confirm"
                     >
@@ -1255,7 +1274,7 @@ export default function Settings({
             )}
           </ProfileCard>
           {accountEraseError && (
-            <ProfileNote role="alert" danger data-testid="profile-erasure-error">
+            <ProfileNote role="alert" danger testId="profile-erasure-error">
               {accountEraseError}
             </ProfileNote>
           )}

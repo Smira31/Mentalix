@@ -1,5 +1,6 @@
 import { platform } from '../platform'
 import { withQuery } from './apiQuery'
+import { erasureDeliveryMethod, erasureRequestReason } from './erasureCode'
 import { demoRequest, isPreviewDemoMode } from './demoMode'
 import { isProMockMode, proMockRequest } from './proMock'
 import { resetGuestState, dispatchGuestMerged } from './guestAuth'
@@ -1006,11 +1007,26 @@ export const api = {
       }
     },
 
-    requestErasureCode: userId =>
-      request('/privacy/account-erasure/request-code', {
-        method: 'POST',
-        body: JSON.stringify({ user_id: userId }),
-      }),
+    // Одноразовый код удаления аккаунта. Бэкенд отправляет его на email, а
+    // веб-пользователю, вошедшему через Telegram (email у такого аккаунта нет),
+    // — сообщением бота. Результат:
+    //   { ok: true, delivery: 'email'|'telegram'|null }
+    //   { ok: false, reason: 'rate_limited'|'telegram_send_failed'
+    //                        |'telegram_delivery_not_configured'
+    //                        |'no_delivery_channel'|'init_data_sufficient'|'failed' }
+    // Разбор кодов ответа — src/lib/erasureCode.js. Ошибку не бросаем наружу:
+    // экран показывает причину понятным текстом.
+    requestErasureCode: async userId => {
+      try {
+        const result = await request('/privacy/account-erasure/request-code', {
+          method: 'POST',
+          body: JSON.stringify({ user_id: userId }),
+        })
+        return { ok: true, delivery: erasureDeliveryMethod(result) }
+      } catch (error) {
+        return { ok: false, reason: erasureRequestReason(error) }
+      }
+    },
 
     eraseAccount: (userId, otpCode) =>
       request('/privacy/account-erasure', {
