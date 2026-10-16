@@ -22,7 +22,7 @@ const CASES = [
   { payState: 'guest', title: 'Войди через Telegram, чтобы оформить Pro', testId: 'subscription-pay-button' },
   { payState: 'base', title: 'Готов открыть свой потенциал?', testId: 'subscription-pay-button' },
   { payState: 'pro', title: 'Pro активен', testId: null },
-  { payState: 'success', title: 'Оплата прошла', testId: null, success: true },
+  { payState: 'success', title: 'pro активен.', testId: 'subscription-success-continue', success: true },
   { payState: 'expired', title: 'Срок Pro закончился', testId: 'subscription-pay-button' },
   {
     payState: 'pending',
@@ -40,16 +40,23 @@ for (const { payState, title, testId, success, support } of CASES) {
       await expect(page.getByTestId('today-profile-button')).toBeVisible()
       await page.getByTestId('today-profile-button').click()
       await page.getByTestId('profile-screen').getByText('Подписка').click()
-      await expect(page.getByTestId('profile-screen-subscription')).toBeVisible()
+      if (payState === 'success') {
+        // Полноэкранный экран успеха заменяет обычный экран подписки.
+        await expect(page.getByTestId('subscription-success-title')).toBeVisible()
+      } else {
+        await expect(page.getByTestId('profile-screen-subscription')).toBeVisible()
+      }
       await expect(page.getByText(title)).toBeVisible()
       if (testId) {
         await expect(page.getByTestId(testId)).toBeVisible()
       } else {
-        // pro/success — кнопки оплаты нет
+        // pro — кнопки оплаты нет
         await expect(page.getByTestId('subscription-pay-button')).not.toBeVisible()
       }
       if (success) {
-        await expect(page.getByTestId('subscription-paid-success')).toBeVisible()
+        // Подзаголовок и строка с датой — на экране успеха.
+        await expect(page.getByTestId('subscription-success-subtitle')).toBeVisible()
+        await expect(page.getByTestId('subscription-success-date')).toBeVisible()
       }
       if (support) {
         // Подсказка про поддержку — тихая ссылка под состоянием.
@@ -126,7 +133,7 @@ test('веб: кнопка «Оформить Pro» уводит на стран
  */
 const RETURN_CASES = [
   { hasPro: false, title: 'Оплата обрабатывается', buttonId: 'subscription-check-payment' },
-  { hasPro: true, title: 'Оплата прошла', buttonId: null },
+  { hasPro: true, title: 'pro активен.', buttonId: 'subscription-success-continue' },
 ]
 
 for (const { hasPro, title, buttonId } of RETURN_CASES) {
@@ -153,7 +160,12 @@ for (const { hasPro, title, buttonId } of RETURN_CASES) {
 
       await page.goto('/?payment=return')
 
-      await expect(page.getByTestId('profile-screen-subscription')).toBeVisible()
+      if (hasPro) {
+        // Полноэкранный экран успеха.
+        await expect(page.getByTestId('subscription-success-title')).toBeVisible()
+      } else {
+        await expect(page.getByTestId('profile-screen-subscription')).toBeVisible()
+      }
       await expect(page.getByText(title)).toBeVisible()
       if (buttonId) {
         await expect(page.getByTestId(buttonId)).toBeVisible()
@@ -165,6 +177,82 @@ for (const { hasPro, title, buttonId } of RETURN_CASES) {
     }
   })
 }
+
+/*
+ * Экран успеха после оплаты: показывается один раз, «Продолжить» уходит,
+ * повторное открытие «Подписки» — обычное состояние «Pro активен» без
+ * закрытого замка (открытый замок вместо закрытого).
+ *
+ * Мок: возврат с ЮKassa (?payment=return) + has_pro=true → экран успеха.
+ * Нажатие «Продолжить» → возврат в профиль. Повторное открытие подписки —
+ * обычный экран «Pro активен» (замок открыт, не закрыт).
+ */
+test('экран успеха: «Продолжить» уходит, повторное открытие — Pro без замка', async ({
+  browser,
+  baseURL,
+}) => {
+  const context = await browser.newContext({
+    baseURL,
+    viewport: VIEWPORT,
+    colorScheme: 'dark',
+    reducedMotion: 'reduce',
+    serviceWorkers: 'block',
+  })
+  try {
+    await context.addInitScript(user => {
+      localStorage.clear()
+      sessionStorage.clear()
+      localStorage.setItem('mentalix_web_user', JSON.stringify(user))
+      localStorage.setItem('mx-onboarded-v2', '1')
+      localStorage.setItem('mx-app-lock-enabled', '0')
+    }, { ...TEST_USER, email: 'pay-success@example.invalid' })
+    await mockApi(context)
+
+    // Имитируем начатую оплату (sessionStorage) и возврат с has_pro=true.
+    await context.addInitScript(() => {
+      sessionStorage.setItem('mx-yookassa-payment-started', String(Date.now()))
+    })
+    await context.route('**/api/subscription**', route =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          tier: 'pro',
+          has_pro: true,
+          expires_at: '2026-11-15T00:00:00Z',
+          days_left: 30,
+        }),
+      })
+    )
+
+    const page = await context.newPage()
+    await page.goto('/?payment=return')
+
+    // 1. Показан полноэкранный экран успеха.
+    await expect(page.getByTestId('subscription-success-title')).toBeVisible()
+    await expect(page.getByText('pro активен.')).toBeVisible()
+    await expect(page.getByTestId('subscription-success-subtitle')).toBeVisible()
+    await expect(page.getByTestId('subscription-success-date')).toBeVisible()
+    await expect(page.getByTestId('subscription-success-continue')).toBeVisible()
+    // Кнопки оплаты на экране успеха нет.
+    await expect(page.getByTestId('subscription-pay-button')).not.toBeVisible()
+
+    // 2. «Продолжить» уходит с экрана успеха — возврат в профиль.
+    await page.getByTestId('subscription-success-continue').click()
+    await expect(page.getByTestId('profile-screen')).toBeVisible()
+
+    // 3. Повторное открытие «Подписки» — обычное состояние «Pro активен»,
+    //    без экрана успеха и без закрытого замка.
+    await page.getByTestId('profile-screen').getByText('Подписка').click()
+    await expect(page.getByTestId('profile-screen-subscription')).toBeVisible()
+    await expect(page.getByText('Pro активен')).toBeVisible()
+    // Экрана успеха больше нет.
+    await expect(page.getByTestId('subscription-success-title')).not.toBeVisible()
+    await expect(page.getByTestId('subscription-success-continue')).not.toBeVisible()
+  } finally {
+    await context.close()
+  }
+})
 
 /*
  * Кнопка «Оформить Pro» в карточке «Прогресс» — тот же путь ЮKassa:

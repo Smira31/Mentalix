@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { BookOpen, LineChart, Lightbulb, Lock, Users } from 'lucide-react'
 import { ProfileBody, ProfilePage } from './settings/ProfileUi'
-import { PotentialLockArt } from './settings/ProfileBannerArt'
+import { PotentialLockArt, ProUnlockedArt } from './settings/ProfileBannerArt'
 import { api } from '../lib/api'
 import { platform, platformName } from '../platform'
 import { isPreviewDemoMode } from '../lib/demoMode'
 import { PAYMENT_UI_ENABLED, PRO_PRICE, PRO_PERIOD_LABEL, TRIBUTE_TG_LINK } from '../lib/paymentConfig'
-import { getSubscriptionState, getDemoPayState } from '../lib/subscriptionState'
+import { getSubscriptionState, getDemoPayState, lockArtKind } from '../lib/subscriptionState'
 import { openSupportChat } from '../lib/support'
 import {
   CHECKOUT_ACTIONS,
@@ -21,11 +21,14 @@ import {
   checkoutAvailable,
   clearPaymentStarted,
   consumeGuestCheckout,
+  markSuccessShown,
   paymentReturnState,
   readPaymentStarted,
+  readSuccessShown,
   startCheckout,
   webGuestLoginCopy,
 } from '../lib/yookassaCheckout'
+import SubscriptionSuccessScreen from './SubscriptionSuccess'
 import './SubscriptionManager.css'
 
 /* Единственная кнопка оплаты: цена и период — из paymentConfig, не хардкодим. */
@@ -66,7 +69,7 @@ const emailLoginEnabled = import.meta.env.VITE_EMAIL_LOGIN_ENABLED !== 'false'
  * только свежий ответ /api/subscription (has_pro). Фронтенд ничего не
  * подтверждает локально, платёжные данные не вводит и не хранит.
  */
-const FEATURES = [
+export const FEATURES = [
   [Users, 'Спутники без ограничений', 'Наставник и другие спутники отвечают глубже и без лимита'],
   [BookOpen, 'Практикумы', '«Путь героя» и новые практикумы'],
   [LineChart, 'Полная аналитика и история', 'Все записи и связи между ними'],
@@ -78,7 +81,7 @@ const MONTHS = [
   'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря',
 ]
 
-function formatProDate(isoDate) {
+export function formatProDate(isoDate) {
   if (!isoDate) return null
   const d = new Date(isoDate)
   if (Number.isNaN(d.getTime())) return null
@@ -242,6 +245,11 @@ function SubscriptionManagerEnabled({ user, onBack, onGuestLogin }) {
   // Демо-режим: ?payState= переопределяет состояние
   const demoPayState = getDemoPayState(isPreviewDemoMode)
 
+  // Экран успеха показывается один раз: флаг в sessionStorage читается при
+  // монтировании (useState), а не на каждом рендере — иначе двойной вызов API
+  // в StrictMode после markSuccessShown() переключал бы экран на «Pro активен».
+  const [successAlreadyShown] = useState(() => readSuccessShown())
+
   // Определяем состояние экрана
   let displayState
   if (demoPayState) {
@@ -250,11 +258,19 @@ function SubscriptionManagerEnabled({ user, onBack, onGuestLogin }) {
     displayState = 'loading'
   } else if (localPending && subscription && !subscription.has_pro) {
     displayState = 'pending'
-  } else if (returnState) {
-    displayState = returnState
+  } else if (returnState === 'success' && !successAlreadyShown) {
+    displayState = 'success'
+  } else if (returnState === 'pending') {
+    displayState = 'pending'
   } else {
     displayState = getSubscriptionState(subscription, isGuest)
   }
+
+  // Отмечаем показанный экран успеха в sessionStorage — повторное открытие
+  // (новый монтируемый экземпляр) даст обычный «Pro активен».
+  useEffect(() => {
+    if (displayState === 'success') markSuccessShown()
+  }, [displayState])
 
   /* Гость: сначала вход (в вебе — Telegram), после входа — возврат к оплате. */
   function beginGuestFlow() {
@@ -308,6 +324,20 @@ function SubscriptionManagerEnabled({ user, onBack, onGuestLogin }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [webCheckout, isGuest, loading])
 
+  // Полноэкранный экран успеха — один раз после оплаты, вместо обычного экрана.
+  if (displayState === 'success') {
+    return (
+      <SubscriptionSuccessScreen
+        subscription={
+          demoPayState === 'success'
+            ? { expires_at: new Date(Date.now() + 30 * 86400000).toISOString(), days_left: 30 }
+            : subscription
+        }
+        onContinue={onBack}
+      />
+    )
+  }
+
   return (
     <ProfilePage
       title="подписка."
@@ -342,12 +372,11 @@ function SubscriptionManagerEnabled({ user, onBack, onGuestLogin }) {
           <BaseState />
         )}
 
-        {(displayState === 'pro' || displayState === 'success') && (
+        {displayState === 'pro' && (
           <ProState
-            paid={displayState === 'success'}
             subscription={
-              demoPayState === 'pro' || demoPayState === 'success'
-                ? { expires_at: null, days_left: 30 }
+              demoPayState === 'pro'
+                ? { expires_at: new Date(Date.now() + 30 * 86400000).toISOString(), days_left: 30 }
                 : subscription
             }
           />
@@ -550,22 +579,17 @@ function BaseState() {
   )
 }
 
-/* ── Состояние: Pro активен / оплата прошла ── */
-function ProState({ paid = false, subscription }) {
+/* ── Состояние: Pro активен (обычное, не экран успеха) ── */
+function ProState({ subscription }) {
   const proDate = formatProDate(subscription?.expires_at)
   const daysLeft = subscription?.days_left
 
   return (
     <>
       <div className="mx-subscription-art" aria-hidden="true">
-        <PotentialLockArt />
+        <ProUnlockedArt />
       </div>
-      <h2 className="mx-subscription-promise">{paid ? 'Оплата прошла' : 'Pro активен'}</h2>
-      {paid && (
-        <p className="mx-subscription-pitch mx-subscription-success" data-testid="subscription-paid-success">
-          Спасибо! Pro активен.
-        </p>
-      )}
+      <h2 className="mx-subscription-promise">Pro активен</h2>
       {proDate && (
         <p className="mx-subscription-pitch">
           Pro до {proDate}
@@ -635,7 +659,7 @@ function PendingState({ showSupportHint = false }) {
   )
 }
 
-function pluralizeDays(n) {
+export function pluralizeDays(n) {
   const mod10 = n % 10
   const mod100 = n % 100
   if (mod10 === 1 && mod100 !== 11) return 'день'

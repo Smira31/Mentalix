@@ -159,6 +159,7 @@ export async function startCheckout({ create, navigate, platform = 'web', enable
 const STARTED_KEY = 'mx-yookassa-payment-started'
 const GUEST_RESUME_KEY = 'mx-yookassa-payment-resume'
 const SETTINGS_SCREEN_KEY = 'mx-settings-initial-screen'
+const SUCCESS_SHOWN_KEY = 'mx-subscription-success-shown'
 
 /* Возврат с оплаты старше суток оплатой уже не считается. */
 export const PAYMENT_RETURN_WINDOW_MS = 24 * 60 * 60 * 1000
@@ -232,9 +233,32 @@ function removeSession(key) {
   }
 }
 
+/*
+ * Экран успеха показывается один раз: флаг в sessionStorage отмечает,
+ * что успех уже показан. При новой оплате флаг снимается (markPaymentStarted),
+ * чтобы следующий возврат снова показал экран успеха.
+ */
+export function markSuccessShown() {
+  writeSession(SUCCESS_SHOWN_KEY, '1')
+}
+
+export function readSuccessShown() {
+  try {
+    return typeof window !== 'undefined' && window.sessionStorage.getItem(SUCCESS_SHOWN_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+export function clearSuccessShown() {
+  removeSession(SUCCESS_SHOWN_KEY)
+}
+
 /* Страница уходит на ЮKassa и загружается заново — отметку держим в sessionStorage. */
 export function markPaymentStarted(now = Date.now()) {
   writeSession(STARTED_KEY, String(now))
+  // Новая оплата — снимаем флаг показанного успеха.
+  removeSession(SUCCESS_SHOWN_KEY)
 }
 
 export function readPaymentStarted() {
