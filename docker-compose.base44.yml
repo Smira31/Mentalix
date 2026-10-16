@@ -19,6 +19,13 @@ services:
       # Sandbox-only включение фронтенд-флага интерфейса оплаты.
       # Production-сборка флаг не получает: default — выключен (src/lib/paymentConfig.js).
       - VITE_PAYMENT_UI_ENABLED=true
+      # Sandbox-only повтор продакшн-конфигурации (.github/workflows/firebase-hosting.yml):
+      # вход по email выключен (нет своего домена в Resend), поэтому экран гостя
+      # в превью ведёт в Telegram Login — то же состояние, что видят люди в бою.
+      # Production-сборка эти значения задаёт сама; дефолт фронтенда — email включён.
+      - VITE_EMAIL_LOGIN_ENABLED=false
+      # Публичное имя бота для Telegram Login (не секрет), как в прод-сборке.
+      - VITE_TELEGRAM_BOT_USERNAME=Mentalix_club_bot
       # Sandbox-only сценарий dev-mock Pro без параметра URL: оболочка превью
       # подменяет адрес своими служебными параметрами, поэтому `?proMock=…`
       # из ссылки до приложения не доходит. URL-параметр приоритетен.

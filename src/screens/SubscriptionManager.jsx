@@ -24,11 +24,19 @@ import {
   paymentReturnState,
   readPaymentStarted,
   startCheckout,
+  webGuestLoginCopy,
 } from '../lib/yookassaCheckout'
 import './SubscriptionManager.css'
 
 /* Единственная кнопка оплаты: цена и период — из paymentConfig, не хардкодим. */
 const PAY_CTA = `Оформить Pro — ${PRO_PRICE} ${PRO_PERIOD_LABEL}`
+
+/*
+ * Вход по email на вебе выключен, пока у проекта нет своего домена в Resend
+ * (продакшн-сборка задаёт VITE_EMAIL_LOGIN_ENABLED=false, см. WebAuthScreen.jsx).
+ * Тогда экран гостя ведёт в Telegram Login и не упоминает email вовсе.
+ */
+const emailLoginEnabled = import.meta.env.VITE_EMAIL_LOGIN_ENABLED !== 'false'
 
 /*
  * «подписка.» — единственный тариф Mentalix Pro.
@@ -37,8 +45,10 @@ const PAY_CTA = `Оформить Pro — ${PRO_PRICE} ${PRO_PERIOD_LABEL}`
  * статичный экран с описанием Pro и неактивной кнопкой «Оплата скоро появится».
  *
  * При включённом флаге — состояния экрана по ответу /api/subscription:
- *   guest   — «Сначала сохрани прогресс по email» + кнопка оплаты, которая
- *             ведёт в существующий флоу «Сохранить прогресс по email»
+ *   guest   — веб: «Войди через Telegram, чтобы оформить Pro» + кнопка
+ *             «Войти через Telegram» — она ведёт в существующий экран входа
+ *             (Telegram Login), после входа оплата продолжается сама;
+ *             Telegram: прежний флоу «Сохранить прогресс по email»
  *   base    — описание Pro + кнопка «Оформить Pro» (цена из paymentConfig)
  *   pro     — «Pro до <дата>», «осталось N дн.»
  *   expired — «Срок Pro закончился» + кнопка продления
@@ -140,7 +150,16 @@ function LegacySubscriptionManager({ onBack }) {
 
 /* Экран с состояниями оплаты — при включённом флаге. */
 function SubscriptionManagerEnabled({ user, onBack, onGuestLogin }) {
-  const isGuest = !user || user.is_guest || !user.email
+  const inTelegram = platformName === 'telegram'
+  /*
+   * Гость — анонимная веб-сессия (is_guest): подписку не к чему привязать.
+   * В вебе отсутствие email гостём не считается: после входа через Telegram
+   * аккаунт есть, email не обязателен, и оплата должна открываться — на этом
+   * же условии держится возврат к оплате после входа (consumeGuestCheckout).
+   * В Telegram прежний признак сохранён: там экран ведёт в «Сохранить прогресс
+   * по email» (путь Tribute не меняется).
+   */
+  const isGuest = !user || Boolean(user.is_guest) || (inTelegram && !user.email)
   const [subscription, setSubscription] = useState(null)
   const [loading, setLoading] = useState(true)
   const [localPending, setLocalPending] = useState(false)
@@ -152,7 +171,6 @@ function SubscriptionManagerEnabled({ user, onBack, onGuestLogin }) {
   const aliveRef = useRef(true)
   const paidRef = useRef(false)
 
-  const inTelegram = platformName === 'telegram'
   // ЮKassa — только в вебе и только при включённом флаге: в Telegram путь Tribute.
   const webCheckout = checkoutAvailable({ enabled: PAYMENT_UI_ENABLED, platform: platformName })
 
@@ -238,7 +256,7 @@ function SubscriptionManagerEnabled({ user, onBack, onGuestLogin }) {
     displayState = getSubscriptionState(subscription, isGuest)
   }
 
-  /* Гость: сначала «Сохранить прогресс по email», после входа — возврат к оплате. */
+  /* Гость: сначала вход (в вебе — Telegram), после входа — возврат к оплате. */
   function beginGuestFlow() {
     beginGuestCheckout()
     onGuestLogin?.()
@@ -299,6 +317,8 @@ function SubscriptionManagerEnabled({ user, onBack, onGuestLogin }) {
         state: displayState,
         webCheckout,
         checkoutState,
+        guestCopy: webGuestLoginCopy({ emailLoginEnabled }),
+        onGuestCta: beginGuestFlow,
         onTributePay: handleTributePay,
         onWebPay: handleWebPay,
         onCheckPayment: handleCheckPayment,
@@ -311,7 +331,11 @@ function SubscriptionManagerEnabled({ user, onBack, onGuestLogin }) {
         )}
 
         {displayState === 'guest' && (
-          <GuestState onGuestLogin={onGuestLogin} />
+          <GuestState
+            webCheckout={webCheckout}
+            emailLoginEnabled={emailLoginEnabled}
+            onLogin={beginGuestFlow}
+          />
         )}
 
         {displayState === 'base' && (
@@ -345,13 +369,15 @@ function renderFooter({
   state,
   webCheckout,
   checkoutState,
+  guestCopy,
+  onGuestCta,
   onTributePay,
   onWebPay,
   onCheckPayment,
   onLogin,
 }) {
   if (state === 'guest') {
-    // В вебе кнопка оплаты гостя ведёт в флоу «Сохранить прогресс по email»,
+    // В вебе кнопка оплаты гостя ведёт на экран входа (Telegram Login),
     // после успеха возвращаемся к оплате.
     if (webCheckout) {
       return (
@@ -359,9 +385,9 @@ function renderFooter({
           type="button"
           className="mx-profile-primary"
           data-testid="subscription-pay-button"
-          onClick={onWebPay}
+          onClick={onGuestCta}
         >
-          {PAY_CTA}
+          {guestCopy.cta}
         </button>
       )
     }
@@ -453,7 +479,32 @@ function renderFooter({
 }
 
 /* ── Состояние: гость ── */
-function GuestState({ onGuestLogin }) {
+function GuestState({ webCheckout, emailLoginEnabled, onLogin }) {
+  // Веб: рабочий вход — Telegram Login; email упоминается только когда включён.
+  if (webCheckout) {
+    const copy = webGuestLoginCopy({ emailLoginEnabled })
+    return (
+      <>
+        <div className="mx-subscription-art" aria-hidden="true">
+          <PotentialLockArt />
+        </div>
+        <h2 className="mx-subscription-promise">{copy.heading}</h2>
+        <p className="mx-subscription-pitch">{copy.pitch}</p>
+        {copy.emailCta && (
+          <button
+            type="button"
+            className="mx-subscription-support"
+            data-testid="subscription-guest-email-login"
+            onClick={onLogin}
+          >
+            {copy.emailCta}
+          </button>
+        )}
+      </>
+    )
+  }
+
+  // Telegram: прежний сценарий — сохранение прогресса по email.
   return (
     <>
       <div className="mx-subscription-art" aria-hidden="true">

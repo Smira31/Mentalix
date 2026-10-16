@@ -10,7 +10,7 @@
  *   веб-пользователя (cookie или Authorization: Bearer), user_id не передаём.
  *   200 → { confirmation_url } — редирект пользователя в текущей вкладке;
  *   401 (unauthorized | verified_identity_required) — нужен вход;
- *   403 guest_payment_forbidden — гость: сначала «Сохранить прогресс по email»;
+ *   403 guest_payment_forbidden — гость: сначала вход (в вебе — Telegram Login);
  *   503 (yookassa_disabled | yookassa_not_configured) — оплата недоступна;
  *   502 yookassa_create_failed — сбой, можно повторить.
  *
@@ -48,6 +48,27 @@ export const CHECKOUT_ACTIONS = {
   [CHECKOUT_AUTH]: 'Войти',
   [CHECKOUT_GUEST]: 'Сохранить прогресс по email',
   [CHECKOUT_FAILED]: 'Попробовать снова',
+}
+
+/*
+ * Копия экрана «Подписка» для гостя в вебе.
+ *
+ * Рабочий вход на вебе — Telegram Login (тот же экран входа WebAuthScreen, что
+ * и по прежней кнопке «Сохранить прогресс по email»): вход по email выключен
+ * флагом VITE_EMAIL_LOGIN_ENABLED=false, пока у проекта нет своего домена в
+ * Resend. Поэтому гостю предлагаем Telegram, а email — только когда он включён
+ * (emailCta = null — экран не упоминает email вовсе).
+ *
+ * Флоу возврата к оплате после входа не меняется: beginGuestCheckout() пишет
+ * намерение, а экран подписки после входа сам продолжает оплату.
+ */
+export function webGuestLoginCopy({ emailLoginEnabled = false } = {}) {
+  return {
+    heading: 'Войди через Telegram, чтобы оформить Pro',
+    pitch: 'Так подписка привяжется к твоему аккаунту, а записи не потеряются.',
+    cta: 'Войти через Telegram',
+    emailCta: emailLoginEnabled ? 'Войти по email' : null,
+  }
 }
 
 /*
