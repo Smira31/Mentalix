@@ -1,0 +1,43 @@
+/* ── Ожидание на экранах Pro (DESIGN_SYSTEM §5.5: спокойные поверхности) ──
+   Кольцо-индикатор без прогресс-процентов: сколько займёт AI-вызов, интерфейс
+   не знает. Движение медленное и единственное; при prefers-reduced-motion
+   остаётся статичное кольцо и тот же текст. */
+
+.mx-pro-waiting {
+  margin-top: var(--mx-space-8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mx-space-4);
+  text-align: center;
+}
+
+.mx-pro-waiting__indicator {
+  width: 28px;
+  height: 28px;
+  border: 2px solid rgb(var(--c-border));
+  border-top-color: rgb(var(--c-muted));
+  border-radius: 999px;
+  animation: mx-pro-waiting-turn 1.4s linear infinite;
+}
+
+/* Размер — общая шкала приложения (§3): базовый размер × --mx-type-scale. */
+.mx-pro-waiting__label {
+  max-width: 280px;
+  font-size: calc(14px * var(--mx-type-scale));
+  line-height: 1.45;
+  color: rgb(var(--c-muted));
+}
+
+@keyframes mx-pro-waiting-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-pro-waiting__indicator {
+    animation: none;
+    border-top-color: rgb(var(--c-line));
+  }
+}

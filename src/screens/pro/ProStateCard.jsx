@@ -11,14 +11,20 @@ export default function ProStateCard({
   text,
   actionLabel,
   onAction,
+  actionTestId,
   testId = 'pro-state-card',
 }) {
   return (
     <Card className="mt-4 p-4" testId={testId}>
-      {title && <p className="text-[14px] font-semibold text-cream">{title}</p>}
-      <p className="mt-1 text-[14px] leading-relaxed text-cream">{text}</p>
+      {title && <p className="mx-pro-size-note font-semibold text-cream">{title}</p>}
+      <p className="mx-pro-size-note mt-1 leading-relaxed text-cream">{text}</p>
       {actionLabel && onAction && (
-        <PillButton variant="dark" onClick={onAction} className="mt-3 w-full">
+        <PillButton
+          variant="dark"
+          testId={actionTestId}
+          onClick={onAction}
+          className="mt-3 w-full"
+        >
           {actionLabel}
         </PillButton>
       )}

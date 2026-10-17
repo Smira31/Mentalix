@@ -339,6 +339,22 @@ async function request(path, options = {}) {
   }
 }
 
+/*
+ * PRO-002b/c: бюджет запроса на сборку разбора и плана недели.
+ *
+ * Генерацию делает бэкенд вызовом модели, и после неудачи он делает повтор —
+ * то есть до ДВУХ вызовов модели на один запрос. Прежние 60 с равнялись
+ * бюджету одного вызова: запрос обрывался в тот момент, когда бэкенд ещё
+ * работал (а при повторе — гарантированно раньше), и пользователь видел
+ * ошибку вместо разбора. Клиент обязан ждать оба вызова и сохранение
+ * результата: 2 × 60 с + запас 30 с.
+ *
+ * Окно опроса GET в src/lib/proGenerationPolling.js покрывает тот же бюджет
+ * (PRO_POLL_*), поэтому после 409 generation_in_progress ожидание согласовано
+ * с ожиданием ответа POST.
+ */
+const PRO_GENERATE_TIMEOUT_MS = 150_000
+
 export const api = {
   auth: {
     requestEmailCode: email =>
@@ -1240,7 +1256,7 @@ export const api = {
     createReport: weekStart =>
       request('/pro/report', {
         method: 'POST',
-        timeoutMs: 60_000,
+        timeoutMs: PRO_GENERATE_TIMEOUT_MS,
         body: JSON.stringify(weekStart ? { week_start: weekStart } : {}),
       }),
 
@@ -1250,7 +1266,7 @@ export const api = {
     createPlan: (weekStart, rebuild = false) =>
       request('/pro/plan', {
         method: 'POST',
-        timeoutMs: 60_000,
+        timeoutMs: PRO_GENERATE_TIMEOUT_MS,
         body: JSON.stringify({
           ...(weekStart ? { week_start: weekStart } : {}),
           ...(rebuild ? { rebuild: true } : {}),

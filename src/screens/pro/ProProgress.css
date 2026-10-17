@@ -1,11 +1,12 @@
 /* ── Прогресс недели Pro: геометрия Stoic (DESIGN_SYSTEM §5.5) ──
    Карточки --c-card2 без рамки, радиус 16, поля 16–20; строки-карточки
    h ≥ 53, зазор 8; подпись раздела капсом 11/600, разрядка 0.2em, muted.
-   Текстовые стили общие — proText.css. */
+   Текстовые стили общие — proText.css. Размеры текста — общая шкала
+   приложения (§3): базовый размер × --mx-type-scale, не ниже 11px. */
 
 /* Подпись раздела: капсом 11/600, разрядка 0.2em, muted (§5.5). */
 .mx-pro-progress__label {
-  font-size: 11px;
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   font-weight: 600;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -22,16 +23,16 @@
 
 .mx-pro-progress__goal-text {
   margin-top: var(--mx-space-2);
-  font-size: 17px;
+  font-size: calc(17px * var(--mx-type-scale));
   font-weight: 600;
   line-height: 1.35;
   color: rgb(var(--c-text));
 }
 
-/* Крупная цифра сводки: 28/700. */
+/* Крупная цифра сводки: 28/700 — тем же множителем, что остальной текст. */
 .mx-pro-progress__title {
   margin-top: var(--mx-space-2);
-  font-size: 28px;
+  font-size: calc(28px * var(--mx-type-scale));
   font-weight: 700;
   line-height: 1.2;
   color: rgb(var(--c-text));

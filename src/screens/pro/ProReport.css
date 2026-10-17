@@ -1,15 +1,15 @@
 /* ── Экраны разбора Pro: геометрия Stoic (DESIGN_SYSTEM §5.5) ──
    Карточки --c-card2 без рамки, радиус 16, поля 16–20; подпись раздела
    капсом 11/600, разрядка 0.2em, muted; строки-карточки h 53, зазор 8;
-   календарные точки ≈15 px. Одна мысль на карточку. Типографика читаемой
-   шкалы (--mx-read-*) сохранена; глобальная дизайн-система не меняется. */
+   календарные точки ≈15 px. Одна мысль на карточку. Размеры текста — общая
+   шкала приложения (§3): базовый размер × --mx-type-scale, не ниже 11px. */
 
 /* Текстовые стили .mx-pro-text / .mx-pro-note / .mx-pro-caption — общие
    для экранов Pro, вынесены в proText.css (импортируется каждым экраном). */
 
 /* Подпись раздела: капсом 11/600, разрядка 0.2em, muted (§5.5). */
 .mx-pro-report__section-label {
-  font-size: 11px;
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
   font-weight: 600;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -46,7 +46,7 @@
 
 .mx-pro-report__direction-text {
   margin-top: var(--mx-space-3);
-  font-size: 20px;
+  font-size: calc(20px * var(--mx-type-scale));
   font-weight: 700;
   line-height: 1.3;
   color: rgb(var(--c-text));
@@ -87,7 +87,7 @@
 
 .mx-pro-report__item-days {
   margin-top: var(--mx-space-1);
-  font-size: var(--mx-read-caption);
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.4;
   color: rgb(var(--c-muted));
 }
@@ -100,7 +100,7 @@
 }
 
 .mx-pro-achievement__title {
-  font-size: 17px;
+  font-size: calc(17px * var(--mx-type-scale));
   font-weight: 600;
   line-height: 1.35;
   color: rgb(var(--c-text));
@@ -138,7 +138,7 @@
 }
 
 .mx-pro-achievement__day-label {
-  font-size: 10px;
+  font-size: max(11px, calc(10px * var(--mx-type-scale)));
   font-weight: 600;
   line-height: 1;
   color: rgb(var(--c-muted));
@@ -146,7 +146,7 @@
 
 .mx-pro-achievement__dates {
   margin-top: var(--mx-space-2);
-  font-size: var(--mx-read-caption);
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
   line-height: 1.4;
   color: rgb(var(--c-muted));
 }
@@ -172,7 +172,7 @@
 }
 
 .mx-pro-report__question {
-  font-size: 17px;
+  font-size: calc(17px * var(--mx-type-scale));
   font-weight: 400;
   line-height: 1.45;
   color: rgb(var(--c-text));
@@ -220,7 +220,7 @@
 }
 
 .mx-pro-details__title {
-  font-size: var(--mx-read-read);
+  font-size: calc(16px * var(--mx-type-scale));
   font-weight: 600;
   color: rgb(var(--c-text));
 }
