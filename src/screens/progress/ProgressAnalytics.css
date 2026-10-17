@@ -16,6 +16,21 @@
   background: rgb(var(--c-bg, 5 4 3));
 }
 
+/* Компактное окно Telegram (Desktop, без fullscreen) и web: сегмент-бар
+   живёт внутри скролл-контейнера, поэтому фиксируется сверху — паттерн
+   Stoic («Значки | Статистика» в SeriesBadges). Раньше position:relative
+   увозил пилюлю «Аналитика | История» вместе с лентой истории, и она
+   пропадала с экрана. z-index выше fade-слоя под шапкой
+   (.mx-scroll-fade-top, 30) и ниже оверлеев записей и листов (90+).
+   В fullscreen и демо-рамке правило не действует: там строка вынесена
+   в полосу кнопок Telegram (fixed/портал). */
+.mx-app-shell:not(.mx-app-shell--fullscreen):not([data-mentalix-demo-frame='true'])
+  .mx-progress-segment-bar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
 /* ── Сегмент «Аналитика | История» между кнопками Telegram ──
    В fullscreen (Telegram) и demo-рамке контент начинается ниже
    56-px полосы Telegram-контролов. Поднимаем пилюлю сегмента в
