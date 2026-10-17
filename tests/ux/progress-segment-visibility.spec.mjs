@@ -37,6 +37,27 @@ async function scrollToHistoryDepth(page, minScrollTop = 200) {
   throw new Error('Лента «Истории» не прокручивается до глубины 200px')
 }
 
+/* Fullscreen-negotiation (MXL-FULLSCREEN-SURFACE-RACE-001, src/lib/tgFullscreen.js)
+   первые ~2 с после загрузки держит pessimistic-снапшот fullscreen=true:
+   shell имеет класс mx-app-shell--fullscreen, сегмент-строка fixed в полосе
+   Telegram-контролов (пилюля видима и достижима), а обёртка
+   .mx-progress-segment-bar скроллится вместе с лентой — по дизайну.
+   Компактный sticky-режим — предмет этого теста — наступает только после
+   подтверждения fullscreen=false. Диагностика падения: сегмент НИЧЕМ не
+   перекрыт (elementFromPoint в центре пилюли попадает в неё саму),
+   обёртка уезжала на -252px именно внутри pessimistic-окна. Поэтому ждём
+   конкретного DOM-состояния (исчезновения fullscreen-класса со shell),
+   а не таймаута. */
+async function waitForCompactShell(page) {
+  await page.waitForFunction(
+    () => {
+      const shell = document.querySelector('.mx-app-shell')
+      return Boolean(shell) && !shell.classList.contains('mx-app-shell--fullscreen')
+    },
+    { timeout: 10_000 }
+  )
+}
+
 /* Регрессия симптома владельца: «после нажатия "История" переключатель
    исчезает, но тап по его месту открывает Аналитику» — элемент остаётся
    в раскладке (тап работает), а его отрисовка пропадает. Проверяем не
@@ -99,6 +120,10 @@ test.describe('компактное окно (frame=0)', () => {
     await expect(page.getByTestId('progress-tab-analytics')).toBeVisible({ timeout: 15_000 })
     await expect(page.getByTestId('progress-tab-history')).toBeVisible()
 
+    // Ждём подтверждения compact-режима (окончания pessimistic-окна
+    // fullscreen-negotiation), чтобы проверять именно sticky-путь.
+    await waitForCompactShell(page)
+
     // До переключения пилюля нарисована и доступна
     await assertSegmentPaintedAndReachable(page, 'на «Аналитике»')
 
@@ -139,6 +164,12 @@ test.describe('компактное окно (frame=0)', () => {
 
     await expect(page.getByTestId('progress-tab-analytics')).toBeVisible({ timeout: 15_000 })
     await expect(page.getByTestId('progress-tab-history')).toBeVisible()
+
+    // Ждём подтверждения compact-режима: внутри pessimistic-окна
+    // fullscreen-negotiation обёртка сегмент-бара скроллится по дизайну
+    // (пилюлю держит fixed-строка), и проверка геометрии обёртки
+    // выполнялась бы в чужом режиме — падение было именно об этом.
+    await waitForCompactShell(page)
 
     // До прокрутки сегмент виден сверху экрана
     const barAtTop = await page.locator('.mx-progress-segment-bar').boundingBox()
