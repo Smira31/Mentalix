@@ -676,7 +676,7 @@ export default function Settings({
   }, [user, screen])
 
   if (screen === 'subscription') {
-    return <SubscriptionManager user={user} tier={tier} onBack={() => setScreen(null)} onGuestLogin={onGuestLogin} />
+    return <SubscriptionManager user={user} tier={tier} onBack={() => setScreen(null)} onGuestLogin={onGuestLogin} onOpenPrivacy={() => setScreen('privacy-notice')} />
   }
 
   if (screen === 'donate') {

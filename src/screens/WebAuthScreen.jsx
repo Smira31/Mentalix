@@ -301,6 +301,14 @@ export default function WebAuthScreen({ onAuthed }) {
         {busy ? 'Подожди…' : 'Продолжить без входа'}
       </button>
 
+      <a
+        className="mx-web-auth-change"
+        href="/privacy"
+        data-testid="web-auth-privacy-link"
+      >
+        Политика конфиденциальности
+      </a>
+
       {directWebVisit && (
         <p className="mx-web-auth-hint">
           Открой Mentalix как приложение на iPhone и войди удобным способом.
