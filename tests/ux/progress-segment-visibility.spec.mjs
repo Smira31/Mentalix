@@ -37,9 +37,86 @@ async function scrollToHistoryDepth(page, minScrollTop = 200) {
   throw new Error('Лента «Истории» не прокручивается до глубины 200px')
 }
 
+/* Регрессия симптома владельца: «после нажатия "История" переключатель
+   исчезает, но тап по его месту открывает Аналитику» — элемент остаётся
+   в раскладке (тап работает), а его отрисовка пропадает. Проверяем не
+   только Playwright-видимость, а фактическую краску: пилюля в viewport,
+   ненулевая высота, opacity 1 (включая предков) и elementFromPoint в
+   центре пилюли попадает в неё саму — ничто не перекрывает её. */
+async function assertSegmentPaintedAndReachable(page, label) {
+  const state = await page.evaluate(() => {
+    const pill = document.querySelector('.mx-progress-segment')
+    if (!pill) return { exists: false }
+
+    const box = pill.getBoundingClientRect()
+    const viewportHeight = window.innerHeight
+    const center = { x: box.left + box.width / 2, y: box.top + box.height / 2 }
+    const atCenter = document.elementFromPoint(center.x, center.y)
+
+    // opacity: 1 у самой пилюли и всех предков до <html> — ни один слой
+    // не «выключает» её прозрачностью (застрявшая анимация, fade-слой).
+    const opacities = []
+    for (let node = pill; node && node.nodeType === 1; node = node.parentElement) {
+      opacities.push(getComputedStyle(node).opacity)
+    }
+
+    return {
+      exists: true,
+      inViewport: box.top >= 0 && box.bottom <= viewportHeight && box.width > 0,
+      height: box.height,
+      opacities,
+      coveredByOther:
+        atCenter !== null && !(atCenter === pill || pill.contains(atCenter)),
+    }
+  })
+
+  expect(state.exists, `Сегмент должен существовать (${label})`).toBe(true)
+  expect(state.inViewport, `Сегмент должен быть в viewport (${label})`).toBe(true)
+  expect(state.height, `Сегмент должен иметь ненулевую высоту (${label})`).toBeGreaterThan(20)
+  expect(
+    state.opacities,
+    `Сегмент и предки должны быть opacity 1 (${label})`
+  ).toEqual(state.opacities.map(() => '1'))
+  expect(state.coveredByOther, `Сегмент не должен быть перекрыт (${label})`).toBe(false)
+}
+
 // Окно Telegram Desktop: ширина как у мини-аппа (~400–450 px)
 test.describe('компактное окно (frame=0)', () => {
   test.use({ viewport: { width: 420, height: 700 } })
+
+  test('сегмент видим и не перекрыт сразу после переключения вкладок', async ({ page }) => {
+    await page.goto('/?demo=1&frame=0&tab=trends')
+
+    // Бейдж демо-панели — превью-артефакт (см. тест выше).
+    await page.addStyleTag({
+      content: '[data-testid="demo-panel-badge"] { display: none !important; }',
+    })
+
+    await expect(page.getByTestId('progress-tab-analytics')).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByTestId('progress-tab-history')).toBeVisible()
+
+    // До переключения пилюля нарисована и доступна
+    await assertSegmentPaintedAndReachable(page, 'на «Аналитике»')
+
+    // Нажатие «История»: пилюля обязана остаться видимой — в viewport,
+    // с высотой, opacity 1, ничем не перекрытая.
+    await page.getByTestId('progress-tab-history').click()
+    await expect(page.getByTestId('progress-tab-history')).toHaveAttribute(
+      'aria-selected',
+      'true'
+    )
+    // Лента истории смонтировалась (эффект восстановления скролла отработал).
+    await expect(page.getByTestId('progress-history-list')).toBeVisible()
+    await assertSegmentPaintedAndReachable(page, 'после нажатия «История»')
+
+    // Возврат на «Аналитику» — пилюля снова полностью видима.
+    await page.getByTestId('progress-tab-analytics').click()
+    await expect(page.getByTestId('progress-tab-analytics')).toHaveAttribute(
+      'aria-selected',
+      'true'
+    )
+    await assertSegmentPaintedAndReachable(page, 'после возврата на «Аналитику»')
+  })
 
   test('сегмент виден при прокрутке «Истории»', async ({ page }) => {
     await page.goto('/?demo=1&frame=0&tab=trends')
