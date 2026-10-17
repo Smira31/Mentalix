@@ -11,7 +11,9 @@ import { test, expect } from '@playwright/test'
  *               состояние ошибки с повтором, без подписи недели;
  *   nodates   — даты недели отсутствуют или нераспознаны: содержимое экрана
  *               показывается, а название недели не строится;
- *   version_conflict — ввод правки не теряется при отказе сохранения.
+ *   version_conflict — ввод правки не теряется при отказе сохранения;
+ *   generation_failed — отказ сборки разбора (502 report_generation_failed):
+ *               видно ожидание, показывается фраза бэкенда и повтор кнопкой.
  *
  * Во всех случаях в интерфейсе не должно быть ни «NaN», ни «undefined».
  * Запуск в web-контейнере: npm run ux:pro-failure-states
@@ -145,4 +147,30 @@ test('ввод правки сохраняется при отказе сохр�
   await expect(page.getByTestId('pro-conflict-card')).toBeVisible()
   await expect(page.getByTestId('pro-plan-edit-input')).toHaveValue(draft)
   await expectNoBrokenNumbers(page, 'конфликт версий')
+})
+
+test('отказ сборки 502 report_generation_failed: ожидание, фраза бэкенда, повтор', async ({
+  page,
+}) => {
+  await openPro(page, 'generation_failed')
+  await buildReport(page)
+
+  // Ожидание сборки видно: тихий индикатор и обещание, согласованное с
+  // бюджетом запроса (150 с), а не прежняя минута.
+  const waiting = page.getByTestId('pro-report-waiting')
+  await expect(waiting).toBeVisible()
+  await expect(waiting).toContainText('это может занять до двух минут')
+
+  // Отказ сборки: показывается фраза бэкенда (502 + code
+  // report_generation_failed) и явный повтор — экран не остаётся пустым.
+  const errorCard = page.getByTestId('pro-generate-error')
+  await expect(errorCard).toBeVisible()
+  await expect(errorCard).toContainText('сервис AI временно не ответил')
+  await expect(page.getByTestId('pro-generate-retry')).toBeVisible()
+  await expectNoBrokenNumbers(page, 'отказ сборки')
+
+  // Повтор действительно собирает разбор: второй POST завершается успешно.
+  await page.getByTestId('pro-generate-retry').click()
+  await expect(page.getByTestId('pro-report-direction')).toContainText('Направление на неделю')
+  await expect(page.getByTestId('pro-generate-error')).toHaveCount(0)
 })

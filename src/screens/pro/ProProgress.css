@@ -1,12 +1,13 @@
 /* ── Прогресс недели Pro: геометрия Stoic (DESIGN_SYSTEM §5.5) ──
    Карточки --c-card2 без рамки, радиус 16, поля 16–20; строки-карточки
    h ≥ 53, зазор 8; подпись раздела капсом 11/600, разрядка 0.2em, muted.
-   Текстовые стили общие — proText.css. Размеры текста — общая шкала
-   приложения (§3): базовый размер × --mx-type-scale, не ниже 11px. */
+   Текстовые стили общие — proText.css. Каждый размер — строка шкалы §3:
+   источник подписан у правила. */
 
-/* Подпись раздела: капсом 11/600, разрядка 0.2em, muted (§5.5). */
+/* §3 `.mx-type-meta` — 11 px (токен); §5.5: подпись раздела капсом 11/600,
+   разрядка 0.2em, muted. */
 .mx-pro-progress__label {
-  font-size: max(11px, calc(11px * var(--mx-type-scale)));
+  font-size: var(--mx-type-meta-size);
   font-weight: 600;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -21,18 +22,20 @@
   padding: var(--mx-space-4) var(--mx-space-5);
 }
 
+/* §3 `.mx-type-control` — 17 px (токен); §5.5: цель недели 17/600. */
 .mx-pro-progress__goal-text {
   margin-top: var(--mx-space-2);
-  font-size: calc(17px * var(--mx-type-scale));
+  font-size: var(--mx-type-control-size);
   font-weight: 600;
   line-height: 1.35;
   color: rgb(var(--c-text));
 }
 
-/* Крупная цифра сводки: 28/700 — тем же множителем, что остальной текст. */
+/* Крупная цифра сводки — §3 `.mx-type-checkin-title` (24 px / 700), та же
+   весовая пара: 28 px из шкалы не выводились (своё значение «на глаз»). */
 .mx-pro-progress__title {
   margin-top: var(--mx-space-2);
-  font-size: calc(28px * var(--mx-type-scale));
+  font-size: calc(24px * var(--mx-type-scale));
   font-weight: 700;
   line-height: 1.2;
   color: rgb(var(--c-text));
@@ -59,7 +62,7 @@
   gap: var(--mx-space-4);
 }
 
-/* Название строки — как в истории: читаемый размер, 600 (§5.5). */
+/* Название строки — §3 `.mx-type-article-title` (16 px) / §5.5: 16/600. */
 .mx-pro-progress__row .mx-pro-text {
   font-weight: 600;
 }

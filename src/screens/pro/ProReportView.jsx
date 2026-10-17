@@ -30,7 +30,7 @@ import './ProReport.css'
  * бесконечная загрузка; недостаток данных (insufficient_data) — отдельное
  * состояние. Ошибки двух форматов: body.detail и body.code.
  * После POST-ответа 409 generation_in_progress — ограниченный опрос GET
- * (окно — 60 с, как таймаут AI-генерации), повторная POST-генерация не
+ * (окно — 150 с, как таймаут AI-генерации), повторная POST-генерация не
  * отправляется. Генерация запускается только явным действием пользователя.
  * Поздние ответы загрузки отбрасываются по номеру запроса.
  */
@@ -186,7 +186,9 @@ export default function ProReportView({ user, onOpenPlan }) {
         } catch (pollError) {
           if (pollError instanceof ProPollCancelledError) return
           if (!aliveRef.current) return
-          setMessage('Разбор ещё собирается — это занимает до минуты. Открой экран чуть позже.')
+          setMessage(
+            'Разбор ещё собирается — это может занять до двух минут. Открой экран чуть позже.'
+          )
         }
       } else if (key === 'consent_required') {
         setStatus('consent_required')
@@ -303,7 +305,7 @@ export default function ProReportView({ user, onOpenPlan }) {
       {!loading && !loadFailed && !blocked && status === 'not_generated' && generating && (
         <ProWaiting
           testId="pro-report-waiting"
-          label="Собираю разбор… это может занять до минуты."
+          label="Собираю разбор… это может занять до двух минут."
         />
       )}
 

@@ -27,6 +27,7 @@ const apiStateSource = await readFile(
   new URL('../../src/screens/pro/proApiState.js', import.meta.url),
   'utf8'
 )
+const apiSource = await readFile(new URL('../../src/lib/api.js', import.meta.url), 'utf8')
 
 test('ошибки обоих форматов сводятся к одному ключу', () => {
   assert.match(apiStateSource, /return error\?\.body\?\.code \|\| error\?\.body\?\.detail \|\| null/)
@@ -74,14 +75,25 @@ test('plan_required и report_required выводят явный следующ�
   assert.match(planViewSource, /К разбору/)
 })
 
-test('таймаут опроса согласован с таймаутом AI-генерации и озвучен в тексте', async () => {
+test('бюджет сборки и окно опроса согласованы, обещание на экранах — по бюджету', async () => {
   const pollingSource = await readFile(
     new URL('../../src/lib/proGenerationPolling.js', import.meta.url),
     'utf8'
   )
   assert.match(pollingSource, /PRO_POLL_INTERVAL_MS = 2000/)
-  assert.match(pollingSource, /PRO_POLL_MAX_ATTEMPTS = 30/)
+  assert.match(pollingSource, /PRO_POLL_MAX_ATTEMPTS = 75/)
   assert.match(pollingSource, /PRO_POLL_WINDOW_MS = PRO_POLL_INTERVAL_MS \* PRO_POLL_MAX_ATTEMPTS/)
-  assert.match(planViewSource, /это занимает до минуты/)
-  assert.match(reportViewSource, /это занимает до минуты/)
+  // Запрос сборки ждёт оба вызова модели: 2 × 60 с + запас 30 с = 150 с;
+  // тем же бюджетом ждёт и GET-опрос после 409 (75 попыток × 2 с).
+  assert.match(apiSource, /const PRO_GENERATE_TIMEOUT_MS = 150_000/)
+  assert.equal(
+    (apiSource.match(/timeoutMs: PRO_GENERATE_TIMEOUT_MS/g) || []).length,
+    2,
+    'сборка разбора и плана ждут 150 с'
+  )
+  // Обещание в интерфейсе совпадает с бюджетом, а не с прежней минутой.
+  assert.match(planViewSource, /это может занять до двух минут/)
+  assert.match(reportViewSource, /это может занять до двух минут/)
+  assert.doesNotMatch(planViewSource, /до минуты/)
+  assert.doesNotMatch(reportViewSource, /до минуты/)
 })

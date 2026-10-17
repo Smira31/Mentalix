@@ -35,6 +35,11 @@ import { MOCK_LONG_REPORT_TEXT } from './proMockLongText.js'
  *   longtext                  — разбор идёт с длинными русскими текстами
  *                               (src/lib/proMockLongText.js): проверка переноса
  *                               без обрезки, кадр в прогоне ux:pro-states
+ *   generation_failed         — POST разбора отвечает 502
+ *                               `report_generation_failed` (как бэкенд при
+ *                               отказе модели), повторный POST собирает
+ *                               разбор: проверка ожидания, фразы бэкенда и
+ *                               кнопки «Попробовать ещё раз»
  *
  * Реализует фактический контракт backend/pro/router.py: ошибки двух видов
  * (HTTPException → detail, JSONResponse → code), GET без признака
@@ -58,6 +63,13 @@ const MOCK_CRISIS_REPLY =
 // отдаёт ready. Сбрасывается перезагрузкой (resetProMockState).
 const MOCK_GENERATION_MS = 3500
 const pendingGeneration = { report: 0, plan: 0 } // отметка готовности; 0 — нет
+
+// Сценарий generation_failed: первый POST разбора отвечает 502
+// report_generation_failed (так это делает бэкенд при отказе модели), второй —
+// собирает разбор. Пауза перед отказом даёт экрану показать ожидание сборки;
+// сам отказ приходит сразу после неё.
+const MOCK_GENERATION_FAILURE_DELAY_MS = 1000
+const generationFailure = { report: false }
 
 export function isProMockMode() {
   if (typeof window === 'undefined') return false
@@ -94,6 +106,7 @@ function mockScenario() {
     'nopayload',
     'nodates',
     'longtext',
+    'generation_failed',
   ].includes(value)
     ? value
     : 'ready'
@@ -474,6 +487,15 @@ export async function proMockRequest(path, options = {}) {
         message: 'Разбор этой недели уже собирается. Повторите запрос позже.',
       })
     }
+    if (scenario === 'generation_failed' && !generationFailure.report) {
+      generationFailure.report = true
+      await delay(MOCK_GENERATION_FAILURE_DELAY_MS)
+      throw new MockApiError(502, {
+        code: 'report_generation_failed',
+        message:
+          'Не удалось собрать разбор: сервис AI временно не ответил. Попробуйте ещё раз чуть позже.',
+      })
+    }
     const created = state.report == null
     await delay(900)
     state.report = buildMockReport(weekStart, scenario === 'longtext')
@@ -639,4 +661,5 @@ export function resetProMockState() {
   }
   pendingGeneration.report = 0
   pendingGeneration.plan = 0
+  generationFailure.report = false
 }

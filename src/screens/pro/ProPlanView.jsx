@@ -198,7 +198,7 @@ function DayCard({
               data-testid="pro-plan-edit-save"
               disabled={busy}
               onClick={onEditSave}
-              className="min-h-10 rounded-full bg-cream/5 px-3 text-[12px] font-semibold text-gold disabled:opacity-50"
+              className="min-h-10 rounded-full bg-cream/5 px-3 mx-pro-size-action font-semibold text-gold disabled:opacity-50"
             >
               {savingThis ? 'Сохраняем…' : 'Сохранить'}
             </button>
@@ -206,7 +206,7 @@ function DayCard({
               type="button"
               disabled={busy}
               onClick={onEditCancel}
-              className="min-h-10 rounded-full px-3 text-[12px] font-semibold text-muted disabled:opacity-50"
+              className="min-h-10 rounded-full px-3 mx-pro-size-action font-semibold text-muted disabled:opacity-50"
             >
               Отмена
             </button>
@@ -220,7 +220,7 @@ function DayCard({
       )}
 
       {day.practice?.title && (
-        <p className="font-label mt-2 inline-block rounded-full bg-cream/5 px-3 py-1 text-[11px] text-muted">
+        <p className="font-label mt-2 inline-block rounded-full bg-cream/5 px-3 py-1 mx-pro-size-label text-muted">
           {day.practice.title}
         </p>
       )}
@@ -234,7 +234,7 @@ function DayCard({
             data-testid={`pro-day-${day.day}-done`}
             disabled={busy}
             onClick={() => onStatus(day, 'done')}
-            className="min-h-10 rounded-full bg-cream/5 px-3 text-[12px] font-semibold text-gold disabled:opacity-50"
+            className="min-h-10 rounded-full bg-cream/5 px-3 mx-pro-size-action font-semibold text-gold disabled:opacity-50"
           >
             Выполнено
           </button>
@@ -385,7 +385,9 @@ export default function ProPlanView({ user, onOpenReport, onOpenProgress }) {
         } catch (pollError) {
           if (pollError instanceof ProPollCancelledError) return
           if (!aliveRef.current) return
-          setMessage('План ещё собирается — это занимает до минуты. Открой экран чуть позже.')
+          setMessage(
+            'План ещё собирается — это может занять до двух минут. Открой экран чуть позже.'
+          )
         }
       } else if (key === 'report_required') {
         setStatus('report_required')
@@ -595,13 +597,13 @@ export default function ProPlanView({ user, onOpenReport, onOpenProgress }) {
         </p>
       )}
 
-      {loading && <p className="mt-6 text-[13px] text-muted">Загружаем…</p>}
+      {loading && <p className="mt-6 mx-pro-size-caption text-muted">Загружаем…</p>}
 
       {blocked && <ProStateCard title={blocked.title} text={blocked.text} testId="pro-blocked-state" />}
 
       {loadFailed && (
         <Card className="mt-4 p-4">
-          <p className="text-[13px] text-muted">Не удалось загрузить план.</p>
+          <p className="mx-pro-size-caption text-muted">Не удалось загрузить план.</p>
           <PillButton variant="dark" onClick={load} className="mt-3 w-full">
             Повторить
           </PillButton>
@@ -684,7 +686,7 @@ export default function ProPlanView({ user, onOpenReport, onOpenProgress }) {
                   data-testid="pro-goal-edit-save"
                   disabled={busy}
                   onClick={() => saveGoal()}
-                  className="min-h-10 rounded-full bg-cream/5 px-3 text-[12px] font-semibold text-gold disabled:opacity-50"
+                  className="min-h-10 rounded-full bg-cream/5 px-3 mx-pro-size-action font-semibold text-gold disabled:opacity-50"
                 >
                   {saving?.kind === 'goal' ? 'Сохраняем…' : 'Сохранить'}
                 </button>
@@ -692,7 +694,7 @@ export default function ProPlanView({ user, onOpenReport, onOpenProgress }) {
                   type="button"
                   disabled={busy}
                   onClick={cancelGoalEdit}
-                  className="min-h-10 rounded-full px-3 text-[12px] font-semibold text-muted disabled:opacity-50"
+                  className="min-h-10 rounded-full px-3 mx-pro-size-action font-semibold text-muted disabled:opacity-50"
                 >
                   Отмена
                 </button>
@@ -707,7 +709,7 @@ export default function ProPlanView({ user, onOpenReport, onOpenProgress }) {
                   data-testid="pro-goal-edit"
                   disabled={busy}
                   onClick={startGoalEdit}
-                  className="min-h-10 text-[12px] font-semibold text-muted disabled:opacity-50"
+                  className="min-h-10 mx-pro-size-action font-semibold text-muted disabled:opacity-50"
                 >
                   Изменить
                 </button>
@@ -747,8 +749,8 @@ export default function ProPlanView({ user, onOpenReport, onOpenProgress }) {
 
           {conflict && (
             <Card className="mt-4 p-4" testId="pro-conflict-card">
-              <p className="text-[14px] font-semibold text-cream">План изменился на сервере</p>
-              <p className="mt-1 text-[12px] leading-relaxed text-muted">
+              <p className="mx-pro-size-note font-semibold text-cream">План изменился на сервере</p>
+              <p className="mt-1 mx-pro-size-caption leading-relaxed text-muted">
                 Твой вариант сохранён в поле правки. Обнови план до последней версии или повтори
                 сохранение поверх актуальной.
               </p>
@@ -758,7 +760,7 @@ export default function ProPlanView({ user, onOpenReport, onOpenProgress }) {
                   data-testid="pro-conflict-refresh"
                   disabled={busy}
                   onClick={() => resolveConflict(false)}
-                  className="min-h-10 rounded-full bg-cream/5 px-3 text-[12px] font-semibold text-gold disabled:opacity-50"
+                  className="min-h-10 rounded-full bg-cream/5 px-3 mx-pro-size-action font-semibold text-gold disabled:opacity-50"
                 >
                   Обновить план
                 </button>
@@ -767,7 +769,7 @@ export default function ProPlanView({ user, onOpenReport, onOpenProgress }) {
                   data-testid="pro-conflict-retry"
                   disabled={busy}
                   onClick={() => resolveConflict(true)}
-                  className="min-h-10 rounded-full bg-cream/5 px-3 text-[12px] font-semibold text-gold disabled:opacity-50"
+                  className="min-h-10 rounded-full bg-cream/5 px-3 mx-pro-size-action font-semibold text-gold disabled:opacity-50"
                 >
                   Повторить сохранение
                 </button>
@@ -779,7 +781,7 @@ export default function ProPlanView({ user, onOpenReport, onOpenProgress }) {
                     setEditingId(null)
                     setEditingGoal(false)
                   }}
-                  className="min-h-10 rounded-full px-3 text-[12px] font-semibold text-muted"
+                  className="min-h-10 rounded-full px-3 mx-pro-size-action font-semibold text-muted"
                 >
                   Отменить правку
                 </button>
@@ -808,12 +810,12 @@ export default function ProPlanView({ user, onOpenReport, onOpenProgress }) {
 
       {crisisReply && (
         <Card className="mt-4 p-4">
-          <p className="text-[14px] leading-relaxed text-cream">{crisisReply}</p>
+          <p className="mx-pro-size-note leading-relaxed text-cream">{crisisReply}</p>
         </Card>
       )}
 
       {message && !crisisReply && (
-        <p role="status" className="mt-3 text-[12px] leading-relaxed text-muted">
+        <p role="status" className="mt-3 mx-pro-size-caption leading-relaxed text-muted">
           {message}
         </p>
       )}

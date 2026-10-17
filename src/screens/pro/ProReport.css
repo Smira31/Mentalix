@@ -1,15 +1,16 @@
 /* ── Экраны разбора Pro: геометрия Stoic (DESIGN_SYSTEM §5.5) ──
    Карточки --c-card2 без рамки, радиус 16, поля 16–20; подпись раздела
    капсом 11/600, разрядка 0.2em, muted; строки-карточки h 53, зазор 8;
-   календарные точки ≈15 px. Одна мысль на карточку. Размеры текста — общая
-   шкала приложения (§3): базовый размер × --mx-type-scale, не ниже 11px. */
+   календарные точки ≈15 px. Одна мысль на карточку. Каждый размер — строка
+   шкалы §3: источник подписан у правила. */
 
 /* Текстовые стили .mx-pro-text / .mx-pro-note / .mx-pro-caption — общие
    для экранов Pro, вынесены в proText.css (импортируется каждым экраном). */
 
-/* Подпись раздела: капсом 11/600, разрядка 0.2em, muted (§5.5). */
+/* §3 `.mx-type-meta` — 11 px (токен); §5.5: подпись раздела капсом 11/600,
+   разрядка 0.2em, muted. */
 .mx-pro-report__section-label {
-  font-size: max(11px, calc(11px * var(--mx-type-scale)));
+  font-size: var(--mx-type-meta-size);
   font-weight: 600;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -37,16 +38,17 @@
   gap: var(--mx-space-10);
 }
 
-/* «Направление на неделю» — карточка без рамки, текст 20/700. */
+/* «Направление на неделю» — карточка без рамки, текст как заголовок карточки. */
 .mx-pro-report__direction {
   padding: var(--mx-space-5);
   border-radius: var(--mx-radius-control);
   background: rgb(var(--c-card2));
 }
 
+/* §3 `.mx-type-card` — 20 px (токен). */
 .mx-pro-report__direction-text {
   margin-top: var(--mx-space-3);
-  font-size: calc(20px * var(--mx-type-scale));
+  font-size: var(--mx-type-card-size);
   font-weight: 700;
   line-height: 1.3;
   color: rgb(var(--c-text));
@@ -80,14 +82,15 @@
   justify-content: center;
 }
 
-/* Название строки — как в истории: 16/600. */
+/* Название строки — §3 `.mx-type-article-title` (16 px) / §5.5: 16/600. */
 .mx-pro-report__list .mx-pro-text {
   font-weight: 600;
 }
 
+/* §3 `.mx-type-body` — 13 px (токен). */
 .mx-pro-report__item-days {
   margin-top: var(--mx-space-1);
-  font-size: max(11px, calc(13px * var(--mx-type-scale)));
+  font-size: var(--mx-type-body-size);
   line-height: 1.4;
   color: rgb(var(--c-muted));
 }
@@ -99,8 +102,9 @@
   background: rgb(var(--c-card2));
 }
 
+/* §3 `.mx-type-control` — 17 px (токен). */
 .mx-pro-achievement__title {
-  font-size: calc(17px * var(--mx-type-scale));
+  font-size: var(--mx-type-control-size);
   font-weight: 600;
   line-height: 1.35;
   color: rgb(var(--c-text));
@@ -137,16 +141,19 @@
   transform: scale(1.2);
 }
 
+/* §3 `.mx-type-meta` — 11 px (токен): подпись дня — минимальный размер,
+   ниже 11px текст не опускается (§3). */
 .mx-pro-achievement__day-label {
-  font-size: max(11px, calc(10px * var(--mx-type-scale)));
+  font-size: var(--mx-type-meta-size);
   font-weight: 600;
   line-height: 1;
   color: rgb(var(--c-muted));
 }
 
+/* §3 `.mx-type-body` — 13 px (токен). */
 .mx-pro-achievement__dates {
   margin-top: var(--mx-space-2);
-  font-size: max(11px, calc(13px * var(--mx-type-scale)));
+  font-size: var(--mx-type-body-size);
   line-height: 1.4;
   color: rgb(var(--c-muted));
 }
@@ -155,7 +162,7 @@
   margin-top: var(--mx-space-2);
 }
 
-/* ── Вопросы для размышления: карточка, вопросы 17/400 ── */
+/* ── Вопросы для размышления: карточка с вопросами ── */
 .mx-pro-report__questions {
   padding: var(--mx-space-5);
   border-radius: var(--mx-radius-control);
@@ -171,8 +178,9 @@
   gap: var(--mx-space-3);
 }
 
+/* §3 `.mx-type-control` — 17 px (токен). */
 .mx-pro-report__question {
-  font-size: calc(17px * var(--mx-type-scale));
+  font-size: var(--mx-type-control-size);
   font-weight: 400;
   line-height: 1.45;
   color: rgb(var(--c-text));
@@ -219,6 +227,7 @@
   display: none;
 }
 
+/* §3 `.mx-type-article-title` — 16 px. */
 .mx-pro-details__title {
   font-size: calc(16px * var(--mx-type-scale));
   font-weight: 600;

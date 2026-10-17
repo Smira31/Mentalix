@@ -21,7 +21,7 @@
   animation: mx-pro-waiting-turn 1.4s linear infinite;
 }
 
-/* Размер — общая шкала приложения (§3): базовый размер × --mx-type-scale. */
+/* §3 `.mx-type-flow-action` — 14 px. */
 .mx-pro-waiting__label {
   max-width: 280px;
   font-size: calc(14px * var(--mx-type-scale));
