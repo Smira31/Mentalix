@@ -87,9 +87,13 @@ test.describe('компактное окно (frame=0)', () => {
   test('сегмент видим и не перекрыт сразу после переключения вкладок', async ({ page }) => {
     await page.goto('/?demo=1&frame=0&tab=trends')
 
-    // Бейдж демо-панели — превью-артефакт (см. тест выше).
+    // Бейдж демо-панели и переключатель «Demo viewport» — превью-артефакты
+    // (см. тест выше).
     await page.addStyleTag({
-      content: '[data-testid="demo-panel-badge"] { display: none !important; }',
+      content: [
+        '[data-testid="demo-panel-badge"] { display: none !important; }',
+        '.mx-preview-device-switcher { display: none !important; }',
+      ].join('\n'),
     })
 
     await expect(page.getByTestId('progress-tab-analytics')).toBeVisible({ timeout: 15_000 })
@@ -124,8 +128,13 @@ test.describe('компактное окно (frame=0)', () => {
     // Бейдж демо-панели (fixed, z-index 9999) — превью-артефакт: в реальном
     // окне Telegram Desktop его нет, а здесь он перекрывает правую кнопку
     // сегмента (см. комментарий к .mx-real-phone-demo в ProgressAnalytics.css).
+    // Переключатель «Demo viewport» (панель предпросмотра Base44) — тот же
+    // артефакт: в реальном окне Telegram его нет.
     await page.addStyleTag({
-      content: '[data-testid="demo-panel-badge"] { display: none !important; }',
+      content: [
+        '[data-testid="demo-panel-badge"] { display: none !important; }',
+        '.mx-preview-device-switcher { display: none !important; }',
+      ].join('\n'),
     })
 
     await expect(page.getByTestId('progress-tab-analytics')).toBeVisible({ timeout: 15_000 })
