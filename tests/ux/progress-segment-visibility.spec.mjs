@@ -44,6 +44,13 @@ test.describe('компактное окно (frame=0)', () => {
   test('сегмент виден при прокрутке «Истории»', async ({ page }) => {
     await page.goto('/?demo=1&frame=0&tab=trends')
 
+    // Бейдж демо-панели (fixed, z-index 9999) — превью-артефакт: в реальном
+    // окне Telegram Desktop его нет, а здесь он перекрывает правую кнопку
+    // сегмента (см. комментарий к .mx-real-phone-demo в ProgressAnalytics.css).
+    await page.addStyleTag({
+      content: '[data-testid="demo-panel-badge"] { display: none !important; }',
+    })
+
     await expect(page.getByTestId('progress-tab-analytics')).toBeVisible({ timeout: 15_000 })
     await expect(page.getByTestId('progress-tab-history')).toBeVisible()
 
