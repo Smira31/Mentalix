@@ -88,33 +88,45 @@ export function formatProDate(isoDate) {
   return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]}`
 }
 
-export default function SubscriptionManager({ user, tier: _tier, onBack, onGuestLogin }) {
+export default function SubscriptionManager({ user, tier: _tier, onBack, onGuestLogin, onOpenPrivacy }) {
   // ── Флаг выключен: поведение ровно как сейчас ──
   if (!PAYMENT_UI_ENABLED) {
-    return <LegacySubscriptionManager onBack={onBack} />
+    return <LegacySubscriptionManager onBack={onBack} onOpenPrivacy={onOpenPrivacy} />
   }
 
   return (
-    <SubscriptionManagerEnabled user={user} onBack={onBack} onGuestLogin={onGuestLogin} />
+    <SubscriptionManagerEnabled user={user} onBack={onBack} onGuestLogin={onGuestLogin} onOpenPrivacy={onOpenPrivacy} />
   )
 }
 
 /* Прежний статичный экран — при выключенном флаге. */
-function LegacySubscriptionManager({ onBack }) {
+function LegacySubscriptionManager({ onBack, onOpenPrivacy }) {
   return (
     <ProfilePage
       title="подписка."
       onBack={onBack}
       testId="profile-screen-subscription"
       footer={
-        <button
-          type="button"
-          disabled
-          data-testid="subscription-pay-button"
-          className="mx-profile-disabled-cta"
-        >
-          <Lock size={14} aria-hidden="true" /> Оплата скоро появится
-        </button>
+        <>
+          <button
+            type="button"
+            disabled
+            data-testid="subscription-pay-button"
+            className="mx-profile-disabled-cta"
+          >
+            <Lock size={14} aria-hidden="true" /> Оплата скоро появится
+          </button>
+          {onOpenPrivacy && (
+            <button
+              type="button"
+              className="mx-subscription-support"
+              data-testid="subscription-privacy-link"
+              onClick={onOpenPrivacy}
+            >
+              Политика конфиденциальности
+            </button>
+          )}
+        </>
       }
     >
       <ProfileBody>
@@ -152,7 +164,7 @@ function LegacySubscriptionManager({ onBack }) {
 }
 
 /* Экран с состояниями оплаты — при включённом флаге. */
-function SubscriptionManagerEnabled({ user, onBack, onGuestLogin }) {
+function SubscriptionManagerEnabled({ user, onBack, onGuestLogin, onOpenPrivacy }) {
   const inTelegram = platformName === 'telegram'
   /*
    * Гость — анонимная веб-сессия (is_guest): подписку не к чему привязать.
@@ -343,17 +355,31 @@ function SubscriptionManagerEnabled({ user, onBack, onGuestLogin }) {
       title="подписка."
       onBack={onBack}
       testId="profile-screen-subscription"
-      footer={renderFooter({
-        state: displayState,
-        webCheckout,
-        checkoutState,
-        guestCopy: webGuestLoginCopy({ emailLoginEnabled }),
-        onGuestCta: beginGuestFlow,
-        onTributePay: handleTributePay,
-        onWebPay: handleWebPay,
-        onCheckPayment: handleCheckPayment,
-        onLogin: onGuestLogin,
-      })}
+      footer={
+        <>
+          {renderFooter({
+            state: displayState,
+            webCheckout,
+            checkoutState,
+            guestCopy: webGuestLoginCopy({ emailLoginEnabled }),
+            onGuestCta: beginGuestFlow,
+            onTributePay: handleTributePay,
+            onWebPay: handleWebPay,
+            onCheckPayment: handleCheckPayment,
+            onLogin: onGuestLogin,
+          })}
+          {onOpenPrivacy && (
+            <button
+              type="button"
+              className="mx-subscription-support"
+              data-testid="subscription-privacy-link"
+              onClick={onOpenPrivacy}
+            >
+              Политика конфиденциальности
+            </button>
+          )}
+        </>
+      }
     >
       <ProfileBody>
         {displayState === 'loading' && (
