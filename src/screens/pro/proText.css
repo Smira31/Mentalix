@@ -1,21 +1,66 @@
 /* ── Общие текстовые стили экранов Pro (Stoic, DESIGN_SYSTEM §5.5) ──
    Используются разбором, планом и прогрессом; вынесены из ProReport.css,
-   чтобы каждый экран импортировал только нужные ему стили. */
+   чтобы каждый экран импортировал только нужные ему стили.
 
+   Размеры — только строки общей шкалы приложения (§3 MXL-TYPE-CONSISTENCY-001):
+   там, где роль токенизирована, берётся `--mx-type-*-size`; для остальных строк
+   — `calc(<px строки> * var(--mx-type-scale))`. Базовые размеры ≤13px не
+   опускаются ниже 11px: `max(11px, …)`. Своих размеров «на глаз» здесь нет —
+   строка-источник подписана у каждого правила. Гарнитура — Onest, как везде в
+   интерфейсе; токены читаемой шкалы (`--mx-read-*`) заданы только для трёх
+   поверхностей MXL-TYPE-READABLE-001 («Сегодня», чек-ин, дневник) и на экранах
+   Pro не действуют (владелец, 17.10: «шрифт кажется слишком крупным»). */
+
+/* §3 `.mx-type-article-title` — 16 px; §5.5: текст строки-карточки 16 px. */
 .mx-pro-text {
-  font-size: var(--mx-read-read);
+  font-size: calc(16px * var(--mx-type-scale));
   line-height: 1.45;
   color: rgb(var(--c-text));
 }
 
+/* §3 `.mx-type-flow-action` — 14 px. */
 .mx-pro-note {
-  font-size: var(--mx-read-note);
+  font-size: calc(14px * var(--mx-type-scale));
   line-height: 1.45;
   color: rgb(var(--c-muted));
 }
 
+/* §3 `.mx-type-body` — 13 px (токен). */
 .mx-pro-caption {
-  font-size: var(--mx-read-caption);
+  font-size: var(--mx-type-body-size);
   line-height: 1.4;
   color: rgb(var(--c-muted));
+}
+
+/* Размерные роли для разметки: только размер, чтобы применять вместе с
+   существующими весом и цветом на месте (классы выше несут и цвет, поэтому
+   в одной строке с цветом Tailwind не смешиваются). */
+/* §3 `.mx-type-article-title` — 16 px. */
+.mx-pro-size-text {
+  font-size: calc(16px * var(--mx-type-scale));
+}
+
+/* §3 `.mx-type-flow-action` — 14 px. */
+.mx-pro-size-note {
+  font-size: calc(14px * var(--mx-type-scale));
+}
+
+/* §3 `.mx-type-body` — 13 px (токен). */
+.mx-pro-size-caption {
+  font-size: var(--mx-type-body-size);
+}
+
+/* §3 `.mx-type-article-action` — 12 px, не ниже 11px. */
+.mx-pro-size-action {
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
+}
+
+/* §3 `.mx-type-article-body` — 12 px, не ниже 11px. */
+.mx-pro-size-meta {
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
+}
+
+/* §3 `.mx-type-meta` — 11 px (токен). */
+.mx-pro-size-label {
+  font-size: var(--mx-type-meta-size);
 }

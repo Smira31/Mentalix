@@ -88,7 +88,7 @@ export default function ProProgressView({ onOpenPlan }) {
       <PageTitle>прогресс.</PageTitle>
 
       {state === null && !loadFailed && !blocked && (
-        <p className="mt-6 text-[13px] text-muted">Загружаем…</p>
+        <p className="mx-pro-size-caption mt-6 text-muted">Загружаем…</p>
       )}
 
       {blocked && (
@@ -97,7 +97,7 @@ export default function ProProgressView({ onOpenPlan }) {
 
       {loadFailed && (
         <Card className="mt-4 p-4">
-          <p className="text-[13px] text-muted">Не удалось загрузить прогресс.</p>
+          <p className="mx-pro-size-caption text-muted">Не удалось загрузить прогресс.</p>
           <PillButton variant="dark" onClick={load} className="mt-3 w-full">
             Повторить
           </PillButton>
@@ -106,7 +106,7 @@ export default function ProProgressView({ onOpenPlan }) {
 
       {state && state.status === 'plan_required' && (
         <Card className="mt-4 p-4">
-          <p className="text-[14px] leading-relaxed text-cream">
+          <p className="mx-pro-size-note leading-relaxed text-cream">
             Прогресс считается по плану недели — сначала собери его.
           </p>
           <PillButton variant="light" onClick={onOpenPlan} className="mt-3 w-full">
@@ -143,7 +143,7 @@ export default function ProProgressView({ onOpenPlan }) {
               </p>
               <p className="mx-pro-progress__title">
                 {completion.done} из {completion.planned}
-                {rate && <span className="ml-2 text-[16px] font-semibold text-muted">{rate}</span>}
+                {rate && <span className="mx-pro-size-text ml-2 font-semibold text-muted">{rate}</span>}
               </p>
               <p className="mx-pro-caption mt-1">
                 выполнено {completion.done} · не вышло {completion.skipped} · ещё впереди{' '}

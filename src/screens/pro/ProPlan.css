@@ -1,7 +1,8 @@
 /* ── План недели Pro: геометрия Stoic (DESIGN_SYSTEM §5.5) ──
    Карточки --c-card2 без рамки, радиус 16, поля 16–20; строки-карточки
    дней h ≥ 53, зазор 8; подпись раздела капсом 11/600, разрядка 0.2em,
-   muted. Текстовые стили общие — proText.css. */
+   muted. Текстовые стили общие — proText.css. Каждый размер — строка шкалы §3:
+   источник подписан у правила. */
 
 /* ── План ещё не собран ── */
 .mx-pro-plan__intro {
@@ -11,9 +12,10 @@
   gap: var(--mx-space-4);
 }
 
-/* Подпись раздела: капсом 11/600, разрядка 0.2em, muted (§5.5). */
+/* §3 `.mx-type-meta` — 11 px (токен); §5.5: подпись раздела капсом 11/600,
+   разрядка 0.2em, muted. */
 .mx-pro-plan__label {
-  font-size: 11px;
+  font-size: var(--mx-type-meta-size);
   font-weight: 600;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -28,9 +30,10 @@
   padding: var(--mx-space-4) var(--mx-space-5);
 }
 
+/* §3 `.mx-type-control` — 17 px (токен); §5.5: цель недели 17/600. */
 .mx-pro-plan__goal-text {
   margin-top: var(--mx-space-2);
-  font-size: 17px;
+  font-size: var(--mx-type-control-size);
   font-weight: 600;
   line-height: 1.35;
   color: rgb(var(--c-text));
@@ -41,8 +44,9 @@
 }
 
 /* ── Счётчик выполнения ── */
+/* §3 `.mx-type-flow-action` — 14 px. */
 .mx-pro-plan__progress {
-  font-size: var(--mx-read-note);
+  font-size: calc(14px * var(--mx-type-scale));
   font-weight: 600;
   line-height: 1.4;
   color: rgb(var(--c-text));
@@ -64,7 +68,7 @@
 }
 
 /* Шапка дня: заголовок, статус и меню «⋯» на одной линии (консилиум:
-   статус читаем — не меньше 12px — и не переносится). */
+   статус читаем и не переносится). */
 .mx-pro-plan__day-head {
   display: flex;
   align-items: center;
@@ -83,15 +87,18 @@
   min-width: 0;
 }
 
+/* §3 `.mx-type-body` — 13 px (токен): статус — вторичная подпись. */
 .mx-pro-plan__status {
-  font-size: 12px;
+  font-size: var(--mx-type-body-size);
   font-weight: 600;
   line-height: 1.4;
   white-space: nowrap;
 }
 
 /* Меню «⋯» справа вверху карточки: компактный триггер, выпадающий список
-   с второстепенными действиями (Пропустить/Сбросить/Изменить). */
+   с второстепенными действиями (Пропустить/Сбросить/Изменить).
+   Глиф «⋯» — знак управления, а не текст: 16 px здесь не размер строки
+   шкалы, а размер иконки (§3: --mx-type-scale применяется только к тексту). */
 .mx-pro-plan__menu {
   position: relative;
   display: inline-flex;
@@ -125,6 +132,7 @@
   flex-direction: column;
 }
 
+/* §3 `.mx-type-flow-action` — 14 px. */
 .mx-pro-plan__menu-item {
   min-height: 44px;
   padding: 0 var(--mx-space-4);
@@ -133,7 +141,7 @@
   text-align: left;
   color: rgb(var(--c-text));
   font: inherit;
-  font-size: var(--mx-read-note);
+  font-size: calc(14px * var(--mx-type-scale));
   font-weight: 600;
   cursor: pointer;
 }
@@ -143,7 +151,8 @@
 }
 
 /* «Пересобрать план» — самая тихая кнопка: контурная, muted (консилиум);
-   перед действием остаётся подтверждение в обработчике. */
+   перед действием остаётся подтверждение в обработчике.
+   §3 `.mx-type-flow-action` — 14 px. */
 .mx-pro-plan__quiet-button {
   min-height: 44px;
   border: 1px solid rgb(var(--c-border));
@@ -151,7 +160,7 @@
   background: transparent;
   color: rgb(var(--c-muted));
   font: inherit;
-  font-size: var(--mx-read-note);
+  font-size: calc(14px * var(--mx-type-scale));
   font-weight: 600;
   cursor: pointer;
 }

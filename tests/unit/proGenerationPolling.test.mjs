@@ -57,9 +57,12 @@ test('опрос ограничен числом попыток и заверш�
   assert.ok(PRO_POLL_MAX_ATTEMPTS >= 2)
 })
 
-test('окно опроса покрывает таймаут AI-генерации (60 с, как POST в api.js)', () => {
-  assert.equal(PRO_POLL_WINDOW_MS, 60_000)
-  assert.equal(PRO_POLL_MAX_ATTEMPTS, 30)
+test('окно опроса покрывает таймаут AI-генерации (150 с, как POST в api.js)', () => {
+  // Бэкенд делает до двух вызовов модели (повтор после неудачи):
+  // 2 × 60 с + запас 30 с = 150 с — тот же бюджет, что PRO_GENERATE_TIMEOUT_MS
+  // в api.js: 75 попыток × 2 с.
+  assert.equal(PRO_POLL_WINDOW_MS, 150_000)
+  assert.equal(PRO_POLL_MAX_ATTEMPTS, 75)
   assert.equal(PRO_POLL_INTERVAL_MS, 2000)
 })
 

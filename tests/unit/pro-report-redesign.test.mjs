@@ -15,7 +15,8 @@ import test from 'node:test'
  *  - данные, даты, источники и предупреждения сохранены: подробности можно
  *    свернуть, но не потерять;
  *  - состояния согласия, загрузки, отказа, пустоты и кризиса сохранены;
- *  - типографика — токены читаемой шкалы, без пиксельных размеров в разметке.
+ *  - типографика — размеры из общей шкалы приложения (§3), без значений «на
+ *    глаз»: строки шкалы указаны у правил proText.css и ProReport.css.
  */
 
 const viewSource = await readFile(
@@ -100,11 +101,18 @@ test('состояния доступа, загрузки, отказа, пус�
   assert.match(viewSource, /Загружаем…/)
 })
 
-test('типографика Pro — токены читаемой шкалы, без пиксельных размеров', () => {
-  // Текстовые стили .mx-pro-* — один источник: proText.css с токенами
-  // читаемой шкалы; в геометрии экрана они не дублируются.
-  assert.match(textCssSource, /--mx-read-read/)
-  assert.match(textCssSource, /--mx-read-note/)
-  assert.match(textCssSource, /--mx-read-caption/)
+test('типографика Pro — размеры из общей шкалы (§3), без значений «на глаз»', () => {
+  // Текстовые стили .mx-pro-* — один источник: proText.css. Размер каждой роли
+  // взят из строки шкалы §3 (MXL-TYPE-CONSISTENCY-001): токен --mx-type-*-size
+  // там, где роль токенизирована, иначе calc(<px строки> * --mx-type-scale);
+  // для базовых размеров ≤13px — max(11px, …). Строка-источник подписана
+  // комментарием у каждого правила.
+  assert.match(textCssSource, /var\(--mx-type-body-size\)/)
+  assert.match(textCssSource, /var\(--mx-type-meta-size\)/)
+  assert.match(textCssSource, /calc\(16px \* var\(--mx-type-scale\)\)/)
+  assert.match(textCssSource, /max\(11px, calc\(12px \* var\(--mx-type-scale\)\)\)/)
+  // Прямых размеров в пикселях без множителя шкалы нет — ни в разметке, ни в
+  // текстовых стилях.
   assert.doesNotMatch(viewSource, /text-\[\d+px\]/)
+  assert.doesNotMatch(textCssSource, /font-size: \d+px/)
 })

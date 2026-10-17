@@ -36,6 +36,22 @@ test('сценарии покрывают конфликт генерации, �
   )
 })
 
+test('сценарий generation_failed отвечает 502 report_generation_failed, повтор успешен', () => {
+  // Первый POST разбора отвечает так, как это делает бэкенд при отказе модели:
+  // 502 JSONResponse с code и message; второй POST (кнопка «Попробовать ещё
+  // раз») собирает разбор — так проверяются ожидание, фраза бэкенда и повтор.
+  assert.match(mockSource, /'generation_failed',/)
+  const failureBlock = mockSource.match(
+    /if \(scenario === 'generation_failed' && !generationFailure\.report\)[\s\S]{0,400}?\n    \}/
+  )?.[0]
+  assert.ok(failureBlock, 'ветка generation_failed найдена')
+  assert.match(failureBlock, /generationFailure\.report = true/)
+  assert.match(failureBlock, /await delay\(MOCK_GENERATION_FAILURE_DELAY_MS\)/)
+  assert.match(failureBlock, /MockApiError\(502, \{/)
+  assert.match(failureBlock, /code: 'report_generation_failed'/)
+  assert.match(failureBlock, /message:/)
+})
+
 test('сценарий longtext подаёт в разбор длинные русские тексты', () => {
   // Длинные строки живут в отдельном модуле: те же данные читает браузерный
   // сценарий, поэтому ожидание и mock не расходятся.
@@ -94,4 +110,5 @@ test('ошибки mock имеют оба формата: detail (HTTPException)
   assert.match(mockSource, /MockApiError\(404, \{ detail \}\)/)
   assert.match(mockSource, /code: 'generation_in_progress'/)
   assert.match(mockSource, /code: 'consent_required'/)
+  assert.match(mockSource, /code: 'report_generation_failed'/)
 })
