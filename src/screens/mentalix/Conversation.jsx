@@ -84,6 +84,9 @@ export default function Conversation({
   const screenRef = useRef(null)
   const inputRef = useRef(null)
   const restoreComposerFocusRef = useRef(false)
+  // Тап начался внутри composer'а: флаг снимается на pointerdown, до того
+  // как браузер отдаст фокус кнопке и закроет клавиатуру.
+  const composerPointerRef = useRef(false)
   const previousMessageCount = useRef(0)
   const recorderRef = useRef(null)
   const streamRef = useRef(null)
@@ -169,7 +172,23 @@ export default function Conversation({
   async function sendFromComposer() {
     if (!input.trim() || sending || dailyLimit || creatingConversation || creationError) return
 
-    restoreComposerFocusRef.current = document.activeElement === inputRef.current
+    /*
+     * MXL-KEYBOARD-001: отправка не закрывает клавиатуру. Тап по кнопке
+     * composer'а снимает фокус с поля раньше click (iOS опускает клавиатуру),
+     * поэтому «человек только что писал здесь» запоминается ещё на pointerdown —
+     * до действия браузера по умолчанию. Фокус возвращается синхронно внутри
+     * самого жеста (клавиатура не успевает закрыться) и ещё раз кадром — чтобы
+     * её не снял ререндер после ответа или ошибки.
+     * Явно закрытая человеком клавиатура так не возвращается: без тапа по
+     * composer'у и без фокуса в поле флаг не ставится.
+     */
+    const keyboardWasOpen =
+      composerPointerRef.current || document.activeElement === inputRef.current
+    composerPointerRef.current = false
+    restoreComposerFocusRef.current = keyboardWasOpen
+
+    if (keyboardWasOpen) inputRef.current?.focus({ preventScroll: true })
+
     await onSend()
 
     if (restoreComposerFocusRef.current) {
@@ -581,7 +600,14 @@ export default function Conversation({
           </div>
         )}
 
-        <div className="mx-ai-composer mx-glass w-full max-w-md mx-auto min-h-[72px] rounded-[36px] flex items-center gap-2.5 px-2.5">
+        <div
+          className="mx-ai-composer mx-glass w-full max-w-md mx-auto min-h-[72px] rounded-[36px] flex items-center gap-2.5 px-2.5"
+          // pointerdown внутри composer'а (поле или кнопка) — значит человек
+          // здесь пишет: после отправки клавиатуру возвращаем.
+          onPointerDownCapture={() => {
+            composerPointerRef.current = true
+          }}
+        >
           <input
             ref={inputRef}
             value={input}
