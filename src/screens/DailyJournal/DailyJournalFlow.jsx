@@ -731,40 +731,52 @@ export default function DailyJournalFlow({ userId, onClose, reflectionPrompt = n
       </div>
     )
   } else if (stage === 'today') {
+    /*
+     * Решение 19.10: одна белая кнопка «Готово» (закрывает экран, как
+     * «Назад»), под ней — тихие ссылки в строку
+     * «Дописать · Перечитать · Мои записи» в стиле карточки аскезы.
+     */
     footerContent = (
       <div className="mx-dj-today__footer">
-        {/* Вторичные действия — заметные кнопки над основной «Дописать» */}
-        <div className="mx-dj-today__secondary">
-          {setupHasData(setup) && (
-            <PillButton
-              variant="dark"
-              testId="dj-today-review"
-              className="mx-dj-today__secondary-btn"
-              onClick={() => {
-                platform.haptic('light')
-                setStage('review')
-              }}
-            >
-              Перечитать
-            </PillButton>
-          )}
-          <PillButton
-            variant="dark"
-            testId="dj-today-entries"
-            className="mx-dj-today__secondary-btn"
-            onClick={openEntries}
-          >
-            Мои записи
-          </PillButton>
-        </div>
         <button
           type="button"
-          className="cta-pill mx-dj-today__append-btn"
-          data-testid="dj-today-append"
-          onClick={handleAppend}
+          className="cta-pill mx-dj-today__done-btn"
+          data-testid="dj-today-done"
+          onClick={() => {
+            platform.haptic('light')
+            onClose()
+          }}
         >
-          Дописать
+          Готово
         </button>
+        <div className="mx-dj-today__links">
+          <button type="button" data-testid="dj-today-append" onClick={handleAppend}>
+            Дописать
+          </button>
+          <span className="mx-dj-today__links-sep" aria-hidden="true">
+            ·
+          </span>
+          {setupHasData(setup) && (
+            <>
+              <button
+                type="button"
+                data-testid="dj-today-review"
+                onClick={() => {
+                  platform.haptic('light')
+                  setStage('review')
+                }}
+              >
+                Перечитать
+              </button>
+              <span className="mx-dj-today__links-sep" aria-hidden="true">
+                ·
+              </span>
+            </>
+          )}
+          <button type="button" data-testid="dj-today-entries" onClick={openEntries}>
+            Мои записи
+          </button>
+        </div>
         {saveError && !entryId && (
           <button
             type="button"
@@ -868,8 +880,13 @@ export default function DailyJournalFlow({ userId, onClose, reflectionPrompt = n
   // ── Render stage content ──
   function renderContent() {
     if (stage === 'today') {
+      // Решение 19.10: JournalIntroArt маленьким над датой
+      const TodayArt = illustrations.journalIntro
       return (
         <div className="mx-dj-today" data-testid="dj-today">
+          <div className="mx-dj-today__art" data-testid="dj-today-art">
+            {TodayArt ? <TodayArt /> : <SemanticGlyph kind="journal" animated={false} />}
+          </div>
           <CapsLabel className="mx-dj-today__label">
             СЕГОДНЯ · {formatRussianDate(todayDate)}
           </CapsLabel>
