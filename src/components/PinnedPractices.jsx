@@ -84,6 +84,7 @@ function Sheet({
               <button
                 type="button"
                 className="mx-pinned-sheet__circle"
+                data-testid={isLibrary ? 'pinned-sheet-close-library' : 'pinned-sheet-close'}
                 aria-label={closeLabel}
                 onClick={onClose}
               >

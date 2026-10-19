@@ -49,9 +49,11 @@ test('Дневник: есть в библиотеке, добавление →
   }
   await expect(diaryRow).toHaveAttribute('aria-pressed', 'true')
 
-  // Закрываем библиотеку → шторка управления → Today
-  await page.getByRole('button', { name: 'Сохранить и закрыть' }).click()
-  await page.getByRole('button', { name: 'Закрыть' }).click()
+  // Закрываем библиотеку → шторка управления → Today. Кнопки закрытия —
+  // только по data-testid: getByRole({ name: 'Закрыть' }) матчит по подстроке
+  // и на Today ловит также «Закрыть подсказку о серии» (strict mode violation).
+  await page.getByTestId('pinned-sheet-close-library').click()
+  await page.getByTestId('pinned-sheet-close').click()
 
   // На Today в блоке «Твои практики» появилась ровно одна плитка «Дневник»
   await expect(DIARY_TILE(page)).toHaveCount(1)
@@ -89,8 +91,8 @@ test('Дневник: повторное добавление не создаё�
   await expect(diaryRow).toHaveAttribute('aria-pressed', 'true')
 
   // Закрываем и проверяем: только одна плитка «Дневник» на Today
-  await page.getByRole('button', { name: 'Сохранить и закрыть' }).click()
-  await page.getByRole('button', { name: 'Закрыть' }).click()
+  await page.getByTestId('pinned-sheet-close-library').click()
+  await page.getByTestId('pinned-sheet-close').click()
 
   await expect(DIARY_TILE(page)).toHaveCount(1)
 })
@@ -106,8 +108,8 @@ test('Дневник: удаление из набора через меню «�
     const diaryRow = page.getByTestId(DIARY_ROW)
     await diaryRow.click()
     await expect(diaryRow).toHaveAttribute('aria-pressed', 'true')
-    await page.getByRole('button', { name: 'Сохранить и закрыть' }).click()
-    await page.getByRole('button', { name: 'Закрыть' }).click()
+    await page.getByTestId('pinned-sheet-close-library').click()
+    await page.getByTestId('pinned-sheet-close').click()
     await expect(DIARY_TILE(page)).toBeVisible()
   }
 
@@ -124,7 +126,7 @@ test('Дневник: удаление из набора через меню «�
   await expect(diaryCard).toHaveCount(0)
 
   // Закрываем шторку
-  await page.getByRole('button', { name: 'Закрыть' }).click()
+  await page.getByTestId('pinned-sheet-close').click()
 
   // На Today плитки «Дневник» больше нет
   await expect(DIARY_TILE(page)).toHaveCount(0)
