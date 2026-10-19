@@ -160,10 +160,10 @@ test('unified own-create flow is a 2-step magazine with fullscreen and native Ba
   assert.match(wording, /Отметить сегодня/)
 })
 
-test('practice menu offers edit, sign and delete', () => {
-  assert.match(detail, /testId="practice-detail-edit"/)
-  assert.match(detail, /testId="practice-detail-sign"/)
-  assert.match(detail, /testId="practice-detail-delete"/)
+test('practice actions offer edit, sign and delete at the bottom', () => {
+  assert.match(detail, /data-testid="practice-detail-edit"/)
+  assert.match(detail, /data-testid="practice-detail-sign"/)
+  assert.match(detail, /data-testid="practice-detail-delete"/)
   // «Изменить» — тот же экран-поле, что и «Свой»; «Знак» — сетка 4×3.
   assert.match(detail, /<PracticeFieldFlow/)
   assert.match(detail, /buildEditPatch/)
