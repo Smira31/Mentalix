@@ -7,7 +7,7 @@ import {
   createContext,
   useContext,
 } from 'react'
-import { Check, ChevronRight, Lock } from 'lucide-react'
+import { Check, ChevronDown, ChevronRight, Lock } from 'lucide-react'
 
 import Screen from '../components/Screen'
 import { HERO_COURSE, courseContent } from '../data/courses'
@@ -192,18 +192,33 @@ function ChapterSection({ chapter, progress, onOpenStep, currentStepId }) {
   const hasCurrentStep = Boolean(currentStepId) && trials.some(t => t.id === currentStepId)
 
   const [expanded, setExpanded] = useState(anyStarted || hasCurrentStep)
+  /* Закрытая глава (ни один шаг не начат и текущего шага в ней нет): серые
+     заголовок и римская цифра, справа вместо счётчика — маленький замок;
+     у открытой главы — стрелка «›» (раскрытая — «˅»). */
+  const locked = !anyStarted && !hasCurrentStep
 
   return (
-    <section className="mx-hj-chapter">
+    <section className={`mx-hj-chapter${locked ? ' mx-hj-chapter--locked' : ''}`}>
       <div className="mx-hj-chapter__head" onClick={() => setExpanded(v => !v)}>
         <div className="mx-hj-chapter__title-block">
           <span className="mx-hj-chapter__roman">Глава {chapter.roman}</span>
           <span className="mx-hj-chapter__name">{chapter.title}</span>
           <span className="mx-hj-chapter__subtitle">{chapter.subtitle}</span>
         </div>
-        <span className="mx-hj-chapter__count">
-          {completedCount} из {trials.length}
-        </span>
+        {locked ? (
+          <Lock size={16} className="mx-hj-chapter__lock" aria-hidden="true" />
+        ) : (
+          <>
+            <span className="mx-hj-chapter__count">
+              {completedCount} из {trials.length}
+            </span>
+            {expanded ? (
+              <ChevronDown size={18} className="mx-hj-chapter__chevron" aria-hidden="true" />
+            ) : (
+              <ChevronRight size={18} className="mx-hj-chapter__chevron" aria-hidden="true" />
+            )}
+          </>
+        )}
       </div>
 
       {expanded && (
@@ -453,16 +468,20 @@ function StepIntro({ trial, onStart }) {
       )}
 
       <div className="mx-hj-step-intro__text">
-        <div className="mx-hj-step-intro__label">
-          {isFinale
-            ? `Финал · ${trial.title}`
-            : `Глава ${chapter.roman} · ${chapter.title} · Шаг ${trial.number} из ${HERO_JOURNEY_TOTAL_STEPS}`}
+        {/* Скролл-обёртка: на низком экране (375×667 и ниже) длинное вступление
+            доскролливается внутри блока и не уходит под кнопку «Начать шаг». */}
+        <div className="mx-hj-step-intro__text-scroll">
+          <div className="mx-hj-step-intro__label">
+            {isFinale
+              ? `Финал · ${trial.title}`
+              : `Глава ${chapter.roman} · ${chapter.title} · Шаг ${trial.number} из ${HERO_JOURNEY_TOTAL_STEPS}`}
+          </div>
+          <h2 className="mx-hj-step-intro__title">{appHeading(trial.title)}</h2>
+          <p className="mx-hj-step-intro__subtitle">{trial.subtitle}</p>
+          {trial.intro.split('\n\n').map((para, i) => (
+            <p key={i} className="mx-hj-step-intro__desc">{para}</p>
+          ))}
         </div>
-        <h2 className="mx-hj-step-intro__title">{appHeading(trial.title)}</h2>
-        <p className="mx-hj-step-intro__subtitle">{trial.subtitle}</p>
-        {trial.intro.split('\n\n').map((para, i) => (
-          <p key={i} className="mx-hj-step-intro__desc">{para}</p>
-        ))}
       </div>
 
       <div className="mx-hj-step-intro__bottom">
@@ -603,6 +622,7 @@ function StepComplete({ trial, progress, onBackToMap }) {
     : null
 
   const reflection = progress.reflections[trial.id] || ''
+  const actionAnswer = progress.actions[trial.id] || ''
   const doneImage = trial.image?.done
   const [imageFailed, setImageFailed] = useState(false)
   const showDoneImage = Boolean(doneImage) && !imageFailed
@@ -643,6 +663,14 @@ function StepComplete({ trial, progress, onBackToMap }) {
         <p className="mx-hj-complete__phrase">
           {trial.doneSummary || 'Ты сделал ещё один шаг по пути.'}
         </p>
+        {/* «Твоя опора»: ответ из «Одно действие» остаётся с пользователем
+            после шага; пустой ответ блок не показывает. */}
+        {actionAnswer && (
+          <div className="mx-hj-complete__support">
+            <span className="mx-hj-complete__support-label">Твоя опора</span>
+            <p className="mx-hj-complete__support-text">{actionAnswer}</p>
+          </div>
+        )}
         {trial.doneTeaser && (
           <p className="mx-hj-complete__teaser">{trial.doneTeaser}</p>
         )}
@@ -689,9 +717,10 @@ function StepComplete({ trial, progress, onBackToMap }) {
           type="button"
           data-testid="hero-complete-map"
           onClick={onBackToMap}
-          className="cta-pill mx-hj-step-intro__cta"
+          className="cta-pill mx-hj-step-intro__cta mx-hj-complete__cta"
         >
-          Продолжить <ChevronRight size={16} />
+          <span>Продолжить</span>
+          <ChevronRight size={16} aria-hidden="true" />
         </button>
       </div>
     </Shell>
