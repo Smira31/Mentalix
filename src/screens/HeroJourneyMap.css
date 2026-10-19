@@ -237,6 +237,23 @@
   margin-top: 2px;
 }
 
+/* Закрытая глава серым (заголовок и римская цифра), справа вместо
+   «0 из 4» — маленький замок; у открытой главы — стрелка «›». */
+.mx-hj-chapter--locked .mx-hj-chapter__roman {
+  color: rgb(var(--c-muted));
+}
+
+.mx-hj-chapter--locked .mx-hj-chapter__name {
+  color: rgb(var(--c-muted));
+}
+
+.mx-hj-chapter__chevron,
+.mx-hj-chapter__lock {
+  flex: none;
+  margin-top: 2px;
+  color: rgb(var(--c-muted));
+}
+
 .mx-hj-chapter__expand {
   margin-top: 12px;
   background: none;
@@ -398,8 +415,7 @@
   position: relative;
   flex: none;
   width: calc(100% + 2 * var(--mx-screen-x));
-  margin:
-    calc(-1 * var(--mx-space-2)) calc(-1 * var(--mx-screen-x))
+  margin: calc(-1 * var(--mx-space-2)) calc(-1 * var(--mx-screen-x))
     calc(-1 * var(--mx-hj-hero-overlap, 0.12) * var(--mx-hj-hero-h, 320px));
   height: var(--mx-hj-hero-h, 320px);
   /* Фон до загрузки картинки — цвет приложения, без вспышки. */
@@ -516,10 +532,12 @@
 .mx-hj-step-intro .mx-hj-hero--flex {
   flex: 1 1 auto;
   height: auto;
-  /* 76 px: у самого длинного вступления («Сигналы тела») на 360×640 и
-     375×667 после текста остаётся меньше 110 px — кнопка уезжала за край.
-     Ниже опускать нельзя: кадр перестаёт читаться. */
-  min-height: 76px;
+  /* Минимум 110 px — нижняя граница читаемости кадра (AGENTS.md: 110–260).
+     Прежние 76 px защищали кнопку: длинное вступление вытесняло её за край.
+     Теперь переполнение принимает скролл-обёртка текста
+     (.mx-hj-step-intro__text-scroll), поэтому герой держит свой минимум,
+     а последний абзац доскролливается внутри блока. */
+  min-height: 110px;
   max-height: 260px;
   margin-bottom: 0;
 }
@@ -637,9 +655,29 @@
 }
 
 .mx-hj-step-intro__text {
-  flex: none;
+  flex: 0 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   /* Без героя (картинка не загрузилась): зазор под заглушкой */
   margin-top: 12px;
+}
+
+/*
+ * Длинное вступление на низком экране (375×667 и ниже) доскролливается
+ * внутри блока. Скролл у внутреннего контейнера, а не у самого текста:
+ * скрим ::before (читаемость подписи на кадре) выходит на 56 px выше
+ * блока и был бы обрезан собственным overflow. Отступ снизу — под высоту
+ * кнопки «Начать шаг»: последний абзац прокручивается до конца и не
+ * уходит под кнопку. Мягкое затемнение над кнопкой — маска нижнего края.
+ */
+.mx-hj-step-intro__text-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-bottom: calc(var(--cta-pill-height, 52px) + var(--mx-space-4));
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 40px), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 40px), transparent);
 }
 
 /* С картинкой текст слегка перехлёстывает затемнённый нижний край героя. */
@@ -1051,12 +1089,48 @@
   max-height: 210px;
 }
 
-/* Под кнопками Telegram («Назад», «⌄», «···») — тёмный градиент ~80 px,
-   от 85% чёрного у верха до прозрачного: белые детали кадра не накладываются
-   на кнопки. */
+/* Кадр done сохраняет полную ширину исходника, срезается только пустой верх.
+   На низком экране flex может поджать нижний край, но не сдвигает верх рисунка
+   под контролы Telegram. Свободная высота высоких экранов (393×852, 440×956)
+   уходит в растянутый контейнер кадра: картинка не масштабируется, удлиняется
+   только растворение нижнего края, поэтому «Продолжить» не отрывается от
+   итога зазором во всю свободную высоту. Эти правила не затрагивают вступления. */
+.mx-hj-step-complete .mx-hj-hero--cropped,
+.mx-hj-step-complete .mx-hj-hero--cropped.mx-hj-hero--compact {
+  flex: 1 1 auto;
+  aspect-ratio: var(--mx-hj-frame-ratio);
+  max-height: none;
+}
+
+.mx-hj-step-complete .mx-hj-hero--cropped .mx-hj-hero__frame img {
+  height: auto;
+  margin-top: var(--mx-hj-frame-top);
+  /* Движущийся zoom снова сдвигал бы согласованную верхнюю линию. */
+  animation: none;
+}
+
+/* Короткое растворение смягчает границу среза; прежняя маска 14% и
+   скрим 80 px скрывали начало рисунка даже после удаления пустого неба. */
+.mx-hj-step-complete .mx-hj-hero--cropped .mx-hj-hero__frame {
+  -webkit-mask-image:
+    linear-gradient(to bottom, transparent 0, #000 var(--mx-space-6), #000 65%, transparent 100%),
+    linear-gradient(to right, transparent 0, #000 5%, #000 95%, transparent 100%);
+  mask-image:
+    linear-gradient(to bottom, transparent 0, #000 var(--mx-space-6), #000 65%, transparent 100%),
+    linear-gradient(to right, transparent 0, #000 5%, #000 95%, transparent 100%);
+}
+
 .mx-hj-step-complete .mx-hj-hero__scrim {
-  height: 80px;
-  background: linear-gradient(rgba(5, 4, 3, 0.85), transparent);
+  height: var(--mx-space-6);
+  background: linear-gradient(rgba(5, 4, 3, 0.35), transparent);
+}
+
+/* «Продолжить» прижата к низу колонки: свободная высота уходит в зазор
+   над кнопкой (margin-top: auto), но не ближе 24 px к итогу. На низком
+   экране 375×667 кнопка видна целиком, без скролла. */
+.mx-hj-complete__bottom {
+  margin-top: auto;
+  padding-top: var(--mx-space-6);
 }
 
 /* Текстовый блок: фиксированный, идёт сразу под картинкой (перекрытие дал
@@ -1126,6 +1200,35 @@
   background: rgb(var(--c-card));
 }
 
+/* «Твоя опора»: ответ из «Одно действие» под подзаголовком. Пустой
+   ответ блок не показывает (JSX), текст — до двух строк, дальше «…». */
+.mx-hj-complete__support {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--mx-space-4);
+}
+
+.mx-hj-complete__support-label {
+  font-family: var(--font-label, 'Manrope', sans-serif);
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgb(var(--c-muted));
+}
+
+.mx-hj-complete__support-text {
+  font-size: calc(15px * var(--mx-type-scale));
+  line-height: 1.4;
+  color: rgb(var(--c-text));
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .mx-hj-complete__chapter-segs {
   display: flex;
   gap: 3px;
@@ -1148,6 +1251,8 @@
   color: rgb(var(--c-text));
 }
 
+/* Тихая ссылка, как «Начать без настройки» в Дневнике: цвет всегда
+   вторичный (без цвета посещённой ссылки) и подчёркивание. */
 .mx-hj-complete__diary-link {
   display: block;
   margin-top: 16px;
@@ -1155,13 +1260,20 @@
   border: none;
   padding: 0;
   font-size: calc(14px * var(--mx-type-scale));
-  color: rgb(var(--c-gold));
+  color: rgb(var(--c-muted));
+  text-decoration: underline;
   cursor: pointer;
   text-align: center;
 }
 
 /* Кнопка «Продолжить» живёт в нижней группе колонки
    (.mx-hj-step-intro__bottom + .mx-hj-step-intro__cta). */
+
+/* Как на главной практикума: текст и отдельная стрелка «›» с тем же
+   зазором 8 px, что у cta в карточке «Следующий шаг». */
+.mx-hj-complete__cta {
+  gap: 8px;
+}
 
 .mx-hj-empty-course {
   margin: 12px 0 0;

@@ -4,6 +4,104 @@ const USER = { id: 900991, first_name: 'Тест' }
 const PROGRESS_KEY = `mx-hero-journey-progress:${USER.id}`
 const DEMO_DRAFT_KEY = 'mx-hero-journey-draft:900001:uncertainty'
 
+// Один целевой сценарий: обрезка применяется только на завершении,
+// первые два шага и финал проверяются в обеих Telegram-рамках.
+test('Завершение: кадр под Telegram, без большого зазора над Продолжить', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.clear()
+    sessionStorage.clear()
+    const ids = [
+      'uncertainty',
+      'temporality',
+      'choice',
+      'abundance',
+      'body',
+      'phone',
+      'autopilot',
+      'digital-avatar',
+      'comparison',
+      'mirror',
+      'loneliness',
+      'relationships',
+      'lost-supports',
+      'age-crises',
+      'meaning',
+      'self-assembly',
+    ]
+    localStorage.setItem(
+      'mx-hero-journey-progress:900001',
+      JSON.stringify({
+        completed: Object.fromEntries(
+          ids.map((id, i) => [id, new Date(Date.now() - (ids.length - i) * 86400000).toISOString()])
+        ),
+        signs: {},
+        reflections: {},
+        actions: {},
+      })
+    )
+  })
+
+  for (const device of [
+    { name: 'standard', width: 393, height: 852 },
+    { name: 'max', width: 440, height: 956 },
+  ]) {
+    await page.setViewportSize({ width: device.width, height: device.height })
+    await page.goto(`/?demo=1&tab=library&action=hero_journey&device=${device.name}`)
+    await expect(page.getByTestId('hero-journey-map')).toBeVisible()
+
+    for (const id of ['uncertainty', 'temporality', 'return']) {
+      await page.getByTestId(`hero-step-${id}`).click()
+      await expect(page.getByTestId('hero-step-start')).toBeVisible()
+      const intro = page.locator('.mx-hj-step-intro .mx-hj-hero')
+      await expect(intro).not.toHaveClass(/mx-hj-hero--cropped/)
+      const introTop = await intro.evaluate(el => el.getBoundingClientRect().top)
+
+      await page.getByTestId('hero-step-start').click()
+      await page.getByTestId('hero-write-input').fill('Проверка завершения шага')
+      await page.getByTestId('hero-write-next').click()
+      await page.getByTestId('hero-action-input').fill('Одно проверочное действие')
+      await page.getByTestId('hero-action-next').click()
+      await expect(page.getByTestId('hero-complete-map')).toBeVisible()
+      const hero = page.locator('.mx-hj-step-complete .mx-hj-hero')
+      await expect(hero).toHaveClass(/mx-hj-hero--cropped/)
+      await expect
+        .poll(() => hero.locator('img').evaluate(img => img.complete && img.naturalWidth > 0))
+        .toBe(true)
+
+      const layout = await hero.evaluate(el => {
+        const image = el.querySelector('img')
+        const controls = document.querySelector('.mx-demo-telegram-chrome__controls')
+        const content = document.querySelector('.mx-hj-complete')
+        const button = document.querySelector('[data-testid="hero-complete-map"]')
+        const column = el.closest('.mx-hj-step-complete')
+        const frame = document.querySelector('[data-mentalix-demo-frame]')
+        const rect = el.getBoundingClientRect()
+        const imageRect = image.getBoundingClientRect()
+        return {
+          top: rect.top,
+          belowControls: rect.top >= controls.getBoundingClientRect().bottom,
+          fullWidth: Math.abs(rect.width - frame.clientWidth) <= 2,
+          gap: button.getBoundingClientRect().top - content.getBoundingClientRect().bottom,
+          buttonInside:
+            button.getBoundingClientRect().bottom <= frame.getBoundingClientRect().bottom,
+          noOverflow: column.scrollHeight <= column.clientHeight + 1,
+          cropApplied: imageRect.top < rect.top && Math.abs(imageRect.width - rect.width) <= 1,
+        }
+      })
+      expect(Math.abs(layout.top - introTop)).toBeLessThanOrEqual(1)
+      expect(layout.belowControls).toBe(true)
+      expect(layout.fullWidth).toBe(true)
+      expect(layout.gap).toBeGreaterThanOrEqual(0)
+      expect(layout.gap).toBeLessThanOrEqual(48)
+      expect(layout.buttonInside).toBe(true)
+      expect(layout.noOverflow).toBe(true)
+      expect(layout.cropApplied).toBe(true)
+      await page.getByTestId('hero-complete-map').click()
+      await expect(page.getByTestId(`hero-step-${id}`)).toHaveAttribute('data-state', 'done')
+    }
+  }
+})
+
 for (const width of [393, 789]) {
   test(`Продолжить не обходит блокировку следующего дня (${width})`, async ({ page }) => {
     await page.setViewportSize({ width, height: 852 })
@@ -33,6 +131,10 @@ for (const width of [393, 789]) {
     await page.goto('/?tab=library')
     await page.getByTestId('library-hero').click()
     await expect(page.getByTestId('hero-step-temporality')).toHaveAttribute('data-state', 'locked')
+    // Закрытые главы (II–IV) — замок вместо счётчика; открытая (I) — стрелка.
+    await expect(page.locator('.mx-hj-chapter--locked')).toHaveCount(3)
+    await expect(page.locator('.mx-hj-chapter--locked .mx-hj-chapter__lock')).toHaveCount(3)
+    await expect(page.locator('.mx-hj-chapter__chevron')).toHaveCount(1)
     await page.getByTestId('hero-continue').click()
     await expect(page.getByTestId('hero-journey-map')).toBeVisible()
     await expect(page.getByTestId('hero-step-start')).toHaveCount(0)
@@ -212,6 +314,17 @@ for (const [width, height] of [
         .evaluate(el => parseFloat(getComputedStyle(el).fontSize))
       expect(fontSize).toBeGreaterThanOrEqual(14.5)
 
+      // Длинное вступление доскролливается внутри текстового блока:
+      // последний абзац доступен выше кнопки, а не под ней.
+      const lastDescBottom = await page
+        .locator('.mx-hj-step-intro__text-scroll')
+        .evaluate(el => {
+          el.scrollTop = el.scrollHeight
+          const descs = el.querySelectorAll('.mx-hj-step-intro__desc')
+          return descs[descs.length - 1].getBoundingClientRect().bottom
+        })
+      expect(lastDescBottom).toBeLessThanOrEqual(box.y)
+
       await page.getByTestId('demo-chrome-back').click()
       await page.getByTestId('hero-journey-map').waitFor({ state: 'visible' })
     }
@@ -232,6 +345,11 @@ test('Шаг пройден на 375×667: «Продолжить» видна �
   await page.getByTestId('hero-action-input').fill('Одно действие')
   await page.getByTestId('hero-action-next').click()
   await expect(page.getByTestId('hero-complete-map')).toBeVisible()
+
+  // «Твоя опора»: ответ из «Одно действие» показан под итогом.
+  const support = page.locator('.mx-hj-complete__support')
+  await expect(support).toBeVisible()
+  await expect(support).toContainText('Одно действие')
 
   const column = page.locator('.mx-hj-step-complete')
   // Скролла нет: ни в колонке, ни в документе.

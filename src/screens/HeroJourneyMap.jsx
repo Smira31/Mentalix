@@ -6,9 +6,8 @@ import {
   useRef,
   createContext,
   useContext,
-  useSyncExternalStore,
 } from 'react'
-import { Check, ChevronRight, Lock } from 'lucide-react'
+import { Check, ChevronDown, ChevronRight, Lock } from 'lucide-react'
 
 import Screen from '../components/Screen'
 import { HERO_COURSE, courseContent } from '../data/courses'
@@ -25,7 +24,6 @@ import {
   clearHeroDraft,
 } from '../lib/heroJourneyProgress'
 import { heroDraftKey } from '../lib/heroJourneyState'
-import { getFullscreenSnapshot, subscribeFullscreen } from '../lib/tgFullscreen'
 import { writeLocal } from '../lib/store'
 import './HeroJourneyMap.css'
 
@@ -66,6 +64,8 @@ function HeroImage({
   size,
   focus,
   compact,
+  /* Кадр передаётся только завершением: вступление остаётся неизменным. */
+  frame,
   overlap = DEFAULT_IMAGE_OVERLAP,
   onError,
   /* Гибкая высота (вход в шаг): картинка сама занимает свободное место колонки. */
@@ -75,8 +75,14 @@ function HeroImage({
     <div
       className={`mx-hj-hero${compact ? ' mx-hj-hero--compact' : ''}${
         flexible ? ' mx-hj-hero--flex' : ''
-      }`}
-      style={{ '--mx-hj-hero-overlap': overlap }}
+      }${frame ? ' mx-hj-hero--cropped' : ''}`}
+      style={{
+        '--mx-hj-hero-overlap': overlap,
+        ...(frame && {
+          '--mx-hj-frame-ratio': `${frame.width} / ${frame.height}`,
+          '--mx-hj-frame-top': `${(-frame.top / frame.width) * 100}%`,
+        }),
+      }}
     >
       <div className="mx-hj-hero__frame">
         <img
@@ -186,18 +192,33 @@ function ChapterSection({ chapter, progress, onOpenStep, currentStepId }) {
   const hasCurrentStep = Boolean(currentStepId) && trials.some(t => t.id === currentStepId)
 
   const [expanded, setExpanded] = useState(anyStarted || hasCurrentStep)
+  /* Закрытая глава (ни один шаг не начат и текущего шага в ней нет): серые
+     заголовок и римская цифра, справа вместо счётчика — маленький замок;
+     у открытой главы — стрелка «›» (раскрытая — «˅»). */
+  const locked = !anyStarted && !hasCurrentStep
 
   return (
-    <section className="mx-hj-chapter">
+    <section className={`mx-hj-chapter${locked ? ' mx-hj-chapter--locked' : ''}`}>
       <div className="mx-hj-chapter__head" onClick={() => setExpanded(v => !v)}>
         <div className="mx-hj-chapter__title-block">
           <span className="mx-hj-chapter__roman">Глава {chapter.roman}</span>
           <span className="mx-hj-chapter__name">{chapter.title}</span>
           <span className="mx-hj-chapter__subtitle">{chapter.subtitle}</span>
         </div>
-        <span className="mx-hj-chapter__count">
-          {completedCount} из {trials.length}
-        </span>
+        {locked ? (
+          <Lock size={16} className="mx-hj-chapter__lock" aria-hidden="true" />
+        ) : (
+          <>
+            <span className="mx-hj-chapter__count">
+              {completedCount} из {trials.length}
+            </span>
+            {expanded ? (
+              <ChevronDown size={18} className="mx-hj-chapter__chevron" aria-hidden="true" />
+            ) : (
+              <ChevronRight size={18} className="mx-hj-chapter__chevron" aria-hidden="true" />
+            )}
+          </>
+        )}
       </div>
 
       {expanded && (
@@ -406,7 +427,6 @@ function AboutScreen({ prologue, onBackToMap }) {
 
 function StepIntro({ trial, onStart }) {
   const { chapterForTrial, finale, steps, total: HERO_JOURNEY_TOTAL_STEPS } = useCourse()
-  const tgFullscreen = useSyncExternalStore(subscribeFullscreen, getFullscreenSnapshot)
   const isFinale = finale?.id === trial.id
   const chapter = isFinale ? null : chapterForTrial(trial.id)
   const enterImage = trial.image?.enter
@@ -426,7 +446,6 @@ function StepIntro({ trial, onStart }) {
        прижата к низу (см. .mx-hj-hero--flex и __bottom в CSS). */
     <Shell
       fit
-      topFlush={showEnterImage && (tgFullscreen || DEMO)}
       bodyClassName="mx-hj-step-intro"
       screenBodyClassName="mx-hj-intro-body"
     >
@@ -449,16 +468,20 @@ function StepIntro({ trial, onStart }) {
       )}
 
       <div className="mx-hj-step-intro__text">
-        <div className="mx-hj-step-intro__label">
-          {isFinale
-            ? `Финал · ${trial.title}`
-            : `Глава ${chapter.roman} · ${chapter.title} · Шаг ${trial.number} из ${HERO_JOURNEY_TOTAL_STEPS}`}
+        {/* Скролл-обёртка: на низком экране (375×667 и ниже) длинное вступление
+            доскролливается внутри блока и не уходит под кнопку «Начать шаг». */}
+        <div className="mx-hj-step-intro__text-scroll">
+          <div className="mx-hj-step-intro__label">
+            {isFinale
+              ? `Финал · ${trial.title}`
+              : `Глава ${chapter.roman} · ${chapter.title} · Шаг ${trial.number} из ${HERO_JOURNEY_TOTAL_STEPS}`}
+          </div>
+          <h2 className="mx-hj-step-intro__title">{appHeading(trial.title)}</h2>
+          <p className="mx-hj-step-intro__subtitle">{trial.subtitle}</p>
+          {trial.intro.split('\n\n').map((para, i) => (
+            <p key={i} className="mx-hj-step-intro__desc">{para}</p>
+          ))}
         </div>
-        <h2 className="mx-hj-step-intro__title">{appHeading(trial.title)}</h2>
-        <p className="mx-hj-step-intro__subtitle">{trial.subtitle}</p>
-        {trial.intro.split('\n\n').map((para, i) => (
-          <p key={i} className="mx-hj-step-intro__desc">{para}</p>
-        ))}
       </div>
 
       <div className="mx-hj-step-intro__bottom">
@@ -588,7 +611,6 @@ function StepComplete({ trial, progress, onBackToMap }) {
     finale,
     steps,
   } = useCourse()
-  const tgFullscreen = useSyncExternalStore(subscribeFullscreen, getFullscreenSnapshot)
   /* У финала нет главы: на его экране «Путь пройден» карточки главы нет. */
   const chapter = finale?.id === trial.id ? null : chapterForTrial(trial.id)
   const chapterTrials = trialsForChapter(chapter)
@@ -600,6 +622,7 @@ function StepComplete({ trial, progress, onBackToMap }) {
     : null
 
   const reflection = progress.reflections[trial.id] || ''
+  const actionAnswer = progress.actions[trial.id] || ''
   const doneImage = trial.image?.done
   const [imageFailed, setImageFailed] = useState(false)
   const showDoneImage = Boolean(doneImage) && !imageFailed
@@ -610,12 +633,10 @@ function StepComplete({ trial, progress, onBackToMap }) {
   }, [trial, steps])
 
   return (
-    /* Колонка на всю высоту без скролла, как у вступления: картинка сама
-       забирает свободную высоту (110–300 px), текст идёт сразу под ней,
-       кнопка «Продолжить» прижата к низу. */
+    /* Колонка без скролла: кадр done обрезается по данным шага,
+       текст идёт сразу под ним, «Продолжить» — с коротким зазором. */
     <Shell
       fit
-      topFlush={showDoneImage && (tgFullscreen || DEMO)}
       bodyClassName="mx-hj-step-complete"
       screenBodyClassName="mx-hj-complete-body"
     >
@@ -624,6 +645,7 @@ function StepComplete({ trial, progress, onBackToMap }) {
           flexible
           src={doneImage}
           size={STEP_IMAGE_DIMENSIONS.done}
+          frame={trial.image?.frame?.done}
           focus={trial.image?.focus}
           compact={trial.image?.compact}
           overlap={trial.image?.overlap}
@@ -641,6 +663,14 @@ function StepComplete({ trial, progress, onBackToMap }) {
         <p className="mx-hj-complete__phrase">
           {trial.doneSummary || 'Ты сделал ещё один шаг по пути.'}
         </p>
+        {/* «Твоя опора»: ответ из «Одно действие» остаётся с пользователем
+            после шага; пустой ответ блок не показывает. */}
+        {actionAnswer && (
+          <div className="mx-hj-complete__support">
+            <span className="mx-hj-complete__support-label">Твоя опора</span>
+            <p className="mx-hj-complete__support-text">{actionAnswer}</p>
+          </div>
+        )}
         {trial.doneTeaser && (
           <p className="mx-hj-complete__teaser">{trial.doneTeaser}</p>
         )}
@@ -687,9 +717,10 @@ function StepComplete({ trial, progress, onBackToMap }) {
           type="button"
           data-testid="hero-complete-map"
           onClick={onBackToMap}
-          className="cta-pill mx-hj-step-intro__cta"
+          className="cta-pill mx-hj-step-intro__cta mx-hj-complete__cta"
         >
-          Продолжить <ChevronRight size={16} />
+          <span>Продолжить</span>
+          <ChevronRight size={16} aria-hidden="true" />
         </button>
       </div>
     </Shell>
