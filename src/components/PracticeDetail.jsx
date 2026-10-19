@@ -260,6 +260,15 @@ export default function PracticeDetail({
         <AccordionRow testId="practice-accordion-note" label="Заметка">
           {note && <p>{note}</p>}
         </AccordionRow>
+
+        {!isRitual && wording.guide && (
+          <AccordionRow testId="practice-accordion-guide" label="Как это работает">
+            <p>Срок — {wording.guide.duration}.</p>
+            <p>Отметка — {wording.guide.markDay}.</p>
+            <p>Пропуск — {wording.guide.missed}.</p>
+            <p>Остановка — {wording.guide.stop}.</p>
+          </AccordionRow>
+        )}
       </div>
 
       {!isRitual && (
@@ -268,7 +277,7 @@ export default function PracticeDetail({
           className="mx-practice-detail__quiet-action"
           onClick={() => onBreak(practice)}
         >
-          Сорвался сегодня
+          Не получилось сегодня
         </button>
       )}
 
@@ -276,7 +285,7 @@ export default function PracticeDetail({
       <section className="mx-practice-detail__week" data-testid="practice-detail-week">
         <p className="mx-practice-detail__week-title">Эта неделя</p>
         <PracticeWeek streak={practice.streak || 0} />
-        <p className="mx-practice-detail__week-hint">1 пропуск в неделю не рвёт серию</p>
+        <p className="mx-practice-detail__week-hint">1 пропуск в неделю не прерывает серию</p>
       </section>
 
       {/* Вчера не отмечено — тихая ссылка на восстановление дня */}

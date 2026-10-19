@@ -68,7 +68,7 @@ function BreakContextSheet({ asceza, onSave, onClose }) {
         </div>
         <div className="practice-sheet__body">
           <p className="text-[12px] text-muted leading-relaxed mb-5">
-            Ты сорвался с «{asceza.name}». Не ругаем себя — фиксируем контекст, чтобы Mentalix смог
+            Не получилось держать «{asceza.name}». Не ругаем себя — фиксируем контекст, чтобы Mentalix смог
             увидеть закономерность.
           </p>
           <p className="text-[11px] text-muted mb-2">Что сильнее всего повлияло?</p>
@@ -99,7 +99,7 @@ function BreakContextSheet({ asceza, onSave, onClose }) {
             onChange={setNote}
             question="Хочешь добавить пару слов?"
             placeholder="Например: вернулся после тяжёлого дня и автоматически открыл Reels"
-            ariaLabel="Комментарий к срыву"
+            ariaLabel="Комментарий"
             autoFocus
             submitLabel="Сохранить"
             submitDisabled={!trigger || saving}
@@ -116,7 +116,7 @@ function BreakContextSheet({ asceza, onSave, onClose }) {
               {error}
             </p>
           )}
-          <p className="text-[11px] text-center text-faint mt-3">Срыв — это данные, а не провал.</p>
+          <p className="text-[11px] text-center text-faint mt-3">Это данные, не повод себя ругать.</p>
         </div>
       </div>
     </div>,

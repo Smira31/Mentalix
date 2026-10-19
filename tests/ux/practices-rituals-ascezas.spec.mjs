@@ -183,13 +183,13 @@ test('ритуал с двумя ступенями отмечается мин�
   )
 })
 
-test('экран аскезы: «Сорвался сегодня», строки «+ …» и отметка «Держусь»', async ({ page }) => {
+test('экран аскезы: «Не получилось сегодня», строки «+ …» и отметка «Держусь»', async ({ page }) => {
   await page.goto('/?demo=1&tab=practices&action=asceza_detail')
 
   await expect(page.getByTestId('practice-detail-week')).toBeVisible()
   await expect(page.getByTestId('practice-restore-yesterday')).toBeVisible()
   await expect(page.getByTestId('practice-detail-toggle')).toHaveText('Держусь ✓')
-  await expect(page.getByText('Сорвался сегодня')).toBeVisible()
+  await expect(page.getByText('Не получилось сегодня')).toBeVisible()
   // Ступеней у аскезы нет — отметка одна.
   await expect(page.getByTestId('practice-detail-level-optimal')).toHaveCount(0)
   // Триггер и замена ещё не заданы — обе строки приглашают заполнить.

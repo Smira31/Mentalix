@@ -17,11 +17,11 @@ export const RITUAL_PRESETS = [
 ]
 
 export const ASCEZA_PRESETS = [
-  { name: 'Без сахара', minimum: 'не покупать сладкое домой', glyph: 'candy' },
-  { name: 'Соцсети до обеда', minimum: 'не открывать ленту до завтрака', glyph: 'phone-play' },
-  { name: 'Без алкоголя', minimum: 'не пить в будни', glyph: 'wine-glass' },
-  { name: 'Кофе после 14:00', minimum: 'не больше одной чашки после обеда', glyph: 'coffee' },
-  { name: 'Без жалоб', minimum: 'поймал жалобу — переформулировал', glyph: 'speech-slash' },
+  { name: 'Без сахара', minimum: 'меньше сладкого, осознанно — без жёсткого запрета', glyph: 'candy' },
+  { name: 'Без бесконечной ленты', minimum: 'не листать ленту до обеда, мессенджеры по делу можно', glyph: 'phone-play' },
+  { name: 'Без алкоголя', minimum: 'меньше алкоголя, осознанно — без жёсткого запрета', glyph: 'wine-glass' },
+  { name: 'Кофе после 14:00', minimum: 'осознанно, меньше кофе во второй половине дня', glyph: 'coffee' },
+  { name: 'Без жалоб', minimum: 'заметил жалобу — преврати в просьбу или маленькое действие', glyph: 'speech-slash' },
   { name: 'Покупки по списку', minimum: 'ничего вне списка дороже 1000 ₽', glyph: 'shopping-bag' },
 ]
 
@@ -159,6 +159,12 @@ export const PRACTICE_WORDING = {
     presets: ASCEZA_PRESETS,
     optionalFields: ASCEZA_OPTIONAL_FIELDS,
     defaultGlyph: 'shield',
+    guide: {
+      duration: 'без ограничения, пока чувствуешь пользу',
+      markDay: 'отметь «держусь» в конце дня',
+      missed: 'ничего страшного — продолжаешь на следующий день',
+      stop: 'в меню «…» → «удалить», или просто перестань отмечать',
+    },
   },
 }
 
@@ -186,7 +192,7 @@ export const RESTORE_LINK_LABEL = 'Отметить вчера'
  */
 export function restoreChoicesFor(kind, item) {
   if (kind !== 'ritual') {
-    return [{ value: 'held', label: 'Держусь', description: 'Восстановить день без срыва.' }]
+    return [{ value: 'held', label: 'Держусь', description: 'Восстановить день.' }]
   }
   const choices = []
   if (item.min_version)

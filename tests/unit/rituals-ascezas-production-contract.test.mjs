@@ -107,7 +107,7 @@ test('practice detail exposes toggle, three accordions and the asceza break acti
   assert.match(detail, /testId="practice-accordion-how"/)
   assert.match(detail, /testId="practice-accordion-note"/)
   assert.match(detail, /onLog/)
-  assert.match(detail, /Сорвался сегодня/)
+  assert.match(detail, /Не получилось сегодня/)
   assert.match(detail, /<DeleteConfirmationDialog/)
 })
 
@@ -115,7 +115,7 @@ test('экран практики показывает «ЭТА НЕДЕЛЯ» �
   // Карточка недели стоит над отметкой: 7 кружков и правило про пропуск.
   assert.match(detail, /data-testid="practice-detail-week"/)
   assert.match(detail, /<PracticeWeek streak=\{practice\.streak \|\| 0\} \/>/)
-  assert.match(detail, /1 пропуск в неделю не рвёт серию/)
+  assert.match(detail, /1 пропуск в неделю не прерывает серию/)
   assert.match(detailCss, /\.mx-practice-detail__week \{/)
   // Уровни отметки ритуала (минимум / оптимум) вернулись из старого экрана.
   assert.match(
