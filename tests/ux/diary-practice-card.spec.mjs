@@ -8,12 +8,28 @@ import { test, expect } from '@playwright/test'
  * Ожидания — по состоянию, без waitForTimeout.
  */
 
+// Бейдж демо-панели и переключатель «Demo viewport» — превью-артефакты
+// демо-режима, перекрывают шапку шторок (как в progress-segment-visibility.spec.mjs)
+async function hideDemoBadge(page) {
+  await page.addStyleTag({
+    content: [
+      '[data-testid="demo-panel-badge"] { display: none !important; }',
+      '.mx-preview-device-switcher { display: none !important; }',
+    ].join('\n'),
+  })
+}
+
+const DIARY_ROW = 'library-row-journal'
+const DIARY_MANAGE_CARD = 'practice-manage-card-journal'
+const DIARY_TILE = page => page.getByTestId('practice-tile').filter({ hasText: 'Дневник' })
+
 test.use({ viewport: { width: 393, height: 852 } })
 
 test('Дневник: есть в библиотеке, добавление → плитка на Today → тап открывает журнал', async ({
   page,
 }) => {
   await page.goto('/?demo=1&tab=today')
+  await hideDemoBadge(page)
 
   // Открываем шторку управления «Твои практики»
   await page.getByTestId('pinned-practices-manage').click()
@@ -24,32 +40,25 @@ test('Дневник: есть в библиотеке, добавление →
   await expect(page.getByRole('heading', { name: 'библиотека практик.' })).toBeVisible()
 
   // «Дневник» присутствует в библиотеке
-  const diaryRow = page.getByRole('listitem').filter({ hasText: 'Дневник' })
+  const diaryRow = page.getByTestId(DIARY_ROW)
   await expect(diaryRow).toBeVisible()
 
-  // Добавляем «Дневник» в набор
-  await diaryRow.click()
-
-  // Кнопка-переключатель показывает галочку (закреплено)
+  // Добавляем «Дневник» в набор: кнопка-переключатель показывает закрепление
+  if ((await diaryRow.getAttribute('aria-pressed')) !== 'true') {
+    await diaryRow.click()
+  }
   await expect(diaryRow).toHaveAttribute('aria-pressed', 'true')
 
-  // Закрываем библиотеку → шторка управления
+  // Закрываем библиотеку → шторка управления → Today
   await page.getByRole('button', { name: 'Сохранить и закрыть' }).click()
+  await page.getByRole('button', { name: 'Закрыть' }).click()
 
-  // Закрываем шторку управления
-  await page.getByRole('button', { name: 'Закрыть' }).click().catch(async () => {
-    // В Telegram-режиме кнопки «Закрыть» нет — закрываем по клику на фон
-    await page.keyboard.press('Escape')
-  })
-
-  // На Today в блоке «Твои практики» появилась плитка «Дневник»
-  const diaryTile = page.getByTestId('practice-tile').filter({ hasText: 'Дневник' })
-  await expect(diaryTile).toBeVisible()
+  // На Today в блоке «Твои практики» появилась ровно одна плитка «Дневник»
+  await expect(DIARY_TILE(page)).toHaveCount(1)
+  await expect(DIARY_TILE(page)).toBeVisible()
 
   // Тап по плитке «Дневник» открывает существующий журнал (DailyJournalFlow)
-  await diaryTile.click()
-
-  // Журнал открыт: DailyJournalFlow рендерит свою поверхность
+  await DIARY_TILE(page).click()
   await expect(page.getByText(/страница для себя|запиши|что на душе/i)).toBeVisible({
     timeout: 10_000,
   })
@@ -57,16 +66,16 @@ test('Дневник: есть в библиотеке, добавление →
 
 test('Дневник: повторное добавление не создаёт дубль', async ({ page }) => {
   await page.goto('/?demo=1&tab=today')
+  await hideDemoBadge(page)
 
   await page.getByTestId('pinned-practices-manage').click()
   await page.getByText('Добавить из библиотеки').click()
 
-  const diaryRow = page.getByRole('listitem').filter({ hasText: 'Дневник' })
+  const diaryRow = page.getByTestId(DIARY_ROW)
   await expect(diaryRow).toBeVisible()
 
   // Если ещё не закреплён — закрепляем
-  const isPressed = await diaryRow.getAttribute('aria-pressed')
-  if (isPressed !== 'true') {
+  if ((await diaryRow.getAttribute('aria-pressed')) !== 'true') {
     await diaryRow.click()
     await expect(diaryRow).toHaveAttribute('aria-pressed', 'true')
   }
@@ -81,37 +90,32 @@ test('Дневник: повторное добавление не создаё�
 
   // Закрываем и проверяем: только одна плитка «Дневник» на Today
   await page.getByRole('button', { name: 'Сохранить и закрыть' }).click()
-  await page.keyboard.press('Escape')
+  await page.getByRole('button', { name: 'Закрыть' }).click()
 
-  const diaryTiles = page.getByTestId('practice-tile').filter({ hasText: 'Дневник' })
-  await expect(diaryTiles).toHaveCount(1)
+  await expect(DIARY_TILE(page)).toHaveCount(1)
 })
 
 test('Дневник: удаление из набора через меню «…» убирает плитку с Today', async ({ page }) => {
   await page.goto('/?demo=1&tab=today')
+  await hideDemoBadge(page)
 
   // Сначала добавим «Дневник» через библиотеку, если его нет
-  const diaryTile = page.getByTestId('practice-tile').filter({ hasText: 'Дневник' })
-  const tileVisible = await diaryTile.isVisible().catch(() => false)
-
-  if (!tileVisible) {
+  if (!(await DIARY_TILE(page).isVisible().catch(() => false))) {
     await page.getByTestId('pinned-practices-manage').click()
     await page.getByText('Добавить из библиотеки').click()
-    const diaryRow = page.getByRole('listitem').filter({ hasText: 'Дневник' })
+    const diaryRow = page.getByTestId(DIARY_ROW)
     await diaryRow.click()
     await expect(diaryRow).toHaveAttribute('aria-pressed', 'true')
     await page.getByRole('button', { name: 'Сохранить и закрыть' }).click()
-    await page.keyboard.press('Escape')
-    await expect(diaryTile).toBeVisible()
+    await page.getByRole('button', { name: 'Закрыть' }).click()
+    await expect(DIARY_TILE(page)).toBeVisible()
   }
 
-  // Открываем шторку управления
+  // Открываем шторку управления и меню «…» карточки «Дневник»
   await page.getByTestId('pinned-practices-manage').click()
-
-  // Находим карточку «Дневник» в шторке управления и открываем меню «…»
-  const diaryCard = page.locator('.mx-pinned-practice-card--managed').filter({ hasText: 'Дневник' })
+  const diaryCard = page.getByTestId(DIARY_MANAGE_CARD)
   await expect(diaryCard).toBeVisible()
-  await diaryCard.getByTestId(/practice-card-more-/).click()
+  await diaryCard.getByTestId('practice-card-more-journal').click()
 
   // Выбираем «Убрать из набора»
   await page.getByTestId('practice-card-menu-remove').click()
@@ -120,8 +124,8 @@ test('Дневник: удаление из набора через меню «�
   await expect(diaryCard).toHaveCount(0)
 
   // Закрываем шторку
-  await page.keyboard.press('Escape')
+  await page.getByRole('button', { name: 'Закрыть' }).click()
 
   // На Today плитки «Дневник» больше нет
-  await expect(page.getByTestId('practice-tile').filter({ hasText: 'Дневник' })).toHaveCount(0)
+  await expect(DIARY_TILE(page)).toHaveCount(0)
 })

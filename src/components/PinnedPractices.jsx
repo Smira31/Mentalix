@@ -476,6 +476,7 @@ export default function PinnedPractices({
               {pinnedPractices.map(practice => (
                 <div
                   className="mx-pinned-practice-card mx-pinned-practice-card--managed"
+                  data-testid={`practice-manage-card-${practice.key}`}
                   key={practice.key}
                 >
                   <button
@@ -606,6 +607,7 @@ export default function PinnedPractices({
                   <button
                     type="button"
                     className="mx-library-row"
+                    data-testid={`library-row-${practice.key}`}
                     key={practice.key}
                     role="listitem"
                     aria-pressed={isPinned}
