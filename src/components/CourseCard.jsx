@@ -37,7 +37,7 @@ export default function CourseCard({ course, userId, onOpen }) {
       course
       label={course.label || `ПРАКТИКУМ · ${total} ШАГОВ`}
       title={`${course.title.toLowerCase()}.`}
-      description={course.cardDescription || course.description}
+      description={course.description}
       art={art}
       action={completed ? 'Продолжить' : 'Начать'}
       actionIcon={<ArrowRight size={16} />}

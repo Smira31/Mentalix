@@ -14,12 +14,10 @@
 .mx-library-stoic .mx-library-hero {
   grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
   height: auto;
-  min-height: calc(var(--mx-space-10) * 7);
+  min-height: calc(var(--mx-space-10) * 6);
   border-radius: var(--mx-radius-card);
-  /* Ч/б акцент: поднятыый светлый фон (card-raised) ярче плиток статей (c-card),
-     рамка втрое ярче — карточка практикума сразу видна как не статья. */
-  background: rgb(var(--c-card-raised));
-  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  background: var(--mx-steps-card-bg);
+  border: 1px solid var(--mx-steps-card-border);
   text-align: left;
   transition: transform 180ms ease;
 }
@@ -36,24 +34,11 @@
   background: rgb(var(--c-card2));
 }
 .mx-library-hero .mx-steps-journal__label {
-  /* Ч/б акцент: метка — сплошная белая пилюля с чёрным текстом,
-     сразу читается как ярлык практикума, а не как подпись статьи. */
-  display: inline-flex;
-  align-items: center;
-  align-self: flex-start;
-  padding: 5px 11px;
-  border-radius: var(--mx-radius-pill);
-  background: rgb(var(--c-text));
-  color: rgb(var(--c-bg));
-  font-weight: 700;
-  font-size: max(10px, calc(11px * var(--mx-type-scale)));
-  letter-spacing: 0.12em;
-  line-height: 1;
-  text-transform: uppercase;
+  color: rgb(var(--c-muted));
+  letter-spacing: 0.14em;
 }
 .mx-library-hero .mx-steps-journal__title {
   color: rgb(var(--c-text));
-  font-size: calc(20px * var(--mx-type-scale));
 }
 .mx-library-hero .mx-steps-journal__desc {
   color: rgb(var(--c-muted));

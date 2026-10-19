@@ -6,7 +6,6 @@ import {
   useRef,
   createContext,
   useContext,
-  useSyncExternalStore,
 } from 'react'
 import { Check, ChevronRight, Lock } from 'lucide-react'
 
@@ -25,7 +24,6 @@ import {
   clearHeroDraft,
 } from '../lib/heroJourneyProgress'
 import { heroDraftKey } from '../lib/heroJourneyState'
-import { getFullscreenSnapshot, subscribeFullscreen } from '../lib/tgFullscreen'
 import { writeLocal } from '../lib/store'
 import './HeroJourneyMap.css'
 
@@ -40,11 +38,8 @@ const STEP_IMAGE_DIMENSIONS = {
   done: { width: 1170, height: 900 },
 }
 
-/* Положение кадра по умолчанию: герой опущен ниже в кадре.
-   При object-fit: cover рост Y показывает низ картинки и сдвигает рисунок
-   вверх, поэтому значение ниже 40% (30%) — видна верхняя часть, герой ниже.
-   Шаги с собственным image.focus задают своё значение (30–40% Y). */
-const DEFAULT_HERO_FOCUS = '50% 30%'
+/* Положение кадра по умолчанию: чуть выше середины — низ кадров намеренно пустой. */
+const DEFAULT_HERO_FOCUS = '50% 40%'
 
 /* Предзагрузка одной картинки: открытие следующего экрана без мигания. */
 function preloadImage(src) {
@@ -409,7 +404,6 @@ function AboutScreen({ prologue, onBackToMap }) {
 
 function StepIntro({ trial, onStart }) {
   const { chapterForTrial, finale, steps, total: HERO_JOURNEY_TOTAL_STEPS } = useCourse()
-  const tgFullscreen = useSyncExternalStore(subscribeFullscreen, getFullscreenSnapshot)
   const isFinale = finale?.id === trial.id
   const chapter = isFinale ? null : chapterForTrial(trial.id)
   const enterImage = trial.image?.enter
@@ -429,7 +423,6 @@ function StepIntro({ trial, onStart }) {
        прижата к низу (см. .mx-hj-hero--flex и __bottom в CSS). */
     <Shell
       fit
-      topFlush={showEnterImage && (tgFullscreen || DEMO)}
       bodyClassName="mx-hj-step-intro"
       screenBodyClassName="mx-hj-intro-body"
     >
@@ -591,7 +584,6 @@ function StepComplete({ trial, progress, onBackToMap }) {
     finale,
     steps,
   } = useCourse()
-  const tgFullscreen = useSyncExternalStore(subscribeFullscreen, getFullscreenSnapshot)
   /* У финала нет главы: на его экране «Путь пройден» карточки главы нет. */
   const chapter = finale?.id === trial.id ? null : chapterForTrial(trial.id)
   const chapterTrials = trialsForChapter(chapter)
@@ -618,7 +610,6 @@ function StepComplete({ trial, progress, onBackToMap }) {
        кнопка «Продолжить» прижата к низу. */
     <Shell
       fit
-      topFlush={showDoneImage && (tgFullscreen || DEMO)}
       bodyClassName="mx-hj-step-complete"
       screenBodyClassName="mx-hj-complete-body"
     >
