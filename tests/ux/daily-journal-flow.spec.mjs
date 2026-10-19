@@ -612,7 +612,7 @@ test('журнал: итоговый экран — одна кнопка «На
   await expect(page.getByTestId('dj-review-entries')).toBeVisible()
   await expect(page.getByTestId('dj-review-edit')).toBeVisible()
   const linksBox = await page.getByTestId('dj-review-entries').boundingBox()
-  expect(linksBox.top).toBeGreaterThanOrEqual(box.bottom)
+  expect(linksBox.y).toBeGreaterThanOrEqual(box.y + box.height)
 
   // Кнопка ведёт в «Поток»
   await startBtn.click()
