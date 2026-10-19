@@ -201,6 +201,77 @@ test.describe('Диалог — экран выбора роли', () => {
   })
 
   /*
+   * MXL-DIALOG-HERO-STABLE-001: место под иллюстрацию шапки «Диалога» занято до
+   * загрузки PNG, поэтому пустой диалог открывается на месте и не дёргается.
+   * Раньше картинка была нулевой высоты и, загрузившись, сдвигала весь экран
+   * вниз. PNG отдаётся с задержкой: сначала меряется место под ещё не загруженную
+   * иллюстрацию, затем — после загрузки; позиция и высота обязаны совпасть, а
+   * страница остаться непрокрученной.
+   */
+  test('пустой диалог: иллюстрация не меняет позицию после загрузки, страница не прокручена', async ({
+    page,
+  }) => {
+    let releaseImage
+    const imageHeld = new Promise(resolve => {
+      releaseImage = resolve
+    })
+    // Держим именно картинку: запрос модуля того же PNG (import в dev-сервере
+    // Vite) отпускаем сразу, иначе не доедет ленивая вкладка «Диалог».
+    await page.route(/dialog-hero-reference/, async route => {
+      if (route.request().resourceType() !== 'image') {
+        await route.continue()
+        return
+      }
+
+      await imageHeld
+      await route.continue()
+    })
+
+    await page.goto('/?demo=1&tab=mentor', { waitUntil: 'domcontentloaded' })
+    await expect(page.getByTestId('dialog-entry')).toBeVisible({ timeout: 15_000 })
+
+    const measure = () =>
+      page.evaluate(() => {
+        const hero = document.querySelector('.mx-dialog-hero-reference')
+        const track = document.querySelector('[data-testid="mentor-persona-track"]')
+        const root = document.querySelector('[data-testid="app-scroll-root"]')
+        return {
+          heroTop: hero.getBoundingClientRect().top,
+          heroHeight: hero.getBoundingClientRect().height,
+          trackTop: track.getBoundingClientRect().top,
+          loaded: hero.complete && hero.naturalWidth > 0,
+          scrollTop: root.scrollTop,
+        }
+      })
+
+    const before = await measure()
+    expect(
+      before.loaded,
+      'картинка шапки ещё не загружена — замер идёт по занятому месту'
+    ).toBe(false)
+    expect(before.heroHeight, 'место под иллюстрацию занято до загрузки PNG').toBeGreaterThan(0)
+    expect(before.scrollTop, '«Диалог» открывается без прокрутки').toBe(0)
+
+    releaseImage()
+
+    await expect
+      .poll(() => measure().then(metrics => metrics.loaded), { message: 'иллюстрация загрузилась' })
+      .toBe(true)
+
+    const after = await measure()
+    expect(after.heroTop, 'иллюстрация не сдвинулась после загрузки').toBeCloseTo(before.heroTop, 1)
+    expect(after.heroHeight, 'высота иллюстрации не изменилась после загрузки').toBeCloseTo(
+      before.heroHeight,
+      1
+    )
+    expect(after.trackTop, 'карусель ролей не сдвинулась после загрузки').toBeCloseTo(
+      before.trackTop,
+      1
+    )
+    expect(after.scrollTop, 'загрузка иллюстрации не прокрутила страницу').toBe(0)
+  })
+
+  /*
    * MXL-QA-038: длинная история прокручивается, и последняя реплика остаётся
    * на виду. История набирается отправкой: демо-разговоры короткие и в экран
    * помещаются.

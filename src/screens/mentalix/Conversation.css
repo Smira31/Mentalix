@@ -18,6 +18,37 @@
   scroll-behavior: smooth;
 }
 
+/*
+ * MXL-KEYBOARD-MOTION-001: клавиатура поднимает ленту и поле ввода одним
+ * transform'ом — раскладка при этом не пересобирается.
+ *
+ * «Сцена» занимает свободную высоту экрана и обрезает поднятую группу сверху:
+ * видимая часть ленты уменьшается снизу, а её низ вместе с composer'ом уезжает
+ * вверх ровно на --mx-keyboard-inset. Анимируется только transform (height и top
+ * не трогаются), поэтому промежуточные события visualViewport/viewportChanged
+ * не вызывают пересчёта layout и рывков; scrollTop ленты при этом не меняется —
+ * последняя реплика остаётся над полем ввода и при открытии, и при закрытии
+ * клавиатуры.
+ */
+.mx-conversation-stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.mx-conversation-lift {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  transform: translateY(calc(-1 * var(--mx-keyboard-inset, 0px)));
+  transition: transform var(--mx-motion-keyboard) var(--mx-ease-ios);
+  will-change: transform;
+}
+
 /* Не анимируем height: на iOS это создаёт временный gap под composer. */
 .mx-conversation-surface--demo {
   transition:
@@ -195,6 +226,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  /* Без анимации, но и без рывка: инсет клавиатуры применяется одним кадром. */
+  .mx-conversation-lift {
+    transition: none;
+  }
+
   .mx-conversation-surface--demo {
     transition: none;
   }
