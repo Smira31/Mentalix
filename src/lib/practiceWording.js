@@ -17,9 +17,9 @@ export const RITUAL_PRESETS = [
 ]
 
 export const ASCEZA_PRESETS = [
-  { name: 'Без сахара', minimum: 'меньше сладкого, осознанно — без жёсткого запрета', glyph: 'candy' },
+  { name: 'Меньше сладкого', minimum: 'меньше сладкого, осознанно — без жёсткого запрета', glyph: 'candy' },
   { name: 'Без бесконечной ленты', minimum: 'не листать ленту до обеда, мессенджеры по делу можно', glyph: 'phone-play' },
-  { name: 'Без алкоголя', minimum: 'меньше алкоголя, осознанно — без жёсткого запрета', glyph: 'wine-glass' },
+  { name: 'Без алкоголя', minimum: 'сегодня без алкоголя; если тянет — заметь, что за этим стоит', glyph: 'wine-glass' },
   { name: 'Кофе после 14:00', minimum: 'осознанно, меньше кофе во второй половине дня', glyph: 'coffee' },
   { name: 'Без жалоб', minimum: 'заметил жалобу — преврати в просьбу или маленькое действие', glyph: 'speech-slash' },
   { name: 'Покупки по списку', minimum: 'ничего вне списка дороже 1000 ₽', glyph: 'shopping-bag' },
@@ -115,6 +115,12 @@ export const PRACTICE_WORDING = {
     presets: RITUAL_PRESETS,
     optionalFields: RITUAL_OPTIONAL_FIELDS,
     defaultGlyph: 'hourglass',
+    guide: {
+      duration: 'без ограничения, пока полезен',
+      markDay: 'отметь «сегодня» в конце дня',
+      missed: 'ничего страшного — продолжаешь на следующий день',
+      stop: '«…» → «Удалить». Отметки этой практики исчезнут',
+    },
   },
   asceza: {
     kind: 'asceza',
@@ -163,7 +169,7 @@ export const PRACTICE_WORDING = {
       duration: 'без ограничения, пока чувствуешь пользу',
       markDay: 'отметь «держусь» в конце дня',
       missed: 'ничего страшного — продолжаешь на следующий день',
-      stop: 'в меню «…» → «удалить», или просто перестань отмечать',
+      stop: '«…» → «Удалить». Отметки этой практики исчезнут',
     },
   },
 }
