@@ -79,7 +79,17 @@ export default function PracticeDetail({
   const [pulse, setPulse] = useState(false)
   const pulseTimer = useRef(null)
   useEdgeSwipeBack(screenRef, onBack)
-  useBackButton(onBack, systemBack)
+  // «Назад» с вложенных экранов карточки (поле, знак, правка) возвращает
+  // в карточку, а не в список: пока открыт sub или диалог — закрываем его.
+  useBackButton(() => {
+    if (sub) {
+      setSub(null)
+    } else if (confirming) {
+      setConfirming(false)
+    } else {
+      onBack()
+    }
+  }, true)
 
   useEffect(() => () => clearTimeout(pulseTimer.current), [])
   const isRitual = kind === 'ritual'
@@ -223,16 +233,6 @@ export default function PracticeDetail({
         )}
       </div>
 
-      {!isRitual && (
-        <button
-          type="button"
-          className="mx-practice-detail__quiet-action"
-          onClick={() => onBreak(practice)}
-        >
-          Не получилось сегодня
-        </button>
-      )}
-
       {/* ЭТА НЕДЕЛЯ: неделя кружками и правило про один пропуск */}
       <section className="mx-practice-detail__week" data-testid="practice-detail-week">
         <p className="mx-practice-detail__week-title">Эта неделя</p>
@@ -240,55 +240,34 @@ export default function PracticeDetail({
         <p className="mx-practice-detail__week-hint">1 пропуск в неделю не прерывает серию</p>
       </section>
 
-      {/* Вчера не отмечено — тихая ссылка на восстановление дня */}
-      {canRestore && (
-        <button
-          type="button"
-          className="mx-practice-detail__restore"
-          data-testid="practice-restore-yesterday"
-          onClick={() => {
-            platform.haptic('light')
-            onRestore?.(practice)
-          }}
-        >
-          {RESTORE_LINK_LABEL}
-        </button>
-      )}
+      {/* Тихие ссылки одной строкой под неделей */}
+      <div className="mx-practice-detail__quiet-links">
+        {canRestore && (
+          <button
+            type="button"
+            className="mx-practice-detail__quiet-link"
+            data-testid="practice-restore-yesterday"
+            onClick={() => {
+              platform.haptic('light')
+              onRestore?.(practice)
+            }}
+          >
+            {RESTORE_LINK_LABEL}
+          </button>
+        )}
+        {!isRitual && (
+          <button
+            type="button"
+            className="mx-practice-detail__quiet-link"
+            data-testid="practice-break-link"
+            onClick={() => onBreak(practice)}
+          >
+            Не получилось сегодня
+          </button>
+        )}
+      </div>
 
-      {hasLevels ? (
-        <div className="mx-practice-detail__levels">
-          {[
-            { value: 'min', caption: 'Минимум', text: practice.min_version },
-            { value: 'optimal', caption: 'Оптимум', text: practice.optimal_version },
-          ].map(item => (
-            <button
-              type="button"
-              key={item.value}
-              className={`mx-practice-detail__level${
-                practice.today_level === item.value ? ' is-active' : ''
-              }`}
-              aria-pressed={practice.today_level === item.value}
-              data-testid={`practice-detail-level-${item.value}`}
-              onClick={() => logLevel(item.value)}
-            >
-              <span className="mx-practice-detail__level-caption">{item.caption}</span>
-              <span className="mx-practice-detail__level-text">{item.text}</span>
-            </button>
-          ))}
-        </div>
-      ) : (
-        <button
-          type="button"
-          className="mx-practice-detail__mark"
-          data-testid="practice-detail-toggle"
-          aria-pressed={done}
-          onClick={toggle}
-        >
-          {done ? wording.markedButton : wording.markButton}
-        </button>
-      )}
-
-      {/* Тихие действия внизу: Изменить · Знак · Удалить */}
+      {/* Тихие действия: Изменить · Знак · Удалить */}
       <div className="mx-practice-detail__actions">
         <button
           type="button"
@@ -316,6 +295,42 @@ export default function PracticeDetail({
         >
           Удалить
         </button>
+      </div>
+
+      {/* Кнопка отметки закреплена внизу, над нижним меню — видна всегда */}
+      <div className="mx-practice-detail__fixed">
+        {hasLevels ? (
+          <div className="mx-practice-detail__levels">
+            {[
+              { value: 'min', caption: 'Минимум', text: practice.min_version },
+              { value: 'optimal', caption: 'Оптимум', text: practice.optimal_version },
+            ].map(item => (
+              <button
+                type="button"
+                key={item.value}
+                className={`mx-practice-detail__level${
+                  practice.today_level === item.value ? ' is-active' : ''
+                }`}
+                aria-pressed={practice.today_level === item.value}
+                data-testid={`practice-detail-level-${item.value}`}
+                onClick={() => logLevel(item.value)}
+              >
+                <span className="mx-practice-detail__level-caption">{item.caption}</span>
+                <span className="mx-practice-detail__level-text">{item.text}</span>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <button
+            type="button"
+            className="mx-practice-detail__mark"
+            data-testid="practice-detail-toggle"
+            aria-pressed={done}
+            onClick={toggle}
+          >
+            {done ? wording.markedButton : wording.markButton}
+          </button>
+        )}
       </div>
 
       {sub?.type === 'edit' && (
