@@ -295,11 +295,8 @@ test.describe('375×667: мобильный layout', () => {
     }))
     expect(overflow.scrollW).toBeLessThanOrEqual(overflow.clientW + 2)
 
-    // «Зачем» открыт по умолчанию.
-    await expect(page.getByTestId('practice-accordion-why')).toHaveAttribute(
-      'aria-expanded',
-      'true'
-    )
+    // У демо-аскезы нет goal — «Зачем» скрыт (пустой аккордеон не рисуется).
+    await expect(page.getByTestId('practice-accordion-why')).toHaveCount(0)
 
     // Кнопка «Держусь» закреплена внизу — видна в видимой области 667px.
     const toggle = page.getByTestId('practice-detail-toggle')
