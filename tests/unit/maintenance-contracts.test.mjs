@@ -18,7 +18,7 @@ import {
 } from '../../src/lib/checkinDraft.js'
 
 test('allowlist сохраняет доступные практики и активирует Daimon entry', () => {
-  assert.deepEqual(AVAILABLE_PRACTICES, ['daimon', 'rituals', 'ascezas'])
+  assert.deepEqual(AVAILABLE_PRACTICES, ['daimon', 'rituals', 'ascezas', 'journal'])
 
   assert.equal(isPracticeAvailable('unknown-practice'), false)
 })
