@@ -237,6 +237,23 @@
   margin-top: 2px;
 }
 
+/* Закрытая глава серым (заголовок и римская цифра), справа вместо
+   «0 из 4» — маленький замок; у открытой главы — стрелка «›». */
+.mx-hj-chapter--locked .mx-hj-chapter__roman {
+  color: rgb(var(--c-muted));
+}
+
+.mx-hj-chapter--locked .mx-hj-chapter__name {
+  color: rgb(var(--c-muted));
+}
+
+.mx-hj-chapter__chevron,
+.mx-hj-chapter__lock {
+  flex: none;
+  margin-top: 2px;
+  color: rgb(var(--c-muted));
+}
+
 .mx-hj-chapter__expand {
   margin-top: 12px;
   background: none;
@@ -636,9 +653,29 @@
 }
 
 .mx-hj-step-intro__text {
-  flex: none;
+  flex: 0 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   /* Без героя (картинка не загрузилась): зазор под заглушкой */
   margin-top: 12px;
+}
+
+/*
+ * Длинное вступление на низком экране (375×667 и ниже) доскролливается
+ * внутри блока. Скролл у внутреннего контейнера, а не у самого текста:
+ * скрим ::before (читаемость подписи на кадре) выходит на 56 px выше
+ * блока и был бы обрезан собственным overflow. Отступ снизу — под высоту
+ * кнопки «Начать шаг»: последний абзац прокручивается до конца и не
+ * уходит под кнопку. Мягкое затемнение над кнопкой — маска нижнего края.
+ */
+.mx-hj-step-intro__text-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-bottom: calc(var(--cta-pill-height, 52px) + var(--mx-space-4));
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 40px), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 40px), transparent);
 }
 
 /* С картинкой текст слегка перехлёстывает затемнённый нижний край героя. */
@@ -1083,11 +1120,12 @@
   background: linear-gradient(rgba(5, 4, 3, 0.35), transparent);
 }
 
-/* «Продолжить» следует за итогом с зазором 24 px, а не отделяется от него
-   всей свободной высотой колонки. Сама кнопка и её действие не меняются. */
+/* «Продолжить» прижата к низу колонки: свободная высота уходит в зазор
+   над кнопкой (margin-top: auto), но не ближе 24 px к итогу. На низком
+   экране 375×667 кнопка видна целиком, без скролла. */
 .mx-hj-complete__bottom {
-  margin-top: var(--mx-space-6);
-  padding-top: 0;
+  margin-top: auto;
+  padding-top: var(--mx-space-6);
 }
 
 /* Текстовый блок: фиксированный, идёт сразу под картинкой (перекрытие дал
@@ -1157,6 +1195,35 @@
   background: rgb(var(--c-card));
 }
 
+/* «Твоя опора»: ответ из «Одно действие» под подзаголовком. Пустой
+   ответ блок не показывает (JSX), текст — до двух строк, дальше «…». */
+.mx-hj-complete__support {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--mx-space-4);
+}
+
+.mx-hj-complete__support-label {
+  font-family: var(--font-label, 'Manrope', sans-serif);
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgb(var(--c-muted));
+}
+
+.mx-hj-complete__support-text {
+  font-size: calc(15px * var(--mx-type-scale));
+  line-height: 1.4;
+  color: rgb(var(--c-text));
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .mx-hj-complete__chapter-segs {
   display: flex;
   gap: 3px;
@@ -1179,6 +1246,8 @@
   color: rgb(var(--c-text));
 }
 
+/* Тихая ссылка, как «Начать без настройки» в Дневнике: цвет всегда
+   вторичный (без цвета посещённой ссылки) и подчёркивание. */
 .mx-hj-complete__diary-link {
   display: block;
   margin-top: 16px;
@@ -1186,13 +1255,20 @@
   border: none;
   padding: 0;
   font-size: calc(14px * var(--mx-type-scale));
-  color: rgb(var(--c-gold));
+  color: rgb(var(--c-muted));
+  text-decoration: underline;
   cursor: pointer;
   text-align: center;
 }
 
 /* Кнопка «Продолжить» живёт в нижней группе колонки
    (.mx-hj-step-intro__bottom + .mx-hj-step-intro__cta). */
+
+/* Как на главной практикума: текст и отдельная стрелка «›» с тем же
+   зазором 8 px, что у cta в карточке «Следующий шаг». */
+.mx-hj-complete__cta {
+  gap: 8px;
+}
 
 .mx-hj-empty-course {
   margin: 12px 0 0;
