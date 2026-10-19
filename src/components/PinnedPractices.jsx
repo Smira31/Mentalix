@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import {
-  Brush,
   Check,
   LayoutGrid,
   Lightbulb,
@@ -21,17 +20,21 @@ import { CatalogDieArt } from './practice-art/CatalogDieArt'
 import { CatalogPuzzleSmallArt } from './practice-art/CatalogPuzzleSmallArt'
 import { CatalogCandleSmallArt } from './practice-art/CatalogCandleSmallArt'
 import { CatalogDieSmallArt } from './practice-art/CatalogDieSmallArt'
+import { CatalogQuillArt } from './practice-art/CatalogQuillArt'
+import { CatalogQuillSmallArt } from './practice-art/CatalogQuillSmallArt'
 
 const TRACED_GLYPHS = {
   rituals: CatalogPuzzleArt,
   ascezas: CatalogCandleArt,
   daimon: CatalogDieArt,
+  journal: CatalogQuillArt,
 }
 
 const TRACED_GLYPHS_SMALL = {
   rituals: CatalogPuzzleSmallArt,
   ascezas: CatalogCandleSmallArt,
   daimon: CatalogDieSmallArt,
+  journal: CatalogQuillSmallArt,
 }
 import { api } from '../lib/api'
 import { hasCanonicalUserId } from '../lib/guestAuth'
@@ -84,6 +87,7 @@ function Sheet({
               <button
                 type="button"
                 className="mx-pinned-sheet__circle"
+                data-testid={isLibrary ? 'pinned-sheet-close-library' : 'pinned-sheet-close'}
                 aria-label={closeLabel}
                 onClick={onClose}
               >
@@ -171,7 +175,6 @@ export default function PinnedPractices({
   const [busyKeys, setBusyKeys] = useState(() => new Set())
   const [undo, setUndo] = useState(null)
   const [menuKey, setMenuKey] = useState(null)
-  const [soonToast, setSoonToast] = useState(false)
   const [libraryFilter, setLibraryFilter] = useState('recommended')
   const [librarySearch, setLibrarySearch] = useState('')
   const todayDone = useMemo(
@@ -182,7 +185,6 @@ export default function PinnedPractices({
     [rituals, ascezas]
   )
   const undoTimerRef = useRef(null)
-  const soonTimerRef = useRef(null)
   // AUD-010: «Повторить» — один запрос на нажатие, автоцикла нет.
   const [retryKey, setRetryKey] = useState(0)
   const railRef = useRef(null)
@@ -190,7 +192,6 @@ export default function PinnedPractices({
   useEffect(() => {
     return () => {
       if (undoTimerRef.current) clearTimeout(undoTimerRef.current)
-      if (soonTimerRef.current) clearTimeout(soonTimerRef.current)
     }
   }, [])
 
@@ -364,16 +365,6 @@ export default function PinnedPractices({
     onOpenPractice?.(practice.sub || practice.key)
   }
 
-  // «Создать свою практику» — функция ещё не готова, показываем короткий тост.
-  function showSoonToast() {
-    setSoonToast(true)
-    if (soonTimerRef.current) clearTimeout(soonTimerRef.current)
-    soonTimerRef.current = setTimeout(() => {
-      setSoonToast(false)
-      soonTimerRef.current = null
-    }, 2000)
-  }
-
   function runMenuAction(action, practice) {
     setMenuKey(null)
     if (action === 'open') openPractice(practice)
@@ -447,15 +438,6 @@ export default function PinnedPractices({
               <button
                 type="button"
                 className="cta-pill mx-pinned-sheet__pill"
-                data-testid="practice-create-soon"
-                onClick={showSoonToast}
-              >
-                <Brush size={18} aria-hidden="true" />
-                <span>Создать свою практику</span>
-              </button>
-              <button
-                type="button"
-                className="cta-pill mx-pinned-sheet__pill"
                 onClick={() => setSheet('library')}
               >
                 <Plus size={18} aria-hidden="true" />
@@ -476,6 +458,7 @@ export default function PinnedPractices({
               {pinnedPractices.map(practice => (
                 <div
                   className="mx-pinned-practice-card mx-pinned-practice-card--managed"
+                  data-testid={`practice-manage-card-${practice.key}`}
                   key={practice.key}
                 >
                   <button
@@ -537,11 +520,6 @@ export default function PinnedPractices({
                   )}
                 </div>
               ))}
-            </div>
-          )}
-          {soonToast && (
-            <div className="mx-pinned-soon-toast" role="status" data-testid="practices-soon-toast">
-              Скоро: свои практики
             </div>
           )}
         </Sheet>
@@ -606,6 +584,7 @@ export default function PinnedPractices({
                   <button
                     type="button"
                     className="mx-library-row"
+                    data-testid={`library-row-${practice.key}`}
                     key={practice.key}
                     role="listitem"
                     aria-pressed={isPinned}

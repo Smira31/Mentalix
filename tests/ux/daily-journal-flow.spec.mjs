@@ -27,6 +27,11 @@ test('журнал: intro → пропуск настройки → поток �
   // ── Intro ──
   await expect(page.getByTestId('dj-intro-skip')).toBeVisible()
   await expect(page.getByTestId('dj-intro-setup')).toHaveText('Настроить — 2 минуты')
+  // Текст владельца (#1090) и закреплённые внизу действия
+  await expect(page.locator('.mx-dj-intro__text')).toHaveText(
+    'Каждый день 5 минут: перечитай, куда идёшь, выгрузи мысли и ответь на один вопрос.'
+  )
+  await expect(page.locator('.mx-dj-intro__art')).toBeVisible()
   // Пропускаем настройку
   await page.getByTestId('dj-intro-skip').click()
 
@@ -84,9 +89,12 @@ test('журнал: intro → пропуск настройки → поток �
   await expect(page.locator('.mx-completion__title')).toContainText('сохранена')
   // Плашка «день 1»
   await expect(page.locator('.mx-completion__date-pill')).toContainText('день 1')
-  // Кнопка «Сохранить и выйти»
+  // Кнопка «Готово» — запись уже сохранена до этого экрана
   await expect(page.getByTestId('dj-complete-close')).toBeVisible()
-  await expect(page.getByTestId('dj-complete-close')).toHaveText('Сохранить и выйти')
+  await expect(page.getByTestId('dj-complete-close')).toHaveText('Готово')
+  // Тихой кнопки «Пропустить» больше нет: оценка необязательна,
+  // «Готово» выходит и без неё
+  await expect(page.getByTestId('dj-complete-skip')).toHaveCount(0)
 })
 
 test('журнал: настройка — 3 подэкрана картинки будущего, ✕ = назад', async ({
@@ -113,9 +121,25 @@ test('журнал: настройка — 3 подэкрана картинки
   await page.getByTestId('dj-setup-goal-0').fill('Спокойствие')
   await page.getByTestId('dj-setup-next').click()
 
-  // ── Шаг 2 — Кем я становлюсь ──
-  await expect(page.locator('.mx-dj-setup__step-label')).toHaveText('Шаг 2 из 5 · Кем я становлюсь')
-  await page.getByTestId('dj-setup-reminder-0').fill('Я делаю главное до обеда')
+  // ── Шаг 2 — Каким я хочу быть (#1090) ──
+  await expect(page.locator('.mx-dj-setup__step-label')).toHaveText('Шаг 2 из 5 · Каким я хочу быть')
+  // Решение 19.10: префикс «Я — человек, который…» — один раз над списком
+  await expect(page.getByTestId('dj-setup-identity-prefix')).toHaveText('Я — человек, который…')
+  await expect(page.getByTestId('dj-setup-identity-prefix')).toHaveCount(1)
+  await expect(page.getByTestId('dj-setup-reminder-0')).toHaveAttribute(
+    'placeholder',
+    'держит слово'
+  )
+  // Чип добавляет строку с префиксом; использованный чип скрыт
+  await page.getByTestId('dj-setup-chip').filter({ hasText: 'делает главное первым' }).click()
+  await expect(page.getByTestId('dj-setup-reminder-0')).toHaveValue('делает главное первым')
+  await expect(page.getByTestId('dj-setup-chip').filter({ hasText: 'делает главное первым' })).toHaveCount(0)
+  // Удаление строки возвращает чип
+  await page.getByTestId('dj-setup-reminder-delete-0').click()
+  await expect(page.getByTestId('dj-setup-reminder-0')).toHaveValue('')
+  await expect(page.getByTestId('dj-setup-chip').filter({ hasText: 'делает главное первым' })).toHaveCount(1)
+  // Снова берём чип и идём дальше
+  await page.getByTestId('dj-setup-chip').filter({ hasText: 'делает главное первым' }).click()
   await page.getByTestId('dj-setup-next').click()
 
   // ── Шаг 3 — Картинка будущего · 1/3 ──
@@ -123,13 +147,25 @@ test('журнал: настройка — 3 подэкрана картинки
   await expect(page.getByTestId('dj-setup-vision-scene')).toBeVisible()
   // Пусто → ✕ = назад на шаг 2
   await page.getByTestId('dj-setup-next').click()
-  await expect(page.locator('.mx-dj-setup__step-label')).toHaveText('Шаг 2 из 5 · Кем я становлюсь')
+  await expect(page.locator('.mx-dj-setup__step-label')).toHaveText('Шаг 2 из 5 · Каким я хочу быть')
   // Назад на шаг 3
   await page.getByTestId('dj-setup-next').click()
   await expect(page.locator('.mx-dj-setup__step-label')).toHaveText('Шаг 3 из 5 · Картинка будущего · 1/3')
 
-  // Заполняем scene → ✓ дальше
+  // 3.1: подсказка и пример владельца (#1090)
+  await expect(page.getByTestId('dj-setup-vision-hint')).toHaveText(
+    'Одна-две детали: что ты видишь и что чувствуешь.'
+  )
+  await expect(page.getByTestId('dj-setup-vision-scene')).toHaveAttribute(
+    'placeholder',
+    'Например: просыпаюсь без тревоги и сразу знаю, с чего начать день'
+  )
+  // Заполняем scene и дописываем чип-чувство через запятую
   await page.getByTestId('dj-setup-vision-scene').fill('Сижу у окна, работа сделана')
+  await page.getByTestId('dj-setup-chip').filter({ hasText: 'спокойствие' }).click()
+  await expect(page.getByTestId('dj-setup-vision-scene')).toHaveValue(
+    'Сижу у окна, работа сделана, спокойствие'
+  )
   await page.getByTestId('dj-setup-next').click()
 
   // ── 2/3 ──
@@ -150,6 +186,10 @@ test('журнал: настройка — 3 подэкрана картинки
 
   // ── Шаг 5 — Напоминание ──
   await expect(page.locator('.mx-dj-setup__step-label')).toHaveText('Шаг 5 из 5 · Напоминание')
+  // Дефолт нового пользователя — «Вечером 21:00» (#1090)
+  await expect(page.getByTestId('dj-setup-reminder-Вечером')).toHaveClass(
+    /mx-dj-reminder__tile--selected/
+  )
   // Выбираем «Своё время» → плитка выделяется, появляется input
   await page.getByTestId('dj-setup-reminder-custom').click()
   await expect(page.getByTestId('dj-setup-reminder-time')).toBeVisible()
@@ -162,6 +202,10 @@ test('журнал: настройка — 3 подэкрана картинки
   // ── Перечитай (после настройки с данными) ──
   await expect(page.locator('.mx-dj-review')).toBeVisible()
   await expect(page.getByTestId('dj-review-edit')).toBeVisible()
+  // Блок «КАКИМ Я ХОЧУ БЫТЬ»: строка с префиксом (#1090)
+  await expect(page.getByTestId('dj-review-identity-item').first()).toHaveText(
+    'Я — человек, который… делает главное первым'
+  )
   // Блок напоминания: «Каждый день в 07:30»
   await expect(page.locator('.mx-dj-review__reminder')).toHaveText('Каждый день в 07:30')
 })
@@ -176,7 +220,7 @@ test('журнал: сброс настройки → intro → поток бе�
   await page.getByTestId('dj-intro-setup').click()
   await page.getByTestId('dj-setup-goal-0').fill('Спокойствие')
   await page.getByTestId('dj-setup-next').click()
-  await page.getByTestId('dj-setup-reminder-0').fill('Я делаю главное до обеда')
+  await page.getByTestId('dj-setup-reminder-0').fill('делает главное первым')
   await page.getByTestId('dj-setup-next').click()
   await page.getByTestId('dj-setup-vision-scene').fill('Сижу у окна')
   await page.getByTestId('dj-setup-next').click()
@@ -185,28 +229,34 @@ test('журнал: сброс настройки → intro → поток бе�
   await page.getByTestId('dj-setup-vision-plan').fill('Перерыв')
   await page.getByTestId('dj-setup-next').click()
   await page.getByTestId('dj-setup-next').click()
-  // Шаг 5 — Напоминание (дефолт «Не напоминать» → ✓)
+  // Шаг 5 — Напоминание (дефолт нового пользователя «Вечером 21:00» → ✓)
   await page.getByTestId('dj-setup-next').click()
 
   // ── Перечитай — настройка заполнена ──
   await expect(page.locator('.mx-dj-review')).toBeVisible()
   await expect(page.getByTestId('dj-review-edit')).toBeVisible()
 
-  // ── «Мои записи» — вторичная кнопка в потоке, а не мелкая ссылка ──
-  const entriesButton = page.getByTestId('dj-review-entries')
-  await expect(entriesButton).toHaveText('Мои записи')
-  await expect(entriesButton).toHaveAttribute('class', /mx-pill-btn/)
-  const entriesBox = await entriesButton.boundingBox()
-  expect(entriesBox.height).toBeGreaterThanOrEqual(44)
-  await entriesButton.click()
+  // ── «Мои записи» — тихая ссылка под кнопкой «Начать запись» (#1090) ──
+  const entriesLink = page.getByTestId('dj-review-entries')
+  await expect(entriesLink).toHaveText('Мои записи')
+  await entriesLink.click()
   await expect(page.getByTestId('dj-entries')).toBeVisible()
   await page.getByTestId('back-button').click()
   await expect(page.locator('.mx-dj-review')).toBeVisible()
 
-  // ── Сбросить и начать заново ──
+  // ── Сброс требует подтверждения (#1090): «Отмена» не сбрасывает ──
   await expect(page.getByTestId('dj-review-reset')).toBeVisible()
-  page.on('dialog', d => d.accept())
   await page.getByTestId('dj-review-reset').click()
+  await expect(page.getByTestId('dj-reset-confirm')).toBeVisible()
+  await expect(page.locator('.mx-dj-confirm__title')).toHaveText('Сбросить настройку?')
+  await expect(page.locator('.mx-dj-confirm__text')).toHaveText('Записи сохранятся.')
+  await page.getByTestId('dj-reset-cancel').click()
+  await expect(page.getByTestId('dj-reset-confirm')).toHaveCount(0)
+  await expect(page.locator('.mx-dj-review')).toBeVisible()
+
+  // ── Подтверждение сбрасывает настройку ──
+  await page.getByTestId('dj-review-reset').click()
+  await page.getByTestId('dj-reset-confirm').click()
 
   // ── Открывается intro ──
   await expect(page.getByTestId('dj-intro-skip')).toBeVisible()
@@ -302,7 +352,7 @@ async function openSavedScreen(page) {
   await page.getByTestId('dj-intro-setup').click()
   await page.getByTestId('dj-setup-goal-0').fill('Спокойствие')
   await page.getByTestId('dj-setup-next').click()
-  await page.getByTestId('dj-setup-reminder-0').fill('Я делаю главное до обеда')
+  await page.getByTestId('dj-setup-reminder-0').fill('делает главное первым')
   await page.getByTestId('dj-setup-next').click()
   await page.getByTestId('dj-setup-vision-scene').fill('Сижу у окна')
   await page.getByTestId('dj-setup-next').click()
@@ -330,58 +380,49 @@ async function openSavedScreen(page) {
   await expect(page.locator('.mx-dj-today__title')).toHaveText('Запись сохранена')
 }
 
-// Геометрия трёх действий и футера относительно текущего экрана.
+// Геометрия «Готово» и тихих ссылок относительно текущего экрана.
 async function measureSavedFooter(page) {
   return page.evaluate(() => {
-    const ids = ['dj-today-review', 'dj-today-entries', 'dj-today-append']
-    const buttons = ids.map(id => {
+    const doneEl = document.querySelector('[data-testid="dj-today-done"]')
+    const linkIds = ['dj-today-append', 'dj-today-review', 'dj-today-entries']
+    const done = doneEl ? doneEl.getBoundingClientRect() : null
+    const links = linkIds.map(id => {
       const el = document.querySelector(`[data-testid="${id}"]`)
       if (!el) return { id, missing: true }
       const r = el.getBoundingClientRect()
-      return {
-        id,
-        top: r.top,
-        bottom: r.bottom,
-        left: r.left,
-        right: r.right,
-        width: r.width,
-        height: r.height,
-      }
+      return { id, top: r.top, bottom: r.bottom, left: r.left, right: r.right, height: r.height }
     })
     const footerEl = document.querySelector('.mx-screen__footer')
     const footer = footerEl ? footerEl.getBoundingClientRect() : null
     const doc = document.documentElement
     return {
       viewport: { width: window.innerWidth, height: window.innerHeight },
-      buttons,
+      done: done ? { top: done.top, bottom: done.bottom, height: done.height } : null,
+      links,
       footer: footer ? { top: footer.top, bottom: footer.bottom } : null,
       horizontalOverflow: doc.scrollWidth - doc.clientWidth,
+      verticalOverflow: doc.scrollHeight - doc.clientHeight,
     }
   })
 }
 
 function assertFitsViewport(geometry, label) {
-  const { viewport, buttons, footer, horizontalOverflow } = geometry
+  const { viewport, done, links, footer, horizontalOverflow, verticalOverflow } = geometry
   expect(horizontalOverflow, `${label}: горизонтальная прокрутка`).toBeLessThanOrEqual(2)
   expect(footer, `${label}: футер не найден`).not.toBeNull()
   expect(footer.bottom, `${label}: футер выходит за низ экрана`).toBeLessThanOrEqual(
     viewport.height + 1
   )
-  for (const b of buttons) {
-    expect(b.missing, `${label}: ${b.id} отсутствует`).not.toBe(true)
-    expect(b.height, `${label}: ${b.id} ниже 44px`).toBeGreaterThanOrEqual(44)
-    expect(b.left, `${label}: ${b.id} выходит влево`).toBeGreaterThanOrEqual(0)
-    expect(b.right, `${label}: ${b.id} выходит вправо`).toBeLessThanOrEqual(viewport.width + 1)
-    expect(b.bottom, `${label}: ${b.id} ниже экрана`).toBeLessThanOrEqual(viewport.height + 1)
+  // «Готово» — основная белая кнопка
+  expect(done, `${label}: «Готово» не найдена`).not.toBeNull()
+  expect(done.height, `${label}: «Готово» ниже 44px`).toBeGreaterThanOrEqual(44)
+  expect(done.bottom, `${label}: «Готово» ниже экрана`).toBeLessThanOrEqual(viewport.height + 1)
+  for (const l of links) {
+    if (l.missing) continue
+    expect(l.bottom, `${label}: ${l.id} ниже экрана`).toBeLessThanOrEqual(viewport.height + 1)
+    // Тихие ссылки стоят ниже «Готово»
+    expect(l.top, `${label}: ${l.id} выше «Готово»`).toBeGreaterThanOrEqual(done.bottom - 1)
   }
-  const [review, entries, append] = buttons
-  // Вторичный ряд стоит выше основной кнопки и не перекрывает её.
-  expect(review.bottom, `${label}: «Перечитать» перекрывает «Дописать»`).toBeLessThanOrEqual(
-    append.top
-  )
-  expect(entries.bottom, `${label}: «Мои записи» перекрывает «Дописать»`).toBeLessThanOrEqual(
-    append.top
-  )
 }
 
 /*
@@ -406,58 +447,69 @@ async function waitForSurfaceSettled(page) {
   })
 }
 
-test('журнал: «Запись сохранена» — три действия, переходы и отсутствие дублей', async ({ page }) => {
+/*
+ * Решение 19.10: «Запись сохранена» — одна белая «Готово» (закрывает экран),
+ * под ней тихие ссылки в строку «Дописать · Перечитать · Мои записи».
+ * Без скролла на 375×667.
+ */
+test('журнал: «Запись сохранена» — «Готово» и тихие ссылки, переходы, без дублей', async ({ page }) => {
   await page.goto('/?demo=1&tab=practices')
 
   await expect(page.getByTestId('journal-open-cta')).toBeVisible()
   await page.getByTestId('journal-open-cta').click()
   await openSavedScreen(page)
 
-  // ── Три действия: видимы, доступны, с подписями ──
-  const reviewBtn = page.getByTestId('dj-today-review')
-  const entriesBtn = page.getByTestId('dj-today-entries')
-  const appendBtn = page.getByTestId('dj-today-append')
+  // ── Одна белая «Готово» ──
+  const doneBtn = page.getByTestId('dj-today-done')
+  await expect(doneBtn).toBeVisible()
+  await expect(doneBtn).toBeEnabled()
+  await expect(doneBtn).toHaveText('Готово')
+  await expect(doneBtn).toHaveAttribute('class', /cta-pill/)
 
-  await expect(reviewBtn).toBeVisible()
-  await expect(reviewBtn).toBeEnabled()
-  await expect(reviewBtn).toHaveAccessibleName('Перечитать')
-  await expect(entriesBtn).toBeVisible()
-  await expect(entriesBtn).toBeEnabled()
-  await expect(entriesBtn).toHaveAccessibleName('Мои записи')
-  await expect(appendBtn).toBeVisible()
-  await expect(appendBtn).toBeEnabled()
-  await expect(appendBtn).toHaveAccessibleName('Дописать')
+  // ── Тихие ссылки в строку под «Готово» ──
+  const appendLink = page.getByTestId('dj-today-append')
+  const reviewLink = page.getByTestId('dj-today-review')
+  const entriesLink = page.getByTestId('dj-today-entries')
+  await expect(appendLink).toBeVisible()
+  await expect(appendLink).toHaveAccessibleName('Дописать')
+  await expect(reviewLink).toBeVisible()
+  await expect(reviewLink).toHaveAccessibleName('Перечитать')
+  await expect(entriesLink).toBeVisible()
+  await expect(entriesLink).toHaveAccessibleName('Мои записи')
 
-  // Вторичные — кнопки дизайн-системы, основное действие — cta-пилюля
-  await expect(reviewBtn).toHaveAttribute('class', /mx-pill-btn/)
-  await expect(entriesBtn).toHaveAttribute('class', /mx-pill-btn/)
-  await expect(appendBtn).toHaveAttribute('class', /cta-pill/)
-
-  // ── Геометрия: 393×852 и 360×640 ──
+  // ── Геометрия: 393×852 и 375×667 — без скролла ──
   assertFitsViewport(await measureSavedFooter(page), '393×852')
-  await page.setViewportSize({ width: 360, height: 640 })
+  await page.setViewportSize({ width: 375, height: 667 })
   await waitForSurfaceSettled(page)
   await expect(page.getByTestId('dj-today')).toBeVisible()
-  assertFitsViewport(await measureSavedFooter(page), '360×640')
+  assertFitsViewport(await measureSavedFooter(page), '375×667')
   await page.setViewportSize({ width: 393, height: 852 })
   await waitForSurfaceSettled(page)
   await expect(page.getByTestId('dj-today')).toBeVisible()
 
+  // ── «Готово» закрывает экран (как «Назад») ──
+  await doneBtn.click()
+  await expect(page.getByTestId('journal-open-cta')).toBeVisible()
+
+  // Открываем снова для проверки переходов
+  await page.getByTestId('journal-open-cta').click()
+  await expect(page.getByTestId('dj-today')).toBeVisible()
+
   // ── «Перечитать» → «Вспомни, куда идёшь» → назад ──
-  await reviewBtn.click()
+  await reviewLink.click()
   await expect(page.locator('.mx-dj-review')).toBeVisible()
   await expect(page.locator('.mx-dj-review__title')).toHaveText('Вспомни, куда идёшь')
   await page.getByTestId('back-button').click()
   await expect(page.getByTestId('dj-today')).toBeVisible()
 
   // ── «Мои записи» → список записей → назад ──
-  await entriesBtn.click()
+  await entriesLink.click()
   await expect(page.getByTestId('dj-entries')).toBeVisible()
   await page.getByTestId('back-button').click()
   await expect(page.getByTestId('dj-today')).toBeVisible()
 
   // ── «Дописать» → продолжение той же записи ──
-  await appendBtn.click()
+  await appendLink.click()
   await expect(page.getByTestId('dj-stream-input')).toBeVisible()
   const streamValue = await page.getByTestId('dj-stream-input').inputValue()
   expect(streamValue).toContain('Синтетическая запись: утро.')
@@ -478,4 +530,226 @@ test('журнал: «Запись сохранена» — три действ�
   await page.getByTestId('dj-today-entries').click()
   await expect(page.getByTestId('dj-entries')).toBeVisible()
   await expect(page.locator('.mx-dj-entries__item')).toHaveCount(1)
+})
+
+/* ── #1090: чипы, «+ Добавить», итоговый экран, подтверждение сброса ── */
+
+// Быстрый проход настройки до шага 2 (нужна непустая цель, чтобы шаг 2
+// открылся; шаг 2 сам заполняется тестом).
+async function openSetupStep2(page) {
+  await page.goto('/?demo=1&tab=practices')
+  await expect(page.getByTestId('journal-open-cta')).toBeVisible()
+  await page.getByTestId('journal-open-cta').click()
+  await page.getByTestId('dj-intro-setup').click()
+  await page.getByTestId('dj-setup-goal-0').fill('Высыпаться')
+  await page.getByTestId('dj-setup-next').click()
+  await expect(page.locator('.mx-dj-setup__step-label')).toHaveText('Шаг 2 из 5 · Каким я хочу быть')
+}
+
+// Быстрый проход настройки до шага 4 «Мои вопросы»: дефолтные вопросы
+// демо уже заполнены, шаг проверяется как есть.
+async function openSetupStep4(page) {
+  await page.goto('/?demo=1&tab=practices')
+  await expect(page.getByTestId('journal-open-cta')).toBeVisible()
+  await page.getByTestId('journal-open-cta').click()
+  await page.getByTestId('dj-intro-setup').click()
+  await page.getByTestId('dj-setup-goal-0').fill('Высыпаться')
+  await page.getByTestId('dj-setup-next').click()
+  await page.getByTestId('dj-setup-reminder-0').fill('держит слово')
+  await page.getByTestId('dj-setup-next').click()
+  await page.getByTestId('dj-setup-vision-scene').fill('Просыпаюсь без тревоги')
+  await page.getByTestId('dj-setup-next').click()
+  await page.getByTestId('dj-setup-vision-obstacle').fill('Усталость')
+  await page.getByTestId('dj-setup-next').click()
+  await page.getByTestId('dj-setup-vision-plan').fill('Делаю минимум')
+  await page.getByTestId('dj-setup-next').click()
+  await expect(page.locator('.mx-dj-setup__step-label')).toHaveText('Шаг 4 из 5 · Мои вопросы')
+}
+
+test('журнал: «+ Добавить» — новая пустая строка, примеры не повторяются по кругу', async ({
+  page,
+}) => {
+  await openSetupStep2(page)
+
+  // Заполняем первую строку — появляется «+ Добавить»
+  await page.getByTestId('dj-setup-reminder-0').fill('держит слово')
+  const addButton = page.getByTestId('dj-setup-add')
+  await expect(addButton).toBeVisible()
+  await addButton.click()
+
+  // Новая строка пустая, с одной подсказкой — без циклических примеров
+  await expect(page.getByTestId('dj-setup-reminder-1')).toHaveValue('')
+  await expect(page.getByTestId('dj-setup-reminder-1')).toHaveAttribute(
+    'placeholder',
+    'держит слово'
+  )
+  // Решение 19.10: префикс один над списком — у второй строки его нет
+  await expect(page.getByTestId('dj-setup-identity-prefix')).toHaveCount(1)
+  // У пустой строки нет крестика
+  await expect(page.getByTestId('dj-setup-reminder-delete-1')).toHaveCount(0)
+  // У заполненной — есть
+  await expect(page.getByTestId('dj-setup-reminder-delete-0')).toBeVisible()
+
+  // Пока есть пустая строка, «+ Добавить» не дублирует строки
+  await expect(addButton).toHaveCount(0)
+})
+
+/*
+ * Решение 19.10: для новой настройки — 1 вопрос по умолчанию, остальные
+ * готовые вопросы видны сразу чипами. Тап добавляет вопрос и прячет чип,
+ * удаление возвращает чип, максимум 7. При 1 вопросе — тихая строка-подсказка.
+ * «+ Добавить вопрос» — для своего вопроса.
+ */
+test('журнал: шаг 4 — чипы готовых вопросов видны сразу, дефолт 1 вопрос', async ({
+  page,
+}) => {
+  await openSetupStep4(page)
+
+  // Дефолт новой настройки — 1 вопрос
+  await expect(page.getByTestId('dj-setup-prompt-0')).toHaveValue(
+    'Что я откладываю, хотя знаю, что это важно?'
+  )
+  await expect(page.getByTestId('dj-setup-prompt-1')).toHaveCount(0)
+
+  // При 1 вопросе — тихая строка-подсказка
+  await expect(page.getByTestId('dj-setup-prompts-hint')).toHaveText(
+    'Один вопрос — каждый день он же. Добавь ещё 2–3, и они пойдут по кругу'
+  )
+
+  // Готовые вопросы видны сразу чипами (4 чипа)
+  const chips = page.getByTestId('dj-setup-chip')
+  await expect(chips).toHaveCount(4)
+  await expect(page.getByTestId('dj-setup-chips')).toBeVisible()
+
+  // «+ Добавить вопрос» — для своего вопроса
+  await expect(page.getByTestId('dj-setup-add-prompt')).toBeVisible()
+
+  // Тап по чипу добавляет вопрос и прячет чип
+  const chipText = 'Какой один шаг сделает завтра чуть легче?'
+  await chips.filter({ hasText: chipText }).click()
+  await expect(page.getByTestId('dj-setup-prompt-1')).toHaveValue(chipText)
+  await expect(chips.filter({ hasText: chipText })).toHaveCount(0)
+  await expect(chips).toHaveCount(3)
+  // Подсказка исчезла (2 вопроса)
+  await expect(page.getByTestId('dj-setup-prompts-hint')).toHaveCount(0)
+
+  // Удаление вопроса возвращает чип
+  await page.getByTestId('dj-setup-prompt-delete-1').click()
+  await expect(page.getByTestId('dj-setup-prompt-1')).toHaveCount(0)
+  await expect(chips.filter({ hasText: chipText })).toHaveCount(1)
+  await expect(chips).toHaveCount(4)
+  // Подсказка вернулась (1 вопрос)
+  await expect(page.getByTestId('dj-setup-prompts-hint')).toBeVisible()
+
+  // «+ Добавить вопрос» — добавляет пустую строку для своего вопроса
+  await page.getByTestId('dj-setup-add-prompt').click()
+  await expect(page.getByTestId('dj-setup-prompt-1')).toHaveValue('')
+  await expect(page.getByTestId('dj-setup-prompt-1')).toHaveAttribute(
+    'placeholder',
+    'Вопрос 2'
+  )
+  // Пока есть пустая строка, кнопка не дублирует
+  await expect(page.getByTestId('dj-setup-add-prompt')).toHaveCount(0)
+  await page.getByTestId('dj-setup-prompt-1').fill('Свой вопрос')
+  await expect(page.getByTestId('dj-setup-add-prompt')).toBeVisible()
+
+  // Максимум 7 вопросов: заполняем чипами до 7, «+ Добавить вопрос» исчезает
+  await chips.filter({ hasText: chipText }).click()
+  const chip2 = 'Что сегодня забрало больше всего сил — и что их вернуло?'
+  await chips.filter({ hasText: chip2 }).click()
+  const chip3 = 'За что я могу себя сегодня похвалить, даже за мелочь?'
+  await chips.filter({ hasText: chip3 }).click()
+  const chip4 = 'Что меня сегодня задело — и что за этим стоит?'
+  await chips.filter({ hasText: chip4 }).click()
+  await page.getByTestId('dj-setup-add-prompt').click()
+  await page.getByTestId('dj-setup-prompt-6').fill('Седьмой вопрос')
+  await expect(page.getByTestId('dj-setup-add-prompt')).toHaveCount(0)
+  await expect(page.getByTestId('dj-setup-prompt-7')).toHaveCount(0)
+})
+
+test('журнал: итоговый экран — одна кнопка «Начать запись» без скролла на 375×667', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 375, height: 667 })
+  await page.goto('/?demo=1&tab=practices')
+
+  await expect(page.getByTestId('journal-open-cta')).toBeVisible()
+  await page.getByTestId('journal-open-cta').click()
+  await page.getByTestId('dj-intro-setup').click()
+  await page.getByTestId('dj-setup-goal-0').fill('Высыпаться')
+  await page.getByTestId('dj-setup-next').click()
+  await page.getByTestId('dj-setup-reminder-0').fill('держит слово')
+  await page.getByTestId('dj-setup-next').click()
+  await page.getByTestId('dj-setup-vision-scene').fill('Просыпаюсь без тревоги')
+  await page.getByTestId('dj-setup-next').click()
+  await page.getByTestId('dj-setup-vision-obstacle').fill('Усталость')
+  await page.getByTestId('dj-setup-next').click()
+  await page.getByTestId('dj-setup-vision-plan').fill('Делаю минимум')
+  await page.getByTestId('dj-setup-next').click()
+  await page.getByTestId('dj-setup-next').click() // шаг 4 · Мои вопросы
+  await page.getByTestId('dj-setup-next').click() // шаг 5 · Напоминание (дефолт)
+
+  // ── Итоговый экран ──
+  await expect(page.locator('.mx-dj-review')).toBeVisible()
+  await waitForSurfaceSettled(page)
+
+  // Одна закреплённая белая кнопка «Начать запись», круглая ✓ убрана
+  const startBtn = page.getByTestId('dj-review-next')
+  await expect(startBtn).toBeVisible()
+  await expect(startBtn).toHaveText('Начать запись')
+  await expect(page.locator('.mx-dj-review .mx-round-next-btn')).toHaveCount(0)
+  await expect(page.locator('.mx-round-next-btn')).toHaveCount(0)
+
+  // Кнопка целиком в кадре 375×667 — главное действие без скролла
+  const box = await startBtn.boundingBox()
+  expect(box.height).toBeGreaterThanOrEqual(44)
+  expect(box.y + box.height).toBeLessThanOrEqual(667)
+
+  // Тихие ссылки под кнопкой: «Мои записи» и «Изменить настройку»
+  await expect(page.getByTestId('dj-review-entries')).toBeVisible()
+  await expect(page.getByTestId('dj-review-edit')).toBeVisible()
+  const linksBox = await page.getByTestId('dj-review-entries').boundingBox()
+  expect(linksBox.y).toBeGreaterThanOrEqual(box.y + box.height)
+
+  // Кнопка ведёт в «Поток»
+  await startBtn.click()
+  await expect(page.getByTestId('dj-stream-input')).toBeVisible()
+})
+
+test('журнал: сброс настройки только через подтверждение', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 667 })
+  await page.goto('/?demo=1&tab=practices')
+
+  await expect(page.getByTestId('journal-open-cta')).toBeVisible()
+  await page.getByTestId('journal-open-cta').click()
+  await page.getByTestId('dj-intro-setup').click()
+  await page.getByTestId('dj-setup-goal-0').fill('Высыпаться')
+  await page.getByTestId('dj-setup-next').click()
+  await page.getByTestId('dj-setup-reminder-0').fill('держит слово')
+  await page.getByTestId('dj-setup-next').click()
+  await page.getByTestId('dj-setup-vision-scene').fill('Просыпаюсь без тревоги')
+  await page.getByTestId('dj-setup-next').click()
+  await page.getByTestId('dj-setup-vision-obstacle').fill('Усталость')
+  await page.getByTestId('dj-setup-next').click()
+  await page.getByTestId('dj-setup-vision-plan').fill('Делаю минимум')
+  await page.getByTestId('dj-setup-next').click()
+  await page.getByTestId('dj-setup-next').click() // шаг 4
+  await page.getByTestId('dj-setup-next').click() // шаг 5
+
+  await expect(page.locator('.mx-dj-review')).toBeVisible()
+
+  // Клик по «Сбросить и начать заново» сам ничего не сбрасывает
+  await page.getByTestId('dj-review-reset').click()
+  await expect(page.getByTestId('dj-reset-confirm')).toBeVisible()
+  await expect(page.locator('.mx-dj-review__title')).toBeVisible()
+
+  // Фон диалога (кнопка «Отмена» на подложке) закрывает без сброса
+  await page.getByTestId('dj-reset-cancel-backdrop').click()
+  await expect(page.getByTestId('dj-reset-confirm')).toHaveCount(0)
+  await expect(page.locator('.mx-dj-review')).toBeVisible()
+
+  // Подтверждение «Сбросить» — настройка сброшена, записи не тронуты
+  await page.getByTestId('dj-review-reset').click()
+  await page.getByTestId('dj-reset-confirm').click()
+  await expect(page.getByTestId('dj-intro-setup')).toBeVisible()
 })

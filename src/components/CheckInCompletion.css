@@ -243,11 +243,13 @@
   font-weight: 700;
 }
 
-/* Тихая текстовая ссылка «Разобраться с Даймоном» — 15/500 muted,
-   тап-зона 44, отступ 8 под «Сохранить и выйти». Базовая пилюля
-   .mx-completion-action button задаёт фон/радиус/тень — снимаем их. */
+/* Тихая текстовая ссылка (сейчас — «Пропустить» на финале журнала, #1084) —
+   15/500 muted, тап-зона 44, отступ 8 под «Сохранить и выйти», по центру.
+   Базовая пилюля .mx-completion-action button задаёт фон/радиус/тень — снимаем их. */
 .mx-completion-action--evening > button:not(.cta-pill) {
+  display: block;
   width: auto;
+  margin: 8px auto 0;
   min-height: 44px;
   padding: 0;
   background: transparent;

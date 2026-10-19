@@ -1,4 +1,4 @@
-import { PRACTICE_KEYS, isPracticeAvailable } from '../config/practiceAvailability'
+import { PRACTICE_KEYS, isPracticeAvailable } from '../config/practiceAvailability.js'
 
 export const PRACTICE_CATALOG_REGISTRY = [
   {
@@ -31,12 +31,23 @@ export const PRACTICE_CATALOG_REGISTRY = [
     completionSource: 'none',
     sub: 'daimon',
   },
+  {
+    key: PRACTICE_KEYS.journal,
+    title: 'Дневник',
+    subtitle: 'запиши, что на душе',
+    description: 'Свободная запись для себя — мысли, чувства, наблюдения.',
+    section: 'Практики',
+    kind: 'journal',
+    completionSource: 'none',
+    sub: 'journal',
+  },
 ]
 
 export const PRACTICE_RAIL_KEYS = [
   PRACTICE_KEYS.daimon,
   PRACTICE_KEYS.rituals,
   PRACTICE_KEYS.ascezas,
+  PRACTICE_KEYS.journal,
 ]
 
 export const PRACTICE_COLLECTIONS = [
