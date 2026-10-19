@@ -398,8 +398,7 @@
   position: relative;
   flex: none;
   width: calc(100% + 2 * var(--mx-screen-x));
-  margin:
-    calc(-1 * var(--mx-space-2)) calc(-1 * var(--mx-screen-x))
+  margin: calc(-1 * var(--mx-space-2)) calc(-1 * var(--mx-screen-x))
     calc(-1 * var(--mx-hj-hero-overlap, 0.12) * var(--mx-hj-hero-h, 320px));
   height: var(--mx-hj-hero-h, 320px);
   /* Фон до загрузки картинки — цвет приложения, без вспышки. */
@@ -1051,12 +1050,44 @@
   max-height: 210px;
 }
 
-/* Под кнопками Telegram («Назад», «⌄», «···») — тёмный градиент ~80 px,
-   от 85% чёрного у верха до прозрачного: белые детали кадра не накладываются
-   на кнопки. */
+/* Кадр done сохраняет полную ширину исходника, срезается только пустой верх.
+   На низком экране flex может поджать нижний край, но не сдвигает верх рисунка
+   под контролы Telegram. Эти правила не затрагивают вступления. */
+.mx-hj-step-complete .mx-hj-hero--cropped,
+.mx-hj-step-complete .mx-hj-hero--cropped.mx-hj-hero--compact {
+  flex: 0 1 auto;
+  aspect-ratio: var(--mx-hj-frame-ratio);
+  max-height: none;
+}
+
+.mx-hj-step-complete .mx-hj-hero--cropped .mx-hj-hero__frame img {
+  height: auto;
+  margin-top: var(--mx-hj-frame-top);
+  /* Движущийся zoom снова сдвигал бы согласованную верхнюю линию. */
+  animation: none;
+}
+
+/* Короткое растворение смягчает границу среза; прежняя маска 14% и
+   скрим 80 px скрывали начало рисунка даже после удаления пустого неба. */
+.mx-hj-step-complete .mx-hj-hero--cropped .mx-hj-hero__frame {
+  -webkit-mask-image:
+    linear-gradient(to bottom, transparent 0, #000 var(--mx-space-6), #000 65%, transparent 100%),
+    linear-gradient(to right, transparent 0, #000 5%, #000 95%, transparent 100%);
+  mask-image:
+    linear-gradient(to bottom, transparent 0, #000 var(--mx-space-6), #000 65%, transparent 100%),
+    linear-gradient(to right, transparent 0, #000 5%, #000 95%, transparent 100%);
+}
+
 .mx-hj-step-complete .mx-hj-hero__scrim {
-  height: 80px;
-  background: linear-gradient(rgba(5, 4, 3, 0.85), transparent);
+  height: var(--mx-space-6);
+  background: linear-gradient(rgba(5, 4, 3, 0.35), transparent);
+}
+
+/* «Продолжить» следует за итогом с зазором 24 px, а не отделяется от него
+   всей свободной высотой колонки. Сама кнопка и её действие не меняются. */
+.mx-hj-complete__bottom {
+  margin-top: var(--mx-space-6);
+  padding-top: 0;
 }
 
 /* Текстовый блок: фиксированный, идёт сразу под картинкой (перекрытие дал

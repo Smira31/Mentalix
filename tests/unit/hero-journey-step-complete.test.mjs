@@ -11,7 +11,7 @@ const cssSource = await readFile(
   'utf8'
 )
 
-test('StepComplete — колонка без скролла, кнопка «Продолжить» прижата к низу', () => {
+test('StepComplete — колонка без скролла, зазор над «Продолжить» ограничен', () => {
   // Кнопка «Продолжить» остаётся на месте (testid не менялся) и лежит в нижней группе.
   assert.match(jsxSource, /data-testid="hero-complete-map"/)
   assert.match(jsxSource, /mx-hj-step-intro__bottom mx-hj-complete__bottom/)
@@ -21,19 +21,50 @@ test('StepComplete — колонка без скролла, кнопка «Пр
   assert.doesNotMatch(jsxSource, /mx-hj-complete__footer/)
   assert.match(jsxSource, /bodyClassName="mx-hj-step-complete"/)
   assert.match(cssSource, /\.mx-hj-step-complete \{[\s\S]*?flex: 1;[\s\S]*?min-height: 0;/)
-  // Нижняя группа прижата к низу (margin-top: auto).
+  // Вступление сохраняет свою нижнюю группу; завершение не наследует
+  // зазор во всю свободную высоту: 24 px по существующему токену.
   assert.match(cssSource, /\.mx-hj-step-intro__bottom \{[\s\S]*?margin-top: auto;/)
+  assert.match(
+    cssSource,
+    /\.mx-hj-complete__bottom \{\s*margin-top: var\(--mx-space-6\);\s*padding-top: 0;/
+  )
 })
 
-test('Гибкий герой на завершении: 110–300 px, градиент под кнопками Telegram', () => {
+test('Кадр done сохраняет ширину и верхнюю линию; граница смягчена на 24 px', () => {
+  assert.match(jsxSource, /frame=\{trial\.image\?\.frame\?\.done\}/)
+  const introSource = jsxSource.slice(
+    jsxSource.indexOf('function StepIntro('),
+    jsxSource.indexOf('const HEADER_VIEW_LABELS')
+  )
+  assert.doesNotMatch(introSource, /frame=|mx-hj-hero--cropped/)
   assert.match(
     cssSource,
-    /\.mx-hj-step-complete \.mx-hj-hero--flex \{[\s\S]*?min-height: 110px;[\s\S]*?max-height: 300px;/
+    /\.mx-hj-step-complete \.mx-hj-hero--cropped\.mx-hj-hero--compact \{\s*flex: 0 1 auto;\s*aspect-ratio: var\(--mx-hj-frame-ratio\);\s*max-height: none;/
   )
   assert.match(
     cssSource,
-    /\.mx-hj-step-complete \.mx-hj-hero__scrim \{[\s\S]*?height: 80px;[\s\S]*?rgba\(5, 4, 3, 0\.85\)/
+    /\.mx-hj-step-complete \.mx-hj-hero--cropped \.mx-hj-hero__frame img \{[\s\S]*?height: auto;[\s\S]*?margin-top: var\(--mx-hj-frame-top\);[\s\S]*?animation: none;/
   )
+  assert.match(
+    cssSource,
+    /\.mx-hj-step-complete \.mx-hj-hero__scrim \{\s*height: var\(--mx-space-6\);[\s\S]*?rgba\(5, 4, 3, 0\.35\)/
+  )
+})
+
+test('У каждой из 15 иллюстраций задан отдельный кадр только для done', async () => {
+  const dataSource = await readFile(
+    new URL('../../src/data/heroJourney.js', import.meta.url),
+    'utf8'
+  )
+  const frames = [
+    ...dataSource.matchAll(/frame:\s*\{\s*done:\s*\{\s*top: (\d+), width: (\d+), height: (\d+)/g),
+  ]
+  assert.equal(frames.length, 15)
+  assert.doesNotMatch(dataSource, /frame:\s*\{\s*enter:/)
+  for (const [, top, width, height] of frames) {
+    assert.ok(Number(top) >= 0 && Number(top) <= 197)
+    assert.equal(Number(top) + Number(height), Number(width) === 780 ? 520 : 900)
+  }
 })
 
 test('Запиши/Одно действие: одна круглая кнопка ×/›, крестика в шапке нет', () => {

@@ -64,6 +64,8 @@ function HeroImage({
   size,
   focus,
   compact,
+  /* Кадр передаётся только завершением: вступление остаётся неизменным. */
+  frame,
   overlap = DEFAULT_IMAGE_OVERLAP,
   onError,
   /* Гибкая высота (вход в шаг): картинка сама занимает свободное место колонки. */
@@ -73,8 +75,14 @@ function HeroImage({
     <div
       className={`mx-hj-hero${compact ? ' mx-hj-hero--compact' : ''}${
         flexible ? ' mx-hj-hero--flex' : ''
-      }`}
-      style={{ '--mx-hj-hero-overlap': overlap }}
+      }${frame ? ' mx-hj-hero--cropped' : ''}`}
+      style={{
+        '--mx-hj-hero-overlap': overlap,
+        ...(frame && {
+          '--mx-hj-frame-ratio': `${frame.width} / ${frame.height}`,
+          '--mx-hj-frame-top': `${(-frame.top / frame.width) * 100}%`,
+        }),
+      }}
     >
       <div className="mx-hj-hero__frame">
         <img
@@ -605,9 +613,8 @@ function StepComplete({ trial, progress, onBackToMap }) {
   }, [trial, steps])
 
   return (
-    /* Колонка на всю высоту без скролла, как у вступления: картинка сама
-       забирает свободную высоту (110–300 px), текст идёт сразу под ней,
-       кнопка «Продолжить» прижата к низу. */
+    /* Колонка без скролла: кадр done обрезается по данным шага,
+       текст идёт сразу под ним, «Продолжить» — с коротким зазором. */
     <Shell
       fit
       bodyClassName="mx-hj-step-complete"
@@ -618,6 +625,7 @@ function StepComplete({ trial, progress, onBackToMap }) {
           flexible
           src={doneImage}
           size={STEP_IMAGE_DIMENSIONS.done}
+          frame={trial.image?.frame?.done}
           focus={trial.image?.focus}
           compact={trial.image?.compact}
           overlap={trial.image?.overlap}

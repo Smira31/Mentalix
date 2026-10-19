@@ -37,6 +37,9 @@ import digitalAvatarDone from '../assets/hero-journey/digital-avatar-done.webp'
  * пролог, 16 шагов, финал). Правки текстов — дословно по документу.
  */
 
+/* image.frame.done: top — срез пустого верха в пикселях исходника;
+ * width/height — оставшийся кадр. Вступления используют исходный кадр. */
+
 // ── 16 шагов курса (порядок = номер шага 1–16) ──
 
 export const HERO_JOURNEY_TRIALS = [
@@ -58,11 +61,7 @@ export const HERO_JOURNEY_TRIALS = [
     image: {
       enter: uncertaintyEnter,
       done: uncertaintyDone,
-      /* Видимый кадр (пиксели исходника): пустое «небо» сверху срезано. */
-      frame: {
-        enter: { width: 1200, height: 585 },
-        done: { width: 1170, height: 703 },
-      },
+      frame: { done: { top: 197, width: 1170, height: 703 } },
       overlap: 0.08,
     },
   },
@@ -83,7 +82,7 @@ export const HERO_JOURNEY_TRIALS = [
     image: {
       enter: temporalityEnter,
       done: temporalityDone,
-      frame: { done: { width: 1170, height: 836 } },
+      frame: { done: { top: 64, width: 1170, height: 836 } },
       overlap: 0.08,
     },
   },
@@ -104,7 +103,7 @@ export const HERO_JOURNEY_TRIALS = [
     image: {
       enter: choiceEnter,
       done: choiceDone,
-      frame: { enter: { width: 1200, height: 717 } },
+      frame: { done: { top: 0, width: 1170, height: 900 } },
       overlap: 0.08,
     },
   },
@@ -126,10 +125,7 @@ export const HERO_JOURNEY_TRIALS = [
     image: {
       enter: abundanceEnter,
       done: abundanceDone,
-      frame: {
-        enter: { width: 1200, height: 669 },
-        done: { width: 1170, height: 804 },
-      },
+      frame: { done: { top: 96, width: 1170, height: 804 } },
       overlap: 0.08,
     },
   },
@@ -152,10 +148,7 @@ export const HERO_JOURNEY_TRIALS = [
     image: {
       enter: bodyEnter,
       done: bodyDone,
-      frame: {
-        enter: { width: 780, height: 473 },
-        done: { width: 780, height: 478 },
-      },
+      frame: { done: { top: 42, width: 780, height: 478 } },
       overlap: 0.12,
     },
   },
@@ -166,7 +159,8 @@ export const HERO_JOURNEY_TRIALS = [
     subtitle: 'Пальцы листают сами, а зачем, неясно',
     intro:
       'Утро начинается с телефона. Очередь, лифт, ожидание чайника, и рука тянется к экрану сама. Лента, ещё одно видео, ещё один чат. Через час трудно сказать, что именно было на экране.\n\nЗаодно в голову попадают чужие новости, мнения и советы: одни говорят «делай так», другие ровно наоборот. В таком гуле трудно услышать, чего хочешь ты сам.\n\nЭто не слабая воля: лента устроена так, чтобы не отпускать. Но каждая минута, которую она забирает, не возвращается.\n\nВ этом шаге ты заметишь, куда уходит время, и вернёшь себе один кусочек.',
-    writePrompt: 'Сколько раз за день рука тянется к телефону без дела? Что в этот момент хочется почувствовать?',
+    writePrompt:
+      'Сколько раз за день рука тянется к телефону без дела? Что в этот момент хочется почувствовать?',
     writeHint: 'Скука, усталость, привычка. Как есть.',
     actionPrompt: 'Выбери один момент дня без телефона. Например, первые полчаса утром.',
     actionHint: 'Один момент, который реально удержать.',
@@ -206,11 +200,8 @@ export const HERO_JOURNEY_TRIALS = [
     image: {
       enter: digitalAvatarEnter,
       done: digitalAvatarDone,
+      frame: { done: { top: 76, width: 1170, height: 824 } },
       focus: '45% 40%',
-      frame: {
-        enter: { width: 1200, height: 720 },
-        done: { width: 1170, height: 824 },
-      },
       overlap: 0.12,
       compact: true,
     },
@@ -229,7 +220,13 @@ export const HERO_JOURNEY_TRIALS = [
     doneTitle: 'Своя мерка нашлась.',
     doneSummary: 'Один твой шаг назван вслух. Сравнивать можно и с собой вчерашним.',
     doneTeaser: 'Дальше: тишина. Что слышно, когда стихает шум.',
-    image: { enter: comparisonEnter, done: comparisonDone, focus: '30% 40%', overlap: 0.22 },
+    image: {
+      enter: comparisonEnter,
+      done: comparisonDone,
+      frame: { done: { top: 0, width: 1170, height: 900 } },
+      focus: '30% 40%',
+      overlap: 0.22,
+    },
   },
   {
     id: 'mirror',
@@ -244,10 +241,15 @@ export const HERO_JOURNEY_TRIALS = [
     actionHint:
       'Любую, даже мелкую. Если станет тяжело, остановись и поговори с близким человеком.',
     doneTitle: 'Пять минут тишины позади.',
-    doneSummary:
-      'Пять минут без шума, и одна мысль записана. Своё слышно, если дать ему время.',
+    doneSummary: 'Пять минут без шума, и одна мысль записана. Своё слышно, если дать ему время.',
     doneTeaser: 'Дальше: одиночество. Когда рядом люди, а близости нет.',
-    image: { enter: mirrorEnter, done: mirrorDone, focus: '40% 40%', overlap: 0.22 },
+    image: {
+      enter: mirrorEnter,
+      done: mirrorDone,
+      frame: { done: { top: 0, width: 1170, height: 900 } },
+      focus: '40% 40%',
+      overlap: 0.22,
+    },
   },
   {
     id: 'loneliness',
@@ -256,7 +258,8 @@ export const HERO_JOURNEY_TRIALS = [
     subtitle: 'Рядом люди, а близости нет',
     intro:
       'Вокруг много людей: коллеги, друзья, чаты, знакомые. Звонят, пишут, приглашают. А в самый важный момент выясняется, что рассказать некому. Или рассказать можно, но тебя не поймут так, как нужно.\n\nЭто знакомо многим: быть среди людей и чувствовать, что до тебя настоящего никто не доходит. Переписка есть, близости нет.\n\nДело не в том, что с тобой что-то не так. Близость не появляется от количества знакомых: она строится медленно, когда один человек решается показать другому не фасад, а себя.\n\nВ этом шаге ты найдёшь, где можно сделать маленький шаг навстречу.',
-    writePrompt: 'Кому в твоей жизни можно рассказать по-настоящему важное? Если некому, что мешает?',
+    writePrompt:
+      'Кому в твоей жизни можно рассказать по-настоящему важное? Если некому, что мешает?',
     writeHint:
       'Один человек или никого. Как есть. Если тяжело, это можно разделить с близким или со специалистом.',
     actionPrompt: 'Напиши или позвони одному человеку и скажи что-то настоящее, не «как дела».',
@@ -264,7 +267,13 @@ export const HERO_JOURNEY_TRIALS = [
     doneTitle: 'Один шаг навстречу сделан.',
     doneSummary: 'Близость строится маленькими шагами. Один уже есть.',
     doneTeaser: 'Дальше: несказанное. То, что давно хочется сказать близким.',
-    image: { enter: lonelinessEnter, done: lonelinessDone, focus: '35% 40%', overlap: 0.22 },
+    image: {
+      enter: lonelinessEnter,
+      done: lonelinessDone,
+      frame: { done: { top: 0, width: 1170, height: 900 } },
+      focus: '35% 40%',
+      overlap: 0.22,
+    },
   },
   {
     id: 'relationships',
@@ -280,7 +289,14 @@ export const HERO_JOURNEY_TRIALS = [
     doneTitle: 'Слова нашлись.',
     doneSummary: 'Фраза названа, а разговор назначен. Это уже половина дела.',
     doneTeaser: 'Дальше: привычное. Когда то, что держало, перестаёт держать.',
-    image: { enter: relationshipsEnter, done: relationshipsDone, focus: '40% 30%', compact: true, overlap: 0.22 },
+    image: {
+      enter: relationshipsEnter,
+      done: relationshipsDone,
+      frame: { done: { top: 0, width: 1170, height: 900 } },
+      focus: '40% 30%',
+      compact: true,
+      overlap: 0.22,
+    },
   },
   {
     id: 'lost-supports',
@@ -299,11 +315,8 @@ export const HERO_JOURNEY_TRIALS = [
     image: {
       enter: lostSupportsEnter,
       done: lostSupportsDone,
+      frame: { done: { top: 146, width: 1170, height: 754 } },
       focus: '50% 40%',
-      frame: {
-        enter: { width: 1200, height: 622 },
-        done: { width: 1170, height: 754 },
-      },
       overlap: 0.08,
     },
   },
@@ -324,11 +337,8 @@ export const HERO_JOURNEY_TRIALS = [
     image: {
       enter: ageCrisesEnter,
       done: ageCrisesDone,
+      frame: { done: { top: 93, width: 1170, height: 807 } },
       focus: '55% 40%',
-      frame: {
-        enter: { width: 1200, height: 632 },
-        done: { width: 1170, height: 807 },
-      },
       overlap: 0.12,
     },
   },
@@ -350,11 +360,8 @@ export const HERO_JOURNEY_TRIALS = [
     image: {
       enter: meaningEnter,
       done: meaningDone,
+      frame: { done: { top: 110, width: 1170, height: 790 } },
       focus: '45% 35%',
-      frame: {
-        enter: { width: 1200, height: 645 },
-        done: { width: 1170, height: 790 },
-      },
       overlap: 0.08,
     },
   },
@@ -372,7 +379,13 @@ export const HERO_JOURNEY_TRIALS = [
     doneTitle: 'Основа названа.',
     doneSummary: 'Одна фраза, на которую можно опереться, когда шатает. Она записана.',
     doneTeaser: 'Дальше: возвращение. Карта пройденного и письмо себе.',
-    image: { enter: selfAssemblyEnter, done: selfAssemblyDone, focus: '40% 40%', overlap: 0.12 },
+    image: {
+      enter: selfAssemblyEnter,
+      done: selfAssemblyDone,
+      frame: { done: { top: 42, width: 1170, height: 858 } },
+      focus: '40% 40%',
+      overlap: 0.12,
+    },
   },
 ]
 
@@ -428,7 +441,12 @@ export const HERO_JOURNEY_FINALE = {
   actionHint: 'Одно, которое проще всего удержать.',
   doneTitle: 'Дорога продолжается дома.',
   doneSummary: 'Письмо написано, действие выбрано. Карта и письмо сохранены в дневнике.',
-  image: { enter: returnImage, done: returnImage, overlap: 0.12 },
+  image: {
+    enter: returnImage,
+    done: returnImage,
+    frame: { done: { top: 65, width: 780, height: 455 } },
+    overlap: 0.12,
+  },
 }
 
 /* Пролог «О практикуме»: пункт в меню курса. */
