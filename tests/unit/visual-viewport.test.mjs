@@ -1,7 +1,11 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import { getKeyboardViewportHeight, isTelegramRuntime } from '../../src/lib/visualViewport.js'
+import {
+  getKeyboardViewportHeight,
+  isTelegramRuntime,
+  readKeyboardInset,
+} from '../../src/lib/visualViewport.js'
 
 function setWindow(overrides = {}) {
   globalThis.window = {

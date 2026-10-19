@@ -78,7 +78,17 @@ export default function Conversation({
 }) {
   const meta = personaMeta || PERSONAS.find(item => item.key === persona) || PERSONAS[0]
 
-  const { style: surfaceStyle, keyboardOpen } = useFullscreenSurface()
+  /*
+   * MXL-KEYBOARD-MOTION-001: клавиатура не пересобирает раскладку экрана.
+   * Оболочка держит стабильную высоту, а лента и composer поднимаются одним
+   * transform'ом на keyboardInset (Conversation.css, 280 ms по кривой iOS).
+   * Раньше высота оболочки следовала за каждым событием visualViewport — на
+   * промежуточных кадрах анимации клавиатуры экран перестраивался рывками,
+   * а при закрытии уезжал последней репликой и прокруткой.
+   */
+  const { style: surfaceStyle, keyboardOpen, keyboardInset } = useFullscreenSurface({
+    keyboardStrategy: 'lift',
+  })
 
   const scrollRef = useRef(null)
   const screenRef = useRef(null)
@@ -372,8 +382,15 @@ export default function Conversation({
     }
   }
 
+  /*
+   * Пустой чат не прокручивается вовсе: места хватает целиком, а любой
+   * автопрокрут к низу двигал бы подпись пустого состояния после загрузки
+   * истории (scrollTop обязан остаться 0). Первое появление истории — без
+   * плавности, дальше — smooth.
+   */
   useEffect(() => {
     if (loading) return
+    if (messages.length === 0) return
 
     const firstPosition = previousMessageCount.current === 0
 
@@ -388,15 +405,12 @@ export default function Conversation({
     }
   }, [loading, messages.length, sending])
 
-  useEffect(() => {
-    if (!keyboardOpen) return undefined
-
-    const frame = window.requestAnimationFrame(() => {
-      scrollToEnd('auto')
-    })
-
-    return () => window.cancelAnimationFrame(frame)
-  }, [keyboardOpen])
+  /*
+   * Отдельного автопрокрута на открытие клавиатуры больше нет: лента и
+   * composer поднимаются вместе (transform), поэтому последняя реплика остаётся
+   * над полем ввода, а scrollTop не меняется — ни при открытии, ни при
+   * закрытии клавиатуры.
+   */
 
   return createPortal(
     <div
@@ -448,386 +462,394 @@ export default function Conversation({
         </div>
       )}
 
-      {/* ── история сообщений ── */}
+      {/* ── лента сообщений и поле ввода: клавиатура поднимает их вместе ── */}
 
-      <div
-        ref={scrollRef}
-        className={`${FULLSCREEN_SCROLL_CLASS} mx-conversation-scroll px-[var(--mx-screen-x)] pb-6`}
-        onWheel={showVoiceHint ? dismissVoiceHint : undefined}
-      >
-        {!loading && contextSlot}
+      <div className="mx-conversation-stage" data-testid="conversation-stage">
+        <div
+          className="mx-conversation-lift"
+          data-testid="conversation-lift"
+          style={{ '--mx-keyboard-inset': `${keyboardInset}px` }}
+        >
+          <div
+            ref={scrollRef}
+            className={`${FULLSCREEN_SCROLL_CLASS} mx-conversation-scroll px-[var(--mx-screen-x)] pb-6`}
+            onWheel={showVoiceHint ? dismissVoiceHint : undefined}
+          >
+            {!loading && contextSlot}
 
-        {loading && <p className="text-muted text-[14px] text-center pt-4">Загрузка...</p>}
+            {loading && <p className="text-muted text-[14px] text-center pt-4">Загрузка...</p>}
 
-        {!loading && historyError && (
-          <ConversationNotice
-            testId="conversation-history-error"
-            text="Не удалось загрузить разговор"
-            retryTestId="conversation-history-retry"
-            onRetry={onRetryHistory}
-          />
-        )}
+            {!loading && historyError && (
+              <ConversationNotice
+                testId="conversation-history-error"
+                text="Не удалось загрузить разговор"
+                retryTestId="conversation-history-retry"
+                onRetry={onRetryHistory}
+              />
+            )}
 
-        {!loading && !historyError && messages.length === 0 && (
-          <p className="text-muted text-[14px] text-center pt-10 leading-[1.6]">
-            {meta.desc}
-            <br />
-            <br />
-            Напиши первым — {meta.name} ответит.
-          </p>
-        )}
+            {!loading && !historyError && messages.length === 0 && (
+              <p className="text-muted text-[14px] text-center pt-10 leading-[1.6]">
+                {meta.desc}
+                <br />
+                <br />
+                Напиши первым — {meta.name} ответит.
+              </p>
+            )}
 
-        <div className="w-full max-w-md mx-auto space-y-3.5">
-          {groupJournalMessages(messages).map(group => (
-            <div key={group.key} className="space-y-3.5">
-              {group.label && (
-                <div className="pt-2 text-center text-[10px] uppercase tracking-[0.18em] text-muted">
-                  {group.label}
+            <div className="w-full max-w-md mx-auto space-y-3.5">
+              {groupJournalMessages(messages).map(group => (
+                <div key={group.key} className="space-y-3.5">
+                  {group.label && (
+                    <div className="pt-2 text-center text-[10px] uppercase tracking-[0.18em] text-muted">
+                      {group.label}
+                    </div>
+                  )}
+
+                  {group.messages.map(({ message, index }) => {
+                    const isUser = message.role === 'user'
+                    const messageKey = journalMessageKey(message, index)
+                    const isLong = !isUser && isLongJournalMessage(message)
+                    const isExpanded = expandedMessages.has(messageKey)
+
+                    if (isUser) {
+                      return (
+                        <div
+                          key={messageKey}
+                          data-testid="chat-message-user"
+                          className="mx-imessage-row mx-imessage-row--user"
+                        >
+                          <div
+                            data-testid="chat-message-bubble"
+                            className="mx-imessage-bubble mx-imessage-bubble--user"
+                          >
+                            {messageContent(message)}
+                          </div>
+
+                          {/* Неудачная отправка: статус и «Повторить» у своего пузыря. */}
+                          {message.status === 'failed' && (
+                            <div data-testid="chat-message-failed" className="mx-imessage-failed">
+                              <span className="text-muted text-[12px]">Не отправлено</span>
+                              <span aria-hidden="true" className="text-faint text-[12px]">
+                                ·
+                              </span>
+                              <button
+                                type="button"
+                                data-testid="chat-message-retry"
+                                className="mx-glass mx-conversation-retry"
+                                onClick={() => onRetryMessage?.(message)}
+                              >
+                                Повторить
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    }
+
+                    return (
+                      <div
+                        key={messageKey}
+                        data-testid="chat-message-assistant"
+                        className="mx-imessage-row mx-imessage-row--assistant"
+                      >
+                        <div
+                          data-testid="chat-message-bubble"
+                          className="mx-imessage-bubble mx-imessage-bubble--assistant mx-ai-body text-cream break-words"
+                        >
+                          <MessageText content={messageContent(message)} />
+                        </div>
+
+                        {isLong && (
+                          <button
+                            type="button"
+                            data-testid="ai-expand-reply"
+                            className="mx-ai-meta mt-3 text-gold"
+                            onClick={() => {
+                              setExpandedMessages(previous => {
+                                const next = new Set(previous)
+                                if (next.has(messageKey)) next.delete(messageKey)
+                                else next.add(messageKey)
+                                return next
+                              })
+                            }}
+                          >
+                            {isExpanded ? 'Свернуть ответ' : 'Читать полностью'}
+                          </button>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              ))}
+
+              {creatingConversation && (
+                <div
+                  data-testid="conversation-creating"
+                  className="w-full py-2 flex items-center justify-center gap-2"
+                >
+                  <LoaderCircle size={16} className="animate-spin text-muted" />
+                  <p className="text-[14px] text-muted">Новый разговор…</p>
                 </div>
               )}
 
-              {group.messages.map(({ message, index }) => {
-                const isUser = message.role === 'user'
-                const messageKey = journalMessageKey(message, index)
-                const isLong = !isUser && isLongJournalMessage(message)
-                const isExpanded = expandedMessages.has(messageKey)
+              {creationError && (
+                <ConversationNotice
+                  testId="conversation-create-error"
+                  text="Не удалось начать разговор"
+                  retryTestId="conversation-create-retry"
+                  onRetry={onRetryCreate}
+                />
+              )}
 
-                if (isUser) {
-                  return (
-                    <div
-                      key={messageKey}
-                      data-testid="chat-message-user"
-                      className="mx-imessage-row mx-imessage-row--user"
-                    >
-                      <div
-                        data-testid="chat-message-bubble"
-                        className="mx-imessage-bubble mx-imessage-bubble--user"
-                      >
-                        {messageContent(message)}
-                      </div>
-
-                      {/* Неудачная отправка: статус и «Повторить» у своего пузыря. */}
-                      {message.status === 'failed' && (
-                        <div data-testid="chat-message-failed" className="mx-imessage-failed">
-                          <span className="text-muted text-[12px]">Не отправлено</span>
-                          <span aria-hidden="true" className="text-faint text-[12px]">
-                            ·
-                          </span>
-                          <button
-                            type="button"
-                            data-testid="chat-message-retry"
-                            className="mx-glass mx-conversation-retry"
-                            onClick={() => onRetryMessage?.(message)}
-                          >
-                            Повторить
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )
-                }
-
-                return (
-                  <div
-                    key={messageKey}
-                    data-testid="chat-message-assistant"
-                    className="mx-imessage-row mx-imessage-row--assistant"
-                  >
-                    <div
-                      data-testid="chat-message-bubble"
-                      className="mx-imessage-bubble mx-imessage-bubble--assistant mx-ai-body text-cream break-words"
-                    >
-                      <MessageText content={messageContent(message)} />
-                    </div>
-
-                    {isLong && (
-                      <button
-                        type="button"
-                        data-testid="ai-expand-reply"
-                        className="mx-ai-meta mt-3 text-gold"
-                        onClick={() => {
-                          setExpandedMessages(previous => {
-                            const next = new Set(previous)
-                            if (next.has(messageKey)) next.delete(messageKey)
-                            else next.add(messageKey)
-                            return next
-                          })
-                        }}
-                      >
-                        {isExpanded ? 'Свернуть ответ' : 'Читать полностью'}
-                      </button>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-          ))}
-
-          {creatingConversation && (
-            <div
-              data-testid="conversation-creating"
-              className="w-full py-2 flex items-center justify-center gap-2"
-            >
-              <LoaderCircle size={16} className="animate-spin text-muted" />
-              <p className="text-[14px] text-muted">Новый разговор…</p>
-            </div>
-          )}
-
-          {creationError && (
-            <ConversationNotice
-              testId="conversation-create-error"
-              text="Не удалось начать разговор"
-              retryTestId="conversation-create-retry"
-              onRetry={onRetryCreate}
-            />
-          )}
-
-          {dailyLimit && (
-            <div
-              data-testid="daily-limit-notice"
-              className="text-center text-[13px] text-muted py-3"
-            >
-              На сегодня хватит — продолжим завтра.
-            </div>
-          )}
-
-          {sending && (
-            <div className="w-full py-2">
-              <p className="text-[14px] text-muted">{meta.typing}</p>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* ── composer ── */}
-
-      <div
-        className="shrink-0 px-4 pt-3"
-
-        style={{
-          paddingBottom: keyboardOpen ? '1px' : 'max(4px, env(safe-area-inset-bottom))',
-        }}
-      >
-        {(voiceState !== 'idle' || voiceError) && (
-          <div className="w-full max-w-md mx-auto px-3 pb-2 text-center text-[12px]">
-            {voiceState === 'recording' && (
-              <span className="text-gold">
-                Запись · 0:{String(voiceSeconds).padStart(2, '0')} · отпусти кнопку, чтобы закончить
-              </span>
-            )}
-
-            {voiceState === 'transcribing' && <span className="text-muted">Распознаю голос…</span>}
-
-            {voiceError && voiceState === 'idle' && (
-              <span className="text-red-400">{voiceError}</span>
-            )}
-          </div>
-        )}
-
-        <div
-          ref={composerRef}
-          className="mx-ai-composer mx-glass w-full max-w-md mx-auto min-h-[72px] rounded-[36px] flex items-center gap-2.5 px-2.5"
-          // pointerdown внутри composer'а, пока поле ещё в фокусе, — значит
-          // человек здесь пишет: после отправки клавиатуру возвращаем. Если
-          // клавиатуру закрыли сами (тап вне поля, системный жест), фокуса на
-          // момент тапа нет — и отправка клавиатуру не возвращает.
-          onPointerDownCapture={() => {
-            composerPointerRef.current = document.activeElement === inputRef.current
-          }}
-        >
-          <input
-            ref={inputRef}
-            value={input}
-            data-testid="mentor-input"
-            disabled={dailyLimit}
-
-            onFocus={() => {
-              restoreComposerFocusRef.current = true
-            }}
-
-            onBlur={() => {
-              restoreComposerFocusRef.current = false
-            }}
-
-            onChange={event => {
-              const value = event.target.value
-
-              setInput(value)
-
-              /*
-               * Стоит человеку найти поле ввода и начать печатать,
-               * подсказку про голос повторно показывать незачем.
-               */
-              if (value.trim() && voiceHintSeen !== '1') {
-                dismissVoiceHint()
-              }
-            }}
-
-            onKeyDown={event => {
-              if (event.key === 'Enter') {
-                event.preventDefault()
-                if (dailyLimit || creatingConversation || creationError) return
-                void sendFromComposer()
-              }
-            }}
-
-            placeholder={`Написать ${meta.dative ?? meta.name}…`}
-
-            name="mentor-message"
-            autoComplete="off"
-            autoCapitalize="sentences"
-            inputMode="text"
-            enterKeyHint="send"
-            className="mx-ai-input flex-1 min-w-0 bg-transparent border-0 outline-none pl-4 pr-2 text-cream placeholder:text-faint"
-          />
-
-          <div className="relative shrink-0">
-            {showVoiceHint && (
-              /*
-               * Подсказка decorative-only (pointer-events-none) — без
-               * полноэкранного слоя: тап по ней уходит дальше, на элемент
-               * под пальцем. Гасится по таймауту, скроллу чата или любому
-               * тапу по поверхности «Диалога».
-               */
-              <div
-                data-testid="voice-hint"
-                className="absolute bottom-full right-0 mb-3 z-[76] pointer-events-none animate-fade-in"
-              >
-                <div className="w-[168px] rounded-2xl bg-cream text-emerald-deep text-[12px] font-semibold leading-snug px-4 py-2.5 text-center shadow-lg">
-                  Нажми и удерживай, чтобы записать голосовое
+              {dailyLimit && (
+                <div
+                  data-testid="daily-limit-notice"
+                  className="text-center text-[13px] text-muted py-3"
+                >
+                  На сегодня хватит — продолжим завтра.
                 </div>
+              )}
 
-                <div className="absolute -bottom-[5px] right-6 w-3 h-3 bg-cream rotate-45" />
+              {sending && (
+                <div className="w-full py-2">
+                  <p className="text-[14px] text-muted">{meta.typing}</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* ── composer ── */}
+
+          <div
+            className="shrink-0 px-4 pt-3"
+
+            style={{
+              paddingBottom: keyboardOpen ? '1px' : 'max(4px, env(safe-area-inset-bottom))',
+            }}
+          >
+            {(voiceState !== 'idle' || voiceError) && (
+              <div className="w-full max-w-md mx-auto px-3 pb-2 text-center text-[12px]">
+                {voiceState === 'recording' && (
+                  <span className="text-gold">
+                    Запись · 0:{String(voiceSeconds).padStart(2, '0')} · отпусти кнопку, чтобы закончить
+                  </span>
+                )}
+
+                {voiceState === 'transcribing' && <span className="text-muted">Распознаю голос…</span>}
+
+                {voiceError && voiceState === 'idle' && (
+                  <span className="text-red-400">{voiceError}</span>
+                )}
               </div>
             )}
 
-            <button
-              type="button"
+            <div
+              ref={composerRef}
+              className="mx-ai-composer mx-glass w-full max-w-md mx-auto min-h-[72px] rounded-[36px] flex items-center gap-2.5 px-2.5"
+              // pointerdown внутри composer'а, пока поле ещё в фокусе, — значит
+              // человек здесь пишет: после отправки клавиатуру возвращаем. Если
+              // клавиатуру закрыли сами (тап вне поля, системный жест), фокуса на
+              // момент тапа нет — и отправка клавиатуру не возвращает.
+              onPointerDownCapture={() => {
+                composerPointerRef.current = document.activeElement === inputRef.current
+              }}
+            >
+              <input
+                ref={inputRef}
+                value={input}
+                data-testid="mentor-input"
+                disabled={dailyLimit}
 
-              {...(hasText && voiceState === 'idle'
-                ? {
-                    onClick: () => {
-                      if (suppressVoiceClickRef.current) {
-                        suppressVoiceClickRef.current = false
-                        return
-                      }
-                      void sendFromComposer()
-                    },
-                    onPointerDown: event => {
-                      event.preventDefault()
-                      setVoicePressed(true)
-                    },
-                    onPointerUp: () => setVoicePressed(false),
-                    onPointerLeave: () => setVoicePressed(false),
-                    onPointerCancel: () => setVoicePressed(false),
+                onFocus={() => {
+                  restoreComposerFocusRef.current = true
+                }}
+
+                onBlur={() => {
+                  restoreComposerFocusRef.current = false
+                }}
+
+                onChange={event => {
+                  const value = event.target.value
+
+                  setInput(value)
+
+                  /*
+                   * Стоит человеку найти поле ввода и начать печатать,
+                   * подсказку про голос повторно показывать незачем.
+                   */
+                  if (value.trim() && voiceHintSeen !== '1') {
+                    dismissVoiceHint()
                   }
-                : {
-                    onClick: demoVoice
-                      ? () => {
+                }}
+
+                onKeyDown={event => {
+                  if (event.key === 'Enter') {
+                    event.preventDefault()
+                    if (dailyLimit || creatingConversation || creationError) return
+                    void sendFromComposer()
+                  }
+                }}
+
+                placeholder={`Написать ${meta.dative ?? meta.name}…`}
+
+                name="mentor-message"
+                autoComplete="off"
+                autoCapitalize="sentences"
+                inputMode="text"
+                enterKeyHint="send"
+                className="mx-ai-input flex-1 min-w-0 bg-transparent border-0 outline-none pl-4 pr-2 text-cream placeholder:text-faint"
+              />
+
+              <div className="relative shrink-0">
+                {showVoiceHint && (
+                  /*
+                   * Подсказка decorative-only (pointer-events-none) — без
+                   * полноэкранного слоя: тап по ней уходит дальше, на элемент
+                   * под пальцем. Гасится по таймауту, скроллу чата или любому
+                   * тапу по поверхности «Диалога».
+                   */
+                  <div
+                    data-testid="voice-hint"
+                    className="absolute bottom-full right-0 mb-3 z-[76] pointer-events-none animate-fade-in"
+                  >
+                    <div className="w-[168px] rounded-2xl bg-cream text-emerald-deep text-[12px] font-semibold leading-snug px-4 py-2.5 text-center shadow-lg">
+                      Нажми и удерживай, чтобы записать голосовое
+                    </div>
+
+                    <div className="absolute -bottom-[5px] right-6 w-3 h-3 bg-cream rotate-45" />
+                  </div>
+                )}
+
+                <button
+                  type="button"
+
+                  {...(hasText && voiceState === 'idle'
+                    ? {
+                        onClick: () => {
                           if (suppressVoiceClickRef.current) {
                             suppressVoiceClickRef.current = false
                             return
                           }
-
-                          if (voiceState === 'idle') startVoiceRecording()
-                          else if (voiceState === 'recording') stopVoiceRecording()
-                        }
-                      : undefined,
-                    onPointerDown: event => {
-                      event.preventDefault()
-                      event.currentTarget.setPointerCapture?.(event.pointerId)
-
-                      setVoicePressed(true)
-
-                      if (voiceState === 'idle') {
-                        startVoiceRecording()
+                          void sendFromComposer()
+                        },
+                        onPointerDown: event => {
+                          event.preventDefault()
+                          setVoicePressed(true)
+                        },
+                        onPointerUp: () => setVoicePressed(false),
+                        onPointerLeave: () => setVoicePressed(false),
+                        onPointerCancel: () => setVoicePressed(false),
                       }
-                    },
+                    : {
+                        onClick: demoVoice
+                          ? () => {
+                              if (suppressVoiceClickRef.current) {
+                                suppressVoiceClickRef.current = false
+                                return
+                              }
 
-                    onPointerUp: event => {
-                      setVoicePressed(false)
-                      event.currentTarget.releasePointerCapture?.(event.pointerId)
+                              if (voiceState === 'idle') startVoiceRecording()
+                              else if (voiceState === 'recording') stopVoiceRecording()
+                            }
+                          : undefined,
+                        onPointerDown: event => {
+                          event.preventDefault()
+                          event.currentTarget.setPointerCapture?.(event.pointerId)
 
-                      if (voiceState === 'recording') {
-                        suppressVoiceClickRef.current = true
-                        stopVoiceRecording()
-                      }
-                    },
+                          setVoicePressed(true)
 
-                    onPointerLeave: event => {
-                      if (event.currentTarget.hasPointerCapture?.(event.pointerId)) return
+                          if (voiceState === 'idle') {
+                            startVoiceRecording()
+                          }
+                        },
 
-                      setVoicePressed(false)
+                        onPointerUp: event => {
+                          setVoicePressed(false)
+                          event.currentTarget.releasePointerCapture?.(event.pointerId)
 
-                      if (voiceState === 'recording') {
-                        suppressVoiceClickRef.current = true
-                        stopVoiceRecording()
-                      }
-                    },
+                          if (voiceState === 'recording') {
+                            suppressVoiceClickRef.current = true
+                            stopVoiceRecording()
+                          }
+                        },
 
-                    onPointerCancel: () => {
-                      setVoicePressed(false)
+                        onPointerLeave: event => {
+                          if (event.currentTarget.hasPointerCapture?.(event.pointerId)) return
 
-                      if (voiceState === 'recording') {
-                        suppressVoiceClickRef.current = true
-                        stopVoiceRecording()
-                      }
-                    },
+                          setVoicePressed(false)
 
-                    onContextMenu: event => {
-                      event.preventDefault()
-                    },
+                          if (voiceState === 'recording') {
+                            suppressVoiceClickRef.current = true
+                            stopVoiceRecording()
+                          }
+                        },
 
-                    style: {
-                      touchAction: 'none',
-                      WebkitTouchCallout: 'none',
-                      WebkitUserSelect: 'none',
-                      userSelect: 'none',
-                    },
-                  })}
+                        onPointerCancel: () => {
+                          setVoicePressed(false)
 
-              data-testid="mentor-composer-action"
+                          if (voiceState === 'recording') {
+                            suppressVoiceClickRef.current = true
+                            stopVoiceRecording()
+                          }
+                        },
 
-              disabled={
-                dailyLimit ||
-                creatingConversation ||
-                Boolean(creationError) ||
-                (hasText && voiceState === 'idle'
-                  ? sending || !hasText
-                  : sending || voiceState === 'transcribing')
-              }
+                        onContextMenu: event => {
+                          event.preventDefault()
+                        },
 
-              className={[
-                'w-[54px] h-[54px] rounded-full bg-gold text-emerald-deep flex items-center justify-center shrink-0 disabled:opacity-35 mx-voice-btn',
-                voicePressed ? 'mx-voice-btn-pressed' : '',
-              ].join(' ')}
+                        style: {
+                          touchAction: 'none',
+                          WebkitTouchCallout: 'none',
+                          WebkitUserSelect: 'none',
+                          userSelect: 'none',
+                        },
+                      })}
 
-              aria-label={
-                hasText && voiceState === 'idle'
-                  ? 'Отправить'
-                  : voiceState === 'recording'
-                    ? 'Идёт запись — отпусти, чтобы закончить'
-                    : voiceState === 'transcribing'
-                      ? 'Распознаю голос'
-                      : 'Нажми и удерживай, чтобы записать голосовое'
-              }
-            >
-              <span key={iconKey} className="mx-voice-icon">
-                {voiceState === 'recording' ? (
-                  <Square size={20} fill="currentColor" />
-                ) : voiceState === 'transcribing' ? (
-                  <LoaderCircle size={24} className="animate-spin" />
-                ) : hasText ? (
-                  <ArrowRight size={25} strokeWidth={1.9} />
-                ) : (
-                  <Mic size={25} strokeWidth={1.7} />
-                )}
-              </span>
-            </button>
+                  data-testid="mentor-composer-action"
+
+                  disabled={
+                    dailyLimit ||
+                    creatingConversation ||
+                    Boolean(creationError) ||
+                    (hasText && voiceState === 'idle'
+                      ? sending || !hasText
+                      : sending || voiceState === 'transcribing')
+                  }
+
+                  className={[
+                    'w-[54px] h-[54px] rounded-full bg-gold text-emerald-deep flex items-center justify-center shrink-0 disabled:opacity-35 mx-voice-btn',
+                    voicePressed ? 'mx-voice-btn-pressed' : '',
+                  ].join(' ')}
+
+                  aria-label={
+                    hasText && voiceState === 'idle'
+                      ? 'Отправить'
+                      : voiceState === 'recording'
+                        ? 'Идёт запись — отпусти, чтобы закончить'
+                        : voiceState === 'transcribing'
+                          ? 'Распознаю голос'
+                          : 'Нажми и удерживай, чтобы записать голосовое'
+                  }
+                >
+                  <span key={iconKey} className="mx-voice-icon">
+                    {voiceState === 'recording' ? (
+                      <Square size={20} fill="currentColor" />
+                    ) : voiceState === 'transcribing' ? (
+                      <LoaderCircle size={24} className="animate-spin" />
+                    ) : hasText ? (
+                      <ArrowRight size={25} strokeWidth={1.9} />
+                    ) : (
+                      <Mic size={25} strokeWidth={1.7} />
+                    )}
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {footerSlot}
           </div>
         </div>
-
-        {footerSlot}
       </div>
     </div>,
     getFullscreenPortalTarget()
