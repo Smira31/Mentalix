@@ -84,9 +84,12 @@ test('журнал: intro → пропуск настройки → поток �
   await expect(page.locator('.mx-completion__title')).toContainText('сохранена')
   // Плашка «день 1»
   await expect(page.locator('.mx-completion__date-pill')).toContainText('день 1')
-  // Кнопка «Сохранить и выйти»
+  // Кнопка «Готово» — запись уже сохранена до этого экрана
   await expect(page.getByTestId('dj-complete-close')).toBeVisible()
-  await expect(page.getByTestId('dj-complete-close')).toHaveText('Сохранить и выйти')
+  await expect(page.getByTestId('dj-complete-close')).toHaveText('Готово')
+  // Тихой кнопки «Пропустить» больше нет: оценка необязательна,
+  // «Готово» выходит и без неё
+  await expect(page.getByTestId('dj-complete-skip')).toHaveCount(0)
 })
 
 test('журнал: настройка — 3 подэкрана картинки будущего, ✕ = назад', async ({

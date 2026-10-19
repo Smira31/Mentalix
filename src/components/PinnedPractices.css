@@ -175,6 +175,33 @@
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 4;
 }
+/* Низкие экраны (375×667 и ниже): сетка 2×2 должна целиком стоять
+   над пилюлями футера. Компактнее круг иконки и вертикальные отступы
+   (токенами), описание — максимум 2 строки с многоточием.
+   На 393×852 и 440×956 правила не срабатывают — вид не меняется. */
+@media (max-height: 700px) {
+  .mx-pinned-practices__grid .mx-pinned-practice-card {
+    height: 200px;
+    min-height: 200px;
+    padding: var(--mx-space-3) var(--mx-space-2);
+  }
+  .mx-pinned-practices__grid .mx-pinned-practice-card__main {
+    gap: var(--mx-space-1);
+  }
+  .mx-pinned-practices__grid .mx-pinned-practice-card__main > .mx-pinned-practice-glyph {
+    width: 56px;
+    min-width: 56px;
+    height: 56px;
+    min-height: 56px;
+  }
+  .mx-pinned-practices__grid .mx-pinned-practice-card__main > .mx-pinned-practice-glyph svg {
+    width: 34px;
+    height: 34px;
+  }
+  .mx-pinned-practices__grid .mx-pinned-practice-card__desc {
+    -webkit-line-clamp: 2;
+  }
+}
 /* Кружок «…» 25pt в правом верхнем углу карточки, отступ 12pt. */
 .mx-pinned-practice-card__more {
   position: absolute;

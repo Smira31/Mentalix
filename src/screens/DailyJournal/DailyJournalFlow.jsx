@@ -762,15 +762,8 @@ export default function DailyJournalFlow({ userId, onClose, reflectionPrompt = n
           className="cta-pill"
           data-testid="dj-complete-close"
         >
-          Сохранить и выйти
+          Готово
         </button>
-        {/* #1084: явный тихий выход без оценки — запись уже сохранена,
-            «Пропустить» ничего не теряет и не показывает ошибок. */}
-        {askFeedback && (
-          <button type="button" onClick={onClose} data-testid="dj-complete-skip">
-            Пропустить
-          </button>
-        )}
       </div>
     )
   }
@@ -1028,7 +1021,7 @@ export default function DailyJournalFlow({ userId, onClose, reflectionPrompt = n
               )
             }
             feedbackQuestion="Стало хоть немного легче?"
-            feedbackHint="Это только для тебя — запись уже сохранена"
+            feedbackHint="Ответ видишь только ты"
             showFeedback={askFeedback}
             onFeedback={handleFeedback}
           />
