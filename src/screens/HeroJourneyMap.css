@@ -425,8 +425,9 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  /* Положение кадра задаёт шаг через image.focus (inline style). */
-  object-position: 50% 40%;
+  /* Фолбэк положения кадра; inline-стиль image.focus (или DEFAULT_HERO_FOCUS)
+     перекрывает это значение. 30% Y — герой ниже в кадре (см. HeroJourneyMap.jsx). */
+  object-position: 50% 30%;
   display: block;
   animation:
     mx-hj-hero-fade 350ms ease-out both,
