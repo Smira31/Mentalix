@@ -103,7 +103,7 @@ export default function PracticeFieldFlow({
       }
     >
       <CapsLabel className="mb-[14px]">
-        {label} · {step + 1} / {steps.length}
+        {steps.length > 1 ? `${label} · ${step + 1} / ${steps.length}` : label}
       </CapsLabel>
 
       <div className="mx-practice-own-progress">
