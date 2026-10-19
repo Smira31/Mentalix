@@ -141,7 +141,7 @@ function ListScreen({
 }
 
 /* ── Экран «готовые» ── */
-function ReadyScreen({ wording, items, onAddPreset, onOpenOwn, onBack }) {
+function ReadyScreen({ wording, items, onAddPreset, onOpenOwn, onOpenDetail, onBack }) {
   const existingNames = new Set(items.map(i => i.name.toLowerCase()))
 
   return (
@@ -164,8 +164,16 @@ function ReadyScreen({ wording, items, onAddPreset, onOpenOwn, onBack }) {
               key={preset.name}
               className={`mx-practice-ready-card${added ? ' is-added' : ''}`}
               data-testid="practice-preset-card"
-              disabled={added}
+              disabled={false}
               onClick={() => {
+                if (added) {
+                  const existing = items.find(i => i.name.toLowerCase() === preset.name.toLowerCase())
+                  if (existing) {
+                    platform.haptic('light')
+                    onOpenDetail(existing)
+                    return
+                  }
+                }
                 platform.haptic('success')
                 onAddPreset(preset)
               }}
@@ -268,6 +276,13 @@ export default function PracticeListFlow({
   }
 
   useEffect(() => () => clearTimeout(toastTimer.current), [])
+
+  // Смена вида (список → готовые → свой) или выбор практики — новый экран:
+  // возвращаем скролл-контейнер к началу, чтобы заголовок не был обрезан.
+  useEffect(() => {
+    const root = document.querySelector('[data-testid="app-scroll-root"]')
+    if (root) root.scrollTop = 0
+  }, [view, selected])
 
   // Пустое состояние — сразу экран «готовые», не пустая сетка
   useEffect(() => {
@@ -428,6 +443,7 @@ export default function PracticeListFlow({
         items={items}
         onAddPreset={addPreset}
         onOpenOwn={() => setView('own')}
+        onOpenDetail={item => setSelected(item)}
         onBack={handleBack}
       />
     )
