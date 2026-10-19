@@ -123,8 +123,9 @@ test('журнал: настройка — 3 подэкрана картинки
 
   // ── Шаг 2 — Каким я хочу быть (#1090) ──
   await expect(page.locator('.mx-dj-setup__step-label')).toHaveText('Шаг 2 из 5 · Каким я хочу быть')
-  // Пустая строка: префикс + серая подсказка «держит слово»
-  await expect(page.getByTestId('dj-setup-identity-prefix-0')).toHaveText('Я — человек, который…')
+  // Решение 19.10: префикс «Я — человек, который…» — один раз над списком
+  await expect(page.getByTestId('dj-setup-identity-prefix')).toHaveText('Я — человек, который…')
+  await expect(page.getByTestId('dj-setup-identity-prefix')).toHaveCount(1)
   await expect(page.getByTestId('dj-setup-reminder-0')).toHaveAttribute(
     'placeholder',
     'держит слово'
@@ -379,58 +380,49 @@ async function openSavedScreen(page) {
   await expect(page.locator('.mx-dj-today__title')).toHaveText('Запись сохранена')
 }
 
-// Геометрия трёх действий и футера относительно текущего экрана.
+// Геометрия «Готово» и тихих ссылок относительно текущего экрана.
 async function measureSavedFooter(page) {
   return page.evaluate(() => {
-    const ids = ['dj-today-review', 'dj-today-entries', 'dj-today-append']
-    const buttons = ids.map(id => {
+    const doneEl = document.querySelector('[data-testid="dj-today-done"]')
+    const linkIds = ['dj-today-append', 'dj-today-review', 'dj-today-entries']
+    const done = doneEl ? doneEl.getBoundingClientRect() : null
+    const links = linkIds.map(id => {
       const el = document.querySelector(`[data-testid="${id}"]`)
       if (!el) return { id, missing: true }
       const r = el.getBoundingClientRect()
-      return {
-        id,
-        top: r.top,
-        bottom: r.bottom,
-        left: r.left,
-        right: r.right,
-        width: r.width,
-        height: r.height,
-      }
+      return { id, top: r.top, bottom: r.bottom, left: r.left, right: r.right, height: r.height }
     })
     const footerEl = document.querySelector('.mx-screen__footer')
     const footer = footerEl ? footerEl.getBoundingClientRect() : null
     const doc = document.documentElement
     return {
       viewport: { width: window.innerWidth, height: window.innerHeight },
-      buttons,
+      done: done ? { top: done.top, bottom: done.bottom, height: done.height } : null,
+      links,
       footer: footer ? { top: footer.top, bottom: footer.bottom } : null,
       horizontalOverflow: doc.scrollWidth - doc.clientWidth,
+      verticalOverflow: doc.scrollHeight - doc.clientHeight,
     }
   })
 }
 
 function assertFitsViewport(geometry, label) {
-  const { viewport, buttons, footer, horizontalOverflow } = geometry
+  const { viewport, done, links, footer, horizontalOverflow, verticalOverflow } = geometry
   expect(horizontalOverflow, `${label}: горизонтальная прокрутка`).toBeLessThanOrEqual(2)
   expect(footer, `${label}: футер не найден`).not.toBeNull()
   expect(footer.bottom, `${label}: футер выходит за низ экрана`).toBeLessThanOrEqual(
     viewport.height + 1
   )
-  for (const b of buttons) {
-    expect(b.missing, `${label}: ${b.id} отсутствует`).not.toBe(true)
-    expect(b.height, `${label}: ${b.id} ниже 44px`).toBeGreaterThanOrEqual(44)
-    expect(b.left, `${label}: ${b.id} выходит влево`).toBeGreaterThanOrEqual(0)
-    expect(b.right, `${label}: ${b.id} выходит вправо`).toBeLessThanOrEqual(viewport.width + 1)
-    expect(b.bottom, `${label}: ${b.id} ниже экрана`).toBeLessThanOrEqual(viewport.height + 1)
+  // «Готово» — основная белая кнопка
+  expect(done, `${label}: «Готово» не найдена`).not.toBeNull()
+  expect(done.height, `${label}: «Готово» ниже 44px`).toBeGreaterThanOrEqual(44)
+  expect(done.bottom, `${label}: «Готово» ниже экрана`).toBeLessThanOrEqual(viewport.height + 1)
+  for (const l of links) {
+    if (l.missing) continue
+    expect(l.bottom, `${label}: ${l.id} ниже экрана`).toBeLessThanOrEqual(viewport.height + 1)
+    // Тихие ссылки стоят ниже «Готово»
+    expect(l.top, `${label}: ${l.id} выше «Готово»`).toBeGreaterThanOrEqual(done.bottom - 1)
   }
-  const [review, entries, append] = buttons
-  // Вторичный ряд стоит выше основной кнопки и не перекрывает её.
-  expect(review.bottom, `${label}: «Перечитать» перекрывает «Дописать»`).toBeLessThanOrEqual(
-    append.top
-  )
-  expect(entries.bottom, `${label}: «Мои записи» перекрывает «Дописать»`).toBeLessThanOrEqual(
-    append.top
-  )
 }
 
 /*
@@ -455,58 +447,69 @@ async function waitForSurfaceSettled(page) {
   })
 }
 
-test('журнал: «Запись сохранена» — три действия, переходы и отсутствие дублей', async ({ page }) => {
+/*
+ * Решение 19.10: «Запись сохранена» — одна белая «Готово» (закрывает экран),
+ * под ней тихие ссылки в строку «Дописать · Перечитать · Мои записи».
+ * Без скролла на 375×667.
+ */
+test('журнал: «Запись сохранена» — «Готово» и тихие ссылки, переходы, без дублей', async ({ page }) => {
   await page.goto('/?demo=1&tab=practices')
 
   await expect(page.getByTestId('journal-open-cta')).toBeVisible()
   await page.getByTestId('journal-open-cta').click()
   await openSavedScreen(page)
 
-  // ── Три действия: видимы, доступны, с подписями ──
-  const reviewBtn = page.getByTestId('dj-today-review')
-  const entriesBtn = page.getByTestId('dj-today-entries')
-  const appendBtn = page.getByTestId('dj-today-append')
+  // ── Одна белая «Готово» ──
+  const doneBtn = page.getByTestId('dj-today-done')
+  await expect(doneBtn).toBeVisible()
+  await expect(doneBtn).toBeEnabled()
+  await expect(doneBtn).toHaveText('Готово')
+  await expect(doneBtn).toHaveAttribute('class', /cta-pill/)
 
-  await expect(reviewBtn).toBeVisible()
-  await expect(reviewBtn).toBeEnabled()
-  await expect(reviewBtn).toHaveAccessibleName('Перечитать')
-  await expect(entriesBtn).toBeVisible()
-  await expect(entriesBtn).toBeEnabled()
-  await expect(entriesBtn).toHaveAccessibleName('Мои записи')
-  await expect(appendBtn).toBeVisible()
-  await expect(appendBtn).toBeEnabled()
-  await expect(appendBtn).toHaveAccessibleName('Дописать')
+  // ── Тихие ссылки в строку под «Готово» ──
+  const appendLink = page.getByTestId('dj-today-append')
+  const reviewLink = page.getByTestId('dj-today-review')
+  const entriesLink = page.getByTestId('dj-today-entries')
+  await expect(appendLink).toBeVisible()
+  await expect(appendLink).toHaveAccessibleName('Дописать')
+  await expect(reviewLink).toBeVisible()
+  await expect(reviewLink).toHaveAccessibleName('Перечитать')
+  await expect(entriesLink).toBeVisible()
+  await expect(entriesLink).toHaveAccessibleName('Мои записи')
 
-  // Вторичные — кнопки дизайн-системы, основное действие — cta-пилюля
-  await expect(reviewBtn).toHaveAttribute('class', /mx-pill-btn/)
-  await expect(entriesBtn).toHaveAttribute('class', /mx-pill-btn/)
-  await expect(appendBtn).toHaveAttribute('class', /cta-pill/)
-
-  // ── Геометрия: 393×852 и 360×640 ──
+  // ── Геометрия: 393×852 и 375×667 — без скролла ──
   assertFitsViewport(await measureSavedFooter(page), '393×852')
-  await page.setViewportSize({ width: 360, height: 640 })
+  await page.setViewportSize({ width: 375, height: 667 })
   await waitForSurfaceSettled(page)
   await expect(page.getByTestId('dj-today')).toBeVisible()
-  assertFitsViewport(await measureSavedFooter(page), '360×640')
+  assertFitsViewport(await measureSavedFooter(page), '375×667')
   await page.setViewportSize({ width: 393, height: 852 })
   await waitForSurfaceSettled(page)
   await expect(page.getByTestId('dj-today')).toBeVisible()
 
+  // ── «Готово» закрывает экран (как «Назад») ──
+  await doneBtn.click()
+  await expect(page.getByTestId('journal-open-cta')).toBeVisible()
+
+  // Открываем снова для проверки переходов
+  await page.getByTestId('journal-open-cta').click()
+  await expect(page.getByTestId('dj-today')).toBeVisible()
+
   // ── «Перечитать» → «Вспомни, куда идёшь» → назад ──
-  await reviewBtn.click()
+  await reviewLink.click()
   await expect(page.locator('.mx-dj-review')).toBeVisible()
   await expect(page.locator('.mx-dj-review__title')).toHaveText('Вспомни, куда идёшь')
   await page.getByTestId('back-button').click()
   await expect(page.getByTestId('dj-today')).toBeVisible()
 
   // ── «Мои записи» → список записей → назад ──
-  await entriesBtn.click()
+  await entriesLink.click()
   await expect(page.getByTestId('dj-entries')).toBeVisible()
   await page.getByTestId('back-button').click()
   await expect(page.getByTestId('dj-today')).toBeVisible()
 
   // ── «Дописать» → продолжение той же записи ──
-  await appendBtn.click()
+  await appendLink.click()
   await expect(page.getByTestId('dj-stream-input')).toBeVisible()
   const streamValue = await page.getByTestId('dj-stream-input').inputValue()
   expect(streamValue).toContain('Синтетическая запись: утро.')
@@ -580,7 +583,8 @@ test('журнал: «+ Добавить» — новая пустая стро�
     'placeholder',
     'держит слово'
   )
-  await expect(page.getByTestId('dj-setup-identity-prefix-1')).toBeVisible()
+  // Решение 19.10: префикс один над списком — у второй строки его нет
+  await expect(page.getByTestId('dj-setup-identity-prefix')).toHaveCount(1)
   // У пустой строки нет крестика
   await expect(page.getByTestId('dj-setup-reminder-delete-1')).toHaveCount(0)
   // У заполненной — есть
@@ -590,51 +594,75 @@ test('журнал: «+ Добавить» — новая пустая стро�
   await expect(addButton).toHaveCount(0)
 })
 
-test('журнал: шаг 4 — «+ Добавить вопрос» показывает чипы готовых вопросов', async ({
+/*
+ * Решение 19.10: для новой настройки — 1 вопрос по умолчанию, остальные
+ * готовые вопросы видны сразу чипами. Тап добавляет вопрос и прячет чип,
+ * удаление возвращает чип, максимум 7. При 1 вопросе — тихая строка-подсказка.
+ * «+ Добавить вопрос» — для своего вопроса.
+ */
+test('журнал: шаг 4 — чипы готовых вопросов видны сразу, дефолт 1 вопрос', async ({
   page,
 }) => {
   await openSetupStep4(page)
 
-  // Дефолтные вопросы заполнены: «+ Добавить вопрос» виден, чипов ещё нет
-  await expect(page.getByTestId('dj-setup-prompt-0')).not.toHaveValue('')
-  await expect(page.getByTestId('dj-setup-add-prompt')).toBeVisible()
-  await expect(page.getByTestId('dj-setup-chips')).toHaveCount(0)
-
-  // «+ Добавить вопрос» добавляет пустую строку и открывает чипы
-  await page.getByTestId('dj-setup-add-prompt').click()
-  await expect(page.getByTestId('dj-setup-prompt-5')).toHaveValue('')
-  await expect(page.getByTestId('dj-setup-prompt-5')).toHaveAttribute(
-    'placeholder',
-    'Вопрос 6'
+  // Дефолт новой настройки — 1 вопрос
+  await expect(page.getByTestId('dj-setup-prompt-0')).toHaveValue(
+    'Что я откладываю, хотя знаю, что это важно?'
   )
-  // Пока строка пустая, кнопка не дублирует строки
-  await expect(page.getByTestId('dj-setup-add-prompt')).toHaveCount(0)
+  await expect(page.getByTestId('dj-setup-prompt-1')).toHaveCount(0)
+
+  // При 1 вопросе — тихая строка-подсказка
+  await expect(page.getByTestId('dj-setup-prompts-hint')).toHaveText(
+    'Один вопрос — каждый день он же. Добавь ещё 2–3, и они пойдут по кругу'
+  )
+
+  // Готовые вопросы видны сразу чипами (4 чипа)
   const chips = page.getByTestId('dj-setup-chip')
   await expect(chips).toHaveCount(4)
-  await expect(chips.filter({ hasText: 'Что сегодня было хорошего?' })).toBeVisible()
+  await expect(page.getByTestId('dj-setup-chips')).toBeVisible()
 
-  // Чип заполняет пустую строку и скрывается; кнопка возвращается
-  await chips.filter({ hasText: 'Что сегодня было хорошего?' }).click()
-  await expect(page.getByTestId('dj-setup-prompt-5')).toHaveValue(
-    'Что сегодня было хорошего?'
-  )
-  await expect(chips.filter({ hasText: 'Что сегодня было хорошего?' })).toHaveCount(0)
-  await expect(chips).toHaveCount(3)
+  // «+ Добавить вопрос» — для своего вопроса
   await expect(page.getByTestId('dj-setup-add-prompt')).toBeVisible()
 
-  // Удаление вопроса возвращает чип
-  await page.getByTestId('dj-setup-prompt-delete-5').click()
-  await expect(page.getByTestId('dj-setup-prompt-5')).toHaveCount(0)
-  await expect(chips.filter({ hasText: 'Что сегодня было хорошего?' })).toHaveCount(1)
-  await expect(chips).toHaveCount(4)
+  // Тап по чипу добавляет вопрос и прячет чип
+  const chipText = 'Какой один шаг сделает завтра чуть легче?'
+  await chips.filter({ hasText: chipText }).click()
+  await expect(page.getByTestId('dj-setup-prompt-1')).toHaveValue(chipText)
+  await expect(chips.filter({ hasText: chipText })).toHaveCount(0)
+  await expect(chips).toHaveCount(3)
+  // Подсказка исчезла (2 вопроса)
+  await expect(page.getByTestId('dj-setup-prompts-hint')).toHaveCount(0)
 
-  // Максимум 7 вопросов: на седьмом заполненном «+ Добавить вопрос» исчезает
+  // Удаление вопроса возвращает чип
+  await page.getByTestId('dj-setup-prompt-delete-1').click()
+  await expect(page.getByTestId('dj-setup-prompt-1')).toHaveCount(0)
+  await expect(chips.filter({ hasText: chipText })).toHaveCount(1)
+  await expect(chips).toHaveCount(4)
+  // Подсказка вернулась (1 вопрос)
+  await expect(page.getByTestId('dj-setup-prompts-hint')).toBeVisible()
+
+  // «+ Добавить вопрос» — добавляет пустую строку для своего вопроса
   await page.getByTestId('dj-setup-add-prompt').click()
-  await chips.filter({ hasText: 'Что сегодня было хорошего?' }).click()
+  await expect(page.getByTestId('dj-setup-prompt-1')).toHaveValue('')
+  await expect(page.getByTestId('dj-setup-prompt-1')).toHaveAttribute(
+    'placeholder',
+    'Вопрос 2'
+  )
+  // Пока есть пустая строка, кнопка не дублирует
+  await expect(page.getByTestId('dj-setup-add-prompt')).toHaveCount(0)
+  await page.getByTestId('dj-setup-prompt-1').fill('Свой вопрос')
+  await expect(page.getByTestId('dj-setup-add-prompt')).toBeVisible()
+
+  // Максимум 7 вопросов: заполняем чипами до 7, «+ Добавить вопрос» исчезает
+  await chips.filter({ hasText: chipText }).click()
+  const chip2 = 'Что сегодня забрало больше всего сил — и что их вернуло?'
+  await chips.filter({ hasText: chip2 }).click()
+  const chip3 = 'За что я могу себя сегодня похвалить, даже за мелочь?'
+  await chips.filter({ hasText: chip3 }).click()
+  const chip4 = 'Что меня сегодня задело — и что за этим стоит?'
+  await chips.filter({ hasText: chip4 }).click()
   await page.getByTestId('dj-setup-add-prompt').click()
-  await expect(page.getByTestId('dj-setup-prompt-6')).toHaveValue('')
-  await page.getByTestId('dj-setup-prompt-6').fill('Свой вопрос')
-  await expect(page.getByTestId('dj-setup-prompt-6')).toHaveValue('Свой вопрос')
+  await page.getByTestId('dj-setup-prompt-6').fill('Седьмой вопрос')
   await expect(page.getByTestId('dj-setup-add-prompt')).toHaveCount(0)
   await expect(page.getByTestId('dj-setup-prompt-7')).toHaveCount(0)
 })
