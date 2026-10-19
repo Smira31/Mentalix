@@ -321,6 +321,7 @@ export default function PracticeListFlow({
     const updated = await onRestore(restoring.id, { restoreDaysAgo, value })
     if (updated) {
       setSelected(prev => (prev?.id === restoring.id ? { ...prev, ...updated } : prev))
+      showToast('День восстановлен')
     }
     return updated
   }
@@ -412,6 +413,7 @@ export default function PracticeListFlow({
           <StreakRestoreSheet
             itemName={restoring.name}
             choices={restoreChoicesFor(kind, restoring)}
+            streak={restoring.streak || 0}
             onSave={handleRestore}
             onClose={() => setRestoring(null)}
           />
