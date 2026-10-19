@@ -91,6 +91,9 @@ export default function DailyJournalFlow({ userId, onClose, reflectionPrompt = n
   const [entryId, setEntryId] = useState(null)
   const [dayNumber, setDayNumber] = useState(null)
   const [helpful, setHelpful] = useState(null)
+  // #1084: спрашиваем «Стало хоть немного легче?» только пока оценка
+  // не дана; после ответа вопрос не появляется заново.
+  const [askFeedback, setAskFeedback] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState(false)
   const [resetError, setResetError] = useState(false)
@@ -166,6 +169,11 @@ export default function DailyJournalFlow({ userId, onClose, reflectionPrompt = n
         setSaveError(false)
         setEntryId(existing.id)
         setHasTodayEntry(true)
+        // #1084: оценка уже дана — повторно не спрашиваем
+        if (existing.helpful) {
+          setHelpful(existing.helpful)
+          setAskFeedback(false)
+        }
         saveDailyJournalDraft(userId, date, { ...draft, pendingSave: false })
         return
       }
@@ -246,6 +254,11 @@ export default function DailyJournalFlow({ userId, onClose, reflectionPrompt = n
           const serverAnswer = todayEntry.prompt_answer || ''
           setHasTodayEntry(true)
           setEntryId(todayEntry.id)
+          // #1084: оценка уже дана — повторно не спрашиваем
+          if (todayEntry.helpful) {
+            setHelpful(todayEntry.helpful)
+            setAskFeedback(false)
+          }
           setPromptText(todayEntry.prompt_text || '')
           // «Дописать»: непустой локальный черновик не затираем серверным текстом
           const local = readDailyJournalDraft(userId, dateStr)
@@ -751,6 +764,13 @@ export default function DailyJournalFlow({ userId, onClose, reflectionPrompt = n
         >
           Сохранить и выйти
         </button>
+        {/* #1084: явный тихий выход без оценки — запись уже сохранена,
+            «Пропустить» ничего не теряет и не показывает ошибок. */}
+        {askFeedback && (
+          <button type="button" onClick={onClose} data-testid="dj-complete-skip">
+            Пропустить
+          </button>
+        )}
       </div>
     )
   }
@@ -1007,7 +1027,9 @@ export default function DailyJournalFlow({ userId, onClose, reflectionPrompt = n
                 </>
               )
             }
-            feedbackQuestion="Помогло?"
+            feedbackQuestion="Стало хоть немного легче?"
+            feedbackHint="Это только для тебя — запись уже сохранена"
+            showFeedback={askFeedback}
             onFeedback={handleFeedback}
           />
           {saveError && (
