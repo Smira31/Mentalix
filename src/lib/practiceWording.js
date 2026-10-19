@@ -17,10 +17,10 @@ export const RITUAL_PRESETS = [
 ]
 
 export const ASCEZA_PRESETS = [
-  { name: 'Меньше сладкого', minimum: 'меньше сладкого, осознанно — без жёсткого запрета', glyph: 'candy' },
+  { name: 'Меньше сладкого', minimum: 'не больше одного сладкого за день', glyph: 'candy' },
   { name: 'Без бесконечной ленты', minimum: 'не листать ленту до обеда, мессенджеры по делу можно', glyph: 'phone-play' },
   { name: 'Без алкоголя', minimum: 'сегодня без алкоголя; если тянет — заметь, что за этим стоит', glyph: 'wine-glass' },
-  { name: 'Кофе после 14:00', minimum: 'осознанно, меньше кофе во второй половине дня', glyph: 'coffee' },
+  { name: 'Без кофе после 14:00', minimum: 'после 14:00 — вода или чай без кофеина', glyph: 'coffee' },
   { name: 'Без жалоб', minimum: 'заметил жалобу — преврати в просьбу или маленькое действие', glyph: 'speech-slash' },
   { name: 'Покупки по списку', minimum: 'ничего вне списка дороже 1000 ₽', glyph: 'shopping-bag' },
 ]
@@ -116,8 +116,8 @@ export const PRACTICE_WORDING = {
     optionalFields: RITUAL_OPTIONAL_FIELDS,
     defaultGlyph: 'hourglass',
     guide: {
-      duration: 'без ограничения, пока полезен',
-      markDay: 'отметь «сегодня» в конце дня',
+      duration: 'сам решаешь; начни с 7 дней, потом реши — продолжать ли',
+      markDay: 'нажми «Отметить сегодня», когда сделал',
       missed: 'ничего страшного — продолжаешь на следующий день',
       stop: '«…» → «Удалить». Отметки этой практики исчезнут',
     },
@@ -166,8 +166,8 @@ export const PRACTICE_WORDING = {
     optionalFields: ASCEZA_OPTIONAL_FIELDS,
     defaultGlyph: 'shield',
     guide: {
-      duration: 'без ограничения, пока чувствуешь пользу',
-      markDay: 'отметь «держусь» в конце дня',
+      duration: 'сам решаешь; начни с 7 дней, потом реши — продолжать ли',
+      markDay: 'нажми «Держусь сегодня» в конце дня',
       missed: 'ничего страшного — продолжаешь на следующий день',
       stop: '«…» → «Удалить». Отметки этой практики исчезнут',
     },

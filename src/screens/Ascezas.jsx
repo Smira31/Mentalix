@@ -116,7 +116,7 @@ function BreakContextSheet({ asceza, onSave, onClose }) {
               {error}
             </p>
           )}
-          <p className="text-[11px] text-center text-faint mt-3">Это данные, не повод себя ругать.</p>
+          <p className="text-[11px] text-center text-faint mt-3">Это не провал. Заметь, что помешало — так проще в следующий раз.</p>
         </div>
       </div>
     </div>,
