@@ -92,7 +92,9 @@ export default function PracticeDetail({
   const glyphKind =
     practice.glyph ||
     (isRitual ? semanticKindForRitual(practice.name) : semanticKindForAsceza(practice))
-  const why = practice.goal || practice.reason
+  // У аскезы «Зачем» — только смысл (goal); граница (reason) живёт в «Как».
+  // fallback на reason у аскезы дублировал бы текст «Граница».
+  const why = isRitual ? (practice.goal || practice.reason) : practice.goal
   // «Как» — минимум у ритуала и граница у аскезы (practice.reason).
   // Оптимум и триггер с заменой живут необязательными строками «+ …».
   const howContent = isRitual ? practice.min_version : practice.reason
