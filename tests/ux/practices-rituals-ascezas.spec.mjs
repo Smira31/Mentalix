@@ -146,11 +146,14 @@ test('экран ритуала: неделя, «Отметить вчера», 
   await expect(page.getByTestId('practice-detail-sign')).toBeVisible()
   await expect(page.getByTestId('practice-detail-delete')).toBeVisible()
 
-  // Восстановление вчерашнего дня: лист → день → ступень → подтверждение.
+  // Восстановление вчерашнего дня: лист → день → подтверждение.
+  // У демо-ритуала 900100 только min_version — выбор авто-выбран (1 ступень),
+  // секция «Как отметить?» скрыта, кнопка подтверждения активна после выбора дня.
   await page.getByTestId('practice-restore-yesterday').click()
   await expect(page.getByTestId('practice-restore-submit')).toBeDisabled()
   await page.getByTestId('practice-restore-day-1').click()
-  await page.getByTestId('practice-restore-choice-min').click()
+  // Единственная ступень выбрана автоматически — кнопка активна.
+  await expect(page.getByTestId('practice-restore-submit')).toBeEnabled()
   await page.getByTestId('practice-restore-submit').click()
 
   // Серия продлилась, сегодняшняя отметка не сдвинулась, восстанавливать больше нечего.
