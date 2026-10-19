@@ -200,7 +200,7 @@ function ChapterSection({ chapter, progress, onOpenStep, currentStepId }) {
   return (
     <section className={`mx-hj-chapter${locked ? ' mx-hj-chapter--locked' : ''}`}>
       <div className="mx-hj-chapter__head" onClick={() => setExpanded(v => !v)}>
-        <div className="mx-hj-chapter__title-block">
+        <div className="mx-hj-chapter__title-block mx-protected-text">
           <span className="mx-hj-chapter__roman">Глава {chapter.roman}</span>
           <span className="mx-hj-chapter__name">{chapter.title}</span>
           <span className="mx-hj-chapter__subtitle">{chapter.subtitle}</span>
@@ -313,7 +313,7 @@ function CourseMap({ progress, onOpenStep, onOpenAbout }) {
   if (HERO_JOURNEY_TRIALS.length === 0)
     return (
       <Shell testId="hero-journey-map">
-        <div className="mx-hj-map__head">
+        <div className="mx-hj-map__head mx-protected-text">
           <h1 className="mx-hj-map__title">{appHeading(HERO_JOURNEY_COURSE.title)}</h1>
           <p className="mx-hj-map__desc">{HERO_JOURNEY_COURSE.description}</p>
         </div>
@@ -325,7 +325,7 @@ function CourseMap({ progress, onOpenStep, onOpenAbout }) {
 
   return (
     <Shell testId="hero-journey-map">
-      <div className="mx-hj-map__head">
+      <div className="mx-hj-map__head mx-protected-text">
         <span className="mx-hj-eyebrow">
           Практикум · {HERO_JOURNEY_TRIALS.length} шагов · {HERO_JOURNEY_CHAPTERS.length} главы
         </span>
@@ -400,7 +400,11 @@ function CourseMap({ progress, onOpenStep, onOpenAbout }) {
 function AboutScreen({ prologue, onBackToMap }) {
   return (
     /* Колонка без скролла: кнопка «К шагам» прижата к низу (см. __bottom в CSS). */
-    <Shell fit bodyClassName="mx-hj-about" screenBodyClassName="mx-hj-about-body">
+    <Shell
+      fit
+      bodyClassName="mx-hj-about mx-protected-text"
+      screenBodyClassName="mx-hj-about-body"
+    >
       <span className="mx-hj-eyebrow">{prologue.eyebrow}</span>
       <h1 className="mx-hj-about__title">{appHeading(prologue.title)}</h1>
       {prologue.paragraphs.map((para, i) => (
@@ -467,7 +471,7 @@ function StepIntro({ trial, onStart }) {
         </div>
       )}
 
-      <div className="mx-hj-step-intro__text">
+      <div className="mx-hj-step-intro__text mx-protected-text">
         {/* Скролл-обёртка: на низком экране (375×667 и ниже) длинное вступление
             доскролливается внутри блока и не уходит под кнопку «Начать шаг». */}
         <div className="mx-hj-step-intro__text-scroll">
@@ -572,7 +576,7 @@ function WriteScreen({
     <Shell fit bodyClassName="mx-hj-write-col">
       <StepHeader trial={trial} view={view} />
 
-      <div className="mx-hj-write">
+      <div className="mx-hj-write mx-protected-text">
         <h2 className="mx-hj-write__prompt">{prompt}</h2>
         {hint && <p className="mx-hj-write__hint">{hint}</p>}
       </div>
@@ -653,7 +657,7 @@ function StepComplete({ trial, progress, onBackToMap }) {
         />
       ) : null}
 
-      <div className="mx-hj-complete">
+      <div className="mx-hj-complete mx-protected-text">
         {!showDoneImage && (
           <div className="mx-hj-complete__circle">
             <Check size={40} strokeWidth={3} />

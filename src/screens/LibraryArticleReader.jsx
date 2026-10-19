@@ -15,14 +15,14 @@ export default function LibraryArticleReader({ article, next, onBack, onJournal,
         data-testid="article-reader"
         data-article-id={article.id}
       >
-        <header>
+        <header className="mx-protected-text">
           <p className="mx-library-caps">{libraryTopic(article.tag || article.category).title}</p>
           <h1 className="mx-type-page" data-testid="article-title">
             {article.title}
           </h1>
           <p className="mx-type-meta text-muted">{article.minutes} мин чтения</p>
         </header>
-        <div className="mx-library-reader-text">
+        <div className="mx-library-reader-text mx-protected-text">
           {paragraphs.map((text, index) => (
             <p key={index} className="mx-type-control">
               {text}

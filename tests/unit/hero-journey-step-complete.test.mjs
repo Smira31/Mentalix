@@ -117,7 +117,9 @@ test('Длительность шага убрана со вступления �
 test('Вступление: длинный текст скроллится внутри блока, не под кнопкой', () => {
   // Скролл-обёртка внутри текстового блока: скрим ::before остаётся на блоке
   // (он выходит выше блока и был бы обрезан собственным overflow).
-  assert.match(jsxSource, /className="mx-hj-step-intro__text">/)
+  // Текст вступления защищён от копирования (#1112): к классу добавлен
+  // mx-protected-text (общая утилита, не отдельная копия стилей).
+  assert.match(jsxSource, /className="mx-hj-step-intro__text mx-protected-text">/)
   assert.match(jsxSource, /className="mx-hj-step-intro__text-scroll"/)
   assert.match(
     cssSource,

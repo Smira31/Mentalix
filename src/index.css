@@ -2270,3 +2270,26 @@ button.mx-demo-telegram-chrome__pill:focus:not(:focus-visible) {
 .mx-app-scroll-root[data-mx-dialog-scrolled='1'] ~ .mx-scroll-fade-top {
   opacity: 1;
 }
+
+/* ============================================================
+   ЗАЩИТА КОНТЕНТА: запрет выделения и копирования (#1112, этап 1)
+   ============================================================ */
+
+/* Тексты «Пути героя» (вступления и шаги), курсов и статей Библиотеки:
+   без выделения и системного меню долгого нажатия. Перехватчики copy и
+   contextmenu — src/lib/protectedText.js (глобальные, по этому классу). */
+.mx-protected-text {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Поля ввода внутри защищённых экранов работают как раньше:
+   выделение, вставка и редактирование сохраняются. */
+.mx-protected-text input,
+.mx-protected-text textarea,
+.mx-protected-text [contenteditable] {
+  user-select: text;
+  -webkit-user-select: text;
+  -webkit-touch-callout: auto;
+}
