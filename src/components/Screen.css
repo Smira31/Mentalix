@@ -17,7 +17,13 @@
 }
 
 .mx-screen__body {
-  padding-bottom: var(--app-safe-bottom);
+  /*
+   * Своего нижнего safe-area отступа у тела экрана нет: тот же инсет уже
+   * держит shell (useFullscreenSurface → padding-bottom). Двойной отступ
+   * (до 34 px) добавлял прокрутку коротким экранам, где контент помещается
+   * целиком, — например, «Запись сохранена».
+   */
+  padding-bottom: 0;
 }
 
 .mx-screen__body--noscroll {

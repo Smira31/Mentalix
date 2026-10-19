@@ -385,11 +385,6 @@ export default function PersonaPicker({
           ))}
         </div>
       </div>
-
-      {/* ── Дисклеймер внизу ── */}
-      <p className="mx-dialog-disclaimer" data-testid="dialog-disclaimer">
-        Разговоры видишь только ты. Это не терапия.
-      </p>
     </main>
   )
 }

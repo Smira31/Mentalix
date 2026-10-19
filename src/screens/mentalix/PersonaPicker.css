@@ -77,8 +77,7 @@
  * Поднимаем экран на этот запас (26px), чтобы шапка «Диалога» шла сразу
  * под кнопками, а не под пустой полосой.
  */
-[data-mentalix-demo-frame='true'][data-demo-mode='true']
-  .mx-app-scroll-root:has(.mx-dialog-entry) {
+[data-mentalix-demo-frame='true'][data-demo-mode='true'] .mx-app-scroll-root:has(.mx-dialog-entry) {
   margin-top: -26px;
 }
 
@@ -524,7 +523,11 @@
 /* ── «Не знаешь, с чего начать?» — чипсы ── */
 
 .mx-dialog-chips {
-  padding: var(--mx-space-10) var(--mx-space-6) 0;
+  /* Нижний отступ держит воздух в конце страницы на месте прежнего
+     дисклеймера: сам текст «Разговоры видишь только ты. Это не терапия.»
+     с основного экрана «Диалога» убран (границы продукта и приватность
+     остаются в «Политике и данных»). */
+  padding: var(--mx-space-10) var(--mx-space-6) var(--mx-space-6);
 }
 
 .mx-dialog-chips__list {
@@ -556,17 +559,4 @@
 .mx-dialog-chip:disabled {
   opacity: 0.5;
   pointer-events: none;
-}
-
-/* ── Дисклеймер внизу ── */
-
-/* Дисклеймер — вне планшета, на фоне страницы: снизу запас, чтобы строка
-   оставалась видна над свёрнутой панелью вкладок. */
-.mx-dialog-disclaimer {
-  margin: 0;
-  padding: var(--mx-space-10) var(--mx-space-6) var(--mx-space-6);
-  color: rgb(var(--c-faint));
-  font-size: max(11px, calc(12px * var(--mx-type-scale)));
-  text-align: center;
-  line-height: 1.4;
 }

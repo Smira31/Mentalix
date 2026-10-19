@@ -110,9 +110,7 @@ export function readDemoFrameBox(frame, windowLike = window) {
 
 function useDemoFrameBox(enabled) {
   const [box, setBox] = useState(() =>
-    enabled === true
-      ? readDemoFrameBox(document.querySelector('[data-mentalix-demo-frame]'))
-      : null
+    enabled === true ? readDemoFrameBox(document.querySelector('[data-mentalix-demo-frame]')) : null
   )
 
   useEffect(() => {
@@ -203,7 +201,7 @@ export function useFullscreenSurface({ fullFrame = false } = {}) {
   const surfaceTop = viewportOffsetTop / scale
   const visibleHeight = frameFull
     ? demoFrameHeight
-    : demoFrameHeight ?? (shellHeight ? shellHeight / scale : null)
+    : (demoFrameHeight ?? (shellHeight ? shellHeight / scale : null))
   // В демо-превью экран — видимая часть «телефона», а не высота окна.
   const demoFrameBox = useDemoFrameBox(demoMode)
   const frameTop = frameFull ? 0 : demoFrameBox ? demoFrameBox.top / scale : null
@@ -239,16 +237,20 @@ export function useFullscreenSurface({ fullFrame = false } = {}) {
         ? `calc(var(--app-safe-top) + ${TG_CONTROLS_HEIGHT}px)`
         : 'var(--app-safe-top)',
 
-    paddingBottom: 'var(--app-safe-bottom)',
+    /*
+     * Открытая клавиатура сама перекрывает нижнюю safe-area (home indicator),
+     * и её отступ только выталкивал контент вверх на время набора — рывок при
+     * каждом фокусе. Пока клавиатура открыта, инсет снимается.
+     */
+    paddingBottom: keyboardOpen ? '0px' : 'var(--app-safe-bottom)',
 
-    height:
-      frameFull
-        ? `${demoFrameHeight}px`
-        : frameHeight !== null
-          ? `${frameHeight}px`
-          : visibleHeight
-            ? `${visibleHeight}px`
-            : '100dvh',
+    height: frameFull
+      ? `${demoFrameHeight}px`
+      : frameHeight !== null
+        ? `${frameHeight}px`
+        : visibleHeight
+          ? `${visibleHeight}px`
+          : '100dvh',
   }
 
   return {

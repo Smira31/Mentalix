@@ -135,7 +135,26 @@ export function useVisualViewportHeight() {
 export function setupStableViewportListeners({ viewport, window: win, webApp, setHeight }) {
   const update = () => {
     const stable = readTelegramViewportStableHeight()
-    const next = stable ?? (viewport ? Math.round(viewport.height) : null)
+    const visual = viewport ? Math.round(viewport.height) : null
+    /*
+     * Открытая клавиатура: оболочка обязана уместиться в видимую часть,
+     * иначе её низ уезжает под клавиатуру и WebView сам прокручивает
+     * страницу к полю ввода — тот самый рывок при фокусе. Условие то же,
+     * что у fullscreen-поверхностей (useFullscreenSurface): расхождение
+     * больше 80 px — это клавиатура, а не анимация раскрытия WebView,
+     * когда опорой остаётся stable height.
+     */
+    const keyboardOpen = visual !== null && win.innerHeight - visual > 80
+    const next =
+      keyboardOpen && isTelegramRuntime()
+        ? (getKeyboardViewportHeight({
+            isTelegram: true,
+            stableHeight: stable,
+            visualHeight: visual,
+          }) ??
+          stable ??
+          visual)
+        : (stable ?? visual)
     setHeight(prev => (prev === next ? prev : next))
   }
 
