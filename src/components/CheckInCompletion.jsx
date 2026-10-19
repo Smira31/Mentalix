@@ -75,6 +75,15 @@ export default function CheckInCompletion({ evening, onFeedback, children, title
             )
           })}
         </div>
+        {/* #1078: оценка на экране завершения читалась как обязательный шаг,
+            а «Сохранить и выйти» — как само сохранение. Поясняем оба: оценка
+            добровольна, запись дня к этому моменту уже сохранена, поэтому
+            выход без оценки ничего не теряет. */}
+        <p className="mx-completion__feedback-hint" data-testid="checkin-feedback-hint">
+          {evening
+            ? 'Оценка по желанию — разбор дня уже сохранён.'
+            : 'Оценка по желанию — чек-ин уже сохранён.'}
+        </p>
       </div>
       {children}
     </section>

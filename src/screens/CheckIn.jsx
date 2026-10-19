@@ -141,7 +141,8 @@ const FULLSCREEN_COMPLETION_CLASS =
  * Одна круглая кнопка шага — та же, что в редакторе «Что на уме?».
  * Пока на шаге ничего не выбрано и не введено, в ней «✕», и нажатие
  * закрывает чек-ин с сохранением черновика (вечером — с подтверждением).
- * После выбора или ввода это «→» («Далее») и переход на следующий шаг.
+ * После выбора или ввода это «›» («Далее») и переход на следующий шаг —
+ * один символ вперёд на всех шагах, шеврон без древка стрелки.
  * Своих «назад» и «закрыть» в шапке экрана нет: возврат — системная
  * кнопка «Назад» Telegram (useBackButton).
  */
@@ -161,8 +162,9 @@ export function CheckInNextControls({
       <RoundSubmitButton
         label={closing ? 'Закрыть' : 'Далее'}
         testId="checkin-next"
-        icon={closing ? 'x' : 'arrow'}
+        icon={closing ? 'x' : 'chevron'}
         crossfade
+        forwardIcon="chevron"
         disabled={disabled}
         onClick={closing ? onClose : onNext}
       />
@@ -258,7 +260,7 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
   const streakBaseline = useStreakBaseline(user.id)
   /*
    * Порядок утренних шкал: настроение → сон → энергия → концентрация.
-   * На каждой шкале «→» активна только после выбора кружка.
+   * На каждой шкале «›» активна только после выбора кружка.
    * dayFocusStep/noteStep/doneStep объявлены ДО useFullscreenSurface:
    * хук читает doneStep для fullFrame, и объявление после хука
    * ловит ReferenceError «Cannot access before initialization».
@@ -447,7 +449,7 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
 
   /*
    * Что читает нижняя круглая кнопка: неотвеченная шкала или фокус без
-   * плитки — «✕» (выход с черновиком), выбранный ответ — «→» («Далее»).
+   * плитки — «✕» (выход с черновиком), выбранный ответ — «›» («Далее»).
    */
   const stepAnswered = scale ? Boolean(values[scale.key]) : Boolean(selectedFocus)
 
@@ -599,7 +601,7 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
         </StepSlide>
       </main>
       {step < noteStep ? (
-        // Ничего не выбрано на шаге — «✕» (выход с черновиком), выбор — «→».
+        // Ничего не выбрано на шаге — «✕» (выход с черновиком), выбор — «›».
         <CheckInNextControls
           mode={stepAnswered ? 'next' : 'close'}
           onNext={() => goToStep(current => Math.min(doneStep, current + 1))}
@@ -1597,7 +1599,7 @@ function CheckInCore({
   /*
    * Без ответа на шаге (нет эмоции или уровня шкалы) кнопка показывает «✕»:
    * нажатие закрывает разбор так же, как прежний крестик в шапке. Ответ
-   * есть — «→» («Далее»).
+   * есть — «›» («Далее»).
    */
   const compactStepAnswered = isEmotionStep
     ? Boolean(emotion)
@@ -1744,7 +1746,7 @@ function CheckInCore({
           : 'Три пункта. Мелочи считаются — из них и состоит день.')
 
   /*
-   * Текущий урок: заполненное поле — «→» («Далее»), пустое — «✕» (выход
+   * Текущий урок: заполненное поле — «›» («Далее»), пустое — «✕» (выход
    * с черновиком, как прежний крестик в шапке). Последний урок остаётся
    * галочкой завершения и не меняется.
    */
@@ -1871,9 +1873,10 @@ function CheckInCore({
                         autoFocus
                         keepFocusOnSubmit
                         submitIcon={
-                          cardIdx === cardCount - 1 ? 'check' : lessonStepHasText ? 'arrow' : 'x'
+                          cardIdx === cardCount - 1 ? 'check' : lessonStepHasText ? 'chevron' : 'x'
                         }
                         submitIconCrossfade
+                        submitIconForward="chevron"
                         submitLabel={
                           cardIdx === cardCount - 1
                             ? recovery
@@ -1927,7 +1930,7 @@ function CheckInCore({
                         guidedFlow={previewDemoMode}
                         autoFocus
                         keepFocusOnSubmit={previewDemoMode}
-                        submitIcon="arrow"
+                        submitIcon="chevron"
                         onSubmit={() => submit()}
                         submitLabel="Завершить чек-ин"
                         submitTestId="checkin-complete"
