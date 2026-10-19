@@ -82,10 +82,14 @@ export default function Conversation({
 
   const scrollRef = useRef(null)
   const screenRef = useRef(null)
+  const composerRef = useRef(null)
   const inputRef = useRef(null)
   const restoreComposerFocusRef = useRef(false)
-  // Тап начался внутри composer'а: флаг снимается на pointerdown, до того
-  // как браузер отдаст фокус кнопке и закроет клавиатуру.
+  /*
+   * Тап начался внутри composer'а, пока поле ещё было в фокусе: на pointerdown
+   * браузер только собирается отдать фокус кнопке и закрыть клавиатуру, поэтому
+   * «человек пишет здесь» считывается именно в этот момент.
+   */
   const composerPointerRef = useRef(false)
   const previousMessageCount = useRef(0)
   const recorderRef = useRef(null)
@@ -169,6 +173,21 @@ export default function Conversation({
     })
   }
 
+  /*
+   * Явное закрытие клавиатуры: тап вне composer'а — по чату или шапке — снимает
+   * фокус с поля. Программный blur закрывает клавиатуру и в iOS WebView, где
+   * касание «пустого» места само её не убирает. Флаг «человек пишет здесь»
+   * сбрасывается: после такого закрытия ни отправка, ни отложенный повтор хука
+   * фокус не возвращают — клавиатура открывается только новым касанием поля.
+   */
+  function dismissComposerKeyboard(event) {
+    if (composerRef.current?.contains(event.target)) return
+
+    composerPointerRef.current = false
+
+    if (document.activeElement === inputRef.current) inputRef.current.blur()
+  }
+
   async function sendFromComposer() {
     if (!input.trim() || sending || dailyLimit || creatingConversation || creationError) return
 
@@ -179,8 +198,9 @@ export default function Conversation({
      * до действия браузера по умолчанию. Фокус возвращается синхронно внутри
      * самого жеста (клавиатура не успевает закрыться) и ещё раз кадром — чтобы
      * её не снял ререндер после ответа или ошибки.
-     * Явно закрытая человеком клавиатура так не возвращается: без тапа по
-     * composer'у и без фокуса в поле флаг не ставится.
+     * Явно закрытая человеком клавиатура так не возвращается: флаг ставится
+     * только если на момент тапа поле было в фокусе, а после закрытия
+     * клавиатуры (тап вне поля) фокуса в нём уже нет.
      */
     const keyboardWasOpen =
       composerPointerRef.current || document.activeElement === inputRef.current
@@ -389,8 +409,12 @@ export default function Conversation({
         paddingBottom: '0px',
       }}
       // Подсказку про голос гасит и тап по чату — слой не перехватывает
-      // нажатие, оно проходит дальше по элементу под пальцем.
-      onPointerDown={showVoiceHint ? dismissVoiceHint : undefined}
+      // нажатие, оно проходит дальше по элементу под пальцем. Тот же тап вне
+      // composer'а закрывает клавиатуру (см. dismissComposerKeyboard).
+      onPointerDown={event => {
+        if (showVoiceHint) dismissVoiceHint()
+        dismissComposerKeyboard(event)
+      }}
     >
       {/* ── шапка ── */}
 
@@ -601,11 +625,14 @@ export default function Conversation({
         )}
 
         <div
+          ref={composerRef}
           className="mx-ai-composer mx-glass w-full max-w-md mx-auto min-h-[72px] rounded-[36px] flex items-center gap-2.5 px-2.5"
-          // pointerdown внутри composer'а (поле или кнопка) — значит человек
-          // здесь пишет: после отправки клавиатуру возвращаем.
+          // pointerdown внутри composer'а, пока поле ещё в фокусе, — значит
+          // человек здесь пишет: после отправки клавиатуру возвращаем. Если
+          // клавиатуру закрыли сами (тап вне поля, системный жест), фокуса на
+          // момент тапа нет — и отправка клавиатуру не возвращает.
           onPointerDownCapture={() => {
-            composerPointerRef.current = true
+            composerPointerRef.current = document.activeElement === inputRef.current
           }}
         >
           <input
