@@ -543,6 +543,26 @@ async function openSetupStep2(page) {
   await expect(page.locator('.mx-dj-setup__step-label')).toHaveText('Шаг 2 из 5 · Каким я хочу быть')
 }
 
+// Быстрый проход настройки до шага 4 «Мои вопросы»: дефолтные вопросы
+// демо уже заполнены, шаг проверяется как есть.
+async function openSetupStep4(page) {
+  await page.goto('/?demo=1&tab=practices')
+  await expect(page.getByTestId('journal-open-cta')).toBeVisible()
+  await page.getByTestId('journal-open-cta').click()
+  await page.getByTestId('dj-intro-setup').click()
+  await page.getByTestId('dj-setup-goal-0').fill('Высыпаться')
+  await page.getByTestId('dj-setup-next').click()
+  await page.getByTestId('dj-setup-reminder-0').fill('держит слово')
+  await page.getByTestId('dj-setup-next').click()
+  await page.getByTestId('dj-setup-vision-scene').fill('Просыпаюсь без тревоги')
+  await page.getByTestId('dj-setup-next').click()
+  await page.getByTestId('dj-setup-vision-obstacle').fill('Усталость')
+  await page.getByTestId('dj-setup-next').click()
+  await page.getByTestId('dj-setup-vision-plan').fill('Делаю минимум')
+  await page.getByTestId('dj-setup-next').click()
+  await expect(page.locator('.mx-dj-setup__step-label')).toHaveText('Шаг 4 из 5 · Мои вопросы')
+}
+
 test('журнал: «+ Добавить» — новая пустая строка, примеры не повторяются по кругу', async ({
   page,
 }) => {
@@ -568,6 +588,55 @@ test('журнал: «+ Добавить» — новая пустая стро�
 
   // Пока есть пустая строка, «+ Добавить» не дублирует строки
   await expect(addButton).toHaveCount(0)
+})
+
+test('журнал: шаг 4 — «+ Добавить вопрос» показывает чипы готовых вопросов', async ({
+  page,
+}) => {
+  await openSetupStep4(page)
+
+  // Дефолтные вопросы заполнены: «+ Добавить вопрос» виден, чипов ещё нет
+  await expect(page.getByTestId('dj-setup-prompt-0')).not.toHaveValue('')
+  await expect(page.getByTestId('dj-setup-add-prompt')).toBeVisible()
+  await expect(page.getByTestId('dj-setup-chips')).toHaveCount(0)
+
+  // «+ Добавить вопрос» добавляет пустую строку и открывает чипы
+  await page.getByTestId('dj-setup-add-prompt').click()
+  await expect(page.getByTestId('dj-setup-prompt-5')).toHaveValue('')
+  await expect(page.getByTestId('dj-setup-prompt-5')).toHaveAttribute(
+    'placeholder',
+    'Вопрос 6'
+  )
+  // Пока строка пустая, кнопка не дублирует строки
+  await expect(page.getByTestId('dj-setup-add-prompt')).toHaveCount(0)
+  const chips = page.getByTestId('dj-setup-chip')
+  await expect(chips).toHaveCount(4)
+  await expect(chips.filter({ hasText: 'Что сегодня было хорошего?' })).toBeVisible()
+
+  // Чип заполняет пустую строку и скрывается; кнопка возвращается
+  await chips.filter({ hasText: 'Что сегодня было хорошего?' }).click()
+  await expect(page.getByTestId('dj-setup-prompt-5')).toHaveValue(
+    'Что сегодня было хорошего?'
+  )
+  await expect(chips.filter({ hasText: 'Что сегодня было хорошего?' })).toHaveCount(0)
+  await expect(chips).toHaveCount(3)
+  await expect(page.getByTestId('dj-setup-add-prompt')).toBeVisible()
+
+  // Удаление вопроса возвращает чип
+  await page.getByTestId('dj-setup-prompt-delete-5').click()
+  await expect(page.getByTestId('dj-setup-prompt-5')).toHaveCount(0)
+  await expect(chips.filter({ hasText: 'Что сегодня было хорошего?' })).toHaveCount(1)
+  await expect(chips).toHaveCount(4)
+
+  // Максимум 7 вопросов: на седьмом заполненном «+ Добавить вопрос» исчезает
+  await page.getByTestId('dj-setup-add-prompt').click()
+  await chips.filter({ hasText: 'Что сегодня было хорошего?' }).click()
+  await page.getByTestId('dj-setup-add-prompt').click()
+  await expect(page.getByTestId('dj-setup-prompt-6')).toHaveValue('')
+  await page.getByTestId('dj-setup-prompt-6').fill('Свой вопрос')
+  await expect(page.getByTestId('dj-setup-prompt-6')).toHaveValue('Свой вопрос')
+  await expect(page.getByTestId('dj-setup-add-prompt')).toHaveCount(0)
+  await expect(page.getByTestId('dj-setup-prompt-7')).toHaveCount(0)
 })
 
 test('журнал: итоговый экран — одна кнопка «Начать запись» без скролла на 375×667', async ({
