@@ -21,12 +21,12 @@ test('StepComplete — колонка без скролла, зазор над �
   assert.doesNotMatch(jsxSource, /mx-hj-complete__footer/)
   assert.match(jsxSource, /bodyClassName="mx-hj-step-complete"/)
   assert.match(cssSource, /\.mx-hj-step-complete \{[\s\S]*?flex: 1;[\s\S]*?min-height: 0;/)
-  // Вступление сохраняет свою нижнюю группу; завершение не наследует
-  // зазор во всю свободную высоту: 24 px по существующему токену.
+  // Вступление сохраняет свою нижнюю группу; «Продолжить» прижата к низу
+  // колонки (margin-top: auto), но не ближе 24 px к итогу.
   assert.match(cssSource, /\.mx-hj-step-intro__bottom \{[\s\S]*?margin-top: auto;/)
   assert.match(
     cssSource,
-    /\.mx-hj-complete__bottom \{\s*margin-top: var\(--mx-space-6\);\s*padding-top: 0;/
+    /\.mx-hj-complete__bottom \{\s*margin-top: auto;\s*padding-top: var\(--mx-space-6\);/
   )
 })
 
@@ -110,4 +110,50 @@ test('Длительность шага убрана со вступления �
   assert.doesNotMatch(jsxSource, /mx-hj-step-intro__flow/)
   assert.doesNotMatch(jsxSource, /next-card__meta/)
   assert.doesNotMatch(cssSource, /__flow|next-card__meta/)
+})
+
+test('Вступление: длинный текст скроллится внутри блока, не под кнопкой', () => {
+  // Скролл-обёртка внутри текстового блока: скрим ::before остаётся на блоке
+  // (он выходит выше блока и был бы обрезан собственным overflow).
+  assert.match(jsxSource, /className="mx-hj-step-intro__text">/)
+  assert.match(jsxSource, /className="mx-hj-step-intro__text-scroll"/)
+  assert.match(
+    cssSource,
+    /\.mx-hj-step-intro__text-scroll \{[\s\S]*?flex: 1;[\s\S]*?min-height: 0;[\s\S]*?overflow-y: auto;/
+  )
+  // Отступ снизу — под высоту кнопки «Начать шаг»: последний абзац
+  // доскролливается до конца и не уходит под кнопку.
+  assert.match(
+    cssSource,
+    /\.mx-hj-step-intro__text-scroll \{[\s\S]*?padding-bottom: calc\(var\(--cta-pill-height, 52px\) \+ var\(--mx-space-4\)\);/
+  )
+})
+
+test('Завершение: блок «Твоя опора» показывает ответ из «Одно действие»', () => {
+  assert.match(jsxSource, /const actionAnswer = progress\.actions\[trial\.id\] \|\| ''/)
+  // Пустой ответ блок не показывает.
+  assert.match(jsxSource, /\{actionAnswer && \(/)
+  assert.match(jsxSource, /mx-hj-complete__support-label">Твоя опора</)
+  assert.match(jsxSource, /mx-hj-complete__support-text">\{actionAnswer\}</)
+  // Текст — до двух строк, дальше «…».
+  assert.match(cssSource, /\.mx-hj-complete__support-text \{[\s\S]*?-webkit-line-clamp: 2;/)
+})
+
+test('Карта: закрытая глава — замок вместо счётчика, открытая — стрелка «›»', () => {
+  assert.match(jsxSource, /const locked = !anyStarted && !hasCurrentStep/)
+  assert.match(jsxSource, /mx-hj-chapter\$\{locked \? ' mx-hj-chapter--locked' : ''\}/)
+  assert.match(jsxSource, /mx-hj-chapter__lock/)
+  assert.match(jsxSource, /mx-hj-chapter__chevron/)
+  // Закрытая глава серым: заголовок и римская цифра.
+  assert.match(
+    cssSource,
+    /\.mx-hj-chapter--locked \.mx-hj-chapter__roman \{[\s\S]*?color: rgb\(var\(--c-muted\)\);/
+  )
+})
+
+test('«Продолжить» на завершении: текст и отдельная стрелка «›», зазор 8 px', () => {
+  assert.match(jsxSource, /cta-pill mx-hj-step-intro__cta mx-hj-complete__cta/)
+  assert.match(jsxSource, /<span>Продолжить<\/span>/)
+  assert.match(jsxSource, /<ChevronRight size=\{16\} aria-hidden="true" \/>/)
+  assert.match(cssSource, /\.mx-hj-complete__cta \{\s*gap: 8px;\s*\}/)
 })
