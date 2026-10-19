@@ -14,20 +14,35 @@
  */
 
 /* ── Intro (первый экран до настройки) ── */
+/*
+ * #1090: рисунок и текст — по центру экрана (по вертикали) между шапкой
+ * и закреплённым футером; иллюстрация чуть крупнее. Действия («Настроить»
+ * и тихая ссылка «Начать без настройки») закреплены внизу, в футере.
+ */
+.mx-dj-intro-body .mx-screen__content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
 .mx-dj-intro {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   padding-top: var(--mx-space-2);
 }
 
 .mx-dj-intro__art {
   display: flex;
-  min-height: clamp(96px, 14dvh, 140px);
+  min-height: clamp(112px, 16dvh, 168px);
   align-items: center;
   justify-content: center;
 }
 
 .mx-dj-intro__art svg {
   width: auto;
-  height: 120px;
+  height: 140px;
   max-height: 100%;
 }
 
@@ -47,6 +62,7 @@
   margin-bottom: var(--mx-space-5);
 }
 
+/* #1090: действия интро закреплены в футере Screen */
 .mx-dj-intro__actions {
   display: flex;
   flex-direction: column;
@@ -135,17 +151,40 @@
   cursor: pointer;
 }
 
-/* ── Review: «Мои записи» — заметная вторичная кнопка в потоке, над нижней кнопкой ── */
-.mx-dj-review__entries-btn {
-  width: 100%;
-  margin-top: var(--mx-space-4);
-  /* MXL-TYPE-READABLE-001: текст кнопок дневника — 16 px. Роль задаётся
-     здесь, а не в общем <PillButton>: тот используется и вне трёх
-     поверхностей этапа. */
-  font-size: var(--mx-read-action);
+/*
+ * ── Review: футер (#1090) ──
+ * Одна закреплённая белая кнопка «Начать запись»; под ней — тихие
+ * ссылки «Мои записи» и «Изменить настройку». Круглая ✓ убрана.
+ */
+.mx-dj-review__footer {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--mx-space-2);
 }
 
-/* ── Review: «Изменить настройку» ── */
+.mx-dj-review__start {
+  width: 100%;
+  text-align: center;
+}
+
+.mx-dj-review__links {
+  display: flex;
+  justify-content: center;
+  gap: var(--mx-space-4);
+}
+
+.mx-dj-review__links button {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: rgb(var(--c-muted));
+  font-size: var(--mx-read-note);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* ── Review: «Сбросить и начать заново» — тихая ссылка в конце ── */
 .mx-dj-review__edit-link {
   display: block;
   margin-top: var(--mx-space-4);
@@ -156,6 +195,29 @@
   font-size: var(--mx-read-note);
   text-decoration: underline;
   cursor: pointer;
+}
+
+/* ── Review: подтверждение сброса настройки (#1090) ── */
+.mx-dj-confirm__title {
+  font-family: 'Manrope', sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: rgb(var(--c-text));
+  margin: 0;
+}
+
+.mx-dj-confirm__text {
+  margin-top: var(--mx-space-2);
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgb(var(--c-muted));
+}
+
+.mx-dj-confirm__actions {
+  display: flex;
+  gap: var(--mx-space-2);
+  margin-top: var(--mx-space-4);
 }
 
 .mx-dj-review__reset-link {
@@ -280,6 +342,78 @@
   cursor: default;
 }
 
+/* ── Setup: чипы подсказок (#1090) ── */
+/* Стиль — по образцу чипов аскез (Ascezas.jsx): приглушённая пилюля
+   с тонкой рамкой; ряд переносится на 2–3 строки, стоит над нижней
+   круглой кнопкой. */
+.mx-dj-setup__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--mx-space-2);
+  margin-top: var(--mx-space-4);
+}
+
+.mx-dj-setup__chip {
+  padding: var(--mx-space-1) var(--mx-space-3);
+  border-radius: var(--mx-radius-pill);
+  background: rgb(var(--c-text) / 0.05);
+  border: 1px solid rgb(var(--c-text) / 0.1);
+  color: rgb(var(--c-muted));
+  font-size: var(--mx-read-note);
+  font-weight: 600;
+  line-height: 1.3;
+  cursor: pointer;
+}
+
+/* ── Setup: строка шага 2 «Каким я хочу быть» (#1090) ── */
+/* Неизменяемый префикс над полем: в настройке хранится только
+   продолжение, префикс печатает экран. */
+.mx-dj-setup__identity-row {
+  margin-bottom: var(--mx-space-3);
+}
+
+.mx-dj-setup__identity-row .mx-dj-setup__input-row {
+  margin-bottom: 0;
+}
+
+.mx-dj-setup__prefix {
+  display: block;
+  font-size: var(--mx-read-read);
+  line-height: 1.5;
+  color: rgb(var(--c-muted));
+  /* Решение 19.10: подпись «Я — человек, который…» — один раз над списком */
+  margin-bottom: var(--mx-space-2);
+}
+
+/* Решение 19.10: тихая строка под единственным вопросом шага 4 */
+.mx-dj-setup__prompts-hint {
+  margin: 0 0 var(--mx-space-2);
+  font-size: var(--mx-read-note);
+  line-height: 1.45;
+  color: rgb(var(--c-muted));
+}
+
+/*
+ * Решение 19.10 (клавиатура): пока поле в фокусе и клавиатура открыта,
+ * футер с круглой кнопкой поднимается над клавиатурой — тот же приём,
+ * что и в PracticeWritingCanvas (шторка «Что произошло?» у аскез).
+ */
+.mx-dj-footer-bar--keyboard {
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: 80;
+  padding: 0 var(--mx-screen-x);
+}
+
+/* ── Setup: подсказка подэкрана «Картинка будущего» (#1090) ── */
+.mx-dj-setup__hint {
+  font-size: var(--mx-read-note);
+  line-height: 1.45;
+  color: rgb(var(--c-muted));
+  margin: calc(-1 * var(--mx-space-2)) 0 var(--mx-space-3);
+}
+
 /* ── Setup: vision sub-step ── */
 .mx-dj-setup__vision-title {
   font-family: 'Manrope', sans-serif;
@@ -328,6 +462,18 @@
 .mx-dj-today {
   padding-top: var(--mx-space-2);
   padding-bottom: calc(var(--mx-btn-round-h) + var(--mx-space-4) + var(--app-safe-bottom));
+}
+
+/* Решение 19.10: JournalIntroArt маленьким над датой (~72–88px) */
+.mx-dj-today__art {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--mx-space-2);
+}
+
+.mx-dj-today__art svg {
+  width: auto;
+  height: 80px;
 }
 
 .mx-dj-today__label {
@@ -381,6 +527,30 @@
 .mx-dj-today__append-btn {
   width: 100%;
   text-align: center;
+}
+
+/* Решение 19.10: тихие ссылки в строку под кнопкой «Готово» —
+   стиль как в карточке аскезы (PracticeDetail quiet action):
+   приглушённый текст без подчёркивания, разделитель «·». */
+.mx-dj-today__links {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--mx-space-2);
+}
+
+.mx-dj-today__links button {
+  background: none;
+  border: 0;
+  padding: var(--mx-space-1) 0;
+  color: rgb(var(--c-muted));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
+  cursor: pointer;
+}
+
+.mx-dj-today__links-sep {
+  color: rgb(var(--c-faint));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
 }
 
 /* Вторичные действия «Запись сохранена»: две заметные кнопки над «Дописать» */

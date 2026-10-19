@@ -9,6 +9,8 @@ import { useBackButton } from '../../platform/telegram.hooks'
 import { platform } from '../../platform'
 import { api } from '../../lib/api'
 import { useAutoFocusField } from '../../lib/useAutoFocusField'
+import { getKeyboardViewportHeight, isTelegramRuntime } from '../../lib/visualViewport'
+import { useVisualViewportMetrics } from '../../components/PracticeWritingCanvas'
 import './DailyJournalFlow.css'
 
 const SETUP_STEPS = [
@@ -20,9 +22,9 @@ const SETUP_STEPS = [
   },
   {
     key: 'reminders',
-    label: 'Шаг 2 из 5 · Кем я становлюсь',
-    title: 'Кем я становлюсь',
-    hint: 'Не похвала себе, а напоминание: что для тебя важно и каким ты хочешь быть.',
+    label: 'Шаг 2 из 5 · Каким я хочу быть',
+    title: 'Каким я хочу быть',
+    hint: 'Не про результат, а про тебя — как ты живёшь каждый день.',
   },
   {
     key: 'vision',
@@ -44,29 +46,93 @@ const SETUP_STEPS = [
   },
 ]
 
-const VISION_QUESTIONS = [
-  { key: 'scene', text: 'Где ты и что делаешь, когда всё получилось?' },
-  { key: 'obstacle', text: 'Что может помешать?' },
-  { key: 'plan', text: 'Что ты тогда сделаешь?' },
+/*
+ * #1090: «Картинка будущего» — порядок и смысл WOOP сохранены
+ * ( Wish → Obstacle → Plan ), тексты шагов уточнены владельцем.
+ */
+const VISION_SUBSTEPS = [
+  {
+    key: 'scene',
+    title: 'Представь день через год, когда всё получилось. Что изменилось?',
+    hint: 'Одна-две детали: что ты видишь и что чувствуешь.',
+    placeholder: 'Например: просыпаюсь без тревоги и сразу знаю, с чего начать день',
+    chips: ['спокойствие', 'уверенность', 'лёгкость', 'гордость за себя', 'свобода'],
+  },
+  {
+    key: 'obstacle',
+    title: 'Что может помешать?',
+    hint: 'То, что обычно сбивает именно тебя.',
+    placeholder: 'Например: прихожу уставшим и залипаю в телефон',
+    chips: [
+      'Усталость',
+      'Лента и телефон',
+      'Страх, что не получится',
+      'Откладываю на потом',
+      'Нет сил после работы',
+      'Сомнения в себе',
+    ],
+  },
+  {
+    key: 'plan',
+    title: 'Если это случится — что ты сделаешь?',
+    hint: 'Простой план «если… то…» — заранее, пока есть силы.',
+    placeholder: 'Например: если устал — делаю минимум, 2 минуты',
+    chips: [
+      'Сделаю минимум — 2 минуты',
+      'Уберу телефон в другую комнату',
+      'Выйду пройтись на 5 минут',
+      'Напишу одну строку',
+      'Напомню себе, ради чего',
+      'Попрошу помощи',
+    ],
+  },
 ]
 
-const GOAL_PLACEHOLDERS = [
-  'Например: пробежать 10 км',
-  'Например: сменить работу',
-  'Например: читать каждый день',
+/*
+ * Решение 19.10: вместо двух пустых строк «Например: …» — одна пустая
+ * строка; чипы целей остаются под ней.
+ */
+const GOAL_PLACEHOLDER = 'Напиши своё или выбери ниже'
+
+const GOAL_CHIPS = [
+  'Высыпаться',
+  'Больше двигаться',
+  'Найти дело по душе',
+  'Меньше тревоги',
+  'Навести порядок в деньгах',
+  'Читать регулярно',
+  'Больше времени с близкими',
 ]
 
-const REMINDER_PLACEHOLDERS = [
-  'Например: я делаю главное до обеда',
-  'Например: я выбираю сон, а не ленту',
-  'Например: я говорю «нет», когда устал',
+/*
+ * #1090: строка шага 2 — неизменяемый префикс + продолжение.
+ * В настройке хранится только продолжение (без префикса); итоговый
+ * экран печатает префикс сам.
+ */
+const IDENTITY_PREFIX = 'Я — человек, который…'
+const IDENTITY_PLACEHOLDER = 'держит слово'
+const IDENTITY_CHIPS = [
+  'держит слово',
+  'делает главное первым',
+  'ложится вовремя',
+  'двигается каждый день',
+  'говорит «нет» без вины',
+  'не сравнивает себя с другими',
+  'спокойно встречает трудности',
+  'находит время для близких',
 ]
 
-const VISION_PLACEHOLDERS = {
-  scene: 'Например: утро, я спокойно пью кофе и знаю, что делаю сегодня…',
-  obstacle: 'Например: усталость, лента, страх, что не получится…',
-  plan: 'Например: делаю 10 минут, а не всё сразу…',
-}
+/*
+ * Решение 19.10: готовые вопросы видны чипами сразу, без «+ Добавить
+ * вопрос»; строка осталась для своего вопроса. Дефолт новой настройки —
+ * первый вопрос (DEFAULT_JOURNAL_PROMPTS), остальные четыре — здесь.
+ */
+const PROMPT_CHIPS = [
+  'Что сегодня забрало больше всего сил — и что их вернуло?',
+  'За что я могу себя сегодня похвалить, даже за мелочь?',
+  'Что меня сегодня задело — и что за этим стоит?',
+  'Какой один шаг сделает завтра чуть легче?',
+]
 
 const REMINDER_TILES = [
   { label: 'Утром', time: '08:00' },
@@ -94,9 +160,8 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
     return [g[0] || '', g[1] || '', g[2] || '']
   })
   const [reminders, setReminders] = useState(() => {
-    const r = initialSetup?.reminders || []
-    const padded = [...r, ...Array(Math.max(0, 2 - r.length)).fill('')]
-    return padded.slice(0, 5)
+    const r = initialSetup?.reminders?.filter(x => x.trim()) || []
+    return r.length > 0 ? [...r] : ['']
   })
   const [vision, setVision] = useState(
     () => initialSetup?.vision || { scene: '', obstacle: '', plan: '' }
@@ -105,19 +170,27 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
     const p = initialSetup?.prompts || []
     return p.length > 0 ? [...p] : ['']
   })
-  const [reminder, setReminder] = useState(
-    () => initialSetup?.reminder || { enabled: false, time: '21:00' }
-  )
+  // #1090: у нового пользователя (настройка ещё не сохранялась) по
+  // умолчанию выбрано «Вечером 21:00»; сохранённый выбор не трогаем.
+  const [reminder, setReminder] = useState(() => {
+    if (!initialSetup?.updated_at) return { enabled: true, time: '21:00' }
+    return initialSetup.reminder || { enabled: true, time: '21:00' }
+  })
   const [customTime, setCustomTime] = useState(
     () => initialSetup?.reminder?.time || '21:00'
   )
   const [reminderMode, setReminderMode] = useState(() => {
-    if (!initialSetup?.reminder?.enabled) return 'off'
-    return REMINDER_TILES.some(t => t.time === initialSetup.reminder.time)
-      ? 'preset'
-      : 'custom'
+    if (!initialSetup?.updated_at) return 'preset'
+    const r = initialSetup?.reminder
+    if (!r?.enabled) return 'off'
+    return REMINDER_TILES.some(t => t.time === r.time) ? 'preset' : 'custom'
   })
   const [saving, setSaving] = useState(false)
+  // Решение 19.10 (клавиатура): пока поле шага в фокусе и открыта
+  // клавиатура, круглая кнопка поднимается над клавиатурой, а скролл
+  // показывает чипы под полем — как в шторке «Что произошло?».
+  const [fieldFocused, setFieldFocused] = useState(false)
+  const chipsRef = useRef(null)
   const timeInputRef = useRef(null)
 
   const step = SETUP_STEPS[stepIndex]
@@ -130,11 +203,98 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
   // ввода не имеет, поэтому фокус туда не ставится.
   useAutoFocusField(stepFieldRef, `${stepIndex}:${visionSubStep}`)
 
+  // ── Чипы шага (#1090): использованный чип скрыт, свободный виден ──
+  const stepChips = (() => {
+    if (stepIndex === 0) {
+      return GOAL_CHIPS.filter(chip => !goals.some(g => g.includes(chip)))
+    }
+    if (stepIndex === 1) {
+      return IDENTITY_CHIPS.filter(chip => !reminders.some(r => r.includes(chip)))
+    }
+    if (stepIndex === 2) {
+      const sub = VISION_SUBSTEPS[visionSubStep]
+      const value = vision[sub.key] || ''
+      return sub.chips.filter(chip => !value.includes(chip))
+    }
+    if (stepIndex === 3) {
+      return PROMPT_CHIPS.filter(chip => !prompts.some(p => p.includes(chip)))
+    }
+    return []
+  })()
+
+  // ── Клавиатура (#1090, решение 19.10): подъём кнопки над клавиатурой ──
+  const metrics = useVisualViewportMetrics()
+  const telegramVisibleHeight = getKeyboardViewportHeight({
+    isTelegram: isTelegramRuntime(),
+    stableHeight: metrics.stableHeight,
+    visualHeight: metrics.height,
+  })
+  const keyboardOpen =
+    fieldFocused && metrics.height !== null && metrics.height < metrics.layoutHeight - 80
+  const footerTop = keyboardOpen
+    ? metrics.pageTop + metrics.offsetTop + telegramVisibleHeight - 48 - 56 - 8
+    : null
+
+  function handleFieldsFocus() {
+    setFieldFocused(true)
+    // Поле прокручивается так, чтобы под ним были видны чипы
+    window.requestAnimationFrame(() => {
+      chipsRef.current?.scrollIntoView({ block: 'nearest', behavior: 'auto' })
+    })
+  }
+
+  function handleChipTap(text) {
+    platform.haptic('light')
+    if (stepIndex === 0) {
+      setGoals(prev => {
+        const emptyIdx = prev.findIndex(g => !g.trim())
+        if (emptyIdx >= 0) {
+          const next = [...prev]
+          next[emptyIdx] = text
+          return next
+        }
+        return prev.length < 5 ? [...prev, text] : prev
+      })
+      return
+    }
+    if (stepIndex === 1) {
+      setReminders(prev => {
+        const emptyIdx = prev.findIndex(r => !r.trim())
+        if (emptyIdx >= 0) {
+          const next = [...prev]
+          next[emptyIdx] = text
+          return next
+        }
+        return prev.length < 5 ? [...prev, text] : prev
+      })
+      return
+    }
+    if (stepIndex === 2) {
+      const sub = VISION_SUBSTEPS[visionSubStep]
+      setVision(prev => {
+        const current = prev[sub.key] || ''
+        return { ...prev, [sub.key]: current.trim() ? `${current}, ${text}` : text }
+      })
+      return
+    }
+    if (stepIndex === 3) {
+      setPrompts(prev => {
+        const emptyIdx = prev.findIndex(p => !p.trim())
+        if (emptyIdx >= 0) {
+          const next = [...prev]
+          next[emptyIdx] = text
+          return next
+        }
+        return prev.length < 7 ? [...prev, text] : prev
+      })
+    }
+  }
+
   function hasContent() {
     if (stepIndex === 0) return goals.some(g => g.trim())
     if (stepIndex === 1) return reminders.some(r => r.trim())
     if (stepIndex === 2) {
-      const fieldKey = VISION_QUESTIONS[visionSubStep].key
+      const fieldKey = VISION_SUBSTEPS[visionSubStep].key
       return Boolean(vision[fieldKey]?.trim())
     }
     if (stepIndex === 3) return prompts.some(p => p.trim())
@@ -220,8 +380,10 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
   }
 
   function deleteReminder(i) {
-    if (reminders.length <= 1) return
-    setReminders(prev => prev.filter((_, idx) => idx !== i))
+    setReminders(prev => {
+      const next = prev.filter((_, idx) => idx !== i)
+      return next.length > 0 ? next : ['']
+    })
   }
 
   function updatePrompt(i, value) {
@@ -274,28 +436,57 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
     setReminder({ enabled: false, time: '21:00' })
   }
 
+  function renderChips() {
+    if (stepChips.length === 0) return null
+    return (
+      <div className="mx-dj-setup__chips" data-testid="dj-setup-chips" ref={chipsRef}>
+        {stepChips.map(chip => (
+          <button
+            key={chip}
+            type="button"
+            className="mx-dj-setup__chip"
+            data-testid="dj-setup-chip"
+            onClick={() => handleChipTap(chip)}
+          >
+            {chip}
+          </button>
+        ))}
+      </div>
+    )
+  }
+
   function renderStep() {
     if (stepIndex === 0) {
+      /*
+       * Решение 19.10: одна пустая строка «Напиши своё или выбери ниже»
+       * вместо двух «Например: …». Видны заполненные строки и первая
+       * пустая после последней заполненной — чипы остаются под полем.
+       */
+      const lastFilledGoal = goals.reduce((acc, g, i) => (g.trim() ? i : acc), -1)
       return (
         <>
           <CapsLabel className="mx-dj-setup__step-label">{step.label}</CapsLabel>
           <JournalField question={step.title} hint={step.hint} className="mx-dj-setup__field-group" />
-          {goals.map((g, i) => (
-            <textarea
-              key={i}
-              ref={el => {
-                autoGrowField(el)
-                if (i === 0) stepFieldRef.current = el
-              }}
-              rows={1}
-              className="mx-dj-setup__input"
-              value={g}
-              onChange={e => updateGoal(i, e.target.value)}
-              placeholder={GOAL_PLACEHOLDERS[i] || GOAL_PLACEHOLDERS[0]}
-              maxLength={500}
-              data-testid={`dj-setup-goal-${i}`}
-            />
-          ))}
+          {goals.map(
+            (g, i) =>
+              (i <= lastFilledGoal + 1 ? (
+                <textarea
+                  key={i}
+                  ref={el => {
+                    autoGrowField(el)
+                    if (i === 0) stepFieldRef.current = el
+                  }}
+                  rows={1}
+                  className="mx-dj-setup__input"
+                  value={g}
+                  onChange={e => updateGoal(i, e.target.value)}
+                  placeholder={GOAL_PLACEHOLDER}
+                  maxLength={500}
+                  data-testid={`dj-setup-goal-${i}`}
+                />
+              ) : null)
+          )}
+          {renderChips()}
         </>
       )
     }
@@ -305,61 +496,79 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
         <>
           <CapsLabel className="mx-dj-setup__step-label">{step.label}</CapsLabel>
           <JournalField question={step.title} hint={step.hint} className="mx-dj-setup__field-group" />
+          {/* Решение 19.10: подпись «Я — человек, который…» — один раз
+              над списком, а не над каждой строкой. */}
+          <div className="mx-dj-setup__prefix" data-testid="dj-setup-identity-prefix">
+            {IDENTITY_PREFIX}
+          </div>
           {reminders.map((r, i) => (
-            <div key={i} className="mx-dj-setup__input-row">
-              <textarea
-                ref={el => {
-                  autoGrowField(el)
-                  if (i === 0) stepFieldRef.current = el
-                }}
-                rows={1}
-                className="mx-dj-setup__input"
-                value={r}
-                onChange={e => updateReminder(i, e.target.value)}
-                placeholder={REMINDER_PLACEHOLDERS[i % REMINDER_PLACEHOLDERS.length]}
-                maxLength={500}
-                data-testid={`dj-setup-reminder-${i}`}
-              />
-              {reminders.length > 1 && (
-                <button
-                  type="button"
-                  className="mx-dj-setup__delete"
-                  onClick={() => deleteReminder(i)}
-                  aria-label="Удалить"
-                >
-                  <X size={16} strokeWidth={1.5} />
-                </button>
-              )}
+            <div key={i} className="mx-dj-setup__identity-row" data-testid={`dj-setup-identity-row-${i}`}>
+              <div className="mx-dj-setup__input-row">
+                <textarea
+                  ref={el => {
+                    autoGrowField(el)
+                    if (i === 0) stepFieldRef.current = el
+                  }}
+                  rows={1}
+                  className="mx-dj-setup__input"
+                  value={r}
+                  onChange={e => updateReminder(i, e.target.value)}
+                  placeholder={IDENTITY_PLACEHOLDER}
+                  maxLength={500}
+                  data-testid={`dj-setup-reminder-${i}`}
+                />
+                {r.trim() && (
+                  <button
+                    type="button"
+                    className="mx-dj-setup__delete"
+                    onClick={() => deleteReminder(i)}
+                    aria-label="Удалить"
+                    data-testid={`dj-setup-reminder-delete-${i}`}
+                  >
+                    <X size={16} strokeWidth={1.5} />
+                  </button>
+                )}
+              </div>
             </div>
           ))}
-          {reminders.length < 5 && (
-            <button type="button" className="mx-dj-setup__add" onClick={addReminder}>
+          {!reminders.some(r => !r.trim()) && reminders.length < 5 && (
+            <button
+              type="button"
+              className="mx-dj-setup__add"
+              data-testid="dj-setup-add"
+              onClick={addReminder}
+            >
               <Plus size={16} strokeWidth={1.5} /> Добавить
             </button>
           )}
+          {renderChips()}
         </>
       )
     }
 
     if (stepIndex === 2) {
-      const vq = VISION_QUESTIONS[visionSubStep]
+      const sub = VISION_SUBSTEPS[visionSubStep]
       const subLabel = `${step.label} · ${visionSubStep + 1}/3`
       return (
         <>
           <CapsLabel className="mx-dj-setup__step-label" data-testid="dj-setup-vision-label">
             {subLabel}
           </CapsLabel>
-          <h2 className="mx-dj-setup__vision-title">{vq.text}</h2>
+          <h2 className="mx-dj-setup__vision-title">{sub.title}</h2>
+          <p className="mx-dj-setup__hint" data-testid="dj-setup-vision-hint">
+            {sub.hint}
+          </p>
           <textarea
             ref={stepFieldRef}
             className="mx-dj-setup__vision-field"
-            value={vision[vq.key]}
-            onChange={e => setVision(prev => ({ ...prev, [vq.key]: e.target.value }))}
+            value={vision[sub.key]}
+            onChange={e => setVision(prev => ({ ...prev, [sub.key]: e.target.value }))}
             rows={3}
             maxLength={1000}
-            placeholder={VISION_PLACEHOLDERS[vq.key] || ''}
-            data-testid={`dj-setup-vision-${vq.key}`}
+            placeholder={sub.placeholder}
+            data-testid={`dj-setup-vision-${sub.key}`}
           />
+          {renderChips()}
         </>
       )
     }
@@ -372,29 +581,49 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
           {prompts.map((p, i) => (
             <div key={i} className="mx-dj-setup__input-row">
               <textarea
-                ref={i === 0 ? stepFieldRef : undefined}
+                ref={el => {
+                  /* #1090: высота вопроса — по его тексту (автовысота, как
+                     в «Целях»): у фиксированных 2 строк отступ после
+                     первого вопроса был неровным. */
+                  autoGrowField(el)
+                  if (i === 0) stepFieldRef.current = el
+                }}
                 className="mx-dj-setup__input mx-dj-setup__input--textarea"
                 value={p}
                 onChange={e => updatePrompt(i, e.target.value)}
                 placeholder={`Вопрос ${i + 1}`}
                 maxLength={500}
-                rows={2}
+                rows={1}
                 data-testid={`dj-setup-prompt-${i}`}
               />
-              {prompts.length > 1 && (
+              {p.trim() && prompts.length > 1 && (
                 <button
                   type="button"
                   className="mx-dj-setup__delete"
                   onClick={() => deletePrompt(i)}
                   aria-label="Удалить"
+                  data-testid={`dj-setup-prompt-delete-${i}`}
                 >
                   <X size={16} strokeWidth={1.5} />
                 </button>
               )}
             </div>
           ))}
-          {prompts.length < 7 && (
-            <button type="button" className="mx-dj-setup__add" onClick={addPrompt}>
+          {prompts.filter(p => p.trim()).length === 1 && (
+            <p className="mx-dj-setup__prompts-hint" data-testid="dj-setup-prompts-hint">
+              Один вопрос — каждый день он же. Добавь ещё 2–3, и они пойдут по кругу
+            </p>
+          )}
+          {/* Решение 19.10: готовые вопросы видны чипами сразу; строка
+              «+ Добавить вопрос» осталась для своего вопроса. */}
+          {renderChips()}
+          {!prompts.some(p => !p.trim()) && prompts.length < 7 && (
+            <button
+              type="button"
+              className="mx-dj-setup__add"
+              data-testid="dj-setup-add-prompt"
+              onClick={addPrompt}
+            >
               <Plus size={16} strokeWidth={1.5} /> Добавить вопрос
             </button>
           )}
@@ -469,24 +698,44 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
 
   const content = hasContent()
 
+  /*
+   * #1090: круглая кнопка как в чек-ине — пока ничего не введено, ✕ (назад);
+   * после ввода/выбора «→»; на последнем шаге ✓ (сохранить).
+   */
+  const submitIcon = !content ? 'close' : isLastStep ? 'check' : 'arrow'
+  const submitLabel = !content
+    ? 'Назад'
+    : isLastStep
+      ? 'Сохранить'
+      : 'Далее'
+
   return (
     <Screen
       onBack={goBack}
       registerSystemBack={false}
       scroll
       footer={
-        <div className="mx-dj-footer-bar">
+        <div
+          className={`mx-dj-footer-bar${footerTop !== null ? ' mx-dj-footer-bar--keyboard' : ''}`}
+          style={footerTop !== null ? { top: `${footerTop}px` } : undefined}
+        >
           <RoundNextButton
             onClick={content ? proceed : goBack}
-            icon={content ? 'check' : 'close'}
-            label={isLastStep ? (content ? 'Сохранить' : 'Назад') : (content ? 'Далее' : 'Назад')}
+            icon={submitIcon}
+            label={submitLabel}
             disabled={saving}
             testId="dj-setup-next"
           />
         </div>
       }
     >
-      <div className="mx-dj-setup">{renderStep()}</div>
+      <div
+        className="mx-dj-setup"
+        onFocus={handleFieldsFocus}
+        onBlur={() => setFieldFocused(false)}
+      >
+        {renderStep()}
+      </div>
     </Screen>
   )
 }

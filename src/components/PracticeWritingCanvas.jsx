@@ -18,7 +18,7 @@ function isDemoPreview() {
   )
 }
 
-function useVisualViewportMetrics() {
+export function useVisualViewportMetrics() {
   const [metrics, setMetrics] = useState(() => ({
     height:
       typeof window === 'undefined' ? null : (window.visualViewport?.height ?? window.innerHeight),
