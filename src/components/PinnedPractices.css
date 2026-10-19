@@ -275,21 +275,6 @@
   background: var(--mx-glass-bg);
   box-shadow: inset 0 0 0 2px rgb(var(--c-text) / 0.12);
 }
-.mx-pinned-soon-toast {
-  position: fixed;
-  z-index: 70;
-  bottom: calc(1.5rem + 5rem + env(safe-area-inset-bottom, 0px));
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 0.7rem 1rem;
-  border: 1px solid rgb(var(--c-text) / 0.12);
-  border-radius: 999px;
-  background: rgb(var(--c-card2));
-  box-shadow: 0 8px 24px rgb(0 0 0 / 0.28);
-  color: rgb(var(--c-muted));
-  font-size: calc(13.6px * var(--mx-type-scale));
-  animation: mx-undo-toast-in 200ms ease;
-}
 .mx-pinned-library {
   gap: 0;
 }
