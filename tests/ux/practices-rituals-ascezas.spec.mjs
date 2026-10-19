@@ -218,3 +218,119 @@ test('поиск в «Шагах»: чипс-подсказка подставл
   await page.getByTestId('steps-search-close').click()
   await expect(page.locator('.mx-steps-search-overlay')).toHaveCount(0)
 })
+
+/* ═══════════════════════════════════════════════════════════════
+ * 375×667 — мобильный layout: отсутствие горизонтального скролла,
+ * закреплённая кнопка отметки в видимой области, действия внизу,
+ * «Зачем» открыт по умолчанию, гайд с текстом об удалении истории.
+ * ═══════════════════════════════════════════════════════════════ */
+
+test.describe('375×667: мобильный layout', () => {
+  test.use({ viewport: { width: 375, height: 667 } })
+
+  test('список ритуалов: нет горизонтального скролла, сетка и плитки вмещаются', async ({
+    page,
+  }) => {
+    await page.goto('/?demo=1&tab=practices&action=rituals_list')
+    await expect(page.getByTestId('practice-grid')).toBeVisible()
+
+    // Нет горизонтального скролла на узком экране.
+    const overflow = await page.evaluate(() => ({
+      scrollW: document.documentElement.scrollWidth,
+      clientW: document.documentElement.clientWidth,
+    }))
+    expect(overflow.scrollW).toBeLessThanOrEqual(overflow.clientW + 2)
+
+    await expect(page.getByTestId('practice-tile')).toHaveCount(4)
+    await expect(page.getByTestId('practice-today-progress')).toBeVisible()
+    await expect(page.getByTestId('practice-new-pill')).toBeVisible()
+  })
+
+  test('экран ритуала: кнопка отметки в видимой области, «Зачем» открыт, гайд с удалением', async ({
+    page,
+  }) => {
+    await page.goto('/?demo=1&tab=practices&action=ritual_detail')
+    await expect(page.getByTestId('practice-detail-week')).toBeVisible()
+
+    // Нет горизонтального скролла.
+    const overflow = await page.evaluate(() => ({
+      scrollW: document.documentElement.scrollWidth,
+      clientW: document.documentElement.clientWidth,
+    }))
+    expect(overflow.scrollW).toBeLessThanOrEqual(overflow.clientW + 2)
+
+    // «Зачем» открыт по умолчанию.
+    await expect(page.getByTestId('practice-accordion-why')).toHaveAttribute(
+      'aria-expanded',
+      'true'
+    )
+
+    // Кнопка отметки закреплена внизу — видна в видимой области 667px.
+    const toggle = page.getByTestId('practice-detail-toggle')
+    await expect(toggle).toBeVisible()
+    const box = await toggle.boundingBox()
+    expect(box.y + box.height).toBeLessThanOrEqual(667)
+
+    // Действия внизу экрана: Изменить · Знак · Удалить.
+    await expect(page.getByTestId('practice-detail-edit')).toBeVisible()
+    await expect(page.getByTestId('practice-detail-sign')).toBeVisible()
+    await expect(page.getByTestId('practice-detail-delete')).toBeVisible()
+
+    // Гайд «Как это работает» — текст об удалении истории.
+    await expect(page.getByTestId('practice-accordion-guide')).toBeVisible()
+    await page.getByTestId('practice-accordion-guide').click()
+    await expect(page.getByText('Отметки этой практики исчезнут')).toBeVisible()
+  })
+
+  test('экран аскезы: «Держусь» в видимой области, «Не получилось», действия и гайд', async ({
+    page,
+  }) => {
+    await page.goto('/?demo=1&tab=practices&action=asceza_detail')
+    await expect(page.getByTestId('practice-detail-week')).toBeVisible()
+
+    // Нет горизонтального скролла.
+    const overflow = await page.evaluate(() => ({
+      scrollW: document.documentElement.scrollWidth,
+      clientW: document.documentElement.clientWidth,
+    }))
+    expect(overflow.scrollW).toBeLessThanOrEqual(overflow.clientW + 2)
+
+    // «Зачем» открыт по умолчанию.
+    await expect(page.getByTestId('practice-accordion-why')).toHaveAttribute(
+      'aria-expanded',
+      'true'
+    )
+
+    // Кнопка «Держусь» закреплена внизу — видна в видимой области 667px.
+    const toggle = page.getByTestId('practice-detail-toggle')
+    await expect(toggle).toBeVisible()
+    const box = await toggle.boundingBox()
+    expect(box.y + box.height).toBeLessThanOrEqual(667)
+
+    // «Не получилось сегодня» — тихая ссылка без штрафной риторики.
+    await expect(page.getByText('Не получилось сегодня')).toBeVisible()
+
+    // Действия внизу.
+    await expect(page.getByTestId('practice-detail-edit')).toBeVisible()
+    await expect(page.getByTestId('practice-detail-delete')).toBeVisible()
+
+    // Гайд с текстом об удалении истории.
+    await expect(page.getByTestId('practice-accordion-guide')).toBeVisible()
+    await page.getByTestId('practice-accordion-guide').click()
+    await expect(page.getByText('Отметки этой практики исчезнут')).toBeVisible()
+  })
+
+  test('«Назад» из правки возвращает в карточку, а не в список', async ({ page }) => {
+    await page.goto('/?demo=1&tab=practices&action=ritual_detail')
+    await expect(page.getByTestId('practice-detail-week')).toBeVisible()
+
+    // Открываем правку — экран PracticeFieldFlow с инпутом.
+    await page.getByTestId('practice-detail-edit').click()
+    await expect(page.getByTestId('practice-own-input-0')).toBeVisible()
+
+    // Системная «Назад» — закрывает правку, возвращая в карточку.
+    await page.getByTestId('demo-chrome-back').click()
+    await expect(page.getByTestId('practice-detail-week')).toBeVisible()
+    await expect(page.getByTestId('practice-own-input-0')).toHaveCount(0)
+  })
+})
