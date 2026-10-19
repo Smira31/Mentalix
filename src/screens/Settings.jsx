@@ -20,11 +20,9 @@ import {
   TODAY_CARD_LABELS,
   parseHiddenCards,
 } from '../lib/todayCardVisibility'
-import { getAccentColors } from '../lib/accentColor'
 import { MENTALIX_BOT_URL, openSupportChat } from '../lib/support'
 import { clearAllLocalUserData } from '../lib/localUserData'
 import { openExternal } from '../lib/externalLinks'
-import { THEMES } from '../lib/theme'
 import { isGuestUser } from '../lib/guestAuth'
 import {
   ERASURE_HINTS,
@@ -176,13 +174,8 @@ export default function Settings({
   onBack,
   onRegisterBack,
   onScrollTop,
-  accent,
-  onAccentChange,
-  theme,
-  onThemeChange,
   onGuestLogin,
 }) {
-  const accentColors = getAccentColors(theme)
   const [profileStats, setProfileStats] = useState(null)
   const [profileLoading, setProfileLoading] = useState(true)
   const [profileError, setProfileError] = useState(false)
@@ -914,42 +907,10 @@ export default function Settings({
   }
 
   function renderAppearance() {
-    // Акцентный цвет: состояние живёт в App.jsx (MXL-THEME-ACCENT-001).
+    // #1109: только тёмная тема и акцент «Серый» — выбор убран.
+    // Экран «Сегодня»: видимость карточек.
     return (
       <ProfileBody>
-        <ProfileGroup label="Общие">
-          <ProfileCard>
-            <ProfileRow title="Тема" testId="profile-row-theme" />
-            <div className="mx-profile-inset">
-              <ProfileChips
-                label="Тема приложения"
-                value={theme}
-                onChange={onThemeChange}
-                options={Object.entries(THEMES).map(([id, { label }]) => ({ value: id, label }))}
-              />
-            </div>
-            <ProfileRow
-              title="Акцентный цвет"
-              subtitle={accentColors[accent].label}
-              right={
-                <div className="flex gap-1">
-                  {Object.entries(accentColors).map(([id, { label, hex }]) => (
-                    <button
-                      key={id}
-                      type="button"
-                      aria-label={label}
-                      aria-pressed={accent === id}
-                      onClick={() => onAccentChange(id)}
-                      className="mx-profile-swatch"
-                    >
-                      <span aria-hidden="true" style={{ background: hex }} />
-                    </button>
-                  ))}
-                </div>
-              }
-            />
-          </ProfileCard>
-        </ProfileGroup>
         <ProfileGroup label="Экран «Сегодня»">
           <ProfileCard>
             {TODAY_CARD_IDS.map(id => (
@@ -1350,7 +1311,6 @@ export default function Settings({
             />
             <ProfileRow
               title="Оформление"
-              value={THEMES[theme]?.label}
               onClick={() => openSub('appearance')}
               testId="profile-row-appearance"
             />

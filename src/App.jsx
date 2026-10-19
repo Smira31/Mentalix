@@ -1308,10 +1308,6 @@ function App() {
                     }}
                     onRegisterBack={registerSettingsBack}
                     onScrollTop={scrollAppToTop}
-                    accent={accent}
-                    onAccentChange={setAccentRaw}
-                    theme={theme}
-                    onThemeChange={setThemeRaw}
                     onGuestLogin={() => setShowGuestAuth(true)}
                   />
                 </Suspense>
