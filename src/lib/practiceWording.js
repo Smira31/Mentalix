@@ -17,11 +17,11 @@ export const RITUAL_PRESETS = [
 ]
 
 export const ASCEZA_PRESETS = [
-  { name: 'Без сахара', minimum: 'не покупать сладкое домой', glyph: 'candy' },
-  { name: 'Соцсети до обеда', minimum: 'не открывать ленту до завтрака', glyph: 'phone-play' },
-  { name: 'Без алкоголя', minimum: 'не пить в будни', glyph: 'wine-glass' },
-  { name: 'Кофе после 14:00', minimum: 'не больше одной чашки после обеда', glyph: 'coffee' },
-  { name: 'Без жалоб', minimum: 'поймал жалобу — переформулировал', glyph: 'speech-slash' },
+  { name: 'Меньше сладкого', minimum: 'не больше одного сладкого за день', glyph: 'candy' },
+  { name: 'Без бесконечной ленты', minimum: 'не листать ленту до обеда, мессенджеры по делу можно', glyph: 'phone-play' },
+  { name: 'Без алкоголя', minimum: 'сегодня без алкоголя; если тянет — заметь, что за этим стоит', glyph: 'wine-glass' },
+  { name: 'Без кофе после 14:00', minimum: 'после 14:00 — вода или чай без кофеина', glyph: 'coffee' },
+  { name: 'Без жалоб', minimum: 'заметил жалобу — преврати в просьбу или маленькое действие', glyph: 'speech-slash' },
   { name: 'Покупки по списку', minimum: 'ничего вне списка дороже 1000 ₽', glyph: 'shopping-bag' },
 ]
 
@@ -115,6 +115,12 @@ export const PRACTICE_WORDING = {
     presets: RITUAL_PRESETS,
     optionalFields: RITUAL_OPTIONAL_FIELDS,
     defaultGlyph: 'hourglass',
+    guide: {
+      duration: 'сам решаешь; начни с 7 дней, потом реши — продолжать ли',
+      markDay: 'нажми «Отметить сегодня», когда сделал',
+      missed: 'ничего страшного — продолжаешь на следующий день',
+      stop: 'внизу экрана «Удалить». Отметки этой практики исчезнут',
+    },
   },
   asceza: {
     kind: 'asceza',
@@ -159,6 +165,12 @@ export const PRACTICE_WORDING = {
     presets: ASCEZA_PRESETS,
     optionalFields: ASCEZA_OPTIONAL_FIELDS,
     defaultGlyph: 'shield',
+    guide: {
+      duration: 'сам решаешь; начни с 7 дней, потом реши — продолжать ли',
+      markDay: 'нажми «Держусь сегодня» в конце дня',
+      missed: 'ничего страшного — продолжаешь на следующий день',
+      stop: 'внизу экрана «Удалить». Отметки этой практики исчезнут',
+    },
   },
 }
 
@@ -186,7 +198,7 @@ export const RESTORE_LINK_LABEL = 'Отметить вчера'
  */
 export function restoreChoicesFor(kind, item) {
   if (kind !== 'ritual') {
-    return [{ value: 'held', label: 'Держусь', description: 'Восстановить день без срыва.' }]
+    return [{ value: 'held', label: 'Держусь', description: 'Восстановить день.' }]
   }
   const choices = []
   if (item.min_version)

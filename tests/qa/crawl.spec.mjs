@@ -17,7 +17,7 @@ const SCREENSHOT_ROOT = path.join(ARTIFACT_ROOT, 'screens')
 
 const EXCLUDE_LABELS = [
   /удалить/i,
-  /сорвался/i,
+  /не получилось сегодня/i,
   /выйти/i,
   /сброс/i,
   /отмена подписки/i,

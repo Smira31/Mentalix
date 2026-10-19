@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { ChevronDown, Grid2x2, PenLine, Trash2 } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 import { platform } from '../platform'
 import { useEdgeSwipeBack } from '../lib/gestures/useEdgeSwipeBack'
 import { useBackButton } from '../platform/telegram.hooks'
@@ -14,14 +14,13 @@ import {
   buildEditPatch,
   canRestoreYesterday,
 } from '../lib/practiceWording'
-import { ProgressGlassMenu, ProgressGlassMenuItem } from './ProgressGlassMenu'
 import PracticeFieldFlow from './practices/PracticeFieldFlow'
 import PracticeSignScreen from './practices/PracticeSignScreen'
 import PracticeWeek from './practices/PracticeWeek'
 import './PracticeDetail.css'
 
-function AccordionRow({ testId, label, children }) {
-  const [open, setOpen] = useState(false)
+function AccordionRow({ testId, label, children, defaultOpen = false }) {
+  const [open, setOpen] = useState(defaultOpen)
   if (!children) return null
   return (
     <div className="mx-practice-detail__accordion">
@@ -76,12 +75,21 @@ export default function PracticeDetail({
 }) {
   const screenRef = useRef(null)
   const [confirming, setConfirming] = useState(false)
-  const [menuOpen, setMenuOpen] = useState(false)
   const [sub, setSub] = useState(null)
   const [pulse, setPulse] = useState(false)
   const pulseTimer = useRef(null)
   useEdgeSwipeBack(screenRef, onBack)
-  useBackButton(onBack, systemBack)
+  // «Назад» с вложенных экранов карточки (поле, знак, правка) возвращает
+  // в карточку, а не в список: пока открыт sub или диалог — закрываем его.
+  useBackButton(() => {
+    if (sub) {
+      setSub(null)
+    } else if (confirming) {
+      setConfirming(false)
+    } else {
+      onBack()
+    }
+  }, true)
 
   useEffect(() => () => clearTimeout(pulseTimer.current), [])
   const isRitual = kind === 'ritual'
@@ -90,19 +98,22 @@ export default function PracticeDetail({
   // Ритуал с двумя ступенями отмечается уровнем (минимум / оптимум);
   // у остальных практик остаётся одна кнопка отметки.
   const hasLevels = isRitual && Boolean(practice.min_version && practice.optimal_version)
-  // Знак выбирается в меню «…» и хранится вместе с практикой; без него — по названию.
+  // Знак выбирается и хранится вместе с практикой; без него — по названию.
   const glyphKind =
     practice.glyph ||
     (isRitual ? semanticKindForRitual(practice.name) : semanticKindForAsceza(practice))
-  const why = practice.goal || practice.reason
-  // «Как» — только обязательная часть: минимум у ритуала и описание у аскезы.
+  // У аскезы «Зачем» — только смысл (goal); граница (reason) живёт в «Как».
+  // fallback на reason у аскезы дублировал бы текст «Граница».
+  const why = isRitual ? (practice.goal || practice.reason) : practice.goal
+  // «Как» — минимум у ритуала и граница у аскезы (practice.reason).
   // Оптимум и триггер с заменой живут необязательными строками «+ …».
-  const how = isRitual
-    ? [practice.min_version && `Минимум: ${practice.min_version}`].filter(Boolean).join('\n')
-    : practice.description || ''
+  const howContent = isRitual ? practice.min_version : practice.reason
+  const howLabel =
+    wording.cardMinimumLabel.charAt(0).toUpperCase() + wording.cardMinimumLabel.slice(1)
   const optionalFields = wording.optionalFields || []
   // «Оптимум» — часть карточки «Как» (рядом с минимумом), а не строка «Зачем».
   const optimalField = optionalFields.find(field => field.key === 'optimal_version')
+  const hasHow = Boolean(howContent) || Boolean(optimalField)
   const canRestore = canRestoreYesterday(practice, kind)
   const note = practice.note || practice.notes || practice.today_note
 
@@ -144,66 +155,7 @@ export default function PracticeDetail({
       ref={screenRef}
       className="mx-practice-detail-screen w-full max-w-md px-[var(--mx-screen-x)] animate-fade-in"
     >
-      <div className="mx-practice-detail-screen__header">
-        <RoundBackButton onClick={onBack} />
-        <div className="mx-practice-detail__menu-wrap">
-          <button
-            type="button"
-            className="mx-practice-detail__menu"
-            aria-label="Действия"
-            aria-expanded={menuOpen}
-            data-testid="practice-detail-menu"
-            onClick={() => setMenuOpen(value => !value)}
-          >
-            …
-          </button>
-          {menuOpen && (
-            <>
-              <button
-                type="button"
-                aria-label="Закрыть меню"
-                className="mx-practice-detail__menu-overlay"
-                data-testid="practice-detail-menu-overlay"
-                onClick={() => setMenuOpen(false)}
-              />
-              <ProgressGlassMenu
-                role="menu"
-                aria-label="Действия"
-                style={{ position: 'absolute', top: '44px', right: 0 }}
-              >
-                <ProgressGlassMenuItem
-                  icon={PenLine}
-                  label="Изменить"
-                  testId="practice-detail-edit"
-                  onClick={() => {
-                    setMenuOpen(false)
-                    setSub({ type: 'edit' })
-                  }}
-                />
-                <ProgressGlassMenuItem
-                  icon={Grid2x2}
-                  label="Знак"
-                  testId="practice-detail-sign"
-                  onClick={() => {
-                    setMenuOpen(false)
-                    setSub({ type: 'sign' })
-                  }}
-                />
-                <ProgressGlassMenuItem
-                  icon={Trash2}
-                  label="Удалить"
-                  danger
-                  testId="practice-detail-delete"
-                  onClick={() => {
-                    setMenuOpen(false)
-                    setConfirming(true)
-                  }}
-                />
-              </ProgressGlassMenu>
-            </>
-          )}
-        </div>
-      </div>
+      <RoundBackButton onClick={onBack} className="mx-practice-detail__back" />
 
       {/* Блок-герой 220: концентрические круги + иконка в круге 96 */}
       <div
@@ -226,7 +178,7 @@ export default function PracticeDetail({
 
       {/* Карточка «Зачем»: смысл практики и необязательные строки «+ …» */}
       <div className="mx-practice-detail__accordions">
-        <AccordionRow testId="practice-accordion-why" label="Зачем">
+        <AccordionRow testId="practice-accordion-why" label="Зачем" defaultOpen>
           {why && <p>{why}</p>}
         </AccordionRow>
 
@@ -244,88 +196,142 @@ export default function PracticeDetail({
             />
           ))}
 
-        <AccordionRow testId="practice-accordion-how" label="Как">
-          {how && <p className="whitespace-pre-line">{how}</p>}
-          {optimalField && (
-            <OptionalFieldRow
-              field={optimalField}
-              value={practice[optimalField.key]}
-              onOpen={() => {
-                platform.haptic('light')
-                setSub({ type: 'field', field: optimalField })
-              }}
-            />
-          )}
-        </AccordionRow>
+        {hasHow && (
+          <AccordionRow testId="practice-accordion-how" label={howLabel}>
+            {howContent && <p className="whitespace-pre-line">{howContent}</p>}
+            {optimalField && (
+              <OptionalFieldRow
+                field={optimalField}
+                value={practice[optimalField.key]}
+                onOpen={() => {
+                  platform.haptic('light')
+                  setSub({ type: 'field', field: optimalField })
+                }}
+              />
+            )}
+          </AccordionRow>
+        )}
         <AccordionRow testId="practice-accordion-note" label="Заметка">
           {note && <p>{note}</p>}
         </AccordionRow>
-      </div>
 
-      {!isRitual && (
-        <button
-          type="button"
-          className="mx-practice-detail__quiet-action"
-          onClick={() => onBreak(practice)}
-        >
-          Сорвался сегодня
-        </button>
-      )}
+        {wording.guide && (
+          <AccordionRow testId="practice-accordion-guide" label="Как это работает">
+            <p className="mx-practice-detail__guide-line">
+              <strong>Срок</strong> — {wording.guide.duration}.
+            </p>
+            <p className="mx-practice-detail__guide-line">
+              <strong>Отметка</strong> — {wording.guide.markDay}.
+            </p>
+            <p className="mx-practice-detail__guide-line">
+              <strong>Пропуск</strong> — {wording.guide.missed}.
+            </p>
+            <p className="mx-practice-detail__guide-line">
+              <strong>Остановка</strong> — {wording.guide.stop}.
+            </p>
+          </AccordionRow>
+        )}
+      </div>
 
       {/* ЭТА НЕДЕЛЯ: неделя кружками и правило про один пропуск */}
       <section className="mx-practice-detail__week" data-testid="practice-detail-week">
         <p className="mx-practice-detail__week-title">Эта неделя</p>
         <PracticeWeek streak={practice.streak || 0} />
-        <p className="mx-practice-detail__week-hint">1 пропуск в неделю не рвёт серию</p>
+        <p className="mx-practice-detail__week-hint">1 пропуск в неделю не прерывает серию</p>
       </section>
 
-      {/* Вчера не отмечено — тихая ссылка на восстановление дня */}
-      {canRestore && (
-        <button
-          type="button"
-          className="mx-practice-detail__restore"
-          data-testid="practice-restore-yesterday"
-          onClick={() => {
-            platform.haptic('light')
-            onRestore?.(practice)
-          }}
-        >
-          {RESTORE_LINK_LABEL}
-        </button>
-      )}
+      {/* Тихие ссылки одной строкой под неделей */}
+      <div className="mx-practice-detail__quiet-links">
+        {canRestore && (
+          <button
+            type="button"
+            className="mx-practice-detail__quiet-link"
+            data-testid="practice-restore-yesterday"
+            onClick={() => {
+              platform.haptic('light')
+              onRestore?.(practice)
+            }}
+          >
+            {RESTORE_LINK_LABEL}
+          </button>
+        )}
+        {!isRitual && (
+          <button
+            type="button"
+            className="mx-practice-detail__quiet-link"
+            data-testid="practice-break-link"
+            onClick={() => onBreak(practice)}
+          >
+            Не получилось сегодня
+          </button>
+        )}
+      </div>
 
-      {hasLevels ? (
-        <div className="mx-practice-detail__levels">
-          {[
-            { value: 'min', caption: 'Минимум', text: practice.min_version },
-            { value: 'optimal', caption: 'Оптимум', text: practice.optimal_version },
-          ].map(item => (
-            <button
-              type="button"
-              key={item.value}
-              className={`mx-practice-detail__level${
-                practice.today_level === item.value ? ' is-active' : ''
-              }`}
-              aria-pressed={practice.today_level === item.value}
-              data-testid={`practice-detail-level-${item.value}`}
-              onClick={() => logLevel(item.value)}
-            >
-              <span className="mx-practice-detail__level-caption">{item.caption}</span>
-              <span className="mx-practice-detail__level-text">{item.text}</span>
-            </button>
-          ))}
-        </div>
-      ) : (
+      {/* Тихие действия: Изменить · Знак · Удалить */}
+      <div className="mx-practice-detail__actions">
         <button
           type="button"
-          className="mx-practice-detail__mark"
-          data-testid="practice-detail-toggle"
-          aria-pressed={done}
-          onClick={toggle}
+          className="mx-practice-detail__action"
+          data-testid="practice-detail-edit"
+          onClick={() => setSub({ type: 'edit' })}
         >
-          {done ? wording.markedButton : wording.markButton}
+          Изменить
         </button>
-      )}
+        <span className="mx-practice-detail__actions-sep" aria-hidden="true">·</span>
+        <button
+          type="button"
+          className="mx-practice-detail__action"
+          data-testid="practice-detail-sign"
+          onClick={() => setSub({ type: 'sign' })}
+        >
+          Знак
+        </button>
+        <span className="mx-practice-detail__actions-sep" aria-hidden="true">·</span>
+        <button
+          type="button"
+          className="mx-practice-detail__action mx-practice-detail__action--danger"
+          data-testid="practice-detail-delete"
+          onClick={() => setConfirming(true)}
+        >
+          Удалить
+        </button>
+      </div>
+
+      {/* Кнопка отметки закреплена внизу, над нижним меню — видна всегда */}
+      <div className="mx-practice-detail__fixed">
+        {hasLevels ? (
+          <div className="mx-practice-detail__levels">
+            {[
+              { value: 'min', caption: 'Минимум', text: practice.min_version },
+              { value: 'optimal', caption: 'Оптимум', text: practice.optimal_version },
+            ].map(item => (
+              <button
+                type="button"
+                key={item.value}
+                className={`mx-practice-detail__level${
+                  practice.today_level === item.value ? ' is-active' : ''
+                }`}
+                aria-pressed={practice.today_level === item.value}
+                data-testid={`practice-detail-level-${item.value}`}
+                onClick={() => logLevel(item.value)}
+              >
+                <span className="mx-practice-detail__level-caption">{item.caption}</span>
+                <span className="mx-practice-detail__level-text">{item.text}</span>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <button
+            type="button"
+            className="mx-practice-detail__mark"
+            data-testid="practice-detail-toggle"
+            aria-pressed={done}
+            onClick={toggle}
+          >
+            {done ? wording.markedButton : wording.markButton}
+          </button>
+        )}
+      </div>
 
       {sub?.type === 'edit' && (
         <PracticeFieldFlow

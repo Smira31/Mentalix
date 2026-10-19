@@ -107,7 +107,7 @@ test('practice detail exposes toggle, three accordions and the asceza break acti
   assert.match(detail, /testId="practice-accordion-how"/)
   assert.match(detail, /testId="practice-accordion-note"/)
   assert.match(detail, /onLog/)
-  assert.match(detail, /Сорвался сегодня/)
+  assert.match(detail, /Не получилось сегодня/)
   assert.match(detail, /<DeleteConfirmationDialog/)
 })
 
@@ -115,7 +115,7 @@ test('экран практики показывает «ЭТА НЕДЕЛЯ» �
   // Карточка недели стоит над отметкой: 7 кружков и правило про пропуск.
   assert.match(detail, /data-testid="practice-detail-week"/)
   assert.match(detail, /<PracticeWeek streak=\{practice\.streak \|\| 0\} \/>/)
-  assert.match(detail, /1 пропуск в неделю не рвёт серию/)
+  assert.match(detail, /1 пропуск в неделю не прерывает серию/)
   assert.match(detailCss, /\.mx-practice-detail__week \{/)
   // Уровни отметки ритуала (минимум / оптимум) вернулись из старого экрана.
   assert.match(
@@ -160,10 +160,10 @@ test('unified own-create flow is a 2-step magazine with fullscreen and native Ba
   assert.match(wording, /Отметить сегодня/)
 })
 
-test('practice menu offers edit, sign and delete', () => {
-  assert.match(detail, /testId="practice-detail-edit"/)
-  assert.match(detail, /testId="practice-detail-sign"/)
-  assert.match(detail, /testId="practice-detail-delete"/)
+test('practice actions offer edit, sign and delete at the bottom', () => {
+  assert.match(detail, /data-testid="practice-detail-edit"/)
+  assert.match(detail, /data-testid="practice-detail-sign"/)
+  assert.match(detail, /data-testid="practice-detail-delete"/)
   // «Изменить» — тот же экран-поле, что и «Свой»; «Знак» — сетка 4×3.
   assert.match(detail, /<PracticeFieldFlow/)
   assert.match(detail, /buildEditPatch/)
@@ -212,4 +212,19 @@ test('экран практики: восстановление дня и нео
   // Демо-ссылка открывает экран практики напрямую.
   assert.match(flow, /previewPracticeAction/)
   assert.match(flow, /'ritual_detail' : 'asceza_detail'/)
+})
+
+test('аскеза без goal: текст reason показан один раз — только в «Граница»', () => {
+  // Баг: const why = practice.goal || practice.reason у аскезы из пресета (goal
+  // пустой) дублировал reason и в «Зачем», и в «Граница». Теперь «Зачем» у аскезы
+  // берётся только из goal; пустой goal скрывает аккордеон (как и «Как»).
+  assert.doesNotMatch(detail, /const why = practice\.goal \|\| practice\.reason\b/)
+  // why разделён по kind: ритуал сохраняет fallback, аскеза — только goal.
+  assert.match(detail, /const why = isRitual \? \(practice\.goal \|\| practice\.reason\) : practice\.goal/)
+  // «Граница» (как) у аскезы по-прежнему берётся из reason.
+  assert.match(detail, /const howContent = isRitual \? practice\.min_version : practice\.reason/)
+  // Аккордеон «Зачем» рендерится только при наличии контента — пустой goal
+  // не показывает пустой аккордеон (тот же принцип, что у «Как» через hasHow).
+  assert.match(detail, /testId="practice-accordion-why"/)
+  assert.match(detail, /\{why && <p>\{why\}<\/p>\}/)
 })
