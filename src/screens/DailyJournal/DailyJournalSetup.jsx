@@ -9,6 +9,8 @@ import { useBackButton } from '../../platform/telegram.hooks'
 import { platform } from '../../platform'
 import { api } from '../../lib/api'
 import { useAutoFocusField } from '../../lib/useAutoFocusField'
+import { getKeyboardViewportHeight, isTelegramRuntime } from '../../lib/visualViewport'
+import { useVisualViewportMetrics } from '../../components/PracticeWritingCanvas'
 import './DailyJournalFlow.css'
 
 const SETUP_STEPS = [
@@ -86,11 +88,11 @@ const VISION_SUBSTEPS = [
   },
 ]
 
-const GOAL_PLACEHOLDERS = [
-  'Например: пробежать 10 км',
-  'Например: сменить работу',
-  'Например: читать каждый день',
-]
+/*
+ * Решение 19.10: вместо двух пустых строк «Например: …» — одна пустая
+ * строка; чипы целей остаются под ней.
+ */
+const GOAL_PLACEHOLDER = 'Напиши своё или выбери ниже'
 
 const GOAL_CHIPS = [
   'Высыпаться',
@@ -120,11 +122,16 @@ const IDENTITY_CHIPS = [
   'находит время для близких',
 ]
 
+/*
+ * Решение 19.10: готовые вопросы видны чипами сразу, без «+ Добавить
+ * вопрос»; строка осталась для своего вопроса. Дефолт новой настройки —
+ * первый вопрос (DEFAULT_JOURNAL_PROMPTS), остальные четыре — здесь.
+ */
 const PROMPT_CHIPS = [
-  'Что сегодня было хорошего?',
-  'Чему я сегодня научился?',
-  'Где я сегодня был честен с собой?',
-  'Что я хочу отпустить?',
+  'Что сегодня забрало больше всего сил — и что их вернуло?',
+  'За что я могу себя сегодня похвалить, даже за мелочь?',
+  'Что меня сегодня задело — и что за этим стоит?',
+  'Какой один шаг сделает завтра чуть легче?',
 ]
 
 const REMINDER_TILES = [
@@ -178,9 +185,12 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
     if (!r?.enabled) return 'off'
     return REMINDER_TILES.some(t => t.time === r.time) ? 'preset' : 'custom'
   })
-  // #1090: чипы готовых вопросов показываются по «+ Добавить вопрос»
-  const [promptChipsVisible, setPromptChipsVisible] = useState(false)
   const [saving, setSaving] = useState(false)
+  // Решение 19.10 (клавиатура): пока поле шага в фокусе и открыта
+  // клавиатура, круглая кнопка поднимается над клавиатурой, а скролл
+  // показывает чипы под полем — как в шторке «Что произошло?».
+  const [fieldFocused, setFieldFocused] = useState(false)
+  const chipsRef = useRef(null)
   const timeInputRef = useRef(null)
 
   const step = SETUP_STEPS[stepIndex]
@@ -207,11 +217,31 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
       return sub.chips.filter(chip => !value.includes(chip))
     }
     if (stepIndex === 3) {
-      if (!promptChipsVisible) return []
       return PROMPT_CHIPS.filter(chip => !prompts.some(p => p.includes(chip)))
     }
     return []
   })()
+
+  // ── Клавиатура (#1090, решение 19.10): подъём кнопки над клавиатурой ──
+  const metrics = useVisualViewportMetrics()
+  const telegramVisibleHeight = getKeyboardViewportHeight({
+    isTelegram: isTelegramRuntime(),
+    stableHeight: metrics.stableHeight,
+    visualHeight: metrics.height,
+  })
+  const keyboardOpen =
+    fieldFocused && metrics.height !== null && metrics.height < metrics.layoutHeight - 80
+  const footerTop = keyboardOpen
+    ? metrics.pageTop + metrics.offsetTop + telegramVisibleHeight - 48 - 56 - 8
+    : null
+
+  function handleFieldsFocus() {
+    setFieldFocused(true)
+    // Поле прокручивается так, чтобы под ним были видны чипы
+    window.requestAnimationFrame(() => {
+      chipsRef.current?.scrollIntoView({ block: 'nearest', behavior: 'auto' })
+    })
+  }
 
   function handleChipTap(text) {
     platform.haptic('light')
@@ -362,7 +392,6 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
 
   function addPrompt() {
     if (prompts.length >= 7) return
-    setPromptChipsVisible(true)
     setPrompts(prev => [...prev, ''])
   }
 
@@ -410,7 +439,7 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
   function renderChips() {
     if (stepChips.length === 0) return null
     return (
-      <div className="mx-dj-setup__chips" data-testid="dj-setup-chips">
+      <div className="mx-dj-setup__chips" data-testid="dj-setup-chips" ref={chipsRef}>
         {stepChips.map(chip => (
           <button
             key={chip}
@@ -428,26 +457,35 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
 
   function renderStep() {
     if (stepIndex === 0) {
+      /*
+       * Решение 19.10: одна пустая строка «Напиши своё или выбери ниже»
+       * вместо двух «Например: …». Видны заполненные строки и первая
+       * пустая после последней заполненной — чипы остаются под полем.
+       */
+      const lastFilledGoal = goals.reduce((acc, g, i) => (g.trim() ? i : acc), -1)
       return (
         <>
           <CapsLabel className="mx-dj-setup__step-label">{step.label}</CapsLabel>
           <JournalField question={step.title} hint={step.hint} className="mx-dj-setup__field-group" />
-          {goals.map((g, i) => (
-            <textarea
-              key={i}
-              ref={el => {
-                autoGrowField(el)
-                if (i === 0) stepFieldRef.current = el
-              }}
-              rows={1}
-              className="mx-dj-setup__input"
-              value={g}
-              onChange={e => updateGoal(i, e.target.value)}
-              placeholder={GOAL_PLACEHOLDERS[i] || GOAL_PLACEHOLDERS[0]}
-              maxLength={500}
-              data-testid={`dj-setup-goal-${i}`}
-            />
-          ))}
+          {goals.map(
+            (g, i) =>
+              (i <= lastFilledGoal + 1 ? (
+                <textarea
+                  key={i}
+                  ref={el => {
+                    autoGrowField(el)
+                    if (i === 0) stepFieldRef.current = el
+                  }}
+                  rows={1}
+                  className="mx-dj-setup__input"
+                  value={g}
+                  onChange={e => updateGoal(i, e.target.value)}
+                  placeholder={GOAL_PLACEHOLDER}
+                  maxLength={500}
+                  data-testid={`dj-setup-goal-${i}`}
+                />
+              ) : null)
+          )}
           {renderChips()}
         </>
       )
@@ -458,11 +496,13 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
         <>
           <CapsLabel className="mx-dj-setup__step-label">{step.label}</CapsLabel>
           <JournalField question={step.title} hint={step.hint} className="mx-dj-setup__field-group" />
+          {/* Решение 19.10: подпись «Я — человек, который…» — один раз
+              над списком, а не над каждой строкой. */}
+          <div className="mx-dj-setup__prefix" data-testid="dj-setup-identity-prefix">
+            {IDENTITY_PREFIX}
+          </div>
           {reminders.map((r, i) => (
             <div key={i} className="mx-dj-setup__identity-row" data-testid={`dj-setup-identity-row-${i}`}>
-              <span className="mx-dj-setup__prefix" data-testid={`dj-setup-identity-prefix-${i}`}>
-                {IDENTITY_PREFIX}
-              </span>
               <div className="mx-dj-setup__input-row">
                 <textarea
                   ref={el => {
@@ -569,6 +609,14 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
               )}
             </div>
           ))}
+          {prompts.filter(p => p.trim()).length === 1 && (
+            <p className="mx-dj-setup__prompts-hint" data-testid="dj-setup-prompts-hint">
+              Один вопрос — каждый день он же. Добавь ещё 2–3, и они пойдут по кругу
+            </p>
+          )}
+          {/* Решение 19.10: готовые вопросы видны чипами сразу; строка
+              «+ Добавить вопрос» осталась для своего вопроса. */}
+          {renderChips()}
           {!prompts.some(p => !p.trim()) && prompts.length < 7 && (
             <button
               type="button"
@@ -579,7 +627,6 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
               <Plus size={16} strokeWidth={1.5} /> Добавить вопрос
             </button>
           )}
-          {renderChips()}
         </>
       )
     }
@@ -668,7 +715,10 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
       registerSystemBack={false}
       scroll
       footer={
-        <div className="mx-dj-footer-bar">
+        <div
+          className={`mx-dj-footer-bar${footerTop !== null ? ' mx-dj-footer-bar--keyboard' : ''}`}
+          style={footerTop !== null ? { top: `${footerTop}px` } : undefined}
+        >
           <RoundNextButton
             onClick={content ? proceed : goBack}
             icon={submitIcon}
@@ -679,7 +729,13 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
         </div>
       }
     >
-      <div className="mx-dj-setup">{renderStep()}</div>
+      <div
+        className="mx-dj-setup"
+        onFocus={handleFieldsFocus}
+        onBlur={() => setFieldFocused(false)}
+      >
+        {renderStep()}
+      </div>
     </Screen>
   )
 }
