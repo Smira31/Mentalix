@@ -131,6 +131,10 @@ for (const width of [393, 789]) {
     await page.goto('/?tab=library')
     await page.getByTestId('library-hero').click()
     await expect(page.getByTestId('hero-step-temporality')).toHaveAttribute('data-state', 'locked')
+    // Закрытые главы (II–IV) — замок вместо счётчика; открытая (I) — стрелка.
+    await expect(page.locator('.mx-hj-chapter--locked')).toHaveCount(3)
+    await expect(page.locator('.mx-hj-chapter--locked .mx-hj-chapter__lock')).toHaveCount(3)
+    await expect(page.locator('.mx-hj-chapter__chevron')).toHaveCount(1)
     await page.getByTestId('hero-continue').click()
     await expect(page.getByTestId('hero-journey-map')).toBeVisible()
     await expect(page.getByTestId('hero-step-start')).toHaveCount(0)
@@ -310,6 +314,17 @@ for (const [width, height] of [
         .evaluate(el => parseFloat(getComputedStyle(el).fontSize))
       expect(fontSize).toBeGreaterThanOrEqual(14.5)
 
+      // Длинное вступление доскролливается внутри текстового блока:
+      // последний абзац доступен выше кнопки, а не под ней.
+      const lastDescBottom = await page
+        .locator('.mx-hj-step-intro__text-scroll')
+        .evaluate(el => {
+          el.scrollTop = el.scrollHeight
+          const descs = el.querySelectorAll('.mx-hj-step-intro__desc')
+          return descs[descs.length - 1].getBoundingClientRect().bottom
+        })
+      expect(lastDescBottom).toBeLessThanOrEqual(box.y)
+
       await page.getByTestId('demo-chrome-back').click()
       await page.getByTestId('hero-journey-map').waitFor({ state: 'visible' })
     }
@@ -330,6 +345,11 @@ test('Шаг пройден на 375×667: «Продолжить» видна �
   await page.getByTestId('hero-action-input').fill('Одно действие')
   await page.getByTestId('hero-action-next').click()
   await expect(page.getByTestId('hero-complete-map')).toBeVisible()
+
+  // «Твоя опора»: ответ из «Одно действие» показан под итогом.
+  const support = page.locator('.mx-hj-complete__support')
+  await expect(support).toBeVisible()
+  await expect(support).toContainText('Одно действие')
 
   const column = page.locator('.mx-hj-step-complete')
   // Скролла нет: ни в колонке, ни в документе.
