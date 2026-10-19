@@ -6,7 +6,6 @@ import { platform } from '../platform'
 import { useBackButton } from '../platform/telegram.hooks'
 import { useVisualViewportHeight } from '../lib/visualViewport'
 import { useSheetSwipeDown } from '../lib/gestures/useSheetSwipeDown'
-import { weekDayCircles } from '../lib/practiceWeekGrid'
 
 function dayLabel(daysAgo) {
   if (daysAgo === 1) return 'Вчера'
@@ -15,17 +14,14 @@ function dayLabel(daysAgo) {
 }
 
 /*
- * Дни, которые реально пропущены в текущей календарной неделе:
- * только кружки, не заполненные серией (и не сегодня).
+ * Дни, которые реально пропущены за последние 7 дней:
+ * серия заполняет дни назад 0…streak−1, остальные — пропуски.
+ * Сегодня (день 0) не восстанавливаем — он уже отмечен.
  */
-function missedDaysThisWeek(streak) {
-  const today = (new Date().getDay() + 6) % 7
-  const { firstFilled } = weekDayCircles(streak, today)
+function missedDays(streak) {
   const result = []
-  for (let i = 0; i < today; i++) {
-    if (i < firstFilled) {
-      result.push(today - i) // дней назад
-    }
+  for (let daysAgo = Math.max(1, streak); daysAgo <= 7; daysAgo++) {
+    result.push(daysAgo)
   }
   return result
 }
@@ -40,7 +36,7 @@ export default function StreakRestoreSheet({ itemName, choices, streak = 0, onSa
   const viewportHeight = useVisualViewportHeight()
   useSheetSwipeDown(sheetRef, onClose)
 
-  const missed = useMemo(() => missedDaysThisWeek(streak), [streak])
+  const missed = useMemo(() => missedDays(streak), [streak])
 
   useBackButton(onClose)
 
