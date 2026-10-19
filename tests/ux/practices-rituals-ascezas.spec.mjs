@@ -124,7 +124,7 @@ test('список аскез: те же плитки, «держишься» в
   await expect(page.getByTestId('practice-tile').nth(2)).toHaveAttribute('data-done', 'true')
 })
 
-test('экран ритуала: неделя, «Отметить вчера», аккордеоны и меню «…»', async ({ page }) => {
+test('экран ритуала: неделя, «Отметить вчера», аккордеоны и действия внизу', async ({ page }) => {
   await page.goto('/?demo=1&tab=practices&action=ritual_detail')
 
   await expect(page.getByTestId('practice-detail-week')).toBeVisible()
@@ -141,13 +141,10 @@ test('экран ритуала: неделя, «Отметить вчера», 
   )
   await page.getByTestId('practice-accordion-how').click()
 
-  // Меню «…» даёт правку, знак и удаление.
-  await page.getByTestId('practice-detail-menu').click()
+  // Действия внизу экрана: правка, знак и удаление — доступны сразу.
   await expect(page.getByTestId('practice-detail-edit')).toBeVisible()
   await expect(page.getByTestId('practice-detail-sign')).toBeVisible()
   await expect(page.getByTestId('practice-detail-delete')).toBeVisible()
-  await page.getByTestId('practice-detail-menu-overlay').click()
-  await expect(page.getByTestId('practice-detail-edit')).toHaveCount(0)
 
   // Восстановление вчерашнего дня: лист → день → ступень → подтверждение.
   await page.getByTestId('practice-restore-yesterday').click()
