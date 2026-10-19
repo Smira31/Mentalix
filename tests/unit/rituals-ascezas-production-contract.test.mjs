@@ -213,3 +213,18 @@ test('экран практики: восстановление дня и нео
   assert.match(flow, /previewPracticeAction/)
   assert.match(flow, /'ritual_detail' : 'asceza_detail'/)
 })
+
+test('аскеза без goal: текст reason показан один раз — только в «Граница»', () => {
+  // Баг: const why = practice.goal || practice.reason у аскезы из пресета (goal
+  // пустой) дублировал reason и в «Зачем», и в «Граница». Теперь «Зачем» у аскезы
+  // берётся только из goal; пустой goal скрывает аккордеон (как и «Как»).
+  assert.doesNotMatch(detail, /const why = practice\.goal \|\| practice\.reason\b/)
+  // why разделён по kind: ритуал сохраняет fallback, аскеза — только goal.
+  assert.match(detail, /const why = isRitual \? \(practice\.goal \|\| practice\.reason\) : practice\.goal/)
+  // «Граница» (как) у аскезы по-прежнему берётся из reason.
+  assert.match(detail, /const howContent = isRitual \? practice\.min_version : practice\.reason/)
+  // Аккордеон «Зачем» рендерится только при наличии контента — пустой goal
+  // не показывает пустой аккордеон (тот же принцип, что у «Как» через hasHow).
+  assert.match(detail, /testId="practice-accordion-why"/)
+  assert.match(detail, /\{why && <p>\{why\}<\/p>\}/)
+})
