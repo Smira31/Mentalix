@@ -21,17 +21,21 @@ import { CatalogDieArt } from './practice-art/CatalogDieArt'
 import { CatalogPuzzleSmallArt } from './practice-art/CatalogPuzzleSmallArt'
 import { CatalogCandleSmallArt } from './practice-art/CatalogCandleSmallArt'
 import { CatalogDieSmallArt } from './practice-art/CatalogDieSmallArt'
+import { CatalogQuillArt } from './practice-art/CatalogQuillArt'
+import { CatalogQuillSmallArt } from './practice-art/CatalogQuillSmallArt'
 
 const TRACED_GLYPHS = {
   rituals: CatalogPuzzleArt,
   ascezas: CatalogCandleArt,
   daimon: CatalogDieArt,
+  journal: CatalogQuillArt,
 }
 
 const TRACED_GLYPHS_SMALL = {
   rituals: CatalogPuzzleSmallArt,
   ascezas: CatalogCandleSmallArt,
   daimon: CatalogDieSmallArt,
+  journal: CatalogQuillSmallArt,
 }
 import { api } from '../lib/api'
 import { hasCanonicalUserId } from '../lib/guestAuth'
