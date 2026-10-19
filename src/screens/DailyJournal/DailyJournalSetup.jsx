@@ -541,13 +541,19 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
           {prompts.map((p, i) => (
             <div key={i} className="mx-dj-setup__input-row">
               <textarea
-                ref={i === 0 ? stepFieldRef : undefined}
+                ref={el => {
+                  /* #1090: высота вопроса — по его тексту (автовысота, как
+                     в «Целях»): у фиксированных 2 строк отступ после
+                     первого вопроса был неровным. */
+                  autoGrowField(el)
+                  if (i === 0) stepFieldRef.current = el
+                }}
                 className="mx-dj-setup__input mx-dj-setup__input--textarea"
                 value={p}
                 onChange={e => updatePrompt(i, e.target.value)}
                 placeholder={`Вопрос ${i + 1}`}
                 maxLength={500}
-                rows={2}
+                rows={1}
                 data-testid={`dj-setup-prompt-${i}`}
               />
               {p.trim() && prompts.length > 1 && (
