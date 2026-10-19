@@ -606,7 +606,7 @@ test('журнал: итоговый экран — одна кнопка «На
   // Кнопка целиком в кадре 375×667 — главное действие без скролла
   const box = await startBtn.boundingBox()
   expect(box.height).toBeGreaterThanOrEqual(44)
-  expect(box.bottom).toBeLessThanOrEqual(667)
+  expect(box.y + box.height).toBeLessThanOrEqual(667)
 
   // Тихие ссылки под кнопкой: «Мои записи» и «Изменить настройку»
   await expect(page.getByTestId('dj-review-entries')).toBeVisible()
