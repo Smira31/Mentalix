@@ -492,7 +492,12 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
             </div>
           ))}
           {!reminders.some(r => !r.trim()) && reminders.length < 5 && (
-            <button type="button" className="mx-dj-setup__add" onClick={addReminder}>
+            <button
+              type="button"
+              className="mx-dj-setup__add"
+              data-testid="dj-setup-add"
+              onClick={addReminder}
+            >
               <Plus size={16} strokeWidth={1.5} /> Добавить
             </button>
           )}
@@ -559,7 +564,12 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
             </div>
           ))}
           {!prompts.some(p => !p.trim()) && prompts.length < 7 && (
-            <button type="button" className="mx-dj-setup__add" onClick={addPrompt}>
+            <button
+              type="button"
+              className="mx-dj-setup__add"
+              data-testid="dj-setup-add-prompt"
+              onClick={addPrompt}
+            >
               <Plus size={16} strokeWidth={1.5} /> Добавить вопрос
             </button>
           )}
