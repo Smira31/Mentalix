@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 import Screen from '../../components/Screen'
 import CapsLabel from '../../components/ui/CapsLabel'
@@ -54,6 +55,51 @@ function wordCount(text) {
   return text.trim().split(/\s+/).filter(Boolean).length
 }
 
+/*
+ * #1090: подтверждение сброса настройки — тихий диалог внизу экрана
+ * («Сбросить настройку? Записи сохранятся.» · «Сбросить» / «Отмена»).
+ */
+function ResetConfirmDialog({ onConfirm, onCancel }) {
+  return createPortal(
+    <div className="fixed inset-0 z-[110] flex items-end justify-center bg-black/70 p-5 sm:items-center">
+      <button
+        type="button"
+        aria-label="Отмена"
+        onClick={onCancel}
+        data-testid="dj-reset-cancel-backdrop"
+        className="absolute inset-0 h-full w-full border-0 bg-transparent"
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="relative z-10 w-full max-w-sm rounded-[28px] border border-cream/10 bg-emerald p-5 shadow-2xl animate-fade-in"
+      >
+        <h2 className="mx-dj-confirm__title">Сбросить настройку?</h2>
+        <p className="mx-dj-confirm__text">Записи сохранятся.</p>
+        <div className="mx-dj-confirm__actions">
+          <button
+            type="button"
+            onClick={onCancel}
+            data-testid="dj-reset-cancel"
+            className="practice-scene__choice min-h-11 flex-1 rounded-full border border-cream/15 bg-cream/5 px-4 py-3 text-[13px] font-semibold text-muted"
+          >
+            Отмена
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            data-testid="dj-reset-confirm"
+            className="practice-scene__choice min-h-11 flex-1 rounded-full border-0 bg-cream px-4 py-3 text-[13px] font-semibold text-emerald-deep"
+          >
+            Сбросить
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
+  )
+}
+
 function setupHasData(setup) {
   if (!setup) return false
   return Boolean(
@@ -97,6 +143,7 @@ export default function DailyJournalFlow({ userId, onClose, reflectionPrompt = n
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState(false)
   const [resetError, setResetError] = useState(false)
+  const [showResetConfirm, setShowResetConfirm] = useState(false)
   const [pendingComplete, setPendingComplete] = useState(false)
   const [hasTodayEntry, setHasTodayEntry] = useState(false)
   const [entriesReturnStage, setEntriesReturnStage] = useState(null)
@@ -458,12 +505,14 @@ export default function DailyJournalFlow({ userId, onClose, reflectionPrompt = n
   }
 
   // ── Reset setup ──
-  async function handleResetSetup() {
-    const confirmed = await platform.showConfirm(
-      'Сбросить цели, напоминания и картинку будущего? Записи журнала останутся.'
-    )
-    if (!confirmed) return
+  // #1090: сброс — только с подтверждением; записи сохраняются
+  function handleResetSetup() {
+    platform.haptic('light')
+    setShowResetConfirm(true)
+  }
 
+  async function confirmResetSetup() {
+    setShowResetConfirm(false)
     platform.haptic('light')
     try {
       const result = await api.dailyJournal.saveSetup(userId, {
@@ -652,8 +701,35 @@ export default function DailyJournalFlow({ userId, onClose, reflectionPrompt = n
 
   // ── Footer ──
   let footerContent = null
+  // #1090: интро — закреплённые внизу белая кнопка «Настроить» и тихая
+  // ссылка «Начать без настройки» под ней
   if (stage === 'intro') {
-    footerContent = null
+    footerContent = (
+      <div className="mx-dj-intro__actions">
+        <button
+          type="button"
+          className="cta-pill mx-dj-intro__cta"
+          data-testid="dj-intro-setup"
+          onClick={() => {
+            platform.haptic('light')
+            setStage('setup')
+          }}
+        >
+          Настроить — 2 минуты
+        </button>
+        <button
+          type="button"
+          className="mx-dj-intro__skip"
+          data-testid="dj-intro-skip"
+          onClick={() => {
+            platform.haptic('light')
+            setStage('stream')
+          }}
+        >
+          Начать без настройки
+        </button>
+      </div>
+    )
   } else if (stage === 'today') {
     footerContent = (
       <div className="mx-dj-today__footer">
@@ -703,17 +779,38 @@ export default function DailyJournalFlow({ userId, onClose, reflectionPrompt = n
       </div>
     )
   } else if (stage === 'review') {
+    /*
+     * #1090: одна закреплённая белая кнопка «Начать запись» (круглая ✓
+     * убрана), под ней — тихие ссылки «Мои записи» и «Изменить настройку».
+     */
     footerContent = (
-      <div className="mx-dj-footer-bar">
-        <RoundNextButton
+      <div className="mx-dj-review__footer">
+        <button
+          type="button"
+          className="cta-pill mx-dj-review__start"
+          data-testid="dj-review-next"
           onClick={() => {
             platform.haptic('light')
             setStage('stream')
           }}
-          icon="check"
-          label="Далее"
-          testId="dj-review-next"
-        />
+        >
+          Начать запись
+        </button>
+        <div className="mx-dj-review__links">
+          <button type="button" data-testid="dj-review-entries" onClick={openEntries}>
+            Мои записи
+          </button>
+          <button
+            type="button"
+            data-testid="dj-review-edit"
+            onClick={() => {
+              platform.haptic('light')
+              setStage('setup')
+            }}
+          >
+            Изменить настройку
+          </button>
+        </div>
       </div>
     )
   } else if (stage === 'stream') {
@@ -809,33 +906,8 @@ export default function DailyJournalFlow({ userId, onClose, reflectionPrompt = n
           </div>
           <h1 className="mx-dj-intro__title">Страница для себя</h1>
           <p className="mx-dj-intro__text">
-            Каждый день: перечитай, кем становишься, выпиши всё из головы и ответь на один вопрос. 5
-            минут.
+            Каждый день 5 минут: перечитай, куда идёшь, выгрузи мысли и ответь на один вопрос.
           </p>
-          <div className="mx-dj-intro__actions">
-            <button
-              type="button"
-              className="cta-pill mx-dj-intro__cta"
-              data-testid="dj-intro-setup"
-              onClick={() => {
-                platform.haptic('light')
-                setStage('setup')
-              }}
-            >
-              Настроить — 2 минуты
-            </button>
-            <button
-              type="button"
-              className="mx-dj-intro__skip"
-              data-testid="dj-intro-skip"
-              onClick={() => {
-                platform.haptic('light')
-                setStage('stream')
-              }}
-            >
-              Начать без настройки
-            </button>
-          </div>
         </div>
       )
     }
@@ -859,12 +931,12 @@ export default function DailyJournalFlow({ userId, onClose, reflectionPrompt = n
           )}
           {setup?.reminders?.filter(r => r.trim()).length > 0 && (
             <div className="mx-dj-review__section">
-              <CapsLabel className="mx-dj-review__label">Кем я становлюсь</CapsLabel>
+              <CapsLabel className="mx-dj-review__label">Каким я хочу быть</CapsLabel>
               {setup.reminders
                 .filter(r => r.trim())
                 .map((r, i) => (
-                  <p key={i} className="mx-dj-review__item">
-                    {r}
+                  <p key={i} className="mx-dj-review__item" data-testid="dj-review-identity-item">
+                    Я — человек, который… {r}
                   </p>
                 ))}
             </div>
@@ -875,11 +947,11 @@ export default function DailyJournalFlow({ userId, onClose, reflectionPrompt = n
             <div className="mx-dj-review__section">
               <CapsLabel className="mx-dj-review__label">Картинка будущего</CapsLabel>
               {setup.vision.scene?.trim() && (
-                <p className="mx-dj-review__item">{setup.vision.scene}</p>
+                <p className="mx-dj-review__item">Что изменилось: {setup.vision.scene}</p>
               )}
               {setup.vision.obstacle?.trim() && (
                 <p className="mx-dj-review__item mx-dj-review__item--muted">
-                  Что может помешать: {setup.vision.obstacle}
+                  Может помешать: {setup.vision.obstacle}
                 </p>
               )}
               {setup.vision.plan?.trim() && (
@@ -897,25 +969,9 @@ export default function DailyJournalFlow({ userId, onClose, reflectionPrompt = n
               </p>
             </div>
           )}
-          <PillButton
-            variant="dark"
-            testId="dj-review-entries"
-            className="mx-dj-review__entries-btn"
-            onClick={openEntries}
-          >
-            Мои записи
-          </PillButton>
           <button
             type="button"
             className="mx-dj-review__edit-link"
-            data-testid="dj-review-edit"
-            onClick={() => setStage('setup')}
-          >
-            Изменить настройку
-          </button>
-          <button
-            type="button"
-            className="mx-dj-review__reset-link"
             data-testid="dj-review-reset"
             onClick={handleResetSetup}
           >
@@ -923,6 +979,12 @@ export default function DailyJournalFlow({ userId, onClose, reflectionPrompt = n
           </button>
           {resetError && (
             <div className="mx-dj-reset-error">Не получилось сбросить, попробуй ещё раз</div>
+          )}
+          {showResetConfirm && (
+            <ResetConfirmDialog
+              onConfirm={confirmResetSetup}
+              onCancel={() => setShowResetConfirm(false)}
+            />
           )}
         </div>
       )
@@ -1041,11 +1103,17 @@ export default function DailyJournalFlow({ userId, onClose, reflectionPrompt = n
     <Screen
       onBack={goBack}
       registerSystemBack={false}
-      scroll={stage === 'intro' || stage === 'review' || stage === 'today'}
+      scroll={stage === 'review' || stage === 'today'}
       fullFrame={stage !== 'intro' && stage !== 'review' && stage !== 'today'}
       footer={footerContent}
       footerClassName={stage === 'complete' ? 'mx-dj-footer--complete' : ''}
-      bodyClassName={stage === 'complete' ? 'mx-dj-complete' : ''}
+      bodyClassName={
+        stage === 'intro'
+          ? 'mx-dj-intro-body'
+          : stage === 'complete'
+            ? 'mx-dj-complete'
+            : ''
+      }
     >
       {renderContent()}
     </Screen>
