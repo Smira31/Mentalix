@@ -176,27 +176,39 @@
   -webkit-line-clamp: 4;
 }
 /* Низкие экраны (375×667 и ниже): сетка 2×2 должна целиком стоять
-   над пилюлями футера. Компактнее круг иконки и вертикальные отступы
-   (токенами), описание — максимум 2 строки с многоточием.
+   над пилюлями футера. Компактнее шапка шторки, круг иконки и
+   вертикальные отступы (токенами), описание — максимум 2 строки
+   с многоточием. С 256px верха сетки и карточками 160px низ сетки
+   на 375×667 — 557px, пилюля футера начинается с 569px: виден весь
+   заголовок и описание нижних карточек.
    На 393×852 и 440×956 правила не срабатывают — вид не меняется. */
 @media (max-height: 700px) {
+  .mx-pinned-sheet__header {
+    padding: 14px 21px 10px;
+    /* Today.css держит min-height 7.8rem при ширине ≤390px —
+       без сбора шапка не сжимается и сетка уходит под пилюлю. */
+    min-height: 0;
+  }
+  .mx-pinned-practices__grid {
+    margin-top: var(--mx-space-1);
+  }
   .mx-pinned-practices__grid .mx-pinned-practice-card {
-    height: 200px;
-    min-height: 200px;
-    padding: var(--mx-space-3) var(--mx-space-2);
+    height: 160px;
+    min-height: 160px;
+    padding: var(--mx-space-2);
   }
   .mx-pinned-practices__grid .mx-pinned-practice-card__main {
     gap: var(--mx-space-1);
   }
   .mx-pinned-practices__grid .mx-pinned-practice-card__main > .mx-pinned-practice-glyph {
-    width: 56px;
-    min-width: 56px;
-    height: 56px;
-    min-height: 56px;
+    width: 48px;
+    min-width: 48px;
+    height: 48px;
+    min-height: 48px;
   }
   .mx-pinned-practices__grid .mx-pinned-practice-card__main > .mx-pinned-practice-glyph svg {
-    width: 34px;
-    height: 34px;
+    width: 28px;
+    height: 28px;
   }
   .mx-pinned-practices__grid .mx-pinned-practice-card__desc {
     -webkit-line-clamp: 2;
