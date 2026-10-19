@@ -9,7 +9,6 @@ import { useBackButton } from '../platform/telegram.hooks'
 import { isLinkedWebWriteBlocked, LINKED_WEB_WRITE_NOTICE } from '../lib/webAuthLimits'
 import { useVisualViewportHeight } from '../lib/visualViewport'
 import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
-import PracticeWritingCanvas from '../components/PracticeWritingCanvas'
 import PracticeListFlow from '../components/practices/PracticeListFlow'
 
 const BREAK_TRIGGERS = ['Стресс', 'Скука', 'Усталость', 'Тревога', 'Компания', 'Импульс', 'Другое']
@@ -47,37 +46,35 @@ function BreakContextSheet({ asceza, onSave, onClose }) {
         className="absolute inset-0 w-full h-full bg-black/70 border-0"
       />
       <div
-        className="mx-practice-sheet relative z-10 w-full max-w-sm max-h-[88dvh] rounded-t-[32px] bg-emerald border border-cream/10 px-[var(--mx-screen-x)] pt-3 pb-8 animate-fade-in flex flex-col overflow-hidden"
+        className="mx-practice-sheet relative z-10 w-full max-w-sm max-h-[88dvh] rounded-t-[32px] bg-emerald border border-cream/10 px-[var(--mx-screen-x)] pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] animate-fade-in flex flex-col overflow-hidden"
         style={viewportHeight ? { maxHeight: `min(88dvh, ${viewportHeight}px)` } : undefined}
       >
-        <div className="shrink-0 w-10 h-1 rounded-full bg-cream/20 mx-auto mb-5" />
-        <div className="shrink-0 flex items-start justify-between gap-4 mb-2">
-          <div>
-            <p className="font-label text-[11px] uppercase tracking-[0.18em] text-gold mb-2">
-              Аскеза
-            </p>
-            <h2 className="font-display text-[22px] leading-tight text-cream">Что произошло?</h2>
-          </div>
+        <div className="shrink-0 w-10 h-1 rounded-full bg-cream/20 mx-auto mb-4" />
+        <div className="shrink-0 flex items-start justify-between gap-4 mb-3">
+          <h2 className="font-display text-[22px] leading-tight text-cream">Что произошло?</h2>
           <button
             onClick={onClose}
             aria-label="Закрыть"
+            data-testid="practice-break-close"
             className="practice-scene__choice w-10 h-10 rounded-full bg-cream/5 border-0 flex items-center justify-center shrink-0"
           >
             <X size={18} className="text-muted" />
           </button>
         </div>
-        <div className="practice-sheet__body">
-          <p className="text-[12px] text-muted leading-relaxed mb-5">
-            Сегодня не получилось: «{asceza.name}». Не ругаем себя — фиксируем контекст, чтобы Mentalix смог
-            увидеть закономерность.
+
+        {/* Скроллруемая середина: описание, чипы, замена */}
+        <div className="practice-sheet__body flex-1 min-h-0 overflow-y-auto">
+          <p className="text-[12px] text-muted leading-relaxed mb-4">
+            Сегодня не получилось: «{asceza.name}». Не ругаем себя — просто отметим, что помешало.
           </p>
           <p className="text-[11px] text-muted mb-2">Что сильнее всего повлияло?</p>
-          <div className="grid grid-cols-2 gap-2 mb-4">
+          <div className="grid grid-cols-2 gap-2 mb-3">
             {BREAK_TRIGGERS.map(item => {
               const active = trigger === item
               return (
                 <button
                   key={item}
+                  data-testid={active ? 'practice-break-trigger-active' : undefined}
                   onClick={() => {
                     platform.haptic('light')
                     setTrigger(item)
@@ -93,30 +90,40 @@ function BreakContextSheet({ asceza, onSave, onClose }) {
               )
             })}
           </div>
-          <label className="block text-[11px] text-muted mb-2">Хочешь добавить пару слов?</label>
-          <PracticeWritingCanvas
-            value={note}
-            onChange={setNote}
-            question="Хочешь добавить пару слов?"
-            placeholder="Например: вернулся после тяжёлого дня и автоматически открыл Reels"
-            ariaLabel="Комментарий"
-            autoFocus
-            submitLabel="Сохранить"
-            submitDisabled={!trigger || saving}
-            onSubmit={submit}
-          />
           {asceza.replacement && (
-            <div className="mt-4 rounded-2xl bg-mint/5 border border-mint/10 px-4 py-3">
+            <div className="rounded-2xl bg-mint/5 border border-mint/10 px-4 py-3 mb-1">
               <p className="text-[11px] text-muted mb-1">Ты заранее выбрал замену</p>
-              <p className="text-[13px] text-cream">{asceza.replacement}</p>
+              <p className="text-[13px] text-cream">«{asceza.replacement}»</p>
             </div>
           )}
+        </div>
+
+        {/* Низ: поле «Пару слов» + кнопка «Сохранить» — всегда видны */}
+        <div className="shrink-0 pt-3">
+          <textarea
+            value={note}
+            onChange={e => setNote(e.target.value)}
+            placeholder="Пару слов, если хочешь"
+            aria-label="Пару слов"
+            rows={2}
+            data-testid="practice-break-note"
+            className="mx-practice-break-note w-full resize-none rounded-2xl bg-cream/5 px-4 py-3 text-[13px] text-cream placeholder:text-faint leading-relaxed border-0 outline-none max-h-[88px] overflow-y-auto"
+            style={{ fieldSizing: 'content' }}
+          />
           {error && (
-            <p role="alert" className="text-[12px] text-amber-200 mt-3 leading-relaxed">
+            <p role="alert" className="text-[12px] text-amber-200 mt-2 leading-relaxed">
               {error}
             </p>
           )}
-          <p className="text-[11px] text-center text-faint mt-3">Это не провал. Заметь, что помешало — так проще в следующий раз.</p>
+          <button
+            type="button"
+            data-testid="practice-break-submit"
+            onClick={submit}
+            disabled={!trigger || saving}
+            className="cta-pill w-full py-4 text-[16px] mt-3 disabled:opacity-35"
+          >
+            {saving ? 'Сохраняю...' : 'Сохранить'}
+          </button>
         </div>
       </div>
     </div>,
