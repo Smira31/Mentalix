@@ -37,9 +37,11 @@ test('Кадр done сохраняет ширину и верхнюю линию
     jsxSource.indexOf('const HEADER_VIEW_LABELS')
   )
   assert.doesNotMatch(introSource, /frame=|mx-hj-hero--cropped/)
+  // Свободная высота высоких экранов уходит в растянутый контейнер кадра
+  // (grow), чтобы «Продолжить» не отрывалась от итога большим зазором.
   assert.match(
     cssSource,
-    /\.mx-hj-step-complete \.mx-hj-hero--cropped\.mx-hj-hero--compact \{\s*flex: 0 1 auto;\s*aspect-ratio: var\(--mx-hj-frame-ratio\);\s*max-height: none;/
+    /\.mx-hj-step-complete \.mx-hj-hero--cropped\.mx-hj-hero--compact \{\s*flex: 1 1 auto;\s*aspect-ratio: var\(--mx-hj-frame-ratio\);\s*max-height: none;/
   )
   assert.match(
     cssSource,
