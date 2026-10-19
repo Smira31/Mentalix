@@ -381,6 +381,29 @@
   font-size: var(--mx-read-read);
   line-height: 1.5;
   color: rgb(var(--c-muted));
+  /* Решение 19.10: подпись «Я — человек, который…» — один раз над списком */
+  margin-bottom: var(--mx-space-2);
+}
+
+/* Решение 19.10: тихая строка под единственным вопросом шага 4 */
+.mx-dj-setup__prompts-hint {
+  margin: 0 0 var(--mx-space-2);
+  font-size: var(--mx-read-note);
+  line-height: 1.45;
+  color: rgb(var(--c-muted));
+}
+
+/*
+ * Решение 19.10 (клавиатура): пока поле в фокусе и клавиатура открыта,
+ * футер с круглой кнопкой поднимается над клавиатурой — тот же приём,
+ * что и в PracticeWritingCanvas (шторка «Что произошло?» у аскез).
+ */
+.mx-dj-footer-bar--keyboard {
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: 80;
+  padding: 0 var(--mx-screen-x);
 }
 
 /* ── Setup: подсказка подэкрана «Картинка будущего» (#1090) ── */
@@ -441,6 +464,18 @@
   padding-bottom: calc(var(--mx-btn-round-h) + var(--mx-space-4) + var(--app-safe-bottom));
 }
 
+/* Решение 19.10: JournalIntroArt маленьким над датой (~72–88px) */
+.mx-dj-today__art {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--mx-space-2);
+}
+
+.mx-dj-today__art svg {
+  width: auto;
+  height: 80px;
+}
+
 .mx-dj-today__label {
   display: block;
   margin-bottom: var(--mx-space-2);
@@ -492,6 +527,30 @@
 .mx-dj-today__append-btn {
   width: 100%;
   text-align: center;
+}
+
+/* Решение 19.10: тихие ссылки в строку под кнопкой «Готово» —
+   стиль как в карточке аскезы (PracticeDetail quiet action):
+   приглушённый текст без подчёркивания, разделитель «·». */
+.mx-dj-today__links {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--mx-space-2);
+}
+
+.mx-dj-today__links button {
+  background: none;
+  border: 0;
+  padding: var(--mx-space-1) 0;
+  color: rgb(var(--c-muted));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
+  cursor: pointer;
+}
+
+.mx-dj-today__links-sep {
+  color: rgb(var(--c-faint));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
 }
 
 /* Вторичные действия «Запись сохранена»: две заметные кнопки над «Дописать» */
