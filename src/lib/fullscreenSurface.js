@@ -4,6 +4,8 @@ import { getFullscreenSnapshot, subscribeFullscreen } from './tgFullscreen'
 import {
   getKeyboardViewportHeight,
   isTelegramRuntime,
+  KEYBOARD_MIN_INSET,
+  readKeyboardInset,
   useVisualViewportGeometry,
 } from './visualViewport'
 import { isPreviewDemoMode } from './demoMode'
@@ -148,7 +150,15 @@ function useDemoFrameBox(enabled) {
   return box
 }
 
-export function useFullscreenSurface({ fullFrame = false } = {}) {
+/*
+ * keyboardStrategy:
+ *  - 'resize' (по умолчанию) — экран умещается в видимую часть, как раньше:
+ *    при открытой клавиатуре оболочка пересобирается под каждое событие;
+ *  - 'lift' — клавиатура раскладку не пересобирает. Оболочка держит стабильную
+ *    высоту, а composer и низ ленты поднимает transform'ом сам экран
+ *    (Conversation.css, переменная --mx-keyboard-inset).
+ */
+export function useFullscreenSurface({ fullFrame = false, keyboardStrategy = 'resize' } = {}) {
   const viewportGeometry = useVisualViewportGeometry()
   const portalTarget = getFullscreenPortalTarget()
   const demoMode = isPreviewDemoMode()
@@ -160,20 +170,43 @@ export function useFullscreenSurface({ fullFrame = false } = {}) {
   const visualViewportHeight = viewportGeometry?.height ?? null
   const stableViewportHeight = viewportGeometry?.stableHeight ?? null
   const viewportOffsetTop = viewportGeometry?.offsetTop ?? 0
+  const windowHeight = typeof window === 'undefined' ? null : Math.round(window.innerHeight)
   const keyboardOpen =
     visualViewportHeight !== null &&
-    typeof window !== 'undefined' &&
-    window.innerHeight - visualViewportHeight > 80
+    windowHeight !== null &&
+    windowHeight - visualViewportHeight > KEYBOARD_MIN_INSET
+
+  /*
+   * MXL-KEYBOARD-MOTION-001: в режиме 'lift' клавиатура НЕ пересобирает
+   * раскладку экрана. Высота оболочки остаётся стабильной (её анимация
+   * клавиатуры не меняет), а подъём composer'а и низа ленты считает сам экран
+   * из своего инсета — одним transform'ом с переходом 280 ms. Промежуточные
+   * события visualViewport/viewportChanged тогда не перестраивают layout, и
+   * рывков на них нет.
+   */
+  const liftKeyboard = keyboardStrategy === 'lift'
+  const keyboardInset = liftKeyboard
+    ? Math.round(
+        readKeyboardInset({
+          stableHeight: stableViewportHeight,
+          visualHeight: visualViewportHeight,
+          windowHeight,
+        }) / scale
+      )
+    : 0
+  const keyboardLifted = liftKeyboard ? keyboardInset > 0 : keyboardOpen
   const telegram = isTelegramRuntime()
   const shellHeight = telegram
-    ? keyboardOpen
+    ? keyboardOpen && !liftKeyboard
       ? getKeyboardViewportHeight({
           isTelegram: true,
           stableHeight: stableViewportHeight,
           visualHeight: visualViewportHeight,
         })
       : stableViewportHeight || visualViewportHeight
-    : visualViewportHeight
+    : liftKeyboard
+      ? windowHeight || visualViewportHeight
+      : visualViewportHeight
 
   /*
    * В demo-рамке shell обязан заполнять именно рамку телефона:
@@ -242,7 +275,7 @@ export function useFullscreenSurface({ fullFrame = false } = {}) {
      * и её отступ только выталкивал контент вверх на время набора — рывок при
      * каждом фокусе. Пока клавиатура открыта, инсет снимается.
      */
-    paddingBottom: keyboardOpen ? '0px' : 'var(--app-safe-bottom)',
+    paddingBottom: keyboardLifted ? '0px' : 'var(--app-safe-bottom)',
 
     height: frameFull
       ? `${demoFrameHeight}px`
@@ -256,6 +289,7 @@ export function useFullscreenSurface({ fullFrame = false } = {}) {
   return {
     style,
     tgFullscreen,
-    keyboardOpen,
+    keyboardOpen: keyboardLifted,
+    keyboardInset,
   }
 }
