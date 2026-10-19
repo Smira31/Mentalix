@@ -20,8 +20,8 @@ import PracticeSignScreen from './practices/PracticeSignScreen'
 import PracticeWeek from './practices/PracticeWeek'
 import './PracticeDetail.css'
 
-function AccordionRow({ testId, label, children }) {
-  const [open, setOpen] = useState(false)
+function AccordionRow({ testId, label, children, defaultOpen = false }) {
+  const [open, setOpen] = useState(defaultOpen)
   if (!children) return null
   return (
     <div className="mx-practice-detail__accordion">
@@ -226,7 +226,7 @@ export default function PracticeDetail({
 
       {/* Карточка «Зачем»: смысл практики и необязательные строки «+ …» */}
       <div className="mx-practice-detail__accordions">
-        <AccordionRow testId="practice-accordion-why" label="Зачем">
+        <AccordionRow testId="practice-accordion-why" label="Зачем" defaultOpen>
           {why && <p>{why}</p>}
         </AccordionRow>
 
@@ -261,7 +261,7 @@ export default function PracticeDetail({
           {note && <p>{note}</p>}
         </AccordionRow>
 
-        {!isRitual && wording.guide && (
+        {wording.guide && (
           <AccordionRow testId="practice-accordion-guide" label="Как это работает">
             <p>Срок — {wording.guide.duration}.</p>
             <p>Отметка — {wording.guide.markDay}.</p>
