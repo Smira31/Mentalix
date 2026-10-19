@@ -179,6 +179,8 @@ export default function JournalTextarea({
   keepFocusOnSubmit = false,
   submitIcon = 'check',
   submitIconCrossfade = false,
+  // Символ вперёд для кроссфейда «✕» ↔ «›»: у чек-ина вперёд ведёт шеврон.
+  submitIconForward = 'arrow',
   desktopInline = false,
   writingCanvas = false,
   guidedFlow = false,
@@ -448,6 +450,7 @@ export default function JournalTextarea({
                 testId={submitTestId}
                 icon={submitIcon}
                 crossfade={submitIconCrossfade}
+                forwardIcon={submitIconForward}
                 onClick={() => {
                   if (!keepFocusOnSubmit) {
                     editorRef.current?.blur()
