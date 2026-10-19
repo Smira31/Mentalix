@@ -68,7 +68,7 @@ function BreakContextSheet({ asceza, onSave, onClose }) {
         </div>
         <div className="practice-sheet__body">
           <p className="text-[12px] text-muted leading-relaxed mb-5">
-            Не получилось держать «{asceza.name}». Не ругаем себя — фиксируем контекст, чтобы Mentalix смог
+            Сегодня не получилось: «{asceza.name}». Не ругаем себя — фиксируем контекст, чтобы Mentalix смог
             увидеть закономерность.
           </p>
           <p className="text-[11px] text-muted mb-2">Что сильнее всего повлияло?</p>
