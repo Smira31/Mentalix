@@ -3,9 +3,11 @@ import {
   backToToday,
   closeCheckin,
   closeStepButton,
+  completeCheckin,
   confirmCloseWithDraft,
   dayFocusOptionStep,
   edgeSwipeBack,
+  expectForwardSymbol,
   nextStepButton,
   openDayCard,
   scaleStep,
@@ -24,7 +26,9 @@ import {
  *  — полностью стёртый текст не воскрешает старый черновик;
  *  — успешное сохранение не даёт крестику или отложенной записи
  *    создать черновик заново;
- *  — сбой API сохраняет текст в черновике.
+ *  — сбой API сохраняет текст в черновике;
+ *  — единый символ вперёд: шеврон «›» без древка стрелки на шагах утра и вечера (#1078);
+ *  — экран завершения объясняет добровольность оценки и уже состоявшееся сохранение (#1078).
  *
  * Даты — только относительно текущего дня (AGENTS.md): часы фиксируются
  * на «сегодня 08:00 / 19:00» локального времени. `clock.setFixedTime` меняет
@@ -512,5 +516,140 @@ test.describe('Check-in navigation consistency (UX audit pack 1)', () => {
     await expect.poll(() => readStorage(page, eveningDraftKey())).not.toBeNull()
 
     await context.close()
+  })
+
+  /*
+   * #1078, замечание 1: у стрелки «→» было лишнее горизонтальное древко,
+   * шаг выбивался из общего языка интерфейса. На всех шагах вперёд ведёт один
+   * символ — шеврон «›» (DESIGN_SYSTEM.md §5.2); прежняя стрелка не всплывает
+   * и на кроссфейде «✕» ↔ «›». Утро идёт через CheckInNextControls, вечерний
+   * урок — через редактор с тем же кроссфейдом: проверяем оба пути.
+   */
+  test('шаги утра и вечера: вперёд ведёт шеврон «›», стрелки с древком нет', async ({
+    browser,
+    baseURL,
+  }) => {
+    const fixtures = buildFixtureRouter()
+    const { context, page } = await openPage(browser, baseURL, fixtures, 8)
+
+    await openDayCard(page, 'morning')
+
+    // ── Первая шкала: без ответа «✕», после ответа — шеврон ──
+    await expect(page.getByRole('heading', { name: 'Как ты сейчас?' })).toBeVisible()
+    await expect(closeStepButton(page)).toBeVisible()
+    await page.locator('[data-testid="checkin-scale-option"][data-level="3"]').click()
+    await expectForwardSymbol(page)
+    await nextStepButton(page).click()
+
+    // ── Остальные шкалы: тот же шеврон после каждого ответа ──
+    for (const heading of ['Как ты спал?', 'Сколько в тебе энергии?', 'Уровень концентрации']) {
+      await expect(page.getByRole('heading', { name: heading })).toBeVisible()
+      await expect(closeStepButton(page)).toBeVisible()
+      await page.locator('[data-testid="checkin-scale-option"][data-level="3"]').click()
+      await expectForwardSymbol(page)
+      await nextStepButton(page).click()
+    }
+
+    // ── Фокус дня: пока плитка не выбрана — «✕», после выбора — шеврон ──
+    await expect(page.getByRole('heading', { name: 'Главный фокус на сегодня?' })).toBeVisible()
+    await expect(page.locator('[data-testid="checkin-next"]')).toHaveAttribute('data-icon', 'x')
+    await page.locator('[data-testid="checkin-day-focus-option"][data-value="Работа"]').click()
+    await expectForwardSymbol(page)
+    await nextStepButton(page).click()
+
+    // ── Текстовый шаг: вперёд ведёт галочка, стрелки на экране нет ──
+    await expect(page.locator('[data-testid="checkin-complete"]')).toBeVisible()
+    await expect(page.locator('[data-testid="checkin-complete"]')).toHaveAttribute(
+      'data-icon',
+      'check'
+    )
+    await expect(page.locator('.mx-demo-checkin svg path[d="M5 12h14"]')).toHaveCount(0)
+
+    await context.close()
+
+    // ── Вечерний урок: пустой — «✕», с текстом — тот же шеврон ──
+    const evening = await openPage(browser, baseURL, buildFixtureRouter(), 19)
+    await openDayCard(evening.page, 'evening')
+    await goToEveningLesson(evening.page)
+    await expect(closeStepButton(evening.page)).toBeVisible()
+    await evening.page.locator('[data-testid="checkin-text-input"]').fill('Урок дня')
+    await expectForwardSymbol(evening.page)
+    await expect(evening.page.locator(`${EVENING_SURFACE} svg path[d="M5 12h14"]`)).toHaveCount(0)
+
+    await evening.context.close()
+  })
+
+  /*
+   * #1078, замечание 2: на экране завершения было непонятно, обязательна ли
+   * оценка и когда сохраняется запись. Пояснение под плитками говорит прямо:
+   * оценка по желанию, запись уже сохранена. Выход без оценки ничего не теряет
+   * — повторный вход открывает сохранённую запись, а не черновик.
+   */
+  test('экран завершения: пояснение к оценке видно, без оценки запись уже сохранена', async ({
+    browser,
+    baseURL,
+  }) => {
+    const fixtures = buildFixtureRouter()
+    const { context, page } = await openPage(browser, baseURL, fixtures, 8)
+    const viewportHeight = page.viewportSize().height
+
+    await openDayCard(page, 'morning')
+    await goToMorningNote(page)
+    await page.locator('[data-testid="checkin-text-input"]').fill('Запись без оценки')
+    await completeCheckin(page)
+
+    await expect(page.getByRole('heading', { name: /Ты прошёл утренний чек-ин/ })).toBeVisible()
+    expect(fixtures.checkinPosts).toBe(1)
+
+    // ── Пояснение стоит у плиток оценки и читается целиком ──
+    const hint = page.locator('[data-testid="checkin-feedback-hint"]')
+    await expect(hint).toBeVisible()
+    await expect(hint).toHaveText('Оценка по желанию — чек-ин уже сохранён.')
+    const hintBox = await hint.boundingBox()
+    expect(hintBox.y + hintBox.height).toBeLessThanOrEqual(viewportHeight)
+
+    // ── Оценка не тронута — и запись уже сохранена ──
+    await expect(
+      page.locator('[data-testid="checkin-feedback-option"][aria-pressed="true"]')
+    ).toHaveCount(0)
+
+    await backToToday(page)
+    await expect(page.locator('[data-testid="today-card-morning"]')).toBeVisible()
+    expect(fixtures.checkinPosts).toBe(1)
+
+    // ── Повторный вход открывает сохранённую запись: оценка не была обязательной ──
+    await openDayCard(page, 'morning')
+    await expect(page.getByText('Запись без оценки')).toBeVisible()
+    expect(await readStorage(page, morningDraftKey())).toBeNull()
+
+    await context.close()
+
+    // ── Вечерний разбор: своя фраза пояснения, запись тоже уже сохранена ──
+    const eveningFixtures = buildFixtureRouter()
+    const evening = await openPage(browser, baseURL, eveningFixtures, 19)
+    const eveningViewportHeight = evening.page.viewportSize().height
+
+    await openDayCard(evening.page, 'evening')
+    await goToEveningLesson(evening.page)
+    const eveningInput = evening.page.locator('[data-testid="checkin-text-input"]')
+    await eveningInput.fill('Фактический результат')
+    await nextStepButton(evening.page).click()
+    await eveningInput.fill('Что было трудно')
+    await nextStepButton(evening.page).click()
+    await eveningInput.fill('Вывод дня')
+    await evening.page.locator('[data-testid="checkin-next"]').click()
+
+    await expect(
+      evening.page.getByRole('heading', { name: 'Ты завершил разбор дня.' })
+    ).toBeVisible()
+    expect(eveningFixtures.checkinPosts).toBe(1)
+
+    const eveningHint = evening.page.locator('[data-testid="checkin-feedback-hint"]')
+    await expect(eveningHint).toBeVisible()
+    await expect(eveningHint).toHaveText('Оценка по желанию — разбор дня уже сохранён.')
+    const eveningHintBox = await eveningHint.boundingBox()
+    expect(eveningHintBox.y + eveningHintBox.height).toBeLessThanOrEqual(eveningViewportHeight)
+
+    await evening.context.close()
   })
 })

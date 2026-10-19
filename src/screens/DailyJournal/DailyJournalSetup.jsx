@@ -74,6 +74,18 @@ const REMINDER_TILES = [
   { label: 'Вечером', time: '21:00' },
 ]
 
+/*
+ * #1081 (MXL-QA-008): «Цели» и «Кем я становлюсь» — длинная строка
+ * переносится аккуратно, а не уезжает в горизонтальный скролл <input>.
+ * Поле — textarea с автовысотой: высота пересчитывается при каждом рендере
+ * (контролируемое значение) и при вводе.
+ */
+function autoGrowField(el) {
+  if (!el) return
+  el.style.height = 'auto'
+  el.style.height = `${el.scrollHeight}px`
+}
+
 export default function DailyJournalSetup({ userId, initialSetup, onComplete, onBack }) {
   const [stepIndex, setStepIndex] = useState(0)
   const [visionSubStep, setVisionSubStep] = useState(0)
@@ -269,10 +281,13 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
           <CapsLabel className="mx-dj-setup__step-label">{step.label}</CapsLabel>
           <JournalField question={step.title} hint={step.hint} className="mx-dj-setup__field-group" />
           {goals.map((g, i) => (
-            <input
+            <textarea
               key={i}
-              ref={i === 0 ? stepFieldRef : undefined}
-              type="text"
+              ref={el => {
+                autoGrowField(el)
+                if (i === 0) stepFieldRef.current = el
+              }}
+              rows={1}
               className="mx-dj-setup__input"
               value={g}
               onChange={e => updateGoal(i, e.target.value)}
@@ -292,9 +307,12 @@ export default function DailyJournalSetup({ userId, initialSetup, onComplete, on
           <JournalField question={step.title} hint={step.hint} className="mx-dj-setup__field-group" />
           {reminders.map((r, i) => (
             <div key={i} className="mx-dj-setup__input-row">
-              <input
-                ref={i === 0 ? stepFieldRef : undefined}
-                type="text"
+              <textarea
+                ref={el => {
+                  autoGrowField(el)
+                  if (i === 0) stepFieldRef.current = el
+                }}
+                rows={1}
                 className="mx-dj-setup__input"
                 value={r}
                 onChange={e => updateReminder(i, e.target.value)}

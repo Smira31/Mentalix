@@ -158,8 +158,14 @@ export default function DailyJournalFlow({ userId, onClose, reflectionPrompt = n
     flushingRef.current = true
     try {
       const entries = await api.dailyJournal.entries(userId, { limit: 50 })
-      if (entries.items?.some(e => e.date === date)) {
+      const existing = entries.items?.find(e => e.date === date)
+      if (existing) {
+        // Запись уже на сервере (POST успел, ответ потерялся на сети) —
+        // снимаем «Не отправлено», иначе статус висит после успешной отправки.
         pendingRef.current = false
+        setSaveError(false)
+        setEntryId(existing.id)
+        setHasTodayEntry(true)
         saveDailyJournalDraft(userId, date, { ...draft, pendingSave: false })
         return
       }
@@ -758,11 +764,11 @@ export default function DailyJournalFlow({ userId, onClose, reflectionPrompt = n
             СЕГОДНЯ · {formatRussianDate(todayDate)}
           </CapsLabel>
           <h2 className="mx-dj-today__title">
-            {saveError && !entryId ? 'Запись не отправлена' : 'Запись сохранена'}
+            {saveError && !entryId ? 'Сохранено на устройстве' : 'Запись сохранена'}
           </h2>
           {saveError && !entryId && (
             <div className="mx-dj-save-error" data-testid="dj-today-unsent">
-              Не отправлено — отправим, когда появится связь
+              Отправим на сервер, когда появится связь — запись не потеряется
             </div>
           )}
           {streamText.trim() && (
@@ -973,10 +979,17 @@ export default function DailyJournalFlow({ userId, onClose, reflectionPrompt = n
               )
             }
             title={
-              <>
-                <strong>Запись</strong>
-                <span>сохранена.</span>
-              </>
+              saveError ? (
+                <>
+                  <strong>Сохранено</strong>
+                  <span>на устройстве.</span>
+                </>
+              ) : (
+                <>
+                  <strong>Запись</strong>
+                  <span>сохранена.</span>
+                </>
+              )
             }
             datePill={
               dayNumber ? (
@@ -999,7 +1012,7 @@ export default function DailyJournalFlow({ userId, onClose, reflectionPrompt = n
           />
           {saveError && (
             <div className="mx-dj-save-error" data-testid="dj-save-error">
-              Не отправлено — отправим, когда появится связь
+              Отправим на сервер, когда появится связь — запись не потеряется
             </div>
           )}
         </>

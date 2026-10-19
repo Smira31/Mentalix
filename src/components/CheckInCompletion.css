@@ -104,6 +104,18 @@
   line-height: 21px;
 }
 
+/* Пояснение к оценке (#1078): добровольность и уже состоявшееся сохранение.
+   Строка стоит под плитками, у самой пилюли «Сохранить и выйти». */
+.mx-completion__feedback .mx-completion__feedback-hint {
+  max-width: 300px;
+  margin: 12px auto 0;
+  color: rgb(var(--c-muted));
+  /* MXL-TYPE-READABLE-001: пояснение к оценке — вторичное, 13 px. */
+  font-size: var(--mx-read-caption);
+  font-weight: 400;
+  line-height: 18px;
+}
+
 /* Плитки отзывов: 96×120, радиус 20, фон #111, тонкая рамка */
 .mx-completion__choices {
   display: flex;
@@ -263,5 +275,8 @@
   }
   .mx-completion__feedback p {
     margin-bottom: 12px;
+  }
+  .mx-completion__feedback .mx-completion__feedback-hint {
+    margin-top: 8px;
   }
 }
