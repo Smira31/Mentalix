@@ -55,7 +55,16 @@ export const HERO_JOURNEY_TRIALS = [
     doneSummary:
       'Планы остаются неясными, зато появилась опора: одно действие, которое в твоих руках.',
     doneTeaser: 'Дальше: время. Когда «потом» незаметно становится «поздно».',
-    image: { enter: uncertaintyEnter, done: uncertaintyDone, overlap: 0.08 },
+    image: {
+      enter: uncertaintyEnter,
+      done: uncertaintyDone,
+      /* Видимый кадр (пиксели исходника): пустое «небо» сверху срезано. */
+      frame: {
+        enter: { width: 1200, height: 585 },
+        done: { width: 1170, height: 703 },
+      },
+      overlap: 0.08,
+    },
   },
   {
     id: 'temporality',
@@ -71,7 +80,12 @@ export const HERO_JOURNEY_TRIALS = [
     doneTitle: '«Потом» стало «на этой неделе».',
     doneSummary: 'Названо, что откладывалось, и выбрано, что сделать сейчас.',
     doneTeaser: 'Дальше: выбор. Когда вариантов столько, что не выбираешь ни один.',
-    image: { enter: temporalityEnter, done: temporalityDone, overlap: 0.08 },
+    image: {
+      enter: temporalityEnter,
+      done: temporalityDone,
+      frame: { done: { width: 1170, height: 836 } },
+      overlap: 0.08,
+    },
   },
   {
     id: 'choice',
@@ -87,7 +101,12 @@ export const HERO_JOURNEY_TRIALS = [
     doneTitle: 'Один вопрос закрыт.',
     doneSummary: 'Достаточно хорошего решения. Идеальное искать не нужно.',
     doneTeaser: 'Дальше: внимание. Когда берёшься за всё и ничего не доводишь до конца.',
-    image: { enter: choiceEnter, done: choiceDone, overlap: 0.08 },
+    image: {
+      enter: choiceEnter,
+      done: choiceDone,
+      frame: { enter: { width: 1200, height: 717 } },
+      overlap: 0.08,
+    },
   },
   {
     id: 'abundance',
@@ -104,7 +123,15 @@ export const HERO_JOURNEY_TRIALS = [
     doneTitle: 'Одно дело получило всё внимание.',
     doneSummary: 'Остальное подождёт. Так дела и доводятся до конца.',
     doneTeaser: 'Дальше: тело. Оно сообщает о проблемах раньше, чем успеваешь заметить.',
-    image: { enter: abundanceEnter, done: abundanceDone, overlap: 0.08 },
+    image: {
+      enter: abundanceEnter,
+      done: abundanceDone,
+      frame: {
+        enter: { width: 1200, height: 669 },
+        done: { width: 1170, height: 804 },
+      },
+      overlap: 0.08,
+    },
   },
   {
     id: 'body',
@@ -122,7 +149,15 @@ export const HERO_JOURNEY_TRIALS = [
     doneTitle: 'Тело услышано.',
     doneSummary: 'Одна забота о теле, и оно ответит спокойнее. Слушать его можно каждый день.',
     doneTeaser: 'Дальше: телефон. Пальцы листают сами, а зачем, неясно.',
-    image: { enter: bodyEnter, done: bodyDone, overlap: 0.12 },
+    image: {
+      enter: bodyEnter,
+      done: bodyDone,
+      frame: {
+        enter: { width: 780, height: 473 },
+        done: { width: 780, height: 478 },
+      },
+      overlap: 0.12,
+    },
   },
   {
     id: 'phone',
@@ -172,6 +207,10 @@ export const HERO_JOURNEY_TRIALS = [
       enter: digitalAvatarEnter,
       done: digitalAvatarDone,
       focus: '45% 40%',
+      frame: {
+        enter: { width: 1200, height: 720 },
+        done: { width: 1170, height: 824 },
+      },
       overlap: 0.12,
       compact: true,
     },
@@ -257,7 +296,16 @@ export const HERO_JOURNEY_TRIALS = [
     doneTitle: 'Одна опора названа.',
     doneSummary: 'Одна опора названа вслух. С неё можно строить дальше.',
     doneTeaser: 'Дальше: сценарий. Когда жизнь идёт по заданным рельсам.',
-    image: { enter: lostSupportsEnter, done: lostSupportsDone, focus: '50% 40%', overlap: 0.08 },
+    image: {
+      enter: lostSupportsEnter,
+      done: lostSupportsDone,
+      focus: '50% 40%',
+      frame: {
+        enter: { width: 1200, height: 622 },
+        done: { width: 1170, height: 754 },
+      },
+      overlap: 0.08,
+    },
   },
   {
     id: 'age-crises',
@@ -273,7 +321,16 @@ export const HERO_JOURNEY_TRIALS = [
     doneTitle: 'Появилось своё.',
     doneSummary: 'Одно «моё» получило шаг. Сценарий начинает становиться твоим.',
     doneTeaser: 'Дальше: зачем. Когда старых ответов больше нет.',
-    image: { enter: ageCrisesEnter, done: ageCrisesDone, focus: '55% 40%', overlap: 0.12 },
+    image: {
+      enter: ageCrisesEnter,
+      done: ageCrisesDone,
+      focus: '55% 40%',
+      frame: {
+        enter: { width: 1200, height: 632 },
+        done: { width: 1170, height: 807 },
+      },
+      overlap: 0.12,
+    },
   },
   {
     id: 'meaning',
@@ -290,7 +347,16 @@ export const HERO_JOURNEY_TRIALS = [
     doneTitle: 'Одно «зачем» найдено.',
     doneSummary: 'Оно маленькое, но своё. С такого и начинаются большие смыслы.',
     doneTeaser: 'Дальше: основа. Что держит всё вместе.',
-    image: { enter: meaningEnter, done: meaningDone, focus: '45% 35%', overlap: 0.08 },
+    image: {
+      enter: meaningEnter,
+      done: meaningDone,
+      focus: '45% 35%',
+      frame: {
+        enter: { width: 1200, height: 645 },
+        done: { width: 1170, height: 790 },
+      },
+      overlap: 0.08,
+    },
   },
   {
     id: 'self-assembly',
