@@ -146,7 +146,7 @@ test('журнал: настройка — 3 подэкрана картинки
   await expect(page.getByTestId('dj-setup-vision-scene')).toBeVisible()
   // Пусто → ✕ = назад на шаг 2
   await page.getByTestId('dj-setup-next').click()
-  await expect(page.locator('.mx-dj-setup__step-label')).toHaveText('Шаг 2 из 5 · Кем я становлюсь')
+  await expect(page.locator('.mx-dj-setup__step-label')).toHaveText('Шаг 2 из 5 · Каким я хочу быть')
   // Назад на шаг 3
   await page.getByTestId('dj-setup-next').click()
   await expect(page.locator('.mx-dj-setup__step-label')).toHaveText('Шаг 3 из 5 · Картинка будущего · 1/3')
@@ -573,7 +573,7 @@ test('журнал: «+ Добавить» — новая пустая стро�
 test('журнал: итоговый экран — одна кнопка «Начать запись» без скролла на 375×667', async ({
   page,
 }) => {
-  test.use({ viewport: { width: 375, height: 667 } })
+  await page.setViewportSize({ width: 375, height: 667 })
   await page.goto('/?demo=1&tab=practices')
 
   await expect(page.getByTestId('journal-open-cta')).toBeVisible()
@@ -620,7 +620,7 @@ test('журнал: итоговый экран — одна кнопка «На
 })
 
 test('журнал: сброс настройки только через подтверждение', async ({ page }) => {
-  test.use({ viewport: { width: 375, height: 667 } })
+  await page.setViewportSize({ width: 375, height: 667 })
   await page.goto('/?demo=1&tab=practices')
 
   await expect(page.getByTestId('journal-open-cta')).toBeVisible()
