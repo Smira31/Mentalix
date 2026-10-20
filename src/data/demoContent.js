@@ -10,9 +10,11 @@
  * Главы II–IV показываются как закрытые с подписью «Полная версия — в Telegram».
  * В НЕ-демо режиме эти данные не используются — всё приходит с сервера.
  */
-import { resolveHeroImage } from './heroJourneyImages'
-import { HERO_JOURNEY_CHAPTERS } from './heroJourney'
-import cover from '../assets/hero-journey/course-cover@2x.webp'
+import { HERO_JOURNEY_CHAPTERS } from './heroJourney.js'
+
+// Картинки здесь — строки-ключи (как и в серверных данных), а не импортированные
+// модули: словарь src/data/heroJourneyImages.js подключает heroJourneyContent.js,
+// чтобы этот файл оставался чистым модулем данных (его читают unit-тесты).
 
 // ── Шаги главы I (с полными текстами) ──
 
@@ -33,8 +35,8 @@ const DEMO_TRIALS = [
       'Планы остаются неясными, зато появилась опора: одно действие, которое в твоих руках.',
     doneTeaser: 'Дальше: время. Когда «потом» незаметно становится «поздно».',
     image: {
-      enter: resolveHeroImage('uncertainty-enter'),
-      done: resolveHeroImage('uncertainty-done'),
+      enter: 'uncertainty-enter',
+      done: 'uncertainty-done',
       frame: { done: { top: 197, width: 1170, height: 703 } },
       overlap: 0.08,
     },
@@ -54,8 +56,8 @@ const DEMO_TRIALS = [
     doneSummary: 'Названо, что откладывалось, и выбрано, что сделать сейчас.',
     doneTeaser: 'Дальше: выбор. Когда вариантов столько, что не выбираешь ни один.',
     image: {
-      enter: resolveHeroImage('temporality-enter'),
-      done: resolveHeroImage('temporality-done'),
+      enter: 'temporality-enter',
+      done: 'temporality-done',
       frame: { done: { top: 64, width: 1170, height: 836 } },
       overlap: 0.08,
     },
@@ -75,8 +77,8 @@ const DEMO_TRIALS = [
     doneSummary: 'Достаточно хорошего решения. Идеальное искать не нужно.',
     doneTeaser: 'Дальше: внимание. Когда берёшься за всё и ничего не доводишь до конца.',
     image: {
-      enter: resolveHeroImage('choice-enter'),
-      done: resolveHeroImage('choice-done'),
+      enter: 'choice-enter',
+      done: 'choice-done',
       frame: { done: { top: 0, width: 1170, height: 900 } },
       overlap: 0.08,
     },
@@ -97,8 +99,8 @@ const DEMO_TRIALS = [
     doneSummary: 'Остальное подождёт. Так дела и доводятся до конца.',
     doneTeaser: 'Дальше: тело. Оно сообщает о проблемах раньше, чем успеваешь заметить.',
     image: {
-      enter: resolveHeroImage('abundance-enter'),
-      done: resolveHeroImage('abundance-done'),
+      enter: 'abundance-enter',
+      done: 'abundance-done',
       frame: { done: { top: 96, width: 1170, height: 804 } },
       overlap: 0.08,
     },
@@ -148,7 +150,7 @@ export const DEMO_HERO_JOURNEY = {
   description:
     '16 шагов о том, как не прожить жизнь на автопилоте. В каждом шаге: прочитать, записать, сделать одно действие.',
   label: 'ПРАКТИКУМ · 16 ШАГОВ',
-  cover,
+  coverKey: 'course-cover',
   imageWidth: 480,
   imageHeight: 960,
   steps: DEMO_ALL_TRIALS,
