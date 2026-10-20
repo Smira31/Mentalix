@@ -13,7 +13,6 @@ import Screen from '../components/Screen'
 import { HERO_COURSE, courseContent } from '../data/courses'
 import JournalTextarea from '../components/JournalTextarea'
 import SemanticGlyph from '../components/SemanticGlyph'
-import WatermarkLayer from '../components/WatermarkLayer'
 import { platform } from '../platform'
 import { useBackButton } from '../platform/telegram.hooks'
 import { isPreviewDemoMode } from '../lib/demoMode'
@@ -454,7 +453,6 @@ function StepIntro({ trial, onStart }) {
       bodyClassName="mx-hj-step-intro"
       screenBodyClassName="mx-hj-intro-body"
     >
-      <WatermarkLayer />
       {showEnterImage ? (
         <HeroImage
           flexible
@@ -576,7 +574,6 @@ function WriteScreen({
     /* Колонка без скролла: поле занимает свободную высоту, кнопка (floating
        toolbar JournalTextarea) прижата к низу и не скрывается за краем. */
     <Shell fit bodyClassName="mx-hj-write-col">
-      <WatermarkLayer />
       <StepHeader trial={trial} view={view} />
 
       <div className="mx-hj-write mx-protected-text">

@@ -58,7 +58,6 @@ import { GUEST_MERGED_EVENT, loginAsGuest, canAutoCreateGuest } from './lib/gues
 import { getFullscreenSnapshot, initFullscreen } from './lib/tgFullscreen'
 import { initIdleMotionPause } from './lib/idleMotion'
 import { installProtectedTextGuards } from './lib/protectedText'
-import { setupWatermark } from './lib/watermark'
 import { useStableViewportHeight } from './lib/visualViewport'
 import { useGlobalEdgeSwipeBack } from './lib/gestures/useGlobalEdgeSwipeBack'
 
@@ -616,9 +615,6 @@ function App() {
   /* Защита контента (#1112, этап 1): глобальные перехватчики copy/contextmenu
      для текстов с классом .mx-protected-text. */
   useEffect(() => installProtectedTextGuards(), [])
-
-  /* Водяной знак (#1112, этап 2): текст водяного знака на защищённых экранах. */
-  useEffect(() => setupWatermark(user), [user])
 
   /* ============================================================
      AUTH

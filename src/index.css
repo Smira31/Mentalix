@@ -2294,19 +2294,4 @@ button.mx-demo-telegram-chrome__pill:focus:not(:focus-visible) {
   -webkit-touch-callout: auto;
 }
 
-/* ── Водяной знак (#1112, этап 2) ──────────────────────────────
-   Один слой на экран: position: fixed, pointer-events: none,
-   под кнопками и полями ввода. Текст повторяется по диагонали
-   через SVG-паттерн в --mx-watermark-bg. Прозрачность —
-   --mx-watermark-opacity (0.07). Компонент WatermarkLayer
-   добавляется явно только в StepIntro, WriteScreen и
-   LibraryArticleReader — на остальных экранах водяного знака нет. */
-.mx-watermark-layer {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background-image: var(--mx-watermark-bg, none);
-  background-repeat: repeat;
-  opacity: var(--mx-watermark-opacity, 0.07);
-}
+
