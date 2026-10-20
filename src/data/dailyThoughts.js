@@ -1,11 +1,16 @@
 import { pickByDay } from './prompts'
 
 /**
- * MXL-016 — authorial Mentalix daily thoughts.
+ * MXL-016 — подборка «Мысль дня» (задача #1089): 60 мыслей четырёх видов,
+ * kind: 'stoic' | 'classic' | 'research' | 'author'.
  *
- * These are original editorial formulations, not quotations. They are kept
- * separate from user-owned quotes and can safely be shown when the backend
- * has no personal phrase for the day.
+ * Цитаты стоиков и классики — собственный перевод Mentalix; в source указано
+ * точное место в источнике. Мысли вида research — пересказ вывода
+ * исследования своими словами; source — авторы и год. Мысли вида author —
+ * оригинальные формулировки Mentalix без внешней атрибуции.
+ *
+ * Тексты утверждены и не меняются; экран «Мысль дня» показывает строку
+ * автора и источник (DailyThoughtScreen.jsx), авторские — без подписи.
  */
 export const DAILY_THOUGHTS = [
   {
