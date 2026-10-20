@@ -144,12 +144,21 @@ export default function HeroJourneyStory({
           </div>
         </div>
 
-        {/* Мысль листа — последний жирный абзац: крупно, прижата к низу
-            сцены над кнопкой «›». */}
+        {/* Мысль листа — последний жирный абзац: серая метка «МЫСЛЬ»
+            (стилем метки листа) и крупная строка одним блоком, прижатым
+            к низу сцены над кнопкой «›». Без мысли метки нет. */}
         {thought && (
-          <p key={index} data-testid="hero-story-thought" className="mx-hj-story__thought mx-protected-text">
-            {thought}
-          </p>
+          <div key={index} className="mx-hj-story__thought-block">
+            <div
+              data-testid="hero-story-thought-label"
+              className="mx-hj-eyebrow mx-hj-story__label"
+            >
+              Мысль
+            </div>
+            <p data-testid="hero-story-thought" className="mx-hj-story__thought mx-protected-text">
+              {thought}
+            </p>
+          </div>
         )}
       </div>
 
