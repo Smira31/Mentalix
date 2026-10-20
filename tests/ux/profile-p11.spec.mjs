@@ -70,9 +70,9 @@ for (const viewport of VIEWPORTS) {
       }
     })
 
-    // (а): акцент ставится через addInitScript — init-скрипт openWeb
-    // очищает localStorage при каждой загрузке.
-    test('профиль и подэкраны монохромны при акценте «Лазурный»', async ({
+    // (а): #1109 — только акцент «Серый» (ice). Сохранённый «Лазурный»
+    // форсируется парсером на «Серый»; профиль и подэкраны монохромны.
+    test('сохранённый «Лазурный» форсируется на «Серый», профиль монохромен', async ({
       browser,
       baseURL,
     }) => {
@@ -81,7 +81,7 @@ for (const viewport of VIEWPORTS) {
         await context.addInitScript(() => localStorage.setItem('mx-accent-color', 'azure'))
         await page.reload()
         await expect(page.getByTestId('today-profile-button')).toBeVisible()
-        await expect(page.locator('html')).toHaveAttribute('data-accent', 'azure')
+        await expect(page.locator('html')).toHaveAttribute('data-accent', 'ice')
 
         await page.getByTestId('today-profile-button').click()
         await expect(page.getByTestId('profile-screen')).toBeVisible()

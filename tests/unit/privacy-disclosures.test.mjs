@@ -59,9 +59,9 @@ test('privacy policy does not sell data to advertising services', () => {
 
 // ── v1.1: новые пункты ──
 
-test('privacy policy version is 1.1 with correct effective date', () => {
-  assert.match(policy, /version:\s*'1\.1'/)
-  assert.match(policy, /effectiveDate:\s*'17 октября 2026 г\.'/)
+test('privacy policy version is 1.2 with correct effective date', () => {
+  assert.match(policy, /version:\s*'1\.2'/)
+  assert.match(policy, /effectiveDate:\s*'19 октября 2026 г\.'/)
 })
 
 test('privacy policy includes payment and subscription data category', () => {

@@ -26,15 +26,15 @@ test('temporary accent palette keeps the existing defaults and adds comparison o
   assert.equal(LIGHT_ACCENT_COLORS.mint.hex, '#96CDB0')
 })
 
-test('accent parsing is theme-aware and rejects an option from the other theme', () => {
+test('accent parsing always returns the default «ice» (#1109: only gray accent)', () => {
   assert.equal(getAccentColors('dark'), DARK_ACCENT_COLORS)
   assert.equal(getAccentColors('light'), LIGHT_ACCENT_COLORS)
-  assert.equal(parseAccent('azure', 'dark'), 'azure')
-  assert.equal(parseAccent('mint', 'light'), 'mint')
+  assert.equal(parseAccent('azure', 'dark'), DEFAULT_ACCENT)
+  assert.equal(parseAccent('mint', 'light'), DEFAULT_ACCENT)
   assert.equal(parseAccent('mint', 'dark'), DEFAULT_ACCENT)
-  assert.equal(parseAccent('azure', 'light'), LIGHT_DEFAULT_ACCENT)
+  assert.equal(parseAccent('azure', 'light'), DEFAULT_ACCENT)
   assert.equal(parseAccent('unknown', 'dark'), DEFAULT_ACCENT)
-  assert.equal(parseAccent('unknown', 'light'), LIGHT_DEFAULT_ACCENT)
+  assert.equal(parseAccent('unknown', 'light'), DEFAULT_ACCENT)
 })
 
 test('CSS exposes the theme-specific overrides for every temporary option', () => {
