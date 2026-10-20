@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test'
 
+import { advanceStoryToWrite } from './hero-journey-helpers.mjs'
+
 /*
  * Защита контента (#1112, этап 1):
  * - на шаге «Пути героя» тексты не выделяются (user-select: none),
@@ -42,17 +44,17 @@ test('«Путь героя»: тексты шага защищены, поле 
   await page.goto('/?demo=1&tab=library&action=hero_journey')
   await expect(page.getByTestId('hero-journey-map')).toBeVisible()
 
-  // ── Вступление шага ──
+  // ── Вводка шага листами (сторис) ──
   await page.getByTestId('hero-continue').click()
-  await expect(page.getByTestId('hero-step-start')).toBeVisible()
+  await expect(page.getByTestId('hero-story-next')).toBeVisible()
 
   const intro = await textGuards(page, '.mx-hj-step-intro__text')
   expect(intro.userSelect).toBe('none')
   expect(intro.copyBlocked).toBe(true)
   expect(intro.menuBlocked).toBe(true)
 
-  // ── Экран «Запиши»: подсказка защищена ──
-  await page.getByTestId('hero-step-start').click()
+  // ── Экран «Запиши»: подсказка защищена (последний лист ведёт на запись) ──
+  await advanceStoryToWrite(page)
   const input = page.getByTestId('hero-write-input')
   await expect(input).toBeVisible()
 
@@ -108,7 +110,7 @@ test('водяной знак удалён: нет .mx-watermark-layer на ша
   await page.goto('/?demo=1&tab=library&action=hero_journey')
   await expect(page.getByTestId('hero-journey-map')).toBeVisible()
   await page.getByTestId('hero-continue').click()
-  await expect(page.getByTestId('hero-step-start')).toBeVisible()
+  await expect(page.getByTestId('hero-story-next')).toBeVisible()
 
   const stepCount = await page.locator('.mx-watermark-layer').count()
   expect(stepCount).toBe(0)

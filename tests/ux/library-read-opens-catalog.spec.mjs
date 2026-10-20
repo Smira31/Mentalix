@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test'
 import { mkdir } from 'node:fs/promises'
 
+import { advanceStoryToWrite } from './hero-journey-helpers.mjs'
+
 // Один сквозной UX-сценарий; в CI используется общая конфигурация.
 test('Библиотека: курс → разделы → шторка → чтение → журнал → следующая → назад', async ({
   page,
@@ -139,7 +141,7 @@ test('Библиотека: курс → разделы → шторка → ч�
   await expect(page.getByTestId('hero-journey-map')).toHaveCount(0)
   await page.getByTestId('library-hero').click()
   await page.getByTestId('hero-continue').click()
-  await expect(page.getByTestId('hero-step-start')).toBeVisible()
+  await expect(page.getByTestId('hero-story-next')).toBeVisible()
   await page.getByTestId('demo-chrome-back').click()
   await expect(page.getByTestId('hero-journey-map')).toBeVisible()
   await page.getByTestId('demo-chrome-back').click()
@@ -253,7 +255,7 @@ test('Библиотека: курс → разделы → шторка → ч�
   await page.goto('/?demo=1&tab=library&demo_courses=0')
   await page.getByTestId('library-hero').click()
   await page.getByTestId('hero-continue').click()
-  await page.getByTestId('hero-step-start').click()
+  await advanceStoryToWrite(page)
   await page.getByTestId('hero-write-input').fill('Сохранённый ответ курса')
   await page.getByTestId('hero-write-next').click()
   await page.getByTestId('hero-action-input').fill('Одно небольшое действие')

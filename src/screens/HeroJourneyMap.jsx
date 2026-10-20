@@ -25,6 +25,7 @@ import {
 } from '../lib/heroJourneyProgress'
 import { heroDraftKey } from '../lib/heroJourneyState'
 import { writeLocal } from '../lib/store'
+import HeroJourneyStory from './HeroJourneyStory'
 import './HeroJourneyMap.css'
 
 const CourseContext = createContext(null)
@@ -485,13 +486,16 @@ function AboutScreen({ prologue, onBackToMap }) {
 
 /* ── B. Вход в шаг ── */
 
-function StepIntro({ trial, onStart }) {
+function StepIntro({ trial, onStart, onBack, storyIndex, onStoryIndexChange }) {
   const { chapterForTrial, finale, steps, total: HERO_JOURNEY_TOTAL_STEPS } = useCourse()
   const isFinale = finale?.id === trial.id
   const chapter = isFinale ? null : chapterForTrial(trial.id)
   const enterImage = trial.image?.enter
   const [imageFailed, setImageFailed] = useState(false)
   const showEnterImage = Boolean(enterImage) && !imageFailed
+  /* Листы вводки, как в сторис: необязательное поле шага pages — 3–5 листов
+     { label, text }. Без листов вводка показывается как раньше. */
+  const pages = Array.isArray(trial.pages) ? trial.pages.filter(page => page?.text) : []
 
   /* Подгрузка (из main): завершение текущего шага и вход следующего. */
   useEffect(() => {
@@ -499,61 +503,79 @@ function StepIntro({ trial, onStart }) {
     preloadImage(steps[trial.number]?.image?.enter)
   }, [trial, steps])
 
+  /* Иллюстрация шага: кадр входа или заглушка, когда картинки нет. Одна и та же
+     на листе 1 сторис и во вступлении шага без листов. */
+  const illustration = showEnterImage ? (
+    <HeroImage
+      flexible
+      src={enterImage}
+      size={STEP_IMAGE_DIMENSIONS.enter}
+      focus={trial.image?.focus}
+      compact={trial.image?.compact}
+      onError={() => setImageFailed(true)}
+    />
+  ) : (
+    <div className="mx-hj-step-intro__image">
+      <div className="mx-hj-step-intro__glyph">
+        <SemanticGlyph kind="pathfinder" animated={false} />
+      </div>
+      <span className="mx-hj-step-intro__image-caption">шаг {trial.number}</span>
+    </div>
+  )
+
   return (
     /* Колонка на всю доступную высоту без скролла. Сверху — картинка, которая
        сама забирает место, оставшееся после текста и кнопки (flex + min/max);
        текст слегка перехлёстывает затемнённый нижний край; кнопка
-       прижата к низу (см. .mx-hj-hero--flex и __bottom в CSS). */
+       прижата к низу (см. .mx-hj-hero--flex и __bottom в CSS). Листы сторис
+       живут в той же колонке: общая геометрия картинки сохраняется. */
     <Shell
       fit
       bodyClassName="mx-hj-step-intro"
       screenBodyClassName="mx-hj-intro-body"
     >
-      {showEnterImage ? (
-        <HeroImage
-          flexible
-          src={enterImage}
-          size={STEP_IMAGE_DIMENSIONS.enter}
-          focus={trial.image?.focus}
-          compact={trial.image?.compact}
-          onError={() => setImageFailed(true)}
+      {pages.length > 0 ? (
+        <HeroJourneyStory
+          pages={pages}
+          illustration={illustration}
+          onForward={onStart}
+          onBack={onBack}
+          index={storyIndex}
+          onIndexChange={onStoryIndexChange}
         />
       ) : (
-        <div className="mx-hj-step-intro__image">
-          <div className="mx-hj-step-intro__glyph">
-            <SemanticGlyph kind="pathfinder" animated={false} />
+        <>
+          {illustration}
+
+          <div className="mx-hj-step-intro__text mx-protected-text">
+            {/* Скролл-обёртка: на низком экране (375×667 и ниже) длинное вступление
+                доскролливается внутри блока и не уходит под кнопку «Начать шаг». */}
+            <div className="mx-hj-step-intro__text-scroll">
+              <div className="mx-hj-step-intro__label">
+                {isFinale
+                  ? `Финал · ${trial.title}`
+                  : `Глава ${chapter.roman} · ${chapter.title} · Шаг ${trial.number} из ${HERO_JOURNEY_TOTAL_STEPS}`}
+              </div>
+              <h2 className="mx-hj-step-intro__title">{appHeading(trial.title)}</h2>
+              <p className="mx-hj-step-intro__subtitle">{trial.subtitle}</p>
+              {trial.intro.split('\n\n').map((para, i) => (
+                <p key={i} className="mx-hj-step-intro__desc">{para}</p>
+              ))}
+            </div>
           </div>
-          <span className="mx-hj-step-intro__image-caption">шаг {trial.number}</span>
-        </div>
+
+          <div className="mx-hj-step-intro__bottom">
+            <button
+              type="button"
+              data-testid="hero-step-start"
+              onClick={onStart}
+              className="cta-pill mx-hj-step-intro__cta"
+            >
+              Начать шаг
+            </button>
+          </div>
+        </>
       )}
-
-      <div className="mx-hj-step-intro__text mx-protected-text">
-        {/* Скролл-обёртка: на низком экране (375×667 и ниже) длинное вступление
-            доскролливается внутри блока и не уходит под кнопку «Начать шаг». */}
-        <div className="mx-hj-step-intro__text-scroll">
-          <div className="mx-hj-step-intro__label">
-            {isFinale
-              ? `Финал · ${trial.title}`
-              : `Глава ${chapter.roman} · ${chapter.title} · Шаг ${trial.number} из ${HERO_JOURNEY_TOTAL_STEPS}`}
-          </div>
-          <h2 className="mx-hj-step-intro__title">{appHeading(trial.title)}</h2>
-          <p className="mx-hj-step-intro__subtitle">{trial.subtitle}</p>
-          {trial.intro.split('\n\n').map((para, i) => (
-            <p key={i} className="mx-hj-step-intro__desc">{para}</p>
-          ))}
-        </div>
-      </div>
-
-      <div className="mx-hj-step-intro__bottom">
-        <button
-          type="button"
-          data-testid="hero-step-start"
-          onClick={onStart}
-          className="cta-pill mx-hj-step-intro__cta"
-        >
-          Начать шаг
-        </button>
-      </div>
     </Shell>
   )
 }
@@ -719,7 +741,9 @@ function StepComplete({ trial, progress, onBackToMap, onContinue }) {
             <Check size={40} strokeWidth={3} />
           </div>
         )}
-        <h2 className="mx-hj-complete__title">{appHeading(trial.doneTitle || 'Шаг пройден')}</h2>
+        {/* doneTitle показывается как в контенте, с заглавной: appHeading()
+            приводит заголовки к строчным, а мысль шага пишется с большой буквы. */}
+        <h2 className="mx-hj-complete__title">{trial.doneTitle || appHeading('Шаг пройден')}</h2>
         <p className="mx-hj-complete__phrase">
           {trial.doneSummary || 'Ты сделал ещё один шаг по пути.'}
         </p>
@@ -870,6 +894,9 @@ function CourseFlow({ onBack, user, course }) {
   /* Первый шаг следующей главы для экрана паузы (после шагов 4, 8, 12). */
   const [pauseNextStepId, setPauseNextStepId] = useState(null)
   const [closeConfirmOpen, setCloseConfirmOpen] = useState(false)
+  /* Открытый лист вводки-сторис: «Назад» с листа 2+ — предыдущий лист,
+     с листа 1 — карта (HeroJourneyStory листает этот же индекс). */
+  const [storyIndex, setStoryIndex] = useState(0)
   const [markedSigns, setMarkedSigns] = useState([])
   const [reflection, setReflection] = useState('')
   const [action, setAction] = useState('')
@@ -926,9 +953,19 @@ function CourseFlow({ onBack, user, course }) {
       setView('map')
       return
     }
+    /* Вводка листами: «Назад» с листа 2+ ведёт на предыдущий лист,
+       с листа 1 — на карту, как раньше. */
+    if (view === 'step-intro' && storyIndex > 0) {
+      platform.haptic('light')
+      setStoryIndex(storyIndex - 1)
+      return
+    }
     flushDraft()
     const seq = screenSequence(trial)
-    setView(seq[seq.indexOf(view) - 1] || 'map')
+    const prevView = seq[seq.indexOf(view) - 1] || 'map'
+    /* Возврат на вводку открывает первый лист, как при новом входе в шаг. */
+    if (prevView === 'step-intro') setStoryIndex(0)
+    setView(prevView)
   }
 
   function openStep(stepId) {
@@ -946,6 +983,7 @@ function CourseFlow({ onBack, user, course }) {
     const draft = readHeroDraft(heroDraftKey(user.id, stepId, course.id))
     platform.haptic('light')
     setActiveStepId(stepId)
+    setStoryIndex(0)
     setMarkedSigns(progress.signs[stepId] || [])
     setReflection(draft?.reflection ?? progress.reflections[stepId] ?? '')
     setAction(draft?.action ?? progress.actions[stepId] ?? '')
@@ -1057,7 +1095,15 @@ function CourseFlow({ onBack, user, course }) {
   }
 
   if (view === 'step-intro') {
-    return <StepIntro trial={trial} onBack={handleBack} onStart={startStep} />
+    return (
+      <StepIntro
+        trial={trial}
+        onBack={handleBack}
+        onStart={startStep}
+        storyIndex={storyIndex}
+        onStoryIndexChange={setStoryIndex}
+      />
+    )
   }
 
   if (view === 'write') {
