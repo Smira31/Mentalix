@@ -49,6 +49,22 @@ function dateOffsetStr(offset) {
 }
 
 /*
+ * Копирование с атрибуцией (#1089): стоики и классика — «— автор, источник»,
+ * исследования — «— источник» (авторы и год), авторские мысли Mentalix —
+ * только текст, как раньше.
+ */
+function buildCopyText(thought) {
+  if (!thought?.text) return ''
+  if (thought.kind === 'research') {
+    return `${thought.text}\n— ${thought.source}`
+  }
+  if (thought.kind === 'stoic' || thought.kind === 'classic') {
+    return `${thought.text}\n— ${thought.author}, ${thought.source}`
+  }
+  return thought.text
+}
+
+/*
  * Экран «Мысль дня» — Stoic-формат.
  *
  * Свайп влево — прошлые дни (до 30), вправо — обратно к сегодня.
@@ -134,7 +150,7 @@ export default function DailyThoughtScreen({ thought, onClose, onGoMentor, user 
 
   function handleCopy() {
     platform.haptic('light')
-    const text = currentThought?.text || ''
+    const text = buildCopyText(currentThought)
     if (navigator.clipboard?.writeText) {
       navigator.clipboard.writeText(text).catch(() => {})
     }
@@ -277,6 +293,18 @@ export default function DailyThoughtScreen({ thought, onClose, onGoMentor, user 
         <p className="mx-daily-thought__text" data-testid="daily-thought-quote">
           {currentThought?.text}
         </p>
+
+        {currentThought?.kind === 'research' && (
+          <span className="mx-daily-thought__author" data-testid="daily-thought-author">
+            — {currentThought.source}
+          </span>
+        )}
+        {(currentThought?.kind === 'stoic' || currentThought?.kind === 'classic') && (
+          <span className="mx-daily-thought__author" data-testid="daily-thought-author">
+            — {currentThought.author}
+            <span className="mx-daily-thought__author-source"> · {currentThought.source}</span>
+          </span>
+        )}
 
         {myThought && (
           <div className="mx-daily-thought__my-thought" data-testid="daily-thought-my-thought">

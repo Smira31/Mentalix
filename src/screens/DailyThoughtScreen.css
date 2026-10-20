@@ -50,6 +50,22 @@
   color: rgb(var(--c-muted));
 }
 
+/* Строка автора под мыслью (#1089) — как подпись «— ты»: мелкая, приглушённая.
+   Источник — мельче и тише автора (faint), новых цветов нет. */
+.mx-daily-thought__author {
+  display: block;
+  margin-top: 16px;
+  max-width: 380px;
+  text-align: center;
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
+  color: rgb(var(--c-muted));
+}
+
+.mx-daily-thought__author-source {
+  color: rgb(var(--c-faint));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
+}
+
 .mx-daily-thought__actions {
   display: flex;
   flex-direction: column;
