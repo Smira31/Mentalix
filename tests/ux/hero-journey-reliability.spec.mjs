@@ -521,6 +521,109 @@ test('Вводка шага листами: 4 сегмента, «›» впер
   await expect(page.getByTestId('hero-journey-map')).toBeVisible()
 })
 
+/*
+ * «Назад» на листах: кнопка в шапке и системный BackButton Telegram с листов
+ * 2–4 ведут на предыдущий лист, с листа 1 — на карту. Тапы и свайпы не
+ * менялись — их держит сценарий выше.
+ */
+test('«Назад» по листам: с листа 3 — на лист 2, с листа 1 — на карту', async ({ page }) => {
+  await page.setViewportSize({ width: 393, height: 852 })
+  await page.addInitScript(() => {
+    localStorage.clear()
+    sessionStorage.clear()
+  })
+  await page.goto('/?demo=1&tab=library&action=hero_journey&frame=0')
+  await page.getByTestId('hero-continue').click()
+
+  const sheet = page.getByTestId('hero-story-page')
+  await expect(sheet).toHaveAttribute('data-page', '1')
+
+  // «›» до третьего листа; «Назад» из шапки ведёт на предыдущий лист.
+  await page.getByTestId('hero-story-next').click()
+  await page.getByTestId('hero-story-next').click()
+  await expect(sheet).toHaveAttribute('data-page', '3')
+  await page.getByTestId('demo-chrome-back').click()
+  await expect(sheet).toHaveAttribute('data-page', '2')
+  await page.getByTestId('demo-chrome-back').click()
+  await expect(sheet).toHaveAttribute('data-page', '1')
+
+  // С первого листа «Назад» выходит на карту шагов.
+  await page.getByTestId('demo-chrome-back').click()
+  await expect(page.getByTestId('hero-journey-map')).toBeVisible()
+})
+
+/*
+ * Мысль листа: последний абзац, целиком жирный (**…**), рендерится отдельно —
+ * видна, прижата к низу над кнопкой «›» и не перекрывает ни текст, ни кнопку.
+ * Листы без прокрутки на 360×640, 375×667 и 393×852 (лист 1 — с картинкой).
+ */
+test('Мысль листа видна и не перекрывает кнопку «›»; листы без скролла на малых экранах', async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    localStorage.clear()
+    sessionStorage.clear()
+  })
+
+  for (const [width, height] of [
+    [360, 640],
+    [375, 667],
+    [393, 852],
+  ]) {
+    await page.setViewportSize({ width, height })
+    // frame=0: приложение на реальном viewport, как на телефоне.
+    await page.goto('/?demo=1&tab=library&action=hero_journey&frame=0')
+    await page.getByTestId('hero-continue').click()
+
+    const sheet = page.getByTestId('hero-story-page')
+    const thought = page.getByTestId('hero-story-thought')
+
+    for (const opened of ['1', '2', '3', '4']) {
+      if (opened !== '1') await page.getByTestId('hero-story-next').click()
+      await expect(sheet).toHaveAttribute('data-page', opened)
+      await expect(thought).toBeVisible()
+
+      // Мысль — именно последний жирный абзац: в тексте листа его нет.
+      if (opened === '1') {
+        await expect(thought).toHaveText(
+          'Будущее, которое Юнг годами носил в голове, исчезло за несколько месяцев.'
+        )
+        await expect(page.locator('.mx-hj-story__text')).not.toContainText(
+          'исчезло за несколько месяцев'
+        )
+      }
+
+      const layout = await page.evaluate(() => {
+        const column = document.querySelector('.mx-hj-step-intro')
+        const textScroll = document.querySelector('.mx-hj-step-intro__text-scroll')
+        const text = document.querySelector('.mx-hj-story__text')
+        const thoughtEl = document.querySelector('[data-testid="hero-story-thought"]')
+        const button = document.querySelector('[data-testid="hero-story-next"]')
+        const thoughtStyle = getComputedStyle(thoughtEl)
+        return {
+          overflow: column.scrollHeight - column.clientHeight,
+          docOverflow:
+            document.documentElement.scrollHeight - document.documentElement.clientHeight,
+          textScroll: textScroll.scrollHeight - textScroll.clientHeight,
+          noTextOverlap:
+            thoughtEl.getBoundingClientRect().top >= text.getBoundingClientRect().bottom - 1,
+          noButtonOverlap:
+            button.getBoundingClientRect().top >= thoughtEl.getBoundingClientRect().bottom - 1,
+          thoughtSize: parseFloat(thoughtStyle.fontSize),
+          thoughtWeight: thoughtStyle.fontWeight,
+        }
+      })
+      expect(layout.overflow).toBeLessThanOrEqual(0)
+      expect(layout.docOverflow).toBeLessThanOrEqual(0)
+      expect(layout.textScroll).toBeLessThanOrEqual(0)
+      expect(layout.noTextOverlap).toBe(true)
+      expect(layout.noButtonOverlap).toBe(true)
+      expect(layout.thoughtSize).toBeGreaterThanOrEqual(18)
+      expect(layout.thoughtWeight).toBe('600')
+    }
+  }
+})
+
 test('Шаг пройден на 375×667: «Продолжить» видна целиком, без скролла', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 667 })
   await page.addInitScript(() => {

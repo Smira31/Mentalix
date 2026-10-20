@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useRef } from 'react'
 
 import MarkdownText from '../components/MarkdownText'
 import RoundSubmitButton from '../components/RoundSubmitButton'
@@ -24,16 +24,42 @@ const SWIPE_CLICK_GUARD_MS = 400
  * назад, внизу белая круглая кнопка «›» — вперёд. Автопереключения по таймеру
  * нет; после последнего листа открывается «Запиши» (onForward).
  *
+ * Индекс открытого листа живёт в шаге (HeroJourneyMap): «Назад» из шапки и
+ * системный BackButton Telegram с листов 2+ ведут на предыдущий лист, с листа
+ * 1 — на карту; тапы и свайпы листают внутри компонента, как раньше.
+ *
+ * Мысль листа: последний абзац текста, целиком жирный (**…**), рендерится
+ * отдельно — крупно, прижат к низу листа над кнопкой «›»
+ * (.mx-hj-story__thought в CSS).
+ *
  * Компонент рисует только части колонки `.mx-hj-step-intro` (полоска, сцена
  * листа, нижняя группа): оболочку <Screen> и flex-колонку держит шаг.
  */
-export default function HeroJourneyStory({ pages, illustration = null, onForward, onBack }) {
-  const [index, setIndex] = useState(0)
+
+/* Последний абзац, целиком жирный (**…**), — «мысль листа»: показывается
+   отдельно, крупно внизу листа; остальной текст — как обычные абзацы. */
+function splitSheetThought(text) {
+  const parts = String(text).split(/\n\n+/)
+  const last = parts[parts.length - 1].trim()
+  const bold = last.match(/^\*\*([\s\S]+)\*\*$/)
+  if (!bold) return { body: text, thought: null }
+  return { body: parts.slice(0, -1).join('\n\n'), thought: bold[1].trim() }
+}
+
+export default function HeroJourneyStory({
+  pages,
+  illustration = null,
+  onForward,
+  onBack,
+  index,
+  onIndexChange,
+}) {
   const touchStart = useRef(null)
   const swipeAt = useRef(0)
 
   const page = pages[index]
   const isLast = index === pages.length - 1
+  const { body, thought } = splitSheetThought(page.text)
 
   const forward = useCallback(() => {
     if (isLast) {
@@ -41,8 +67,8 @@ export default function HeroJourneyStory({ pages, illustration = null, onForward
       return
     }
     platform.haptic('light')
-    setIndex(current => current + 1)
-  }, [isLast, onForward])
+    onIndexChange(index + 1)
+  }, [isLast, onForward, index, onIndexChange])
 
   const back = useCallback(() => {
     if (index === 0) {
@@ -50,8 +76,8 @@ export default function HeroJourneyStory({ pages, illustration = null, onForward
       return
     }
     platform.haptic('light')
-    setIndex(current => current - 1)
-  }, [index, onBack])
+    onIndexChange(index - 1)
+  }, [index, onBack, onIndexChange])
 
   function handleTap(event) {
     if (Date.now() - swipeAt.current < SWIPE_CLICK_GUARD_MS) return
@@ -113,10 +139,18 @@ export default function HeroJourneyStory({ pages, illustration = null, onForward
               data-page={index + 1}
             >
               {page.label && <div className="mx-hj-eyebrow mx-hj-story__label">{page.label}</div>}
-              <MarkdownText content={page.text} className="mx-hj-story__text" />
+              {body && <MarkdownText content={body} className="mx-hj-story__text" />}
             </div>
           </div>
         </div>
+
+        {/* Мысль листа — последний жирный абзац: крупно, прижата к низу
+            сцены над кнопкой «›». */}
+        {thought && (
+          <p key={index} data-testid="hero-story-thought" className="mx-hj-story__thought mx-protected-text">
+            {thought}
+          </p>
+        )}
       </div>
 
       <div className="mx-hj-story__bottom">

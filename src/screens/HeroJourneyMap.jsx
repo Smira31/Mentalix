@@ -486,7 +486,7 @@ function AboutScreen({ prologue, onBackToMap }) {
 
 /* ── B. Вход в шаг ── */
 
-function StepIntro({ trial, onStart, onBack }) {
+function StepIntro({ trial, onStart, onBack, storyIndex, onStoryIndexChange }) {
   const { chapterForTrial, finale, steps, total: HERO_JOURNEY_TOTAL_STEPS } = useCourse()
   const isFinale = finale?.id === trial.id
   const chapter = isFinale ? null : chapterForTrial(trial.id)
@@ -540,6 +540,8 @@ function StepIntro({ trial, onStart, onBack }) {
           illustration={illustration}
           onForward={onStart}
           onBack={onBack}
+          index={storyIndex}
+          onIndexChange={onStoryIndexChange}
         />
       ) : (
         <>
@@ -739,7 +741,9 @@ function StepComplete({ trial, progress, onBackToMap, onContinue }) {
             <Check size={40} strokeWidth={3} />
           </div>
         )}
-        <h2 className="mx-hj-complete__title">{appHeading(trial.doneTitle || 'Шаг пройден')}</h2>
+        {/* doneTitle показывается как в контенте, с заглавной: appHeading()
+            приводит заголовки к строчным, а мысль шага пишется с большой буквы. */}
+        <h2 className="mx-hj-complete__title">{trial.doneTitle || appHeading('Шаг пройден')}</h2>
         <p className="mx-hj-complete__phrase">
           {trial.doneSummary || 'Ты сделал ещё один шаг по пути.'}
         </p>
@@ -890,6 +894,9 @@ function CourseFlow({ onBack, user, course }) {
   /* Первый шаг следующей главы для экрана паузы (после шагов 4, 8, 12). */
   const [pauseNextStepId, setPauseNextStepId] = useState(null)
   const [closeConfirmOpen, setCloseConfirmOpen] = useState(false)
+  /* Открытый лист вводки-сторис: «Назад» с листа 2+ — предыдущий лист,
+     с листа 1 — карта (HeroJourneyStory листает этот же индекс). */
+  const [storyIndex, setStoryIndex] = useState(0)
   const [markedSigns, setMarkedSigns] = useState([])
   const [reflection, setReflection] = useState('')
   const [action, setAction] = useState('')
@@ -946,9 +953,19 @@ function CourseFlow({ onBack, user, course }) {
       setView('map')
       return
     }
+    /* Вводка листами: «Назад» с листа 2+ ведёт на предыдущий лист,
+       с листа 1 — на карту, как раньше. */
+    if (view === 'step-intro' && storyIndex > 0) {
+      platform.haptic('light')
+      setStoryIndex(storyIndex - 1)
+      return
+    }
     flushDraft()
     const seq = screenSequence(trial)
-    setView(seq[seq.indexOf(view) - 1] || 'map')
+    const prevView = seq[seq.indexOf(view) - 1] || 'map'
+    /* Возврат на вводку открывает первый лист, как при новом входе в шаг. */
+    if (prevView === 'step-intro') setStoryIndex(0)
+    setView(prevView)
   }
 
   function openStep(stepId) {
@@ -966,6 +983,7 @@ function CourseFlow({ onBack, user, course }) {
     const draft = readHeroDraft(heroDraftKey(user.id, stepId, course.id))
     platform.haptic('light')
     setActiveStepId(stepId)
+    setStoryIndex(0)
     setMarkedSigns(progress.signs[stepId] || [])
     setReflection(draft?.reflection ?? progress.reflections[stepId] ?? '')
     setAction(draft?.action ?? progress.actions[stepId] ?? '')
@@ -1077,7 +1095,15 @@ function CourseFlow({ onBack, user, course }) {
   }
 
   if (view === 'step-intro') {
-    return <StepIntro trial={trial} onBack={handleBack} onStart={startStep} />
+    return (
+      <StepIntro
+        trial={trial}
+        onBack={handleBack}
+        onStart={startStep}
+        storyIndex={storyIndex}
+        onStoryIndexChange={setStoryIndex}
+      />
+    )
   }
 
   if (view === 'write') {
