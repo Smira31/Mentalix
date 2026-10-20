@@ -74,7 +74,8 @@
 
 /*
  * Мысль листа — последний абзац текста, целиком жирный (**…**): крупно
- * (строка 22 px), прижата к низу сцены над белой кнопкой «›». Свободная высота
+ * (строка 20 px, строки выровнены через text-wrap: balance), прижата к низу
+ * сцены над белой кнопкой «›». Свободная высота
  * листа уходит в отступ над мыслью (margin-top: auto); при нехватке места
  * отступ схлопывается до padding-top — не меньше 24 px от текста, без
  * наложения на текст и кнопку.
@@ -83,9 +84,10 @@
   flex: none;
   margin-top: auto;
   padding-top: var(--mx-space-6);
-  font-size: calc(22px * var(--mx-type-scale));
+  font-size: calc(20px * var(--mx-type-scale));
   font-weight: 600;
   line-height: 1.3;
+  text-wrap: balance;
   color: rgb(var(--c-text));
   animation: fadeIn var(--mx-motion-fast) ease-out both;
 }
