@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 
@@ -6,8 +6,8 @@ import { getFullscreenPortalTarget, useFullscreenSurface } from '../lib/fullscre
 import { isPreviewDemoMode, previewSeriesAction } from '../lib/demoMode'
 import { api } from '../lib/api'
 import { readCanonicalStreakStats, serverSeriesBadges } from '../lib/canonicalStreak'
-import { badgeGroups, daysSinceRegistration, upcomingBadges } from '../lib/badgeCatalog'
-import { featuredBadge, featuredBadgeCaption } from '../lib/featuredBadge'
+import { badgeCategoryLabel, badgeGroups, daysSinceRegistration, upcomingBadges } from '../lib/badgeCatalog'
+import { badgeEarnedDate, featuredBadge, featuredBadgeCaption } from '../lib/featuredBadge'
 import { buildMvpBadges } from '../lib/badgesMvp'
 import { platform } from '../platform'
 import { logEngagementEvent } from '../lib/engagementEvents'
@@ -25,30 +25,36 @@ import MilestoneBars from '../components/MilestoneBars'
 import { BadgeIcon, BadgeSnowHorizon } from '../components/BadgeIcons'
 import './SeriesBadges.css'
 
-/* Вписывание пер-вариантных иконок в квадрат 40×40 по центру (50,50):
-   scale = 40 / max(ширина, высота) по фактическому bbox, кап 1.25. */
+/* Вписывание пер-вариантных иконок в шар: видимая масса (bbox вместе с
+   обводкой) у всех 15 значков одна — 48 единиц шара. Значок рисуется в
+   квадрате 54 (BadgeIcon), поэтому scale = (48 / 2.25 − 1.8) / max(bbox 24×24),
+   а translate ставит центр bbox в центр шара (50,50). Числа — замеры bbox. */
 const ART_FIT = {
-  'first-step': 'translate(50 50) scale(0.513) translate(-81 -73)',
-  first_checkin: 'translate(50 50) scale(0.816) translate(-79.5 -62.5)',
-  first_journal: 'translate(50 50) scale(0.816) translate(-79.5 -70.5)',
-  streak_7: 'translate(50 50) scale(0.769) translate(-80 -66.5)',
-  streak_30: 'translate(50 50) scale(0.741) translate(-80 -62.5)',
-  active_days_100: 'translate(50 50) scale(0.645) translate(-80 -68.5)',
-  'month-on-path': 'translate(50 50) scale(0.769) translate(-86 -68)',
-  'voice-heard': 'translate(50 50) scale(0.889) translate(-82.5 -68)',
-  'streak-two': 'translate(50 50) scale(1.25) translate(-80 -68.6)',
-  'streak-three': 'translate(50 50) scale(1.25) translate(-80 -66)',
-  'streak-five': 'translate(50 50) scale(1.026) translate(-80 -66.8)',
-  'week-on-path': 'translate(50 50) scale(0.635) translate(-84 -62)',
-  'ritual-holds': 'translate(50 50) scale(0.8) translate(-81.4 -66.6)',
-  'asceza-power': 'translate(50 50) scale(1.111) translate(-80 -69)',
-  default: 'translate(50 50) scale(1.25) translate(-80 -68)',
+  'first-step': 'translate(50 50) scale(0.977) translate(-80 -68)',
+  first_checkin: 'translate(50 50) scale(0.977) translate(-80 -68)',
+  first_journal: 'translate(50 50) scale(0.976) translate(-80 -68)',
+  'streak-two': 'translate(50 50) scale(1.028) translate(-80 -69.1)',
+  'streak-three': 'translate(50 50) scale(1.206) translate(-80 -69.1)',
+  'streak-five': 'translate(50 50) scale(1.023) translate(-80 -65.9)',
+  streak_7: 'translate(50 50) scale(0.977) translate(-80 -68)',
+  streak_30: 'translate(50 50) scale(0.977) translate(-80 -68)',
+  'voice-heard': 'translate(50 50) scale(0.977) translate(-80 -68)',
+  'week-on-path': 'translate(50 50) scale(0.977) translate(-80 -68)',
+  'month-on-path': 'translate(50 50) scale(1.086) translate(-80 -68)',
+  active_days_100: 'translate(50 50) scale(1.05) translate(-80 -68)',
+  'ritual-holds': 'translate(50 50) scale(1.028) translate(-81.1 -66.9)',
+  'asceza-power': 'translate(50 50) scale(1.028) translate(-80 -69.1)',
+  default: 'translate(50 50) scale(1.028) translate(-80 -69.1)',
 }
 
 function RewardIcon({ variant = 'default', locked = false, size = 72, className = '', ariaLabel }) {
   const artTransform = ART_FIT[variant] || ART_FIT.default
   const fitScale = Number(artTransform.match(/scale\(([\d.]+)\)/)?.[1]) || 1
   const iconLabel = ariaLabel || (locked ? 'Закрыт: Значок' : 'Значок')
+  // Свечение полученного значка: один тёплый токен --mx-reward-glow (≤ 12%),
+  // у закрытого значка его нет. Анимации у свечения нет, поэтому
+  // prefers-reduced-motion соблюдается без отдельного правила.
+  const glowId = `mx-reward-glow-${useId().replace(/:/g, '')}`
   // Шар по Stoic: viewBox 0 0 100 104, width = размер шара, высота ×1.04.
   // Низ SVG (плоский низ подставки) = линия горизонта в главной карточке.
   return (
@@ -68,6 +74,23 @@ function RewardIcon({ variant = 'default', locked = false, size = 72, className 
         r="49"
       />
       <path className="mx-reward-icon__shine" d="M13.8 30.8 A41 41 0 0 1 42.9 9.6" />
+      {!locked && (
+        <g aria-hidden="true">
+          <defs>
+            <radialGradient id={glowId} gradientUnits="userSpaceOnUse" cx="50" cy="52" r="46">
+              <stop className="mx-reward-icon__glow-core" offset="0" />
+              <stop className="mx-reward-icon__glow-edge" offset="1" />
+            </radialGradient>
+          </defs>
+          <circle
+            className="mx-reward-icon__glow"
+            cx="50"
+            cy="52"
+            r="46"
+            fill={`url(#${glowId})`}
+          />
+        </g>
+      )}
       <g
         className={`mx-reward-icon__badge-scene${locked ? ' mx-reward-icon__badge-scene--locked' : ''}`}
         aria-hidden="true"
@@ -168,6 +191,7 @@ export function BadgeSheet({ badge, onClose, onOpenPractice }) {
 
   if (!badge) return null
   const practice = badgePractice(badge)
+  const earnedLabel = badge.done ? badgeEarnedDate(badge) : null
   return createPortal(
     <div
       className={`mx-badge-sheet-layer${closing ? ' mx-badge-sheet-layer--exit' : ''}`}
@@ -192,13 +216,19 @@ export function BadgeSheet({ badge, onClose, onOpenPractice }) {
           />
         </div>
         <div className="mx-badge-sheet__body">
-          <span className="mx-badge-sheet__eyebrow">{badge.done ? 'ЗНАЧОК СЕРИИ' : 'ЗНАЧОК'}</span>
+          <span className="mx-badge-sheet__eyebrow">{badgeCategoryLabel(badge.id)}</span>
           <h2 id="mx-badge-sheet-title">{badge.title}</h2>
           <p>
             {badge.done
               ? badge.desc
               : `Чтобы получить, ${badgeConditions[badge.id] || 'продолжай свой путь.'}`}
           </p>
+          {earnedLabel && (
+            <div className="mx-badge-sheet__received" data-testid="badge-sheet-received">
+              <strong>Получен</strong>
+              <span>{earnedLabel}</span>
+            </div>
+          )}
           <div className="mx-badge-sheet__progress">
             <strong>Твой прогресс</strong>
             <span>
