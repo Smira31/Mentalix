@@ -1,15 +1,14 @@
 import {
   AudioLines,
+  Coffee,
   Feather,
   Flame,
   FlameKindling,
-  Lamp,
+  Footprints,
   Lighthouse,
-  Puzzle,
-  Route,
-  Sparkle,
   Sunrise,
   Tent,
+  TreePine,
 } from 'lucide-react'
 
 const ICON_STROKE = 1.8
@@ -33,6 +32,61 @@ function CandleIcon({ x, y, width, height, className }) {
     >
       <path d="M12 2.8c-1.2 1.7-3.1 3.2-3.1 5.2a3.1 3.1 0 0 0 6.2 0c0-1.2-.6-2.4-1.5-3.7-.2 1.1-.7 1.8-1.4 2.2-.1-1.4-.2-2.3-.2-3.7Z" />
       <path d="M8.5 12.2h7v8.6h-7zM8.5 15.3h7" />
+    </svg>
+  )
+}
+
+/* «Второй день» — искра: меньшая ступень огня. Тот же силуэт пламени, что у
+   «Пламени» (Flame, default), уменьшенный до 60% (ширина 8.4 против 14), и две
+   искры над ним. */
+function SparkIcon({ x, y, width, height, className }) {
+  return (
+    <svg
+      x={x}
+      y={y}
+      width={width}
+      height={height}
+      viewBox="0 0 24 24"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={ICON_STROKE}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="M9.9 16.7A1.5 1.5 0 0 0 11.4 15.2c0-.83-.3-1.2-.6-1.8-.64-1.29-.13-2.43 1.2-3.6.3 1.5 1.2 2.94 2.4 3.9 1.2.96 1.8 2.1 1.8 3.3a4.2 4.2 0 1 1-8.4 0c0-.69.26-1.38.6-1.8a1.5 1.5 0 0 0 1.5 1.5Z" />
+      <circle cx="8.6" cy="6.6" r="0.75" />
+      <circle cx="14.4" cy="4.2" r="0.75" />
+    </svg>
+  )
+}
+
+/* «Серия: пять дней» — фонарь путника: кольцо-ручка, крышка, стеклянный
+   корпус с огоньком внутри и основание. */
+function LanternIcon({ x, y, width, height, className }) {
+  return (
+    <svg
+      x={x}
+      y={y}
+      width={width}
+      height={height}
+      viewBox="0 0 24 24"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={ICON_STROKE}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <circle cx="12" cy="4.3" r="1.8" />
+      <path d="M9.6 6.1h4.8l1.6 2.6H8z" />
+      <path d="M8.6 8.7h6.8v9.4H8.6z" />
+      <path d="M12 11.3c1 1.2 1.5 2 1.5 2.9a1.5 1.5 0 0 1-3 0c0-.9.5-1.7 1.5-2.9Z" />
+      <path d="M7.2 18.1h9.6v2.3H7.2z" />
     </svg>
   )
 }
@@ -85,20 +139,20 @@ function SummitFlagIcon({ x, y, width, height, className }) {
 }
 
 const BADGE_ICONS = {
-  'first-step': Route,
+  'first-step': Footprints,
   first_checkin: Sunrise,
   first_journal: Feather,
-  'streak-two': Sparkle,
+  'streak-two': SparkIcon,
   'streak-three': CandleIcon,
-  'streak-five': Lamp,
+  'streak-five': LanternIcon,
   streak_7: FlameKindling,
   streak_30: Lighthouse,
   'voice-heard': AudioLines,
   'week-on-path': Tent,
   'month-on-path': MoonOverMountainsIcon,
   active_days_100: SummitFlagIcon,
-  'ritual-holds': Puzzle,
-  'asceza-power': CandleIcon,
+  'ritual-holds': Coffee,
+  'asceza-power': TreePine,
   default: Flame,
 }
 

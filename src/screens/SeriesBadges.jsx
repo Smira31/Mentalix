@@ -36,12 +36,12 @@ const ART_FIT = {
   active_days_100: 'translate(50 50) scale(0.645) translate(-80 -68.5)',
   'month-on-path': 'translate(50 50) scale(0.769) translate(-86 -68)',
   'voice-heard': 'translate(50 50) scale(0.889) translate(-82.5 -68)',
-  'streak-two': 'translate(50 50) scale(1.25) translate(-80 -66)',
+  'streak-two': 'translate(50 50) scale(1.25) translate(-80 -68.6)',
   'streak-three': 'translate(50 50) scale(1.25) translate(-80 -66)',
-  'streak-five': 'translate(50 50) scale(1.026) translate(-80 -66)',
+  'streak-five': 'translate(50 50) scale(1.026) translate(-80 -66.8)',
   'week-on-path': 'translate(50 50) scale(0.635) translate(-84 -62)',
-  'ritual-holds': 'translate(50 50) scale(0.8) translate(-80 -76)',
-  'asceza-power': 'translate(50 50) scale(1.111) translate(-80 -70)',
+  'ritual-holds': 'translate(50 50) scale(0.8) translate(-81.4 -66.6)',
+  'asceza-power': 'translate(50 50) scale(1.111) translate(-80 -69)',
   default: 'translate(50 50) scale(1.25) translate(-80 -68)',
 }
 
