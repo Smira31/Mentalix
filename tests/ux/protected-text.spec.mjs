@@ -7,6 +7,11 @@ import { expect, test } from '@playwright/test'
  * - поле «Запиши» внутри защищённого экрана принимает ввод и вставку;
  * - в журнале выделение и копирование работают как раньше.
  *
+ * Водяной знак (#1112, этап 2):
+ * - на шаге «Пути героя» и в статье Библиотеки — ровно один слой
+ *   водяного знака (.mx-watermark-layer);
+ * - на карте «Пути героя» и в журнале — ноль слоёв.
+ *
  * Проверка блокировки — программная установка выделения и синтетические
  * события: user-select: none не даёт выделить текст мышью, а перехватчик
  * (src/lib/protectedText.js) обязан отменить событие, если выделение
@@ -99,52 +104,57 @@ test('Библиотека: текст статьи не выделяется и
 
 /*
  * Водяной знак (#1112, этап 2):
- * - на шаге «Пути героя» и в статье Библиотеки есть водяной знак
- *   (::after с непустым content на .mx-protected-text);
- * - в журнале водяного знака нет (нет класса .mx-protected-text).
+ * - на шаге «Пути героя» и в статье Библиотеки — ровно один слой;
+ * - на карте «Пути героя» и в журнале — ноль.
  */
 
-async function watermarkContent(page, selector) {
-  return page.locator(selector).evaluate(el => {
-    const after = getComputedStyle(el, '::after')
-    return { content: after.content, opacity: after.opacity }
-  })
-}
-
-test('Водяной знак: есть на шаге «Пути героя»', async ({ page }) => {
+test('Водяной знак: ровно один слой на шаге «Пути героя»', async ({ page }) => {
   await page.goto('/?demo=1&tab=library&action=hero_journey')
   await expect(page.getByTestId('hero-journey-map')).toBeVisible()
+
+  // На карте — ноль слоёв водяного знака
+  const mapCount = await page.locator('.mx-watermark-layer').count()
+  expect(mapCount).toBe(0)
+
+  // Открываем шаг — ровно один слой
   await page.getByTestId('hero-continue').click()
   await expect(page.getByTestId('hero-step-start')).toBeVisible()
 
-  const wm = await watermarkContent(page, '.mx-hj-step-intro__text')
-  expect(wm.content).not.toBe('none')
-  expect(wm.content).not.toBe('')
-  // В demo-режиме — «demo · Mentalix»
-  expect(wm.content).toContain('Mentalix')
+  const stepCount = await page.locator('.mx-watermark-layer').count()
+  expect(stepCount).toBe(1)
+
+  // Слой имеет непустой background-image (SVG-паттерн с текстом)
+  const bg = await page.locator('.mx-watermark-layer').evaluate(el => {
+    return getComputedStyle(el).backgroundImage
+  })
+  expect(bg).not.toBe('none')
+  expect(bg).toContain('data:image/svg+xml')
 })
 
-test('Водяной знак: есть в статье Библиотеки', async ({ page }) => {
+test('Водяной знак: ровно один слой в статье Библиотеки', async ({ page }) => {
   await page.goto('/?demo=1&tab=library')
   await page.getByTestId('library-article-tile').first().click()
   await expect(page.getByTestId('article-sheet')).toBeVisible()
   await page.getByTestId('article-sheet-read').click()
   await expect(page.getByTestId('article-reader')).toBeVisible()
 
-  const wm = await watermarkContent(page, '.mx-library-reader-text')
-  expect(wm.content).not.toBe('none')
-  expect(wm.content).not.toBe('')
-  expect(wm.content).toContain('Mentalix')
+  const count = await page.locator('.mx-watermark-layer').count()
+  expect(count).toBe(1)
+
+  const bg = await page.locator('.mx-watermark-layer').evaluate(el => {
+    return getComputedStyle(el).backgroundImage
+  })
+  expect(bg).not.toBe('none')
+  expect(bg).toContain('data:image/svg+xml')
 })
 
-test('Водяной знак: нет в журнале', async ({ page }) => {
+test('Водяной знак: ноль слоёв в журнале', async ({ page }) => {
   await page.goto('/?demo=1&tab=practices')
   await page.getByTestId('journal-open-cta').click()
   await page.getByTestId('dj-intro-skip').click()
   const input = page.getByTestId('dj-stream-input')
   await expect(input).toBeVisible()
 
-  // На экране журнала нет элементов с классом .mx-protected-text
-  const protectedCount = await page.locator('.mx-protected-text').count()
-  expect(protectedCount).toBe(0)
+  const count = await page.locator('.mx-watermark-layer').count()
+  expect(count).toBe(0)
 })

@@ -1,4 +1,5 @@
 import Screen from '../components/Screen'
+import WatermarkLayer from '../components/WatermarkLayer'
 import { ArrowRight } from 'lucide-react'
 import { useBackButton } from '../platform/telegram.hooks'
 import { libraryTopic } from '../data/libraryTopics'
@@ -10,6 +11,7 @@ export default function LibraryArticleReader({ article, next, onBack, onJournal,
     .filter(Boolean)
   return (
     <Screen showHeader={false} telegramChrome className="mx-library-reader-surface">
+      <WatermarkLayer />
       <article
         className="mx-library-reader"
         data-testid="article-reader"
