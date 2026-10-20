@@ -5,8 +5,26 @@ const groups = [
   ['Общие', ['week-on-path', 'month-on-path', 'active_days_100']],
 ]
 
+/* Метка над названием в шторке значка — по категории, а не по факту получения. */
+const categoryLabels = {
+  Серия: 'ЗНАЧОК СЕРИИ',
+  Записи: 'ЗНАЧОК ЗАПИСЕЙ',
+  Практики: 'ЗНАЧОК ПРАКТИК',
+  Общие: 'ОБЩИЙ ЗНАЧОК',
+}
+
+export function badgeCategoryLabel(id) {
+  const group = groups.find(([, ids]) => ids.includes(id))
+  return categoryLabels[group?.[0]] || categoryLabels['Общие']
+}
+
+/* Порядок внутри группы задаёт список ids, а не порядок входного массива:
+   в «Серии» значки идут по возрастанию дней (2 → 3 → 5 → 7 → 30). */
 export function badgeGroups(badges) {
-  return groups.map(([title, ids]) => ({ title, badges: badges.filter(badge => ids.includes(badge.id)) }))
+  return groups.map(([title, ids]) => ({
+    title,
+    badges: ids.map(id => badges.find(badge => badge.id === id)).filter(Boolean),
+  }))
 }
 
 export function upcomingBadges(badges) {

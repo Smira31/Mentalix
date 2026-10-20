@@ -294,37 +294,51 @@
   color: rgb(var(--c-text, 243 243 243));
 }
 .mx-reward-icon__glass {
-  /* Цвет шара — токен карточки (Stoic-референс). */
   fill: rgb(var(--c-card2, 17 17 17));
+  stroke: rgb(var(--c-border, 41 41 41));
+  stroke-width: 1.2;
 }
 .mx-reward-icon__shine {
   fill: none;
-  stroke: #6a6a6a;
+  stroke: rgb(var(--c-muted, 133 133 133) / 0.65);
   stroke-linecap: round;
   stroke-width: 5;
 }
-.mx-reward-icon__question {
-  fill: #6c7385;
-  /* 20 в единицах viewBox 100 — заметный, как у Stoic. */
-  font-size: 20px;
-  font-weight: 700;
+.mx-reward-icon__badge-scene--locked {
+  opacity: 0.2;
 }
-.mx-reward-icon__steps,
-.mx-reward-icon__flag,
-.mx-reward-icon__bird,
 .mx-reward-icon__symbol {
   fill: none;
-  stroke: #f2f2f2;
+  stroke: currentColor;
   stroke-linecap: round;
   stroke-linejoin: round;
-  /* Пути вписаны в шар масштабом 0.4167 — компенсируем толщину. */
-  stroke-width: 6;
+  stroke-width: 1.8;
 }
-.mx-reward-icon__dot {
-  fill: #f2f2f2;
+/* Свечение полученного значка: один тёплый токен --mx-reward-glow, ядро 11%
+   (≤ 12%), к краю − 0. Свечение статичное: анимации нет, поэтому
+   prefers-reduced-motion соблюдается без отдельного правила. */
+.mx-reward-icon__glow {
+  pointer-events: none;
+}
+.mx-reward-icon__glow-core {
+  stop-color: rgb(var(--mx-reward-glow, 237 189 96));
+  stop-opacity: 0.11;
+}
+.mx-reward-icon__glow-edge {
+  stop-color: rgb(var(--mx-reward-glow, 237 189 96));
+  stop-opacity: 0;
+}
+.mx-reward-icon__horizon {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 1.8;
+}
+.mx-reward-icon__snow {
+  fill: currentColor;
 }
 .mx-reward-icon__base {
-  fill: #f2f2f2;
+  fill: currentColor;
 }
 
 .mx-path-see-all {
