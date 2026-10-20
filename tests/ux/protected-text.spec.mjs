@@ -96,3 +96,55 @@ test('Библиотека: текст статьи не выделяется и
   expect(article.copyBlocked).toBe(true)
   expect(article.menuBlocked).toBe(true)
 })
+
+/*
+ * Водяной знак (#1112, этап 2):
+ * - на шаге «Пути героя» и в статье Библиотеки есть водяной знак
+ *   (::after с непустым content на .mx-protected-text);
+ * - в журнале водяного знака нет (нет класса .mx-protected-text).
+ */
+
+async function watermarkContent(page, selector) {
+  return page.locator(selector).evaluate(el => {
+    const after = getComputedStyle(el, '::after')
+    return { content: after.content, opacity: after.opacity }
+  })
+}
+
+test('Водяной знак: есть на шаге «Пути героя»', async ({ page }) => {
+  await page.goto('/?demo=1&tab=library&action=hero_journey')
+  await expect(page.getByTestId('hero-journey-map')).toBeVisible()
+  await page.getByTestId('hero-continue').click()
+  await expect(page.getByTestId('hero-step-start')).toBeVisible()
+
+  const wm = await watermarkContent(page, '.mx-hj-step-intro__text')
+  expect(wm.content).not.toBe('none')
+  expect(wm.content).not.toBe('')
+  // В demo-режиме — «demo · Mentalix»
+  expect(wm.content).toContain('Mentalix')
+})
+
+test('Водяной знак: есть в статье Библиотеки', async ({ page }) => {
+  await page.goto('/?demo=1&tab=library')
+  await page.getByTestId('library-article-tile').first().click()
+  await expect(page.getByTestId('article-sheet')).toBeVisible()
+  await page.getByTestId('article-sheet-read').click()
+  await expect(page.getByTestId('article-reader')).toBeVisible()
+
+  const wm = await watermarkContent(page, '.mx-library-reader-text')
+  expect(wm.content).not.toBe('none')
+  expect(wm.content).not.toBe('')
+  expect(wm.content).toContain('Mentalix')
+})
+
+test('Водяной знак: нет в журнале', async ({ page }) => {
+  await page.goto('/?demo=1&tab=practices')
+  await page.getByTestId('journal-open-cta').click()
+  await page.getByTestId('dj-intro-skip').click()
+  const input = page.getByTestId('dj-stream-input')
+  await expect(input).toBeVisible()
+
+  // На экране журнала нет элементов с классом .mx-protected-text
+  const protectedCount = await page.locator('.mx-protected-text').count()
+  expect(protectedCount).toBe(0)
+})
