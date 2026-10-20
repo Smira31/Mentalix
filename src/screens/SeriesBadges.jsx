@@ -81,7 +81,7 @@ function RewardIcon({ variant = 'default', locked = false, size = 72, className 
       <path
         className="mx-reward-icon__base"
         d="M6 104 C6 94 10 88.5 20 88.5 L80 88.5 C90 88.5 94 94 94 104 Z"
-      </path>
+      />
     </svg>
   )
 }
