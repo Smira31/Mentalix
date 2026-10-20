@@ -86,3 +86,38 @@ test('мобильное демо без рамки сохраняет обыч�
   await expect(page.getByTestId('progress-tab-history')).toHaveAttribute('aria-selected', 'true')
   await context.close()
 })
+
+test('контурная сцена значка доступна в двух мобильных размерах', async ({ browser }) => {
+  for (const viewport of [
+    { width: 360, height: 640 },
+    { width: 393, height: 852 },
+  ]) {
+    const context = await browser.newContext({
+      baseURL: 'http://127.0.0.1:4173',
+      viewport,
+      colorScheme: 'dark',
+      reducedMotion: 'reduce',
+    })
+    const page = await context.newPage()
+    await page.goto('/?demo=1&action=all_badges&frame=0')
+    await expect(page.getByTestId('all-badges-screen')).toBeVisible()
+
+    const icons = page.locator('[data-testid^="all-badge-"] .mx-reward-icon')
+    await expect(icons).toHaveCount(14)
+    const labels = await icons.evaluateAll(elements =>
+      elements.map(element => element.getAttribute('aria-label'))
+    )
+    expect(labels.some(label => label?.startsWith('Закрыт: '))).toBe(true)
+    expect(labels.some(label => label && !label.startsWith('Закрыт: '))).toBe(true)
+    expect(labels).not.toContain('Награда пока закрыта')
+    expect(await page.locator('.mx-reward-icon__question').count()).toBe(0)
+    await expect(page.locator('.mx-reward-icon__snow-scene')).toHaveCount(14)
+    expect(
+      await page.locator('.mx-reward-icon__badge-scene--locked').first().evaluate(element =>
+        getComputedStyle(element).opacity
+      )
+    ).toBe('0.2')
+
+    await context.close()
+  }
+})
