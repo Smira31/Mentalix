@@ -32,7 +32,7 @@ test('Курс подаётся данными; реестр автоматич�
   assert.match(registry, /!course.demoOnly \|\| \(demo && demoCourses\)/)
   const engine = source('src/screens/HeroJourneyMap.jsx')
   assert.doesNotMatch(engine, /from '..\/data\/heroJourney'/)
-  assert.match(engine, /courseContent\(course\)/)
+  assert.match(engine, /courseContent\(activeCourse\)/)
   assert.match(engine, /useHeroJourneyProgress\(user.id, course.id\)/)
   assert.doesNotMatch(engine, /RoundBackButton/)
   assert.match(source('src/components/CourseCatalog.jsx'), /<ThemeQuestionCarousel/)
