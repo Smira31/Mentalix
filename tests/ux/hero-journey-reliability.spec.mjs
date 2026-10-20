@@ -66,12 +66,17 @@ test('Завершение: кадр под Telegram, без большого з
 
     for (const id of ['uncertainty', 'temporality']) {
       await page.getByTestId(`hero-step-${id}`).click()
-      await expect(page.getByTestId('hero-step-start')).toBeVisible()
+      /* Лист 1 сторис идёт под полоской прогресса, поэтому кадр вводки стоит
+         ниже кадра завершения: сверку «одной линии» держат шаги без листов. */
       const intro = page.locator('.mx-hj-step-intro .mx-hj-hero')
-      await expect(intro).not.toHaveClass(/mx-hj-hero--cropped/)
-      const introTop = await intro.evaluate(el => el.getBoundingClientRect().top)
+      let introTop = null
+      if (!demoStepHasPages(id)) {
+        await expect(page.getByTestId('hero-step-start')).toBeVisible()
+        await expect(intro).not.toHaveClass(/mx-hj-hero--cropped/)
+        introTop = await intro.evaluate(el => el.getBoundingClientRect().top)
+      }
 
-      await page.getByTestId('hero-step-start').click()
+      await openStepWrite(page)
       await page.getByTestId('hero-write-input').fill('Проверка завершения шага')
       await page.getByTestId('hero-write-next').click()
       await page.getByTestId('hero-action-input').fill('Одно проверочное действие')
@@ -103,7 +108,9 @@ test('Завершение: кадр под Telegram, без большого з
           cropApplied: imageRect.top < rect.top && Math.abs(imageRect.width - rect.width) <= 1,
         }
       })
-      expect(Math.abs(layout.top - introTop)).toBeLessThanOrEqual(1)
+      if (introTop !== null) {
+        expect(Math.abs(layout.top - introTop)).toBeLessThanOrEqual(1)
+      }
       expect(layout.belowControls).toBe(true)
       expect(layout.fullWidth).toBe(true)
       expect(layout.gap).toBeGreaterThanOrEqual(0)
@@ -223,7 +230,7 @@ test('черновик сохраняется с debounce и при выходе
   })
   await page.goto('/?demo=1&tab=library&action=hero_journey')
   await page.getByTestId('hero-continue').click()
-  await page.getByTestId('hero-step-start').click()
+  await openStepWrite(page)
   await page.getByTestId('hero-write-input').fill('Черновик первого шага')
   await expect
     .poll(() =>
@@ -236,14 +243,15 @@ test('черновик сохраняется с debounce и при выходе
   // Новая правка + немедленный уход до истечения debounce.
   await page.getByTestId('hero-write-input').fill('Последняя правка перед выходом')
   await page.getByTestId('demo-chrome-back').click()
-  await expect(page.getByTestId('hero-step-start')).toBeVisible()
+  /* Назад из «Запиши» возвращает вводку: у шага с листами — на первый лист. */
+  await expect(page.getByTestId('hero-story-page')).toHaveAttribute('data-page', '1')
   await page.getByTestId('demo-chrome-back').click()
   await expect(page.getByTestId('hero-journey-map')).toBeVisible()
   await page.getByTestId('demo-chrome-back').click()
   await expect(page.getByTestId('library-home')).toBeVisible()
   await page.getByTestId('library-hero').click()
   await page.getByTestId('hero-continue').click()
-  await page.getByTestId('hero-step-start').click()
+  await openStepWrite(page)
   await expect(page.getByTestId('hero-write-input')).toHaveText('Последняя правка перед выходом')
   await page.getByTestId('hero-write-next').click()
   await expect(page.getByTestId('hero-action-input')).toBeVisible()
@@ -521,7 +529,7 @@ test('Шаг пройден на 375×667: «Продолжить» видна �
   })
   await page.goto('/?demo=1&tab=library&action=hero_journey&frame=0')
   await page.getByTestId('hero-continue').click()
-  await page.getByTestId('hero-step-start').click()
+  await openStepWrite(page)
   await page.getByTestId('hero-write-input').fill('Запись первого шага')
   await page.getByTestId('hero-write-next').click()
   await page.getByTestId('hero-action-input').fill('Одно действие')
@@ -574,7 +582,7 @@ test('Кнопка на «Запиши»: крестик при пустом п�
   })
   await page.goto('/?demo=1&tab=library&action=hero_journey&frame=0')
   await page.getByTestId('hero-continue').click()
-  await page.getByTestId('hero-step-start').click()
+  await openStepWrite(page)
 
   // Пока поле пустое — белая круглая кнопка с крестиком «×».
   const submit = page.getByTestId('hero-write-next')
@@ -587,7 +595,7 @@ test('Кнопка на «Запиши»: крестик при пустом п�
 
   // После ввода символа — в той же кнопке шеврон «›», нажатие идёт дальше.
   await page.getByTestId('hero-continue').click()
-  await page.getByTestId('hero-step-start').click()
+  await openStepWrite(page)
   await page.getByTestId('hero-write-input').fill('а')
   await expect(submit.locator('svg')).toHaveClass(/lucide-chevron-right/)
   await expect(submit).toHaveAttribute('aria-label', 'Дальше')
