@@ -73,23 +73,26 @@
 }
 
 /*
- * Мысль листа — последний абзац текста, целиком жирный (**…**): крупно
- * (строка 20 px, строки выровнены через text-wrap: balance), прижата к низу
- * сцены над белой кнопкой «›». Свободная высота
- * листа уходит в отступ над мыслью (margin-top: auto); при нехватке места
- * отступ схлопывается до padding-top — не меньше 24 px от текста, без
- * наложения на текст и кнопку.
+ * Мысль листа — последний абзац текста, целиком жирный (**…**): блок из
+ * серой метки «МЫСЛЬ» (.mx-hj-eyebrow, как метка листа сверху) и крупной
+ * строки (20 px, строки выровнены через text-wrap: balance), прижат к низу
+ * сцены над белой кнопкой «›». Свободная высота листа уходит в отступ над
+ * блоком (margin-top: auto); при нехватке места отступ схлопывается до
+ * padding-top — не меньше 24 px от текста, без наложения на текст и кнопку.
  */
-.mx-hj-story__thought {
+.mx-hj-story__thought-block {
   flex: none;
   margin-top: auto;
   padding-top: var(--mx-space-6);
+  animation: fadeIn var(--mx-motion-fast) ease-out both;
+}
+
+.mx-hj-story__thought {
   font-size: calc(20px * var(--mx-type-scale));
   font-weight: 600;
   line-height: 1.3;
   text-wrap: balance;
   color: rgb(var(--c-text));
-  animation: fadeIn var(--mx-motion-fast) ease-out both;
 }
 
 /*
@@ -105,7 +108,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .mx-hj-story__sheet,
-  .mx-hj-story__thought {
+  .mx-hj-story__thought-block {
     animation: none;
   }
 }
