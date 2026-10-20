@@ -360,7 +360,7 @@ test('MXL-019 заменяет Journey mountain metaphor на continuous progres
   assert.match(line, /role="img"/)
 })
 
-test('MXL-016 публикует семь авторских мыслей без непроверенной атрибуции', () => {
+test('MXL-016 публикует 60 мыслей подборки #1089 с kind, автором и источником', () => {
   const thoughts = readFileSync(new URL('../../src/data/dailyThoughts.js', import.meta.url), 'utf8')
   const today = readFileSync(new URL('../../src/screens/Today.jsx', import.meta.url), 'utf8')
   const quoteView = readFileSync(
@@ -368,12 +368,39 @@ test('MXL-016 публикует семь авторских мыслей без
     'utf8'
   )
 
-  assert.equal((thoughts.match(/key: '/g) || []).length, 7)
-  assert.equal((thoughts.match(/attribution: 'авторская мысль Mentalix'/g) || []).length, 7)
-  assert.equal((thoughts.match(/prompt:/g) || []).length, 7)
-  assert.equal((thoughts.match(/action:/g) || []).length, 7)
-  assert.equal((thoughts.match(/nextStep:/g) || []).length, 7)
-  assert.match(thoughts, /not quotations/)
+  const KINDS = ['stoic', 'classic', 'research', 'author']
+  const entries = (thoughts.match(/\{\s*\n\s*key:[\s\S]*?\n\s*\},?/g) || []).map(entry => ({
+    key: entry.match(/key: '([^']+)'/)[1],
+    kind: entry.match(/kind: '([^']*)'/)[1],
+    text: entry.match(/text: '([^']*)'/)[1],
+    author: entry.match(/author: '([^']*)'/)[1],
+    source: entry.match(/source: '([^']*)'/)[1],
+    attribution: entry.match(/attribution: '([^']*)'/)[1],
+    prompt: entry.match(/prompt: '([^']*)'/)[1],
+    action: entry.match(/action: '([^']*)'/)[1],
+    nextStep: entry.match(/nextStep: '([^']*)'/)[1],
+  }))
+
+  assert.equal(entries.length, 60)
+  assert.equal(new Set(entries.map(entry => entry.key)).size, 60)
+  for (const entry of entries) {
+    assert.ok(KINDS.includes(entry.kind), `kind у «${entry.key}»: ${entry.kind}`)
+    assert.ok(entry.prompt, `prompt у «${entry.key}»`)
+    assert.ok(entry.action, `action у «${entry.key}»`)
+    assert.ok(entry.nextStep, `nextStep у «${entry.key}»`)
+    assert.ok(entry.text, `text у «${entry.key}»`)
+    assert.ok(entry.text.length <= 120, `text у «${entry.key}» длиннее 120 символов`)
+  }
+
+  assert.equal(
+    entries.filter(entry => entry.attribution === 'авторская мысль Mentalix').length,
+    10
+  )
+  for (const entry of entries.filter(entry => entry.kind !== 'author')) {
+    assert.ok(entry.author.trim(), `author у «${entry.key}»`)
+    assert.ok(entry.source.trim(), `source у «${entry.key}»`)
+  }
+
   assert.match(today, /const \[thoughtOfDay\] = useState\(\(\) => getDailyThought\(\)\)/)
   assert.doesNotMatch(today, /dailyQuote/)
   assert.doesNotMatch(quoteView, /current\.attribution \|\| current\.tag/)
