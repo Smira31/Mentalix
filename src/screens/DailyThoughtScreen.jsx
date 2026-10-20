@@ -49,16 +49,16 @@ function dateOffsetStr(offset) {
 }
 
 /*
- * Копирование с атрибуцией (#1089): стоики и классика — «— автор, источник»,
- * исследования — «— источник» (авторы и год), авторские мысли Mentalix —
- * только текст, как раньше.
+ * Копирование с атрибуцией (#1089): стоики, классика и философия —
+ * «— автор, источник», исследования — «— источник» (авторы и год),
+ * авторские мысли Mentalix — только текст, как раньше.
  */
 function buildCopyText(thought) {
   if (!thought?.text) return ''
   if (thought.kind === 'research') {
     return `${thought.text}\n— ${thought.source}`
   }
-  if (thought.kind === 'stoic' || thought.kind === 'classic') {
+  if (thought.kind === 'stoic' || thought.kind === 'classic' || thought.kind === 'philosophy') {
     return `${thought.text}\n— ${thought.author}, ${thought.source}`
   }
   return thought.text
@@ -299,7 +299,9 @@ export default function DailyThoughtScreen({ thought, onClose, onGoMentor, user 
             — {currentThought.source}
           </span>
         )}
-        {(currentThought?.kind === 'stoic' || currentThought?.kind === 'classic') && (
+        {(currentThought?.kind === 'stoic' ||
+          currentThought?.kind === 'classic' ||
+          currentThought?.kind === 'philosophy') && (
           <span className="mx-daily-thought__author" data-testid="daily-thought-author">
             — {currentThought.author}
             <span className="mx-daily-thought__author-source"> · {currentThought.source}</span>
