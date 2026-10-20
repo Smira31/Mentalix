@@ -19,6 +19,15 @@ export function featuredBadge(badges) {
   , null)
 }
 
+/* Дата получения для шторки значка: «18 октября». Без даты в данных — null,
+   строку «Получен …» не показываем и ничего не додумываем. */
+export function badgeEarnedDate(badge) {
+  const time = earnedTime(badge)
+  if (time === null) return null
+  return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long' })
+    .format(new Date(time))
+}
+
 export function featuredBadgeCaption(badge) {
   if (!badge) return 'Продолжай свой путь'
   if (!badge.done) return `${badge.progress}/${badge.goal} до получения`
