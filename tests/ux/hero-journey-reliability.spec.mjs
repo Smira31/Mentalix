@@ -577,11 +577,15 @@ test('Мысль листа видна и не перекрывает кнопк
 
     const sheet = page.getByTestId('hero-story-page')
     const thought = page.getByTestId('hero-story-thought')
+    const thoughtLabel = page.getByTestId('hero-story-thought-label')
 
     for (const opened of ['1', '2', '3', '4']) {
       if (opened !== '1') await page.getByTestId('hero-story-next').click()
       await expect(sheet).toHaveAttribute('data-page', opened)
       await expect(thought).toBeVisible()
+      // Над мыслью — серая метка «МЫСЛЬ» тем же стилем, что метка листа сверху.
+      await expect(thoughtLabel).toBeVisible()
+      await expect(thoughtLabel).toHaveText('Мысль')
 
       // Мысль — именно последний жирный абзац: в тексте листа его нет.
       if (opened === '1') {
@@ -598,6 +602,7 @@ test('Мысль листа видна и не перекрывает кнопк
         const textScroll = document.querySelector('.mx-hj-step-intro__text-scroll')
         const text = document.querySelector('.mx-hj-story__text')
         const thoughtEl = document.querySelector('[data-testid="hero-story-thought"]')
+        const labelEl = document.querySelector('[data-testid="hero-story-thought-label"]')
         const button = document.querySelector('[data-testid="hero-story-next"]')
         const thoughtStyle = getComputedStyle(thoughtEl)
         return {
@@ -606,7 +611,7 @@ test('Мысль листа видна и не перекрывает кнопк
             document.documentElement.scrollHeight - document.documentElement.clientHeight,
           textScroll: textScroll.scrollHeight - textScroll.clientHeight,
           noTextOverlap:
-            thoughtEl.getBoundingClientRect().top >= text.getBoundingClientRect().bottom - 1,
+            labelEl.getBoundingClientRect().top >= text.getBoundingClientRect().bottom - 1,
           noButtonOverlap:
             button.getBoundingClientRect().top >= thoughtEl.getBoundingClientRect().bottom - 1,
           thoughtSize: parseFloat(thoughtStyle.fontSize),
