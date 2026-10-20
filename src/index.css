@@ -267,6 +267,10 @@
   /* Semantic glyph secondary accent: explicit token, not a fixed hex. */
   --c-glyph-secondary: 199 125 122;
 
+  /* Свечение полученного значка внутри шара (экран «Значки», SeriesBadges.css):
+     единственный тёплый токен, непрозрачность ядра ≤ 12%, анимации нет. */
+  --mx-reward-glow: 237 189 96;
+
   /* Нейтральная шкала чек-ина: без цветового тона в UI-хроме. */
   --mx-checkin-neutral-gradient: linear-gradient(145deg, #3a3a3a 0%, #ffffff 100%);
 
