@@ -314,6 +314,20 @@
   stroke-linejoin: round;
   stroke-width: 1.8;
 }
+/* Свечение полученного значка: один тёплый токен --mx-reward-glow, ядро 11%
+   (≤ 12%), к краю − 0. Свечение статичное: анимации нет, поэтому
+   prefers-reduced-motion соблюдается без отдельного правила. */
+.mx-reward-icon__glow {
+  pointer-events: none;
+}
+.mx-reward-icon__glow-core {
+  stop-color: rgb(var(--mx-reward-glow, 237 189 96));
+  stop-opacity: 0.11;
+}
+.mx-reward-icon__glow-edge {
+  stop-color: rgb(var(--mx-reward-glow, 237 189 96));
+  stop-opacity: 0;
+}
 .mx-reward-icon__horizon {
   fill: none;
   stroke: currentColor;
