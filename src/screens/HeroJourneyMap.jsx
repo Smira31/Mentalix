@@ -844,13 +844,16 @@ function PauseScreen({ nextTrial, onStay, onContinue }) {
 /* ── главный компонент ── */
 
 export default function HeroJourneyMap({ course = HERO_COURSE, ...props }) {
-  const { course: loadedCourse, loading, error, retry } = useHeroJourneyContent()
-  const activeCourse = loadedCourse || course
+  /* Серверные тексты относятся только к «Пути героя». Этим же экраном
+     Библиотека открывает другие практикумы — у них данные свои. */
+  const isHeroJourney = course?.id === HERO_COURSE.id
+  const { course: loadedCourse, loading, error, retry } = useHeroJourneyContent(isHeroJourney)
+  const activeCourse = (isHeroJourney && loadedCourse) || course
 
   /* Тексты едут с сервера: спокойный скелет, пока грузится, и короткая
      ошибка с «Повторить», если сети нет. */
-  if (loading && !loadedCourse) return <ContentSkeleton />
-  if (error && !loadedCourse) return <ContentError onRetry={retry} />
+  if (isHeroJourney && loading && !loadedCourse) return <ContentSkeleton />
+  if (isHeroJourney && error && !loadedCourse) return <ContentError onRetry={retry} />
 
   return (
     <CourseContext.Provider value={courseContent(activeCourse)}>

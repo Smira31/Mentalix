@@ -123,15 +123,24 @@ async function loadHeroJourney() {
   return cachedPromise
 }
 
-export function useHeroJourneyContent() {
+export function useHeroJourneyContent(enabled = true) {
+  /* enabled=false — тексты «Пути героя» не нужны: этим экраном Библиотека
+     открывает и другие практикумы, у них свои данные. */
   const [course, setCourse] = useState(() => {
+    if (!enabled) return null
     if (isPreviewDemoMode()) return buildDemoCourse()
     return cachedCourse
   })
-  const [loading, setLoading] = useState(() => !course && !isPreviewDemoMode())
+  const [loading, setLoading] = useState(() => enabled && !course && !isPreviewDemoMode())
   const [error, setError] = useState(false)
 
   const load = useCallback(async () => {
+    if (!enabled) {
+      setCourse(null)
+      setLoading(false)
+      setError(false)
+      return
+    }
     if (isPreviewDemoMode()) {
       setCourse(buildDemoCourse())
       setLoading(false)
@@ -152,7 +161,7 @@ export function useHeroJourneyContent() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [enabled])
 
   useEffect(() => {
     load()
