@@ -143,6 +143,40 @@ const FIXTURES = {
   history: [],
 }
 
+// Публикуемые статьи Библиотеки: те же id, заголовки и теги, что отдаёт
+// сервер (GET /api/content/library). В списке body нет — она догружается
+// по id, как в приложении; иначе проверка читалки была бы холостой.
+const CONTENT_ARTICLES = [
+  {
+    id: 'trevoga-ranshe-povoda',
+    question: 'Что помогает тебе спокойно начать утро?',
+    title: 'Тревога приходит раньше, чем повод',
+    excerpt:
+      'Тело поднимается за час до тебя. Голова просыпается уже во взведённом состоянии, а причина находится потом.',
+    minutes: 3,
+    date: '2026-08-01',
+    tag: 'тревога',
+    source: 'https://academic.oup.com/edrv/article/46/1/43/7739741',
+    body: 'Тревога редко приходит по расписанию. Но у неё есть одно время суток, когда она приходит чаще всего, — первые минуты после пробуждения.\n\nПричина в том, что тело просыпается раньше головы: кортизол поднимается ещё в последний час сна.',
+  },
+  {
+    id: 'son-kak-uborka',
+    question: 'Что мешает тебе вовремя лечь спать?',
+    title: 'Сон — это не пауза. Но и не уборка',
+    excerpt:
+      'Про то, что мозг ночью вывозит мусор, слышали все. Учёные в этом больше не уверены, и это интереснее исходной версии.',
+    minutes: 2,
+    date: '2026-07-20',
+    tag: 'сон',
+    source: 'https://www.nature.com/articles/s41593-024-01638-y',
+    body: 'В 2013 году вышла работа, которая за десять лет превратилась в общее место: сон — ночная уборка, а недосып — пропущенная уборка.\n\nВ 2024 году другая группа измерила то же самое иначе — и получила обратное.',
+  },
+]
+
+function contentArticleList() {
+  return CONTENT_ARTICLES.map(({ body, ...list }) => list)
+}
+
 function jsonResponse(body, status = 200) {
   return {
     status,
@@ -277,6 +311,16 @@ function fixtureFor(request) {
   }
   if (pathname === '/api/daily-journal/entries') {
     return jsonResponse({ items: dailyJournalEntries, total_days: dailyJournalEntries.length })
+  }
+
+  // Контент Библиотеки грузится с сервера (#1112, этап 3): список без body,
+  // текст статьи — отдельным запросом по id. Теги совпадают с публикуемым
+  // набором, поэтому «Ещё почитать» собирается так же, как в приложении.
+  if (pathname === '/api/content/library') return jsonResponse(contentArticleList())
+  if (/^\/api\/content\/library\/[^/]+$/.test(pathname)) {
+    const id = decodeURIComponent(pathname.split('/').pop())
+    const article = CONTENT_ARTICLES.find(item => item.id === id)
+    return article ? jsonResponse(article) : jsonResponse({ error: 'not_found' }, 404)
   }
 
   return jsonResponse({ error: `Нет локального fixture для ${method} ${pathname}` }, 501)
