@@ -15,7 +15,8 @@
 
 // ── 16 шагов курса (порядок = номер шага 1–16) ──
 // Тексты (intro, writePrompt, actionPrompt, doneTitle и т.д.) приходят с сервера.
-// Здесь — только id, номер и данные картинки для словаря.
+// Здесь — только id, номер и данные картинки (ключи словаря + кадр) — структура
+// нужна и серверным данным, и демо-контенту (?demo=1).
 export const HERO_JOURNEY_TRIALS = [
   { id: 'uncertainty', number: 1, image: { enter: 'uncertainty-enter', done: 'uncertainty-done', frame: { done: { top: 197, width: 1170, height: 703 } }, overlap: 0.08 } },
   { id: 'temporality', number: 2, image: { enter: 'temporality-enter', done: 'temporality-done', frame: { done: { top: 64, width: 1170, height: 836 } }, overlap: 0.08 } },
@@ -36,6 +37,20 @@ export const HERO_JOURNEY_TRIALS = [
 ]
 
 export const HERO_JOURNEY_TOTAL_STEPS = HERO_JOURNEY_TRIALS.length
+
+/* Финал «Возвращение»: здесь только структура и кадр картинки — тексты
+ * приходят с сервера (src/lib/heroJourneyContent.js объединяет их). */
+export const HERO_JOURNEY_FINALE = {
+  id: 'return',
+  key: 'return',
+  number: HERO_JOURNEY_TOTAL_STEPS + 1,
+  image: {
+    enter: 'return',
+    done: 'return',
+    frame: { done: { top: 65, width: 780, height: 455 } },
+    overlap: 0.12,
+  },
+}
 
 export const HERO_JOURNEY_CHAPTERS = [
   { key: 'call', roman: 'I', trialIds: ['uncertainty', 'temporality', 'choice', 'abundance'] },
