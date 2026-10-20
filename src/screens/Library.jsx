@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { ArrowRight } from 'lucide-react'
 import CourseCatalog, { CourseCards } from '../components/CourseCatalog'
 import { HERO_COURSE, libraryCourses } from '../data/courses'
@@ -13,15 +13,18 @@ import {
   LibraryV2ProgramDetail,
   LIBRARY_PROGRAMS_ENABLED,
 } from './LibraryPrograms'
-import { articleSections, nextArticle } from '../lib/libraryArticles'
+import {
+  articleSectionsFromList,
+  nextArticleFromList,
+  fetchArticles,
+  peekArticles,
+} from '../lib/libraryDataCache'
 import { redirectRemovedLibraryAddress } from '../lib/libraryNavigation'
 import { useTabReset } from '../lib/tabRefresh'
 import { previewHeroJourneyAction } from '../lib/heroJourneyDemo'
 import { platform } from '../platform'
 import './Library.css'
 import './LibraryStoic.css'
-
-const sections = articleSections()
 
 export default function Library({ user, onInputModeChange }) {
   const [screen, setScreen] = useState(() => (previewHeroJourneyAction() ? 'hero-journey' : 'home'))
@@ -30,6 +33,12 @@ export default function Library({ user, onInputModeChange }) {
   const [program, setProgram] = useState('Самодисциплина')
   const [course, setCourse] = useState(HERO_COURSE)
   const [courseOrigin, setCourseOrigin] = useState('home')
+  /* Статьи едут с сервера: список без body, текст статьи догружает читалка. */
+  const [articles, setArticles] = useState(() => peekArticles() || [])
+  const [articlesLoading, setArticlesLoading] = useState(() => !peekArticles())
+  const [articlesError, setArticlesError] = useState(false)
+  const [articlesRetry, setArticlesRetry] = useState(0)
+  const sections = useMemo(() => articleSectionsFromList(articles), [articles])
   const courses = libraryCourses(
     isPreviewDemoMode(),
     new URLSearchParams(window.location.search).get('demo_courses') !== '0'

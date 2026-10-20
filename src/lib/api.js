@@ -1087,6 +1087,12 @@ export const api = {
     list: () => request('/articles'),
   },
 
+  content: {
+    heroJourney: () => request('/content/hero-journey'),
+    library: () => request('/content/library'),
+    libraryArticle: id => request(`/content/library/${id}`),
+  },
+
   themes: {
     list: userId => request(withQuery('/themes', { user_id: userId })),
 

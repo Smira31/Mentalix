@@ -1,4 +1,3 @@
-import { mskDayKey } from './mskDate.js'
 import { scopedStorageKey } from './userDataScope.js'
 
 export const HERO_PROGRESS_KEY = 'mx-hero-journey-progress'
@@ -46,14 +45,17 @@ export function mergeProgress(local, remote) {
   )
 }
 
-export function isStepAvailable(stepNumber, prevStepId, progress, demo = false, now = new Date()) {
+/*
+ * Темп прохождения (решение владельца, вариант «Б»):
+ * дневного замка больше нет — следующий шаг открывается сразу после
+ * завершения предыдущего, в том числе первый шаг следующей главы.
+ * Порядок остаётся обязательным: без завершённого предыдущего шага
+ * следующий недоступен. Пауза между главами показывается отдельным
+ * экраном (см. src/screens/HeroJourneyMap.jsx), а не блокировкой.
+ */
+export function isStepAvailable(stepNumber, prevStepId, progress) {
   if (stepNumber === 1) return true
-  const completedAt = progress.completed[prevStepId]
-  if (!completedAt) return false
-  if (demo) return true
-  const previousDay = mskDayKey(completedAt)
-  const today = mskDayKey(now)
-  return Boolean(previousDay && today && previousDay < today)
+  return Boolean(progress.completed[prevStepId])
 }
 
 export function isStepCompleted(stepId, progress) {

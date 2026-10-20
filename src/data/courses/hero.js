@@ -1,15 +1,21 @@
-import { HERO_JOURNEY_COURSE, HERO_JOURNEY_TRIALS } from '../heroJourney'
+import { HERO_JOURNEY_TRIALS, HERO_JOURNEY_CHAPTERS } from '../heroJourney'
 import cover from '../../assets/hero-journey/course-cover@2x.webp'
 
+// Тексты курса (title, subtitle, description, prologue, finale) приходят с сервера
+// (src/lib/heroJourneyContent.js). Здесь — структурные данные для карточки курса
+// в Библиотеке и для courseContent() до загрузки серверных данных.
 export default {
-  ...HERO_JOURNEY_COURSE,
   id: 'hero-journey',
+  title: 'Путь героя',
+  subtitle: '16 шагов · 4 главы',
+  description:
+    '16 шагов о том, как не прожить жизнь на автопилоте. В каждом шаге: прочитать, записать, сделать одно действие.',
   label: 'ПРАКТИКУМ · 16 ШАГОВ',
-  // Обложка 1:2 для колонки карточки (~119×240): берём файл @2x (480×960)
-  // для Retina, чёрный фон сливается с фоном колонки, кадр — cover по центру.
   cover,
-  // Размеры нужны карточке, чтобы вёрстка не прыгала при загрузке.
   imageWidth: 480,
   imageHeight: 960,
   steps: HERO_JOURNEY_TRIALS,
+  chapters: HERO_JOURNEY_CHAPTERS,
+  prologue: null,
+  finale: null,
 }

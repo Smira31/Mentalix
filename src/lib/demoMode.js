@@ -8,6 +8,7 @@ import {
   getCell as getDaimonCell,
 } from './daimonBoard.js'
 import { DEFAULT_JOURNAL_PROMPTS } from './dailyJournalConstants.js'
+import { DEMO_ARTICLES } from '../data/demoContent.js'
 
 const DEMO_STATE_KEY = 'mentalix_preview_demo_state_v6'
 
@@ -1506,6 +1507,21 @@ function respond(path, options = {}) {
     return json({ period: { from, to }, ...result })
   }
   if (pathname === '/articles' && method === 'GET') return json([])
+  // #1112 этап 3: контент «Пути героя» и статей Библиотеки в демо-режиме
+  // отдаётся из встроенных демо-данных (src/data/demoContent.js).
+  if (pathname === '/content/library' && method === 'GET') {
+    return json(DEMO_ARTICLES.map(({ body, ...rest }) => rest))
+  }
+  if (pathname.startsWith('/content/library/') && method === 'GET') {
+    const id = pathname.slice('/content/library/'.length)
+    const found = DEMO_ARTICLES.find(a => a.id === id)
+    if (!found) {
+      const error = new Error('Демо: HTTP 404')
+      error.status = 404
+      throw error
+    }
+    return json(found)
+  }
   if (pathname.match(/^\/themes\/\d+\/reflect$/) && method === 'POST') {
     const id = numericId(pathname)
     const theme = (state.themes || []).find(t => t.id === id)
