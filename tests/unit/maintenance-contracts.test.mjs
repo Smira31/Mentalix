@@ -360,15 +360,19 @@ test('MXL-019 заменяет Journey mountain metaphor на continuous progres
   assert.match(line, /role="img"/)
 })
 
-test('MXL-016 публикует 60 мыслей подборки #1089 с kind, автором и источником', () => {
+test('MXL-016 публикует 32 мысли подборки #1089 с kind, автором и источником', () => {
   const thoughts = readFileSync(new URL('../../src/data/dailyThoughts.js', import.meta.url), 'utf8')
   const today = readFileSync(new URL('../../src/screens/Today.jsx', import.meta.url), 'utf8')
   const quoteView = readFileSync(
     new URL('../../src/screens/QuoteView.jsx', import.meta.url),
     'utf8'
   )
+  const screen = readFileSync(
+    new URL('../../src/screens/DailyThoughtScreen.jsx', import.meta.url),
+    'utf8'
+  )
 
-  const KINDS = ['stoic', 'classic', 'research', 'author']
+  const KIND_ORDER = ['stoic', 'classic', 'philosophy', 'research']
   const entries = (thoughts.match(/\{\s*\n\s*key:[\s\S]*?\n\s*\},?/g) || []).map(entry => ({
     key: entry.match(/key: '([^']+)'/)[1],
     kind: entry.match(/kind: '([^']*)'/)[1],
@@ -376,30 +380,52 @@ test('MXL-016 публикует 60 мыслей подборки #1089 с kind,
     author: entry.match(/author: '([^']*)'/)[1],
     source: entry.match(/source: '([^']*)'/)[1],
     attribution: entry.match(/attribution: '([^']*)'/)[1],
+    note: entry.match(/note: '([^']*)'/)[1],
     prompt: entry.match(/prompt: '([^']*)'/)[1],
     action: entry.match(/action: '([^']*)'/)[1],
     nextStep: entry.match(/nextStep: '([^']*)'/)[1],
   }))
 
-  assert.equal(entries.length, 60)
-  assert.equal(new Set(entries.map(entry => entry.key)).size, 60)
-  for (const entry of entries) {
-    assert.ok(KINDS.includes(entry.kind), `kind у «${entry.key}»: ${entry.kind}`)
+  assert.equal(entries.length, 32)
+  assert.equal(new Set(entries.map(entry => entry.key)).size, 32)
+  assert.doesNotMatch(thoughts, /авторская мысль Mentalix/)
+  entries.forEach((entry, index) => {
+    // Чередование С → Л → Ф → И, включая переход последней позиции на первую
+    assert.equal(entry.kind, KIND_ORDER[index % 4], `чередование у «${entry.key}»`)
     assert.ok(entry.prompt, `prompt у «${entry.key}»`)
     assert.ok(entry.action, `action у «${entry.key}»`)
     assert.ok(entry.nextStep, `nextStep у «${entry.key}»`)
+    assert.ok(entry.note, `note у «${entry.key}»`)
     assert.ok(entry.text, `text у «${entry.key}»`)
     assert.ok(entry.text.length <= 120, `text у «${entry.key}» длиннее 120 символов`)
-  }
-
-  assert.equal(
-    entries.filter(entry => entry.attribution === 'авторская мысль Mentalix').length,
-    10
-  )
-  for (const entry of entries.filter(entry => entry.kind !== 'author')) {
     assert.ok(entry.author.trim(), `author у «${entry.key}»`)
     assert.ok(entry.source.trim(), `source у «${entry.key}»`)
+    assert.ok(entry.attribution.trim(), `attribution у «${entry.key}»`)
+  })
+
+  // По 8 фраз каждой категории; цикл замыкается: 32-я — исследовательская
+  for (const kind of KIND_ORDER) {
+    assert.equal(entries.filter(entry => entry.kind === kind).length, 8, `количество «${kind}»`)
   }
+  assert.equal(entries[31].kind, 'research')
+
+  // Исследования — редакторские пересказы, не цитаты учёных
+  for (const entry of entries.filter(entry => entry.kind === 'research')) {
+    assert.match(entry.note, /пересказ/, `note у «${entry.key}» должен быть пересказом`)
+  }
+
+  // Подпись и копирование для всех четырёх категорий
+  assert.ok(screen.includes('philosophy'), 'экран учитывает философскую категорию')
+  assert.ok(
+    screen.includes('— ${thought.source}'),
+    'копирование исследования — с источником'
+  )
+  assert.ok(
+    screen.includes('— ${thought.author}, ${thought.source}'),
+    'копирование стоики/классика/философия — с автором и источником'
+  )
+  assert.ok(screen.includes('— {currentThought.source}'), 'подпись исследования — источник')
+  assert.ok(screen.includes('— {currentThought.author}'), 'подпись остальных — автор')
 
   assert.match(today, /const \[thoughtOfDay\] = useState\(\(\) => getDailyThought\(\)\)/)
   assert.doesNotMatch(today, /dailyQuote/)
