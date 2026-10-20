@@ -6,6 +6,7 @@ import {
   FlameKindling,
   Footprints,
   Lighthouse,
+  Moon,
   Sunrise,
   Tent,
   TreePine,
@@ -13,7 +14,9 @@ import {
 
 const ICON_STROKE = 1.8
 
-function CandleIcon({ x, y, width, height, className }) {
+/* «Серия: три дня» — свеча: узкий корпус, фитиль и маленький огонёк.
+   Ручки-кольца нет: по силуэту свеча сразу отличается от фонаря «пять дней». */
+function CandleIcon({ x, y, width, height, className, strokeWidth = ICON_STROKE }) {
   return (
     <svg
       x={x}
@@ -24,22 +27,22 @@ function CandleIcon({ x, y, width, height, className }) {
       className={className}
       fill="none"
       stroke="currentColor"
-      strokeWidth={ICON_STROKE}
+      strokeWidth={strokeWidth}
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
       focusable="false"
     >
-      <path d="M12 2.8c-1.2 1.7-3.1 3.2-3.1 5.2a3.1 3.1 0 0 0 6.2 0c0-1.2-.6-2.4-1.5-3.7-.2 1.1-.7 1.8-1.4 2.2-.1-1.4-.2-2.3-.2-3.7Z" />
-      <path d="M8.5 12.2h7v8.6h-7zM8.5 15.3h7" />
+      <path d="M12 4.4c-1.05 1.3-1.7 2.3-1.7 3.5a1.7 1.7 0 0 0 3.4 0c0-1.2-.65-2.2-1.7-3.5Z" />
+      <path d="M12 9.8v2.2" />
+      <path d="M9.2 12h5.6v8.6H9.2z" />
     </svg>
   )
 }
 
-/* «Второй день» — искра: меньшая ступень огня. Тот же силуэт пламени, что у
-   «Пламени» (Flame, default), уменьшенный до 60% (ширина 8.4 против 14), и две
-   искры над ним. */
-function SparkIcon({ x, y, width, height, className }) {
+/* «Серия: пять дней» — фонарь путника: явная ручка-кольцо, крышка, широкий
+   решётчатый корпус и основание. Корпус заметно шире свечи. */
+function LanternIcon({ x, y, width, height, className, strokeWidth = ICON_STROKE }) {
   return (
     <svg
       x={x}
@@ -50,22 +53,24 @@ function SparkIcon({ x, y, width, height, className }) {
       className={className}
       fill="none"
       stroke="currentColor"
-      strokeWidth={ICON_STROKE}
+      strokeWidth={strokeWidth}
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
       focusable="false"
     >
-      <path d="M9.9 16.7A1.5 1.5 0 0 0 11.4 15.2c0-.83-.3-1.2-.6-1.8-.64-1.29-.13-2.43 1.2-3.6.3 1.5 1.2 2.94 2.4 3.9 1.2.96 1.8 2.1 1.8 3.3a4.2 4.2 0 1 1-8.4 0c0-.69.26-1.38.6-1.8a1.5 1.5 0 0 0 1.5 1.5Z" />
-      <circle cx="8.6" cy="6.6" r="0.75" />
-      <circle cx="14.4" cy="4.2" r="0.75" />
+      <circle cx="12" cy="3.2" r="1.7" />
+      <path d="M9.4 5.4h5.2l2.1 3.2H7.3z" />
+      <path d="M7.4 8.6h9.2v9.6H7.4z" />
+      <path d="M7.4 12.8h9.2M7.4 16.6h9.2" />
+      <path d="M10.4 8.6v9.6M13.6 8.6v9.6" />
+      <path d="M6 18.2h12v2.4H6z" />
     </svg>
   )
 }
 
-/* «Серия: пять дней» — фонарь путника: кольцо-ручка, крышка, стеклянный
-   корпус с огоньком внутри и основание. */
-function LanternIcon({ x, y, width, height, className }) {
+/* «100 активных дней» — флаг на вершине. */
+function SummitFlagIcon({ x, y, width, height, className, strokeWidth = ICON_STROKE }) {
   return (
     <svg
       x={x}
@@ -76,56 +81,7 @@ function LanternIcon({ x, y, width, height, className }) {
       className={className}
       fill="none"
       stroke="currentColor"
-      strokeWidth={ICON_STROKE}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <circle cx="12" cy="4.3" r="1.8" />
-      <path d="M9.6 6.1h4.8l1.6 2.6H8z" />
-      <path d="M8.6 8.7h6.8v9.4H8.6z" />
-      <path d="M12 11.3c1 1.2 1.5 2 1.5 2.9a1.5 1.5 0 0 1-3 0c0-.9.5-1.7 1.5-2.9Z" />
-      <path d="M7.2 18.1h9.6v2.3H7.2z" />
-    </svg>
-  )
-}
-
-function MoonOverMountainsIcon({ x, y, width, height, className }) {
-  return (
-    <svg
-      x={x}
-      y={y}
-      width={width}
-      height={height}
-      viewBox="0 0 24 24"
-      className={className}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={ICON_STROKE}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <path d="M19.6 4.1a7.2 7.2 0 0 0 0 10.4 7.4 7.4 0 1 1-4.6-12.9 7.3 7.3 0 0 0 4.6 2.5Z" />
-      <path d="m2.5 20.7 6.1-7.2 4 4.2 2.8-3.1 6.1 6.1H2.5Z" />
-    </svg>
-  )
-}
-
-function SummitFlagIcon({ x, y, width, height, className }) {
-  return (
-    <svg
-      x={x}
-      y={y}
-      width={width}
-      height={height}
-      viewBox="0 0 24 24"
-      className={className}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={ICON_STROKE}
+      strokeWidth={strokeWidth}
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
@@ -138,34 +94,43 @@ function SummitFlagIcon({ x, y, width, height, className }) {
   )
 }
 
+/* Иконок со своими точками/звёздочками нет намеренно: «снег» шара уже
+   рисует точки, а лишние кружки внутри силуэта читались как часть значка. */
 const BADGE_ICONS = {
   'first-step': Footprints,
   first_checkin: Sunrise,
   first_journal: Feather,
-  'streak-two': SparkIcon,
+  // «Второй день» — простая искра-огонёк: меньшая ступень огня (Lucide Flame),
+  // без колбы-силуэта и без собственных искр.
+  'streak-two': Flame,
   'streak-three': CandleIcon,
   'streak-five': LanternIcon,
   streak_7: FlameKindling,
   streak_30: Lighthouse,
   'voice-heard': AudioLines,
   'week-on-path': Tent,
-  'month-on-path': MoonOverMountainsIcon,
+  'month-on-path': Moon,
   active_days_100: SummitFlagIcon,
   'ritual-holds': Coffee,
   'asceza-power': TreePine,
   default: Flame,
 }
 
-export function BadgeIcon({ name, fitScale = 1.25 }) {
+export function BadgeIcon({ name, fitScale = 1 }) {
   const Icon = BADGE_ICONS[name] || BADGE_ICONS.default
-  const size = 54 / fitScale
+  // Значок всегда рисуется в квадрате 54: оптический размер задаёт пер-вариантный
+  // transform в шаре (ART_FIT в SeriesBadges.jsx), а не размер этого элемента.
+  const size = 54
   const iconProps = {
     x: 80 - size / 2,
     y: 68 - size / 2,
     width: size,
     height: size,
     className: 'mx-reward-icon__symbol',
-    strokeWidth: ICON_STROKE,
+    // Обводка компенсирует пер-вариантный fit-scale: ICON_STROKE остаётся 1.8
+    // для всех значков, а на экране все 15 иконок рисуются одной толщиной —
+    // иначе увеличенные значки выглядели бы плотнее остальных.
+    strokeWidth: ICON_STROKE / fitScale,
     'aria-hidden': 'true',
     focusable: 'false',
   }
