@@ -25,6 +25,8 @@
   text-align: center;
   max-width: 420px;
   padding: 0 20px;
+  /* Сохраняем перенос строки в утверждённых текстах (Пушкин, II/XIV) */
+  white-space: pre-line;
 }
 
 /* Своя мысль под цитатой: по центру, курсив 17/400, без боковой линии */
@@ -48,6 +50,22 @@
   margin-top: 8px;
   font-size: max(11px, calc(13px * var(--mx-type-scale)));
   color: rgb(var(--c-muted));
+}
+
+/* Строка автора под мыслью (#1089) — как подпись «— ты»: мелкая, приглушённая.
+   Источник — мельче и тише автора (faint), новых цветов нет. */
+.mx-daily-thought__author {
+  display: block;
+  margin-top: 16px;
+  max-width: 380px;
+  text-align: center;
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
+  color: rgb(var(--c-muted));
+}
+
+.mx-daily-thought__author-source {
+  color: rgb(var(--c-faint));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
 }
 
 .mx-daily-thought__actions {
