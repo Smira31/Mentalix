@@ -10,11 +10,15 @@
  * (src/data/demoContent.js) — без запроса к серверу.
  */
 import { useCallback, useEffect, useState } from 'react'
-import { api } from './api'
-import { isPreviewDemoMode } from './demoMode'
-import { resolveHeroImage } from '../data/heroJourneyImages'
-import { HERO_JOURNEY_TRIALS, HERO_JOURNEY_CHAPTERS } from '../data/heroJourney'
-import { DEMO_HERO_JOURNEY } from '../data/demoContent'
+import { api } from './api.js'
+import { isPreviewDemoMode } from './demoMode.js'
+import { resolveHeroImage } from '../data/heroJourneyImages.js'
+import {
+  HERO_JOURNEY_TRIALS,
+  HERO_JOURNEY_CHAPTERS,
+  HERO_JOURNEY_FINALE,
+} from '../data/heroJourney.js'
+import { DEMO_HERO_JOURNEY } from '../data/demoContent.js'
 import cover from '../assets/hero-journey/course-cover@2x.webp'
 
 // Сессионный кеш: загружается один раз за сессию.
@@ -54,9 +58,26 @@ function mergeTrialWithLocal(serverTrial) {
   })
 }
 
+/* Финал держит собственный кадр картинки: сервер отдаёт тексты, локально —
+ * frame/overlap. Без этого объединения завершение курса теряет кадрирование. */
+function mergeFinaleWithLocal(serverFinale) {
+  if (!serverFinale) return null
+  const localImage = HERO_JOURNEY_FINALE.image || {}
+  const serverImage = serverFinale.image || {}
+  return resolveTrialImages({
+    ...serverFinale,
+    image: {
+      ...localImage,
+      ...serverImage,
+      enter: serverImage.enter || localImage.enter,
+      done: serverImage.done || localImage.done,
+    },
+  })
+}
+
 function buildCourseFromServer(data) {
   const trials = (data.trials || []).map(mergeTrialWithLocal)
-  const finale = data.finale ? resolveTrialImages(data.finale) : null
+  const finale = mergeFinaleWithLocal(data.finale)
   return {
     id: 'hero-journey',
     title: data.course?.title || 'Путь героя',
@@ -73,8 +94,16 @@ function buildCourseFromServer(data) {
   }
 }
 
+/* Демо-данные держат картинки ключами: словарь подключается здесь, чтобы
+ * src/data/demoContent.js оставался чистым модулем данных. */
 function buildDemoCourse() {
-  return DEMO_HERO_JOURNEY
+  const { coverKey, ...rest } = DEMO_HERO_JOURNEY
+  return {
+    ...rest,
+    cover: resolveHeroImage(coverKey) || cover,
+    steps: (rest.steps || []).map(resolveTrialImages),
+    finale: resolveTrialImages(rest.finale),
+  }
 }
 
 async function loadHeroJourney() {
