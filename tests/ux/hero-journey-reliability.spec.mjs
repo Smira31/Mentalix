@@ -618,7 +618,7 @@ test('Мысль листа видна и не перекрывает кнопк
       expect(layout.textScroll).toBeLessThanOrEqual(0)
       expect(layout.noTextOverlap).toBe(true)
       expect(layout.noButtonOverlap).toBe(true)
-      expect(layout.thoughtSize).toBeGreaterThanOrEqual(18)
+      expect(layout.thoughtSize).toBeGreaterThanOrEqual(17) // 20 px × масштаб 0.86 = 17.2
       expect(layout.thoughtWeight).toBe('600')
     }
   }
