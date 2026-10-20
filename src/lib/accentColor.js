@@ -42,7 +42,9 @@ export function getAccentColors(theme) {
   return theme === 'light' ? LIGHT_ACCENT_COLORS : DARK_ACCENT_COLORS
 }
 
+// Только акцент «Серый» (ice, #C8C8C8) — #1109.
+// Парсер всегда возвращает дефолт: пользователь с сохранённым другим
+// акцентом при входе получает «Серый» без ошибок.
 export function parseAccent(raw, theme = 'dark') {
-  const colors = getAccentColors(theme)
-  return raw && colors[raw] ? raw : theme === 'light' ? LIGHT_DEFAULT_ACCENT : DEFAULT_ACCENT
+  return DEFAULT_ACCENT
 }

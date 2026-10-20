@@ -4,7 +4,7 @@ import { platform } from '../platform'
  * Единственный адрес поддержки Mentalix. Раньше ссылка была продублирована
  * в профиле и в «политика и данные.» и вела на несуществующий аккаунт.
  */
-export const SUPPORT_TELEGRAM = 'smira31'
+export const SUPPORT_TELEGRAM = 'andre_smi3'
 
 export const SUPPORT_TELEGRAM_URL = `https://t.me/${SUPPORT_TELEGRAM}`
 

@@ -4,8 +4,8 @@
 
 export const privacyPolicy = {
   title: 'Политика конфиденциальности Mentalix',
-  version: '1.1',
-  effectiveDate: '17 октября 2026 г.',
+  version: '1.2',
+  effectiveDate: '19 октября 2026 г.',
   screenTitle: 'конфиденциальность.',
 
   sections: [
@@ -23,7 +23,7 @@ export const privacyPolicy = {
             { text: 'Оператор приложения и ответственное лицо за обработку данных: Смирнов Андрей Александрович. Email: ' },
             { text: 'smiraandre2@gmail.com', href: 'mailto:smiraandre2@gmail.com' },
             { text: '. Telegram: ' },
-            { text: '@smira31', href: 'https://t.me/smira31' },
+            { text: '@andre_smi3', href: 'https://t.me/andre_smi3' },
             { text: '.' },
           ],
         },
@@ -240,7 +240,7 @@ export const privacyPolicy = {
             { text: 'По вопросам конфиденциальности и работы с данными: Смирнов Андрей Александрович. Email: ' },
             { text: 'smiraandre2@gmail.com', href: 'mailto:smiraandre2@gmail.com' },
             { text: '. Telegram: ' },
-            { text: '@smira31', href: 'https://t.me/smira31' },
+            { text: '@andre_smi3', href: 'https://t.me/andre_smi3' },
             { text: '.' },
           ],
         },

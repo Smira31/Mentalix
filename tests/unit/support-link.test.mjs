@@ -6,7 +6,7 @@ const read = path => readFile(new URL(`../../src/${path}`, import.meta.url), 'ut
 
 test('адрес поддержки задан одной константой SUPPORT_TELEGRAM', async () => {
   const source = await read('lib/support.js')
-  assert.match(source, /export const SUPPORT_TELEGRAM = 'smira31'/)
+  assert.match(source, /export const SUPPORT_TELEGRAM = 'andre_smi3'/)
   assert.match(source, /`https:\/\/t\.me\/\$\{SUPPORT_TELEGRAM\}`/)
   assert.match(source, /platform\.openTelegramLink\(SUPPORT_TELEGRAM_URL\)/)
 })
