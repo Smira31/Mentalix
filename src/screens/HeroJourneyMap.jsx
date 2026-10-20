@@ -25,6 +25,7 @@ import {
 } from '../lib/heroJourneyProgress'
 import { heroDraftKey } from '../lib/heroJourneyState'
 import { writeLocal } from '../lib/store'
+import HeroJourneyStory from './HeroJourneyStory'
 import './HeroJourneyMap.css'
 
 const CourseContext = createContext(null)
@@ -485,13 +486,16 @@ function AboutScreen({ prologue, onBackToMap }) {
 
 /* ── B. Вход в шаг ── */
 
-function StepIntro({ trial, onStart }) {
+function StepIntro({ trial, onStart, onBack }) {
   const { chapterForTrial, finale, steps, total: HERO_JOURNEY_TOTAL_STEPS } = useCourse()
   const isFinale = finale?.id === trial.id
   const chapter = isFinale ? null : chapterForTrial(trial.id)
   const enterImage = trial.image?.enter
   const [imageFailed, setImageFailed] = useState(false)
   const showEnterImage = Boolean(enterImage) && !imageFailed
+  /* Листы вводки, как в сторис: необязательное поле шага pages — 3–5 листов
+     { label, text }. Без листов вводка показывается как раньше. */
+  const pages = Array.isArray(trial.pages) ? trial.pages.filter(page => page?.text) : []
 
   /* Подгрузка (из main): завершение текущего шага и вход следующего. */
   useEffect(() => {
@@ -499,61 +503,77 @@ function StepIntro({ trial, onStart }) {
     preloadImage(steps[trial.number]?.image?.enter)
   }, [trial, steps])
 
+  /* Иллюстрация шага: кадр входа или заглушка, когда картинки нет. Одна и та же
+     на листе 1 сторис и во вступлении шага без листов. */
+  const illustration = showEnterImage ? (
+    <HeroImage
+      flexible
+      src={enterImage}
+      size={STEP_IMAGE_DIMENSIONS.enter}
+      focus={trial.image?.focus}
+      compact={trial.image?.compact}
+      onError={() => setImageFailed(true)}
+    />
+  ) : (
+    <div className="mx-hj-step-intro__image">
+      <div className="mx-hj-step-intro__glyph">
+        <SemanticGlyph kind="pathfinder" animated={false} />
+      </div>
+      <span className="mx-hj-step-intro__image-caption">шаг {trial.number}</span>
+    </div>
+  )
+
   return (
     /* Колонка на всю доступную высоту без скролла. Сверху — картинка, которая
        сама забирает место, оставшееся после текста и кнопки (flex + min/max);
        текст слегка перехлёстывает затемнённый нижний край; кнопка
-       прижата к низу (см. .mx-hj-hero--flex и __bottom в CSS). */
+       прижата к низу (см. .mx-hj-hero--flex и __bottom в CSS). Листы сторис
+       живут в той же колонке: общая геометрия картинки сохраняется. */
     <Shell
       fit
       bodyClassName="mx-hj-step-intro"
       screenBodyClassName="mx-hj-intro-body"
     >
-      {showEnterImage ? (
-        <HeroImage
-          flexible
-          src={enterImage}
-          size={STEP_IMAGE_DIMENSIONS.enter}
-          focus={trial.image?.focus}
-          compact={trial.image?.compact}
-          onError={() => setImageFailed(true)}
+      {pages.length > 0 ? (
+        <HeroJourneyStory
+          pages={pages}
+          illustration={illustration}
+          onForward={onStart}
+          onBack={onBack}
         />
       ) : (
-        <div className="mx-hj-step-intro__image">
-          <div className="mx-hj-step-intro__glyph">
-            <SemanticGlyph kind="pathfinder" animated={false} />
+        <>
+          {illustration}
+
+          <div className="mx-hj-step-intro__text mx-protected-text">
+            {/* Скролл-обёртка: на низком экране (375×667 и ниже) длинное вступление
+                доскролливается внутри блока и не уходит под кнопку «Начать шаг». */}
+            <div className="mx-hj-step-intro__text-scroll">
+              <div className="mx-hj-step-intro__label">
+                {isFinale
+                  ? `Финал · ${trial.title}`
+                  : `Глава ${chapter.roman} · ${chapter.title} · Шаг ${trial.number} из ${HERO_JOURNEY_TOTAL_STEPS}`}
+              </div>
+              <h2 className="mx-hj-step-intro__title">{appHeading(trial.title)}</h2>
+              <p className="mx-hj-step-intro__subtitle">{trial.subtitle}</p>
+              {trial.intro.split('\n\n').map((para, i) => (
+                <p key={i} className="mx-hj-step-intro__desc">{para}</p>
+              ))}
+            </div>
           </div>
-          <span className="mx-hj-step-intro__image-caption">шаг {trial.number}</span>
-        </div>
+
+          <div className="mx-hj-step-intro__bottom">
+            <button
+              type="button"
+              data-testid="hero-step-start"
+              onClick={onStart}
+              className="cta-pill mx-hj-step-intro__cta"
+            >
+              Начать шаг
+            </button>
+          </div>
+        </>
       )}
-
-      <div className="mx-hj-step-intro__text mx-protected-text">
-        {/* Скролл-обёртка: на низком экране (375×667 и ниже) длинное вступление
-            доскролливается внутри блока и не уходит под кнопку «Начать шаг». */}
-        <div className="mx-hj-step-intro__text-scroll">
-          <div className="mx-hj-step-intro__label">
-            {isFinale
-              ? `Финал · ${trial.title}`
-              : `Глава ${chapter.roman} · ${chapter.title} · Шаг ${trial.number} из ${HERO_JOURNEY_TOTAL_STEPS}`}
-          </div>
-          <h2 className="mx-hj-step-intro__title">{appHeading(trial.title)}</h2>
-          <p className="mx-hj-step-intro__subtitle">{trial.subtitle}</p>
-          {trial.intro.split('\n\n').map((para, i) => (
-            <p key={i} className="mx-hj-step-intro__desc">{para}</p>
-          ))}
-        </div>
-      </div>
-
-      <div className="mx-hj-step-intro__bottom">
-        <button
-          type="button"
-          data-testid="hero-step-start"
-          onClick={onStart}
-          className="cta-pill mx-hj-step-intro__cta"
-        >
-          Начать шаг
-        </button>
-      </div>
     </Shell>
   )
 }

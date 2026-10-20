@@ -4,6 +4,15 @@ import {
   HERO_JOURNEY_CHAPTERS,
   HERO_JOURNEY_FINALE,
 } from '../../src/data/heroJourney.js'
+import { DEMO_HERO_JOURNEY } from '../../src/data/demoContent.js'
+
+import { openStepWrite } from './hero-journey-helpers.mjs'
+
+/* Листы вводки (сторис) — необязательное поле демо-шага: у такого шага лист 1
+   начинается под полоской прогресса, поэтому кадр входа стоит ниже кадра
+   завершения (одна линия держится только у шагов без листов). */
+const demoStepHasPages = id =>
+  Boolean(DEMO_HERO_JOURNEY.steps.find(step => step.id === id)?.pages?.length)
 
 const DEMO_PROGRESS_KEY = 'mx-hero-journey-progress:900001'
 const DEMO_DRAFT_KEY = 'mx-hero-journey-draft:900001:uncertainty'
@@ -257,11 +266,23 @@ test('черновик сохраняется с debounce и при выходе
   await expect(page.locator('.mx-library-course-progress')).toHaveText('Шаг 2 из 16')
 })
 
-test('Вступление шага 1 на 375×667 без скролла, кнопка «Начать шаг» видна', async ({ page }) => {
+/* Шаг 1 в демо идёт листами-сторис (сценарий «Вводка шага листами» ниже),
+   поэтому раскладку вступления проверяем на первом шаге без листов. */
+test('Вступление шага 2 на 375×667 без скролла, кнопка «Начать шаг» видна', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 667 })
   await page.addInitScript(() => {
     localStorage.clear()
     sessionStorage.clear()
+    // Шаг 1 пройден: «Продолжить» ведёт на шаг 2 — у него вступление без листов.
+    localStorage.setItem(
+      'mx-hero-journey-progress:900001',
+      JSON.stringify({
+        completed: { uncertainty: new Date().toISOString() },
+        signs: {},
+        reflections: {},
+        actions: {},
+      })
+    )
   })
   // frame=0: приложение на реальном viewport, как на телефоне.
   await page.goto('/?demo=1&tab=library&action=hero_journey&frame=0')
@@ -290,10 +311,11 @@ test('Вступление шага 1 на 375×667 без скролла, кн�
 
 /*
  * Шаги 5–16 и их тексты живут только на сервере, в демо текст есть у четырёх
- * шагов главы I. Проверяем все четыре: колонка без скролла, кнопка «Начать шаг»
- * видна целиком и прижата к низу, картинка не ниже минимума 76 px.
+ * шагов главы I. У вступлений без листов проверяем колонку без скролла, кнопку
+ * «Начать шаг» целиком и прижатой к низу, картинку не ниже минимума 76 px.
+ * Вводку шага 1 нарезают листы-сторис: её раскладку держит сценарий ниже.
  */
-const CHAPTER_I_IDS = ['uncertainty', 'temporality', 'choice', 'abundance']
+const CHAPTER_I_IDS = ['temporality', 'choice', 'abundance']
 
 for (const [width, height] of [
   [360, 640],
@@ -391,6 +413,105 @@ for (const [width, height] of [
     }
   })
 }
+
+/*
+ * Вводка шага листами, как в сторис: демо-шаг 1 отдаётся четырьмя листами
+ * (необязательное поле шага pages). Проверяем полоску прогресса по числу
+ * листов, листы без скролла на iPhone 390×844, вперёд — белая круглая кнопка
+ * «›» и тап по правой половине, назад — тап по левой трети и свайп вправо,
+ * а после последнего листа открывается «Запиши».
+ */
+test('Вводка шага листами: 4 сегмента, «›» вперёд, назад тапом по левой трети', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.addInitScript(() => {
+    localStorage.clear()
+    sessionStorage.clear()
+  })
+  // frame=0: приложение на реальном viewport, как на iPhone 390×844.
+  await page.goto('/?demo=1&tab=library&action=hero_journey&frame=0')
+  await page.getByTestId('hero-continue').click()
+
+  const story = page.getByTestId('hero-story-viewport')
+  const sheet = page.getByTestId('hero-story-page')
+  await expect(story).toBeVisible()
+
+  /* Лист без скролла: колонка не переполняется, документ не прокручивается,
+     шрифт текста листа не мельче читалки Библиотеки (17 px по общей шкале). */
+  async function assertSheetFits() {
+    const metrics = await page.evaluate(() => {
+      const column = document.querySelector('.mx-hj-step-intro')
+      const paragraph = document.querySelector('.mx-hj-story__text p')
+      return {
+        overflow: column.scrollHeight - column.clientHeight,
+        docOverflow:
+          document.documentElement.scrollHeight - document.documentElement.clientHeight,
+        fontSize: paragraph ? parseFloat(getComputedStyle(paragraph).fontSize) : 0,
+      }
+    })
+    expect(metrics.overflow).toBeLessThanOrEqual(0)
+    expect(metrics.docOverflow).toBeLessThanOrEqual(0)
+    expect(metrics.fontSize).toBeGreaterThanOrEqual(14.5)
+  }
+
+  // Полоска прогресса — по числу листов; лист 1 идёт с иллюстрацией шага.
+  await expect(page.locator('[data-testid="hero-story-progress"] .mx-hj-segment')).toHaveCount(4)
+  await expect(sheet).toHaveAttribute('data-page', '1')
+  await expect(sheet).toContainText('История')
+  await expect(page.locator('.mx-hj-step-intro .mx-hj-hero')).toBeVisible()
+  await assertSheetFits()
+
+  // «›» три раза — открыт четвёртый лист.
+  for (const opened of ['2', '3', '4']) {
+    await page.getByTestId('hero-story-next').click()
+    await expect(sheet).toHaveAttribute('data-page', opened)
+    await assertSheetFits()
+  }
+  await expect(sheet).toContainText('Твой шаг')
+  await expect(sheet).toContainText('Кьеркегор')
+
+  // Назад — тап по левой трети сцены; вперёд — тап по правой половине.
+  const box = await story.boundingBox()
+  const middle = Math.round(box.height / 2)
+  await story.click({ position: { x: 24, y: middle } })
+  await expect(sheet).toHaveAttribute('data-page', '3')
+  await story.click({ position: { x: Math.round(box.width - 24), y: middle } })
+  await expect(sheet).toHaveAttribute('data-page', '4')
+
+  // Свайпы (жест, а не тап): вправо — назад, влево — вперёд.
+  const touch = await page.context().newCDPSession(page)
+  async function swipe(from, to) {
+    const rect = await story.boundingBox()
+    const y = rect.y + rect.height / 2
+    await touch.send('Input.dispatchTouchEvent', {
+      type: 'touchStart',
+      touchPoints: [{ x: rect.x + rect.width * from, y }],
+    })
+    await touch.send('Input.dispatchTouchEvent', {
+      type: 'touchMove',
+      touchPoints: [{ x: rect.x + rect.width * to, y }],
+    })
+    await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
+  }
+  await swipe(0.2, 0.8)
+  await expect(sheet).toHaveAttribute('data-page', '3')
+  await swipe(0.8, 0.2)
+  await expect(sheet).toHaveAttribute('data-page', '4')
+  await touch.detach()
+
+  // «›» на последнем листе открывает «Запиши».
+  await page.getByTestId('hero-story-next').click()
+  await expect(page.getByTestId('hero-write-input')).toBeVisible()
+
+  // Назад с «Запиши» возвращает вводку на первый лист, а тап по левой трети
+  // с первого листа выходит на карту шагов.
+  await page.getByTestId('demo-chrome-back').click()
+  await expect(sheet).toHaveAttribute('data-page', '1')
+  const exitBox = await story.boundingBox()
+  await story.click({ position: { x: 24, y: Math.round(exitBox.height / 2) } })
+  await expect(page.getByTestId('hero-journey-map')).toBeVisible()
+})
 
 test('Шаг пройден на 375×667: «Продолжить» видна целиком, без скролла', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 667 })

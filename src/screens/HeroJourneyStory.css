@@ -1,0 +1,77 @@
+/*
+ * Вводка шага листами, как в сторис (необязательное поле шага pages).
+ *
+ * Разметка — части колонки .mx-hj-step-intro (HeroJourneyStory.jsx): полоска
+ * прогресса, сцена листа и нижняя группа с круглой кнопкой «›». Оболочка
+ * <Screen>, flex-колонка и геометрия иллюстрации (.mx-hj-hero--flex) остаются
+ * общими со вступлением шага без листов.
+ */
+
+/*
+ * Полоска прогресса по числу листов: под кнопками Telegram (верх поверхности
+ * <Screen>), над иллюстрацией — картинка шага начинается ниже полоски и ею не
+ * перекрывается. Нижний отступ больше верхнего: у самого кадра есть свой
+ * отрицательный верхний margin (-8 px), и без запаса он подтянулся бы к полоске.
+ */
+.mx-hj-story__progress {
+  display: flex;
+  flex: none;
+  gap: var(--mx-space-1);
+  margin-top: var(--mx-space-2);
+  margin-bottom: var(--mx-space-4);
+}
+
+/*
+ * Сцена листа: иллюстрация (только первый лист) и текст. Забирает свободную
+ * высоту колонки, излишек остаётся зазором над нижней группой — как во
+ * вступлении шага. Тап-зоны считаются по ширине сцены; наложений поверх текста
+ * нет: они перехватывали бы касание у прокручиваемого длинного листа.
+ */
+.mx-hj-story__viewport {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* Смена листа — короткое проявление: сдвига и карусели нет. */
+.mx-hj-story__sheet {
+  animation: fadeIn var(--mx-motion-fast) ease-out both;
+}
+
+/* Метка листа — мелкий капс, как eyebrow в приложении (.mx-hj-eyebrow). */
+.mx-hj-story__label {
+  display: block;
+  margin-bottom: var(--mx-space-3);
+}
+
+/*
+ * Текст листа — типографика читалки статей Библиотеки: 17 px по общей шкале
+ * (--mx-type-control-size), обычное начертание, межстрочный 1.8, межабзацный
+ * интервал 24 px, много воздуха. Жирное выделение (**так**) рисует MarkdownText.
+ */
+.mx-hj-story__text {
+  display: grid;
+  gap: var(--mx-space-6);
+  font-weight: 400;
+  line-height: 1.8;
+  color: rgb(var(--c-text));
+}
+
+/*
+ * Нижняя группа: белая круглая кнопка «›» — вперёд. Прижата к правому краю
+ * контента, как на экранах «Запиши» и «Одно действие» того же шага.
+ */
+.mx-hj-story__bottom {
+  display: flex;
+  flex: none;
+  justify-content: flex-end;
+  padding-top: var(--mx-space-3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-hj-story__sheet {
+    animation: none;
+  }
+}
