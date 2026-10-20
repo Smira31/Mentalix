@@ -414,9 +414,11 @@ export function getDailyThought() {
 /**
  * Мысль дня для конкретной календарной даты (ISO YYYY-MM-DD).
  * Используется свайпом по прошлым дням на экране «Мысль дня».
- * Детерминированный выбор по дню года — та же ротация, что и pickByDay,
- * но для произвольной даты, а не только сегодня. 32 позиции замыкаются
- * в цикл: последняя (исследовательская) сменяется первой (стоической).
+ * Детерминированный выбор по дню года — та же ротация, что и pickByDay
+ * на карточке «Сегодня» (день года по модулю длины), но для произвольной
+ * даты, а не только сегодня: карточка и экран показывают одну мысль.
+ * 32 позиции замыкаются в цикл: последняя (исследовательская)
+ * сменяется первой (стоической).
  */
 export function getDailyThoughtForDate(dateStr) {
   if (!dateStr) return getDailyThought()
@@ -425,5 +427,5 @@ export function getDailyThoughtForDate(dateStr) {
   const startOfYear = Date.UTC(d.getFullYear(), 0, 1)
   const current = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())
   const dayOfYear = Math.round((current - startOfYear) / 86400000) + 1
-  return DAILY_THOUGHTS[(dayOfYear - 1) % DAILY_THOUGHTS.length]
+  return DAILY_THOUGHTS[dayOfYear % DAILY_THOUGHTS.length]
 }

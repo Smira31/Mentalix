@@ -414,6 +414,13 @@ test('MXL-016 публикует 32 мысли подборки #1089 с kind, �
     assert.match(entry.note, /пересказ/, `note у «${entry.key}» должен быть пересказом`)
   }
 
+  // Ротация экрана совпадает с pickByDay карточки «Сегодня»
+  assert.match(
+    thoughts,
+    /dayOfYear % DAILY_THOUGHTS\.length/,
+    'экран и карточка «Сегодня» показывают одну и ту же мысль'
+  )
+
   // Подпись и копирование для всех четырёх категорий
   assert.ok(screen.includes('philosophy'), 'экран учитывает философскую категорию')
   assert.ok(
