@@ -53,6 +53,34 @@ export default function Library({ user, onInputModeChange }) {
   useEffect(() => {
     redirectRemovedLibraryAddress()
   }, [])
+
+  /* Список статей едет с сервера (GET /api/content/library): пока грузится —
+     спокойный скелет, при ошибке сети — короткий текст и «Повторить». */
+  useEffect(() => {
+    const cached = peekArticles()
+    if (cached) {
+      setArticles(cached)
+      setArticlesLoading(false)
+      setArticlesError(false)
+      return undefined
+    }
+    let alive = true
+    setArticlesLoading(true)
+    setArticlesError(false)
+    fetchArticles({ force: articlesRetry > 0 })
+      .then(list => {
+        if (alive) setArticles(list || [])
+      })
+      .catch(() => {
+        if (alive) setArticlesError(true)
+      })
+      .finally(() => {
+        if (alive) setArticlesLoading(false)
+      })
+    return () => {
+      alive = false
+    }
+  }, [articlesRetry])
   useEffect(() => {
     onInputModeChange?.(focused)
     return () => onInputModeChange?.(false)
@@ -113,7 +141,7 @@ export default function Library({ user, onInputModeChange }) {
       <LibraryArticleReader
         key={article.id}
         article={article}
-        next={nextArticle(article, sections)}
+        next={nextArticleFromList(article, articles)}
         onBack={() => {
           setScreen('home')
           setSheet(article)
@@ -126,7 +154,7 @@ export default function Library({ user, onInputModeChange }) {
         }}
         onNext={() => {
           readerScroll.current = 0
-          setArticle(nextArticle(article, sections))
+          setArticle(nextArticleFromList(article, articles))
         }}
       />
     ) : null
@@ -173,35 +201,72 @@ export default function Library({ user, onInputModeChange }) {
         {LIBRARY_PROGRAMS_ENABLED && (
           <LibraryV2ProgramLanding onOpen={() => setScreen('programs')} />
         )}
-        {sections.map(section => (
+        {articlesLoading && (
           <section
-            key={section.topic}
             className="mx-library-topic"
-            data-testid="library-topic"
-            aria-label={section.topic}
+            data-testid="library-articles-loading"
+            aria-busy="true"
+            aria-label="Статьи загружаются"
           >
-            <h2 className="mx-library-caps">{section.topic}</h2>
-            <div className="mx-library-tiles">
-              {section.articles.map(item => (
-                <button
-                  type="button"
-                  className="mx-library-tile"
-                  key={item.id}
-                  data-testid="library-article-tile"
-                  data-article-id={item.id}
-                  onClick={event => openArticle(item, event)}
-                >
-                  <span className="mx-library-art-slot" aria-hidden="true">
-                    <img src={section.image} alt="" />
-                  </span>
-                  <strong className="mx-type-card">{item.title}</strong>
-                  <span className="mx-type-body text-muted mx-library-excerpt">{item.excerpt}</span>
-                </button>
+            <div className="mx-library-articles-skeleton">
+              {[0, 1, 2].map(index => (
+                <span key={index} className="mx-hj-skeleton mx-hj-skeleton--text" />
               ))}
             </div>
           </section>
-        ))}
-        {sections.length === 0 && <p className="mx-type-body text-muted">Статей пока нет.</p>}
+        )}
+        {articlesError && !articlesLoading && (
+          <section
+            className="mx-library-topic mx-library-articles-error"
+            data-testid="library-articles-error"
+            role="alert"
+          >
+            <p className="mx-type-body text-muted">Не удалось загрузить. Проверь интернет</p>
+            <button
+              type="button"
+              className="mx-library-action mx-type-control"
+              data-testid="library-articles-retry"
+              onClick={() => setArticlesRetry(count => count + 1)}
+            >
+              Повторить
+            </button>
+          </section>
+        )}
+        {!articlesLoading &&
+          !articlesError &&
+          sections.map(section => (
+            <section
+              key={section.topic}
+              className="mx-library-topic"
+              data-testid="library-topic"
+              aria-label={section.topic}
+            >
+              <h2 className="mx-library-caps">{section.topic}</h2>
+              <div className="mx-library-tiles">
+                {section.articles.map(item => (
+                  <button
+                    type="button"
+                    className="mx-library-tile"
+                    key={item.id}
+                    data-testid="library-article-tile"
+                    data-article-id={item.id}
+                    onClick={event => openArticle(item, event)}
+                  >
+                    <span className="mx-library-art-slot" aria-hidden="true">
+                      <img src={section.image} alt="" />
+                    </span>
+                    <strong className="mx-type-card">{item.title}</strong>
+                    <span className="mx-type-body text-muted mx-library-excerpt">
+                      {item.excerpt}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </section>
+          ))}
+        {!articlesLoading && !articlesError && sections.length === 0 && (
+          <p className="mx-type-body text-muted">Статей пока нет.</p>
+        )}
       </div>
       {reader}
       {screen === 'journal' && (

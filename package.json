@@ -56,7 +56,8 @@
     "test:visual:update": "playwright test --config=playwright.ux.config.mjs --update-snapshots",
     "ux:progress-visual": "playwright test --config=playwright.progress-visual.config.mjs",
     "test:progress-visual:update": "playwright test --config=playwright.progress-visual.config.mjs --update-snapshots",
-    "check:core": "npm run test:unit && npm run lint && npm run build && npm run docs:check",
+    "check:core": "npm run test:unit && npm run lint && npm run build && npm run check:content-leak && npm run docs:check",
+    "check:content-leak": "node scripts/dist-content-leak-check.mjs",
     "format": "prettier --write .",
     "prepare": "husky",
     "preview:stop:dry-run": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/preview-stop.ps1 -DryRun"
