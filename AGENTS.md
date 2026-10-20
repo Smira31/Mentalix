@@ -254,6 +254,13 @@ screens, and keep article cards unchanged unless the owner explicitly approves t
 - Для этой задачи владелец разрешил только `check:core` и целевой Playwright-файл `hero-journey-reliability.spec.mjs` (Chromium); полный `ux:check` и WebKit оставлены CI. Команды выполняются в `docker compose -f docker-compose.base44.yml exec -T web`.
 - В свежем web-контейнере браузера Playwright нет: перед прогоном нужен `npx playwright install --with-deps chromium` (в `node:22-slim` нет системных библиотек, иначе launch падает на `libglib-2.0.so.0`). Ставить только Chromium.
 
+### Защита контента от копирования (#1112, этап 1) в Base44
+
+- Один общий класс `.mx-protected-text` (стили в `src/index.css`, глобальные перехватчики copy/contextmenu — `src/lib/protectedText.js`, установка в `App.jsx`): `user-select: none` + `-webkit-user-select: none` + `-webkit-touch-callout: none`. Класс вешается на тексты «Пути героя» (заголовок/описание курса, названия глав, вступление шага, подсказки «Запиши»/«Одно действие», тексты завершения), на пролог «О курсе» и на заголовок/текст статьи в `LibraryArticleReader.jsx`.
+- Поля ввода внутри защищённых экранов работают как раньше: и CSS-переопределение, и перехватчики исключают `input`/`textarea`/`contenteditable` (выделение, вставка, редактирование). Журнал, «Страница для себя», чек-ины, диалог, Даймон, аскезы/ритуалы и шторка-превью статьи класса не имеют — там выделение не тронуто.
+- Этапы 2 (водяной знак) и 3 (загрузка курсов с сервера) не реализованы — issue #1112 остаётся открытым.
+- Локальный gate: `check:core` и `npm run ux:protected-text` в web-контейнере (Chromium, перед первым прогоном `npx playwright install --with-deps chromium`). Полный `ux:check` (включая `protected-text.spec.mjs` через `playwright.ux.config.mjs`) и WebKit — CI. Блокировка copy/contextmenu в тесте проверяется программной установкой выделения и синтетическим событием; вставка в «Запиши» — реальным буфером обмена (`grantPermissions` + Ctrl+V).
+
 ### Библиотека Stoic в Base44
 
 - Публикуемые статьи: только `src/data/articles.js`; `libraryDataCache.js` — совместимый адаптер того же массива, не API-кеш. Старые API-снимки намеренно не читаются.

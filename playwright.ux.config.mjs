@@ -33,6 +33,7 @@ export default defineConfig({
     'dialog-errors.spec.mjs',
     'guided-journals-reliability.spec.mjs',
     'hero-journey-reliability.spec.mjs',
+    'protected-text.spec.mjs',
     'checkin-navigation-consistency.spec.mjs',
     'theme-week-carousel.spec.mjs',
     // AUD-015: переписаны под текущий интерфейс «Прогресса» и утреннего
