@@ -15,7 +15,7 @@ import JournalTextarea from '../components/JournalTextarea'
 import SemanticGlyph from '../components/SemanticGlyph'
 import { platform } from '../platform'
 import { useBackButton } from '../platform/telegram.hooks'
-import { isPreviewDemoMode } from '../lib/demoMode'
+import { useHeroJourneyContent } from '../lib/heroJourneyContent'
 import {
   useHeroJourneyProgress,
   isStepAvailable,
@@ -29,8 +29,6 @@ import './HeroJourneyMap.css'
 
 const CourseContext = createContext(null)
 const useCourse = () => useContext(CourseContext)
-
-const DEMO = isPreviewDemoMode()
 
 /* Размеры картинок шага: enter 1.6:1, done 1.3:1 (совпадает с aspect-ratio в CSS). */
 const STEP_IMAGE_DIMENSIONS = {
@@ -168,6 +166,46 @@ function Shell({
   )
 }
 
+/* ── Загрузка / ошибка контента ── */
+
+/* Спокойный скелет в стиле приложения: пока тексты едут с сервера. */
+function ContentSkeleton() {
+  return (
+    <Shell testId="hero-journey-loading">
+      <div className="mx-hj-map__head">
+        <span className="mx-hj-skeleton mx-hj-skeleton--eyebrow" />
+        <span className="mx-hj-skeleton mx-hj-skeleton--title" />
+        <span className="mx-hj-skeleton mx-hj-skeleton--desc" />
+      </div>
+      <div className="mx-hj-skeleton mx-hj-skeleton--card" />
+      <div className="mx-hj-chapters">
+        {[0, 1, 2].map(i => (
+          <div key={i} className="mx-hj-skeleton mx-hj-skeleton--chapter" />
+        ))}
+      </div>
+    </Shell>
+  )
+}
+
+/* Ошибка сети: короткий текст и «Повторить», без технических сообщений. */
+function ContentError({ onRetry }) {
+  return (
+    <Shell testId="hero-journey-error">
+      <div className="mx-hj-content-error" role="alert">
+        <p className="mx-hj-content-error__text">Не удалось загрузить. Проверь интернет</p>
+        <button
+          type="button"
+          data-testid="hero-retry"
+          onClick={onRetry}
+          className="cta-pill mx-hj-content-error__cta"
+        >
+          Повторить
+        </button>
+      </div>
+    </Shell>
+  )
+}
+
 /* ── A. Карта курса ── */
 
 function StepDot({ status, number }) {
@@ -192,6 +230,24 @@ function ChapterSection({ chapter, progress, onOpenStep, currentStepId }) {
   const hasCurrentStep = Boolean(currentStepId) && trials.some(t => t.id === currentStepId)
 
   const [expanded, setExpanded] = useState(anyStarted || hasCurrentStep)
+  /* Демо (?demo=1): главы II–IV в бандле без текстов — показываем их
+     закрытыми с подписью «Полная версия — в Telegram». */
+  const demoLocked = Boolean(chapter.demoLocked)
+
+  if (demoLocked) {
+    return (
+      <section className="mx-hj-chapter mx-hj-chapter--locked mx-hj-chapter--demo-locked">
+        <div className="mx-hj-chapter__head">
+          <div className="mx-hj-chapter__title-block">
+            <span className="mx-hj-chapter__roman">Глава {chapter.roman}</span>
+          </div>
+          <Lock size={16} className="mx-hj-chapter__lock" aria-hidden="true" />
+        </div>
+        <p className="mx-hj-chapter__demo-note">Полная версия — в Telegram</p>
+      </section>
+    )
+  }
+
   /* Закрытая глава (ни один шаг не начат и текущего шага в ней нет): серые
      заголовок и римская цифра, справа вместо счётчика — маленький замок;
      у открытой главы — стрелка «›» (раскрытая — «˅»). */
@@ -226,7 +282,7 @@ function ChapterSection({ chapter, progress, onOpenStep, currentStepId }) {
           {trials.map((trial, i) => {
             const completed = isStepCompleted(trial.id, progress)
             const prevTrial = previousTrial(trial.id)
-            const available = isStepAvailable(trial.number, prevTrial?.id, progress, DEMO)
+            const available = isStepAvailable(trial.number, prevTrial?.id, progress)
             const status = completed ? 'completed' : available ? 'current' : 'locked'
 
             return (
@@ -267,7 +323,7 @@ function FinaleCard({ progress, onOpenStep }) {
   const { steps, finale } = useCourse()
   const lastStep = steps[steps.length - 1]
   const completed = isStepCompleted(finale.id, progress)
-  const available = isStepAvailable(finale.number, lastStep?.id, progress, DEMO)
+  const available = isStepAvailable(finale.number, lastStep?.id, progress)
   const state = completed ? 'done' : available ? 'open' : 'locked'
 
   return (
@@ -607,7 +663,7 @@ function WriteScreen({
 
 /* ── G. Шаг пройден ── */
 
-function StepComplete({ trial, progress, onBackToMap }) {
+function StepComplete({ trial, progress, onBackToMap, onContinue }) {
   const {
     chapterForTrial,
     trialsForChapter,
@@ -720,7 +776,12 @@ function StepComplete({ trial, progress, onBackToMap }) {
         <button
           type="button"
           data-testid="hero-complete-map"
-          onClick={onBackToMap}
+          onClick={() => {
+            /* Последний шаг главы (4, 8, 12) ведёт на экран паузы;
+               остальные — на карту, как раньше. */
+            if (chapterDone && nextChapter) onContinue(nextChapter.trialIds[0])
+            else onContinue(null)
+          }}
           className="cta-pill mx-hj-step-intro__cta mx-hj-complete__cta"
         >
           <span>Продолжить</span>
@@ -731,21 +792,83 @@ function StepComplete({ trial, progress, onBackToMap }) {
   )
 }
 
+/* ── H. Пауза между главами ── */
+
+/*
+ * Экран паузы после последнего шага главы (шаги 4, 8, 12).
+ * Главная кнопка (одна, белая) ведёт на карту, тихая текстовая ссылка —
+ * сразу первый шаг следующей главы. После 16-го шага пауза не показывается:
+ * открывается финал «Возвращение».
+ */
+function PauseScreen({ nextTrial, onStay, onContinue }) {
+  return (
+    <Shell
+      fit
+      bodyClassName="mx-hj-pause"
+      screenBodyClassName="mx-hj-pause-body"
+      testId="hero-pause"
+    >
+      <div className="mx-hj-pause__content">
+        <span className="mx-hj-eyebrow">ПАУЗА</span>
+        <h2 className="mx-hj-pause__title">{appHeading('Глава позади')}</h2>
+        <p className="mx-hj-pause__text">
+          Ты прошёл четыре шага и взял четыре действия. Дай им пару дней — так они станут твоими,
+          а не очередным списком дел.
+        </p>
+      </div>
+
+      <div className="mx-hj-pause__bottom">
+        <button
+          type="button"
+          data-testid="hero-pause-stay"
+          onClick={onStay}
+          className="cta-pill mx-hj-pause__cta"
+        >
+          Вернусь завтра
+        </button>
+        {nextTrial && (
+          <button
+            type="button"
+            data-testid="hero-pause-next"
+            onClick={onContinue}
+            className="mx-hj-pause__skip"
+          >
+            Всё равно дальше
+          </button>
+        )}
+      </div>
+    </Shell>
+  )
+}
+
 /* ── главный компонент ── */
 
 export default function HeroJourneyMap({ course = HERO_COURSE, ...props }) {
+  /* Серверные тексты относятся только к «Пути героя». Этим же экраном
+     Библиотека открывает другие практикумы — у них данные свои. */
+  const isHeroJourney = course?.id === HERO_COURSE.id
+  const { course: loadedCourse, loading, error, retry } = useHeroJourneyContent(isHeroJourney)
+  const activeCourse = (isHeroJourney && loadedCourse) || course
+
+  /* Тексты едут с сервера: спокойный скелет, пока грузится, и короткая
+     ошибка с «Повторить», если сети нет. */
+  if (isHeroJourney && loading && !loadedCourse) return <ContentSkeleton />
+  if (isHeroJourney && error && !loadedCourse) return <ContentError onRetry={retry} />
+
   return (
-    <CourseContext.Provider value={courseContent(course)}>
-      <CourseFlow {...props} course={course} />
+    <CourseContext.Provider value={courseContent(activeCourse)}>
+      <CourseFlow {...props} course={activeCourse} />
     </CourseContext.Provider>
   )
 }
 
 function CourseFlow({ onBack, user, course }) {
-  const { findTrial, previousTrial, prologue } = useCourse()
+  const { findTrial, previousTrial, prologue, chapterForTrial } = useCourse()
   const { progress, completeStep } = useHeroJourneyProgress(user.id, course.id)
   const [view, setView] = useState('map')
   const [activeStepId, setActiveStepId] = useState(null)
+  /* Первый шаг следующей главы для экрана паузы (после шагов 4, 8, 12). */
+  const [pauseNextStepId, setPauseNextStepId] = useState(null)
   const [closeConfirmOpen, setCloseConfirmOpen] = useState(false)
   const [markedSigns, setMarkedSigns] = useState([])
   const [reflection, setReflection] = useState('')
@@ -799,7 +922,7 @@ function CourseFlow({ onBack, user, course }) {
       onBack()
       return
     }
-    if (view === 'about') {
+    if (view === 'about' || view === 'pause') {
       setView('map')
       return
     }
@@ -811,9 +934,11 @@ function CourseFlow({ onBack, user, course }) {
   function openStep(stepId) {
     const selected = findTrial(stepId)
     if (!selected) return
+    /* Демо: главы II–IV в бандле без текстов — их шаги не открываются. */
+    if (chapterForTrial(stepId)?.demoLocked) return
     if (
       !isStepCompleted(stepId, progress) &&
-      !isStepAvailable(selected.number, previousTrial(stepId)?.id, progress, DEMO)
+      !isStepAvailable(selected.number, previousTrial(stepId)?.id, progress)
     )
       return
     flushDraft()
@@ -981,7 +1106,32 @@ function CourseFlow({ onBack, user, course }) {
         trial={trial}
         progress={progress}
         onBackToMap={() => setView('map')}
+        onContinue={nextStepId => {
+          if (nextStepId) {
+            setPauseNextStepId(nextStepId)
+            setView('pause')
+          } else {
+            setView('map')
+          }
+        }}
         onBack={handleBack}
+      />
+    )
+  }
+
+  if (view === 'pause') {
+    const nextTrial = pauseNextStepId ? findTrial(pauseNextStepId) : null
+    /* Демо: главы II–IV без текстов — «Всё равно дальше» ведёт на карту,
+       где они показаны закрытыми («Полная версия — в Telegram»). */
+    const nextOpen = Boolean(pauseNextStepId) && !chapterForTrial(pauseNextStepId)?.demoLocked
+    return (
+      <PauseScreen
+        nextTrial={nextOpen ? nextTrial : null}
+        onStay={() => setView('map')}
+        onContinue={() => {
+          if (nextOpen) openStep(pauseNextStepId)
+          else setView('map')
+        }}
       />
     )
   }

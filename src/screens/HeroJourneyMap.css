@@ -1282,3 +1282,86 @@
   font-size: calc(15px * var(--mx-type-scale));
   line-height: 1.45;
 }
+
+/* ── Загрузка и ошибка контента (тексты курса едут с сервера) ── */
+
+/* Спокойный скелет: экран открывается сразу, тексты дорисовываются. */
+.mx-hj-skeleton {
+  display: block;
+  border-radius: var(--mx-radius-control);
+  background: rgb(var(--c-card2));
+  animation: mx-hj-skeleton 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes mx-hj-skeleton {
+  from {
+    opacity: 0.5;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-hj-skeleton {
+    animation: none;
+  }
+}
+
+.mx-hj-skeleton--eyebrow {
+  width: 96px;
+  height: 12px;
+}
+
+.mx-hj-skeleton--title {
+  width: 70%;
+  height: 36px;
+  margin-top: var(--mx-space-3);
+}
+
+.mx-hj-skeleton--desc {
+  width: 100%;
+  height: 48px;
+  margin-top: var(--mx-space-3);
+}
+
+.mx-hj-skeleton--card {
+  width: 100%;
+  height: 180px;
+  margin-top: var(--mx-space-5);
+}
+
+.mx-hj-skeleton--chapter {
+  width: 100%;
+  height: 56px;
+}
+
+.mx-hj-skeleton--text {
+  width: 100%;
+  height: 16px;
+  margin-bottom: var(--mx-space-2);
+}
+
+.mx-hj-content-error {
+  display: grid;
+  justify-items: start;
+  gap: var(--mx-space-5);
+  padding: var(--mx-space-8) 0;
+}
+
+.mx-hj-content-error__text {
+  margin: 0;
+  font-size: calc(15px * var(--mx-type-scale));
+  line-height: 1.45;
+  color: rgb(var(--c-muted));
+}
+
+.mx-hj-content-error__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--mx-btn-pill-h);
+  padding: 0 var(--mx-space-6);
+  font-size: calc(14px * var(--mx-type-scale));
+  font-weight: 600;
+}

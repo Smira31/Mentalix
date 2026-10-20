@@ -1,10 +1,13 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import test from 'node:test'
-import { articleSections, libraryArticles, nextArticle } from '../../src/lib/libraryArticles.js'
+import { DEMO_ARTICLES } from '../../src/data/demoContent.js'
+import { loadLibraryDataCache } from './helpers/load-library-data-cache.mjs'
 
 const source = path => readFileSync(new URL(`../../${path}`, import.meta.url), 'utf8')
 const library = source('src/screens/Library.jsx')
+
+const { articleSectionsFromList, nextArticleFromList } = await loadLibraryDataCache({ demo: true })
 
 test('Библиотека использует общий баннер и не монтирует направленные записи', () => {
   assert.match(library, /<CourseCards/)
@@ -24,10 +27,10 @@ test('Скрытые статьи не показываются: ни в раз�
     'vozrastnye-krizisy-chernovik-konchaetsya',
     'ii-i-samost-pochemu-mashina-ne-zamenit',
   ]
-  const sections = articleSections()
+  const sections = articleSectionsFromList(DEMO_ARTICLES)
   const shown = new Set(sections.flatMap(s => s.articles.map(a => a.id)))
   for (const id of hiddenIds) {
-    assert.equal(libraryArticles.some(a => a.id === id), false, id)
+    assert.equal(DEMO_ARTICLES.some(a => a.id === id), false, id)
     assert.equal(shown.has(id), false, id)
   }
   // Видимыми остаются «Тревога…» (тревога) и «Сон…» (сон) — по одной статье
@@ -43,17 +46,30 @@ test('Скрытые статьи не показываются: ни в раз�
 })
 
 test('Разделы минимум по две статьи, маленькие темы — в конце', () => {
-  const sections = articleSections()
-  assert.equal(articleSections([]).length, 0)
+  assert.equal(articleSectionsFromList([]).length, 0)
+  const list = [
+    { id: 'a', tag: 'сон' },
+    { id: 'b', tag: 'сон' },
+    { id: 'c', tag: 'тревога' },
+  ]
+  const sections = articleSectionsFromList(list)
+  assert.deepEqual(
+    sections.map(s => s.topic),
+    ['Сон', 'Ещё почитать']
+  )
+  assert.deepEqual(
+    sections.map(s => s.articles.map(a => a.id)),
+    [['a', 'b'], ['c']]
+  )
   const ordered = sections.flatMap(s => s.articles)
-  assert.equal(new Set(ordered.map(a => a.id)).size, libraryArticles.length)
+  assert.equal(new Set(ordered.map(a => a.id)).size, list.length)
   for (let i = 0; i < ordered.length; i++)
-    assert.equal(nextArticle(ordered[i]).id, ordered[(i + 1) % ordered.length].id)
-  assert.equal(nextArticle({ id: 'only' }, [{ articles: [{ id: 'only' }] }]), null)
+    assert.equal(nextArticleFromList(ordered[i], list).id, ordered[(i + 1) % ordered.length].id)
+  assert.equal(nextArticleFromList({ id: 'only' }, [{ id: 'only' }]), null)
 })
 
 test('У каждой статьи ровно один короткий вопрос без возраста, денег и ИИ', () => {
-  for (const article of libraryArticles) {
+  for (const article of DEMO_ARTICLES) {
     assert.equal((article.question.match(/\?/g) || []).length, 1)
     assert.ok(article.question.length < 100)
     assert.doesNotMatch(article.question, /возраст|деньг|\bИИ\b|\d/i)

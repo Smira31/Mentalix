@@ -8,6 +8,7 @@ import {
   heroProgressKey,
   heroDraftKey,
   isStepAvailable,
+  isStepCompleted,
 } from '../../src/lib/heroJourneyState.js'
 import {
   switchUserDataScope,
@@ -113,30 +114,44 @@ test('полное удаление аккаунта очищает прогре
   assert.equal(local.length, 0)
 })
 
-for (const number of [5, 9, 13]) {
-  test(`первый шаг главы (${number}) использует предыдущий шаг всего курса`, () => {
-    const trial = HERO_JOURNEY_TRIALS[number - 1]
-    const previous = previousTrial(trial.id)
-    assert.equal(previous.number, number - 1)
+/*
+ * Темп прохождения (решение владельца, вариант «Б»): дневного замка больше нет.
+ * Следующий шаг открыт сразу после завершения предыдущего — в том числе первый
+ * шаг следующей главы. Обязателен только порядок: без пройденного предыдущего
+ * шага следующий недоступен.
+ */
+test('первый шаг курса открыт всегда, остальные — только после предыдущего', () => {
+  assert.equal(HERO_JOURNEY_TRIALS.length, 16)
+  for (const [index, trial] of HERO_JOURNEY_TRIALS.entries()) {
+    if (index === 0) {
+      assert.equal(isStepAvailable(trial.number, null, emptyProgress()), true)
+      continue
+    }
+    const previous = HERO_JOURNEY_TRIALS[index - 1]
+    // Номер шага — по порядку, на границе главы предыдущий шаг тоже предыдущий.
+    assert.equal(previousTrial(trial.id).number, trial.number - 1)
+    assert.equal(isStepAvailable(trial.number, previous.id, emptyProgress()), false, trial.id)
     const progress = { ...emptyProgress(), completed: { [previous.id]: '2026-10-01T12:00:00Z' } }
-    assert.equal(
-      isStepAvailable(number, previous.id, progress, false, new Date('2026-10-02T12:00:00Z')),
-      true
-    )
-    assert.equal(isStepAvailable(number, previous.id, emptyProgress(), true), false)
-  })
-}
+    assert.equal(isStepAvailable(trial.number, previous.id, progress), true, trial.id)
+    assert.equal(isStepCompleted(previous.id, progress), true)
+  }
+})
 
-test('открытие ровно в полночь МСК независимо от часового пояса устройства', () => {
-  const progress = { ...emptyProgress(), completed: { uncertainty: '2026-10-02T20:59:00Z' } }
-  assert.equal(
-    isStepAvailable(2, 'uncertainty', progress, false, new Date('2026-10-02T20:59:59Z')),
-    false
-  )
-  assert.equal(
-    isStepAvailable(2, 'uncertainty', progress, false, new Date('2026-10-02T21:00:00Z')),
-    true
-  )
-  progress.completed.uncertainty = 'invalid'
-  assert.equal(isStepAvailable(2, 'uncertainty', progress), false)
+test('дневного замка нет: шаг, пройденный сегодня, сразу открывает следующий', () => {
+  for (const number of [2, 5, 9, 13]) {
+    const previous = HERO_JOURNEY_TRIALS[number - 2]
+    const progress = {
+      ...emptyProgress(),
+      completed: { [previous.id]: new Date().toISOString() },
+    }
+    // Прежнее правило ждало следующего дня; теперь ждать нечего.
+    assert.equal(isStepAvailable(number, previous.id, progress), true, previous.id)
+    // Аргумент дня больше не влияет на результат (сигнатура без даты).
+    assert.equal(
+      isStepAvailable(number, previous.id, progress, false, new Date('2026-10-01T00:00:00Z')),
+      true,
+      previous.id
+    )
+    assert.equal(isStepAvailable(number, previous.id, emptyProgress(), true), false, previous.id)
+  }
 })
