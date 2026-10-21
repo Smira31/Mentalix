@@ -14,8 +14,12 @@ permissions:
   contents: read
 
 concurrency:
+  # Устаревшие PR-прогоны отменяются: у PR свой ref (refs/pull/N/merge), поэтому
+  # новый push в тот же PR снимает прежний прогон и не считает минуты дважды на
+  # старых коммитах. Прогоны main НЕ отменяются — на завершение этого workflow
+  # опирается деплой Firebase Hosting (workflow_run), отмена могла бы его расстроить.
   group: mentalix-ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   NODE_VERSION: 22.22.1
@@ -152,6 +156,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Cache Playwright browsers
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
@@ -220,179 +230,6 @@ jobs:
             test-results/
           if-no-files-found: ignore
 
-  ux-visual:
-    name: Playwright visual snapshots (informational)
-    runs-on: ubuntu-latest
-    needs: quality
-    if: github.event_name == 'pull_request'
-    timeout-minutes: 15
-    permissions:
-      contents: read
-      pull-requests: write
-      actions: read
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-
-      - name: Setup Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
-
-      - name: Download baselines from main
-        id: download-baselines
-        continue-on-error: true
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-          RUN_ID=$(gh run list --workflow=visual-baselines.yml \
-            --branch=main --status=completed --conclusion=success \
-            --limit=1 --json databaseId --jq '.[0].databaseId' 2>/dev/null || echo "")
-          if [ -z "$RUN_ID" ]; then
-            echo "baselines_downloaded=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Нет артефакта эталонов с main — bootstrap: генерация из текущей ветки"
-            exit 0
-          fi
-          echo "Скачиваю эталоны из run $RUN_ID"
-          gh run download "$RUN_ID" --name visual-baselines \
-            --dir tests/ux/ux-check.spec.mjs-snapshots/
-          echo "baselines_downloaded=true" >> "$GITHUB_OUTPUT"
-
-      - name: Run visual snapshots
-        continue-on-error: true
-        env:
-          RUN_VISUAL_SNAPSHOTS: 'true'
-          UX_FIXED_TIME: '08:00'
-        run: |
-          if [ "${{ steps.download-baselines.outputs.baselines_downloaded }}" = "true" ]; then
-            npm run ux:check -- --retries=1
-          else
-            npm run ux:check -- --update-snapshots --retries=1
-          fi
-
-      - name: Generate diff report
-        if: always()
-        env:
-          GITHUB_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        run: node scripts/visual-diff-report.mjs
-
-      - name: Upload visual diff artifacts
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: visual-diff-${{ github.event.pull_request.number }}
-          path: |
-            artifacts/ux-check/
-            test-results/
-          if-no-files-found: ignore
-          retention-days: 7
-
-      - name: Post/update «было / стало» comment
-        if: always()
-        uses: actions/github-script@v9
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const fs = require('fs')
-            const marker = '<!-- mx-visual-diff -->'
-            let diffReport
-            try {
-              diffReport = fs.readFileSync('artifacts/ux-check/visual-diff-report.md', 'utf8')
-            } catch {
-              diffReport = '## 📸 Визуальные изменения: было / стало\n\n⚠️ Не удалось сформировать отчёт визуального diff.'
-            }
-            const body = `${marker}\n${diffReport}`
-            const { owner, repo } = context.repo
-            const issue_number = context.issue.number
-            const comments = await github.paginate(github.rest.issues.listComments, {
-              owner, repo, issue_number, per_page: 100,
-            })
-            const previous = comments.find(comment =>
-              comment.body?.includes(marker) && comment.user?.type === 'Bot'
-            )
-            if (previous) {
-              await github.rest.issues.updateComment({ owner, repo, comment_id: previous.id, body })
-            } else {
-              await github.rest.issues.createComment({ owner, repo, issue_number, body })
-            }
-
-  ux-visual-progress:
-    name: Progress visual snapshots (demo mode, informational)
-    runs-on: ubuntu-latest
-    needs: quality
-    if: github.event_name == 'pull_request'
-    timeout-minutes: 15
-    permissions:
-      contents: read
-      pull-requests: write
-      actions: read
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-
-      - name: Setup Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
-
-      - name: Download progress baselines from main
-        id: download-baselines
-        continue-on-error: true
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-          RUN_ID=$(gh run list --workflow=visual-baselines.yml \
-            --branch=main --status=completed --conclusion=success \
-            --limit=1 --json databaseId --jq '.[0].databaseId' 2>/dev/null || echo "")
-          if [ -z "$RUN_ID" ]; then
-            echo "baselines_downloaded=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Нет артефакта эталонов Прогресса с main — bootstrap: генерация из текущей ветки"
-            exit 0
-          fi
-          echo "Скачиваю эталоны Прогресса из run $RUN_ID"
-          gh run download "$RUN_ID" --name visual-baselines-progress \
-            --dir tests/ux/progress-tabs-visual.spec.mjs-snapshots/
-          echo "baselines_downloaded=true" >> "$GITHUB_OUTPUT"
-
-      - name: Run progress visual snapshots
-        continue-on-error: true
-        env:
-          RUN_VISUAL_SNAPSHOTS: 'true'
-          UX_FIXED_TIME: '08:00'
-        run: |
-          if [ "${{ steps.download-baselines.outputs.baselines_downloaded }}" = "true" ]; then
-            npm run ux:progress-visual -- --retries=1
-          else
-            npm run ux:progress-visual -- --update-snapshots --retries=1
-          fi
-
-      - name: Upload progress visual artifacts
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: progress-visual-diff-${{ github.event.pull_request.number }}
-          path: |
-            artifacts/progress-visual/
-            test-results/
-          if-no-files-found: ignore
-          retention-days: 7
-
   backend-health:
     name: Backend health
     needs: change-scope
@@ -439,124 +276,6 @@ jobs:
           fi
           exit 0
 
-  qa-crawl:
-    name: QA обход (informational)
-    runs-on: ubuntu-latest
-    needs: quality
-    continue-on-error: true
-    timeout-minutes: 15
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-
-      - name: Setup Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
-
-      - name: Run QA crawl
-        env:
-          QA_FIXED_TIME: '08:00'
-        run: npm run qa:crawl
-
-      - name: Upload QA report
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: qa-report
-          path: qa-report/
-          retention-days: 7
-          if-no-files-found: ignore
-
-      - name: Publish summary
-        if: always()
-        run: |
-          if [ -f qa-report/summary.md ]; then
-            cat qa-report/summary.md >> "$GITHUB_STEP_SUMMARY"
-          fi
-
-  bundle-size-report:
-    name: Отчёт о размерах чанков (informational)
-    runs-on: ubuntu-latest
-    needs: quality
-    if: github.event_name == 'pull_request'
-    timeout-minutes: 10
-    continue-on-error: true
-    permissions:
-      contents: read
-      pull-requests: write
-    steps:
-      - name: Checkout PR
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with:
-          fetch-depth: 0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build PR branch
-        run: npm run build
-
-      # Сборку PR уносим из рабочей папки: checkout main её не трогает.
-      # Скрипт тоже — иначе checkout main затрёт его версией из main.
-      - name: Save PR dist
-        run: |
-          mv dist "$RUNNER_TEMP/dist-pr"
-          cp scripts/bundle-size-report.mjs "$RUNNER_TEMP/bundle-size-report.mjs"
-
-      - name: Checkout main
-        run: |
-          git checkout origin/main -- .
-
-      - name: Install dependencies (main)
-        run: npm ci
-
-      - name: Build main
-        run: npm run build
-
-      - name: Generate bundle size report
-        run: node "$RUNNER_TEMP/bundle-size-report.mjs" "$RUNNER_TEMP/dist-pr" dist > bundle-report.md
-
-      - name: Post bundle size comment
-        uses: actions/github-script@v9
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const fs = require('fs')
-            const marker = '<!-- mx-bundle-size -->'
-            let report
-            try {
-              report = fs.readFileSync('bundle-report.md', 'utf8')
-            } catch {
-              report = '## 📦 Размеры чанков сборки\n\n⚠️ Не удалось сформировать отчёт.'
-            }
-            const body = `${marker}\n${report}`
-            const { owner, repo } = context.repo
-            const issue_number = context.issue.number
-            const comments = await github.paginate(github.rest.issues.listComments, {
-              owner, repo, issue_number, per_page: 100,
-            })
-            const previous = comments.find(comment =>
-              comment.body?.includes(marker) && comment.user?.type === 'Bot'
-            )
-            if (previous) {
-              await github.rest.issues.updateComment({ owner, repo, comment_id: previous.id, body })
-            } else {
-              await github.rest.issues.createComment({ owner, repo, issue_number, body })
-            }
-
   telegram-p0:
     name: Telegram P0 (informational)
     runs-on: ubuntu-latest
@@ -574,6 +293,12 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
 
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
@@ -593,89 +318,6 @@ jobs:
             artifacts/telegram-p0-check/
           retention-days: 7
           if-no-files-found: ignore
-
-  pr-screenshots:
-    name: PR-скриншоты экранов (informational)
-    runs-on: ubuntu-latest
-    needs: quality
-    if: github.event_name == 'pull_request'
-    continue-on-error: true
-    timeout-minutes: 15
-    permissions:
-      contents: read
-      pull-requests: write
-      actions: read
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-
-      - name: Setup Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
-
-      # Демо-режим (?demo=1) в собранной версии работает только с этим флагом.
-      - name: Build preview
-        run: VITE_LOCAL_PREVIEW=true npm run build
-
-      - name: Start preview server
-        run: npx vite preview --host 127.0.0.1 --port 4173 &
-        env:
-          NODE_ENV: production
-
-      - name: Wait for server
-        run: npx wait-on http://127.0.0.1:4173 --timeout 30000
-
-      - name: Capture PR screenshots
-        run: node tests/visual/pr-screens.mjs
-        env:
-          PR_SCREENSHOTS_BASE_URL: 'http://127.0.0.1:4173'
-
-      - name: Upload screenshot artifacts
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: pr-screenshots-${{ github.event.pull_request.number }}
-          path: artifacts/pr-screenshots/
-          retention-days: 14
-          if-no-files-found: ignore
-
-      - name: Post/update screenshots comment
-        if: always()
-        uses: actions/github-script@v9
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const fs = require('fs')
-            const marker = '<!-- mx-pr-screenshots -->'
-            const runUrl = `${context.payload.repository.html_url}/actions/runs/${context.runId}`
-            let gallery
-            try {
-              gallery = fs.readFileSync('artifacts/pr-screenshots/README.md', 'utf8')
-            } catch {
-              gallery = '⚠️ Скриншоты не сгенерированы.'
-            }
-            const body = `${marker}\n## 📸 Скриншоты ключевых экранов\n\n${gallery}\n\n🔗 [Артефакт со скриншотами](${runUrl})`
-            const { owner, repo } = context.repo
-            const issue_number = context.issue.number
-            const comments = await github.paginate(github.rest.issues.listComments, {
-              owner, repo, issue_number, per_page: 100,
-            })
-            const previous = comments.find(comment =>
-              comment.body?.includes(marker) && comment.user?.type === 'Bot'
-            )
-            if (previous) {
-              await github.rest.issues.updateComment({ owner, repo, comment_id: previous.id, body })
-            } else {
-              await github.rest.issues.createComment({ owner, repo, issue_number, body })
-            }
 
   required-check:
     name: Функциональная проверка проекта
