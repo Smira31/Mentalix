@@ -1424,13 +1424,16 @@ function CheckInCore({
 
   const isMorningNoteStep = !isEvening && isCard && cardIdx === 0
 
-  const interactiveStyle = isMorningNoteStep
-    ? {
-        overflowY: 'scroll',
-        WebkitOverflowScrolling: 'touch',
-        touchAction: 'pan-y',
-      }
-    : undefined
+  /*
+   * Принудительный overflowY: 'scroll' для утреннего шага заметки (коммит
+   * 463f279f) удалён: ветка недостижима. CheckInCore рендерится только при
+   * mode === 'evening' (см. CheckIn ниже), поэтому isEvening здесь всегда
+   * true, а isMorningNoteStep — всегда false. Утренний чек-ин идёт через
+   * MorningCheckInFlow, где область шага скроллится естественно
+   * (.mx-demo-checkin__body.is-editor, overflow-y: auto). Область шага снова
+   * использует overflow-y: auto из FULLSCREEN_SCROLL_CLASS, без
+   * зарезервированной полосы прокрутки пустого пространства.
+   */
 
   const teaserLogged = useRef(false)
   useEffect(() => {
@@ -1778,7 +1781,7 @@ function CheckInCore({
         </div>
       )}
 
-      <div className={FULLSCREEN_SCROLL_CLASS} style={interactiveStyle}>
+      <div className={FULLSCREEN_SCROLL_CLASS}>
         <StepSlide stepKey={step} onAnimatingChange={handleAnimatingChange}>
           <div className={isCard || isEmotionStep ? CHECKIN_LONG_CLASS : CHECKIN_CENTER_CLASS}>
             {/* Текстовые вопросы вечера: своих «назад» и «закрыть» нет —
