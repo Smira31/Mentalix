@@ -44,6 +44,20 @@
   min-height: 0;
 }
 
+/* Шапка финала и экрана серии — одна высота.
+   Утренний финал живёт в .mx-demo-checkin и держит строку контролов
+   (.mx-demo-checkin__header:empty = var(--mx-header-control) + 12px = 55 px).
+   Вечерний финал и серия обязаны стоять на той же линии: с общей полосой
+   FULLSCREEN_HEADER_SLOT_CLASS (52 px) герой серии начинался на 3 px выше
+   иллюстрации финала, и экран прыгал при переходе. */
+.mx-finale-header-slot {
+  display: flex;
+  flex: none;
+  align-items: center;
+  min-height: calc(var(--mx-header-control) + 12px);
+  padding-inline: var(--mx-screen-x);
+}
+
 /* Полоса героя: всё свободное место над заголовком, картинка по центру.
    Минимальной высоты нет: при нехватке места картинка ужинается (max-height
    ниже), но полоса не выталкивает нижний блок из области над пилюлей. */

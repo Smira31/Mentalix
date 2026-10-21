@@ -1637,8 +1637,10 @@ function CheckInCore({
         style={viewportStyle}
       >
         {/* Финалу свои «назад» и «закрыть» не нужны: возврат — системная
-            «Назад» Telegram, выход — пилюля «Сохранить и выйти» внизу. */}
-        <div className={CHECKIN_HEADER_CLASS} aria-hidden="true" />
+            «Назад» Telegram, выход — пилюля «Сохранить и выйти» внизу.
+            Высота шапки — общая с утренним финалом и экраном серии
+            (.mx-finale-header-slot), иначе герой серии стоит на 3 px выше. */}
+        <div className="mx-finale-header-slot" aria-hidden="true" />
 
         <div className={FULLSCREEN_COMPLETION_CLASS}>
           <CheckInCompletion

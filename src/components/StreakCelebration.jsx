@@ -3,7 +3,6 @@ import { Check } from 'lucide-react'
 import { platform } from '../platform'
 import { useBackButton, useMainButton } from '../platform/telegram.hooks'
 import {
-  FULLSCREEN_HEADER_SLOT_CLASS,
   FULLSCREEN_SHELL_CLASS,
   getFullscreenPortalTarget,
   useFullscreenSurface,
@@ -38,12 +37,9 @@ export default function StreakCelebration({ streak, days = [], onDone }) {
       style={{ ...style, paddingBottom: 0 }}
       data-testid="streak-celebration"
     >
-      {/* Пустой слот той же высоты, что у финала: содержимое обоих экранов
-          начинается на одной линии. */}
-      <div
-        className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`}
-        aria-hidden="true"
-      />
+      {/* Пустой слот той же высоты, что у финала (см. .mx-finale-header-slot):
+          содержимое обоих экранов начинается на одной линии. */}
+      <div className="mx-finale-header-slot" aria-hidden="true" />
       <div className="mx-fullscreen-completion w-full flex-1 min-h-0 flex flex-col overflow-hidden">
         <section className="mx-completion mx-completion--streak">
           <div className="mx-completion__art-wrap">
