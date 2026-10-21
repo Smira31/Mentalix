@@ -1116,12 +1116,20 @@ export default function DailyJournalFlow({ userId, onClose, reflectionPrompt = n
     return null
   }
 
+  /*
+   * Финал журнала — экран без полей ввода. Клавиатура закрывается анимацией
+   * уже после того, как финал открылся (`saveAndComplete` показывает его при
+   * инсете меньше 80 px), и на поверхности 'resize' последние её кадры
+   * растягивали экран: рисунок дневника менял размер и смещался. Та же
+   * стабилизация, что у финала чек-ина, — контракт в fullscreenSurface.js.
+   */
   return (
     <Screen
       onBack={goBack}
       registerSystemBack={false}
       scroll={stage === 'review' || stage === 'today'}
       fullFrame={stage !== 'intro' && stage !== 'review' && stage !== 'today'}
+      keyboardStrategy={stage === 'complete' ? 'stable' : 'resize'}
       footer={footerContent}
       footerClassName={stage === 'complete' ? 'mx-dj-footer--complete' : ''}
       bodyClassName={
