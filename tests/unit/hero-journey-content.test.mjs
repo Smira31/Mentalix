@@ -99,8 +99,13 @@ test('главы II–IV в бандле закрыты: у шагов 5–16 н
     assert.equal(step.actionPrompt, undefined)
   }
   // Закрытыми помечены ровно три главы (II–IV), первая открыта.
-  assert.equal(DEMO_HERO_JOURNEY.chapters.filter(ch => ch.demoLocked).length, 3)
-  assert.equal(DEMO_HERO_JOURNEY.chapters[0].demoLocked, undefined)
+  // Демо несёт тот же контракт прав, что сервер (#1122): не demoLocked.
+  assert.equal(DEMO_HERO_JOURNEY.chapters.filter(ch => ch.locked).length, 3)
+  assert.equal(DEMO_HERO_JOURNEY.chapters[0].locked, undefined)
+  assert.deepEqual(DEMO_HERO_JOURNEY.access, {
+    has_pro: false,
+    free_chapter_keys: ['call'],
+  })
 })
 
 test('некорректный payload не считается пустым курсом; листы не достраиваются', async () => {

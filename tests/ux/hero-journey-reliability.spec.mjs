@@ -159,10 +159,11 @@ for (const width of [393, 789]) {
     // Порядок обязателен: шаг 3 без шага 2 закрыт.
     await expect(page.getByTestId('hero-step-choice')).toHaveAttribute('data-state', 'locked')
     await expect(page.getByTestId('hero-step-choice')).toBeDisabled()
-    // Доступные шаги главы I раскрыты, главы II–IV в демо закрыты карточкой.
-    await expect(page.locator('.mx-hj-chapter--demo-locked')).toHaveCount(3)
-    await expect(page.locator('.mx-hj-chapter--demo-locked').first()).toContainText(
-      'Полная версия — в Telegram'
+    // Доступные шаги главы I раскрыты, главы II–IV в демо закрыты по правам
+    // (#1122): карточка Pro на месте главы ведёт на экран подписки.
+    await expect(page.locator('.mx-hj-chapter--pro-locked')).toHaveCount(3)
+    await expect(page.locator('.mx-hj-chapter--pro-locked').first()).toContainText(
+      'Доступно по подписке Pro'
     )
     await page.getByTestId('hero-continue').click()
     await expect(page.getByTestId('hero-step-start')).toBeVisible()
