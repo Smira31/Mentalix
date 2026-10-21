@@ -10,6 +10,10 @@ const cssSource = await readFile(
   new URL('../../src/screens/HeroJourneyMap.css', import.meta.url),
   'utf8'
 )
+const sheetSource = await readFile(
+  new URL('../../src/components/HeroJourneySheet.jsx', import.meta.url),
+  'utf8'
+)
 
 test('StepComplete — колонка без скролла, зазор над «Продолжить» ограничен', () => {
   // Кнопка «Продолжить» остаётся на месте (testid не менялся) и лежит в нижней группе.
@@ -98,12 +102,14 @@ test('Текст завершения: итог не жирный, ~90% бело
   )
 })
 
-test('карточка главы на экране завершения во всю ширину контента', () => {
+test('карточка главы на экране завершения: без сегментного прогресса', () => {
   // карточка имеет width: 100%
   assert.match(cssSource, /\.mx-hj-complete__chapter-card[\s\S]*?width:\s*100%/)
-  // сегменты растянуты на всю ширину карточки
-  assert.match(cssSource, /\.mx-hj-complete__chapter-segs[\s\S]*?width:\s*100%/)
-  // подпись по центру
+  // Сегментный прогресс главы с финального экрана убран, нового индикатора
+  // взамен нет: ни разметки, ни стилей (согласованное требование владельца).
+  assert.doesNotMatch(jsxSource, /mx-hj-complete__chapter-segs/)
+  assert.doesNotMatch(cssSource, /mx-hj-complete__chapter-segs/)
+  // подпись главы по центру
   assert.match(cssSource, /\.mx-hj-complete__chapter-card[\s\S]*?text-align:\s*center/)
 })
 
@@ -114,13 +120,21 @@ test('Длительность шага убрана со вступления �
   assert.doesNotMatch(cssSource, /__flow|next-card__meta/)
 })
 
-test('Вступление: длинный текст скроллится внутри блока, не под кнопкой', () => {
+test('Вступление: длинный текст скроллится внутри блока, не под кнопкой', async () => {
   // Скролл-обёртка внутри текстового блока: скрим ::before остаётся на блоке
   // (он выходит выше блока и был бы обрезан собственным overflow).
   // Текст вступления защищён от копирования (#1112): к классу добавлен
   // mx-protected-text (общая утилита, не отдельная копия стилей).
-  assert.match(jsxSource, /className="mx-hj-step-intro__text mx-protected-text">/)
-  assert.match(jsxSource, /className="mx-hj-step-intro__text-scroll"/)
+  // После выделения общего листа проверяем фактический владелец разметки,
+  // а также его использование обоими вариантами вступления — не удаляем gate.
+  assert.match(jsxSource, /<HeroJourneySheet[\s\S]*?body=\{introScene\}/)
+  const storySource = await readFile(
+    new URL('../../src/screens/HeroJourneyStory.jsx', import.meta.url),
+    'utf8'
+  )
+  assert.match(storySource, /<HeroJourneySheet/)
+  assert.match(sheetSource, /className="mx-hj-step-intro__text mx-protected-text">/)
+  assert.match(sheetSource, /className="mx-hj-step-intro__text-scroll"/)
   assert.match(
     cssSource,
     /\.mx-hj-step-intro__text-scroll \{[\s\S]*?flex: 1;[\s\S]*?min-height: 0;[\s\S]*?overflow-y: auto;/

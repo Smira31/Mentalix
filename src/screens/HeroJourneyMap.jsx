@@ -1,18 +1,11 @@
-import {
-  useState,
-  useMemo,
-  useCallback,
-  useEffect,
-  useRef,
-  createContext,
-  useContext,
-} from 'react'
+import { useState, useMemo, useCallback, useEffect, useRef, createContext, useContext } from 'react'
 import { Check, ChevronDown, ChevronRight, Lock } from 'lucide-react'
 
 import Screen from '../components/Screen'
 import { HERO_COURSE, courseContent } from '../data/courses'
 import JournalTextarea from '../components/JournalTextarea'
 import SemanticGlyph from '../components/SemanticGlyph'
+import HeroJourneySheet, { splitSheetThought } from '../components/HeroJourneySheet'
 import { platform } from '../platform'
 import { useBackButton } from '../platform/telegram.hooks'
 import { useHeroJourneyContent } from '../lib/heroJourneyContent'
@@ -137,6 +130,24 @@ function headerScreens(trial) {
   return screenSequence(trial).filter(v => v !== 'step-intro' && v !== 'complete')
 }
 
+/*
+ * Есть ли у шага свои тексты. В демо-сборке у глав II–IV в бандле только id и
+ * номер (закрытая часть курса живёт на сервере и отдаётся по правам), поэтому
+ * такой шаг нельзя предлагать как «Следующий шаг»: карточка показала бы
+ * «undefined». Шаг остаётся видимым на карте — но как закрытая глава.
+ */
+function hasStepContent(trial) {
+  return Boolean(
+    trial && (trial.title || trial.intro || (Array.isArray(trial.pages) && trial.pages.length))
+  )
+}
+
+/* Подпись главы « · Название» — только когда название есть: у демо-глав оно
+   приходит с сервера, и подставлять вместо него слово undefined нельзя. */
+function chapterLabel(chapter) {
+  return chapter?.title ? `${chapter.roman} · ${chapter.title}` : String(chapter?.roman ?? '')
+}
+
 /* ── оболочка экрана ── */
 
 function Shell({
@@ -147,6 +158,8 @@ function Shell({
   fit = false,
   topFlush = false,
   testId,
+  contentSource,
+  contentStatus,
 }) {
   return (
     <Screen
@@ -159,6 +172,8 @@ function Shell({
     >
       <div
         data-testid={testId}
+        data-content-source={contentSource}
+        data-content-status={contentStatus}
         className={`flex flex-col ${fit ? 'flex-1 min-h-0' : ''} ${bodyClassName}`}
       >
         {children}
@@ -189,20 +204,30 @@ function ContentSkeleton() {
 }
 
 /* Ошибка сети: короткий текст и «Повторить», без технических сообщений. */
-function ContentError({ onRetry }) {
+function ContentFailure({ onRetry, error }) {
   return (
-    <Shell testId="hero-journey-error">
-      <div className="mx-hj-content-error" role="alert">
-        <p className="mx-hj-content-error__text">Не удалось загрузить. Проверь интернет</p>
-        <button
-          type="button"
-          data-testid="hero-retry"
-          onClick={onRetry}
-          className="cta-pill mx-hj-content-error__cta"
-        >
-          Повторить
-        </button>
-      </div>
+    <div className="mx-hj-content-error" role="alert" data-testid="hero-content-failure">
+      <p className="mx-hj-content-error__text">
+        {error === 'access'
+          ? 'Практикум недоступен для этого аккаунта.'
+          : 'Не удалось загрузить. Проверь интернет'}
+      </p>
+      <button
+        type="button"
+        data-testid="hero-retry"
+        onClick={onRetry}
+        className="cta-pill mx-hj-content-error__cta"
+      >
+        Повторить
+      </button>
+    </div>
+  )
+}
+
+function ContentError({ onRetry, error }) {
+  return (
+    <Shell testId="hero-journey-error" contentStatus={error === 'access' ? 'access' : 'error'}>
+      <ContentFailure onRetry={onRetry} error={error} />
     </Shell>
   )
 }
@@ -358,18 +383,22 @@ function CourseMap({ progress, onOpenStep, onOpenAbout }) {
     course: HERO_JOURNEY_COURSE,
     prologue,
     finale: HERO_JOURNEY_FINALE,
+    contentSource,
+    contentStatus,
+    retryContent,
   } = useCourse()
   const completedTotal = HERO_JOURNEY_TRIALS.filter(t => isStepCompleted(t.id, progress)).length
 
+  /* «Следующий шаг» — только шаг с текстами: у закрытых демо-шагов их нет. */
   const nextTrial = useMemo(() => {
-    return HERO_JOURNEY_TRIALS.find(t => !isStepCompleted(t.id, progress))
+    return HERO_JOURNEY_TRIALS.find(t => !isStepCompleted(t.id, progress) && hasStepContent(t))
   }, [progress, HERO_JOURNEY_TRIALS])
 
   usePreloadStepImages(nextTrial)
 
   if (HERO_JOURNEY_TRIALS.length === 0)
     return (
-      <Shell testId="hero-journey-map">
+      <Shell testId="hero-journey-map" contentSource={contentSource} contentStatus={contentStatus}>
         <div className="mx-hj-map__head mx-protected-text">
           <h1 className="mx-hj-map__title">{appHeading(HERO_JOURNEY_COURSE.title)}</h1>
           <p className="mx-hj-map__desc">{HERO_JOURNEY_COURSE.description}</p>
@@ -381,7 +410,8 @@ function CourseMap({ progress, onOpenStep, onOpenAbout }) {
     )
 
   return (
-    <Shell testId="hero-journey-map">
+    <Shell testId="hero-journey-map" contentSource={contentSource} contentStatus={contentStatus}>
+      {contentStatus === 'error' && <ContentFailure onRetry={retryContent} />}
       <div className="mx-hj-map__head mx-protected-text">
         <span className="mx-hj-eyebrow">
           Практикум · {HERO_JOURNEY_TRIALS.length} шагов · {HERO_JOURNEY_CHAPTERS.length} главы
@@ -457,11 +487,7 @@ function CourseMap({ progress, onOpenStep, onOpenAbout }) {
 function AboutScreen({ prologue, onBackToMap }) {
   return (
     /* Колонка без скролла: кнопка «К шагам» прижата к низу (см. __bottom в CSS). */
-    <Shell
-      fit
-      bodyClassName="mx-hj-about mx-protected-text"
-      screenBodyClassName="mx-hj-about-body"
-    >
+    <Shell fit bodyClassName="mx-hj-about mx-protected-text" screenBodyClassName="mx-hj-about-body">
       <span className="mx-hj-eyebrow">{prologue.eyebrow}</span>
       <h1 className="mx-hj-about__title">{appHeading(prologue.title)}</h1>
       {prologue.paragraphs.map((para, i) => (
@@ -497,6 +523,30 @@ function StepIntro({ trial, onStart, onBack, storyIndex, onStoryIndexChange }) {
      { label, text }. Без листов вводка показывается как раньше. */
   const pages = Array.isArray(trial.pages) ? trial.pages.filter(page => page?.text) : []
 
+  /* Вступление без листов идёт той же сценой, что листы: тот же разбор текста
+     (последний жирный абзац — «мысль») и та же белая круглая кнопка «›» внизу.
+     Разметка блока — прежняя: метка главы, заголовок, подзаголовок, абзацы. */
+  const intro = splitSheetThought(trial.intro)
+  const introScene = (
+    <>
+      <div className="mx-hj-step-intro__label">
+        {isFinale
+          ? `Финал · ${trial.title}`
+          : `Глава ${chapterLabel(chapter)} · Шаг ${trial.number} из ${HERO_JOURNEY_TOTAL_STEPS}`}
+      </div>
+      <h2 className="mx-hj-step-intro__title">{appHeading(trial.title)}</h2>
+      <p className="mx-hj-step-intro__subtitle">{trial.subtitle}</p>
+      {String(intro.body ?? '')
+        .split('\n\n')
+        .filter(Boolean)
+        .map((para, i) => (
+          <p key={i} className="mx-hj-step-intro__desc">
+            {para}
+          </p>
+        ))}
+    </>
+  )
+
   /* Подгрузка (из main): завершение текущего шага и вход следующего. */
   useEffect(() => {
     preloadImage(trial.image?.done)
@@ -529,11 +579,7 @@ function StepIntro({ trial, onStart, onBack, storyIndex, onStoryIndexChange }) {
        текст слегка перехлёстывает затемнённый нижний край; кнопка
        прижата к низу (см. .mx-hj-hero--flex и __bottom в CSS). Листы сторис
        живут в той же колонке: общая геометрия картинки сохраняется. */
-    <Shell
-      fit
-      bodyClassName="mx-hj-step-intro"
-      screenBodyClassName="mx-hj-intro-body"
-    >
+    <Shell fit bodyClassName="mx-hj-step-intro" screenBodyClassName="mx-hj-intro-body">
       {pages.length > 0 ? (
         <HeroJourneyStory
           pages={pages}
@@ -544,37 +590,15 @@ function StepIntro({ trial, onStart, onBack, storyIndex, onStoryIndexChange }) {
           onIndexChange={onStoryIndexChange}
         />
       ) : (
-        <>
-          {illustration}
-
-          <div className="mx-hj-step-intro__text mx-protected-text">
-            {/* Скролл-обёртка: на низком экране (375×667 и ниже) длинное вступление
-                доскролливается внутри блока и не уходит под кнопку «Начать шаг». */}
-            <div className="mx-hj-step-intro__text-scroll">
-              <div className="mx-hj-step-intro__label">
-                {isFinale
-                  ? `Финал · ${trial.title}`
-                  : `Глава ${chapter.roman} · ${chapter.title} · Шаг ${trial.number} из ${HERO_JOURNEY_TOTAL_STEPS}`}
-              </div>
-              <h2 className="mx-hj-step-intro__title">{appHeading(trial.title)}</h2>
-              <p className="mx-hj-step-intro__subtitle">{trial.subtitle}</p>
-              {trial.intro.split('\n\n').map((para, i) => (
-                <p key={i} className="mx-hj-step-intro__desc">{para}</p>
-              ))}
-            </div>
-          </div>
-
-          <div className="mx-hj-step-intro__bottom">
-            <button
-              type="button"
-              data-testid="hero-step-start"
-              onClick={onStart}
-              className="cta-pill mx-hj-step-intro__cta"
-            >
-              Начать шаг
-            </button>
-          </div>
-        </>
+        /* Одна сцена шага: тот же кадр, тот же текст с «мыслью» и та же белая
+           круглая кнопка «›», что на листах шага 1. */
+        <HeroJourneySheet
+          illustration={illustration}
+          sheetKey={trial.id}
+          body={introScene}
+          thought={intro.thought}
+          action={{ testId: 'hero-step-start', label: 'Начать шаг', onClick: onStart }}
+        />
       )}
     </Shell>
   )
@@ -676,7 +700,7 @@ function WriteScreen({
         submitDisabled={false}
         submitIcon={hasText ? 'chevron' : 'x'}
         submitLabel={hasText ? 'Дальше' : 'Закрыть'}
-        className="mt-[28px] flex-1 mx-hj-write-input"
+        className="mt-[var(--mx-space-7)] flex-1 mx-hj-write-input"
         editorClassName="mx-hj-write-editor"
       />
     </Shell>
@@ -717,11 +741,7 @@ function StepComplete({ trial, progress, onBackToMap, onContinue }) {
   return (
     /* Колонка без скролла: кадр done обрезается по данным шага,
        текст идёт сразу под ним, «Продолжить» — с коротким зазором. */
-    <Shell
-      fit
-      bodyClassName="mx-hj-step-complete"
-      screenBodyClassName="mx-hj-complete-body"
-    >
+    <Shell fit bodyClassName="mx-hj-step-complete" screenBodyClassName="mx-hj-complete-body">
       {showDoneImage ? (
         <HeroImage
           flexible
@@ -755,23 +775,13 @@ function StepComplete({ trial, progress, onBackToMap, onContinue }) {
             <p className="mx-hj-complete__support-text">{actionAnswer}</p>
           </div>
         )}
-        {trial.doneTeaser && (
-          <p className="mx-hj-complete__teaser">{trial.doneTeaser}</p>
-        )}
+        {trial.doneTeaser && <p className="mx-hj-complete__teaser">{trial.doneTeaser}</p>}
 
         {chapter && (
           <div className="mx-hj-complete__chapter-card">
-            <div className="mx-hj-complete__chapter-segs">
-              {chapterTrials.map(t => (
-                <span
-                  key={t.id}
-                  className={`mx-hj-segment ${isStepCompleted(t.id, progress) ? 'is-done' : ''}`}
-                />
-              ))}
-            </div>
             {chapterDone ? (
               <p className="mx-hj-complete__chapter-done">
-                Глава {chapter.roman} · {chapter.title} пройдена
+                {`Глава ${chapterLabel(chapter)} пройдена`}
               </p>
             ) : (
               <p className="mx-hj-complete__chapter-progress">
@@ -780,7 +790,7 @@ function StepComplete({ trial, progress, onBackToMap, onContinue }) {
             )}
             {chapterDone && nextChapter && (
               <p className="mx-hj-complete__next-chapter">
-                Открыта глава {nextChapter.roman} · {nextChapter.title}
+                {`Открыта глава ${chapterLabel(nextChapter)}`}
               </p>
             )}
             {chapterDone && !nextChapter && finale && (
@@ -790,7 +800,7 @@ function StepComplete({ trial, progress, onBackToMap, onContinue }) {
         )}
 
         {reflection && (
-          <button type="button" className="mx-hj-complete__diary-link" onClick={onBackToMap}>
+          <button type="button" className="mx-hj-quiet-link" onClick={onBackToMap}>
             Твоя запись в дневнике
           </button>
         )}
@@ -823,6 +833,10 @@ function StepComplete({ trial, progress, onBackToMap, onContinue }) {
  * Главная кнопка (одна, белая) ведёт на карту, тихая текстовая ссылка —
  * сразу первый шаг следующей главы. После 16-го шага пауза не показывается:
  * открывается финал «Возвращение».
+ *
+ * Оформление общее, своего набора классов у экрана нет: метка, заголовок и
+ * абзац те же, что на вступлении шага, кнопка — общая нижняя группа
+ * шага (.mx-hj-step-intro__bottom) и тихий вторичный текст (.mx-hj-quiet-link).
  */
 function PauseScreen({ nextTrial, onStay, onContinue }) {
   return (
@@ -832,21 +846,19 @@ function PauseScreen({ nextTrial, onStay, onContinue }) {
       screenBodyClassName="mx-hj-pause-body"
       testId="hero-pause"
     >
-      <div className="mx-hj-pause__content">
-        <span className="mx-hj-eyebrow">ПАУЗА</span>
-        <h2 className="mx-hj-pause__title">{appHeading('Глава позади')}</h2>
-        <p className="mx-hj-pause__text">
-          Ты прошёл четыре шага и взял четыре действия. Дай им пару дней — так они станут твоими,
-          а не очередным списком дел.
-        </p>
-      </div>
+      <span className="mx-hj-eyebrow">ПАУЗА</span>
+      <h2 className="mx-hj-step-intro__title">{appHeading('Глава позади')}</h2>
+      <p className="mx-hj-step-intro__desc">
+        Ты прошёл четыре шага и взял четыре действия. Дай им пару дней — так они станут твоими, а
+        не очередным списком дел.
+      </p>
 
-      <div className="mx-hj-pause__bottom">
+      <div className="mx-hj-step-intro__bottom">
         <button
           type="button"
           data-testid="hero-pause-stay"
           onClick={onStay}
-          className="cta-pill mx-hj-pause__cta"
+          className="cta-pill mx-hj-step-intro__cta"
         >
           Вернусь завтра
         </button>
@@ -855,7 +867,7 @@ function PauseScreen({ nextTrial, onStay, onContinue }) {
             type="button"
             data-testid="hero-pause-next"
             onClick={onContinue}
-            className="mx-hj-pause__skip"
+            className="mx-hj-quiet-link"
           >
             Всё равно дальше
           </button>
@@ -871,17 +883,38 @@ export default function HeroJourneyMap({ course = HERO_COURSE, ...props }) {
   /* Серверные тексты относятся только к «Пути героя». Этим же экраном
      Библиотека открывает другие практикумы — у них данные свои. */
   const isHeroJourney = course?.id === HERO_COURSE.id
-  const { course: loadedCourse, loading, error, retry } = useHeroJourneyContent(isHeroJourney)
+  const {
+    course: loadedCourse,
+    loading,
+    error,
+    retry,
+    source,
+  } = useHeroJourneyContent(isHeroJourney, props.user?.id)
   const activeCourse = (isHeroJourney && loadedCourse) || course
 
   /* Тексты едут с сервера: спокойный скелет, пока грузится, и короткая
      ошибка с «Повторить», если сети нет. */
   if (isHeroJourney && loading && !loadedCourse) return <ContentSkeleton />
-  if (isHeroJourney && error && !loadedCourse) return <ContentError onRetry={retry} />
+  if (isHeroJourney && error && !loadedCourse) return <ContentError onRetry={retry} error={error} />
 
   return (
-    <CourseContext.Provider value={courseContent(activeCourse)}>
-      <CourseFlow {...props} course={activeCourse} />
+    <CourseContext.Provider
+      value={{
+        ...courseContent(activeCourse),
+        contentSource: source,
+        contentStatus: loading
+          ? 'loading'
+          : error === 'access'
+            ? 'access'
+            : error
+              ? 'error'
+              : activeCourse.steps.length
+                ? 'ready'
+                : 'empty',
+        retryContent: retry,
+      }}
+    >
+      <CourseFlow key={props.user?.id} {...props} course={activeCourse} />
     </CourseContext.Provider>
   )
 }

@@ -9,8 +9,9 @@ import { DEMO_HERO_JOURNEY } from '../../src/data/demoContent.js'
 import { openStepWrite } from './hero-journey-helpers.mjs'
 
 /* Листы вводки (сторис) — необязательное поле демо-шага: у такого шага лист 1
-   начинается под полоской прогресса, поэтому кадр входа стоит ниже кадра
-   завершения (одна линия держится только у шагов без листов). */
+   идёт вместо экрана «Начать шаг». Сцена листа центрирует связку «кадр + текст +
+   мысль», поэтому кадр вводки стоит ниже кадра завершения (одна линия держится
+   у шагов без листов). */
 const demoStepHasPages = id =>
   Boolean(DEMO_HERO_JOURNEY.steps.find(step => step.id === id)?.pages?.length)
 
@@ -66,15 +67,19 @@ test('Завершение: кадр под Telegram, без большого з
 
     for (const id of ['uncertainty', 'temporality']) {
       await page.getByTestId(`hero-step-${id}`).click()
-      /* Лист 1 сторис идёт под полоской прогресса, поэтому кадр вводки стоит
-         ниже кадра завершения: сверку «одной линии» держат шаги без листов. */
+      /* У листа-сторис сцена центрирует связку «кадр + текст + мысль», поэтому
+         кадр вводки стоит ниже кадра завершения; полоски сегментов над ним уже
+         нет — её отступ ушёл вместе с ней. Сверку «одной линии» держат шаги
+         без листов. */
       const intro = page.locator('.mx-hj-step-intro .mx-hj-hero')
-      let introTop = null
       if (!demoStepHasPages(id)) {
         await expect(page.getByTestId('hero-step-start')).toBeVisible()
-        await expect(intro).not.toHaveClass(/mx-hj-hero--cropped/)
-        introTop = await intro.evaluate(el => el.getBoundingClientRect().top)
       }
+      await expect(intro).not.toHaveClass(/mx-hj-hero--cropped/)
+      const introFrame = await intro.boundingBox()
+      // И листы, и одиночное вступление теперь центрируют общую сцену.
+      // Вертикальная линия done отличается намеренно; ширина кадра — общая.
+      expect(introFrame.y).toBeGreaterThanOrEqual(0)
 
       await openStepWrite(page)
       await page.getByTestId('hero-write-input').fill('Проверка завершения шага')
@@ -108,9 +113,7 @@ test('Завершение: кадр под Telegram, без большого з
           cropApplied: imageRect.top < rect.top && Math.abs(imageRect.width - rect.width) <= 1,
         }
       })
-      if (introTop !== null) {
-        expect(Math.abs(layout.top - introTop)).toBeLessThanOrEqual(1)
-      }
+      expect(Math.abs(introFrame.width - (await hero.boundingBox()).width)).toBeLessThanOrEqual(1)
       expect(layout.belowControls).toBe(true)
       expect(layout.fullWidth).toBe(true)
       expect(layout.gap).toBeGreaterThanOrEqual(0)
@@ -407,13 +410,11 @@ for (const [width, height] of [
 
       // Длинное вступление доскролливается внутри текстового блока:
       // последний абзац доступен выше кнопки, а не под ней.
-      const lastDescBottom = await page
-        .locator('.mx-hj-step-intro__text-scroll')
-        .evaluate(el => {
-          el.scrollTop = el.scrollHeight
-          const descs = el.querySelectorAll('.mx-hj-step-intro__desc')
-          return descs[descs.length - 1].getBoundingClientRect().bottom
-        })
+      const lastDescBottom = await page.locator('.mx-hj-step-intro__text-scroll').evaluate(el => {
+        el.scrollTop = el.scrollHeight
+        const descs = el.querySelectorAll('.mx-hj-step-intro__desc')
+        return descs[descs.length - 1].getBoundingClientRect().bottom
+      })
       expect(lastDescBottom).toBeLessThanOrEqual(box.y)
 
       await page.getByTestId('demo-chrome-back').click()
@@ -424,12 +425,12 @@ for (const [width, height] of [
 
 /*
  * Вводка шага листами, как в сторис: демо-шаг 1 отдаётся четырьмя листами
- * (необязательное поле шага pages). Проверяем полоску прогресса по числу
- * листов, листы без скролла на iPhone 390×844, вперёд — белая круглая кнопка
- * «›» и тап по правой половине, назад — тап по левой трети и свайп вправо,
+ * (необязательное поле шага pages). Проверяем, что сегментной полоски по листам
+ * нет, листы без скролла на iPhone 390×844, вперёд — белая круглая кнопка «›»
+ * и тап по правой половине, назад — тап по левой трети и свайп вправо,
  * а после последнего листа открывается «Запиши».
  */
-test('Вводка шага листами: 4 сегмента, «›» вперёд, назад тапом по левой трети', async ({
+test('Вводка шага листами: без полоски сегментов, «›» вперёд, назад тапом по левой трети', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 })
@@ -453,8 +454,7 @@ test('Вводка шага листами: 4 сегмента, «›» впер
       const paragraph = document.querySelector('.mx-hj-story__text p')
       return {
         overflow: column.scrollHeight - column.clientHeight,
-        docOverflow:
-          document.documentElement.scrollHeight - document.documentElement.clientHeight,
+        docOverflow: document.documentElement.scrollHeight - document.documentElement.clientHeight,
         fontSize: paragraph ? parseFloat(getComputedStyle(paragraph).fontSize) : 0,
       }
     })
@@ -463,11 +463,21 @@ test('Вводка шага листами: 4 сегмента, «›» впер
     expect(metrics.fontSize).toBeGreaterThanOrEqual(14.5)
   }
 
-  // Полоска прогресса — по числу листов; лист 1 идёт с иллюстрацией шага.
-  await expect(page.locator('[data-testid="hero-story-progress"] .mx-hj-segment')).toHaveCount(4)
+  // Сегментной полоски по листам нет (задача владельца): ни самой полоски,
+  // ни её сегментов — верх экрана отдан кадру шага, а не прогрессу.
+  await expect(page.locator('[data-testid="hero-story-progress"]')).toHaveCount(0)
+  await expect(page.locator('[data-testid="hero-story-viewport"] .mx-hj-segment')).toHaveCount(0)
   await expect(sheet).toHaveAttribute('data-page', '1')
   await expect(sheet).toContainText('История')
   await expect(page.locator('.mx-hj-step-intro .mx-hj-hero')).toBeVisible()
+  // Полоски нет — под неё не осталось и отступа: сцена листа начинается от
+  // самого верха колонки, пустой полосы над кадром нет.
+  const stripSpace = await page.evaluate(() => {
+    const column = document.querySelector('.mx-hj-step-intro')
+    const stage = document.querySelector('[data-testid="hero-story-viewport"]')
+    return Math.round(stage.getBoundingClientRect().top - column.getBoundingClientRect().top)
+  })
+  expect(stripSpace).toBe(0)
   await assertSheetFits()
 
   // «›» три раза — открыт четвёртый лист.
@@ -856,4 +866,87 @@ test('Финал с сервера: свой кадр картинки и без
   await expect(page.getByTestId('hero-journey-map')).toBeVisible()
   await expect(page.getByTestId('hero-pause')).toHaveCount(0)
   await expect(page.getByTestId('hero-step-return')).toHaveAttribute('data-state', 'done')
+})
+
+/*
+ * Кнопка «вперёд» — одна на всех экранах шага: листы вводки и экраны записи
+ * 1/2 и 2/2. Белый круг цветом системы (--c-text, тот же белый, что у
+ * «Продолжить»), тёмный шеврон (--c-bg), 45 px (--mx-btn-round-h), без тени,
+ * у правого края поверхности; нижний отступ совпадает с точностью 2 px (панель
+ * дока ввода стоит на 10 px над safe-area, колонка листа — на 12 px). Нажатие
+ * ведёт вперёд там и там. Основная кнопка «Продолжить» остаётся пилюлей с
+ * текстом и не превращается в круг.
+ */
+test('Кнопка «вперёд» одинакова на листах вводки и обоих экранах записи', async ({ page }) => {
+  await page.setViewportSize({ width: 430, height: 932 })
+  await page.addInitScript(() => {
+    localStorage.clear()
+    sessionStorage.clear()
+  })
+  await page.goto('/?demo=1&tab=library&action=hero_journey&frame=0')
+  await page.getByTestId('hero-continue').click()
+  await expect(page.getByTestId('hero-story-page')).toBeVisible()
+
+  const read = testId =>
+    page.evaluate(tid => {
+      const el = document.querySelector(`[data-testid="${tid}"]`)
+      const rect = el.getBoundingClientRect()
+      const style = getComputedStyle(el)
+      const icon = el.querySelector('svg')
+      return {
+        size: `${Math.round(rect.width)}x${Math.round(rect.height)}`,
+        radius: style.borderTopLeftRadius,
+        background: style.backgroundColor,
+        color: style.color,
+        shadow: style.boxShadow,
+        glyph: `${Math.round(icon.getBoundingClientRect().width)}px`,
+        insetRight: Math.round(window.innerWidth - rect.right),
+        insetBottom: Math.round(window.innerHeight - rect.bottom),
+      }
+    }, testId)
+
+  /* Нижний отступ у листа и у дока ввода различается на 2 px — сравниваем
+     остальную геометрию и цвета строго. */
+  const shared = metrics => {
+    const { insetBottom, ...rest } = metrics
+    return rest
+  }
+
+  const sheet = await read('hero-story-next')
+  expect(sheet.size).toBe('45x45')
+  expect(sheet.background).toBe('rgb(243, 243, 243)')
+  expect(sheet.color).toBe('rgb(5, 4, 3)')
+  expect(sheet.radius).toBe('999px')
+  expect(sheet.shadow).toBe('none')
+
+  // Одна и та же кнопка на всех четырёх листах: размер, цвета, место.
+  for (const sheetIndex of ['2', '3', '4']) {
+    await page.getByTestId('hero-story-next').click()
+    await expect(page.getByTestId('hero-story-page')).toHaveAttribute('data-page', sheetIndex)
+    expect(shared(await read('hero-story-next'))).toEqual(shared(sheet))
+  }
+
+  // Последний лист ведёт на «Запиши»; там та же кнопка.
+  await page.getByTestId('hero-story-next').click()
+  await expect(page.getByTestId('hero-write-input')).toBeVisible()
+  const write = await read('hero-write-next')
+  expect(shared(write)).toEqual(shared(sheet))
+  expect(Math.abs(write.insetBottom - sheet.insetBottom)).toBeLessThanOrEqual(2)
+
+  // Нажатие ведёт вперёд: экран записи 1/2 → 2/2, там кнопка та же.
+  await page.getByTestId('hero-write-input').fill('Проверка кнопки «вперёд»')
+  await page.getByTestId('hero-write-next').click()
+  await expect(page.getByTestId('hero-action-input')).toBeVisible()
+  expect(shared(await read('hero-action-next'))).toEqual(shared(sheet))
+
+  // Финальный экран: сегментного прогресса главы нет, «Продолжить» — прежняя
+  // белая пилюля с текстом, а не круг.
+  await page.getByTestId('hero-action-input').fill('Одно проверочное действие')
+  await page.getByTestId('hero-action-next').click()
+  await expect(page.getByTestId('hero-complete-map')).toBeVisible()
+  await expect(page.locator('.mx-hj-complete__chapter-segs')).toHaveCount(0)
+  await expect(page.getByTestId('hero-complete-map')).toContainText('Продолжить')
+  const cta = await read('hero-complete-map')
+  expect(cta.size).toBe('398x52')
+  expect(cta.radius).toBe('999px')
 })
