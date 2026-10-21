@@ -1065,6 +1065,28 @@
   overflow-y: auto;
 }
 
+/*
+ * Полоса плавающей кнопки «Дальше». Панель JournalTextarea прижата к низу
+ * поверхности (fixed: кнопка 45 px и 10 px над safe-area) и накрывала последние
+ * строки поля — на полной высоте и тем заметнее, чем ниже поверхность: с
+ * поднятой клавиатурой <Screen> сжимается по visualViewport. Контент колонки
+ * резервирует высоту полосы, поэтому поле кончается выше кнопки.
+ */
+.mx-screen__content:has(.mx-hj-write-input) {
+  padding-bottom: calc(var(--mx-btn-round-h, 45px) + var(--mx-space-3));
+}
+
+/*
+ * Минимум поля (9rem из JournalTextarea) на низкой поверхности — 360×640 с
+ * поднятой клавиатурой — вытеснял кнопку за край: колонка переполнялась на
+ * 52 px и низ поля обрезался. Нижняя граница под клавиатурой — две строки поля
+ * (17 px при межстрочном 1.5); свободную высоту поле по-прежнему забирает себе
+ * как flex-1, поэтому на обычной высоте минимум не виден.
+ */
+.mx-hj-write-col .mx-hj-write-editor {
+  min-height: calc(2 * 1.5 * 17px);
+}
+
 /* ── G. Шаг пройден: колонка без скролла, как у вступления ── */
 
 .mx-hj-step-complete {
@@ -1187,15 +1209,19 @@
   margin-top: 12px;
 }
 
+/* Карточка прогресса главы: компактнее прежнего (зазор над ней 16 вместо 24,
+   отступ 16/20, внутренний ритм 8) — итог, «Твоя опора», карточка и кнопка
+   читаются одним блоком, а освободившиеся пиксели на низком экране (360×640)
+   уходят кадру. */
 .mx-hj-complete__chapter-card {
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 10px;
-  margin-top: 24px;
-  padding: 18px 20px;
+  gap: var(--mx-space-2);
+  margin-top: var(--mx-space-4);
+  padding: var(--mx-space-4) var(--mx-space-5);
   border-radius: 24px;
   background: rgb(var(--c-card));
 }
@@ -1207,7 +1233,7 @@
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  margin-top: var(--mx-space-4);
+  margin-top: var(--mx-space-3);
 }
 
 .mx-hj-complete__support-label {
@@ -1255,7 +1281,7 @@
    вторичный (без цвета посещённой ссылки) и подчёркивание. */
 .mx-hj-complete__diary-link {
   display: block;
-  margin-top: 16px;
+  margin-top: var(--mx-space-3);
   background: none;
   border: none;
   padding: 0;
