@@ -1424,7 +1424,24 @@ function App() {
                   >
                     <ScreenErrorBoundary resetKey={`library-${errorResetKey}`} onHome={goHome}>
                       <Suspense fallback={<ScreenLoading />}>
-                        <Library user={user} onInputModeChange={setLibraryInputMode} />
+                        <Library
+                          user={user}
+                          onInputModeChange={setLibraryInputMode}
+                          /* Закрытая Pro-глава «Пути героя» ведёт на тот же
+                             экран подписки, что карточка «Прогресса» (#1122). */
+                          onOpenSubscription={() => {
+                            platform.haptic('light')
+                            try {
+                              sessionStorage.setItem(
+                                'mx-settings-initial-screen',
+                                'subscription'
+                              )
+                            } catch {
+                              /* приватный режим: откроется корень настроек */
+                            }
+                            setOverlay('settings')
+                          }}
+                        />
                       </Suspense>
                     </ScreenErrorBoundary>
                   </div>

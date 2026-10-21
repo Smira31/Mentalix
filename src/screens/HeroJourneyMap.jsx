@@ -10,6 +10,11 @@ import { platform } from '../platform'
 import { useBackButton } from '../platform/telegram.hooks'
 import { useHeroJourneyContent } from '../lib/heroJourneyContent'
 import {
+  heroChapterLocked,
+  heroFinaleLocked,
+  heroTrialLocked,
+} from '../lib/heroJourneyPayload'
+import {
   useHeroJourneyProgress,
   isStepAvailable,
   isStepCompleted,
@@ -248,28 +253,46 @@ function StepDot({ status, number }) {
   )
 }
 
-function ChapterSection({ chapter, progress, onOpenStep, currentStepId }) {
-  const { trialsForChapter, previousTrial } = useCourse()
+function ChapterSection({ chapter, progress, onOpenStep, currentStepId, onOpenSubscription }) {
+  const { trialsForChapter, previousTrial, chapters, course } = useCourse()
   const trials = trialsForChapter(chapter)
   const completedCount = trials.filter(t => isStepCompleted(t.id, progress)).length
   const anyStarted = completedCount > 0
   const hasCurrentStep = Boolean(currentStepId) && trials.some(t => t.id === currentStepId)
+  const access = course?.access || null
 
   const [expanded, setExpanded] = useState(anyStarted || hasCurrentStep)
-  /* Демо (?demo=1): главы II–IV в бандле без текстов — показываем их
-     закрытыми с подписью «Полная версия — в Telegram». */
-  const demoLocked = Boolean(chapter.demoLocked)
+  /* Главы II–IV без Pro закрыты: сервер не отдаёт их тексты (у закрытых шагов
+     текстовых полей нет), поэтому карточка главы показывает публичное название,
+     помечается Pro и ведёт на существующий экран подписки. Прав решает сервер —
+     ни локальное состояние, ни демо-сборка закрытые тексты не открывают. */
+  const proLocked = heroChapterLocked(chapter, access)
 
-  if (demoLocked) {
+  if (proLocked) {
     return (
-      <section className="mx-hj-chapter mx-hj-chapter--locked mx-hj-chapter--demo-locked">
-        <div className="mx-hj-chapter__head">
-          <div className="mx-hj-chapter__title-block">
+      <section
+        className="mx-hj-chapter mx-hj-chapter--locked mx-hj-chapter--pro-locked"
+        data-testid={`hero-chapter-locked-${chapter.key}`}
+      >
+        <button
+          type="button"
+          className="mx-hj-chapter__head mx-hj-chapter__head--button"
+          data-testid={`hero-chapter-pro-${chapter.key}`}
+          onClick={() => onOpenSubscription?.()}
+        >
+          <div className="mx-hj-chapter__title-block mx-protected-text">
             <span className="mx-hj-chapter__roman">Глава {chapter.roman}</span>
+            {chapter.title && <span className="mx-hj-chapter__name">{chapter.title}</span>}
+            {chapter.subtitle && (
+              <span className="mx-hj-chapter__subtitle">{chapter.subtitle}</span>
+            )}
           </div>
-          <Lock size={16} className="mx-hj-chapter__lock" aria-hidden="true" />
-        </div>
-        <p className="mx-hj-chapter__demo-note">Полная версия — в Telegram</p>
+          <span className="mx-hj-chapter__side">
+            <span className="mx-hj-chapter__pro">Pro</span>
+            <Lock size={16} className="mx-hj-chapter__lock" aria-hidden="true" />
+          </span>
+        </button>
+        <p className="mx-hj-chapter__note">Доступно по подписке Pro</p>
       </section>
     )
   }
@@ -309,16 +332,20 @@ function ChapterSection({ chapter, progress, onOpenStep, currentStepId }) {
             const completed = isStepCompleted(trial.id, progress)
             const prevTrial = previousTrial(trial.id)
             const available = isStepAvailable(trial.number, prevTrial?.id, progress)
-            const status = completed ? 'completed' : available ? 'current' : 'locked'
+            /* Закрытый Pro-шаг внутри открытой главы: текстов у него нет, но
+               нажатие не молчит — ведёт на экран подписки. */
+            const proStepLocked = heroTrialLocked(trial, chapters, access)
+            const status = completed ? 'completed' : proStepLocked ? 'locked' : available ? 'current' : 'locked'
 
             return (
               <button
                 key={trial.id}
                 data-testid={`hero-step-${trial.id}`}
                 data-state={completed ? 'done' : available ? 'open' : 'locked'}
+                data-pro-locked={proStepLocked ? 'true' : undefined}
                 type="button"
-                disabled={status === 'locked'}
-                onClick={() => onOpenStep(trial.id)}
+                disabled={status === 'locked' && !proStepLocked}
+                onClick={() => (proStepLocked ? onOpenSubscription?.() : onOpenStep(trial.id))}
                 className="mx-hj-step-row"
               >
                 <div className="mx-hj-step-row__left">
@@ -326,8 +353,10 @@ function ChapterSection({ chapter, progress, onOpenStep, currentStepId }) {
                   <StepDot status={status} number={trial.number} />
                 </div>
                 <div className="mx-hj-step-row__info">
-                  <span className="mx-hj-step-row__name">{trial.title}</span>
-                  <span className="mx-hj-step-row__sub">{trial.subtitle}</span>
+                  {/* Название закрытого шага может прийти публичным или не
+                      прийти вовсе: вместо «undefined» — номер шага. */}
+                  <span className="mx-hj-step-row__name">{trial.title || `Шаг ${trial.number}`}</span>
+                  {trial.subtitle && <span className="mx-hj-step-row__sub">{trial.subtitle}</span>}
                 </div>
               </button>
             )
@@ -345,20 +374,24 @@ function ChapterSection({ chapter, progress, onOpenStep, currentStepId }) {
 }
 
 /* Финал «Возвращение»: закрыт, пока не пройден последний шаг; потом открывается как шаг. */
-function FinaleCard({ progress, onOpenStep }) {
-  const { steps, finale } = useCourse()
+function FinaleCard({ progress, onOpenStep, onOpenSubscription }) {
+  const { steps, finale, course } = useCourse()
   const lastStep = steps[steps.length - 1]
   const completed = isStepCompleted(finale.id, progress)
   const available = isStepAvailable(finale.number, lastStep?.id, progress)
-  const state = completed ? 'done' : available ? 'open' : 'locked'
+  /* Финал идёт после последней главы: без Pro он закрыт так же, как главы
+     II–IV, и ведёт на экран подписки. */
+  const proLocked = heroFinaleLocked(finale, course?.access || null)
+  const state = completed ? 'done' : proLocked ? 'locked' : available ? 'open' : 'locked'
 
   return (
     <button
       type="button"
       data-testid={`hero-step-${finale.id}`}
       data-state={state}
-      disabled={state === 'locked'}
-      onClick={() => onOpenStep(finale.id)}
+      data-pro-locked={proLocked ? 'true' : undefined}
+      disabled={state === 'locked' && !proLocked}
+      onClick={() => (proLocked ? onOpenSubscription?.() : onOpenStep(finale.id))}
       className={`mx-hj-finale-card mx-hj-finale-card--${state}`}
     >
       {state === 'done' ? (
@@ -370,13 +403,17 @@ function FinaleCard({ progress, onOpenStep }) {
       )}
       <span className="mx-hj-finale-card__title">{finale.title}</span>
       <span className="mx-hj-finale-card__hint">
-        {state === 'locked' ? finale.lockedHint : finale.subtitle}
+        {proLocked
+          ? 'Доступно по подписке Pro'
+          : state === 'locked'
+            ? finale.lockedHint
+            : finale.subtitle}
       </span>
     </button>
   )
 }
 
-function CourseMap({ progress, onOpenStep, onOpenAbout }) {
+function CourseMap({ progress, onOpenStep, onOpenAbout, onOpenSubscription }) {
   const {
     steps: HERO_JOURNEY_TRIALS,
     chapters: HERO_JOURNEY_CHAPTERS,
@@ -387,12 +424,20 @@ function CourseMap({ progress, onOpenStep, onOpenAbout }) {
     contentStatus,
     retryContent,
   } = useCourse()
+  const access = HERO_JOURNEY_COURSE?.access || null
   const completedTotal = HERO_JOURNEY_TRIALS.filter(t => isStepCompleted(t.id, progress)).length
 
-  /* «Следующий шаг» — только шаг с текстами: у закрытых демо-шагов их нет. */
+  /* «Следующий шаг» — только открытый шаг с текстами: закрытый Pro-шаг
+     предлагать нельзя, у него текстов нет (карточка показала бы «undefined»),
+     а пройти его без подписки нельзя. */
   const nextTrial = useMemo(() => {
-    return HERO_JOURNEY_TRIALS.find(t => !isStepCompleted(t.id, progress) && hasStepContent(t))
-  }, [progress, HERO_JOURNEY_TRIALS])
+    return HERO_JOURNEY_TRIALS.find(
+      t =>
+        !isStepCompleted(t.id, progress) &&
+        !heroTrialLocked(t, HERO_JOURNEY_CHAPTERS, access) &&
+        hasStepContent(t)
+    )
+  }, [progress, HERO_JOURNEY_TRIALS, HERO_JOURNEY_CHAPTERS, access])
 
   usePreloadStepImages(nextTrial)
 
@@ -472,12 +517,19 @@ function CourseMap({ progress, onOpenStep, onOpenAbout }) {
             chapter={chapter}
             progress={progress}
             onOpenStep={onOpenStep}
+            onOpenSubscription={onOpenSubscription}
             currentStepId={nextTrial?.id}
           />
         ))}
       </div>
 
-      {HERO_JOURNEY_FINALE && <FinaleCard progress={progress} onOpenStep={onOpenStep} />}
+      {HERO_JOURNEY_FINALE && (
+        <FinaleCard
+          progress={progress}
+          onOpenStep={onOpenStep}
+          onOpenSubscription={onOpenSubscription}
+        />
+      )}
     </Shell>
   )
 }
@@ -883,13 +935,15 @@ export default function HeroJourneyMap({ course = HERO_COURSE, ...props }) {
   /* Серверные тексты относятся только к «Пути героя». Этим же экраном
      Библиотека открывает другие практикумы — у них данные свои. */
   const isHeroJourney = course?.id === HERO_COURSE.id
+  /* refreshToken: возврат из подписки и возврат на вкладку перечитывают права
+     (#1122) — экран остаётся на месте, свежий ответ подставляется тихо. */
   const {
     course: loadedCourse,
     loading,
     error,
     retry,
     source,
-  } = useHeroJourneyContent(isHeroJourney, props.user?.id)
+  } = useHeroJourneyContent(isHeroJourney, props.user?.id, props.refreshToken)
   const activeCourse = (isHeroJourney && loadedCourse) || course
 
   /* Тексты едут с сервера: спокойный скелет, пока грузится, и короткая
@@ -919,8 +973,14 @@ export default function HeroJourneyMap({ course = HERO_COURSE, ...props }) {
   )
 }
 
-function CourseFlow({ onBack, user, course }) {
-  const { findTrial, previousTrial, prologue, chapterForTrial } = useCourse()
+function CourseFlow({ onBack, user, course, onOpenSubscription }) {
+  const { findTrial, previousTrial, prologue, chapterForTrial, chapters, finale } = useCourse()
+  const access = course?.access || null
+  /* Закрытый шаг или финал: прав решает сервер, экран лишь ведёт на подписку. */
+  const isLocked = selected =>
+    finale?.id === selected?.id
+      ? heroFinaleLocked(selected, access)
+      : heroTrialLocked(selected, chapters, access)
   const { progress, completeStep } = useHeroJourneyProgress(user.id, course.id)
   const [view, setView] = useState('map')
   const [activeStepId, setActiveStepId] = useState(null)
@@ -1004,8 +1064,12 @@ function CourseFlow({ onBack, user, course }) {
   function openStep(stepId) {
     const selected = findTrial(stepId)
     if (!selected) return
-    /* Демо: главы II–IV в бандле без текстов — их шаги не открываются. */
-    if (chapterForTrial(stepId)?.demoLocked) return
+    /* Закрытая глава II–IV без Pro: текстов нет, открывать нечего — ведём на
+       существующий экран подписки. */
+    if (isLocked(selected)) {
+      onOpenSubscription?.()
+      return
+    }
     if (
       !isStepCompleted(stepId, progress) &&
       !isStepAvailable(selected.number, previousTrial(stepId)?.id, progress)
@@ -1122,6 +1186,7 @@ function CourseFlow({ onBack, user, course }) {
         progress={progress}
         onOpenStep={openStep}
         onOpenAbout={() => setView('about')}
+        onOpenSubscription={onOpenSubscription}
         onBack={onBack}
       />
     )
@@ -1200,9 +1265,9 @@ function CourseFlow({ onBack, user, course }) {
 
   if (view === 'pause') {
     const nextTrial = pauseNextStepId ? findTrial(pauseNextStepId) : null
-    /* Демо: главы II–IV без текстов — «Всё равно дальше» ведёт на карту,
-       где они показаны закрытыми («Полная версия — в Telegram»). */
-    const nextOpen = Boolean(pauseNextStepId) && !chapterForTrial(pauseNextStepId)?.demoLocked
+    /* Закрытая следующая глава (без Pro): «Всё равно дальше» ведёт на карту,
+       где главы II–IV показаны Pro и ведут на экран подписки. */
+    const nextOpen = Boolean(nextTrial) && !isLocked(nextTrial)
     return (
       <PauseScreen
         nextTrial={nextOpen ? nextTrial : null}
@@ -1220,6 +1285,7 @@ function CourseFlow({ onBack, user, course }) {
       progress={progress}
       onOpenStep={openStep}
       onOpenAbout={() => setView('about')}
+      onOpenSubscription={onOpenSubscription}
       onBack={onBack}
     />
   )

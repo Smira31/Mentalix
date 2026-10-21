@@ -11,10 +11,20 @@
  * с учётом прав пользователя. Демо/превью показывает только встроенную
  * публичную часть (глава I из src/data/demoContent.js), без запросов сервера.
  * Обычный режим загружает серверный ответ; отказ не подменяется демо-версией.
+ *
+ * Права (#1122) — часть того же ответа (access и locked): они кладутся на
+ * собранный курс как course.access, чтобы экран решал, что показывает, но не
+ * придумывал доступ сам. Смена подписки перечитывает ответ не гася экран
+ * (третий аргумент refreshToken: возврат из подписки, возврат на вкладку) —
+ * см. Library.jsx.
  */
 import { useCallback, useEffect, useState } from 'react'
 import { api } from './api.js'
-import { heroJourneyErrorKind, validateHeroJourneyPayload } from './heroJourneyPayload.js'
+import {
+  heroJourneyErrorKind,
+  normalizeHeroAccess,
+  validateHeroJourneyPayload,
+} from './heroJourneyPayload.js'
 import { isPreviewDemoMode } from './demoMode.js'
 import { resolveHeroImage } from '../data/heroJourneyImages.js'
 import {
@@ -91,6 +101,11 @@ function buildCourseFromServer(data) {
     chapters: data.chapters || HERO_JOURNEY_CHAPTERS,
     prologue: data.prologue || null,
     finale,
+    /* Права приходят тем же ответом: access.has_pro и free_chapter_keys плюс
+       флаг locked у глав, шагов и финала. Закрытые тексты во фронтенд не
+       переносятся — сервер их не отдаёт, — а локальное состояние прав не
+       подменяет. */
+    access: normalizeHeroAccess(data.access),
   }
 }
 
@@ -103,10 +118,13 @@ function buildDemoCourse() {
     cover: resolveHeroImage(coverKey) || cover,
     steps: (rest.steps || []).map(resolveTrialImages),
     finale: resolveTrialImages(rest.finale),
+    /* Демо несёт тот же контракт прав, что сервер: глава I открыта, главы
+       II–IV — Pro. Демо-сборка закрытые тексты не подставляет. */
+    access: normalizeHeroAccess(rest.access),
   }
 }
 
-export function useHeroJourneyContent(enabled = true, userId = null) {
+export function useHeroJourneyContent(enabled = true, userId = null, refreshToken = 0) {
   const demo = isPreviewDemoMode()
   const [attempt, setAttempt] = useState(0)
   const initialState = () => ({
@@ -128,13 +146,16 @@ export function useHeroJourneyContent(enabled = true, userId = null) {
        обёртка API перехватывает демо-запросы и контракта курса не знает.
        Вне демо серверный курс приходит как раньше: с проверкой формата и с
        причиной отказа, отличной от пустого курса. */
-    setState({
+    setState(prev => ({
       userId,
-      course: fallback,
-      source: demo ? 'demo' : null,
+      /* Тихий рефетч (смена подписки, возврат на вкладку) не гасит уже
+         показанный курс: скелетон мигал бы на каждом переключении вкладки.
+         Прошлый профиль не переносится — чужие тексты не должны мелькнуть. */
+      course: fallback ?? (prev.userId === userId ? prev.course : null),
+      source: demo ? 'demo' : prev.userId === userId ? prev.source : null,
       loading: enabled && !demo,
       error: null,
-    })
+    }))
     if (enabled && !demo) {
       api.content.heroJourney().then(
         data => {
@@ -161,7 +182,7 @@ export function useHeroJourneyContent(enabled = true, userId = null) {
     return () => {
       active = false
     }
-  }, [enabled, userId, demo, attempt])
+  }, [enabled, userId, demo, attempt, refreshToken])
 
   const retry = useCallback(() => setAttempt(value => value + 1), [])
   // На самой первой отрисовке нового профиля старые серверные тексты скрыты.

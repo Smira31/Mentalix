@@ -250,6 +250,48 @@
   color: rgb(var(--c-muted));
 }
 
+/* Закрытая Pro-глава (#1122): шапка — кнопка и ведёт на экран подписки,
+   поэтому у неё снят вид кнопки браузера. Отступы, радиусы и типографика —
+   из соседних правил главы; бейдж «Pro» — тот же приём, что у витрины Pro
+   (.mx-pro-showcase-card__badge): акцентная заливка 15% и акцентный текст. */
+.mx-hj-chapter__head--button {
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.mx-hj-chapter__side {
+  display: flex;
+  align-items: center;
+  gap: var(--mx-space-2);
+  flex: none;
+}
+
+.mx-hj-chapter__pro {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--mx-radius-pill);
+  background: rgb(var(--c-gold) / 0.15);
+  color: rgb(var(--c-gold));
+  font-size: max(11px, calc(11px * var(--mx-type-scale)));
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.mx-hj-chapter__note {
+  margin-top: var(--mx-space-2);
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
+  color: rgb(var(--c-muted));
+}
+
 .mx-hj-chapter__chevron,
 .mx-hj-chapter__lock {
   flex: none;

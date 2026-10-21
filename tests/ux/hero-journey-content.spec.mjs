@@ -90,8 +90,12 @@ for (const [width, height, keyboardHeight] of [
     await expect(map).toHaveAttribute('data-content-source', 'demo')
     await expect(map).toHaveAttribute('data-content-status', 'ready')
     /* Закрытые главы II–IV: в бандле только структура, ни текстов шагов,
-       ни открытых карточек шагов. Проверка по факту, а не по классу. */
-    await expect(page.locator('.mx-hj-chapter--demo-locked')).toHaveCount(3)
+       ни открытых карточек шагов. Закрытая глава — карточка Pro по правам
+       (#1122). Проверка по факту, а не по классу. */
+    await expect(page.locator('.mx-hj-chapter--pro-locked')).toHaveCount(3)
+    await expect(page.locator('.mx-hj-chapter--pro-locked').first()).toContainText(
+      'Доступно по подписке Pro'
+    )
     for (const locked of DEMO_HERO_JOURNEY.steps.filter(step => !step.intro)) {
       await expect(tid(page, `hero-step-${locked.id}`)).toHaveCount(0)
     }
@@ -180,7 +184,12 @@ for (const [width, height, keyboardHeight] of [
     }
     await expect(tid(page, 'hero-continue')).toHaveCount(0)
     await expect(map).not.toContainText('undefined')
-    await expect(page.locator('.mx-hj-chapter--demo-locked')).toHaveCount(3)
+    // Демо закрывает главы II–IV тем же контрактом прав: карточка Pro, а не
+    // старый текст «Полная версия — в Telegram» (#1122).
+    await expect(page.locator('.mx-hj-chapter--pro-locked')).toHaveCount(3)
+    await expect(page.locator('.mx-hj-chapter--pro-locked').first()).toContainText(
+      'Доступно по подписке Pro'
+    )
     // Курс ни разу не запросил сервер: демо-режим остаётся изолированным.
     expect(serverRequests).toEqual([])
     await page.screenshot({ path: `${evidence}/${width}x${height}-locked-chapters.png` })
@@ -208,7 +217,7 @@ const serverPayload = {
     description: 'Тестовый ответ загрузки: публичная глава I.',
   },
   chapters: [
-    ...DEMO_HERO_JOURNEY.chapters.filter(chapter => !chapter.demoLocked),
+    ...DEMO_HERO_JOURNEY.chapters.filter(chapter => !chapter.locked),
     { key: 'threshold', roman: 'II', title: 'Тестовая глава', trialIds: ['body'] },
   ],
   // Проверяем доступный шаг II главы: текст — копия ПУБЛИЧНОГО шага 1,
@@ -314,7 +323,8 @@ for (const [width, height] of [
         await expect(map).toHaveAttribute('data-content-source', 'server')
         await expect(map).toHaveAttribute('data-content-status', 'ready')
         await expect(map).toContainText(serverPayload.course.description)
-        await expect(page.locator('.mx-hj-chapter--demo-locked')).toHaveCount(0)
+        // Права сервера не закрывают главу: карточек Pro в ответе нет.
+        await expect(page.locator('.mx-hj-chapter--pro-locked')).toHaveCount(0)
         await expect(tid(page, 'hero-step-body')).toHaveAttribute('data-state', 'open')
         if (scenario === 'success')
           await page.screenshot({ path: `${evidence}/${width}x${height}-test-success.png` })
@@ -359,3 +369,125 @@ for (const [width, height] of [
     })
   }
 }
+
+/*
+ * Права (#1122): сервер отдаёт access.has_pro/free_chapter_keys и флаг locked
+ * у глав, шагов и финала. Без Pro главы II–IV и финал закрыты и ведут в
+ * существующий экран подписки, а у закрытых шагов текстов нет — пустой шаг не
+ * открывается и не предлагается «Следующим шагом». Возврат из подписки
+ * перечитывает тот же ответ: права могли измениться (App закрывает профиль и
+ * отправляет mentalix:tab-refresh — как при возврате на вкладку).
+ */
+test('Права: закрытые главы ведут в подписку, возврат перечитывает права', async ({ page }) => {
+  await page.setViewportSize({ width: 393, height: 852 })
+  const accessUserId = 900993
+  await page.addInitScript(
+    ({ token, userId }) => {
+      localStorage.setItem('mentalix_web_user', JSON.stringify({ id: userId, first_name: 'Тест' }))
+      localStorage.setItem('mentalix_session_token', token)
+      localStorage.setItem('mx-onboarded-v2', '1')
+      // Шаг 1 главы I пройден до открытия курса: права не должны стирать прогресс.
+      localStorage.setItem(
+        `mx-hero-journey-progress:${userId}`,
+        JSON.stringify({
+          completed: { uncertainty: '2026-10-01' },
+          signs: {},
+          reflections: {},
+          actions: {},
+        })
+      )
+    },
+    { token: testToken, userId: accessUserId }
+  )
+
+  const requests = []
+  let hasPro = false
+  /*
+   * Второй ответ — «подписка оформлена»: тот же курс, но главы открыты.
+   * Закрытый шаг идёт без текстов (сервер их не отдаёт), и это корректный
+   * формат: подставленных демо-текстов вместо них быть не должно.
+   */
+  const accessPayload = () => ({
+    course: { title: 'Путь героя', description: 'Тестовый ответ с правами.' },
+    chapters: [
+      { key: 'call', roman: 'I', title: 'Зов', trialIds: ['uncertainty'] },
+      { key: 'threshold', roman: 'II', title: 'Порог', trialIds: ['body'], locked: !hasPro },
+    ],
+    trials: [
+      { ...publicSteps[0], id: 'uncertainty', number: 1 },
+      hasPro
+        ? { ...publicSteps[0], id: 'body', number: 5, title: 'Тестовый шаг сервера' }
+        : { id: 'body', number: 5 },
+    ],
+    prologue: null,
+    finale: {
+      id: 'return',
+      key: 'return',
+      number: 17,
+      title: 'Возвращение',
+      subtitle: 'Финал курса',
+      lockedHint: 'Сначала пройди все шаги',
+      locked: !hasPro,
+    },
+    access: { has_pro: hasPro, free_chapter_keys: ['call'] },
+  })
+
+  await page.route('**/api/**', route =>
+    route.fulfill({ contentType: 'application/json', body: '[]' })
+  )
+  await page.route('**/api/content/hero-journey', route => {
+    requests.push(route.request())
+    return route.fulfill({ json: accessPayload() })
+  })
+
+  await page.goto('/?tab=library&frame=0')
+  await tid(page, 'library-hero').click()
+  const map = tid(page, 'hero-journey-map')
+  await expect(map).toHaveAttribute('data-content-source', 'server')
+  await expect(map).toHaveAttribute('data-content-status', 'ready')
+
+  // 1: без Pro глава II закрыта — карточка Pro, шагов внутри нет.
+  const lockedChapter = tid(page, 'hero-chapter-locked-threshold')
+  await expect(lockedChapter).toBeVisible()
+  await expect(lockedChapter).toContainText('Доступно по подписке Pro')
+  await expect(tid(page, 'hero-step-body')).toHaveCount(0)
+  await expect(tid(page, 'hero-chapter-pro-threshold')).toBeVisible()
+  // Пустой шаг не предлагается «Следующим шагом»; глава I и прогресс на месте.
+  await expect(tid(page, 'hero-continue')).toHaveCount(0)
+  await expect(tid(page, 'hero-step-uncertainty')).toHaveAttribute('data-state', 'done')
+  // Финал закрыт тем же контрактом прав и ведёт туда же.
+  await expect(tid(page, 'hero-step-return')).toHaveAttribute('data-pro-locked', 'true')
+  await expect(tid(page, 'hero-step-return')).toContainText('Доступно по подписке Pro')
+  expect(await map.innerText()).not.toContain('undefined')
+  const requestsBefore = requests.length
+
+  // 2: переход в существующий экран подписки (тот же, что из «Прогресса»).
+  await tid(page, 'hero-chapter-pro-threshold').click()
+  await expect(tid(page, 'profile-screen-subscription')).toBeVisible()
+  await expect(tid(page, 'subscription-pay-button')).toBeVisible()
+
+  // 3: подписка изменилась → возврат из профиля перечитывает ответ.
+  hasPro = true
+  /*
+   * «Назад» профиля: подэкран → корень, затем корень → закрытие оверлея
+   * (App закрывает профиль и отправляет mentalix:tab-refresh). Это тот же
+   * обработчик, который вызывает нативная кнопка Telegram и демо-шапка;
+   * в браузере без Telegram кнопки нет, поэтому берём действие из стека.
+   */
+  await page.evaluate(() => window.__mxGetCurrentBackAction?.()?.())
+  await expect(tid(page, 'profile-screen')).toBeVisible()
+  await page.evaluate(() => window.__mxGetCurrentBackAction?.()?.())
+  await expect(tid(page, 'profile-screen')).toHaveCount(0)
+
+  await tid(page, 'library-hero').click()
+  await expect(map).toHaveAttribute('data-content-status', 'ready')
+  expect(requests.length).toBeGreaterThan(requestsBefore)
+  // Права обновились: глава II открыта и её шаг доступен.
+  await expect(tid(page, 'hero-chapter-locked-threshold')).toHaveCount(0)
+  await expect(tid(page, 'hero-step-body')).toBeVisible()
+  await expect(tid(page, 'hero-step-body')).not.toHaveAttribute('data-pro-locked', 'true')
+  await expect(tid(page, 'hero-step-return')).not.toHaveAttribute('data-pro-locked', 'true')
+  // Прогресс за перечитывание прав не потерялся.
+  await expect(tid(page, 'hero-step-uncertainty')).toHaveAttribute('data-state', 'done')
+  expect(await map.innerText()).not.toContain('undefined')
+})

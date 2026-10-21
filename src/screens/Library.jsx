@@ -20,14 +20,19 @@ import {
   peekArticles,
 } from '../lib/libraryDataCache'
 import { redirectRemovedLibraryAddress } from '../lib/libraryNavigation'
-import { useTabReset } from '../lib/tabRefresh'
+import { useTabRefresh, useTabReset } from '../lib/tabRefresh'
 import { previewHeroJourneyAction } from '../lib/heroJourneyDemo'
 import { platform } from '../platform'
 import './Library.css'
 import './LibraryStoic.css'
 
-export default function Library({ user, onInputModeChange }) {
+export default function Library({ user, onInputModeChange, onOpenSubscription }) {
   const [screen, setScreen] = useState(() => (previewHeroJourneyAction() ? 'hero-journey' : 'home'))
+  /* Права «Пути героя» (#1122) приходят с текстами курса, поэтому после
+     закрытия подписки (и возврата на вкладку) ответ перечитывается: счётчик
+     уходит в HeroJourneyMap как refreshToken. Экран при этом не перемонтируется
+     и не теряет прогресс — тихий рефетч оставляет уже показанный курс. */
+  const [heroRefresh, setHeroRefresh] = useState(0)
   const [sheet, setSheet] = useState(null)
   const [article, setArticle] = useState(null)
   const [program, setProgram] = useState('Самодисциплина')
@@ -105,6 +110,8 @@ export default function Library({ user, onInputModeChange }) {
     setArticle(null)
   })
 
+  useTabRefresh('library', () => setHeroRefresh(count => count + 1))
+
   function openArticle(item, event) {
     originTile.current = event.currentTarget
     homeScroll.current = document.querySelector('.mx-app-scroll-root')?.scrollTop || 0
@@ -118,6 +125,8 @@ export default function Library({ user, onInputModeChange }) {
         key={`${user.id}:${course.id}`}
         user={user}
         course={course}
+        refreshToken={heroRefresh}
+        onOpenSubscription={onOpenSubscription}
         onBack={() => setScreen(courseOrigin)}
       />
     )
