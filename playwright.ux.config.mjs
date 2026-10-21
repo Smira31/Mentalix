@@ -33,6 +33,7 @@ export default defineConfig({
     'dialog-errors.spec.mjs',
     'guided-journals-reliability.spec.mjs',
     'hero-journey-reliability.spec.mjs',
+    'hero-journey-content.spec.mjs',
     'protected-text.spec.mjs',
     'checkin-navigation-consistency.spec.mjs',
     'theme-week-carousel.spec.mjs',

@@ -10,6 +10,10 @@ const cssSource = await readFile(
   new URL('../../src/screens/HeroJourneyMap.css', import.meta.url),
   'utf8'
 )
+const sheetSource = await readFile(
+  new URL('../../src/components/HeroJourneySheet.jsx', import.meta.url),
+  'utf8'
+)
 
 test('StepComplete — колонка без скролла, зазор над «Продолжить» ограничен', () => {
   // Кнопка «Продолжить» остаётся на месте (testid не менялся) и лежит в нижней группе.
@@ -116,13 +120,21 @@ test('Длительность шага убрана со вступления �
   assert.doesNotMatch(cssSource, /__flow|next-card__meta/)
 })
 
-test('Вступление: длинный текст скроллится внутри блока, не под кнопкой', () => {
+test('Вступление: длинный текст скроллится внутри блока, не под кнопкой', async () => {
   // Скролл-обёртка внутри текстового блока: скрим ::before остаётся на блоке
   // (он выходит выше блока и был бы обрезан собственным overflow).
   // Текст вступления защищён от копирования (#1112): к классу добавлен
   // mx-protected-text (общая утилита, не отдельная копия стилей).
-  assert.match(jsxSource, /className="mx-hj-step-intro__text mx-protected-text">/)
-  assert.match(jsxSource, /className="mx-hj-step-intro__text-scroll"/)
+  // После выделения общего листа проверяем фактический владелец разметки,
+  // а также его использование обоими вариантами вступления — не удаляем gate.
+  assert.match(jsxSource, /<HeroJourneySheet[\s\S]*?body=\{introScene\}/)
+  const storySource = await readFile(
+    new URL('../../src/screens/HeroJourneyStory.jsx', import.meta.url),
+    'utf8'
+  )
+  assert.match(storySource, /<HeroJourneySheet/)
+  assert.match(sheetSource, /className="mx-hj-step-intro__text mx-protected-text">/)
+  assert.match(sheetSource, /className="mx-hj-step-intro__text-scroll"/)
   assert.match(
     cssSource,
     /\.mx-hj-step-intro__text-scroll \{[\s\S]*?flex: 1;[\s\S]*?min-height: 0;[\s\S]*?overflow-y: auto;/

@@ -1,12 +1,4 @@
-import {
-  useState,
-  useMemo,
-  useCallback,
-  useEffect,
-  useRef,
-  createContext,
-  useContext,
-} from 'react'
+import { useState, useMemo, useCallback, useEffect, useRef, createContext, useContext } from 'react'
 import { Check, ChevronDown, ChevronRight, Lock } from 'lucide-react'
 
 import Screen from '../components/Screen'
@@ -166,6 +158,8 @@ function Shell({
   fit = false,
   topFlush = false,
   testId,
+  contentSource,
+  contentStatus,
 }) {
   return (
     <Screen
@@ -178,6 +172,8 @@ function Shell({
     >
       <div
         data-testid={testId}
+        data-content-source={contentSource}
+        data-content-status={contentStatus}
         className={`flex flex-col ${fit ? 'flex-1 min-h-0' : ''} ${bodyClassName}`}
       >
         {children}
@@ -208,20 +204,26 @@ function ContentSkeleton() {
 }
 
 /* Ошибка сети: короткий текст и «Повторить», без технических сообщений. */
+function ContentFailure({ onRetry }) {
+  return (
+    <div className="mx-hj-content-error" role="alert" data-testid="hero-content-failure">
+      <p className="mx-hj-content-error__text">Не удалось загрузить. Проверь интернет</p>
+      <button
+        type="button"
+        data-testid="hero-retry"
+        onClick={onRetry}
+        className="cta-pill mx-hj-content-error__cta"
+      >
+        Повторить
+      </button>
+    </div>
+  )
+}
+
 function ContentError({ onRetry }) {
   return (
     <Shell testId="hero-journey-error">
-      <div className="mx-hj-content-error" role="alert">
-        <p className="mx-hj-content-error__text">Не удалось загрузить. Проверь интернет</p>
-        <button
-          type="button"
-          data-testid="hero-retry"
-          onClick={onRetry}
-          className="cta-pill mx-hj-content-error__cta"
-        >
-          Повторить
-        </button>
-      </div>
+      <ContentFailure onRetry={onRetry} />
     </Shell>
   )
 }
@@ -377,6 +379,9 @@ function CourseMap({ progress, onOpenStep, onOpenAbout }) {
     course: HERO_JOURNEY_COURSE,
     prologue,
     finale: HERO_JOURNEY_FINALE,
+    contentSource,
+    contentStatus,
+    retryContent,
   } = useCourse()
   const completedTotal = HERO_JOURNEY_TRIALS.filter(t => isStepCompleted(t.id, progress)).length
 
@@ -389,7 +394,7 @@ function CourseMap({ progress, onOpenStep, onOpenAbout }) {
 
   if (HERO_JOURNEY_TRIALS.length === 0)
     return (
-      <Shell testId="hero-journey-map">
+      <Shell testId="hero-journey-map" contentSource={contentSource} contentStatus={contentStatus}>
         <div className="mx-hj-map__head mx-protected-text">
           <h1 className="mx-hj-map__title">{appHeading(HERO_JOURNEY_COURSE.title)}</h1>
           <p className="mx-hj-map__desc">{HERO_JOURNEY_COURSE.description}</p>
@@ -401,7 +406,8 @@ function CourseMap({ progress, onOpenStep, onOpenAbout }) {
     )
 
   return (
-    <Shell testId="hero-journey-map">
+    <Shell testId="hero-journey-map" contentSource={contentSource} contentStatus={contentStatus}>
+      {contentStatus === 'error' && <ContentFailure onRetry={retryContent} />}
       <div className="mx-hj-map__head mx-protected-text">
         <span className="mx-hj-eyebrow">
           Практикум · {HERO_JOURNEY_TRIALS.length} шагов · {HERO_JOURNEY_CHAPTERS.length} главы
@@ -477,11 +483,7 @@ function CourseMap({ progress, onOpenStep, onOpenAbout }) {
 function AboutScreen({ prologue, onBackToMap }) {
   return (
     /* Колонка без скролла: кнопка «К шагам» прижата к низу (см. __bottom в CSS). */
-    <Shell
-      fit
-      bodyClassName="mx-hj-about mx-protected-text"
-      screenBodyClassName="mx-hj-about-body"
-    >
+    <Shell fit bodyClassName="mx-hj-about mx-protected-text" screenBodyClassName="mx-hj-about-body">
       <span className="mx-hj-eyebrow">{prologue.eyebrow}</span>
       <h1 className="mx-hj-about__title">{appHeading(prologue.title)}</h1>
       {prologue.paragraphs.map((para, i) => (
@@ -573,11 +575,7 @@ function StepIntro({ trial, onStart, onBack, storyIndex, onStoryIndexChange }) {
        текст слегка перехлёстывает затемнённый нижний край; кнопка
        прижата к низу (см. .mx-hj-hero--flex и __bottom в CSS). Листы сторис
        живут в той же колонке: общая геометрия картинки сохраняется. */
-    <Shell
-      fit
-      bodyClassName="mx-hj-step-intro"
-      screenBodyClassName="mx-hj-intro-body"
-    >
+    <Shell fit bodyClassName="mx-hj-step-intro" screenBodyClassName="mx-hj-intro-body">
       {pages.length > 0 ? (
         <HeroJourneyStory
           pages={pages}
@@ -739,11 +737,7 @@ function StepComplete({ trial, progress, onBackToMap, onContinue }) {
   return (
     /* Колонка без скролла: кадр done обрезается по данным шага,
        текст идёт сразу под ним, «Продолжить» — с коротким зазором. */
-    <Shell
-      fit
-      bodyClassName="mx-hj-step-complete"
-      screenBodyClassName="mx-hj-complete-body"
-    >
+    <Shell fit bodyClassName="mx-hj-step-complete" screenBodyClassName="mx-hj-complete-body">
       {showDoneImage ? (
         <HeroImage
           flexible
@@ -777,9 +771,7 @@ function StepComplete({ trial, progress, onBackToMap, onContinue }) {
             <p className="mx-hj-complete__support-text">{actionAnswer}</p>
           </div>
         )}
-        {trial.doneTeaser && (
-          <p className="mx-hj-complete__teaser">{trial.doneTeaser}</p>
-        )}
+        {trial.doneTeaser && <p className="mx-hj-complete__teaser">{trial.doneTeaser}</p>}
 
         {chapter && (
           <div className="mx-hj-complete__chapter-card">
@@ -850,8 +842,8 @@ function PauseScreen({ nextTrial, onStay, onContinue }) {
         <span className="mx-hj-eyebrow">ПАУЗА</span>
         <h2 className="mx-hj-pause__title">{appHeading('Глава позади')}</h2>
         <p className="mx-hj-pause__text">
-          Ты прошёл четыре шага и взял четыре действия. Дай им пару дней — так они станут твоими,
-          а не очередным списком дел.
+          Ты прошёл четыре шага и взял четыре действия. Дай им пару дней — так они станут твоими, а
+          не очередным списком дел.
         </p>
       </div>
 
@@ -885,7 +877,13 @@ export default function HeroJourneyMap({ course = HERO_COURSE, ...props }) {
   /* Серверные тексты относятся только к «Пути героя». Этим же экраном
      Библиотека открывает другие практикумы — у них данные свои. */
   const isHeroJourney = course?.id === HERO_COURSE.id
-  const { course: loadedCourse, loading, error, retry } = useHeroJourneyContent(isHeroJourney)
+  const {
+    course: loadedCourse,
+    loading,
+    error,
+    retry,
+    source,
+  } = useHeroJourneyContent(isHeroJourney, props.user?.id)
   const activeCourse = (isHeroJourney && loadedCourse) || course
 
   /* Тексты едут с сервера: спокойный скелет, пока грузится, и короткая
@@ -894,8 +892,23 @@ export default function HeroJourneyMap({ course = HERO_COURSE, ...props }) {
   if (isHeroJourney && error && !loadedCourse) return <ContentError onRetry={retry} />
 
   return (
-    <CourseContext.Provider value={courseContent(activeCourse)}>
-      <CourseFlow {...props} course={activeCourse} />
+    <CourseContext.Provider
+      value={{
+        ...courseContent(activeCourse),
+        contentSource: source,
+        contentStatus: loading
+          ? 'loading'
+          : error === 'access'
+            ? 'access'
+            : error
+              ? 'error'
+              : activeCourse.steps.length
+                ? 'ready'
+                : 'empty',
+        retryContent: retry,
+      }}
+    >
+      <CourseFlow key={props.user?.id} {...props} course={activeCourse} />
     </CourseContext.Provider>
   )
 }

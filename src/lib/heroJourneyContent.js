@@ -4,7 +4,7 @@
  * GET /api/content/hero-journey → { course, prologue, chapters, trials, finale }
  * — тот же формат, что src/data/heroJourney.js, но image.enter/done — строки-ключи.
  *
- * Данные кешируются на сессию: повторно не грузятся при каждом переходе.
+ * Данные живут до закрытия курса; смена профиля отменяет применение старого ответа.
  * Картинки разрешаются через словарь src/data/heroJourneyImages.js.
  *
  * Закрытые главы во фронтенд не переносятся: сервер отдаёт весь курс только
@@ -14,6 +14,7 @@
  */
 import { useCallback, useEffect, useState } from 'react'
 import { api } from './api.js'
+import { heroJourneyErrorKind, validateHeroJourneyPayload } from './heroJourneyPayload.js'
 import { isPreviewDemoMode } from './demoMode.js'
 import { resolveHeroImage } from '../data/heroJourneyImages.js'
 import {
@@ -23,10 +24,6 @@ import {
 } from '../data/heroJourney.js'
 import { DEMO_HERO_JOURNEY } from '../data/demoContent.js'
 import cover from '../assets/hero-journey/course-cover@2x.webp'
-
-// Сессионный кеш: загружается один раз за сессию.
-let cachedCourse = null
-let cachedPromise = null
 
 /**
  * Разрешает картинки в server-данных: заменяет строковые ключи
@@ -109,85 +106,64 @@ function buildDemoCourse() {
   }
 }
 
-async function loadHeroJourney() {
-  if (cachedCourse) return cachedCourse
-  if (cachedPromise) return cachedPromise
-
-  cachedPromise = api.content
-    .heroJourney()
-    .then(data => {
-      cachedCourse = buildCourseFromServer(data)
-      return cachedCourse
-    })
-    .catch(error => {
-      /* Демо/превью: сервер закрыт (401 verified_identity_required) или
-         недоступен — показываем встроенную публичную часть курса. В обычной
-         сборке отказ остаётся ошибкой загрузки с «Повторить». */
-      if (!isPreviewDemoMode()) throw error
-      cachedCourse = buildDemoCourse()
-      return cachedCourse
-    })
-    .finally(() => {
-      cachedPromise = null
-    })
-
-  return cachedPromise
-}
-
-export function useHeroJourneyContent(enabled = true) {
-  /* enabled=false — тексты «Пути героя» не нужны: этим экраном Библиотека
-     открывает и другие практикумы, у них свои данные. */
-  const [course, setCourse] = useState(() => {
-    if (!enabled) return null
-    if (isPreviewDemoMode()) return buildDemoCourse()
-    return cachedCourse
+export function useHeroJourneyContent(enabled = true, userId = null) {
+  const demo = isPreviewDemoMode()
+  const [attempt, setAttempt] = useState(0)
+  const initialState = () => ({
+    userId,
+    course: enabled && demo ? buildDemoCourse() : null,
+    source: demo ? 'demo' : null,
+    loading: enabled && !demo,
+    error: null,
   })
-  const [loading, setLoading] = useState(() => enabled && !course && !isPreviewDemoMode())
-  const [error, setError] = useState(false)
-
-  const load = useCallback(async () => {
-    if (!enabled) {
-      setCourse(null)
-      setLoading(false)
-      setError(false)
-      return
-    }
-    if (cachedCourse) {
-      setCourse(cachedCourse)
-      setLoading(false)
-      return
-    }
-    /* Демо/превью: встроенная публичная часть курса видна сразу, без ожидания
-       сети; серверный курс заменяет её, если доступ есть. */
-    const demo = isPreviewDemoMode()
-    if (demo) setCourse(buildDemoCourse())
-    else setLoading(true)
-    setError(false)
-    try {
-      const data = await loadHeroJourney()
-      setCourse(data)
-    } catch {
-      if (!demo) setError(true)
-    } finally {
-      setLoading(false)
-    }
-  }, [enabled])
+  const [state, setState] = useState(initialState)
 
   useEffect(() => {
-    load()
-  }, [load])
+    // Данные принадлежат смонтированному экрану и текущему пользователю.
+    // Общего кеша нет: поздний ответ A не должен попасть к пользователю B,
+    // а публичный fallback не должен навсегда подменить серверный курс.
+    let active = true
+    const fallback = enabled && demo ? buildDemoCourse() : null
+    /* Демо/превью: встроенная публичная часть показывается сразу и без запроса —
+       обёртка API перехватывает демо-запросы и контракта курса не знает.
+       Вне демо серверный курс приходит как раньше: с проверкой формата и с
+       причиной отказа, отличной от пустого курса. */
+    setState({
+      userId,
+      course: fallback,
+      source: demo ? 'demo' : null,
+      loading: enabled && !demo,
+      error: null,
+    })
+    if (enabled && !demo) {
+      api.content.heroJourney().then(
+        data => {
+          try {
+            const course = buildCourseFromServer(validateHeroJourneyPayload(data))
+            if (active) setState({ userId, course, source: 'server', loading: false, error: null })
+          } catch {
+            if (active)
+              setState({ userId, course: null, source: null, loading: false, error: 'load' })
+          }
+        },
+        error => {
+          if (active)
+            setState({
+              userId,
+              course: null,
+              source: null,
+              loading: false,
+              error: heroJourneyErrorKind(error),
+            })
+        }
+      )
+    }
+    return () => {
+      active = false
+    }
+  }, [enabled, userId, demo, attempt])
 
-  const retry = useCallback(() => {
-    cachedCourse = null
-    cachedPromise = null
-    load()
-  }, [load])
-
-  return { course, loading, error, retry }
-}
-
-// Для тестов: сброс кеша.
-export function resetHeroJourneyCache() {
-  cachedCourse = null
-  cachedPromise = null
+  const retry = useCallback(() => setAttempt(value => value + 1), [])
+  // На самой первой отрисовке нового профиля старые серверные тексты скрыты.
+  return { ...(state.userId === userId ? state : initialState()), retry }
 }

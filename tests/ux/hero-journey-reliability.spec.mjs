@@ -72,12 +72,14 @@ test('Завершение: кадр под Telegram, без большого з
          нет — её отступ ушёл вместе с ней. Сверку «одной линии» держат шаги
          без листов. */
       const intro = page.locator('.mx-hj-step-intro .mx-hj-hero')
-      let introTop = null
       if (!demoStepHasPages(id)) {
         await expect(page.getByTestId('hero-step-start')).toBeVisible()
-        await expect(intro).not.toHaveClass(/mx-hj-hero--cropped/)
-        introTop = await intro.evaluate(el => el.getBoundingClientRect().top)
       }
+      await expect(intro).not.toHaveClass(/mx-hj-hero--cropped/)
+      const introFrame = await intro.boundingBox()
+      // И листы, и одиночное вступление теперь центрируют общую сцену.
+      // Вертикальная линия done отличается намеренно; ширина кадра — общая.
+      expect(introFrame.y).toBeGreaterThanOrEqual(0)
 
       await openStepWrite(page)
       await page.getByTestId('hero-write-input').fill('Проверка завершения шага')
@@ -111,9 +113,7 @@ test('Завершение: кадр под Telegram, без большого з
           cropApplied: imageRect.top < rect.top && Math.abs(imageRect.width - rect.width) <= 1,
         }
       })
-      if (introTop !== null) {
-        expect(Math.abs(layout.top - introTop)).toBeLessThanOrEqual(1)
-      }
+      expect(Math.abs(introFrame.width - (await hero.boundingBox()).width)).toBeLessThanOrEqual(1)
       expect(layout.belowControls).toBe(true)
       expect(layout.fullWidth).toBe(true)
       expect(layout.gap).toBeGreaterThanOrEqual(0)
@@ -410,13 +410,11 @@ for (const [width, height] of [
 
       // Длинное вступление доскролливается внутри текстового блока:
       // последний абзац доступен выше кнопки, а не под ней.
-      const lastDescBottom = await page
-        .locator('.mx-hj-step-intro__text-scroll')
-        .evaluate(el => {
-          el.scrollTop = el.scrollHeight
-          const descs = el.querySelectorAll('.mx-hj-step-intro__desc')
-          return descs[descs.length - 1].getBoundingClientRect().bottom
-        })
+      const lastDescBottom = await page.locator('.mx-hj-step-intro__text-scroll').evaluate(el => {
+        el.scrollTop = el.scrollHeight
+        const descs = el.querySelectorAll('.mx-hj-step-intro__desc')
+        return descs[descs.length - 1].getBoundingClientRect().bottom
+      })
       expect(lastDescBottom).toBeLessThanOrEqual(box.y)
 
       await page.getByTestId('demo-chrome-back').click()
@@ -456,8 +454,7 @@ test('Вводка шага листами: без полоски сегмент
       const paragraph = document.querySelector('.mx-hj-story__text p')
       return {
         overflow: column.scrollHeight - column.clientHeight,
-        docOverflow:
-          document.documentElement.scrollHeight - document.documentElement.clientHeight,
+        docOverflow: document.documentElement.scrollHeight - document.documentElement.clientHeight,
         fontSize: paragraph ? parseFloat(getComputedStyle(paragraph).fontSize) : 0,
       }
     })
