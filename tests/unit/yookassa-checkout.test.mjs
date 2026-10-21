@@ -9,7 +9,9 @@ import test from 'node:test'
  *     соответствует своё состояние экрана;
  *   - возврат с ЮKassa не считается оплатой без has_pro от /api/subscription;
  *   - в Telegram (и при выключенном флаге) ЮKassa не вызывается: запрос и
- *     редирект не выполняются.
+ *     редирект не выполняются;
+ *   - повторный запуск, пока create выполняется, второго платежа не создаёт
+ *     (один POST на один запуск), а после сбоя попытка не блокируется.
  *
  * Телеграм-путь (Tribute) здесь не проверяется: он в SubscriptionManager
  * и остаётся прежним.
@@ -337,4 +339,117 @@ test('вход по возврату подключён в App: вызов, эк
     'возврат открывает подписку для Pro и донат для доната'
   )
   assert.ok(app.includes('beginDonationReturn('), 'возврат с доната распознаётся')
+})
+
+/* ── Повторный запуск оплаты: один POST create на один запуск ───────────── */
+
+test('два одновременных запуска оплаты создают один платёж', async () => {
+  let createCalls = 0
+  const navigated = []
+  const create = () => {
+    createCalls += 1
+    // Ответ приходит позже второго запуска: вызовы идут параллельно.
+    return new Promise(resolve =>
+      setTimeout(() => resolve({ confirmation_url: CONFIRMATION_URL }), 10)
+    )
+  }
+
+  const first = startCheckout({
+    platform: 'web',
+    enabled: true,
+    create,
+    navigate: url => navigated.push(url),
+  })
+  const second = startCheckout({
+    platform: 'web',
+    enabled: true,
+    create,
+    navigate: url => navigated.push(url),
+  })
+
+  const [a, b] = await Promise.all([first, second])
+  assert.equal(createCalls, 1, 'параллельный запуск не создаёт второй платёж')
+  assert.deepEqual(a, { state: CHECKOUT_OK, url: CONFIRMATION_URL })
+  assert.deepEqual(b, { state: CHECKOUT_OK, url: CONFIRMATION_URL })
+  assert.deepEqual(navigated, [CONFIRMATION_URL], 'переход на оплату один')
+})
+
+test('после сбоя повторная попытка создаёт новый платёж', async () => {
+  let createCalls = 0
+  const failed = await startCheckout({
+    platform: 'web',
+    enabled: true,
+    create: async () => {
+      createCalls += 1
+      throw Object.assign(new Error('boom'), { status: 502 })
+    },
+    navigate: () => {},
+  })
+
+  assert.equal(failed.state, CHECKOUT_FAILED)
+  assert.equal(createCalls, 1)
+
+  // Промис сброшен по завершении: повторная попытка не блокируется.
+  const navigated = []
+  const retried = await startCheckout({
+    platform: 'web',
+    enabled: true,
+    create: async () => {
+      createCalls += 1
+      return { confirmation_url: CONFIRMATION_URL }
+    },
+    navigate: url => navigated.push(url),
+  })
+
+  assert.equal(createCalls, 2, 'после сбоя повторная попытка не блокируется')
+  assert.deepEqual(retried, { state: CHECKOUT_OK, url: CONFIRMATION_URL })
+  assert.deepEqual(navigated, [CONFIRMATION_URL])
+})
+
+test('гейт проверяется до дедупликации: Telegram и флаг — без запроса', async () => {
+  let createCalls = 0
+  const create = async () => {
+    createCalls += 1
+    return { confirmation_url: CONFIRMATION_URL }
+  }
+
+  const [telegram, disabled] = await Promise.all([
+    startCheckout({ platform: 'telegram', enabled: true, create }),
+    startCheckout({ platform: 'web', enabled: false, create }),
+  ])
+
+  assert.equal(telegram.state, CHECKOUT_SKIPPED)
+  assert.equal(disabled.state, CHECKOUT_SKIPPED)
+  assert.equal(createCalls, 0, 'без пройденного гейта запроса нет')
+})
+
+/*
+ * Границы задачи: путь Tribute в Telegram не тронут, а create не передаёт
+ * user_id — чужой платёж по подставленному идентификатору запросить нельзя,
+ * авторизация остаётся сессионной (cookie или Bearer).
+ */
+test('Tribute и контракт create не изменены', async () => {
+  const { readFile } = await import('node:fs/promises')
+  const manager = await readFile(
+    new URL('../../src/screens/SubscriptionManager.jsx', import.meta.url),
+    'utf8'
+  )
+  const api = await readFile(new URL('../../src/lib/api.js', import.meta.url), 'utf8')
+
+  assert.ok(
+    manager.includes('platform.openTelegramLink(TRIBUTE_TG_LINK)'),
+    'в Telegram оплата открывается прежней ссылкой Tribute'
+  )
+  const config = await readFile(
+    new URL('../../src/lib/paymentConfig.js', import.meta.url),
+    'utf8'
+  )
+  assert.ok(
+    config.includes('https://t.me/tribute/app?startapp=creatorProduct_165247'),
+    'ссылка Tribute в paymentConfig не менялась'
+  )
+
+  const createCall = api.match(/create: \(\) => request\('\/payments\/yookassa\/create'[^\n]*\n/)
+  assert.ok(createCall, 'POST create вызывается как раньше — без тела запроса')
+  assert.doesNotMatch(createCall[0], /user_id/, 'create не передаёт user_id')
 })

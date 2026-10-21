@@ -18,6 +18,12 @@
  * свежий GET /api/subscription (has_pro) — см. paymentReturnState().
  * Платёжные данные на фронтенде не вводятся и не хранятся.
  *
+ * Повторный запуск оплаты: пока POST create выполняется, второй запуск ждёт
+ * тот же промис (см. startCheckout) — один запрос на один запуск. Это защита
+ * клиента от быстрого двойного тапа; от повторной оплаты по уже начатому
+ * платежу она НЕ защищает: отменён платёж или ещё обрабатывается, различает
+ * только сервер (has_pro этого не различает).
+ *
  * Модуль чистый: без импортов платформы и API-клиента. Флаг и платформа
  * передаются вызывающим компонентом (PAYMENT_UI_ENABLED, platformName), а
  * запрос и редирект — снаружи. Поэтому разбор ответов проверяется
@@ -120,11 +126,36 @@ export function confirmationUrl(value) {
  * Раньше отсутствующий navigate молча пропускал редирект — экран оставался
  * в «Открываем оплату…», а вызывающий получал успех (CHECKOUT_OK).
  * Теперь это CHECKOUT_FAILED, и сбой виден в интерфейсе и в тестах.
+ *
+ * Пока запрос create выполняется, повторный запуск второго платежа не
+ * создаёт: оба вызова ждут один in-flight промис и получают один результат
+ * (та же дедупликация, что у гостевого входа в src/lib/guestAuth.js).
+ * Кнопка получает disabled только после рендера, а авто-продолжение оплаты
+ * после гостевого входа и ручное нажатие могут совпасть — без этого второй
+ * POST create уходил бы в ЮKassa с новым ключом и новым платежом.
+ * Промис сбрасывается по завершении: повторная попытка после сбоя создаёт
+ * платёж как раньше. От гонок между вкладками и устройствами клиент не
+ * защищает — там решение только за сервером.
  */
-export async function startCheckout({ create, navigate, platform = 'web', enabled = false } = {}) {
+let checkoutInFlight = null
+
+export async function startCheckout(options = {}) {
+  const { create, navigate, platform = 'web', enabled = false } = options
+
   if (!checkoutAvailable({ enabled, platform })) return { state: CHECKOUT_SKIPPED }
   if (typeof create !== 'function') return { state: CHECKOUT_FAILED }
 
+  if (!checkoutInFlight) {
+    checkoutInFlight = runCheckout({ create, navigate }).finally(() => {
+      checkoutInFlight = null
+    })
+  }
+
+  return checkoutInFlight
+}
+
+/* Один запуск оплаты: POST create → проверка ответа → переход на ЮKassa. */
+async function runCheckout({ create, navigate }) {
   let data
   try {
     data = await create()
