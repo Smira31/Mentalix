@@ -1,44 +1,37 @@
-/* Экран серии после чек-ина — замеры Stoic «3-day streak.» для экрана 393 pt. */
+/* Экран серии после чек-ина — замеры Stoic «3-day streak.» для экрана 393 pt.
+   Геометрия не своя: разметка использует общую сетку финала чек-ина
+   (.mx-completion в CheckInCompletion.css) — полоса героя, полоса заголовка
+   и нижний блок те же, что у финала. */
 .mx-streak-celebration {
   background: rgb(var(--c-bg));
 }
 
-.mx-streak-celebration__body {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  /* Свободная высота уходит в auto-отступы: на высоком экране блок
-     стоит по центру, на низком (360×640) сдвигается вверх и не обрезает
-     ряд дней — высота не фиксируется. */
-  margin-block: auto;
-  padding: 16px 28px 24px;
+/* Цветок стоит по центру полосы героя — там же, где иллюстрация финала.
+   Квадрат 66×66 сохраняется, на коротком экране символ ужинается целиком
+   (max-height/max-width), без искажения пропорций. */
+.mx-completion--streak .mx-streak-celebration__petals {
+  flex: none;
+  width: auto;
+  height: 66px;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/* Текст серии — та же полоса заголовка и та же шкала, что у финала. */
+.mx-completion--streak .mx-streak-celebration__text {
+  max-width: 300px;
+  color: rgb(var(--c-text) / 0.85);
+  font-weight: 400;
   text-align: center;
 }
+.mx-completion--streak .mx-streak-celebration__text strong { font-weight: 700; }
 
-.mx-streak-celebration__petals {
-  flex: none;
-  width: 66px;
-  height: 66px;
-}
-
-.mx-streak-celebration__text {
-  display: flex;
-  flex-direction: column;
-  max-width: 300px;
-  margin: 64px 0 0;
-  color: rgb(var(--c-text) / 0.85);
-  font-size: calc(26px * var(--mx-type-scale));
-  line-height: 36px;
-  font-weight: 400;
-}
-.mx-streak-celebration__text strong { font-weight: 700; }
-
-.mx-streak-celebration__days {
+/* Ряд дней — нижний блок на месте плашки даты финала. */
+.mx-completion--streak .mx-streak-celebration__days {
   display: flex;
   justify-content: center;
   gap: 8px;
-  margin: 40px 0 0;
+  margin: var(--mx-finale-meta-gap) 0 0;
   padding: 0;
   list-style: none;
 }
