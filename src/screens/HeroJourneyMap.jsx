@@ -935,13 +935,15 @@ export default function HeroJourneyMap({ course = HERO_COURSE, ...props }) {
   /* Серверные тексты относятся только к «Пути героя». Этим же экраном
      Библиотека открывает другие практикумы — у них данные свои. */
   const isHeroJourney = course?.id === HERO_COURSE.id
+  /* refreshToken: возврат из подписки и возврат на вкладку перечитывают права
+     (#1122) — экран остаётся на месте, свежий ответ подставляется тихо. */
   const {
     course: loadedCourse,
     loading,
     error,
     retry,
     source,
-  } = useHeroJourneyContent(isHeroJourney, props.user?.id)
+  } = useHeroJourneyContent(isHeroJourney, props.user?.id, props.refreshToken)
   const activeCourse = (isHeroJourney && loadedCourse) || course
 
   /* Тексты едут с сервера: спокойный скелет, пока грузится, и короткая

@@ -14,8 +14,9 @@
  *
  * Права (#1122) — часть того же ответа (access и locked): они кладутся на
  * собранный курс как course.access, чтобы экран решал, что показывает, но не
- * придумывал доступ сам. Смена подписки перечитывает ответ: экран
- * перемонтируется по ключу ветки прав (см. Library.jsx).
+ * придумывал доступ сам. Смена подписки перечитывает ответ не гася экран
+ * (третий аргумент refreshToken: возврат из подписки, возврат на вкладку) —
+ * см. Library.jsx.
  */
 import { useCallback, useEffect, useState } from 'react'
 import { api } from './api.js'
@@ -123,7 +124,7 @@ function buildDemoCourse() {
   }
 }
 
-export function useHeroJourneyContent(enabled = true, userId = null) {
+export function useHeroJourneyContent(enabled = true, userId = null, refreshToken = 0) {
   const demo = isPreviewDemoMode()
   const [attempt, setAttempt] = useState(0)
   const initialState = () => ({
@@ -145,13 +146,16 @@ export function useHeroJourneyContent(enabled = true, userId = null) {
        обёртка API перехватывает демо-запросы и контракта курса не знает.
        Вне демо серверный курс приходит как раньше: с проверкой формата и с
        причиной отказа, отличной от пустого курса. */
-    setState({
+    setState(prev => ({
       userId,
-      course: fallback,
-      source: demo ? 'demo' : null,
+      /* Тихий рефетч (смена подписки, возврат на вкладку) не гасит уже
+         показанный курс: скелетон мигал бы на каждом переключении вкладки.
+         Прошлый профиль не переносится — чужие тексты не должны мелькнуть. */
+      course: fallback ?? (prev.userId === userId ? prev.course : null),
+      source: demo ? 'demo' : prev.userId === userId ? prev.source : null,
       loading: enabled && !demo,
       error: null,
-    })
+    }))
     if (enabled && !demo) {
       api.content.heroJourney().then(
         data => {
@@ -178,7 +182,7 @@ export function useHeroJourneyContent(enabled = true, userId = null) {
     return () => {
       active = false
     }
-  }, [enabled, userId, demo, attempt])
+  }, [enabled, userId, demo, attempt, refreshToken])
 
   const retry = useCallback(() => setAttempt(value => value + 1), [])
   // На самой первой отрисовке нового профиля старые серверные тексты скрыты.

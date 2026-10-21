@@ -7,7 +7,7 @@
  * - Описание практикума;
  * - 2 видимые статьи.
  *
- * Главы II–IV показываются как закрытые с подписью «Полная версия — в Telegram».
+ * Главы II–IV без Pro закрыты (#1122): карточка главы ведёт на экран подписки.
  * В НЕ-демо режиме эти данные не используются — всё приходит с сервера.
  */
 import { HERO_JOURNEY_CHAPTERS } from './heroJourney.js'
@@ -157,9 +157,12 @@ const DEMO_PROLOGUE = {
   ],
 }
 
-// Главы II–IV помечены как demoLocked — в демо показываются закрытыми.
-const DEMO_CHAPTERS = HERO_JOURNEY_CHAPTERS.map((ch, i) =>
-  i === 0 ? ch : { ...ch, demoLocked: true }
+/* Права (#1122) — тот же контракт, что у сервера: глава I бесплатна
+   (free_chapter_keys), у глав II–IV стоит locked. Демо показывает такие главы
+   карточкой Pro и ведёт на экран подписки; текстов у них нет и не подставляется. */
+const DEMO_FREE_CHAPTER_KEYS = ['call']
+const DEMO_CHAPTERS = HERO_JOURNEY_CHAPTERS.map(ch =>
+  DEMO_FREE_CHAPTER_KEYS.includes(ch.key) ? ch : { ...ch, locked: true }
 )
 
 export const DEMO_HERO_JOURNEY = {
@@ -176,6 +179,9 @@ export const DEMO_HERO_JOURNEY = {
   chapters: DEMO_CHAPTERS,
   prologue: DEMO_PROLOGUE,
   finale: null,
+  /* Права демо-пользователя: Pro нет, глава I бесплатна. Сервер отдаёт
+     тот же объект — экран решает по нему, а не по локальному состоянию. */
+  access: { has_pro: false, free_chapter_keys: DEMO_FREE_CHAPTER_KEYS },
 }
 
 // ── 2 видимые статьи для демо ──
