@@ -13,6 +13,7 @@ import Screen from '../components/Screen'
 import { HERO_COURSE, courseContent } from '../data/courses'
 import JournalTextarea from '../components/JournalTextarea'
 import SemanticGlyph from '../components/SemanticGlyph'
+import HeroJourneySheet, { splitSheetThought } from '../components/HeroJourneySheet'
 import { platform } from '../platform'
 import { useBackButton } from '../platform/telegram.hooks'
 import { useHeroJourneyContent } from '../lib/heroJourneyContent'
@@ -135,6 +136,24 @@ function appHeading(text) {
 /* экраны шага с шапкой (без intro/complete) — для счётчика */
 function headerScreens(trial) {
   return screenSequence(trial).filter(v => v !== 'step-intro' && v !== 'complete')
+}
+
+/*
+ * Есть ли у шага свои тексты. В демо-сборке у глав II–IV в бандле только id и
+ * номер (закрытая часть курса живёт на сервере и отдаётся по правам), поэтому
+ * такой шаг нельзя предлагать как «Следующий шаг»: карточка показала бы
+ * «undefined». Шаг остаётся видимым на карте — но как закрытая глава.
+ */
+function hasStepContent(trial) {
+  return Boolean(
+    trial && (trial.title || trial.intro || (Array.isArray(trial.pages) && trial.pages.length))
+  )
+}
+
+/* Подпись главы « · Название» — только когда название есть: у демо-глав оно
+   приходит с сервера, и подставлять вместо него слово undefined нельзя. */
+function chapterLabel(chapter) {
+  return chapter?.title ? `${chapter.roman} · ${chapter.title}` : String(chapter?.roman ?? '')
 }
 
 /* ── оболочка экрана ── */
@@ -361,8 +380,9 @@ function CourseMap({ progress, onOpenStep, onOpenAbout }) {
   } = useCourse()
   const completedTotal = HERO_JOURNEY_TRIALS.filter(t => isStepCompleted(t.id, progress)).length
 
+  /* «Следующий шаг» — только шаг с текстами: у закрытых демо-шагов их нет. */
   const nextTrial = useMemo(() => {
-    return HERO_JOURNEY_TRIALS.find(t => !isStepCompleted(t.id, progress))
+    return HERO_JOURNEY_TRIALS.find(t => !isStepCompleted(t.id, progress) && hasStepContent(t))
   }, [progress, HERO_JOURNEY_TRIALS])
 
   usePreloadStepImages(nextTrial)
@@ -497,6 +517,30 @@ function StepIntro({ trial, onStart, onBack, storyIndex, onStoryIndexChange }) {
      { label, text }. Без листов вводка показывается как раньше. */
   const pages = Array.isArray(trial.pages) ? trial.pages.filter(page => page?.text) : []
 
+  /* Вступление без листов идёт той же сценой, что листы: тот же разбор текста
+     (последний жирный абзац — «мысль») и та же белая круглая кнопка «›» внизу.
+     Разметка блока — прежняя: метка главы, заголовок, подзаголовок, абзацы. */
+  const intro = splitSheetThought(trial.intro)
+  const introScene = (
+    <>
+      <div className="mx-hj-step-intro__label">
+        {isFinale
+          ? `Финал · ${trial.title}`
+          : `Глава ${chapterLabel(chapter)} · Шаг ${trial.number} из ${HERO_JOURNEY_TOTAL_STEPS}`}
+      </div>
+      <h2 className="mx-hj-step-intro__title">{appHeading(trial.title)}</h2>
+      <p className="mx-hj-step-intro__subtitle">{trial.subtitle}</p>
+      {String(intro.body ?? '')
+        .split('\n\n')
+        .filter(Boolean)
+        .map((para, i) => (
+          <p key={i} className="mx-hj-step-intro__desc">
+            {para}
+          </p>
+        ))}
+    </>
+  )
+
   /* Подгрузка (из main): завершение текущего шага и вход следующего. */
   useEffect(() => {
     preloadImage(trial.image?.done)
@@ -544,37 +588,15 @@ function StepIntro({ trial, onStart, onBack, storyIndex, onStoryIndexChange }) {
           onIndexChange={onStoryIndexChange}
         />
       ) : (
-        <>
-          {illustration}
-
-          <div className="mx-hj-step-intro__text mx-protected-text">
-            {/* Скролл-обёртка: на низком экране (375×667 и ниже) длинное вступление
-                доскролливается внутри блока и не уходит под кнопку «Начать шаг». */}
-            <div className="mx-hj-step-intro__text-scroll">
-              <div className="mx-hj-step-intro__label">
-                {isFinale
-                  ? `Финал · ${trial.title}`
-                  : `Глава ${chapter.roman} · ${chapter.title} · Шаг ${trial.number} из ${HERO_JOURNEY_TOTAL_STEPS}`}
-              </div>
-              <h2 className="mx-hj-step-intro__title">{appHeading(trial.title)}</h2>
-              <p className="mx-hj-step-intro__subtitle">{trial.subtitle}</p>
-              {trial.intro.split('\n\n').map((para, i) => (
-                <p key={i} className="mx-hj-step-intro__desc">{para}</p>
-              ))}
-            </div>
-          </div>
-
-          <div className="mx-hj-step-intro__bottom">
-            <button
-              type="button"
-              data-testid="hero-step-start"
-              onClick={onStart}
-              className="cta-pill mx-hj-step-intro__cta"
-            >
-              Начать шаг
-            </button>
-          </div>
-        </>
+        /* Одна сцена шага: тот же кадр, тот же текст с «мыслью» и та же белая
+           круглая кнопка «›», что на листах шага 1. */
+        <HeroJourneySheet
+          illustration={illustration}
+          sheetKey={trial.id}
+          body={introScene}
+          thought={intro.thought}
+          action={{ testId: 'hero-step-start', label: 'Начать шаг', onClick: onStart }}
+        />
       )}
     </Shell>
   )
@@ -763,7 +785,7 @@ function StepComplete({ trial, progress, onBackToMap, onContinue }) {
           <div className="mx-hj-complete__chapter-card">
             {chapterDone ? (
               <p className="mx-hj-complete__chapter-done">
-                Глава {chapter.roman} · {chapter.title} пройдена
+                {`Глава ${chapterLabel(chapter)} пройдена`}
               </p>
             ) : (
               <p className="mx-hj-complete__chapter-progress">
@@ -772,7 +794,7 @@ function StepComplete({ trial, progress, onBackToMap, onContinue }) {
             )}
             {chapterDone && nextChapter && (
               <p className="mx-hj-complete__next-chapter">
-                Открыта глава {nextChapter.roman} · {nextChapter.title}
+                {`Открыта глава ${chapterLabel(nextChapter)}`}
               </p>
             )}
             {chapterDone && !nextChapter && finale && (

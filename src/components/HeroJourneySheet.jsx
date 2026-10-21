@@ -1,6 +1,20 @@
 import RoundSubmitButton from './RoundSubmitButton'
 
 /*
+ * Разбор текста листа: «мысль листа» — последний абзац, целиком жирный (**…**).
+ * Живёт рядом с блоком «МЫСЛЬ», потому что этот разбор общий у листов вводки и
+ * у вступления шага без листов: иначе один и тот же текст давал бы разное
+ * оформление на разных шагах.
+ */
+export function splitSheetThought(text) {
+  const parts = String(text ?? '').split(/\n\n+/)
+  const last = parts[parts.length - 1].trim()
+  const bold = last.match(/^\*\*([\s\S]+)\*\*$/)
+  if (!bold) return { body: text, thought: null }
+  return { body: parts.slice(0, -1).join('\n\n'), thought: bold[1].trim() }
+}
+
+/*
  * Лист «Пути героя» — одна сцена на все экраны чтения шага: листы вводки-сторис
  * (необязательное поле шага pages) и вступление шага без листов. Оформление
  * задано здесь один раз, поэтому листы и вступление не расходятся: тот же кадр

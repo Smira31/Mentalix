@@ -6,8 +6,11 @@
  *
  * Данные кешируются на сессию: повторно не грузятся при каждом переходе.
  * Картинки разрешаются через словарь src/data/heroJourneyImages.js.
- * В демо-режиме (?demo=1) используются встроенные демо-данные
- * (src/data/demoContent.js) — без запроса к серверу.
+ *
+ * Закрытые главы во фронтенд не переносятся: сервер отдаёт весь курс только
+ * авторизованному пользователю. Демо/превью показывает встроенную публичную
+ * часть (глава I из src/data/demoContent.js) сразу и подхватывает серверный
+ * ответ, когда доступ есть; отказ доступа или сбой сети оставляют демо-версию.
  */
 import { useCallback, useEffect, useState } from 'react'
 import { api } from './api.js'
@@ -116,6 +119,14 @@ async function loadHeroJourney() {
       cachedCourse = buildCourseFromServer(data)
       return cachedCourse
     })
+    .catch(error => {
+      /* Демо/превью: сервер закрыт (401 verified_identity_required) или
+         недоступен — показываем встроенную публичную часть курса. В обычной
+         сборке отказ остаётся ошибкой загрузки с «Повторить». */
+      if (!isPreviewDemoMode()) throw error
+      cachedCourse = buildDemoCourse()
+      return cachedCourse
+    })
     .finally(() => {
       cachedPromise = null
     })
@@ -141,23 +152,22 @@ export function useHeroJourneyContent(enabled = true) {
       setError(false)
       return
     }
-    if (isPreviewDemoMode()) {
-      setCourse(buildDemoCourse())
-      setLoading(false)
-      return
-    }
     if (cachedCourse) {
       setCourse(cachedCourse)
       setLoading(false)
       return
     }
-    setLoading(true)
+    /* Демо/превью: встроенная публичная часть курса видна сразу, без ожидания
+       сети; серверный курс заменяет её, если доступ есть. */
+    const demo = isPreviewDemoMode()
+    if (demo) setCourse(buildDemoCourse())
+    else setLoading(true)
     setError(false)
     try {
       const data = await loadHeroJourney()
       setCourse(data)
-    } catch (e) {
-      setError(true)
+    } catch {
+      if (!demo) setError(true)
     } finally {
       setLoading(false)
     }

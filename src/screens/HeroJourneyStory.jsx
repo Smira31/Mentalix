@@ -1,7 +1,7 @@
 import { useCallback, useRef } from 'react'
 
 import MarkdownText from '../components/MarkdownText'
-import HeroJourneySheet from '../components/HeroJourneySheet'
+import HeroJourneySheet, { splitSheetThought } from '../components/HeroJourneySheet'
 import { platform } from '../platform'
 import { isHorizontalSwipe } from '../lib/gestures/swipeThresholds'
 
@@ -35,14 +35,6 @@ const SWIPE_CLICK_GUARD_MS = 400
  * вступление шага без листов: мысль листа (последний абзац, целиком жирный)
  * стоит сразу под текстом вместе с ним, кнопка «вперёд» одна на оба экрана.
  */
-function splitSheetThought(text) {
-  const parts = String(text).split(/\n\n+/)
-  const last = parts[parts.length - 1].trim()
-  const bold = last.match(/^\*\*([\s\S]+)\*\*$/)
-  if (!bold) return { body: text, thought: null }
-  return { body: parts.slice(0, -1).join('\n\n'), thought: bold[1].trim() }
-}
-
 export default function HeroJourneyStory({
   pages,
   illustration = null,
