@@ -7,13 +7,21 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 const SCRIPT = 'scripts/bundle-size-report.mjs'
-const ci = readFileSync('.github/workflows/ci.yml', 'utf8')
+// Отчёты PR (informational) вынесены из ci.yml в отдельный workflow ручного
+// запуска (issue #1111, этап 2), поэтому job'ы ищем в обоих файлах.
+const workflowSources = [
+  readFileSync('.github/workflows/ci.yml', 'utf8'),
+  readFileSync('.github/workflows/informational-checks.yml', 'utf8'),
+]
 
 function job(name) {
-  const start = ci.indexOf(`\n  ${name}:\n`)
-  assert.notEqual(start, -1, `job ${name} не найден`)
-  const next = ci.slice(start + 1).search(/\n {2}[a-z0-9-]+:\n/)
-  return next === -1 ? ci.slice(start) : ci.slice(start, start + 1 + next)
+  for (const source of workflowSources) {
+    const start = source.indexOf(`\n  ${name}:\n`)
+    if (start === -1) continue
+    const next = source.slice(start + 1).search(/\n {2}[a-z0-9-]+:\n/)
+    return next === -1 ? source.slice(start) : source.slice(start, start + 1 + next)
+  }
+  assert.fail(`job ${name} не найден`)
 }
 
 function dist(files) {
