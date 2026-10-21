@@ -11,10 +11,19 @@
  * с учётом прав пользователя. Демо/превью показывает только встроенную
  * публичную часть (глава I из src/data/demoContent.js), без запросов сервера.
  * Обычный режим загружает серверный ответ; отказ не подменяется демо-версией.
+ *
+ * Права (#1122) — часть того же ответа (access и locked): они кладутся на
+ * собранный курс как course.access, чтобы экран решал, что показывает, но не
+ * придумывал доступ сам. Смена подписки перечитывает ответ: экран
+ * перемонтируется по ключу ветки прав (см. Library.jsx).
  */
 import { useCallback, useEffect, useState } from 'react'
 import { api } from './api.js'
-import { heroJourneyErrorKind, validateHeroJourneyPayload } from './heroJourneyPayload.js'
+import {
+  heroJourneyErrorKind,
+  normalizeHeroAccess,
+  validateHeroJourneyPayload,
+} from './heroJourneyPayload.js'
 import { isPreviewDemoMode } from './demoMode.js'
 import { resolveHeroImage } from '../data/heroJourneyImages.js'
 import {
@@ -91,6 +100,11 @@ function buildCourseFromServer(data) {
     chapters: data.chapters || HERO_JOURNEY_CHAPTERS,
     prologue: data.prologue || null,
     finale,
+    /* Права приходят тем же ответом: access.has_pro и free_chapter_keys плюс
+       флаг locked у глав, шагов и финала. Закрытые тексты во фронтенд не
+       переносятся — сервер их не отдаёт, — а локальное состояние прав не
+       подменяет. */
+    access: normalizeHeroAccess(data.access),
   }
 }
 
@@ -103,6 +117,9 @@ function buildDemoCourse() {
     cover: resolveHeroImage(coverKey) || cover,
     steps: (rest.steps || []).map(resolveTrialImages),
     finale: resolveTrialImages(rest.finale),
+    /* Демо несёт тот же контракт прав, что сервер: глава I открыта, главы
+       II–IV — Pro. Демо-сборка закрытые тексты не подставляет. */
+    access: normalizeHeroAccess(rest.access),
   }
 }
 
