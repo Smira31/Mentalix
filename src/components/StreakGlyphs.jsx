@@ -5,51 +5,47 @@ import './StreakGlyphs.css'
  * Значки серии Mentalix — только SVG: тонкие линии, без заливок
  * (огонёк), без свечения, тени и emoji.
  *
- * Цветок: замеры Stoic — верхняя миндалина 16×27 с острыми концами,
- * четыре полумесяца той же длины (≈30 по дуге) наклонены на +5°,
- * зазоры между лепестками 4.7–6.6, в центре пусто (⌀12),
- * общий размер цветка ≈61×65 при viewBox 66.
- * Геометрия не меняется — меняется только число светлых лепестков.
+ * Цветок: пять одинаковых миндалевидных лепестков (как в референсе Stoic —
+ * вытянутая миндалина с острыми концами), повёрнутых на 72° вокруг центра.
+ * Узкий конец лепестка у центра (радиус 12 — пустое отверстие ⌀24), широкий
+ * снаружи (радиус 46.6): зазор между соседними лепестками ≈15°, поэтому
+ * лепестки читаются по отдельности, а не сливаются в кляксу.
+ * Геометрия одна для всех состояний — меняется только число светлых лепестков.
  */
-const ALMOND_PATH =
-  'M33 0C28.6 5.2 25 10.2 25 13.5C25 16.8 28.6 21.8 33 27C37.4 21.8 41 16.8 41 13.5C41 10.2 37.4 5.2 33 0Z'
-const CRESCENT_PATH =
-  'M33 27C39.8 24.4 44 19.6 45.3 12.4C46.3 8.3 46.3 5.3 46.8 2.6C44.8 5.7 43.2 10.2 42.2 14.4C40.9 19.1 36.3 23.4 33 27Z'
-const PETAL_TILT = 5
+const PETAL_PATH =
+  'M50 38C57.6 30.8 61.2 25.6 61.2 21C61.2 13.8 56.2 8 50 3.4C43.8 8 38.8 13.8 38.8 21C38.8 25.6 42.4 30.8 50 38Z'
 
 /* Цветок из пяти отдельных лепестков: светлые — дни серии в текущем
  * круге из пяти, тёмные — оставшиеся. Центр пустой (негативное
  * пространство), поэтому ни круга, ни заливки в середине нет. */
-export function StreakFlower({ streak = 0, size = 66, className = '', testId = 'streak-petals' }) {
+export function StreakFlower({ streak = 0, size = 100, className = '', testId = 'streak-petals' }) {
   const lit = litStreakPetals(streak)
 
   return (
     <svg
       width={size}
       height={size}
-      viewBox="0 0 66 66"
+      viewBox="0 0 100 100"
       aria-hidden="true"
       focusable="false"
       className={`mx-streak-flower ${className}`.trim()}
       data-testid={testId}
       data-lit={lit}
     >
-      <g transform="translate(-2.9 0.5)">
-        {Array.from({ length: STREAK_PETALS }, (_, index) => (
-          <path
-            key={index}
-            d={index === 0 ? ALMOND_PATH : CRESCENT_PATH}
-            transform={`rotate(${index * (360 / STREAK_PETALS) + (index ? PETAL_TILT : 0)} 33 33)`}
-            className={[
-              'mx-streak-flower__petal',
-              index < lit ? 'is-lit' : '',
-              index === lit - 1 ? 'is-new' : '',
-            ]
-              .filter(Boolean)
-              .join(' ')}
-          />
-        ))}
-      </g>
+      {Array.from({ length: STREAK_PETALS }, (_, index) => (
+        <path
+          key={index}
+          d={PETAL_PATH}
+          transform={`rotate(${index * (360 / STREAK_PETALS)} 50 50)`}
+          className={[
+            'mx-streak-flower__petal',
+            index < lit ? 'is-lit' : '',
+            index === lit - 1 ? 'is-new' : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+        />
+      ))}
     </svg>
   )
 }

@@ -1,37 +1,97 @@
-/* Экран серии после чек-ина — замеры Stoic «3-day streak.» для экрана 393 pt.
-   Геометрия не своя: разметка использует общую сетку финала чек-ина
-   (.mx-completion в CheckInCompletion.css) — полоса героя, полоса заголовка
-   и нижний блок те же, что у финала. */
+/* Экран серии после чек-ина.
+   Оболочка, полоса шапки и нижняя полоса кнопки — общие с финалом чек-ина
+   (.mx-finale-header-slot, .mx-completion-action в CheckInCompletion.css):
+   при переходе края экрана и главное действие не двигаются.
+   Внутри — своя компактная сетка: иллюстрация, заголовок, пояснение, дни.
+   Каждая полоса имеет свою высоту, поэтому смена числа дней (1…7) и любого
+   текста не переставляет блоки: свободную высоту забирают отступы сцены. */
 .mx-streak-celebration {
+  background: rgb(var(--c-bg));
+  /* Полосы сцены. Высоты фиксированы намеренно: ряд дней при 1 и при 7
+     днях разной ширины, а пояснение занимает до двух строк — без резерва
+     заголовок и кнопка переезжали бы между состояниями. */
+  --mx-streak-art-band: 176px;
+  --mx-streak-art-size: 148px;
+  --mx-streak-title-band: 32px;
+  --mx-streak-note-band: 36px;
+  --mx-streak-days-band: 58px;
+}
+
+/* Сцена серии — единственная растущая полоса шелла. Контент центрируется
+   по свободной высоте между шапкой и кнопкой (margin-block: auto через
+   justify-content), поэтому композиция не висит у верхнего края. */
+.mx-streak-stage {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--mx-space-4) var(--mx-screen-x) var(--mx-space-6);
+  text-align: center;
   background: rgb(var(--c-bg));
 }
 
-/* Цветок стоит по центру полосы героя — там же, где иллюстрация финала.
-   Квадрат 66×66 сохраняется, на коротком экране символ ужинается целиком
-   (max-height/max-width), без искажения пропорций. */
-.mx-completion--streak .mx-streak-celebration__petals {
+/* Иллюстрация: полноценный рисунок в 148 px (на коротком экране — 112 px),
+   а не значок. Полоса держит высоту, поэтому заголовок не «прыгает». */
+.mx-streak-stage__art {
   flex: none;
-  width: auto;
-  height: 66px;
-  max-width: 100%;
-  max-height: 100%;
-}
-
-/* Текст серии — та же полоса заголовка и та же шкала, что у финала. */
-.mx-completion--streak .mx-streak-celebration__text {
-  max-width: 300px;
-  color: rgb(var(--c-text) / 0.85);
-  font-weight: 400;
-  text-align: center;
-}
-.mx-completion--streak .mx-streak-celebration__text strong { font-weight: 700; }
-
-/* Ряд дней — нижний блок на месте плашки даты финала. */
-.mx-completion--streak .mx-streak-celebration__days {
   display: flex;
+  align-items: center;
   justify-content: center;
-  gap: 8px;
-  margin: var(--mx-finale-meta-gap) 0 0;
+  width: 100%;
+  height: var(--mx-streak-art-band);
+}
+
+.mx-streak-celebration__flower {
+  width: var(--mx-streak-art-size);
+  height: var(--mx-streak-art-size);
+  max-width: 100%;
+}
+
+/* Заголовок серии — роль вопроса финала (MXL-TYPE-READABLE-001): 24 px,
+   насыщенный. «Серия: 5 дней». */
+.mx-streak-celebration__title {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--mx-streak-title-band);
+  max-width: 320px;
+  margin: 0;
+  color: rgb(var(--c-text));
+  font-size: var(--mx-read-ask);
+  line-height: 32px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+/* Пояснение к иллюстрации — содержательная подпись финала
+   (MXL-TYPE-READABLE-001): 14 px, muted, до двух строк. */
+.mx-streak-celebration__note {
+  flex: none;
+  min-height: var(--mx-streak-note-band);
+  max-width: 300px;
+  margin: var(--mx-space-1) 0 0;
+  color: rgb(var(--c-muted));
+  font-size: var(--mx-read-note);
+  line-height: 18px;
+  font-weight: 400;
+}
+
+/* Ряд дней: только подтверждённые дни серии (до недели). Высота полосы
+   постоянна — 34 + 8 + 16 = 58 px, поэтому ряд из одного и из семи дней
+   стоит на одной линии. */
+.mx-streak-celebration__days {
+  display: flex;
+  flex: none;
+  align-items: flex-start;
+  justify-content: center;
+  gap: var(--mx-space-2);
+  width: 100%;
+  min-height: var(--mx-streak-days-band);
+  margin: var(--mx-space-6) 0 0;
   padding: 0;
   list-style: none;
 }
@@ -39,7 +99,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: var(--mx-space-2);
 }
 
 .mx-streak-celebration__dot {
@@ -58,7 +118,16 @@
 
 .mx-streak-celebration__day-label {
   color: rgb(var(--c-muted));
-  font-size: max(11px, calc(13px * var(--mx-type-scale)));
+  font-size: var(--mx-read-caption);
   font-weight: 500;
   line-height: 16px;
+}
+
+/* Короткий экран (360×640): иллюстрация меньше, но остаётся рисунком;
+   полосы сцены не меняются, поэтому ряд дней и кнопка на своих местах. */
+@media (max-height: 740px) {
+  .mx-streak-celebration {
+    --mx-streak-art-band: 136px;
+    --mx-streak-art-size: 112px;
+  }
 }

@@ -94,8 +94,8 @@ async function readFinalLayout(page) {
       shellHeight: Math.round(shell?.getBoundingClientRect().height ?? 0),
       innerHeight: Math.round(window.innerHeight),
       visualHeight: Math.round(window.visualViewport?.height ?? window.innerHeight),
-      hero: box('.mx-completion__art-wrap') || measure(screen?.querySelector('[data-testid="streak-petals"]')),
-      title: box('.mx-completion__title') || box('.mx-streak-celebration__text'),
+      hero: box('.mx-completion__art-wrap') || box('.mx-streak-stage__art'),
+      title: box('.mx-completion__title') || box('.mx-streak-celebration__title'),
       meta: box('.mx-completion__date-pill') || box('.mx-streak-celebration__days'),
       cta: measure(document.querySelector('.mx-completion-action button')),
       overflow: overflow(),
@@ -261,32 +261,28 @@ for (const viewport of VIEWPORTS) {
     }
 
     /*
-     * Экран серии (тот же компонент и тот же стабильный шелл).
+     * Экран серии (тот же стабильный шелл).
      * Демо-API не увеличивает серию при сохранении, поэтому автоматический
      * переход после «Сохранить и выйти» в демо не срабатывает — экран
      * открывается прямой демо-ссылкой в том же вьюпорте. Проверяется то,
-     * что важно для перехода: общая геометрия нижнего блока и CTA.
+     * что важно для перехода: общая оболочка и главная кнопка.
      */
     await page.goto('/?demo=1&frame=0&action=streak_celebration&streak_days=9')
     await expect(page.getByTestId('streak-celebration')).toBeVisible()
     const streak = await readFinalLayout(page)
     await page.screenshot({ path: `${SHOTS}/streak-9days-${viewport.name}.png` })
 
-    // Героя и заголовка в сравнении нет: у экранов разное содержание
-    // (иллюстрация финала ↔ цветок, две строки ↔ четыре), поэтому верх
-    // заголовка зависит от длины текста. Стоять на месте обязаны нижний
-    // блок и главное действие — они и сравниваются.
-    const streakDeltas = layoutDeltas(completion, streak, ['meta', 'cta'])
+    /*
+     * Внутренние полосы серии с полосами финала больше не сравниваются:
+     * у серии своя компактная сетка (иллюстрация → заголовок → пояснение →
+     * дни), и общими остаются только оболочка и главное действие.
+     */
+    const streakDeltas = layoutDeltas(completion, streak, ['cta'])
     console.log(`completion→streak ${viewport.name}`, JSON.stringify(streakDeltas))
     console.log(`positions ${viewport.name}`, JSON.stringify({ completion, streak }))
     expect.soft(streakDeltas.cta, 'кнопка финала и серии на одной высоте').toBeLessThanOrEqual(2)
-    /*
-     * Нижний блок серии (ряд дней) по вертикали не совпадает с плашкой даты
-     * финала: у экранов разное содержание, и на 360×640 ряд дней стоит выше
-     * кнопки на другую величину, чем плашка. Проверяется то, что обязано
-     * выполняться на любом вьюпорте: блок целиком выше CTA и не обрезан.
-     */
-    expect.soft(streak.meta.top + streak.meta.height, 'ряд дней не заходит под кнопку').toBeLessThanOrEqual(
+    // Сцена серии целиком выше кнопки и не обрезана.
+    expect.soft(streak.meta.top + streak.meta.height, 'сцена не заходит под кнопку').toBeLessThanOrEqual(
       streak.cta.top + 1
     )
     expect.soft(streak.overflow, 'экран серии не требует скролла').toBeLessThanOrEqual(1)
@@ -307,8 +303,12 @@ for (const viewport of VIEWPORTS) {
 }
 
 for (const viewport of VIEWPORTS) {
-  for (const days of [1, 3, 5]) {
-    test(`цветок серии: ${days} светлых лепестков из пяти, ${viewport.name}`, async ({ page }) => {
+  for (const days of [1, 3, 5, 9]) {
+    // Дни серии в текущем круге из пяти: 1 → 1, 5 → 5, 9 → 4.
+    const lit = ((days - 1) % 5) + 1
+    test(`цветок серии: ${days} дней — ${lit} светлых лепестков из пяти, ${viewport.name}`, async ({
+      page,
+    }) => {
       await page.setViewportSize({ width: viewport.width, height: viewport.height })
       await page.goto(`/?demo=1&frame=0&action=streak_celebration&streak_days=${days}`)
 
@@ -317,7 +317,7 @@ for (const viewport of VIEWPORTS) {
       // Символ серии — цветок из пяти отдельных лепестков с пустым центром.
       const flower = page.getByTestId('streak-petals')
       await expect(flower).toBeVisible()
-      await expect(flower).toHaveAttribute('data-lit', String(days))
+      await expect(flower).toHaveAttribute('data-lit', String(lit))
       // Росток не используется.
       await expect(page.locator('[data-testid*="sprout"]')).toHaveCount(0)
 
@@ -345,10 +345,10 @@ for (const viewport of VIEWPORTS) {
         }
       })
       expect(flowerStyle.petals, 'пять отдельных лепестков').toBe(5)
-      expect(flowerStyle.litCount, `${days} дней — ${days} светлых лепестков`).toBe(days)
+      expect(flowerStyle.litCount, `${days} дней — ${lit} светлых лепестков`).toBe(lit)
       expect(flowerStyle.centerParts, 'центр цветка пустой').toBe(0)
       expect(flowerStyle.litFills, 'светлые лепестки одного цвета').toHaveLength(1)
-      if (days < 5) {
+      if (lit < 5) {
         // Пять из пяти — тёмных лепестков в круге не остаётся.
         expect(flowerStyle.dimFills, 'тёмные лепестки одного цвета').toHaveLength(1)
         expect(flowerStyle.litFills[0], 'светлый лепесток светлее тёмного').not.toBe(
@@ -374,6 +374,13 @@ for (const viewport of VIEWPORTS) {
       })
       expect(flameStyle.fills.every(fill => fill === 'none'), 'у огонька нет заливки').toBe(true)
       expect(flameStyle.strokeWidth, 'огонёк тонкой линией').toBeLessThanOrEqual(3)
+
+      // Ряд дней — только подтверждённые дни серии, не больше недели.
+      const rows = await page.locator('.mx-streak-celebration__days li').count()
+      expect(rows, `${days} дней — ${Math.min(days, 7)} в ряду`).toBe(Math.min(days, 7))
+      await expect(page.getByTestId('streak-celebration-text')).toHaveText(
+        `Серия: ${days} ${days === 1 ? 'день' : days < 5 ? 'дня' : 'дней'}`
+      )
 
       // Главное действие видно сразу и не уехало за экран.
       const layout = await readFinalLayout(page)
@@ -517,8 +524,7 @@ async function settle(page) {
 async function readGridLayout(page) {
   return page.evaluate(() => {
     const streakRoot = document.querySelector('.mx-streak-celebration')
-    const screen =
-      streakRoot?.querySelector('.mx-completion') || document.querySelector('.mx-completion')
+    const screen = streakRoot || document.querySelector('.mx-completion')
     const measure = el => {
       if (!el) return null
       const rect = el.getBoundingClientRect()
@@ -559,17 +565,29 @@ async function readGridLayout(page) {
       shellHeight: Math.round(shell?.getBoundingClientRect().height ?? 0),
       innerHeight: Math.round(window.innerHeight),
       visualHeight: Math.round(window.visualViewport?.height ?? window.innerHeight),
-      hero: box('.mx-completion__art-wrap'),
-      title: box('.mx-completion__title'),
-      meta: box('.mx-completion__meta'),
+      /* Полосы финала и свои полосы серии: у серии нет ни блока отзывов,
+         ни плашки даты — сетка серии компактная (см. StreakCelebration.css). */
+      hero: box('.mx-completion__art-wrap') || box('.mx-streak-stage__art'),
+      title: box('.mx-completion__title') || box('.mx-streak-celebration__title'),
+      meta: box('.mx-completion__meta') || box('.mx-streak-stage'),
+      note: box('.mx-streak-celebration__note'),
       row: box('.mx-completion__date-pill') || box('.mx-streak-celebration__days'),
       cta: measure(ctaButton),
+      headerSlot: measure(document.querySelector('.mx-finale-header-slot')),
       overflow: overflow(),
-      titleClip: clipping(screen?.querySelector('.mx-completion__title')),
-      metaClip: clipping(screen?.querySelector('.mx-completion__meta')),
+      titleClip: clipping(
+        screen?.querySelector('.mx-completion__title, .mx-streak-celebration__title')
+      ),
+      metaClip: clipping(screen?.querySelector('.mx-completion__meta, .mx-streak-stage')),
+      noteClip: clipping(screen?.querySelector('.mx-streak-celebration__note')),
       ctaClip: clipping(ctaButton),
       shellPaddingTop: shell ? getComputedStyle(shell).paddingTop : null,
       streakDays: screen?.querySelectorAll('.mx-streak-celebration__days li').length ?? 0,
+      /* Ряд дней не должен содержать дни, помеченные пропуском, если заморозка
+         не использована: неизвестные дни в ряд не попадают вовсе. */
+      gapDays: screen?.querySelectorAll('.mx-streak-celebration__days li[data-state="gap"]')
+        .length ?? 0,
+      flowerSize: measure(screen?.querySelector('[data-testid="streak-petals"]')),
     }
   })
 }
@@ -661,7 +679,10 @@ for (const viewport of VIEWPORTS) {
     // 4: «Сохранить и выйти» → настоящий экран серии 9 дней.
     await page.getByTestId('checkin-back-to-today').click()
     await expect(page.getByTestId('streak-celebration')).toBeVisible()
-    await expect(page.getByTestId('streak-celebration-text')).toContainText('Серия 9 дней.')
+    await expect(page.getByTestId('streak-celebration-text')).toHaveText('Серия: 9 дней')
+    await expect(page.getByTestId('streak-celebration-note')).toHaveText(
+      'Один лепесток — один день. Пятый завершает круг.'
+    )
     await settle(page)
     const streak = await readGridLayout(page)
     await page.screenshot({ path: `${SHOTS}/grid-streak-9days-${viewport.name}.png` })
@@ -670,28 +691,42 @@ for (const viewport of VIEWPORTS) {
     expect(mock.state.saved, 'чек-ин сохранён через API').toBe(true)
     // Цветок серии: 9 дней = 4 светлых лепестка в текущем круге из пяти.
     await expect(page.getByTestId('streak-petals')).toHaveAttribute('data-lit', '4')
-    await expect(page.locator('.mx-streak-celebration__days li')).toHaveCount(3)
-    expect(streak.streakDays, 'ряд из трёх дней').toBe(3)
+    // Ряд дней — только подтверждённые дни серии: 9 дней = полная неделя.
+    await expect(page.locator('.mx-streak-celebration__days li')).toHaveCount(7)
+    expect(streak.streakDays, 'ряд из семи подтверждённых дней').toBe(7)
+    expect(streak.gapDays, 'неизвестных дней в ряду нет').toBe(0)
 
-    // 5: общая сетка двух экранов — герой, заголовок, нижний блок и кнопка.
+    // 5: общая оболочка — шапка и главная кнопка на своих местах.
     expect(streak.shellPaddingTop, 'верхний отступ шелла не изменился').toBe(
       rated.shellPaddingTop
     )
-    expectSameGridBand(rated, streak, `финал → серия, ${viewport.name}`, [
-      'hero',
-      'title',
-      'meta',
-      'cta',
-    ])
+    expectSameGridBand(rated, streak, `финал → серия, ${viewport.name}`, ['cta'])
+
+    /*
+     * 5b: компактная композиция серии. Владелец не принял пустую сцену:
+     * иллюстрация → заголовок → пояснение → дни стоят плотной группой,
+     * без резерва блока отзывов, и группа центрирована по свободной высоте.
+     */
+    expect(streak.flowerSize, 'цветок — иллюстрация, а не значок').not.toBeNull()
+    expect(streak.flowerSize.height).toBeGreaterThanOrEqual(100)
+    expect(streak.hero, 'полоса иллюстрации').not.toBeNull()
+    expect(streak.title.top - streak.hero.bottom, 'иллюстрация → заголовок без пустоты').toBeLessThanOrEqual(8)
+    expect(streak.note.top - streak.title.bottom, 'заголовок → пояснение').toBeLessThanOrEqual(12)
+    expect(streak.row.top - streak.note.bottom, 'пояснение → дни').toBeLessThanOrEqual(28)
+    const gapAbove = streak.hero.top - streak.headerSlot.bottom
+    const gapBelow = streak.cta.top - streak.row.bottom
+    console.log(`streak composition ${viewport.name}`, JSON.stringify({ gapAbove, gapBelow }))
+    expect(gapAbove, 'сцена не прижата к шапке').toBeGreaterThanOrEqual(0)
+    expect(gapBelow, 'блок дней выше кнопки').toBeGreaterThanOrEqual(0)
     expect(
-      Math.abs(rated.row.top - streak.row.top),
-      `финал → серия, ${viewport.name}: первая строка нижнего блока (${rated.row.top} → ${streak.row.top})`
-    ).toBeLessThanOrEqual(2)
+      Math.abs(gapAbove - gapBelow),
+      `композиция центрирована (${gapAbove} vs ${gapBelow})`
+    ).toBeLessThanOrEqual(12)
 
     // 6: нет обрезки и лишней прокрутки, кнопка целиком в экране.
     for (const [key, clip] of Object.entries({
       title: streak.titleClip,
-      meta: streak.metaClip,
+      note: streak.noteClip,
       cta: streak.ctaClip,
     })) {
       expect(clip.textClipped, `${key} не обрезан текстом на экране серии`).toBe(false)
@@ -699,7 +734,7 @@ for (const viewport of VIEWPORTS) {
     }
     expect(streak.cta.bottom, 'кнопка серии видна вся').toBeLessThanOrEqual(viewport.height + 1)
     expect(streak.overflow, 'экран серии не требует прокрутки').toBeLessThanOrEqual(1)
-    expect(streak.meta.bottom, 'ряд дней выше кнопки').toBeLessThanOrEqual(streak.cta.top + 1)
+    expect(streak.meta.bottom, 'сцена серии выше кнопки').toBeLessThanOrEqual(streak.cta.top + 1)
 
     // 7: клавиатура, закрывающаяся уже на экране серии, ничего не двигает.
     await stubKeyboardViewport(page, 336)

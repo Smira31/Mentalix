@@ -14,16 +14,18 @@ import './CheckInCompletion.css'
 import './StreakCelebration.css'
 
 /*
- * Экран серии после чек-ина. Разметка и классы — те же, что у финала
- * чек-ина (.mx-completion в CheckInCompletion.css): полоса героя, полоса
- * заголовка и нижний блок занимают одни и те же области, поэтому переход
- * «Сохранить и выйти» → серия не двигает сцену, заголовок и пилюлю.
+ * Экран серии после чек-ина. Оболочка общая с финалом чек-ина (тот же шелл,
+ * та же полоса шапки .mx-finale-header-slot и та же нижняя полоса с кнопкой),
+ * поэтому при переходе не двигаются края экрана и главное действие.
+ * Внутри — своя компактная композиция: иллюстрация → заголовок серии →
+ * короткое пояснение → дни. Полосы финала (резерв блока отзывов) не
+ * наследуются: у серии нет ни плашки даты, ни плиток оценки.
  */
 export default function StreakCelebration({ streak, days = [], onDone }) {
   // Экран серии без полей ввода: высота от layout-вьюпорта, иначе
   // закрытие клавиатуры после финала чек-ина сдвигает весь экран.
   const { style } = useFullscreenSurface({ keyboardStrategy: 'stable' })
-  const { title, body } = streakCelebrationCopy(streak)
+  const { title, note } = streakCelebrationCopy(streak)
 
   useBackButton(() => {
     platform.haptic('light')
@@ -40,40 +42,37 @@ export default function StreakCelebration({ streak, days = [], onDone }) {
       {/* Пустой слот той же высоты, что у финала (см. .mx-finale-header-slot):
           содержимое обоих экранов начинается на одной линии. */}
       <div className="mx-finale-header-slot" aria-hidden="true" />
-      <div className="mx-fullscreen-completion w-full flex-1 min-h-0 flex flex-col overflow-hidden">
-        <section className="mx-completion mx-completion--streak">
-          <div className="mx-completion__art-wrap">
-            <StreakFlower streak={streak} className="mx-streak-celebration__petals" />
-          </div>
-          <h1
-            className="mx-completion__title mx-streak-celebration__text"
-            data-testid="streak-celebration-text"
+      <section className="mx-streak-stage" data-testid="streak-celebration-stage">
+        <div className="mx-streak-stage__art">
+          <StreakFlower streak={streak} size={148} className="mx-streak-celebration__flower" />
+        </div>
+        <h1 className="mx-streak-celebration__title" data-testid="streak-celebration-text">
+          {title}
+        </h1>
+        <p className="mx-streak-celebration__note" data-testid="streak-celebration-note">
+          {note}
+        </p>
+        {days.length > 0 && (
+          <ol
+            className="mx-streak-celebration__days"
+            data-testid="streak-celebration-days"
+            data-days={days.length}
           >
-            <strong>{title}</strong>
-            <span>{body}</span>
-          </h1>
-          {/* Нижний блок той же полосы, что плашка и отзыв финала: ряд дней
-              встаёт на линию плашки даты. */}
-          <div className="mx-completion__meta">
-            {days.length > 0 && (
-              <ol className="mx-streak-celebration__days" data-testid="streak-celebration-days">
-                {days.map(day => (
-                  <li key={day.key} data-state={day.state}>
-                    <span className="mx-streak-celebration__dot">
-                      {day.state === 'today' ? (
-                        <StreakFlame size={16} testId="streak-flame" />
-                      ) : day.state === 'done' ? (
-                        <Check size={14} strokeWidth={2} aria-hidden="true" />
-                      ) : null}
-                    </span>
-                    <span className="mx-streak-celebration__day-label">{day.label}</span>
-                  </li>
-                ))}
-              </ol>
-            )}
-          </div>
-        </section>
-      </div>
+            {days.map(day => (
+              <li key={day.key} data-state={day.state}>
+                <span className="mx-streak-celebration__dot">
+                  {day.state === 'today' ? (
+                    <StreakFlame size={16} testId="streak-flame" />
+                  ) : day.state === 'done' ? (
+                    <Check size={14} strokeWidth={2} aria-hidden="true" />
+                  ) : null}
+                </span>
+                <span className="mx-streak-celebration__day-label">{day.label}</span>
+              </li>
+            ))}
+          </ol>
+        )}
+      </section>
       <WebActionBar
         action={{ text: 'Отлично!', testId: 'streak-celebration-done', onClick: onDone }}
         className="mx-completion-action"
