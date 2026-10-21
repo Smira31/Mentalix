@@ -98,12 +98,14 @@ test('Текст завершения: итог не жирный, ~90% бело
   )
 })
 
-test('карточка главы на экране завершения во всю ширину контента', () => {
+test('карточка главы на экране завершения: без сегментного прогресса', () => {
   // карточка имеет width: 100%
   assert.match(cssSource, /\.mx-hj-complete__chapter-card[\s\S]*?width:\s*100%/)
-  // сегменты растянуты на всю ширину карточки
-  assert.match(cssSource, /\.mx-hj-complete__chapter-segs[\s\S]*?width:\s*100%/)
-  // подпись по центру
+  // Сегментный прогресс главы с финального экрана убран, нового индикатора
+  // взамен нет: ни разметки, ни стилей (согласованное требование владельца).
+  assert.doesNotMatch(jsxSource, /mx-hj-complete__chapter-segs/)
+  assert.doesNotMatch(cssSource, /mx-hj-complete__chapter-segs/)
+  // подпись главы по центру
   assert.match(cssSource, /\.mx-hj-complete__chapter-card[\s\S]*?text-align:\s*center/)
 })
 

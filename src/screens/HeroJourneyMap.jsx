@@ -761,14 +761,6 @@ function StepComplete({ trial, progress, onBackToMap, onContinue }) {
 
         {chapter && (
           <div className="mx-hj-complete__chapter-card">
-            <div className="mx-hj-complete__chapter-segs">
-              {chapterTrials.map(t => (
-                <span
-                  key={t.id}
-                  className={`mx-hj-segment ${isStepCompleted(t.id, progress) ? 'is-done' : ''}`}
-                />
-              ))}
-            </div>
             {chapterDone ? (
               <p className="mx-hj-complete__chapter-done">
                 Глава {chapter.roman} · {chapter.title} пройдена
