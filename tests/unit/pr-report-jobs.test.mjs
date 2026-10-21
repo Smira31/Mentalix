@@ -7,13 +7,21 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 const SCRIPT = 'scripts/bundle-size-report.mjs'
-const ci = readFileSync('.github/workflows/ci.yml', 'utf8')
+// Отчёты PR (informational) вынесены из ci.yml в отдельный workflow ручного
+// запуска (issue #1111, этап 2), поэтому job'ы ищем в обоих файлах.
+const workflowSources = [
+  readFileSync('.github/workflows/ci.yml', 'utf8'),
+  readFileSync('.github/workflows/informational-checks.yml', 'utf8'),
+]
 
 function job(name) {
-  const start = ci.indexOf(`\n  ${name}:\n`)
-  assert.notEqual(start, -1, `job ${name} не найден`)
-  const next = ci.slice(start + 1).search(/\n {2}[a-z0-9-]+:\n/)
-  return next === -1 ? ci.slice(start) : ci.slice(start, start + 1 + next)
+  for (const source of workflowSources) {
+    const start = source.indexOf(`\n  ${name}:\n`)
+    if (start === -1) continue
+    const next = source.slice(start + 1).search(/\n {2}[a-z0-9-]+:\n/)
+    return next === -1 ? source.slice(start) : source.slice(start, start + 1 + next)
+  }
+  assert.fail(`job ${name} не найден`)
 }
 
 function dist(files) {
@@ -74,6 +82,32 @@ test('ci: скрипт копируется до checkout main и запуска
 
 test('ci: PR-скриншоты собираются с демо-режимом', () => {
   assert.match(job('pr-screenshots'), /run: VITE_LOCAL_PREVIEW=true npm run build/)
+})
+
+// Безопасность informational-checks: workflow может проверять код произвольного
+// PR (refs/pull/<N>/head) и выполняет на нём npm-команды, поэтому write-прав у
+// токена быть не должно, а отчёты идут в артефакты и Summary, а не в комментарии.
+test('informational-checks: только чтение — без write-прав и комментариев из кода PR', () => {
+  const workflow = readFileSync('.github/workflows/informational-checks.yml', 'utf8')
+  const start = workflow.indexOf('\npermissions:\n')
+  const end = workflow.indexOf('\nconcurrency:')
+  assert.ok(start !== -1 && end > start, 'блок permissions не найден')
+  const permissions = workflow.slice(start, end)
+  assert.match(permissions, /contents: read/)
+  assert.match(permissions, /actions: read/)
+  assert.doesNotMatch(permissions, /write/)
+  // Комментарии в PR требовали pull-requests: write — их больше нет.
+  assert.doesNotMatch(workflow, /pull-requests:\s*write/)
+  assert.doesNotMatch(workflow, /github-script/)
+  // Токен не остаётся в .git/config для npm-команд на коде PR.
+  assert.match(workflow, /persist-credentials: false/)
+  // Код сторонних fork-PR не запускается: job guard допускает только PR из
+  // этого репозитория (read-only токен тоже имеет доступ к данным приватного).
+  assert.match(workflow, /pull-requests: read/)
+  assert.match(workflow, /\n  guard:\n/)
+  assert.match(workflow, /head\.repo\.full_name/)
+  for (const name of ['ux-visual', 'ux-visual-progress', 'qa-crawl', 'bundle-size-report', 'pr-screenshots'])
+    assert.match(job(name), /needs: guard/, `${name} должен зависеть от guard`)
 })
 
 test('pr-screens: сценарии не ссылаются на удалённые элементы', () => {
