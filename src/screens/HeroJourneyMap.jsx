@@ -204,10 +204,14 @@ function ContentSkeleton() {
 }
 
 /* Ошибка сети: короткий текст и «Повторить», без технических сообщений. */
-function ContentFailure({ onRetry }) {
+function ContentFailure({ onRetry, error }) {
   return (
     <div className="mx-hj-content-error" role="alert" data-testid="hero-content-failure">
-      <p className="mx-hj-content-error__text">Не удалось загрузить. Проверь интернет</p>
+      <p className="mx-hj-content-error__text">
+        {error === 'access'
+          ? 'Практикум недоступен для этого аккаунта.'
+          : 'Не удалось загрузить. Проверь интернет'}
+      </p>
       <button
         type="button"
         data-testid="hero-retry"
@@ -220,10 +224,10 @@ function ContentFailure({ onRetry }) {
   )
 }
 
-function ContentError({ onRetry }) {
+function ContentError({ onRetry, error }) {
   return (
-    <Shell testId="hero-journey-error">
-      <ContentFailure onRetry={onRetry} />
+    <Shell testId="hero-journey-error" contentStatus={error === 'access' ? 'access' : 'error'}>
+      <ContentFailure onRetry={onRetry} error={error} />
     </Shell>
   )
 }
@@ -889,7 +893,7 @@ export default function HeroJourneyMap({ course = HERO_COURSE, ...props }) {
   /* Тексты едут с сервера: спокойный скелет, пока грузится, и короткая
      ошибка с «Повторить», если сети нет. */
   if (isHeroJourney && loading && !loadedCourse) return <ContentSkeleton />
-  if (isHeroJourney && error && !loadedCourse) return <ContentError onRetry={retry} />
+  if (isHeroJourney && error && !loadedCourse) return <ContentError onRetry={retry} error={error} />
 
   return (
     <CourseContext.Provider

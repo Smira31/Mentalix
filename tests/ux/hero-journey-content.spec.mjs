@@ -114,8 +114,7 @@ for (const [width, height, keyboardHeight] of [
           }
           const metrics = await assertFits(page)
           seen.push({ page: index + 1, ...metrics })
-          if (index < 2)
-            await page.screenshot({ path: `${evidence}/${width}x${height}-sheet-${index + 1}.png` })
+          await page.screenshot({ path: `${evidence}/${width}x${height}-sheet-${index + 1}.png` })
           await tid(page, 'hero-story-next').click()
         }
       } else {
@@ -199,3 +198,164 @@ for (const [width, height, keyboardHeight] of [
   })
 }
 
+/* Только тестовые подмены: обычный путь приложения, без demo=1.
+ * Ни пользователь, ни bearer ниже не являются подтверждённой сессией сервера.
+ * Все API перехвачены, чтобы тест не обращался к настоящему backend.
+ * Используем исключительно опубликованные тексты главы I. */
+const serverPayload = {
+  course: {
+    title: DEMO_HERO_JOURNEY.title,
+    description: 'Тестовый ответ загрузки: публичная глава I.',
+  },
+  chapters: [
+    ...DEMO_HERO_JOURNEY.chapters.filter(chapter => !chapter.demoLocked),
+    { key: 'threshold', roman: 'II', title: 'Тестовая глава', trialIds: ['body'] },
+  ],
+  // Проверяем доступный шаг II главы: текст — копия ПУБЛИЧНОГО шага 1,
+  // а не закрытый материал сервера; число листов настоящего шага 5 неизвестно.
+  trials: [
+    ...publicSteps,
+    { ...publicSteps[0], id: 'body', number: 5, title: 'Тестовый шаг сервера' },
+  ],
+  prologue: null,
+  finale: null,
+}
+const testToken = 'hero-content-test-only-not-a-real-session'
+const cases = ['success', 'empty-course', 'empty-body', '401', '403', '503', 'network', 'malformed']
+
+for (const [width, height] of [
+  [430, 932],
+  [360, 640],
+]) {
+  for (const scenario of cases) {
+    test(`Обычный режим, тестовый ответ ${scenario}: ${width}×${height}`, async ({ page }) => {
+      await page.setViewportSize({ width, height })
+      await page.addInitScript(
+        ({ token, ids }) => {
+          localStorage.setItem(
+            'mentalix_web_user',
+            JSON.stringify({ id: 900992, first_name: 'Тест' })
+          )
+          localStorage.setItem('mentalix_session_token', token)
+          localStorage.setItem('mx-onboarded-v2', '1')
+          localStorage.setItem(
+            'mx-hero-journey-progress:900992',
+            JSON.stringify({
+              completed: Object.fromEntries(ids.map(id => [id, new Date().toISOString()])),
+              signs: {},
+              reflections: {},
+              actions: {},
+            })
+          )
+        },
+        { token: testToken, ids: publicSteps.map(step => step.id) }
+      )
+      await mkdir(evidence, { recursive: true })
+      const requests = []
+      const errors = []
+      page.on('pageerror', error => errors.push(error.message))
+      let recovered = scenario === 'success'
+      await page.route('**/api/**', route =>
+        route.fulfill({ contentType: 'application/json', body: '[]' })
+      )
+      await page.route('**/api/content/hero-journey', route => {
+        requests.push(route.request())
+        if (recovered) return route.fulfill({ json: serverPayload })
+        if (scenario === 'network') return route.abort('failed')
+        if (['401', '403', '503'].includes(scenario))
+          return route.fulfill({ status: Number(scenario), json: { detail: 'test-only' } })
+        if (scenario === 'empty-body') return route.fulfill({ status: 200, body: '' })
+        return route.fulfill({
+          json:
+            scenario === 'empty-course'
+              ? { ...serverPayload, trials: [], chapters: [] }
+              : { ok: true },
+        })
+      })
+      await page.goto('/?tab=library&frame=0')
+      await tid(page, 'library-hero').click()
+      const map = tid(page, 'hero-journey-map')
+      if (scenario === 'empty-course') {
+        await expect(map).toHaveAttribute('data-content-source', 'server')
+        await expect(map).toHaveAttribute('data-content-status', 'empty')
+        await expect(tid(page, 'hero-empty-course')).toBeVisible()
+        await expect(tid(page, 'hero-continue')).toHaveCount(0)
+        await expect(tid(page, 'hero-content-failure')).toHaveCount(0)
+        await page.screenshot({ path: `${evidence}/${width}x${height}-test-empty-course.png` })
+      } else {
+        if (!recovered) {
+          const denied = ['401', '403'].includes(scenario)
+          await expect(tid(page, 'hero-journey-error')).toHaveAttribute(
+            'data-content-status',
+            denied ? 'access' : 'error'
+          )
+          await expect(tid(page, 'hero-content-failure')).toBeVisible()
+          await expect(map).toHaveCount(0)
+          await expect(tid(page, 'hero-empty-course')).toHaveCount(0)
+          if (denied) {
+            await expect(tid(page, 'hero-content-failure')).toContainText('недоступен')
+            await expect(tid(page, 'hero-content-failure')).not.toContainText('Проверь интернет')
+          }
+          if (scenario === '401')
+            expect(
+              await page.evaluate(() => localStorage.getItem('mentalix_session_token'))
+            ).toBeNull()
+          else
+            expect(await page.evaluate(() => localStorage.getItem('mentalix_session_token'))).toBe(
+              testToken
+            )
+          await page.screenshot({ path: `${evidence}/${width}x${height}-test-${scenario}.png` })
+          const failedRequests = requests.length
+          recovered = true
+          await tid(page, 'hero-retry').click()
+          await expect(map).toHaveAttribute('data-content-source', 'server')
+          expect(requests.length).toBeGreaterThan(failedRequests)
+        }
+        await expect(map).toHaveAttribute('data-content-source', 'server')
+        await expect(map).toHaveAttribute('data-content-status', 'ready')
+        await expect(map).toContainText(serverPayload.course.description)
+        await expect(page.locator('.mx-hj-chapter--demo-locked')).toHaveCount(0)
+        await expect(tid(page, 'hero-step-body')).toHaveAttribute('data-state', 'open')
+        if (scenario === 'success')
+          await page.screenshot({ path: `${evidence}/${width}x${height}-test-success.png` })
+        await tid(page, 'hero-continue').click()
+        for (const [index, sheet] of publicSteps[0].pages.entries()) {
+          await expect(tid(page, 'hero-story-page')).toHaveAttribute('data-page', String(index + 1))
+          await expect(tid(page, 'hero-story-page')).toContainText(sheet.label)
+          await assertFits(page)
+          await tid(page, 'hero-story-next').click()
+        }
+        await expect(tid(page, 'hero-write-input')).toBeVisible()
+      }
+      expect(requests.length).toBeGreaterThan(0)
+      expect(requests[0].headers().authorization).toBe(`Bearer ${testToken}`)
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth - document.documentElement.clientWidth
+        )
+      ).toBeLessThanOrEqual(2)
+      expect(errors).toEqual([])
+      await mkdir(evidence, { recursive: true })
+      await writeFile(
+        `${evidence}/${width}x${height}-${scenario}.json`,
+        JSON.stringify(
+          {
+            scenario,
+            width,
+            height,
+            source: 'test-route-not-real-backend',
+            requests: requests.length,
+            recovered,
+            publicSheets: recovered ? publicSteps[0].pages.length : 0,
+          },
+          null,
+          2
+        )
+      )
+      await page.evaluate(() => {
+        localStorage.clear()
+        sessionStorage.clear()
+      })
+    })
+  }
+}
