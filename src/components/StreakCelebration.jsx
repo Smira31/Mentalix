@@ -60,6 +60,9 @@ export default function StreakCelebration({ streak, days = [], onDone }) {
           >
             {days.map(day => (
               <li key={day.key} data-state={day.state}>
+                {/* 'unknown' (день без записи) остаётся без значка: ни
+                    галочки — это не «выполнено», ни пропуска — история
+                    могла не дойти. */}
                 <span className="mx-streak-celebration__dot">
                   {day.state === 'today' ? (
                     <StreakFlame size={16} testId="streak-flame" />

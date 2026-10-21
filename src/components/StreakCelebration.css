@@ -80,9 +80,10 @@
   font-weight: 400;
 }
 
-/* Ряд дней: только подтверждённые дни серии (до недели). Высота полосы
-   постоянна — 34 + 8 + 16 = 58 px, поэтому ряд из одного и из семи дней
-   стоит на одной линии. */
+/* Ряд дней: дни серии (до недели). День с записью — галочка, день без
+   записи — нейтральный кружок ('unknown', см. правило ниже), сегодня —
+   огонёк. Высота полосы постоянна — 34 + 8 + 16 = 58 px, поэтому ряд из
+   одного и из семи дней стоит на одной линии. */
 .mx-streak-celebration__days {
   display: flex;
   flex: none;
@@ -112,7 +113,9 @@
   background: rgb(var(--c-text));
   color: rgb(var(--c-bg));
 }
-.mx-streak-celebration__days li[data-state='gap'] .mx-streak-celebration__dot {
+/* День без записи — нейтральный кружок: состояние дня неизвестно, поэтому
+   ни галочки (выполнено), ни пропуска. */
+.mx-streak-celebration__days li[data-state='unknown'] .mx-streak-celebration__dot {
   background: rgb(var(--c-card3));
 }
 

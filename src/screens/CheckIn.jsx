@@ -495,7 +495,6 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
         days={buildStreakDays({
           streak: streakStats.currentStreak,
           checkins: streakHistory,
-          freezeUsed: streakStats.freezeUsedThisWeek,
           today: seriesLogicalDateKey(),
         })}
         onDone={onDone}
@@ -1621,7 +1620,6 @@ function CheckInCore({
         days={buildStreakDays({
           streak: eveningStreakStats.currentStreak,
           checkins: streakHistory,
-          freezeUsed: eveningStreakStats.freezeUsedThisWeek,
           today: seriesLogicalDateKey(),
         })}
         onDone={onDone}

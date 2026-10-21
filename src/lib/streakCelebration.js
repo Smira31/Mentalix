@@ -8,9 +8,9 @@ import { seriesDateKey } from './series.js'
 
 export const STREAK_PETALS = 5
 /*
- * Ряд дней — до недели: показываются только подтверждённые дни (дни текущей
- * серии). Неизвестный день не рисуется вовсе, чтобы не выглядеть пропуском:
- * при серии в 3 дня видны три дня, при 9 — полная неделя.
+ * Ряд дней — до недели: длина ряда равна длине серии, не больше семи.
+ * Дни до начала серии в ряд не попадают вовсе: их состояние неизвестно,
+ * а ряд показывает серию, а не произвольный отрезок календаря.
  */
 export const STREAK_DAYS_MAX = 7
 
@@ -54,13 +54,20 @@ function weekdayLabel(key) {
 }
 
 /*
- * Дни ряда: только подтверждённые данные — дни текущей серии, не больше
- * недели. Сегодня — огонёк, день серии с записью — галочка, день серии без
- * записи при использованной заморозке — тёмный кружок (пропуск мягкой серии).
- * Дни до начала серии в ряд не попадают: их состояние неизвестно, а тёмный
- * кружок выдал бы их за пропуски.
+ * Дни ряда: длина серии (не больше недели), состояние каждого дня — только по
+ * записи этого дня. Сегодня — огонёк, день с записью в истории — галочка,
+ * день без записи — 'unknown' (нейтральный кружок без значка).
+ *
+ * Контракт streak/checkins: неизвестную дату нельзя выдавать ни за
+ * выполненную, ни за пропущенную. Серия мягкая — её день закрывает любая
+ * завершённая активность, а история приходит только чек-инами; поэтому
+ * отсутствие записи означает «неизвестно», а не «сделано» и не «пропущено».
+ * Заморозку сюда тоже не подставляем: сервер сообщает только факт заморозки
+ * недели, но не её дату (PROJECT_STATE.md, docs/TASK_INDEX.md), поэтому
+ * приписать заморозку конкретному дню нельзя — раньше одиночная дыра в
+ * истории помечалась как пропуск именно так.
  */
-export function buildStreakDays({ streak, checkins = [], freezeUsed = false, today }) {
+export function buildStreakDays({ streak, checkins = [], today }) {
   const count = Number.isSafeInteger(streak) ? streak : 0
   if (count < 1 || !today) return []
 
@@ -72,9 +79,7 @@ export function buildStreakDays({ streak, checkins = [], freezeUsed = false, tod
 
   for (let offset = span - 1; offset >= 1; offset -= 1) {
     const key = shiftDay(today, -offset)
-    const hasEntry = active.has(key)
-    const singleHole = !hasEntry && active.has(shiftDay(key, -1))
-    days.push({ key, state: !hasEntry && freezeUsed && singleHole ? 'gap' : 'done' })
+    days.push({ key, state: active.has(key) ? 'done' : 'unknown' })
   }
   days.push({ key: today, state: 'today' })
 

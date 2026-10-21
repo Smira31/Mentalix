@@ -19,7 +19,8 @@ import { dayFocusOptionStep, openDayCard, scaleStep } from './checkin-helpers.mj
  *      не растягивает и экран серии.
  *   4. Демо-ссылка ?demo=1&action=streak_celebration&streak_days=N показывает
  *      пятилистный цветок (1, 3 и 5 светлых лепестков) и огонёк тонким
- *      контуром без заливки; экран не требует скролла.
+ *      контуром без заливки; экран не требует скролла. Дни без записи в ряду
+ *      остаются неизвестными: галочка не рисуется, пропуск не ставится.
  *   5. Реальный переход «сохранение → оценка “Помогло?” → серия 9 дней»:
  *      API подменяется только внутри теста (до сохранения серия 8 и сегодня
  *      не активен, после — 9 и активен), а приложение проходит настоящий
@@ -375,9 +376,20 @@ for (const viewport of VIEWPORTS) {
       expect(flameStyle.fills.every(fill => fill === 'none'), 'у огонька нет заливки').toBe(true)
       expect(flameStyle.strokeWidth, 'огонёк тонкой линией').toBeLessThanOrEqual(3)
 
-      // Ряд дней — только подтверждённые дни серии, не больше недели.
+      // Ряд дней — длина серии, не больше недели.
       const rows = await page.locator('.mx-streak-celebration__days li').count()
       expect(rows, `${days} дней — ${Math.min(days, 7)} в ряду`).toBe(Math.min(days, 7))
+
+      // Истории в демо нет вовсе: прошедшие дни неизвестны, но не выполнены.
+      // Галочки без записи и пропусков в ряду быть не должно.
+      const dotStates = await page
+        .locator('.mx-streak-celebration__days li')
+        .evaluateAll(items => items.map(item => item.dataset.state))
+      expect(dotStates.filter(state => state === 'done'), 'галочки без записи нет').toHaveLength(0)
+      expect(dotStates.filter(state => state === 'unknown'), 'прошедшие дни неизвестны').toHaveLength(
+        Math.min(days, 7) - 1
+      )
+      expect(dotStates.filter(state => state === 'gap'), 'пропусков в ряду нет').toHaveLength(0)
       await expect(page.getByTestId('streak-celebration-text')).toHaveText(
         `Серия: ${days} ${days === 1 ? 'день' : days < 5 ? 'дня' : 'дней'}`
       )
@@ -583,10 +595,16 @@ async function readGridLayout(page) {
       ctaClip: clipping(ctaButton),
       shellPaddingTop: shell ? getComputedStyle(shell).paddingTop : null,
       streakDays: screen?.querySelectorAll('.mx-streak-celebration__days li').length ?? 0,
-      /* Ряд дней не должен содержать дни, помеченные пропуском, если заморозка
-         не использована: неизвестные дни в ряд не попадают вовсе. */
+      /* Ряд дней не должен содержать дни, помеченные пропуском: неизвестную
+         дату нельзя выдавать ни за выполненную, ни за пропущенную, поэтому
+         день без записи — 'unknown' без значка. */
       gapDays: screen?.querySelectorAll('.mx-streak-celebration__days li[data-state="gap"]')
         .length ?? 0,
+      doneDays: screen?.querySelectorAll('.mx-streak-celebration__days li[data-state="done"]')
+        .length ?? 0,
+      unknownDays: screen?.querySelectorAll(
+        '.mx-streak-celebration__days li[data-state="unknown"]'
+      ).length ?? 0,
       flowerSize: measure(screen?.querySelector('[data-testid="streak-petals"]')),
     }
   })
@@ -693,8 +711,14 @@ for (const viewport of VIEWPORTS) {
     await expect(page.getByTestId('streak-petals')).toHaveAttribute('data-lit', '4')
     // Ряд дней — только подтверждённые дни серии: 9 дней = полная неделя.
     await expect(page.locator('.mx-streak-celebration__days li')).toHaveCount(7)
-    expect(streak.streakDays, 'ряд из семи подтверждённых дней').toBe(7)
-    expect(streak.gapDays, 'неизвестных дней в ряду нет').toBe(0)
+    expect(streak.streakDays, 'ряд из семи дней серии').toBe(7)
+    expect(streak.gapDays, 'дней, помеченных пропуском, нет').toBe(0)
+    // Каждый день ряда, кроме сегодня, либо подтверждён записью, либо остаётся
+    // неизвестным: заморозку ряд не приписывает дню (сервер отдаёт только факт
+    // заморозки недели) и не рисует галочку без записи.
+    expect(streak.doneDays + streak.unknownDays, 'состояние каждого дня ряда').toBe(
+      streak.streakDays - 1
+    )
 
     // 5: общая оболочка — шапка и главная кнопка на своих местах.
     expect(streak.shellPaddingTop, 'верхний отступ шелла не изменился').toBe(

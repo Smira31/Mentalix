@@ -23,6 +23,10 @@ const componentSource = await readFile(
   new URL('../../src/components/StreakCelebration.jsx', import.meta.url),
   'utf8'
 )
+const librarySource = await readFile(
+  new URL('../../src/lib/streakCelebration.js', import.meta.url),
+  'utf8'
+)
 const glyphSource = await readFile(
   new URL('../../src/components/StreakGlyphs.jsx', import.meta.url),
   'utf8'
@@ -77,8 +81,9 @@ test('ряд дней: только подтверждённые дни сери
   assert.deepEqual(buildStreakDays({ streak: 0, today }), [])
 })
 
-test('ряд дней: ни один день не помечен пропуском без заморозки', () => {
+test('ряд дней: день без записи — неизвестный, не выполненный и не пропущенный', () => {
   const today = dayKey(0)
+  const known = new Set(['done', 'today', 'unknown'])
   for (const streak of [1, 2, 3, 5, 9, 12]) {
     const days = buildStreakDays({ streak, today })
     assert.equal(days.length, Math.min(streak, STREAK_DAYS_MAX))
@@ -86,24 +91,82 @@ test('ряд дней: ни один день не помечен пропуск
       days.map(day => day.key),
       days.map((_, index) => dayKey(index - (days.length - 1)))
     )
-    assert.ok(
-      days.slice(0, -1).every(day => day.state === 'done'),
-      `серия ${streak}: дни до сегодня — выполненные`
-    )
     assert.equal(days.at(-1).state, 'today')
+    // Истории нет вовсе: прошлые дни не подтверждены записью, поэтому ни
+    // «выполнено» (галочка), ни «пропущено».
+    assert.ok(
+      days.slice(0, -1).every(day => day.state === 'unknown'),
+      `серия ${streak}: день без записи — unknown`
+    )
+    assert.ok(
+      days.every(day => known.has(day.state)),
+      `серия ${streak}: состояния только done/today/unknown`
+    )
   }
 })
 
-test('пропуск мягкой серии — только при заморозке и одиночной дыре в истории', () => {
+test('неполная история: выполнен только день с записью, остальные — неизвестные', () => {
+  const today = dayKey(0)
+  const streak = 7
+  const checkins = [{ date: dayKey(-2) }, { date: dayKey(-5) }]
+  const days = buildStreakDays({ streak, checkins, today })
+
+  assert.deepEqual(
+    days.map(day => day.key),
+    [1, 2, 3, 4, 5, 6, 7].map(offset => dayKey(offset - streak))
+  )
+  assert.deepEqual(
+    days.map(day => day.state),
+    ['unknown', 'done', 'unknown', 'unknown', 'done', 'unknown', 'today']
+  )
+  // День без записи не выдаётся ни за выполненный, ни за пропущенный.
+  for (const day of days.slice(0, -1)) {
+    if (day.key === dayKey(-2) || day.key === dayKey(-5)) continue
+    assert.equal(day.state, 'unknown', `${day.key}: день без записи`)
+  }
+
+  // Обрезанная история (одна запись вчера) — галочка только у неё.
+  const tail = buildStreakDays({ streak: 9, checkins: [{ date: dayKey(-1) }], today })
+  assert.equal(tail.length, STREAK_DAYS_MAX)
+  assert.equal(tail.at(-2).state, 'done')
+  assert.ok(tail.slice(0, -2).every(day => day.state === 'unknown'))
+
+  // Записи вне ряда (старше недели и на будущий день) состояние не меняют.
+  const outside = buildStreakDays({
+    streak: 3,
+    checkins: [{ date: dayKey(-9) }, { date: dayKey(2) }],
+    today,
+  })
+  assert.deepEqual(outside.map(day => day.state), ['unknown', 'unknown', 'today'])
+})
+
+test('заморозка не приписывается дню: ряд не решает за сервер', () => {
   const today = dayKey(0)
   const checkins = [{ date: dayKey(-2) }, { date: dayKey(-3) }]
+  /*
+   * Раньше одиночная дыра в истории при использованной заморозке рисовалась
+   * пропуском — то есть заморозка приписывалась конкретному дню. Сервер
+   * отдаёт только факт заморозки недели без даты (PROJECT_STATE.md,
+   * docs/TASK_INDEX.md), поэтому дыра остаётся неизвестной: и с фактом
+   * заморозки, и без него ряд одинаков.
+   */
   const withFreeze = buildStreakDays({ streak: 3, checkins, freezeUsed: true, today })
+  assert.deepEqual(withFreeze.map(day => day.state), ['done', 'unknown', 'today'])
   assert.deepEqual(
-    withFreeze.map(day => day.state),
-    ['done', 'gap', 'today']
+    withFreeze,
+    buildStreakDays({ streak: 3, checkins, freezeUsed: false, today })
   )
-  const noFreeze = buildStreakDays({ streak: 3, checkins, freezeUsed: false, today })
-  assert.ok(noFreeze.every(day => day.state !== 'gap'))
+  assert.ok(!withFreeze.some(day => ['gap', 'missed'].includes(day.state)))
+
+  // В модуле нет ни параметра заморозки, ни состояния «пропуск».
+  assert.ok(!/freeze/i.test(librarySource), 'ряд дней не принимает факт заморозки')
+  assert.ok(!/['"](gap|missed)['"]/.test(librarySource), 'в ряду дней нет состояния пропуска')
+})
+
+test('ряд дней: значок стоит только у сегодня и у подтверждённого дня', () => {
+  // 'unknown' остаётся без значка: галочка читалась бы как «выполнено».
+  const marks = componentSource.match(/day\.state === '\w+'/g) || []
+  assert.deepEqual(marks, ["day.state === 'today'", "day.state === 'done'"])
 })
 
 test('цветок: пять одинаковых лепестков, повёрнутых на 72°, центр пустой', () => {
