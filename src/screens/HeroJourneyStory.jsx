@@ -1,7 +1,7 @@
 import { useCallback, useRef } from 'react'
 
 import MarkdownText from '../components/MarkdownText'
-import RoundSubmitButton from '../components/RoundSubmitButton'
+import HeroJourneySheet from '../components/HeroJourneySheet'
 import { platform } from '../platform'
 import { isHorizontalSwipe } from '../lib/gestures/swipeThresholds'
 
@@ -31,16 +31,10 @@ const SWIPE_CLICK_GUARD_MS = 400
  * системный BackButton Telegram с листов 2+ ведут на предыдущий лист, с листа
  * 1 — на карту; тапы и свайпы листают внутри компонента, как раньше.
  *
- * Мысль листа: последний абзац текста, целиком жирный (**…**), рендерится
- * отдельно — крупно, сразу под текстом листа, вместе с ним, а не отдельным
- * островом у нижнего края сцены (.mx-hj-story__thought в CSS).
- *
- * Компонент рисует только части колонки `.mx-hj-step-intro` (сцена листа и
- * нижняя группа): оболочку <Screen> и flex-колонку держит шаг.
+ * Разметку сцены держит общий компонент HeroJourneySheet — тот же, что рисует
+ * вступление шага без листов: мысль листа (последний абзац, целиком жирный)
+ * стоит сразу под текстом вместе с ним, кнопка «вперёд» одна на оба экрана.
  */
-
-/* Последний абзац, целиком жирный (**…**), — «мысль листа»: показывается
-   отдельно, крупно внизу листа; остальной текст — как обычные абзацы. */
 function splitSheetThought(text) {
   const parts = String(text).split(/\n\n+/)
   const last = parts[parts.length - 1].trim()
@@ -113,58 +107,27 @@ export default function HeroJourneyStory({
   }
 
   return (
-    <>
-      {/* Сцена листа: тап-зоны считаются по её ширине (обработчик на элементе,
-          а не на документе — так жест не конфликтует с Telegram). */}
-      <div
-        className="mx-hj-story__viewport"
-        data-testid="hero-story-viewport"
-        onClick={handleTap}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-      >
-        {index === 0 && illustration}
-
-        <div className="mx-hj-step-intro__text mx-protected-text">
-          <div className="mx-hj-step-intro__text-scroll">
-            <div
-              key={index}
-              className="mx-hj-story__sheet"
-              data-testid="hero-story-page"
-              data-page={index + 1}
-            >
-              {page.label && <div className="mx-hj-eyebrow mx-hj-story__label">{page.label}</div>}
-              {body && <MarkdownText content={body} className="mx-hj-story__text" />}
-            </div>
-          </div>
-        </div>
-
-        {/* Мысль листа — последний жирный абзац: серая метка «МЫСЛЬ»
-            (стилем метки листа) и крупная строка одним блоком сразу под
-            текстом листа. Без мысли метки нет. */}
-        {thought && (
-          <div key={index} className="mx-hj-story__thought-block">
-            <div
-              data-testid="hero-story-thought-label"
-              className="mx-hj-eyebrow mx-hj-story__label"
-            >
-              Мысль
-            </div>
-            <p data-testid="hero-story-thought" className="mx-hj-story__thought mx-protected-text">
-              {thought}
-            </p>
-          </div>
-        )}
-      </div>
-
-      <div className="mx-hj-story__bottom">
-        <RoundSubmitButton
-          testId="hero-story-next"
-          label="Дальше"
-          icon="chevron"
-          onClick={forward}
-        />
-      </div>
-    </>
+    <HeroJourneySheet
+      illustration={index === 0 ? illustration : null}
+      viewportTestId="hero-story-viewport"
+      sheetTestId="hero-story-page"
+      page={index + 1}
+      label={
+        page.label && <div className="mx-hj-eyebrow mx-hj-story__label">{page.label}</div>
+      }
+      /* key — проявление листа при смене: сдвига и карусели нет. */
+      body={
+        body && (
+          <MarkdownText key={index} content={body} className="mx-hj-story__text" />
+        )
+      }
+      thought={thought}
+      gestures={{
+        onClick: handleTap,
+        onTouchStart: handleTouchStart,
+        onTouchEnd: handleTouchEnd,
+      }}
+      action={{ testId: 'hero-story-next', label: 'Дальше', onClick: forward }}
+    />
   )
 }
