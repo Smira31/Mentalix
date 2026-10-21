@@ -5,7 +5,6 @@ import { useBackButton, useMainButton } from '../platform/telegram.hooks'
 import {
   FULLSCREEN_SHELL_CLASS,
   FULLSCREEN_SCROLL_CLASS,
-  TG_CONTROLS_HEIGHT,
   getFullscreenPortalTarget,
   useFullscreenSurface,
 } from '../lib/fullscreenSurface'
@@ -18,9 +17,8 @@ import './StreakCelebration.css'
 export default function StreakCelebration({ streak, days = [], onDone }) {
   // Экран серии без полей ввода: высота от layout-вьюпорта, иначе
   // закрытие клавиатуры после финала чек-ина сдвигает весь экран.
-  const { style, tgFullscreen } = useFullscreenSurface({ stable: true })
+  const { style } = useFullscreenSurface({ stable: true })
   const { title, body } = streakCelebrationCopy(streak)
-  const topOffset = tgFullscreen ? TG_CONTROLS_HEIGHT : 0
 
   useBackButton(() => {
     platform.haptic('light')
@@ -35,12 +33,11 @@ export default function StreakCelebration({ streak, days = [], onDone }) {
       data-testid="streak-celebration"
     >
       <div className={FULLSCREEN_SCROLL_CLASS}>
-        <section
-          className="mx-streak-celebration__body"
-          style={{
-            paddingTop: `max(16px, calc(33dvh - 33px - var(--app-safe-top) - ${topOffset}px))`,
-          }}
-        >
+        {/* Блок центрируется по свободной высоте через margin: auto
+            (контракт FULLSCREEN_SCROLL_CLASS): на 360×640 фиксированный
+            отступ 33dvh поднимал контент выше области прокрутки и обрезал
+            ряд дней. */}
+        <section className="mx-streak-celebration__body">
           <StreakFlower streak={streak} className="mx-streak-celebration__petals" />
           <h1 className="mx-streak-celebration__text" data-testid="streak-celebration-text">
             <strong>{title}</strong>

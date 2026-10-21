@@ -8,9 +8,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-left: 28px;
-  padding-right: 28px;
-  padding-bottom: 24px;
+  /* Свободная высота уходит в auto-отступы: на высоком экране блок
+     стоит по центру, на низком (360×640) сдвигается вверх и не обрезает
+     ряд дней — высота не фиксируется. */
+  margin-block: auto;
+  padding: 16px 28px 24px;
   text-align: center;
 }
 

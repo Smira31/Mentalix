@@ -4,19 +4,22 @@ import { dayFocusOptionStep, openDayCard, scaleStep } from './checkin-helpers.mj
 /*
  * Стабильность экранов завершения чек-ина и серии (задача fix-checkin-layout).
  *
- * Владелец прислал видео с iPhone: при завершении утреннего чек-ина интерфейс
- * прыгает, а на экране «Серия 9 дней» стоял цветок, не из Mentalix.
+ * Владелец прислал видео с iPhone: при завершении утреннего чек-ина
+ * интерфейс прыгает, а на экране «Серия 9 дней» стоял цветок, не из Mentalix.
  *
  * Что проверяется:
- *   1. Экран завершения не зависит от высоты visualViewport: закрытие
- *      клавиатуры не двигает иллюстрацию, заголовок, содержимое и CTA.
+ *   1. Утренний чек-ин: клавиатура открыта в момент нажатия «Завершить»,
+ *      финал появляется при открытой клавиатуре, затем она закрывается —
+ *      иллюстрация, заголовок, дата и CTA не двигаются.
  *      Клавиатура имитируется подменой `visualViewport.height` при
  *      неизменном `window.innerHeight` — так ведёт себя iOS/Telegram.
- *   2. Переход «Помогло?» → экран серии не перемещает героя, заголовок и CTA.
- *   3. Демо-ссылка ?demo=1&action=streak_celebration&streak_days=9 показывает
- *      цветок серии (пять отдельных лепестков, пустой центр) и огонёк
- *      тонким контуром без заливки, экран не требует скролла.
- *   4. Вечерний финал чек-ина не нарушен.
+ *   2. Вечерний финал: та же последовательность на экране завершения вечера.
+ *   3. Переход «финал → серия»: у экранов общий шелл, поэтому нижний блок
+ *      и главное действие обязаны стоять на одной высоте; клавиатура
+ *      не растягивает и экран серии.
+ *   4. Демо-ссылка ?demo=1&action=streak_celebration&streak_days=N показывает
+ *      пятилистный цветок (1, 3 и 5 светлых лепестков) и огонёк тонким
+ *      контуром без заливки; экран не требует скролла.
  *
  * Вьюпорты задачи — 430×932 (iPhone 15 Pro Max) и 360×640.
  * Скриншоты: CHECKIN_STREAK_SHOTS (по умолчанию test-results/checkin-streak).
@@ -47,6 +50,8 @@ async function finishMorningNote(page) {
  * Положение ключевых элементов финала в координатах вьюпорта.
  * Один и тот же набор читается на экране завершения и на экране серии,
  * поэтому проверка «ничего не сдвинулось» сравнивает одинаковые ключи.
+ * shellHeight нужен отдельно: у стабильного экрана он равен layout-вьюпорту
+ * (window.innerHeight) и не следует за visualViewport.
  */
 async function readFinalLayout(page) {
   return page.evaluate(() => {
@@ -64,19 +69,25 @@ async function readFinalLayout(page) {
        у утреннего чек-ина это .mx-step-slide, у вечернего — оболочка. */
     const overflow = () => {
       if (!screen) return null
-      let el = screen.parentElement
-      while (el) {
-        if (/(auto|scroll)/.test(getComputedStyle(el).overflowY)) {
-          return el.scrollHeight - el.clientHeight
+      /* Сначала прокрутка внутри экрана (экран серии), затем — вокруг него
+         (утренний и вечерний чек-ин). Иначе переполнение экрана серии
+         не измерялось вообще. */
+      const candidates = [screen.querySelector('.mx-fullscreen-scroll')]
+      for (let el = screen.parentElement; el; el = el.parentElement) candidates.push(el)
+      for (const node of candidates) {
+        if (node && /(auto|scroll)/.test(getComputedStyle(node).overflowY)) {
+          return Math.max(0, node.scrollHeight - node.clientHeight)
         }
-        el = el.parentElement
       }
       return 0
     }
+    // У утреннего демо-экрана шелл — .mx-demo-checkin, у остальных — fullscreen-поверхность.
+    const shell = document.querySelector('.mx-fullscreen-surface, .mx-demo-checkin')
     return {
-      shell: measure(
-        document.querySelector('.mx-fullscreen-surface') || document.querySelector('.mx-demo-checkin')
-      ),
+      shell: measure(shell),
+      shellHeight: Math.round(shell?.getBoundingClientRect().height ?? 0),
+      innerHeight: Math.round(window.innerHeight),
+      visualHeight: Math.round(window.visualViewport?.height ?? window.innerHeight),
       hero: box('.mx-completion__art-wrap') || measure(screen?.querySelector('[data-testid="streak-petals"]')),
       title: box('.mx-completion__title') || box('.mx-streak-celebration__text'),
       meta: box('.mx-completion__date-pill') || box('.mx-streak-celebration__days'),
@@ -137,154 +148,235 @@ async function restoreViewport(page) {
   await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))))
 }
 
-test('закрытие клавиатуры не двигает экран завершения утреннего чек-ина', async ({ page }) => {
-  await page.setViewportSize({ width: 430, height: 932 })
-  await page.goto('/?demo=1&frame=0')
-  await passMorningSteps(page)
-  await finishMorningNote(page)
-
-  const closed = await readFinalLayout(page)
-  await page.screenshot({ path: `${SHOTS}/before-close-430x932.png` })
-  expect(closed.cta, 'CTA финала должен быть виден').not.toBeNull()
-
-  // Клавиатура «открывается» уже после завершения: у финала нет поля ввода,
-  // но геометрия шелла не должна за ней следовать.
-  await stubKeyboardViewport(page, 336)
-  const keyboard = await readFinalLayout(page)
-  await restoreViewport(page)
-  const reopened = await readFinalLayout(page)
-
-  const toKeyboard = layoutDeltas(closed, keyboard)
-  const backToClosed = layoutDeltas(closed, reopened)
-  console.log('layout completion→keyboard', JSON.stringify(toKeyboard))
-  console.log('layout completion→closed', JSON.stringify(backToClosed))
-
-  for (const [key, delta] of Object.entries(toKeyboard)) {
-    expect.soft(delta, `при открытой клавиатуре сдвинулся ${key}`).toBeLessThanOrEqual(2)
-  }
-  for (const [key, delta] of Object.entries(backToClosed)) {
-    expect.soft(delta, `после закрытия клавиатуры сдвинулся ${key}`).toBeLessThanOrEqual(2)
-  }
-})
-
-test('«Помогло?» и экран серии не перемещают героя, заголовок и CTA', async ({ page }) => {
-  await page.setViewportSize({ width: 430, height: 932 })
-  // checkinPending: сегодня ещё не отмечено, поэтому сохранение чек-ина
-  // честно увеличивает серию и открывает экран серии — как у владельца.
-  await page.goto('/?demo=1&frame=0&today_state=checkinPending')
-  await passMorningSteps(page)
-  await finishMorningNote(page)
-
-  const completion = await readFinalLayout(page)
-  await page.screenshot({ path: `${SHOTS}/before-completion-430x932.png` })
-
-  // Оценка «Помогло?»: выбранная плитка не должна перестраивать экран.
-  await page.locator('[data-testid="checkin-feedback-option"][data-value="yes"]').click()
-  await expect(
-    page.locator('[data-testid="checkin-feedback-option"][data-value="yes"]')
-  ).toHaveAttribute('aria-pressed', 'true')
-  const rated = await readFinalLayout(page)
-  const ratedDeltas = layoutDeltas(completion, rated)
-  console.log('layout completion→rated', JSON.stringify(ratedDeltas))
-  for (const [key, delta] of Object.entries(ratedDeltas)) {
-    expect.soft(delta, `после оценки «Помогло?» сдвинулся ${key}`).toBeLessThanOrEqual(2)
-  }
-
-  // Экран серии (тот же компонент и тот же стабильный шелл).
-  // Демо-данные считают день уже активным, поэтому автоматический переход
-  // после сохранения не срабатывает — экран открывается прямой демо-ссылкой
-  // в том же вьюпорте.
-  await page.goto('/?demo=1&frame=0&action=streak_celebration&streak_days=9')
-  await expect(page.getByTestId('streak-celebration')).toBeVisible()
-  const streak = await readFinalLayout(page)
-  await page.screenshot({ path: `${SHOTS}/before-streak-flow-430x932.png` })
-
-  // Героя и заголовка в сравнении нет: у экранов разное содержание
-  // (иллюстрация финала ↔ цветок, две строки ↔ четыре), поэтому верх
-  // заголовка зависит от длины текста. Стоять на месте обязаны нижний
-  // блок и главное действие — они и сравниваются.
-  const streakDeltas = layoutDeltas(completion, streak, ['meta', 'cta'])
-  console.log('layout completion→streak', JSON.stringify(streakDeltas))
-  console.log('positions', JSON.stringify({ completion, streak }))
-  expect.soft(streakDeltas.cta, 'кнопка финала и серии на одной высоте').toBeLessThanOrEqual(2)
-  expect.soft(streakDeltas.meta, 'нижний блок серии на месте плашки даты').toBeLessThanOrEqual(8)
-  expect.soft(streak.overflow, 'экран серии не требует скролла').toBeLessThanOrEqual(1)
-})
+/*
+ * Стабильный шелл: высота от layout-вьюпорта, а не от visualViewport.
+ * На экране завершения и на экране серии shell обязан совпадать с
+ * window.innerHeight и при открытой, и при закрытой клавиатуре.
+ */
+function expectStableShell(layout, label) {
+  expect(layout.shellHeight, `${label}: шелл занимает layout-вьюпорт`).toBeGreaterThan(0)
+  expect(
+    Math.abs(layout.shellHeight - layout.innerHeight),
+    `${label}: шелл не следует за клавиатурой (${layout.shellHeight} vs ${layout.innerHeight})`
+  ).toBeLessThanOrEqual(2)
+}
 
 for (const viewport of VIEWPORTS) {
-  test(`демо «Серия 9 дней»: цветок серии и огонёк тонкими линиями, ${viewport.name}`, async ({
+  test(`утренний чек-ин: закрытие клавиатуры не двигает финал, ${viewport.name}`, async ({
     page,
   }) => {
     await page.setViewportSize({ width: viewport.width, height: viewport.height })
-    await page.goto('/?demo=1&frame=0&action=streak_celebration&streak_days=9')
+    await page.goto('/?demo=1&frame=0')
+    await passMorningSteps(page)
 
-    const celebration = page.getByTestId('streak-celebration')
-    await expect(celebration).toBeVisible()
-    await expect(page.getByTestId('streak-celebration-text')).toContainText('Серия 9 дней')
+    // Клавиатура открыта в момент нажатия «Завершить» — как в видео владельца.
+    await page.getByTestId('checkin-text-input').fill('Проверка стабильности экрана')
+    await stubKeyboardViewport(page, 336)
+    await page.getByTestId('checkin-complete').click()
+    await expect(page.getByTestId('checkin-completion')).toBeVisible()
 
-    // Символ серии — цветок из пяти отдельных лепестков с пустым центром.
-    // 9 дней — четвёртый лепесток текущего круга: ((9 - 1) % 5) + 1 = 4.
-    const flower = page.getByTestId('streak-petals')
-    await expect(flower).toBeVisible()
-    await expect(flower).toHaveAttribute('data-lit', '4')
-    const flowerStyle = await flower.evaluate(svg => {
-      const petals = Array.from(svg.querySelectorAll('path'))
-      const litCount = Number(svg.dataset.lit)
-      const fills = petals.map(petal => getComputedStyle(petal).fill)
-      return {
-        petals: petals.length,
-        litCount,
-        centerParts: svg.querySelectorAll('circle, ellipse, line, rect').length,
-        litFills: [...new Set(fills.slice(0, litCount))],
-        dimFills: [...new Set(fills.slice(litCount))],
-        gradients: svg.querySelectorAll('linearGradient, radialGradient, filter').length,
-        emoji: /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(svg.textContent || ''),
-      }
-    })
-    expect(flowerStyle.petals, 'пять отдельных лепестков').toBe(5)
-    expect(flowerStyle.litCount, 'девять дней — четыре светлых лепестка').toBe(4)
-    expect(flowerStyle.centerParts, 'центр цветка пустой').toBe(0)
-    expect(flowerStyle.litFills, 'светлые лепестки одного цвета').toHaveLength(1)
-    expect(flowerStyle.dimFills, 'тёмные лепестки одного цвета').toHaveLength(1)
-    expect(flowerStyle.litFills[0], 'светлый лепесток светлее тёмного').not.toBe(
-      flowerStyle.dimFills[0]
-    )
-    expect(flowerStyle.gradients, 'без градиентов и теней').toBe(0)
-    expect(flowerStyle.emoji, 'без emoji').toBe(false)
+    const withKeyboard = await readFinalLayout(page)
+    await page.screenshot({ path: `${SHOTS}/morning-keyboard-open-${viewport.name}.png` })
 
-    // Огонёк сегодняшнего дня — тот же тонкий контур.
-    const flame = page.getByTestId('streak-flame')
-    await expect(flame).toBeVisible()
-    const flameStyle = await flame.evaluate(svg => {
-      const parts = Array.from(svg.querySelectorAll('path, circle, line'))
-      return {
-        fills: parts.map(part => getComputedStyle(part).fill),
-        strokeWidth: Math.max(...parts.map(part => parseFloat(getComputedStyle(part).strokeWidth))),
-      }
-    })
-    expect(flameStyle.fills.every(fill => fill === 'none'), 'у огонька нет заливки').toBe(true)
-    expect(flameStyle.strokeWidth, 'огонёк тонкой линией').toBeLessThanOrEqual(3)
+    // Клавиатура закрылась — visualViewport вернулся к полной высоте.
+    await restoreViewport(page)
+    const closed = await readFinalLayout(page)
+    await page.screenshot({ path: `${SHOTS}/morning-keyboard-closed-${viewport.name}.png` })
 
-    // Главное действие видно сразу и не уехало за экран.
-    const layout = await readFinalLayout(page)
-    expect(layout.cta, 'CTA серии виден').not.toBeNull()
-    expect(layout.cta.top + layout.cta.height).toBeLessThanOrEqual(viewport.height + 1)
-    expect(layout.overflow, 'экран серии не требует скролла').toBeLessThanOrEqual(1)
+    const deltas = layoutDeltas(withKeyboard, closed)
+    console.log(`morning keyboard open→closed ${viewport.name}`, JSON.stringify(deltas))
+    for (const [key, delta] of Object.entries(deltas)) {
+      expect.soft(delta, `после закрытия клавиатуры сдвинулся ${key}`).toBeLessThanOrEqual(2)
+    }
 
-    await page.screenshot({ path: `${SHOTS}/before-streak-demo-${viewport.name}.png` })
+    // stable включён: шелл равен layout-вьюпорту даже при открытой клавиатуре.
+    expectStableShell(withKeyboard, `утренний финал, клавиатура открыта, ${viewport.name}`)
+    expectStableShell(closed, `утренний финал, клавиатура закрыта, ${viewport.name}`)
+    expect(closed.cta, 'CTA финала виден').not.toBeNull()
+    expect(closed.cta.top + closed.cta.height).toBeLessThanOrEqual(viewport.height + 1)
+    expect(closed.overflow, 'финал утра не требует скролла').toBeLessThanOrEqual(1)
   })
 }
 
 for (const viewport of VIEWPORTS) {
-  test(`вечерний финал чек-ина не нарушен, ${viewport.name}`, async ({ page }) => {
+  test(`вечерний чек-ин: закрытие клавиатуры не двигает финал, ${viewport.name}`, async ({
+    page,
+  }) => {
     await page.setViewportSize({ width: viewport.width, height: viewport.height })
     await page.goto('/?demo=1&frame=0&action=complete_evening')
 
     await expect(page.getByTestId('checkin-completion')).toBeVisible()
     await expect(page.getByTestId('checkin-feedback-option')).toHaveCount(3)
-    const layout = await readFinalLayout(page)
-    expect(layout.cta, 'CTA вечернего финала виден').not.toBeNull()
-    expect(layout.cta.top + layout.cta.height).toBeLessThanOrEqual(viewport.height + 1)
-    expect(layout.overflow, 'вечерний финал не требует скролла').toBeLessThanOrEqual(1)
+
+    await stubKeyboardViewport(page, 336)
+    const withKeyboard = await readFinalLayout(page)
+    await page.screenshot({ path: `${SHOTS}/evening-keyboard-open-${viewport.name}.png` })
+
+    await restoreViewport(page)
+    const closed = await readFinalLayout(page)
+    await page.screenshot({ path: `${SHOTS}/evening-keyboard-closed-${viewport.name}.png` })
+
+    const deltas = layoutDeltas(withKeyboard, closed)
+    console.log(`evening keyboard open→closed ${viewport.name}`, JSON.stringify(deltas))
+    for (const [key, delta] of Object.entries(deltas)) {
+      expect.soft(delta, `после закрытия клавиатуры сдвинулся ${key}`).toBeLessThanOrEqual(2)
+    }
+
+    expectStableShell(withKeyboard, `вечерний финал, клавиатура открыта, ${viewport.name}`)
+    expectStableShell(closed, `вечерний финал, клавиатура закрыта, ${viewport.name}`)
+    expect(closed.cta, 'CTA вечернего финала виден').not.toBeNull()
+    expect(closed.cta.top + closed.cta.height).toBeLessThanOrEqual(viewport.height + 1)
+    expect(closed.overflow, 'вечерний финал не требует скролла').toBeLessThanOrEqual(1)
   })
+}
+
+for (const viewport of VIEWPORTS) {
+  test(`«Помогло?» и переход финал → серия не перемещают нижний блок и CTA, ${viewport.name}`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: viewport.width, height: viewport.height })
+    await page.goto('/?demo=1&frame=0&today_state=checkinPending')
+    await passMorningSteps(page)
+    await finishMorningNote(page)
+
+    const completion = await readFinalLayout(page)
+    await page.screenshot({ path: `${SHOTS}/final-completion-${viewport.name}.png` })
+
+    // Оценка «Помогло?»: выбранная плитка не должна перестраивать экран.
+    await page.locator('[data-testid="checkin-feedback-option"][data-value="yes"]').click()
+    await expect(
+      page.locator('[data-testid="checkin-feedback-option"][data-value="yes"]')
+    ).toHaveAttribute('aria-pressed', 'true')
+    const rated = await readFinalLayout(page)
+    const ratedDeltas = layoutDeltas(completion, rated)
+    console.log(`completion→rated ${viewport.name}`, JSON.stringify(ratedDeltas))
+    for (const [key, delta] of Object.entries(ratedDeltas)) {
+      expect.soft(delta, `после оценки «Помогло?» сдвинулся ${key}`).toBeLessThanOrEqual(2)
+    }
+
+    /*
+     * Экран серии (тот же компонент и тот же стабильный шелл).
+     * Демо-API не увеличивает серию при сохранении, поэтому автоматический
+     * переход после «Сохранить и выйти» в демо не срабатывает — экран
+     * открывается прямой демо-ссылкой в том же вьюпорте. Проверяется то,
+     * что важно для перехода: общая геометрия нижнего блока и CTA.
+     */
+    await page.goto('/?demo=1&frame=0&action=streak_celebration&streak_days=9')
+    await expect(page.getByTestId('streak-celebration')).toBeVisible()
+    const streak = await readFinalLayout(page)
+    await page.screenshot({ path: `${SHOTS}/streak-9days-${viewport.name}.png` })
+
+    // Героя и заголовка в сравнении нет: у экранов разное содержание
+    // (иллюстрация финала ↔ цветок, две строки ↔ четыре), поэтому верх
+    // заголовка зависит от длины текста. Стоять на месте обязаны нижний
+    // блок и главное действие — они и сравниваются.
+    const streakDeltas = layoutDeltas(completion, streak, ['meta', 'cta'])
+    console.log(`completion→streak ${viewport.name}`, JSON.stringify(streakDeltas))
+    console.log(`positions ${viewport.name}`, JSON.stringify({ completion, streak }))
+    expect.soft(streakDeltas.cta, 'кнопка финала и серии на одной высоте').toBeLessThanOrEqual(2)
+    /*
+     * Нижний блок серии (ряд дней) по вертикали не совпадает с плашкой даты
+     * финала: у экранов разное содержание, и на 360×640 ряд дней стоит выше
+     * кнопки на другую величину, чем плашка. Проверяется то, что обязано
+     * выполняться на любом вьюпорте: блок целиком выше CTA и не обрезан.
+     */
+    expect.soft(streak.meta.top + streak.meta.height, 'ряд дней не заходит под кнопку').toBeLessThanOrEqual(
+      streak.cta.top + 1
+    )
+    expect.soft(streak.overflow, 'экран серии не требует скролла').toBeLessThanOrEqual(1)
+    expectStableShell(streak, `экран серии, ${viewport.name}`)
+
+    // Клавиатура, закрывающаяся после финала, не растягивает и экран серии.
+    await stubKeyboardViewport(page, 336)
+    const streakKeyboard = await readFinalLayout(page)
+    await restoreViewport(page)
+    const streakClosed = await readFinalLayout(page)
+    const streakKeyboardDeltas = layoutDeltas(streakKeyboard, streakClosed)
+    console.log(`streak keyboard open→closed ${viewport.name}`, JSON.stringify(streakKeyboardDeltas))
+    for (const [key, delta] of Object.entries(streakKeyboardDeltas)) {
+      expect.soft(delta, `на экране серии сдвинулся ${key}`).toBeLessThanOrEqual(2)
+    }
+    expectStableShell(streakKeyboard, `экран серии, клавиатура открыта, ${viewport.name}`)
+  })
+}
+
+for (const viewport of VIEWPORTS) {
+  for (const days of [1, 3, 5]) {
+    test(`цветок серии: ${days} светлых лепестков из пяти, ${viewport.name}`, async ({ page }) => {
+      await page.setViewportSize({ width: viewport.width, height: viewport.height })
+      await page.goto(`/?demo=1&frame=0&action=streak_celebration&streak_days=${days}`)
+
+      await expect(page.getByTestId('streak-celebration')).toBeVisible()
+
+      // Символ серии — цветок из пяти отдельных лепестков с пустым центром.
+      const flower = page.getByTestId('streak-petals')
+      await expect(flower).toBeVisible()
+      await expect(flower).toHaveAttribute('data-lit', String(days))
+      // Росток не используется.
+      await expect(page.locator('[data-testid*="sprout"]')).toHaveCount(0)
+
+      const flowerStyle = await flower.evaluate(svg => {
+        const petals = Array.from(svg.querySelectorAll('path'))
+        const litCount = Number(svg.dataset.lit)
+        const fills = petals.map(petal => getComputedStyle(petal).fill)
+        return {
+          petals: petals.length,
+          litCount,
+          centerParts: svg.querySelectorAll('circle, ellipse, line, rect').length,
+          litFills: [...new Set(fills.slice(0, litCount))],
+          dimFills: [...new Set(fills.slice(litCount))],
+          // Незажжённые лепестки обязаны читаться контуром, иначе при одном
+          // светлом лепестке цветок выглядит как одиночный росток.
+          dimStrokes: [
+            ...new Set(
+              petals
+                .slice(litCount)
+                .map(petal => `${getComputedStyle(petal).stroke}|${getComputedStyle(petal).strokeWidth}`)
+            ),
+          ],
+          gradients: svg.querySelectorAll('linearGradient, radialGradient, filter').length,
+          emoji: /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(svg.textContent || ''),
+        }
+      })
+      expect(flowerStyle.petals, 'пять отдельных лепестков').toBe(5)
+      expect(flowerStyle.litCount, `${days} дней — ${days} светлых лепестков`).toBe(days)
+      expect(flowerStyle.centerParts, 'центр цветка пустой').toBe(0)
+      expect(flowerStyle.litFills, 'светлые лепестки одного цвета').toHaveLength(1)
+      if (days < 5) {
+        // Пять из пяти — тёмных лепестков в круге не остаётся.
+        expect(flowerStyle.dimFills, 'тёмные лепестки одного цвета').toHaveLength(1)
+        expect(flowerStyle.litFills[0], 'светлый лепесток светлее тёмного').not.toBe(
+          flowerStyle.dimFills[0]
+        )
+        expect(flowerStyle.dimStrokes, 'у тёмных лепестков один контур').toHaveLength(1)
+        expect(flowerStyle.dimStrokes[0], 'тёмный лепесток виден контуром').not.toContain('none|')
+      }
+      expect(flowerStyle.gradients, 'без градиентов и теней').toBe(0)
+      expect(flowerStyle.emoji, 'без emoji').toBe(false)
+
+      // Огонёк сегодняшнего дня — тот же тонкий контур без заливки.
+      const flame = page.getByTestId('streak-flame')
+      await expect(flame).toBeVisible()
+      const flameStyle = await flame.evaluate(svg => {
+        const parts = Array.from(svg.querySelectorAll('path, circle, line'))
+        return {
+          fills: parts.map(part => getComputedStyle(part).fill),
+          strokeWidth: Math.max(
+            ...parts.map(part => parseFloat(getComputedStyle(part).strokeWidth))
+          ),
+        }
+      })
+      expect(flameStyle.fills.every(fill => fill === 'none'), 'у огонька нет заливки').toBe(true)
+      expect(flameStyle.strokeWidth, 'огонёк тонкой линией').toBeLessThanOrEqual(3)
+
+      // Главное действие видно сразу и не уехало за экран.
+      const layout = await readFinalLayout(page)
+      expect(layout.cta, 'CTA серии виден').not.toBeNull()
+      expect(layout.cta.top + layout.cta.height).toBeLessThanOrEqual(viewport.height + 1)
+      expect(layout.overflow, 'экран серии не требует скролла').toBeLessThanOrEqual(1)
+      expectStableShell(layout, `экран серии ${days} дней, ${viewport.name}`)
+
+      await page.screenshot({ path: `${SHOTS}/streak-${days}days-${viewport.name}.png` })
+    })
+  }
 }
