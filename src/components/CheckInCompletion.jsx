@@ -33,7 +33,12 @@ export default function CheckInCompletion({ evening, onFeedback, children, title
       className={`mx-completion${evening ? ' mx-completion--evening' : ''}`}
       data-testid="checkin-completion"
     >
-      <div className="mx-completion__art-wrap">
+      {/* У утренней совы своё кадрирование и размер внутри той же полосы
+          героя (--owl): рисунок крупнее и стоит ближе к заголовку.
+          Вечерний арт и арт журнала остаются в общей рамке. */}
+      <div
+        className={`mx-completion__art-wrap${!art && !evening ? ' mx-completion__art-wrap--owl' : ''}`}
+      >
         {art || (evening ? <CompletionArtEvening /> : <CompletionArtMorning />)}
       </div>
       <h1 className="mx-completion__title">
