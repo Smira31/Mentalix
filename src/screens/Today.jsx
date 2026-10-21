@@ -23,6 +23,7 @@ import { OwlEveningStartArt } from '../components/practice-art/OwlEveningStartAr
 import { OwlEveningDoneArt } from '../components/practice-art/OwlEveningDoneArt'
 
 import EmptyState from '../components/EmptyState'
+import { StreakFlame } from '../components/StreakGlyphs'
 import StarterSetPicker from '../components/StarterSetPicker'
 import PinnedPractices from '../components/PinnedPractices'
 import GuestSaveReminder from '../components/GuestSaveReminder'
@@ -105,18 +106,6 @@ function todayGreeting() {
   return 'тихой ночи.'
 }
 
-function ReferenceFlame() {
-  return (
-    <svg className="mx-reference-flame" viewBox="0 0 24 28" aria-hidden="true">
-      <path d="M13.8 1.8c.5 4.1-2.4 5.8-3.7 8.3C8.8 7.7 9.2 5.5 9.2 4 5.3 7.1 3.6 11 4.1 15.2c.6 5.5 4.3 9 8.3 9 4.7 0 8.1-3.5 8.1-8.2 0-4.7-3.1-8.7-6.7-14.2Z" />
-      <path
-        className="mx-reference-flame__inner"
-        d="M13.1 13.2c1.9 2.3 2.7 3.5 2.7 5.2 0 1.9-1.2 3.4-3.1 3.4-1.7 0-2.9-1.3-2.9-3.2 0-1.6 1.1-3 3.3-5.4Z"
-      />
-    </svg>
-  )
-}
-
 // DESIGN_SYSTEM.md §5.4: белый диск 28 px внутри тёмного кольца, чёрный силуэт
 // (голова + плечи), плечи срезаны нижним краем диска. Своя иконка — фото из
 // Telegram не используем.
@@ -168,7 +157,7 @@ function TodayWorkspaceHeader({
         aria-label={streakLabel}
         onClick={onStreakClick || onOpenSeries}
       >
-        <ReferenceFlame />
+        <StreakFlame size={17} testId="today-streak-flame" />
         {streak > 0 && <strong>{streak}</strong>}
       </button>
       <strong

@@ -36,6 +36,7 @@ export default defineConfig({
     'hero-journey-content.spec.mjs',
     'protected-text.spec.mjs',
     'checkin-navigation-consistency.spec.mjs',
+    'checkin-streak-stability.spec.mjs',
     'theme-week-carousel.spec.mjs',
     // AUD-015: переписаны под текущий интерфейс «Прогресса» и утреннего
     // чек-ина; каждый стабильно проходит на Chromium дважды подряд.

@@ -3,13 +3,20 @@
  * Трассировано potrace из растрового оригинала. fill rgb(var(--c-text)),
  * fill-rule evenodd, плоский силуэт. Прозрачный фон.
  * viewBox 0 0 1024 1024, координаты через transform.
+ *
+ * Кадр обрезан по самому рисунку (силуэт занимает x 250–874, y 155–892
+ * исходных координат) с запасом 6 единиц: внутри прежнего квадрата 180 pt
+ * сова рисовалась всего 110×130 pt, а остальное было пустым полем — из-за
+ * него между иллюстрацией и заголовком зияла пустота. Класс --owl даёт
+ * утреннему финалу свой размер (см. CheckInCompletion.css); вечерний арт
+ * и арт журнала используют прежний кадр.
  */
 
 export default function CompletionArtMorning() {
   return (
     <svg
-      className="mx-completion__art"
-      viewBox="0 0 1024 1024"
+      className="mx-completion__art mx-completion__art--owl"
+      viewBox="244 149 636 749"
       preserveAspectRatio="xMidYMax meet"
       aria-hidden="true"
       focusable="false"

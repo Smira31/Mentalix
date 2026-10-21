@@ -39,7 +39,7 @@ test('streak flame is always rendered in the Today header', () => {
   )
 
   // Огонёк рисуется безусловно, цифра — только при серии ≥ 1.
-  assert.match(todaySource, /<ReferenceFlame \/>/)
+  assert.match(todaySource, /<StreakFlame size=\{17\} testId="today-streak-flame" \/>/)
   assert.match(todaySource, /\{streak > 0 && <strong>\{streak\}<\/strong>\}/)
 
   // Шапка остаётся на экране и во время загрузки дня — с актуальным streak.

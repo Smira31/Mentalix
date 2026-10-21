@@ -1,0 +1,39 @@
+/* Значки серии Mentalix: цветок из пяти лепестков и огонёк-контур.
+   Ни градиентов, ни теней, ни свечения — только заливка лепестков
+   и линия огонька. */
+
+.mx-streak-flower {
+  display: block;
+  flex: none;
+}
+
+/* Тёмный лепесток — тихая заливка карточки (≈#333 на чёрном фоне)
+   плюс тонкий контур: без него при одном светлом лепестке остальные
+   четыре неразличимы, и цветок читается одиночным лепестком. */
+.mx-streak-flower__petal {
+  fill: rgb(var(--c-card3));
+  stroke: rgb(var(--c-text) / 0.28);
+  stroke-width: 0.6;
+  stroke-linejoin: round;
+}
+.mx-streak-flower__petal.is-lit {
+  fill: rgb(var(--c-text));
+  stroke: rgb(var(--c-text));
+}
+.mx-streak-flower__petal.is-new {
+  animation: mx-streak-petal-on 400ms ease-out 400ms both;
+}
+
+@keyframes mx-streak-petal-on {
+  from { fill: rgb(var(--c-card3)); }
+  to { fill: rgb(var(--c-text)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-streak-flower__petal.is-new { animation: none; }
+}
+
+.mx-streak-flame {
+  display: block;
+  flex: none;
+}

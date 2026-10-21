@@ -274,7 +274,12 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
    * Финал утра — тот же одноэкранный Stoic-финал, что и у вечера:
    * поверхность на всю высоту «телефона» (демо-рамки), без прокрутки.
    */
-  const { style: viewportStyle } = useFullscreenSurface({ fullFrame: step === doneStep })
+  const { style: viewportStyle } = useFullscreenSurface({
+    fullFrame: step === doneStep,
+    // Финал без полей ввода: высота от layout-вьюпорта, чтобы закрытие
+    // клавиатуры после заметки не растягивало экран и не двигало текст.
+    keyboardStrategy: step === doneStep ? 'stable' : 'resize',
+  })
   const demoSurfaceStyle = {
     ...viewportStyle,
     paddingBottom: 0,
@@ -490,7 +495,6 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
         days={buildStreakDays({
           streak: streakStats.currentStreak,
           checkins: streakHistory,
-          freezeUsed: streakStats.freezeUsedThisWeek,
           today: seriesLogicalDateKey(),
         })}
         onDone={onDone}
@@ -1011,6 +1015,8 @@ function CheckInCore({
     // поверхность на видимую часть окна сжимала область контента до
     // полоски, и текст с плитками отзыва обрезались.
     fullFrame: isEvening && isCompletion,
+    // Финал вечера — та же стабильная поверхность без полей ввода.
+    keyboardStrategy: isCompletion ? 'stable' : 'resize',
   })
 
   /*
@@ -1614,7 +1620,6 @@ function CheckInCore({
         days={buildStreakDays({
           streak: eveningStreakStats.currentStreak,
           checkins: streakHistory,
-          freezeUsed: eveningStreakStats.freezeUsedThisWeek,
           today: seriesLogicalDateKey(),
         })}
         onDone={onDone}
@@ -1630,8 +1635,10 @@ function CheckInCore({
         style={viewportStyle}
       >
         {/* Финалу свои «назад» и «закрыть» не нужны: возврат — системная
-            «Назад» Telegram, выход — пилюля «Сохранить и выйти» внизу. */}
-        <div className={CHECKIN_HEADER_CLASS} aria-hidden="true" />
+            «Назад» Telegram, выход — пилюля «Сохранить и выйти» внизу.
+            Высота шапки — общая с утренним финалом и экраном серии
+            (.mx-finale-header-slot), иначе герой серии стоит на 3 px выше. */}
+        <div className="mx-finale-header-slot" aria-hidden="true" />
 
         <div className={FULLSCREEN_COMPLETION_CLASS}>
           <CheckInCompletion
@@ -2006,7 +2013,10 @@ function CheckInCore({
 
 function DemoCompletionScreen({ evening, onDone }) {
   // Финал высокий: в демо-рамке он занимает весь «телефон».
-  const { style: viewportStyle } = useFullscreenSurface({ fullFrame: true })
+  const { style: viewportStyle } = useFullscreenSurface({
+    fullFrame: true,
+    keyboardStrategy: 'stable',
+  })
   // Та же пилюля, что и в реальном финале: демо-экран повторяет Stoic-макет.
   const action = {
     text: 'Сохранить и выйти',
