@@ -16,6 +16,22 @@
      плитки никогда не касаются кнопки в нижней полосе. */
   padding: 0 16px 24px;
   background: rgb(var(--c-bg));
+  /* Полоса нижнего блока: плашка даты + отзыв у финала чек-ина,
+     ряд дней у экрана серии (.mx-streak-celebration__days). Одна высота
+     у обоих экранов — заголовок и герой стоят на месте, когда «Сохранить
+     и выйти» меняет финал на экран серии. */
+  --mx-completion-meta-band: 230px;
+}
+
+/* Нижний блок финала не сжимается: свободную высоту забирает зона героя,
+   поэтому текст и плитки всегда прижаты к нижней пилюле. */
+.mx-completion__meta {
+  flex: none;
+  display: flex;
+  width: 100%;
+  min-height: var(--mx-completion-meta-band);
+  flex-direction: column;
+  align-items: center;
 }
 
 /* В fullscreen-шелле финал растягивается флексом на всю область контента. */
@@ -55,7 +71,8 @@
    высоты ужинается только арт, иначе строки налезают друг на друга. */
 .mx-completion__title,
 .mx-completion__date-pill,
-.mx-completion__feedback {
+.mx-completion__feedback,
+.mx-completion__meta {
   flex: none;
 }
 

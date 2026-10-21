@@ -42,38 +42,44 @@ export default function CheckInCompletion({ evening, onFeedback, children, title
           </>
         ))}
       </h1>
-      <div className="mx-completion__date-pill" aria-label="Дата">
-        {datePill || (<><span aria-hidden="true">✓</span> {formatReviewDate()}</>)}
-      </div>
-      {body}
-      <div className="mx-completion__feedback">
-        <p>{questionText}</p>
-        <div
-          className="mx-completion__choices"
-          role="group"
-          aria-label={questionText}
-        >
-          {CHECKIN_FEEDBACK_OPTIONS.map(option => {
-            const Icon = ICONS[option.value]
-            return (
-              <button
-                key={option.value}
-                type="button"
-                data-testid="checkin-feedback-option"
-                data-value={option.value}
-                aria-pressed={selected === option.value}
-                className={selected === option.value ? 'is-selected' : ''}
-                onClick={() => {
-                  const next = selected === option.value ? null : option.value
-                  setSelected(next)
-                  if (next) onFeedback(option.label)
-                }}
-              >
-                <Icon size={22} strokeWidth={1.5} aria-hidden="true" />
-                <span>{option.label}</span>
-              </button>
-            )
-          })}
+      {/* Нижний блок финала — плашка даты, дополнительное содержимое и отзыв.
+          Его высота задана полосой (.mx-completion__meta): на том же месте
+          стоит ряд дней экрана серии, поэтому заголовок и герой не двигаются
+          при переходе «Сохранить и выйти» → серия. */}
+      <div className="mx-completion__meta">
+        <div className="mx-completion__date-pill" aria-label="Дата">
+          {datePill || (<><span aria-hidden="true">✓</span> {formatReviewDate()}</>)}
+        </div>
+        {body}
+        <div className="mx-completion__feedback">
+          <p>{questionText}</p>
+          <div
+            className="mx-completion__choices"
+            role="group"
+            aria-label={questionText}
+          >
+            {CHECKIN_FEEDBACK_OPTIONS.map(option => {
+              const Icon = ICONS[option.value]
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  data-testid="checkin-feedback-option"
+                  data-value={option.value}
+                  aria-pressed={selected === option.value}
+                  className={selected === option.value ? 'is-selected' : ''}
+                  onClick={() => {
+                    const next = selected === option.value ? null : option.value
+                    setSelected(next)
+                    if (next) onFeedback(option.label)
+                  }}
+                >
+                  <Icon size={22} strokeWidth={1.5} aria-hidden="true" />
+                  <span>{option.label}</span>
+                </button>
+              )
+            })}
+          </div>
         </div>
       </div>
       {children}

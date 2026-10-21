@@ -150,7 +150,7 @@ function useDemoFrameBox(enabled) {
   return box
 }
 
-export function useFullscreenSurface({ fullFrame = false } = {}) {
+export function useFullscreenSurface({ fullFrame = false, stable = false } = {}) {
   const viewportGeometry = useVisualViewportGeometry()
   const portalTarget = getFullscreenPortalTarget()
   const demoMode = isPreviewDemoMode()
@@ -167,7 +167,18 @@ export function useFullscreenSurface({ fullFrame = false } = {}) {
     typeof window !== 'undefined' &&
     window.innerHeight - visualViewportHeight > 80
   const telegram = isTelegramRuntime()
-  const shellHeight = telegram
+  /*
+   * stable — экраны без полей ввода (финал чек-ина и экран серии). Их
+   * высота берётся из стабильного layout-вьюпорта (в Telegram —
+   * viewportStableHeight, в вебе — window.innerHeight) и не следует за
+   * клавиатурой. Иначе закрытие клавиатуры после заметки растягивает шелл
+   * на ~330 px, и весь финал уезжает вниз уже после перехода.
+   */
+  const layoutViewportHeight =
+    typeof window !== 'undefined' && Number.isFinite(window.innerHeight)
+      ? Math.round(window.innerHeight)
+      : null
+  const liveShellHeight = telegram
     ? keyboardOpen
       ? getKeyboardViewportHeight({
           isTelegram: true,
@@ -176,6 +187,9 @@ export function useFullscreenSurface({ fullFrame = false } = {}) {
         })
       : stableViewportHeight || visualViewportHeight
     : visualViewportHeight
+  const shellHeight = stable
+    ? stableViewportHeight || layoutViewportHeight || visualViewportHeight
+    : liveShellHeight
 
   /*
    * В demo-рамке shell обязан заполнять именно рамку телефона:
@@ -200,7 +214,9 @@ export function useFullscreenSurface({ fullFrame = false } = {}) {
    */
   const frameFull = Boolean(fullFrame && demoFrameHeight)
 
-  const surfaceTop = viewportOffsetTop / scale
+  /* При stable поверхность стоит по верхнему краю layout-вьюпорта: прокрутка
+     visualViewport (клавиатура, адресная строка) её не сдвигает. */
+  const surfaceTop = stable ? 0 : viewportOffsetTop / scale
   const visibleHeight = frameFull
     ? demoFrameHeight
     : demoFrameHeight ?? (shellHeight ? shellHeight / scale : null)
