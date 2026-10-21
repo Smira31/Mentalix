@@ -101,6 +101,13 @@ test('informational-checks: только чтение — без write-прав 
   assert.doesNotMatch(workflow, /github-script/)
   // Токен не остаётся в .git/config для npm-команд на коде PR.
   assert.match(workflow, /persist-credentials: false/)
+  // Код сторонних fork-PR не запускается: job guard допускает только PR из
+  // этого репозитория (read-only токен тоже имеет доступ к данным приватного).
+  assert.match(workflow, /pull-requests: read/)
+  assert.match(workflow, /\n  guard:\n/)
+  assert.match(workflow, /head\.repo\.full_name/)
+  for (const name of ['ux-visual', 'ux-visual-progress', 'qa-crawl', 'bundle-size-report', 'pr-screenshots'])
+    assert.match(job(name), /needs: guard/, `${name} должен зависеть от guard`)
 })
 
 test('pr-screens: сценарии не ссылаются на удалённые элементы', () => {

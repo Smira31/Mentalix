@@ -9,6 +9,8 @@ name: Informational checks (manual)
 # Если указать номер PR, работа идёт на его head (refs/pull/<N>/head), а
 # «было / стало» и скриншоты попадают в артефакты run и в Summary прогона.
 # Комментарии в PR не публикуются: токену не выдаются права на запись.
+# Код сторонних fork-PR не запускается — job guard допускает только PR из этого
+# репозитория (read-only токен тоже имеет доступ к данным приватного репозитория).
 # Без номера — проверяется выбранная ветка, артефакты складываются в run.
 #
 # Обязательные проверки (quality, backend-health, UX-смоук, «Функциональная
@@ -18,16 +20,19 @@ on:
   workflow_dispatch:
     inputs:
       pr_number:
-        description: "Номер PR: сборка его head, отчёты в артефактах и Summary (пусто — выбранная ветка)"
+        description: "Номер PR этого репозитория: сборка его head, отчёты в артефактах и Summary (пусто — выбранная ветка)"
         required: false
         type: string
 
 # Только чтение. Workflow может проверять код произвольного PR
 # (refs/pull/<N>/head) и выполняет на нём npm-команды, поэтому права на запись
 # ему не выдаются: отчёты складываются в артефакты и $GITHUB_STEP_SUMMARY.
+# pull-requests: read нужен job'у guard — прочитать, из какого репозитория
+# пришёл PR, и не запускать код сторонних fork-PR.
 permissions:
   contents: read
   actions: read
+  pull-requests: read
 
 concurrency:
   group: informational-checks-${{ github.ref }}
@@ -37,8 +42,42 @@ env:
   NODE_VERSION: 22.22.1
 
 jobs:
+  # Проверяем источник PR до тяжёлых job'ов: даже read-only токен имеет доступ
+  # к данным приватного репозитория, поэтому код сторонних fork-PR не запускаем.
+  guard:
+    name: Guard — PR только из этого репозитория
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      allowed: ${{ steps.check.outputs.allowed }}
+    steps:
+      - name: Resolve PR head repository
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          pr="${{ inputs.pr_number }}"
+          if [ -z "$pr" ]; then
+            echo "allowed=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::PR не задан — проверяется ветка ${{ github.ref }}"
+            exit 0
+          fi
+          # Пустой ответ (ошибка API, удалённый форк) тоже запрещает запуск.
+          head_repo=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${pr}" \
+            --jq '.head.repo.full_name // ""' 2>/dev/null || echo "")
+          echo "PR #${pr} head repo: ${head_repo:-<не определён>}"
+          if [ "$head_repo" = "$GITHUB_REPOSITORY" ]; then
+            echo "allowed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "allowed=false" >> "$GITHUB_OUTPUT"
+            echo "::error::PR #${pr} пришёл из «${head_repo:-не определён}» — код сторонних fork-PR не запускается"
+            exit 1
+          fi
+
   ux-visual:
     name: Playwright visual snapshots (informational)
+    needs: guard
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -132,6 +171,7 @@ jobs:
 
   ux-visual-progress:
     name: Progress visual snapshots (demo mode, informational)
+    needs: guard
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -205,6 +245,7 @@ jobs:
 
   qa-crawl:
     name: QA обход (informational)
+    needs: guard
     runs-on: ubuntu-latest
     continue-on-error: true
     timeout-minutes: 15
@@ -256,6 +297,7 @@ jobs:
 
   bundle-size-report:
     name: Отчёт о размерах чанков (informational)
+    needs: guard
     runs-on: ubuntu-latest
     timeout-minutes: 10
     continue-on-error: true
@@ -325,6 +367,7 @@ jobs:
 
   pr-screenshots:
     name: PR-скриншоты экранов (informational)
+    needs: guard
     runs-on: ubuntu-latest
     continue-on-error: true
     timeout-minutes: 15
