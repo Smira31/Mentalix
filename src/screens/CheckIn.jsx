@@ -272,7 +272,12 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
    * Финал утра — тот же одноэкранный Stoic-финал, что и у вечера:
    * поверхность на всю высоту «телефона» (демо-рамки), без прокрутки.
    */
-  const { style: viewportStyle } = useFullscreenSurface({ fullFrame: step === doneStep })
+  const { style: viewportStyle } = useFullscreenSurface({
+    fullFrame: step === doneStep,
+    // Финал без полей ввода: высота от layout-вьюпорта, чтобы закрытие
+    // клавиатуры после заметки не растягивало экран и не двигало текст.
+    stable: step === doneStep,
+  })
   const demoSurfaceStyle = {
     ...viewportStyle,
     paddingBottom: 0,
@@ -1009,6 +1014,8 @@ function CheckInCore({
     // поверхность на видимую часть окна сжимала область контента до
     // полоски, и текст с плитками отзыва обрезались.
     fullFrame: isEvening && isCompletion,
+    // Финал вечера — та же стабильная поверхность без полей ввода.
+    stable: isCompletion,
   })
 
   /*
@@ -2003,7 +2010,7 @@ function CheckInCore({
 
 function DemoCompletionScreen({ evening, onDone }) {
   // Финал высокий: в демо-рамке он занимает весь «телефон».
-  const { style: viewportStyle } = useFullscreenSurface({ fullFrame: true })
+  const { style: viewportStyle } = useFullscreenSurface({ fullFrame: true, stable: true })
   // Та же пилюля, что и в реальном финале: демо-экран повторяет Stoic-макет.
   const action = {
     text: 'Сохранить и выйти',

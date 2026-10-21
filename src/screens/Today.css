@@ -1064,10 +1064,6 @@
   justify-self: end;
 }
 
-.mx-demo-today-streak .mx-reference-flame {
-  flex: 0 0 auto;
-}
-
 /* MXL-HOME-QUIET-V2-001 — header reference pass.
    Keep the greeting centered to the viewport, not to the space left between controls. */
 .mx-demo-today-header {
@@ -1709,32 +1705,12 @@
 }
 
 /* ЕДИНЫЙ блок огонька серии (§5.1, эталон Stoic).
-   Серия ≥1: внешний огонь залит цветом цифры, без контура;
-   внутренний огонёк «вырезан» цветом фона чипа.
-   Серия 0 (--empty): внешний огонь — контур (stroke 1.6);
-   внутренний огонёк — залит тем же цветом. */
-.mx-demo-today-streak .mx-reference-flame {
+   Огонёк — светлый тонкий контур без заливки в обоих состояниях:
+   серия ≥1 и серия 0 (--empty) отличаются только числом рядом. */
+.mx-demo-today-streak .mx-streak-flame {
   width: 17px;
   height: 20px;
-  fill: rgb(var(--c-header-muted));
-  stroke: none;
-}
-
-.mx-demo-today-streak .mx-reference-flame__inner {
-  fill: rgb(var(--c-header-chip));
-  stroke: none;
-}
-
-.mx-demo-today-streak--empty .mx-reference-flame {
-  fill: none;
-  stroke: rgb(var(--c-header-muted));
-  stroke-width: 1.6;
-  stroke-linejoin: round;
-}
-
-.mx-demo-today-streak--empty .mx-reference-flame__inner {
-  fill: rgb(var(--c-header-muted));
-  stroke: none;
+  color: rgb(var(--c-header-muted));
 }
 
 .mx-demo-today-streak strong {
