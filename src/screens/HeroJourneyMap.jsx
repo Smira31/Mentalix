@@ -700,7 +700,7 @@ function WriteScreen({
         submitDisabled={false}
         submitIcon={hasText ? 'chevron' : 'x'}
         submitLabel={hasText ? 'Дальше' : 'Закрыть'}
-        className="mt-[28px] flex-1 mx-hj-write-input"
+        className="mt-[var(--mx-space-7)] flex-1 mx-hj-write-input"
         editorClassName="mx-hj-write-editor"
       />
     </Shell>
@@ -800,7 +800,7 @@ function StepComplete({ trial, progress, onBackToMap, onContinue }) {
         )}
 
         {reflection && (
-          <button type="button" className="mx-hj-complete__diary-link" onClick={onBackToMap}>
+          <button type="button" className="mx-hj-quiet-link" onClick={onBackToMap}>
             Твоя запись в дневнике
           </button>
         )}
@@ -833,6 +833,10 @@ function StepComplete({ trial, progress, onBackToMap, onContinue }) {
  * Главная кнопка (одна, белая) ведёт на карту, тихая текстовая ссылка —
  * сразу первый шаг следующей главы. После 16-го шага пауза не показывается:
  * открывается финал «Возвращение».
+ *
+ * Оформление общее, своего набора классов у экрана нет: метка, заголовок и
+ * абзац те же, что на вступлении шага, кнопка — общая нижняя группа
+ * шага (.mx-hj-step-intro__bottom) и тихий вторичный текст (.mx-hj-quiet-link).
  */
 function PauseScreen({ nextTrial, onStay, onContinue }) {
   return (
@@ -842,21 +846,19 @@ function PauseScreen({ nextTrial, onStay, onContinue }) {
       screenBodyClassName="mx-hj-pause-body"
       testId="hero-pause"
     >
-      <div className="mx-hj-pause__content">
-        <span className="mx-hj-eyebrow">ПАУЗА</span>
-        <h2 className="mx-hj-pause__title">{appHeading('Глава позади')}</h2>
-        <p className="mx-hj-pause__text">
-          Ты прошёл четыре шага и взял четыре действия. Дай им пару дней — так они станут твоими, а
-          не очередным списком дел.
-        </p>
-      </div>
+      <span className="mx-hj-eyebrow">ПАУЗА</span>
+      <h2 className="mx-hj-step-intro__title">{appHeading('Глава позади')}</h2>
+      <p className="mx-hj-step-intro__desc">
+        Ты прошёл четыре шага и взял четыре действия. Дай им пару дней — так они станут твоими, а
+        не очередным списком дел.
+      </p>
 
-      <div className="mx-hj-pause__bottom">
+      <div className="mx-hj-step-intro__bottom">
         <button
           type="button"
           data-testid="hero-pause-stay"
           onClick={onStay}
-          className="cta-pill mx-hj-pause__cta"
+          className="cta-pill mx-hj-step-intro__cta"
         >
           Вернусь завтра
         </button>
@@ -865,7 +867,7 @@ function PauseScreen({ nextTrial, onStay, onContinue }) {
             type="button"
             data-testid="hero-pause-next"
             onClick={onContinue}
-            className="mx-hj-pause__skip"
+            className="mx-hj-quiet-link"
           >
             Всё равно дальше
           </button>
