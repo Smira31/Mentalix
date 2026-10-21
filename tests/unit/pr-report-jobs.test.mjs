@@ -84,6 +84,25 @@ test('ci: PR-скриншоты собираются с демо-режимом'
   assert.match(job('pr-screenshots'), /run: VITE_LOCAL_PREVIEW=true npm run build/)
 })
 
+// Безопасность informational-checks: workflow может проверять код произвольного
+// PR (refs/pull/<N>/head) и выполняет на нём npm-команды, поэтому write-прав у
+// токена быть не должно, а отчёты идут в артефакты и Summary, а не в комментарии.
+test('informational-checks: только чтение — без write-прав и комментариев из кода PR', () => {
+  const workflow = readFileSync('.github/workflows/informational-checks.yml', 'utf8')
+  const start = workflow.indexOf('\npermissions:\n')
+  const end = workflow.indexOf('\nconcurrency:')
+  assert.ok(start !== -1 && end > start, 'блок permissions не найден')
+  const permissions = workflow.slice(start, end)
+  assert.match(permissions, /contents: read/)
+  assert.match(permissions, /actions: read/)
+  assert.doesNotMatch(permissions, /write/)
+  // Комментарии в PR требовали pull-requests: write — их больше нет.
+  assert.doesNotMatch(workflow, /pull-requests:\s*write/)
+  assert.doesNotMatch(workflow, /github-script/)
+  // Токен не остаётся в .git/config для npm-команд на коде PR.
+  assert.match(workflow, /persist-credentials: false/)
+})
+
 test('pr-screens: сценарии не ссылаются на удалённые элементы', () => {
   const screens = readFileSync('tests/visual/pr-screens.mjs', 'utf8')
   for (const gone of ['today-thoughts', 'progress-hero-journey', 'hero-step-0', 'tab=progress'])

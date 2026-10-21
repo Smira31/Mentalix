@@ -7,8 +7,9 @@ name: Informational checks (manual)
 # проверками. Теперь они запускаются только вручную:
 #   Actions → «Informational checks (manual)» → Run workflow
 # Если указать номер PR, работа идёт на его head (refs/pull/<N>/head), а
-# «было / стало» и скриншоты публикуются комментарием в этот PR. Без номера —
-# проверяется выбранная ветка, артефакты складываются в run.
+# «было / стало» и скриншоты попадают в артефакты run и в Summary прогона.
+# Комментарии в PR не публикуются: токену не выдаются права на запись.
+# Без номера — проверяется выбранная ветка, артефакты складываются в run.
 #
 # Обязательные проверки (quality, backend-health, UX-смоук, «Функциональная
 # проверка проекта») остаются в ci.yml и не затрагиваются.
@@ -17,13 +18,15 @@ on:
   workflow_dispatch:
     inputs:
       pr_number:
-        description: "Номер PR: сборка его head и комментарии в PR (пусто — выбранная ветка)"
+        description: "Номер PR: сборка его head, отчёты в артефактах и Summary (пусто — выбранная ветка)"
         required: false
         type: string
 
+# Только чтение. Workflow может проверять код произвольного PR
+# (refs/pull/<N>/head) и выполняет на нём npm-команды, поэтому права на запись
+# ему не выдаются: отчёты складываются в артефакты и $GITHUB_STEP_SUMMARY.
 permissions:
   contents: read
-  pull-requests: write
   actions: read
 
 concurrency:
@@ -43,6 +46,8 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: ${{ inputs.pr_number != '' && format('refs/pull/{0}/head', inputs.pr_number) || github.ref }}
+          # Токен не остаётся в .git/config — код PR не должен его читать.
+          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
@@ -111,34 +116,19 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
-      - name: Post/update «было / стало» comment
-        if: always() && inputs.pr_number != ''
-        uses: actions/github-script@v9
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const fs = require('fs')
-            const marker = '<!-- mx-visual-diff -->'
-            let diffReport
-            try {
-              diffReport = fs.readFileSync('artifacts/ux-check/visual-diff-report.md', 'utf8')
-            } catch {
-              diffReport = '## 📸 Визуальные изменения: было / стало\n\n⚠️ Не удалось сформировать отчёт визуального diff.'
-            }
-            const body = `${marker}\n${diffReport}`
-            const { owner, repo } = context.repo
-            const issue_number = ${{ inputs.pr_number || 0 }}
-            const comments = await github.paginate(github.rest.issues.listComments, {
-              owner, repo, issue_number, per_page: 100,
-            })
-            const previous = comments.find(comment =>
-              comment.body?.includes(marker) && comment.user?.type === 'Bot'
-            )
-            if (previous) {
-              await github.rest.issues.updateComment({ owner, repo, comment_id: previous.id, body })
-            } else {
-              await github.rest.issues.createComment({ owner, repo, issue_number, body })
-            }
+      # Отчёт идёт в Summary прогона (без токена и без прав на запись).
+      - name: Publish «было / стало» to summary
+        if: always()
+        run: |
+          {
+            echo '## 📸 Визуальные изменения: было / стало'
+            echo
+            if [ -f artifacts/ux-check/visual-diff-report.md ]; then
+              cat artifacts/ux-check/visual-diff-report.md
+            else
+              echo '⚠️ Не удалось сформировать отчёт визуального diff.'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
 
   ux-visual-progress:
     name: Progress visual snapshots (demo mode, informational)
@@ -149,6 +139,8 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: ${{ inputs.pr_number != '' && format('refs/pull/{0}/head', inputs.pr_number) || github.ref }}
+          # Токен не остаётся в .git/config — код PR не должен его читать.
+          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
@@ -221,6 +213,8 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: ${{ inputs.pr_number != '' && format('refs/pull/{0}/head', inputs.pr_number) || github.ref }}
+          # Токен не остаётся в .git/config — код PR не должен его читать.
+          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
@@ -270,6 +264,8 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: ${{ inputs.pr_number != '' && format('refs/pull/{0}/head', inputs.pr_number) || github.ref }}
+          # Токен не остаётся в .git/config — код PR не должен его читать.
+          persist-credentials: false
           fetch-depth: 0
 
       - name: Setup Node.js
@@ -313,34 +309,19 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
-      - name: Post bundle size comment
-        if: always() && inputs.pr_number != ''
-        uses: actions/github-script@v9
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const fs = require('fs')
-            const marker = '<!-- mx-bundle-size -->'
-            let report
-            try {
-              report = fs.readFileSync('bundle-report.md', 'utf8')
-            } catch {
-              report = '## 📦 Размеры чанков сборки\n\n⚠️ Не удалось сформировать отчёт.'
-            }
-            const body = `${marker}\n${report}`
-            const { owner, repo } = context.repo
-            const issue_number = ${{ inputs.pr_number || 0 }}
-            const comments = await github.paginate(github.rest.issues.listComments, {
-              owner, repo, issue_number, per_page: 100,
-            })
-            const previous = comments.find(comment =>
-              comment.body?.includes(marker) && comment.user?.type === 'Bot'
-            )
-            if (previous) {
-              await github.rest.issues.updateComment({ owner, repo, comment_id: previous.id, body })
-            } else {
-              await github.rest.issues.createComment({ owner, repo, issue_number, body })
-            }
+      # Отчёт идёт в Summary прогона (без токена и без прав на запись).
+      - name: Publish bundle size report to summary
+        if: always()
+        run: |
+          {
+            echo '## 📦 Размеры чанков сборки'
+            echo
+            if [ -f bundle-report.md ]; then
+              cat bundle-report.md
+            else
+              echo '⚠️ Не удалось сформировать отчёт.'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
 
   pr-screenshots:
     name: PR-скриншоты экранов (informational)
@@ -352,6 +333,8 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: ${{ inputs.pr_number != '' && format('refs/pull/{0}/head', inputs.pr_number) || github.ref }}
+          # Токен не остаётся в .git/config — код PR не должен его читать.
+          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
@@ -397,32 +380,20 @@ jobs:
           retention-days: 14
           if-no-files-found: ignore
 
-      - name: Post/update screenshots comment
-        if: always() && inputs.pr_number != ''
-        uses: actions/github-script@v9
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const fs = require('fs')
-            const marker = '<!-- mx-pr-screenshots -->'
-            const runUrl = `${context.payload.repository.html_url}/actions/runs/${context.runId}`
-            let gallery
-            try {
-              gallery = fs.readFileSync('artifacts/pr-screenshots/README.md', 'utf8')
-            } catch {
-              gallery = '⚠️ Скриншоты не сгенерированы.'
-            }
-            const body = `${marker}\n## 📸 Скриншоты ключевых экранов\n\n${gallery}\n\n🔗 [Артефакт со скриншотами](${runUrl})`
-            const { owner, repo } = context.repo
-            const issue_number = ${{ inputs.pr_number || 0 }}
-            const comments = await github.paginate(github.rest.issues.listComments, {
-              owner, repo, issue_number, per_page: 100,
-            })
-            const previous = comments.find(comment =>
-              comment.body?.includes(marker) && comment.user?.type === 'Bot'
-            )
-            if (previous) {
-              await github.rest.issues.updateComment({ owner, repo, comment_id: previous.id, body })
-            } else {
-              await github.rest.issues.createComment({ owner, repo, issue_number, body })
-            }
+      # Список скриншотов идёт в Summary прогона (без токена и без прав на запись).
+      - name: Publish screenshots note to summary
+        if: always()
+        env:
+          GITHUB_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          {
+            echo '## 📸 Скриншоты ключевых экранов'
+            echo
+            if [ -f artifacts/pr-screenshots/README.md ]; then
+              cat artifacts/pr-screenshots/README.md
+            else
+              echo '⚠️ Скриншоты не сгенерированы.'
+            fi
+            echo
+            echo "🔗 [Артефакт со скриншотами]($GITHUB_RUN_URL)"
+          } >> "$GITHUB_STEP_SUMMARY"
