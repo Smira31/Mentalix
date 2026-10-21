@@ -23,7 +23,7 @@ import './ui/ui-details.css'
  *    регистрация в стеке useBackButton;
  *  - верхний отступ по токену --mx-screen-top (safe-top + 56 + 16);
  *  - нижний safe-area через --app-safe-bottom;
- *  - опции: scroll (по умолчанию) / noScroll / fullFrame.
+ *  - опции: scroll (по умолчанию) / noScroll / fullFrame / keyboardStrategy.
  *
  * Все новые вложенные экраны должны использовать <Screen>.
  */
@@ -40,8 +40,17 @@ export default function Screen({
   footerClassName = '',
   className = '',
   bodyClassName = '',
+  /*
+   * Поведение поверхности при клавиатуре — контракт useFullscreenSurface.
+   * По умолчанию 'resize': экран следует за видимой частью вьюпорта, как у
+   * экранов с полями ввода. Финалу без полей ввода (финал журнала) нужен
+   * 'stable': поверхность стоит на layout-вьюпорте, иначе последние кадры
+   * закрытия клавиатуры растягивают её уже после открытия финала, а всю
+   * разницу забирает единственная растягиваемая полоса — рисунок.
+   */
+  keyboardStrategy = 'resize',
 }) {
-  const { style: surfaceStyle } = useFullscreenSurface()
+  const { style: surfaceStyle } = useFullscreenSurface({ keyboardStrategy })
   const portalTarget = getFullscreenPortalTarget()
 
   const demoHidden = isDemoEmulationActive()
