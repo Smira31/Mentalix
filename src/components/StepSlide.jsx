@@ -31,7 +31,24 @@ function prefersReducedMotion() {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
+/*
+ * Возврат шага к началу: сброс позиции у самой сцены и у её скролл-контейнеров.
+ * Сцена прокручивается сама (overflow-x: hidden вычисляет overflow-y в auto),
+ * а снаружи лежит контейнер шага, который скроллится на длинных текстах.
+ * Выше body не поднимаемся: прокрутка страницы превью — не наша.
+ */
+function resetStepScroll(scene) {
+  let element = scene
+  while (element && element !== document.body) {
+    if (element.scrollHeight > element.clientHeight && element.scrollTop > 0) {
+      element.scrollTop = 0
+    }
+    element = element.parentElement
+  }
+}
+
 export default function StepSlide({ stepKey, children, onAnimatingChange, className = '' }) {
+  const rootRef = useRef(null)
   const panelRef = useRef(null)
   const leavingRef = useRef(null)
   const lastChildrenRef = useRef(children)
@@ -59,6 +76,13 @@ export default function StepSlide({ stepKey, children, onAnimatingChange, classN
       lastChildrenRef.current = children
       return
     }
+
+    /*
+     * Новый шаг начинается с верха: без сброса позиция предыдущего шага
+     * оставалась и после «Далее» человек видел середину нового шага
+     * (скачок экрана). Сброс до отрисовки — кадра со старой позицией нет.
+     */
+    resetStepScroll(rootRef.current)
 
     const direction = stepKey > prevKeyRef.current ? 1 : -1
     const leavingContent = lastChildrenRef.current
@@ -124,7 +148,7 @@ export default function StepSlide({ stepKey, children, onAnimatingChange, classN
   }, [leaving])
 
   return (
-    <div className={`mx-step-slide ${className}`.trim()}>
+    <div ref={rootRef} className={`mx-step-slide ${className}`.trim()}>
       {leaving ? (
         <div
           key={leaving.key}

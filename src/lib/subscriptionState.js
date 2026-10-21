@@ -38,6 +38,23 @@ export function getSubscriptionState(subscription, isGuest) {
 }
 
 /*
+ * Какой значок-замок показывать для состояния экрана.
+ * 'lock' — закрытый замок (PotentialLockArt): только неоплаченные состояния
+ *          (guest, base, expired, pending, loading).
+ * 'unlock' — открытый замок (ProUnlockedArt): Pro активен или оплата прошла.
+ *
+ * Замок (закрытый) — только у неоплаченных состояний. У активного Pro и
+ * экрана успеха — открытый замок.
+ *
+ * @param {string} state — состояние экрана (displayState)
+ * @returns {'lock'|'unlock'}
+ */
+export function lockArtKind(state) {
+  if (state === 'pro' || state === 'success') return 'unlock'
+  return 'lock'
+}
+
+/*
  * Демо-режим: ?payState=guest|base|pro|expired|pending|success
  * (success — экран «Оплата прошла»).
  * Только в dev/демо-сборке (как proMock); в production-сборке неактивно.

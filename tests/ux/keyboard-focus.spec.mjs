@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test'
 
 import { openDayCard } from './checkin-helpers.mjs'
+import { advanceStoryToWrite } from './hero-journey-helpers.mjs'
 
 /*
  * MXL-KEYBOARD-001 — контракт клавиатуры и автофокуса (браузерный уровень).
@@ -189,8 +190,8 @@ test('курс: поле шага записи получает фокус по�
   await expect(stepCard).toBeVisible()
   await stepCard.click()
 
-  await expect(page.getByTestId('hero-step-start')).toBeVisible()
-  await page.getByTestId('hero-step-start').click()
+  // Вводка шага 1 — листами (сторис): последний лист открывает «Запиши».
+  await advanceStoryToWrite(page)
 
   await expect(page.getByTestId('hero-write-input')).toBeVisible()
   await expectAutoFocus(page, 'hero-write-input')

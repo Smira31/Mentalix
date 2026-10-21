@@ -10,10 +10,13 @@ import Card from '../../components/ui/Card'
 import PillButton from '../../components/ui/PillButton'
 import ProConsentCard from './ProConsentCard'
 import ProStateCard from './ProStateCard'
+import ProWaiting from './ProWaiting'
 import ProDetails from './ProDetails'
-import { proBlockedState, proErrorKey, proStatePayload } from './proApiState'
+import ProAchievementCard from './ProAchievementCard'
+import { proBlockedState, proErrorKey, proErrorMessage, proStatePayload } from './proApiState'
 import { formatDayList, formatSources, formatWeekRange, isoDay } from './weekLabel'
 
+import './proText.css'
 import './ProReport.css'
 
 /*
@@ -27,7 +30,7 @@ import './ProReport.css'
  * бесконечная загрузка; недостаток данных (insufficient_data) — отдельное
  * состояние. Ошибки двух форматов: body.detail и body.code.
  * После POST-ответа 409 generation_in_progress — ограниченный опрос GET
- * (окно — 60 с, как таймаут AI-генерации), повторная POST-генерация не
+ * (окно — 150 с, как таймаут AI-генерации), повторная POST-генерация не
  * отправляется. Генерация запускается только явным действием пользователя.
  * Поздние ответы загрузки отбрасываются по номеру запроса.
  */
@@ -89,6 +92,9 @@ export default function ProReportView({ user, onOpenPlan }) {
   const [generating, setGenerating] = useState(false)
   const [consentSaving, setConsentSaving] = useState(false)
   const [message, setMessage] = useState('')
+  // Отказ сборки: текст из ответа бэкенда и «Попробовать ещё раз» — не пустой
+  // экран и не молча вернувшаяся кнопка.
+  const [generateError, setGenerateError] = useState(null)
   const [crisisReply, setCrisisReply] = useState(null)
   const aliveRef = useRef(true)
   // Поздний ответ загрузки не затирает новое состояние экрана.
@@ -159,6 +165,7 @@ export default function ProReportView({ user, onOpenPlan }) {
     const seq = ++loadSeqRef.current
     setGenerating(true)
     setMessage('')
+    setGenerateError(null)
     setInsufficient(false)
     try {
       const res = await api.pro.createReport()
@@ -179,15 +186,21 @@ export default function ProReportView({ user, onOpenPlan }) {
         } catch (pollError) {
           if (pollError instanceof ProPollCancelledError) return
           if (!aliveRef.current) return
-          setMessage('Разбор ещё собирается — это занимает до минуты. Открой экран чуть позже.')
+          setMessage(
+            'Разбор ещё собирается — это может занять до двух минут. Открой экран чуть позже.'
+          )
         }
       } else if (key === 'consent_required') {
         setStatus('consent_required')
       } else if (key === 'insufficient_data') {
         setInsufficient(true)
       } else {
+        // 502 report_generation_failed и прочие 5xx: показываем фразу бэкенда,
+        // а не свой текст — состояние разбора при этом не теряется.
         console.error(error)
-        setMessage('Не удалось собрать разбор. Попробуй ещё раз.')
+        setGenerateError(
+          proErrorMessage(error, 'Не получилось собрать разбор. Попробуй ещё раз.')
+        )
       }
     } finally {
       if (aliveRef.current) setGenerating(false)
@@ -224,7 +237,7 @@ export default function ProReportView({ user, onOpenPlan }) {
         </p>
       )}
 
-      {loading && <p className="mx-pro-note mt-6">Загружаем…</p>}
+      {loading && <ProWaiting label="Загружаем…" testId="pro-report-loading" />}
 
       {blocked && <ProStateCard title={blocked.title} text={blocked.text} testId="pro-blocked-state" />}
 
@@ -256,7 +269,7 @@ export default function ProReportView({ user, onOpenPlan }) {
         <ProConsentCard onEnable={handleEnableConsent} saving={consentSaving} note={message} />
       )}
 
-      {!loading && !loadFailed && !blocked && status === 'not_generated' && (
+      {!loading && !loadFailed && !blocked && status === 'not_generated' && !generating && !generateError && (
         <section className="mx-pro-intro" data-testid="pro-report-intro">
           <p className="mx-pro-text">
             Разбор недели собирает твои записи — темы, повторяющиеся трудности и достижения — и
@@ -287,10 +300,25 @@ export default function ProReportView({ user, onOpenPlan }) {
         />
       )}
 
-      {generating && (
-        <p role="status" className="mx-pro-note mt-3">
-          Собираем разбор — это занимает до минуты.
-        </p>
+      {/* Ожидание сборки: спокойный индикатор и одна строка вместо кнопки —
+          бэкенд делает AI-вызов (при неудаче — повтор), это занимает минуты. */}
+      {!loading && !loadFailed && !blocked && status === 'not_generated' && generating && (
+        <ProWaiting
+          testId="pro-report-waiting"
+          label="Собираю разбор… это может занять до двух минут."
+        />
+      )}
+
+      {/* Отказ сборки: фраза бэкенда и явный повтор — экран не остаётся пустым
+          и не показывает молча прежнюю кнопку. */}
+      {!loading && !loadFailed && !blocked && generateError && (
+        <ProStateCard
+          text={generateError}
+          actionLabel="Попробовать ещё раз"
+          onAction={handleGenerate}
+          actionTestId="pro-generate-retry"
+          testId="pro-generate-error"
+        />
       )}
 
       {crisisReply && (
@@ -304,30 +332,44 @@ export default function ProReportView({ user, onOpenPlan }) {
           {/* Направление — главный блок сверху: это ориентир на следующую
               неделю, а не доказанная закономерность. */}
           <section className="mx-pro-report__direction" data-testid="pro-report-direction">
-            <p className="mx-pro-caption">Направление на неделю</p>
+            <p className="mx-pro-report__section-label">Направление на неделю</p>
             <p className="mx-pro-report__direction-text">{report.focus_next_week}</p>
           </section>
 
-          {report.achievements?.length > 0 && (
-            <section data-testid="pro-report-achievements">
-              <h2 className="mx-pro-report__section-title">Достижения</h2>
-              <ReportList items={report.achievements} />
-            </section>
-          )}
+          {/* Достижения — отдельная карточка на каждое: одна мысль на
+              карточку. Без достижений — спокойный текст, не пустой блок. */}
+          <section data-testid="pro-report-achievements">
+            <h2 className="mx-pro-report__section-label">Достижения</h2>
+            {report.achievements?.length > 0 ? (
+              <div className="mx-pro-report__cards">
+                {report.achievements.map((item, index) => (
+                  <ProAchievementCard
+                    key={`${item.text}-${index}`}
+                    achievement={item}
+                    weekStart={week?.start}
+                  />
+                ))}
+              </div>
+            ) : (
+              <p className="mx-pro-note mx-pro-report__empty">
+                На этой неделе достижений не нашлось.
+              </p>
+            )}
+          </section>
 
           {(report.themes?.length > 0 ||
             report.difficulties?.length > 0 ||
             report.patterns?.length > 0) && (
-            <div data-testid="pro-report-details">
+            <div className="mx-pro-report__details" data-testid="pro-report-details">
               {report.themes?.length > 0 && (
                 <ProDetails title="Темы" testId="pro-details-themes">
-                  <div className="mx-pro-report__chips">
+                  <ul className="mx-pro-report__list">
                     {report.themes.map(theme => (
-                      <span key={theme} className="mx-pro-report__chip">
-                        {theme}
-                      </span>
+                      <li key={theme}>
+                        <p className="mx-pro-text">{theme}</p>
+                      </li>
                     ))}
-                  </div>
+                  </ul>
                 </ProDetails>
               )}
 
@@ -338,7 +380,7 @@ export default function ProReportView({ user, onOpenPlan }) {
               )}
 
               {report.patterns?.length > 0 && (
-                <ProDetails title="Закономерности" testId="pro-details-patterns">
+                <ProDetails title="Наблюдения" testId="pro-details-patterns">
                   <PatternList items={report.patterns} />
                 </ProDetails>
               )}
@@ -347,10 +389,10 @@ export default function ProReportView({ user, onOpenPlan }) {
 
           {report.reflection_questions?.length > 0 && (
             <section className="mx-pro-report__questions" data-testid="pro-report-questions">
-              <h2 className="mx-pro-report__section-title">Вопросы для размышления</h2>
-              <ul className="mx-pro-report__list">
+              <h2 className="mx-pro-report__section-label">Вопросы для размышления</h2>
+              <ul className="mx-pro-report__question-list">
                 {report.reflection_questions.map(question => (
-                  <li key={question} className="mx-pro-note">
+                  <li key={question} className="mx-pro-report__question">
                     {question}
                   </li>
                 ))}

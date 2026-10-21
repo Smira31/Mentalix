@@ -57,7 +57,10 @@ test('возвращённые практики не тянут StreakBar с fre
 })
 
 test('restore-sheet ограничивает выбор семью прошедшими днями и требует явного подтверждения', () => {
-  assert.match(sheetSource, /const RESTORE_DAY_OPTIONS = \[1, 2, 3, 4, 5, 6, 7\]/)
+  // Дни вычисляются динамически: только реально пропущенные за последние 7 дней,
+  // сегодня (день 0) не восстанавливается.
+  assert.match(sheetSource, /function missedDays\(streak\)/)
+  assert.match(sheetSource, /for \(let daysAgo = Math\.max\(1, streak\); daysAgo <= 7; daysAgo\+\+\)/)
   assert.match(sheetSource, /Будущие даты и сегодняшняя\s+отметка не меняются/)
   assert.match(sheetSource, /disabled=\{!restoreDaysAgo \|\| !choice \|\| saving\}/)
   assert.match(sheetSource, /Подтвердить восстановление/)

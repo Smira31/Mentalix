@@ -76,7 +76,7 @@ const SCREENS = [
     id: 'hero-step',
     label: 'Путь героя шаг',
     url: '/?demo=1&tab=library&action=hero_journey',
-    steps: [{ tap: 'hero-continue' }, { wait: 'hero-step-start' }],
+    steps: [{ tap: 'hero-continue' }, { wait: 'hero-story-next' }],
   },
 ]
 

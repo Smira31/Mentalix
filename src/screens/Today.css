@@ -1977,6 +1977,7 @@
   align-items: flex-start;
   gap: 10px;
   margin-top: 12px;
+  margin-bottom: var(--mx-space-5);
   padding: 14px 36px 14px 14px;
   border: 1px solid rgb(var(--c-text) / 0.08);
   border-radius: 20px;

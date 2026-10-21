@@ -45,6 +45,37 @@ export function PotentialLockArt() {
   )
 }
 
+/*
+ * ProUnlockedArt — открытый навесной замок (шейхл поднят, замок не заперт).
+ * Тот же стиль и палитра, что у PotentialLockArt (#3a3a3a шейхл, #444 тело,
+ * #161616 ключевое отверстие), но шейхл поднят — знак разблокированного Pro.
+ * Самостоятельный SVG (viewBox 0-based), размер задаётся CSS-контейнером.
+ */
+export function ProUnlockedArt() {
+  return (
+    <svg
+      className="mx-profile-banner__art mx-profile-banner__art--unlock"
+      viewBox="0 0 80 96"
+      aria-hidden="true"
+      focusable="false"
+    >
+      {/* Шейхл — поднят, правый конец открыт */}
+      <path
+        d="M22 52 V32 C22 18 32 10 44 10 C56 10 66 18 66 32 V42"
+        fill="none"
+        stroke="#3a3a3a"
+        strokeWidth="5"
+        strokeLinecap="round"
+      />
+      {/* Тело замка */}
+      <path d="M14 52 H66 V80 A8 8 0 0 1 58 88 H22 A8 8 0 0 1 14 80 Z" fill="#444" />
+      {/* Ключевое отверстие */}
+      <circle cx="40" cy="66" r="5" fill="#161616" />
+      <line x1="40" y1="70" x2="40" y2="80" stroke="#161616" strokeWidth="5" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 export function SupportGiftArt() {
   // Полоса 89 pt: горизонтальная линия на y 45, вертикальная — по центру
   // через всю высоту. Две петли общей шириной 49 pt, высотой 20 pt над

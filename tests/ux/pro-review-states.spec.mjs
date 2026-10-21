@@ -23,6 +23,11 @@ import { createEvidenceWriter, describeFrames } from './typography-evidence.mjs'
  * кадр, совпавший с другим состоянием. Поэтому «FAIL-» заглушки здесь
  * невозможны: состояние либо снято как доказательство, либо прогон падает.
  *
+ * Pro-статус задаёт dev-параметр `?proStatus=pro`: карточка входа выбирается
+ * по ответу /api/subscription (ProAnalyticsEntry), а в демо без него Pro нет —
+ * тогда вместо карточки Pro рисуется витрина для не-Pro. `?proMock=…` мокает
+ * только API Pro, не статус подписки.
+ *
  * Запуск в web-контейнере (VITE_PRO_REVIEW_PLAN_ENABLED=true задаёт конфиг):
  *   npm run ux:pro-states
  */
@@ -162,7 +167,7 @@ async function openAnalytics(page, scenario) {
     }
   }, MOCK_STATE_KEY)
 
-  await page.goto(`/?demo=1&frame=0&proMock=${scenario}`)
+  await page.goto(`/?demo=1&frame=0&proStatus=pro&proMock=${scenario}`)
   await expect(page.getByRole('button', { name: 'Прогресс' })).toBeVisible({ timeout: 15_000 })
   await page.getByRole('button', { name: 'Прогресс' }).click()
   await expect(page.getByTestId('progress-pro-card')).toBeVisible()
@@ -267,8 +272,9 @@ for (const viewport of VIEWPORTS) {
         label: 'Pro: план не собран',
       })
 
-      // 5. Готовый план недели.
+      // 5. Готовый план недели: один список дней, блоки не дублируются.
       await page.getByTestId('pro-generate-plan').click()
+      await expect(page.getByTestId('pro-plan-day')).toHaveCount(7)
       await capture(page, writer, {
         name: '5-plan-ready.png',
         marker: '[data-testid="pro-plan-progress"]',
@@ -290,7 +296,14 @@ for (const viewport of VIEWPORTS) {
 
       await page.getByRole('button', { name: 'Отмена' }).click()
 
-      // 7. Правка действия дня: фокус в поле действия, оба поля 16px.
+      // 7. Действия дня открываются через меню «⋯» (консилиум): правка —
+      //     из меню, фокус в поле действия, оба поля 16px.
+      await page.getByTestId('pro-day-1-menu').click()
+      await capture(page, writer, {
+        name: '5a-plan-day-menu.png',
+        marker: '[data-testid="pro-day-1-menu-list"]',
+        label: 'Pro: меню действий дня',
+      })
       await page.getByTestId('pro-day-1-edit').click()
       await expect(page.getByTestId('pro-plan-edit-input')).toBeFocused()
       await capture(page, writer, {
@@ -307,8 +320,12 @@ for (const viewport of VIEWPORTS) {
 
       await page.getByRole('button', { name: 'Отмена' }).click()
 
-      // 8. Прогресс недели.
+      // 8. Прогресс недели: без дублей — счётчик и «Выполнено»; цель недели
+      //     и повторный список дней остаются на экране плана.
       await page.getByTestId('pro-open-progress').click()
+      await expect(page.getByTestId('pro-progress-completion')).toContainText('2 из 7')
+      await expect(page.getByText('Цель недели')).toHaveCount(0)
+      await expect(page.getByText('Дни недели действий')).toHaveCount(0)
       await capture(page, writer, {
         name: '8-progress.png',
         marker: '[data-testid="pro-progress-completion"]',
@@ -336,7 +353,7 @@ for (const viewport of VIEWPORTS) {
       // экране; сегмент не нажимаем (на 360×640 его перекрывает переключатель
       // размера экрана демо-панели). Сценарий mock нужен, чтобы карточка
       // получила состояние разбора, а не ответ демо-фолбэка.
-      await page.goto('/?demo=1&frame=0&proMock=ready')
+      await page.goto('/?demo=1&frame=0&proStatus=pro&proMock=ready')
       await page.getByRole('button', { name: 'Прогресс' }).click()
       await expect(page.getByTestId('progress-pro-card')).toBeVisible()
       await expect(page.getByTestId('progress-practices')).toBeVisible()
@@ -410,7 +427,7 @@ for (const viewport of VIEWPORTS) {
 
       await expect(card).toHaveAttribute('data-state', 'not_generated')
       await expect(page.getByTestId('pro-card-title')).toHaveText('Подведи итоги недели')
-      await expect(page.getByTestId('pro-card-period')).toContainText('неделя')
+      await expect(page.getByTestId('pro-card-period')).toContainText(/\d/)
       await expect(page.getByTestId('pro-card-retry')).toHaveCount(0)
       await capture(page, writer, {
         name: '0a-pro-card-waiting.png',
@@ -532,7 +549,7 @@ for (const viewport of VIEWPORTS) {
       // 5. Раскрытые подробности: длинные тема, трудность и закономерность.
       const theme = await readTextFit(
         page,
-        '[data-testid="pro-details-themes"] .mx-pro-report__chip'
+        '[data-testid="pro-details-themes"] .mx-pro-text'
       )
       expect(theme.text.trim(), 'тема показана целиком').toBe(long.theme)
       expectNoClipping(theme, 'тема недели')
@@ -651,9 +668,11 @@ test.describe('Pro: доступ и особые состояния', () => {
       label: 'Pro: конфликт пересборки',
     })
 
-    // Конфликт версий: правка не сохраняется, введённый текст остаётся.
+    // Конфликт версий: правка не сохраняется, введённый текст остаётся;
+    // вход в правку — через меню «⋯» карточки дня.
     await openPro(page, 'version_conflict')
     await buildPlan(page)
+    await page.getByTestId('pro-day-1-menu').click()
     await page.getByTestId('pro-day-1-edit').click()
     await page.getByTestId('pro-plan-edit-input').fill('Проверка сохранения ввода при конфликте')
     await page.getByTestId('pro-plan-edit-save').click()

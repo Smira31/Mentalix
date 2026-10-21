@@ -9,13 +9,13 @@ import PillButton from '../../components/ui/PillButton'
 export default function ProConsentCard({ onEnable, saving, note, testId = 'pro-consent-enable' }) {
   return (
     <Card className="mt-4">
-      <p className="text-[14px] font-semibold text-cream">Нужно согласие на использование записей</p>
-      <p className="mt-1 text-[12px] leading-relaxed text-muted">
+      <p className="mx-pro-size-note font-semibold text-cream">Нужно согласие на использование записей</p>
+      <p className="mx-pro-size-meta mt-1 leading-relaxed text-muted">
         Разбор собирается только из записей, которые ты разрешил использовать в AI. Отдельные
         чек-ины для контекста выбираются в «Истории». AI не заменяет помощь специалиста.
       </p>
       {note && (
-        <p role="status" className="mt-2 text-[11px] leading-relaxed text-muted">
+        <p role="status" className="mx-pro-size-label mt-2 leading-relaxed text-muted">
           {note}
         </p>
       )}

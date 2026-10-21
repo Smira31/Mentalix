@@ -1,0 +1,124 @@
+/* Полноэкранный экран успеха «pro активен.» — после успешной оплаты. */
+
+.mx-subscription-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: calc(100dvh - var(--app-safe-top) - var(--app-safe-bottom) - 120px);
+  padding-top: max(48px, calc(16dvh - 40px));
+  padding-bottom: var(--mx-space-4);
+  text-align: center;
+  animation: mx-subscription-success-in 480ms ease-out both;
+}
+
+@keyframes mx-subscription-success-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-subscription-success {
+    animation: none;
+  }
+}
+
+/* Открытый замок — крупнее, чем у неоплаченных состояний. */
+.mx-subscription-success__icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--mx-space-4);
+  width: 96px;
+}
+
+.mx-subscription-success__icon svg {
+  width: 96px;
+  height: auto;
+}
+
+/* Заголовок — строчный, с точкой, как у других экранов. */
+.mx-subscription-success__title {
+  margin: 0 0 var(--mx-space-2);
+  color: rgb(var(--c-text));
+  font-size: calc(34px * var(--mx-type-scale));
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  text-transform: lowercase;
+}
+
+.mx-subscription-success__subtitle {
+  margin: 0 0 var(--mx-space-3);
+  max-width: 280px;
+  color: rgb(var(--c-muted));
+  font-size: calc(15px * var(--mx-type-scale));
+  line-height: 1.4;
+}
+
+.mx-subscription-success__date {
+  margin: 0 0 var(--mx-space-4);
+  color: rgb(var(--c-gold));
+  font-size: calc(14px * var(--mx-type-scale));
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+/* Список преимуществ — компактный, как на основном экране. */
+.mx-subscription-success__features {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mx-space-2);
+  width: 100%;
+  max-width: 320px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  text-align: left;
+}
+
+.mx-subscription-success__feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.mx-subscription-success__feature-icon {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  color: rgb(var(--c-muted));
+}
+
+.mx-subscription-success__feature-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding-top: 2px;
+}
+
+.mx-subscription-success__feature-text strong {
+  color: rgb(var(--c-text));
+  font-size: calc(15px * var(--mx-type-scale));
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.mx-subscription-success__feature-text span {
+  color: rgb(var(--c-muted));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
+  line-height: 1.3;
+}
+
+/* Кнопка «Продолжить» — та же, что у профиля. */
+.mx-subscription-success-cta {
+  width: 100%;
+}

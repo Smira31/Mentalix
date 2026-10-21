@@ -156,9 +156,13 @@ export function ProfileCard({ children, testId }) {
   )
 }
 
-export function ProfileNote({ children, role, danger = false }) {
+export function ProfileNote({ children, role, danger = false, testId }) {
   return (
-    <p role={role} className={`mx-profile-note${danger ? ' mx-profile-note--danger' : ''}`}>
+    <p
+      role={role}
+      data-testid={testId}
+      className={`mx-profile-note${danger ? ' mx-profile-note--danger' : ''}`}
+    >
       {children}
     </p>
   )

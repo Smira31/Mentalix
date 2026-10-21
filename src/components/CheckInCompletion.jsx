@@ -17,9 +17,16 @@ function formatReviewDate() {
   }
 }
 
-export default function CheckInCompletion({ evening, onFeedback, children, title, art, body, feedbackQuestion, datePill }) {
+export default function CheckInCompletion({ evening, onFeedback, children, title, art, body, feedbackQuestion, feedbackHint, showFeedback = true, datePill }) {
   const [selected, setSelected] = useState(null)
   const questionText = feedbackQuestion || (evening ? 'Был ли разбор полезен?' : 'Было полезно сегодня?')
+  // #1078/#1084: пояснение под плитками — по умолчанию финалы чек-ина,
+  // свой текст (журнал) передаётся пропом, чтобы не плодить копии экрана.
+  const hintText =
+    feedbackHint ||
+    (evening
+      ? 'Оценка по желанию — разбор дня уже сохранён.'
+      : 'Оценка по желанию — чек-ин уже сохранён.')
 
   return (
     <section
@@ -51,6 +58,9 @@ export default function CheckInCompletion({ evening, onFeedback, children, title
           {datePill || (<><span aria-hidden="true">✓</span> {formatReviewDate()}</>)}
         </div>
         {body}
+        {/* #1084: если оценка уже дана (повторное открытие записи),
+            вопрос не показывается заново. */}
+        {showFeedback && (
         <div className="mx-completion__feedback">
           <p>{questionText}</p>
           <div
@@ -66,6 +76,10 @@ export default function CheckInCompletion({ evening, onFeedback, children, title
                   type="button"
                   data-testid="checkin-feedback-option"
                   data-value={option.value}
+                  /* #1084: короткое «Да» без контекста непонятно при
+                     навигации с клавиатуры/скринридера — имя плитки
+                     включает вопрос. */
+                  aria-label={`${questionText} — ${option.label}`}
                   aria-pressed={selected === option.value}
                   className={selected === option.value ? 'is-selected' : ''}
                   onClick={() => {
@@ -80,7 +94,15 @@ export default function CheckInCompletion({ evening, onFeedback, children, title
               )
             })}
           </div>
+          {/* #1078: оценка на экране завершения читалась как обязательный шаг,
+              а «Сохранить и выйти» — как само сохранение. Поясняем оба: оценка
+              добровольна, запись дня к этому моменту уже сохранена, поэтому
+              выход без оценки ничего не теряет. */}
+          <p className="mx-completion__feedback-hint" data-testid="checkin-feedback-hint">
+            {hintText}
+          </p>
         </div>
+        )}
       </div>
       {children}
     </section>

@@ -4,6 +4,8 @@ import { getFullscreenSnapshot, subscribeFullscreen } from './tgFullscreen'
 import {
   getKeyboardViewportHeight,
   isTelegramRuntime,
+  KEYBOARD_MIN_INSET,
+  readKeyboardInset,
   useVisualViewportGeometry,
 } from './visualViewport'
 import { isPreviewDemoMode } from './demoMode'
@@ -110,9 +112,7 @@ export function readDemoFrameBox(frame, windowLike = window) {
 
 function useDemoFrameBox(enabled) {
   const [box, setBox] = useState(() =>
-    enabled === true
-      ? readDemoFrameBox(document.querySelector('[data-mentalix-demo-frame]'))
-      : null
+    enabled === true ? readDemoFrameBox(document.querySelector('[data-mentalix-demo-frame]')) : null
   )
 
   useEffect(() => {
@@ -150,7 +150,20 @@ function useDemoFrameBox(enabled) {
   return box
 }
 
-export function useFullscreenSurface({ fullFrame = false, stable = false } = {}) {
+/*
+ * keyboardStrategy:
+ *  - 'resize' (по умолчанию) — экран умещается в видимую часть, как раньше:
+ *    при открытой клавиатуре оболочка пересобирается под каждое событие;
+ *  - 'lift' — клавиатура раскладку не пересобирает. Оболочка держит стабильную
+ *    высоту, а composer и низ ленты поднимает transform'ом сам экран
+ *    (Conversation.css, переменная --mx-keyboard-inset);
+ *  - 'stable' — экраны без полей ввода (финал чек-ина и экран серии). Оболочка
+ *    стоит на layout-вьюпорте (в Telegram — viewportStableHeight, в вебе —
+ *    window.innerHeight), прижата к его верхнему краю и не снимает нижний
+ *    safe-area. Иначе закрытие клавиатуры после заметки растягивает шелл на
+ *    ~330 px, и финал уезжает вниз уже после перехода.
+ */
+export function useFullscreenSurface({ fullFrame = false, keyboardStrategy = 'resize' } = {}) {
   const viewportGeometry = useVisualViewportGeometry()
   const portalTarget = getFullscreenPortalTarget()
   const demoMode = isPreviewDemoMode()
@@ -162,34 +175,50 @@ export function useFullscreenSurface({ fullFrame = false, stable = false } = {})
   const visualViewportHeight = viewportGeometry?.height ?? null
   const stableViewportHeight = viewportGeometry?.stableHeight ?? null
   const viewportOffsetTop = viewportGeometry?.offsetTop ?? 0
+  const windowHeight = typeof window === 'undefined' ? null : Math.round(window.innerHeight)
   const keyboardOpen =
     visualViewportHeight !== null &&
-    typeof window !== 'undefined' &&
-    window.innerHeight - visualViewportHeight > 80
-  const telegram = isTelegramRuntime()
+    windowHeight !== null &&
+    windowHeight - visualViewportHeight > KEYBOARD_MIN_INSET
+
   /*
-   * stable — экраны без полей ввода (финал чек-ина и экран серии). Их
-   * высота берётся из стабильного layout-вьюпорта (в Telegram —
-   * viewportStableHeight, в вебе — window.innerHeight) и не следует за
-   * клавиатурой. Иначе закрытие клавиатуры после заметки растягивает шелл
-   * на ~330 px, и весь финал уезжает вниз уже после перехода.
+   * MXL-KEYBOARD-MOTION-001: в режиме 'lift' клавиатура НЕ пересобирает
+   * раскладку экрана. Высота оболочки остаётся стабильной (её анимация
+   * клавиатуры не меняет), а подъём composer'а и низа ленты считает сам экран
+   * из своего инсета — одним transform'ом с переходом 280 ms. Промежуточные
+   * события visualViewport/viewportChanged тогда не перестраивают layout, и
+   * рывков на них нет.
    */
-  const layoutViewportHeight =
-    typeof window !== 'undefined' && Number.isFinite(window.innerHeight)
-      ? Math.round(window.innerHeight)
-      : null
-  const liveShellHeight = telegram
-    ? keyboardOpen
-      ? getKeyboardViewportHeight({
-          isTelegram: true,
+  const liftKeyboard = keyboardStrategy === 'lift'
+  const stableLayout = keyboardStrategy === 'stable'
+  const keyboardInset = liftKeyboard
+    ? Math.round(
+        readKeyboardInset({
           stableHeight: stableViewportHeight,
           visualHeight: visualViewportHeight,
-        })
-      : stableViewportHeight || visualViewportHeight
-    : visualViewportHeight
-  const shellHeight = stable
-    ? stableViewportHeight || layoutViewportHeight || visualViewportHeight
-    : liveShellHeight
+          windowHeight,
+        }) / scale
+      )
+    : 0
+  /* В 'stable' клавиатура не поднимает и не пересобирает оболочку: экран
+     без полей ввода просто не реагирует на её закрытие. */
+  const keyboardLifted = liftKeyboard
+    ? keyboardInset > 0
+    : keyboardOpen && !stableLayout
+  const telegram = isTelegramRuntime()
+  const shellHeight = stableLayout
+    ? stableViewportHeight || windowHeight || visualViewportHeight
+    : telegram
+      ? keyboardOpen && !liftKeyboard
+        ? getKeyboardViewportHeight({
+            isTelegram: true,
+            stableHeight: stableViewportHeight,
+            visualHeight: visualViewportHeight,
+          })
+        : stableViewportHeight || visualViewportHeight
+      : liftKeyboard
+        ? windowHeight || visualViewportHeight
+        : visualViewportHeight
 
   /*
    * В demo-рамке shell обязан заполнять именно рамку телефона:
@@ -214,12 +243,12 @@ export function useFullscreenSurface({ fullFrame = false, stable = false } = {})
    */
   const frameFull = Boolean(fullFrame && demoFrameHeight)
 
-  /* При stable поверхность стоит по верхнему краю layout-вьюпорта: прокрутка
+  /* В 'stable' поверхность стоит по верхнему краю layout-вьюпорта: прокрутка
      visualViewport (клавиатура, адресная строка) её не сдвигает. */
-  const surfaceTop = stable ? 0 : viewportOffsetTop / scale
+  const surfaceTop = stableLayout ? 0 : viewportOffsetTop / scale
   const visibleHeight = frameFull
     ? demoFrameHeight
-    : demoFrameHeight ?? (shellHeight ? shellHeight / scale : null)
+    : (demoFrameHeight ?? (shellHeight ? shellHeight / scale : null))
   // В демо-превью экран — видимая часть «телефона», а не высота окна.
   const demoFrameBox = useDemoFrameBox(demoMode)
   const frameTop = frameFull ? 0 : demoFrameBox ? demoFrameBox.top / scale : null
@@ -255,21 +284,26 @@ export function useFullscreenSurface({ fullFrame = false, stable = false } = {})
         ? `calc(var(--app-safe-top) + ${TG_CONTROLS_HEIGHT}px)`
         : 'var(--app-safe-top)',
 
-    paddingBottom: 'var(--app-safe-bottom)',
+    /*
+     * Открытая клавиатура сама перекрывает нижнюю safe-area (home indicator),
+     * и её отступ только выталкивал контент вверх на время набора — рывок при
+     * каждом фокусе. Пока клавиатура открыта, инсет снимается.
+     */
+    paddingBottom: keyboardLifted ? '0px' : 'var(--app-safe-bottom)',
 
-    height:
-      frameFull
-        ? `${demoFrameHeight}px`
-        : frameHeight !== null
-          ? `${frameHeight}px`
-          : visibleHeight
-            ? `${visibleHeight}px`
-            : '100dvh',
+    height: frameFull
+      ? `${demoFrameHeight}px`
+      : frameHeight !== null
+        ? `${frameHeight}px`
+        : visibleHeight
+          ? `${visibleHeight}px`
+          : '100dvh',
   }
 
   return {
     style,
     tgFullscreen,
-    keyboardOpen,
+    keyboardOpen: keyboardLifted,
+    keyboardInset,
   }
 }

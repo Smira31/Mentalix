@@ -1,3 +1,5 @@
+import { pluralize } from '../../lib/pluralize.js'
+
 /*
  * Метки недель и дней для экранов Mentalix Pro.
  * Даты приходят от backend как ISO-дни (week_start/week_end, dates плана).
@@ -34,6 +36,13 @@ export function formatDayLabel(iso) {
   return dayLabel(iso)
 }
 
+/* Месяц распознанного ISO-дня — для сравнения концов недели. */
+function monthShort(iso) {
+  const day = isoDay(iso)
+  if (!day) return null
+  return MONTHS_SHORT[new Date(`${day}T00:00:00`).getMonth()]
+}
+
 export function formatWeekRange(start, end) {
   const from = dayLabel(start)
 
@@ -41,18 +50,27 @@ export function formatWeekRange(start, end) {
   if (!from) return ''
 
   const to = end === start ? '' : dayLabel(end)
+  if (!to) return from
 
-  return to ? `неделя ${from} — ${to}` : `неделя ${from}`
+  // Один месяц — «13–19 окт», переход через месяц — «28 окт – 3 ноя»
+  // (консилиум: слово «неделя» из метки убрано).
+  if (monthShort(start) === monthShort(end)) {
+    const fromDay = new Date(`${isoDay(start)}T00:00:00`).getDate()
+    return `${fromDay}–${to}`
+  }
+
+  return `${from} – ${to}`
 }
 
 export function formatDayList(days) {
   return Array.isArray(days) ? days.map(dayLabel).filter(Boolean).join(', ') : ''
 }
 
+/* «не вышло» — нейтральная формулировка без красного (консилиум). */
 export const STATUS_LABELS = {
-  planned: 'не отмечено',
+  planned: 'ещё впереди',
   done: 'выполнено',
-  skipped: 'пропущено',
+  skipped: 'не вышло',
 }
 
 export const SOURCE_LABELS = {
@@ -69,9 +87,27 @@ export const SOURCE_LABELS = {
   quotes: 'мысли',
 }
 
+/* Родительный падеж после «На основе N …»: одна строка подписи разбора. */
+const SOURCE_FORMS = {
+  checkins: ['чек-ина', 'чек-инов', 'чек-инов'],
+  habits: ['привычки', 'привычек', 'привычек'],
+  themes: ['темы', 'тем', 'тем'],
+  goals: ['цели', 'целей', 'целей'],
+  rituals: ['ритуала', 'ритуалов', 'ритуалов'],
+  ascezas: ['аскезы', 'аскез', 'аскез'],
+  journal: ['записи журнала', 'записей журнала', 'записей журнала'],
+  mood: ['отметки настроения', 'отметок настроения', 'отметок настроения'],
+  focus: ['фокуса', 'фокусов', 'фокусов'],
+  brain: ['заметки о мозге', 'заметок о мозге', 'заметок о мозге'],
+  quotes: ['мысли', 'мыслей', 'мыслей'],
+}
+
 export function formatSources(sources) {
   if (!sources || typeof sources !== 'object') return ''
-  return Object.entries(sources)
-    .map(([key, count]) => `${SOURCE_LABELS[key] || key}: ${count}`)
-    .join(', ')
+  const parts = Object.entries(sources).map(([key, count]) => {
+    const forms = SOURCE_FORMS[key]
+    if (!forms) return `${SOURCE_LABELS[key] || key}: ${count}`
+    return `${count} ${pluralize(count, forms)}`
+  })
+  return parts.length > 0 ? `На основе: ${parts.join(', ')}` : ''
 }

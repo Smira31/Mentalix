@@ -15,7 +15,8 @@ import test from 'node:test'
  *  - данные, даты, источники и предупреждения сохранены: подробности можно
  *    свернуть, но не потерять;
  *  - состояния согласия, загрузки, отказа, пустоты и кризиса сохранены;
- *  - типографика — токены читаемой шкалы, без пиксельных размеров в разметке.
+ *  - типографика — размеры из общей шкалы приложения (§3), без значений «на
+ *    глаз»: строки шкалы указаны у правил proText.css и ProReport.css.
  */
 
 const viewSource = await readFile(
@@ -28,6 +29,11 @@ const cssSource = await readFile(
 )
 const detailsSource = await readFile(
   new URL('../../src/screens/pro/ProDetails.jsx', import.meta.url),
+  'utf8'
+)
+/* Текстовые стили экранов Pro общие — вынесены из ProReport.css в proText.css. */
+const textCssSource = await readFile(
+  new URL('../../src/screens/pro/proText.css', import.meta.url),
   'utf8'
 )
 
@@ -49,7 +55,7 @@ test('подробности разбора раскрываются, но не 
 
   assert.match(viewSource, /<ProDetails title="Темы" testId="pro-details-themes">/)
   assert.match(viewSource, /<ProDetails title="Трудности" testId="pro-details-difficulties">/)
-  assert.match(viewSource, /<ProDetails title="Закономерности" testId="pro-details-patterns">/)
+  assert.match(viewSource, /<ProDetails title="Наблюдения" testId="pro-details-patterns">/)
 
   // Содержимое подробностей по-прежнему рендерится — сворачивается, не исчезает.
   assert.match(viewSource, /<ReportList items=\{report\.difficulties\} \/>/)
@@ -95,9 +101,18 @@ test('состояния доступа, загрузки, отказа, пус�
   assert.match(viewSource, /Загружаем…/)
 })
 
-test('типографика Pro — токены читаемой шкалы, без пиксельных размеров', () => {
-  assert.match(cssSource, /--mx-read-read/)
-  assert.match(cssSource, /--mx-read-note/)
-  assert.match(cssSource, /--mx-read-caption/)
+test('типографика Pro — размеры из общей шкалы (§3), без значений «на глаз»', () => {
+  // Текстовые стили .mx-pro-* — один источник: proText.css. Размер каждой роли
+  // взят из строки шкалы §3 (MXL-TYPE-CONSISTENCY-001): токен --mx-type-*-size
+  // там, где роль токенизирована, иначе calc(<px строки> * --mx-type-scale);
+  // для базовых размеров ≤13px — max(11px, …). Строка-источник подписана
+  // комментарием у каждого правила.
+  assert.match(textCssSource, /var\(--mx-type-body-size\)/)
+  assert.match(textCssSource, /var\(--mx-type-meta-size\)/)
+  assert.match(textCssSource, /calc\(16px \* var\(--mx-type-scale\)\)/)
+  assert.match(textCssSource, /max\(11px, calc\(12px \* var\(--mx-type-scale\)\)\)/)
+  // Прямых размеров в пикселях без множителя шкалы нет — ни в разметке, ни в
+  // текстовых стилях.
   assert.doesNotMatch(viewSource, /text-\[\d+px\]/)
+  assert.doesNotMatch(textCssSource, /font-size: \d+px/)
 })

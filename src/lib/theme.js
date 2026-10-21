@@ -7,6 +7,8 @@ export const THEMES = {
   light: { label: 'Светлая' },
 }
 
+// Только тёмная тема (#1109): парсер всегда возвращает дефолт.
+// Пользователь со сохранённой светлой темой при входе получает тёмную.
 export function parseTheme(raw) {
-  return raw && THEMES[raw] ? raw : DEFAULT_THEME
+  return DEFAULT_THEME
 }

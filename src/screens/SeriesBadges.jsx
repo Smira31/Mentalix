@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 
@@ -6,8 +6,8 @@ import { getFullscreenPortalTarget, useFullscreenSurface } from '../lib/fullscre
 import { isPreviewDemoMode, previewSeriesAction } from '../lib/demoMode'
 import { api } from '../lib/api'
 import { readCanonicalStreakStats, serverSeriesBadges } from '../lib/canonicalStreak'
-import { badgeGroups, daysSinceRegistration, upcomingBadges } from '../lib/badgeCatalog'
-import { featuredBadge, featuredBadgeCaption } from '../lib/featuredBadge'
+import { badgeCategoryLabel, badgeGroups, daysSinceRegistration, upcomingBadges } from '../lib/badgeCatalog'
+import { badgeEarnedDate, featuredBadge, featuredBadgeCaption } from '../lib/featuredBadge'
 import { buildMvpBadges } from '../lib/badgesMvp'
 import { platform } from '../platform'
 import { logEngagementEvent } from '../lib/engagementEvents'
@@ -22,32 +22,39 @@ import BackButton from '../components/BackButton'
 import DemoTelegramHeader from '../components/DemoTelegramHeader'
 import { isDemoEmulationActive } from '../lib/demoChrome'
 import MilestoneBars from '../components/MilestoneBars'
+import { BadgeIcon, BadgeSnowHorizon } from '../components/BadgeIcons'
 import './SeriesBadges.css'
 
-/* Вписывание пер-вариантных иконок в квадрат 40×40 по центру (50,50):
-   scale = 40 / max(ширина, высота) по фактическому bbox, кап 1.25. */
+/* Вписывание пер-вариантных иконок в шар: видимая масса (bbox вместе с
+   обводкой) у всех 15 значков одна — 48 единиц шара. Значок рисуется в
+   квадрате 54 (BadgeIcon), поэтому scale = (48 / 2.25 − 1.8) / max(bbox 24×24),
+   а translate ставит центр bbox в центр шара (50,50). Числа — замеры bbox. */
 const ART_FIT = {
-  'first-step': 'translate(50 50) scale(0.513) translate(-81 -73)',
-  first_checkin: 'translate(50 50) scale(0.816) translate(-79.5 -62.5)',
-  first_journal: 'translate(50 50) scale(0.816) translate(-79.5 -70.5)',
-  streak_7: 'translate(50 50) scale(0.769) translate(-80 -66.5)',
-  streak_30: 'translate(50 50) scale(0.741) translate(-80 -62.5)',
-  active_days_100: 'translate(50 50) scale(0.645) translate(-80 -68.5)',
-  'month-on-path': 'translate(50 50) scale(0.769) translate(-86 -68)',
-  'voice-heard': 'translate(50 50) scale(0.889) translate(-82.5 -68)',
-  'streak-two': 'translate(50 50) scale(1.25) translate(-80 -66)',
-  'streak-three': 'translate(50 50) scale(1.25) translate(-80 -66)',
-  'streak-five': 'translate(50 50) scale(1.026) translate(-80 -66)',
-  'week-on-path': 'translate(50 50) scale(0.635) translate(-84 -62)',
-  'ritual-holds': 'translate(50 50) scale(0.8) translate(-80 -76)',
-  'asceza-power': 'translate(50 50) scale(1.111) translate(-80 -70)',
-  default: 'translate(50 50) scale(1.25) translate(-80 -68)',
+  'first-step': 'translate(50 50) scale(0.977) translate(-80 -68)',
+  first_checkin: 'translate(50 50) scale(0.977) translate(-80 -68)',
+  first_journal: 'translate(50 50) scale(0.976) translate(-80 -68)',
+  'streak-two': 'translate(50 50) scale(1.028) translate(-80 -69.1)',
+  'streak-three': 'translate(50 50) scale(1.206) translate(-80 -69.1)',
+  'streak-five': 'translate(50 50) scale(1.023) translate(-80 -65.9)',
+  streak_7: 'translate(50 50) scale(0.977) translate(-80 -68)',
+  streak_30: 'translate(50 50) scale(0.977) translate(-80 -68)',
+  'voice-heard': 'translate(50 50) scale(0.977) translate(-80 -68)',
+  'week-on-path': 'translate(50 50) scale(0.977) translate(-80 -68)',
+  'month-on-path': 'translate(50 50) scale(1.086) translate(-80 -68)',
+  active_days_100: 'translate(50 50) scale(1.05) translate(-80 -68)',
+  'ritual-holds': 'translate(50 50) scale(1.028) translate(-81.1 -66.9)',
+  'asceza-power': 'translate(50 50) scale(1.028) translate(-80 -69.1)',
+  default: 'translate(50 50) scale(1.028) translate(-80 -69.1)',
 }
 
-function RewardIcon({ variant = 'locked', size = 72, className = '' }) {
-  const isLocked = variant === 'locked'
-  const isFirstStep = variant === 'first-step'
-
+function RewardIcon({ variant = 'default', locked = false, size = 72, className = '', ariaLabel }) {
+  const artTransform = ART_FIT[variant] || ART_FIT.default
+  const fitScale = Number(artTransform.match(/scale\(([\d.]+)\)/)?.[1]) || 1
+  const iconLabel = ariaLabel || (locked ? 'Закрыт: Значок' : 'Значок')
+  // Свечение полученного значка: один тёплый токен --mx-reward-glow (≤ 12%),
+  // у закрытого значка его нет. Анимации у свечения нет, поэтому
+  // prefers-reduced-motion соблюдается без отдельного правила.
+  const glowId = `mx-reward-glow-${useId().replace(/:/g, '')}`
   // Шар по Stoic: viewBox 0 0 100 104, width = размер шара, высота ×1.04.
   // Низ SVG (плоский низ подставки) = линия горизонта в главной карточке.
   return (
@@ -58,114 +65,41 @@ function RewardIcon({ variant = 'locked', size = 72, className = '' }) {
       viewBox="0 0 100 104"
       fill="none"
       role="img"
-      aria-label={isLocked ? 'Награда пока закрыта' : 'Открытая награда'}
+      aria-label={iconLabel}
     >
       <circle
         className="mx-reward-icon__glass"
         cx="50"
         cy="50"
         r="49"
-        stroke="#555"
-        strokeWidth="1.2"
       />
       <path className="mx-reward-icon__shine" d="M13.8 30.8 A41 41 0 0 1 42.9 9.6" />
-      {isLocked ? (
-        <text className="mx-reward-icon__question" x="50" y="55" textAnchor="middle">
-          ?
-        </text>
-      ) : (
-        // Открытый значок: иконка в квадрате 40×40 по центру (50,50).
-        <g className="mx-reward-icon__badge-art" transform={ART_FIT[variant] || ART_FIT.default}>
-          {isFirstStep ? (
-            <>
-              <path className="mx-reward-icon__steps" d="M42 103h76M50 94h60M58 85h44M66 76h28" />
-              <path className="mx-reward-icon__flag" d="M88 76V43m0 0h22l-7 8 7 8H88" />
-              <path className="mx-reward-icon__bird" d="M104 66c5-6 11-6 16 0-5-2-9-1-12 3" />
-            </>
-          ) : variant === 'first_checkin' ? (
-            <path className="mx-reward-icon__symbol" d="M58 68l14 13 29-30M55 44h49" />
-          ) : variant === 'first_journal' ? (
-            <path
-              className="mx-reward-icon__symbol"
-              d="M55 46h39v42H55zM64 56h20M64 66h20M64 76h13M94 46l10 7v42H65"
-            />
-          ) : variant === 'streak_7' ? (
-            <path className="mx-reward-icon__symbol" d="M56 80l9-25 12 15 11-23 15 33zM54 86h52" />
-          ) : variant === 'streak_30' ? (
-            <path
-              className="mx-reward-icon__symbol"
-              d="M56 82a27 27 0 1 1 48 0M68 78l12-32 12 32M71 68h18"
-            />
-          ) : variant === 'active_days_100' ? (
-            <path
-              className="mx-reward-icon__symbol"
-              d="M80 39l9 20 22 2-17 15 5 22-19-11-19 11 5-22-17-15 22-2z"
-            />
-          ) : variant === 'month-on-path' ? (
-            <path
-              className="mx-reward-icon__symbol"
-              d="M91 42a26 26 0 1 0 18 43 28 28 0 0 1-18-43z"
-            />
-          ) : variant === 'voice-heard' ? (
-            <>
-              <path
-                className="mx-reward-icon__symbol"
-                d="M60 68c5-12 10 12 15 0s10-12 15 0 10 12 15 0"
-              />
-              <circle className="mx-reward-icon__dot" cx="80" cy="68" r="4" />
-            </>
-          ) : variant === 'streak-two' ? (
-            [0, 1].map(index => (
-              <circle
-                className="mx-reward-icon__dot"
-                key={index}
-                cx={76 + index * 8}
-                cy={66}
-                r="3.5"
-              />
-            ))
-          ) : variant === 'streak-three' ? (
-            [0, 1, 2].map(index => (
-              <circle
-                className="mx-reward-icon__dot"
-                key={index}
-                cx={72 + index * 8}
-                cy={68 - Math.abs(1 - index) * 4}
-                r="3.5"
-              />
-            ))
-          ) : variant === 'streak-five' ? (
-            [0, 1, 2, 3, 4].map(index => (
-              <circle
-                className="mx-reward-icon__dot"
-                key={index}
-                cx={64 + index * 8}
-                cy={68 - Math.abs(2 - index) * 4}
-                r="3.5"
-              />
-            ))
-          ) : variant === 'week-on-path' ? (
-            [0, 1, 2, 3, 4, 5, 6].map(index => (
-              <circle
-                className="mx-reward-icon__dot"
-                key={index}
-                cx={56 + index * 8}
-                cy={68 - Math.abs(3 - index) * 4}
-                r="3.5"
-              />
-            ))
-          ) : variant === 'ritual-holds' ? (
-            <path className="mx-reward-icon__steps" d="M55 88h50M62 80h36M69 72h22M76 64h8" />
-          ) : variant === 'asceza-power' ? (
-            <path className="mx-reward-icon__symbol" d="M62 84l36-32M70 88l28-24" />
-          ) : (
-            <>
-              <circle className="mx-reward-icon__dot" cx="80" cy="68" r="12" />
-              <path className="mx-reward-icon__symbol" d="M80 52v32M64 68h32" />
-            </>
-          )}
+      {!locked && (
+        <g aria-hidden="true">
+          <defs>
+            <radialGradient id={glowId} gradientUnits="userSpaceOnUse" cx="50" cy="52" r="46">
+              <stop className="mx-reward-icon__glow-core" offset="0" />
+              <stop className="mx-reward-icon__glow-edge" offset="1" />
+            </radialGradient>
+          </defs>
+          <circle
+            className="mx-reward-icon__glow"
+            cx="50"
+            cy="52"
+            r="46"
+            fill={`url(#${glowId})`}
+          />
         </g>
       )}
+      <g
+        className={`mx-reward-icon__badge-scene${locked ? ' mx-reward-icon__badge-scene--locked' : ''}`}
+        aria-hidden="true"
+      >
+        <g className="mx-reward-icon__badge-art" transform={artTransform}>
+          <BadgeIcon name={variant} fitScale={fitScale} />
+        </g>
+        <BadgeSnowHorizon />
+      </g>
       <rect className="mx-reward-icon__base" x="9" y="84" width="82" height="2.6" rx="1.3" />
       <path
         className="mx-reward-icon__base"
@@ -257,6 +191,7 @@ export function BadgeSheet({ badge, onClose, onOpenPractice }) {
 
   if (!badge) return null
   const practice = badgePractice(badge)
+  const earnedLabel = badge.done ? badgeEarnedDate(badge) : null
   return createPortal(
     <div
       className={`mx-badge-sheet-layer${closing ? ' mx-badge-sheet-layer--exit' : ''}`}
@@ -273,16 +208,27 @@ export function BadgeSheet({ badge, onClose, onOpenPractice }) {
       >
         <CloseButton onClose={requestClose} testId="badge-sheet-close" />
         <div className="mx-badge-sheet__scene">
-          <RewardIcon variant={badge.done ? badge.id : 'locked'} size={92} />
+          <RewardIcon
+            variant={badge.id}
+            locked={!badge.done}
+            ariaLabel={badge.done ? badge.title : `Закрыт: ${badge.title}`}
+            size={92}
+          />
         </div>
         <div className="mx-badge-sheet__body">
-          <span className="mx-badge-sheet__eyebrow">{badge.done ? 'ЗНАЧОК СЕРИИ' : 'ЗНАЧОК'}</span>
+          <span className="mx-badge-sheet__eyebrow">{badgeCategoryLabel(badge.id)}</span>
           <h2 id="mx-badge-sheet-title">{badge.title}</h2>
           <p>
             {badge.done
               ? badge.desc
               : `Чтобы получить, ${badgeConditions[badge.id] || 'продолжай свой путь.'}`}
           </p>
+          {earnedLabel && (
+            <div className="mx-badge-sheet__received" data-testid="badge-sheet-received">
+              <strong>Получен</strong>
+              <span>{earnedLabel}</span>
+            </div>
+          )}
           <div className="mx-badge-sheet__progress">
             <strong>Твой прогресс</strong>
             <span>
@@ -329,7 +275,7 @@ export function NewBadgeSheet({ badge, onClose }) {
       >
         <CloseButton onClose={requestClose} testId="new-badge-close" />
         <div className="mx-badge-sheet__scene">
-          <RewardIcon variant={badge.id} size={92} />
+          <RewardIcon variant={badge.id} ariaLabel={badge.title} size={92} />
         </div>
         <div className="mx-badge-sheet__body">
           <span className="mx-badge-sheet__eyebrow">НОВЫЙ ЗНАЧОК</span>
@@ -387,7 +333,12 @@ function BadgeRow({ badge, onOpen }) {
       aria-label={`Открыть значок: ${badge.title}`}
       data-testid={`series-badge-${badge.id}`}
     >
-      <RewardIcon variant={badge.done ? badge.id : 'locked'} size={50} />
+      <RewardIcon
+        variant={badge.id}
+        locked={!badge.done}
+        ariaLabel={badge.done ? badge.title : `Закрыт: ${badge.title}`}
+        size={50}
+      />
       <span className="mx-path-row-copy-wrap">
         <strong className="mx-path-row-title">{badge.title}</strong>
         <span className="mx-path-row-copy">{badge.desc}</span>
@@ -419,7 +370,11 @@ function AwardsView({ badges, onOpenBadge, onShowAll }) {
         <FeaturedLandscape />
         <div className="mx-path-featured-scene">
           <RewardIcon
-            variant={featured?.done ? featured.id : 'locked'}
+            variant={featured?.id || 'default'}
+            locked={Boolean(featured && !featured.done)}
+            ariaLabel={
+              featured ? (featured.done ? featured.title : `Закрыт: ${featured.title}`) : 'Серия'
+            }
             size={77}
             className="mx-path-featured-icon"
           />
@@ -467,7 +422,12 @@ function AllBadgesView({ badges, onOpenBadge }) {
                 onClick={() => onOpenBadge(badge)}
                 data-testid={`all-badge-${badge.id}`}
               >
-                <RewardIcon variant={badge.done ? badge.id : 'locked'} size={64} />
+                <RewardIcon
+                  variant={badge.id}
+                  locked={!badge.done}
+                  ariaLabel={badge.done ? badge.title : `Закрыт: ${badge.title}`}
+                  size={64}
+                />
                 <strong>{badge.title}</strong>
                 <span>
                   {badge.progress}/{badge.goal}

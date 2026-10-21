@@ -32,13 +32,12 @@ test('исходники приложения не обещают провере
   assert.deepEqual(offenders, [])
 })
 
-test('экран «Твои данные» называет ограничение веб-входа без обещания подписи', async () => {
+test('экран «Твои данные» не обещает подпись для веб-пользователей', async () => {
   const settings = await readFile(
     new URL('../../src/screens/Settings.jsx', import.meta.url),
     'utf8'
   )
-  assert.match(
-    settings,
-    /Экспорт и удаление аккаунта сейчас доступны в Telegram Mini App\. Веб-вход доступен/
-  )
+  // Гости видят понятное сообщение, а не обещание действий без аккаунта
+  assert.match(settings, /Сначала войдите в аккаунт, чтобы скачать или удалить свои данные/)
+  assert.doesNotMatch(settings, /проверенной подписью/)
 })

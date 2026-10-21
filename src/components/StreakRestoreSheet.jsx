@@ -1,5 +1,5 @@
 import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import { platform } from '../platform'
@@ -7,22 +7,36 @@ import { useBackButton } from '../platform/telegram.hooks'
 import { useVisualViewportHeight } from '../lib/visualViewport'
 import { useSheetSwipeDown } from '../lib/gestures/useSheetSwipeDown'
 
-const RESTORE_DAY_OPTIONS = [1, 2, 3, 4, 5, 6, 7]
-
 function dayLabel(daysAgo) {
   if (daysAgo === 1) return 'Вчера'
   if (daysAgo >= 2 && daysAgo <= 4) return `${daysAgo} дня назад`
   return `${daysAgo} дней назад`
 }
 
-export default function StreakRestoreSheet({ itemName, choices, onSave, onClose }) {
+/*
+ * Дни, которые реально пропущены за последние 7 дней:
+ * серия заполняет дни назад 0…streak−1, остальные — пропуски.
+ * Сегодня (день 0) не восстанавливаем — он уже отмечен.
+ */
+function missedDays(streak) {
+  const result = []
+  for (let daysAgo = Math.max(1, streak); daysAgo <= 7; daysAgo++) {
+    result.push(daysAgo)
+  }
+  return result
+}
+
+export default function StreakRestoreSheet({ itemName, choices, streak = 0, onSave, onClose }) {
   const sheetRef = useRef(null)
   const [restoreDaysAgo, setRestoreDaysAgo] = useState(null)
-  const [choice, setChoice] = useState(null)
+  // Один вариант отметки — выбирается сам, блок «Как отметить?» скрыт.
+  const [choice, setChoice] = useState(() => (choices.length === 1 ? choices[0].value : null))
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
   const viewportHeight = useVisualViewportHeight()
   useSheetSwipeDown(sheetRef, onClose)
+
+  const missed = useMemo(() => missedDays(streak), [streak])
 
   useBackButton(onClose)
 
@@ -91,80 +105,100 @@ export default function StreakRestoreSheet({ itemName, choices, onSave, onClose 
         </div>
 
         <div className="practice-sheet__body">
-          <p className="text-[12px] text-muted leading-relaxed mb-5">
-            Выбери один день за последние семь дней для «{itemName}». Будущие даты и сегодняшняя
-            отметка не меняются.
-          </p>
+          {missed.length === 0 ? (
+            <>
+              <p className="text-[13px] text-muted leading-relaxed mb-5">
+                За последние 7 дней пропусков нет
+              </p>
+              <button
+                data-testid="practice-restore-ok"
+                onClick={onClose}
+                className="cta-pill w-full py-4 text-[16px]"
+              >
+                Понятно
+              </button>
+            </>
+          ) : (
+            <>
+              <p className="text-[12px] text-muted leading-relaxed mb-5">
+                Выбери один день для «{itemName}». Будущие даты и сегодняшняя отметка не меняются.
+              </p>
 
-          <p className="text-[11px] text-muted mb-2">Когда это было?</p>
-          <div className="grid grid-cols-2 gap-2 mb-5">
-            {RESTORE_DAY_OPTIONS.map(daysAgo => {
-              const active = restoreDaysAgo === daysAgo
-              return (
-                <button
-                  key={daysAgo}
-                  data-testid={`practice-restore-day-${daysAgo}`}
-                  onClick={() => {
-                    platform.haptic('light')
-                    setRestoreDaysAgo(daysAgo)
-                  }}
-                  className={`practice-scene__choice py-3 px-3 rounded-2xl border text-[12px] font-semibold ${
-                    active
-                      ? 'bg-gold text-emerald-deep border-gold'
-                      : 'bg-cream/5 text-muted border-cream/10'
-                  }`}
-                >
-                  {dayLabel(daysAgo)}
-                </button>
-              )
-            })}
-          </div>
-
-          <p className="text-[11px] text-muted mb-2">Как отметить?</p>
-          <div className="flex flex-col gap-2">
-            {choices.map(option => {
-              const active = choice === option.value
-              return (
-                <button
-                  key={option.value}
-                  data-testid={`practice-restore-choice-${option.value}`}
-                  onClick={() => {
-                    platform.haptic('light')
-                    setChoice(option.value)
-                  }}
-                  className={`practice-scene__choice w-full text-left rounded-2xl px-4 py-3 border ${
-                    active
-                      ? 'bg-gold text-emerald-deep border-gold'
-                      : 'bg-cream/5 text-muted border-cream/10'
-                  }`}
-                >
-                  <span className="block text-[12px] font-semibold">{option.label}</span>
-                  {option.description && (
-                    <span
-                      className={`block text-[11px] leading-snug mt-1 ${active ? 'text-emerald-deep' : 'text-muted'}`}
+              <p className="text-[11px] text-muted mb-2">Когда это было?</p>
+              <div className="grid grid-cols-2 gap-2 mb-5">
+                {missed.map(daysAgo => {
+                  const active = restoreDaysAgo === daysAgo
+                  return (
+                    <button
+                      key={daysAgo}
+                      data-testid={`practice-restore-day-${daysAgo}`}
+                      onClick={() => {
+                        platform.haptic('light')
+                        setRestoreDaysAgo(daysAgo)
+                      }}
+                      className={`practice-scene__choice py-3 px-3 rounded-2xl border text-[12px] font-semibold ${
+                        active
+                          ? 'bg-gold text-emerald-deep border-gold'
+                          : 'bg-cream/5 text-muted border-cream/10'
+                      }`}
                     >
-                      {option.description}
-                    </span>
-                  )}
-                </button>
-              )
-            })}
-          </div>
+                      {dayLabel(daysAgo)}
+                    </button>
+                  )
+                })}
+              </div>
 
-          {error && (
-            <p role="alert" className="text-[12px] text-amber-200 mt-3 leading-relaxed">
-              {error}
-            </p>
+              {choices.length > 1 && (
+                <>
+                  <p className="text-[11px] text-muted mb-2">Как отметить?</p>
+                  <div className="flex flex-col gap-2 mb-5">
+                    {choices.map(option => {
+                      const active = choice === option.value
+                      return (
+                        <button
+                          key={option.value}
+                          data-testid={`practice-restore-choice-${option.value}`}
+                          onClick={() => {
+                            platform.haptic('light')
+                            setChoice(option.value)
+                          }}
+                          className={`practice-scene__choice w-full text-left rounded-2xl px-4 py-3 border ${
+                            active
+                              ? 'bg-gold text-emerald-deep border-gold'
+                              : 'bg-cream/5 text-muted border-cream/10'
+                          }`}
+                        >
+                          <span className="block text-[12px] font-semibold">{option.label}</span>
+                          {option.description && (
+                            <span
+                              className={`block text-[11px] leading-snug mt-1 ${active ? 'text-emerald-deep' : 'text-muted'}`}
+                            >
+                              {option.description}
+                            </span>
+                          )}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </>
+              )}
+
+              {error && (
+                <p role="alert" className="text-[12px] text-amber-200 mt-3 leading-relaxed">
+                  {error}
+                </p>
+              )}
+
+              <button
+                data-testid="practice-restore-submit"
+                onClick={submit}
+                disabled={!restoreDaysAgo || !choice || saving}
+                className="cta-pill w-full py-4 text-[16px] mt-2 disabled:opacity-35"
+              >
+                {saving ? 'Восстанавливаю...' : 'Подтвердить восстановление'}
+              </button>
+            </>
           )}
-
-          <button
-            data-testid="practice-restore-submit"
-            onClick={submit}
-            disabled={!restoreDaysAgo || !choice || saving}
-            className="cta-pill w-full py-4 text-[16px] mt-5 disabled:opacity-35"
-          >
-            {saving ? 'Восстанавливаю...' : 'Подтвердить восстановление'}
-          </button>
         </div>
       </div>
     </div>,

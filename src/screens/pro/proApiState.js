@@ -13,6 +13,19 @@ export function proErrorKey(error) {
 }
 
 /*
+ * Готовая фраза отказа из ответа бэкенда: 5xx (например, 502
+ * report_generation_failed) приходит как JSONResponse с `code` и `message` —
+ * пользователю показывается именно `message`, а не выдуманный интерфейсом
+ * текст. `detail` для этого не подходит: там код ошибки (HTTPException), его
+ * в интерфейс не выводим. Сообщения нет — общий текст задачи.
+ */
+export function proErrorMessage(error, fallback) {
+  const message = error?.body?.message
+
+  return typeof message === 'string' && message.trim() ? message : fallback
+}
+
+/*
  * Состояние Pro из ответа API. Ответ обязан быть объектом с непустым
  * статусом: пусто, массив или чужой формат означают, что данные не
  * доставлены. Тогда экран показывает своё состояние ошибки с повтором и

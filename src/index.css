@@ -267,6 +267,10 @@
   /* Semantic glyph secondary accent: explicit token, not a fixed hex. */
   --c-glyph-secondary: 199 125 122;
 
+  /* Свечение полученного значка внутри шара (экран «Значки», SeriesBadges.css):
+     единственный тёплый токен, непрозрачность ядра ≤ 12%, анимации нет. */
+  --mx-reward-glow: 237 189 96;
+
   /* Нейтральная шкала чек-ина: без цветового тона в UI-хроме. */
   --mx-checkin-neutral-gradient: linear-gradient(145deg, #3a3a3a 0%, #ffffff 100%);
 
@@ -338,6 +342,11 @@
   --mx-motion-base: 220ms;
   --mx-motion-slow: 320ms;
   --mx-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Подъём composer'а и низа ленты под клавиатуру (MXL-KEYBOARD-MOTION-001):
+     длительность и кривая повторяют нативную анимацию клавиатуры iOS, чтобы
+     интерфейс двигался вместе с ней, а не после неё. */
+  --mx-motion-keyboard: 280ms;
+  --mx-ease-ios: cubic-bezier(0.32, 0.72, 0, 1);
 
   --mx-glass-bg: rgba(38, 38, 38, 0.92);
   /* «Стекло» (blur) остаётся только на нижней панели вкладок; все остальные
@@ -2265,3 +2274,28 @@ button.mx-demo-telegram-chrome__pill:focus:not(:focus-visible) {
 .mx-app-scroll-root[data-mx-dialog-scrolled='1'] ~ .mx-scroll-fade-top {
   opacity: 1;
 }
+
+/* ============================================================
+   ЗАЩИТА КОНТЕНТА: запрет выделения и копирования (#1112, этап 1)
+   ============================================================ */
+
+/* Тексты «Пути героя» (вступления и шаги), курсов и статей Библиотеки:
+   без выделения и системного меню долгого нажатия. Перехватчики copy и
+   contextmenu — src/lib/protectedText.js (глобальные, по этому классу). */
+.mx-protected-text {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Поля ввода внутри защищённых экранов работают как раньше:
+   выделение, вставка и редактирование сохраняются. */
+.mx-protected-text input,
+.mx-protected-text textarea,
+.mx-protected-text [contenteditable] {
+  user-select: text;
+  -webkit-user-select: text;
+  -webkit-touch-callout: auto;
+}
+
+

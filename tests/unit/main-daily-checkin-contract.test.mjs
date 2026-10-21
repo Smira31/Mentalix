@@ -92,7 +92,9 @@ test('morning flow keeps the visual viewport height when the keyboard opens', ()
   // обычные шаги держат visual viewport, чтобы клавиатура не обрезала ввод.
   assert.match(morningFlow, /useFullscreenSurface\(\{/)
   assert.match(morningFlow, /fullFrame: step === doneStep,/)
-  assert.match(morningFlow, /stable: step === doneStep,/)
+  // Стабильную поверхность даёт та же стратегия клавиатуры, что и у остальных
+  // экранов: 'stable' только на финальном шаге.
+  assert.match(morningFlow, /keyboardStrategy: step === doneStep \? 'stable' : 'resize',/)
   assert.match(morningFlow, /const demoSurfaceStyle = \{[\s\S]*\.\.\.viewportStyle[\s\S]*paddingBottom: 0/)
   assert.match(checkinSource, /className="mx-demo-checkin__editor-scene"/)
 })

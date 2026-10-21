@@ -33,9 +33,8 @@ import MilestoneProgress from './progress/MilestoneProgress'
 import { countActiveDays } from './progress/weeklySummary'
 import { Eye, SlidersHorizontal } from 'lucide-react'
 import { PRO_REVIEW_PLAN_ENABLED } from '../lib/proFlag'
-import { isGuestUser } from '../lib/guestAuth'
 import { profileScopeKey } from '../lib/historyProfileScope'
-import ProAnalyticsCard from './pro/ProAnalyticsCard'
+import ProAnalyticsEntry from './pro/ProAnalyticsEntry'
 import ProScreen from './pro/ProScreen'
 
 const CALENDAR_WEEKDAYS = ['П', 'В', 'С', 'Ч', 'П', 'С', 'В']
@@ -786,7 +785,6 @@ export default function Analytics({
   // Возврат из Pro перечитывает готовность разбора: карточка показывает
   // состояние по данным, а не по факту открытия экрана.
   const [proRefresh, setProRefresh] = useState(0)
-  const proAvailable = PRO_REVIEW_PLAN_ENABLED && Boolean(user) && !isGuestUser(user)
 
   useEffect(() => {
     writeCardPreferences(cardPreferences)
@@ -1109,11 +1107,14 @@ export default function Analytics({
               Прогресс несёт веха, отметку — карточка «Как ты сейчас?» выше. */}
           <MilestoneProgress totalDays={totalDays} />
 
-          {/* Одна карточка входа в Pro над графиками. В настройку графиков не
-              входит: порядок, скрытие и фильтры аналитики не затрагивает. */}
-          {activeTab === 'analytics' && proAvailable && (
-            <ProAnalyticsCard
+          {/* Карточка Pro над графиками: витрина для не-Pro и гостей, настоящая
+              карточка для Pro. В настройку графиков не входит: порядок,
+              скрытие и фильтры аналитики не затрагивает. Флаг — общий
+              выключатель: если выключен, карточки нет ни у кого. */}
+          {activeTab === 'analytics' && PRO_REVIEW_PLAN_ENABLED && (
+            <ProAnalyticsEntry
               key={profileScopeKey(user.id)}
+              user={user}
               refreshToken={proRefresh}
               onOpen={() => setProOpen(true)}
               onOpenSubscription={onOpenSubscription}
@@ -1205,8 +1206,9 @@ export default function Analytics({
 
       {/* Pro — вложенный экран поверх аналитики (разбор → план → прогресс).
           Пока он открыт, аналитика остаётся смонтированной: возврат «Назад»
-          показывает её в прежнем состоянии. */}
-      {proAvailable && proOpen && (
+          показывает её в прежнем состоянии. Открывается только из карточки
+          Pro (не витрины), поэтому proOpen подразумевает активный Pro. */}
+      {proOpen && (
         <ProScreen
           user={user}
           onBack={() => {

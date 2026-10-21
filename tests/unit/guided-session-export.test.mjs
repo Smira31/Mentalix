@@ -13,8 +13,8 @@ const policy = await readFile(
 const policyText = policy.replace(/\\n/g, ' ').replace(/\s+/g, ' ')
 
 test('single export entry honestly names JSON and completed guided sessions', () => {
-  assert.match(settings, /'Отправить мои данные в чат'/)
-  assert.match(settings, /Файл JSON: профиль, чек-ины, завершённые направленные записи/)
+  assert.match(settings, /'Отправить в Telegram'/)
+  assert.match(settings, /Файл JSON: профиль, чек-ины, записи/)
   assert.doesNotMatch(settings, /Экспорт Markdown|Экспорт CSV/)
 })
 

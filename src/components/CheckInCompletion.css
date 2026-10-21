@@ -121,6 +121,18 @@
   line-height: 21px;
 }
 
+/* Пояснение к оценке (#1078): добровольность и уже состоявшееся сохранение.
+   Строка стоит под плитками, у самой пилюли «Сохранить и выйти». */
+.mx-completion__feedback .mx-completion__feedback-hint {
+  max-width: 300px;
+  margin: 12px auto 0;
+  color: rgb(var(--c-muted));
+  /* MXL-TYPE-READABLE-001: пояснение к оценке — вторичное, 13 px. */
+  font-size: var(--mx-read-caption);
+  font-weight: 400;
+  line-height: 18px;
+}
+
 /* Плитки отзывов: 96×120, радиус 20, фон #111, тонкая рамка */
 .mx-completion__choices {
   display: flex;
@@ -248,11 +260,13 @@
   font-weight: 700;
 }
 
-/* Тихая текстовая ссылка «Разобраться с Даймоном» — 15/500 muted,
-   тап-зона 44, отступ 8 под «Сохранить и выйти». Базовая пилюля
-   .mx-completion-action button задаёт фон/радиус/тень — снимаем их. */
+/* Тихая текстовая ссылка (сейчас — «Пропустить» на финале журнала, #1084) —
+   15/500 muted, тап-зона 44, отступ 8 под «Сохранить и выйти», по центру.
+   Базовая пилюля .mx-completion-action button задаёт фон/радиус/тень — снимаем их. */
 .mx-completion-action--evening > button:not(.cta-pill) {
+  display: block;
   width: auto;
+  margin: 8px auto 0;
   min-height: 44px;
   padding: 0;
   background: transparent;
@@ -280,5 +294,8 @@
   }
   .mx-completion__feedback p {
     margin-bottom: 12px;
+  }
+  .mx-completion__feedback .mx-completion__feedback-hint {
+    margin-top: 8px;
   }
 }

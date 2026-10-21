@@ -28,7 +28,7 @@ export default defineConfig({
   },
   webServer: {
     command:
-      'VITE_PRO_REVIEW_PLAN_ENABLED=true npm run dev -- --host 127.0.0.1 --port 4177',
+      'VITE_PAYMENT_UI_ENABLED=false VITE_PRO_REVIEW_PLAN_ENABLED=true npm run dev -- --host 127.0.0.1 --port 4177',
     url: 'http://127.0.0.1:4177',
     reuseExistingServer: false,
     timeout: 120_000,

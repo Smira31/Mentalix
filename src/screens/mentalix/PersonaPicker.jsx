@@ -228,7 +228,20 @@ export default function PersonaPicker({
   return (
     <main className="mx-dialog-entry" data-testid="dialog-entry">
       <section className="mx-dialog-hero" aria-labelledby="dialog-entry-title">
-        <img className="mx-dialog-hero-reference" src={heroReference} alt="" aria-hidden="true" />
+        {/*
+         * Размеры (851×505) отданы разметке и aspect-ratio в CSS: место под
+         * иллюстрацию занято ещё до загрузки PNG. Без них картинка была нулевой
+         * высоты и, загрузившись, сдвигала весь экран вниз — «Диалог» дёргался
+         * при открытии (MXL-DIALOG-HERO-STABLE-001).
+         */}
+        <img
+          className="mx-dialog-hero-reference"
+          src={heroReference}
+          alt=""
+          aria-hidden="true"
+          width={851}
+          height={505}
+        />
         <div className="mx-dialog-hero__content">
           <p className="mx-dialog-eyebrow font-label">ДИАЛОГ</p>
           <h1 id="dialog-entry-title" className="mx-type-hero">
@@ -385,11 +398,6 @@ export default function PersonaPicker({
           ))}
         </div>
       </div>
-
-      {/* ── Дисклеймер внизу ── */}
-      <p className="mx-dialog-disclaimer" data-testid="dialog-disclaimer">
-        Разговоры видишь только ты. Это не терапия.
-      </p>
     </main>
   )
 }

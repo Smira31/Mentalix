@@ -1,36 +1,29 @@
-import { libraryTopic } from '../data/libraryTopics.js'
-import { ARTICLES } from '../data/articles.js'
+/**
+ * Совместимый адаптер: articleSections и nextArticle теперь работают
+ * на данных, загруженных с сервера (src/lib/libraryDataCache.js).
+ *
+ * Статический каталог (ARTICLES) пуст — тексты статей приходят с сервера.
+ */
+import {
+  articleSectionsFromList,
+  nextArticleFromList,
+  fetchArticles,
+  peekArticles,
+} from './libraryDataCache.js'
 
-// Единственный опубликованный каталог. Не зависит от сети, API и устаревших снимков.
-// Скрытые статьи (hidden: true — чужой текст дословно) не показываются нигде:
-// ни в разделах Библиотеки, ни в поиске, ни в переходах «следующая статья».
-// Файл и текст остаются в articles.js — вернуть статью можно, убрав флаг.
-export const libraryArticles = ARTICLES.filter(article => !article.hidden)
-
-export function articleSections(articles = libraryArticles) {
-  // Группируем по резолвнутому заголовку темы: теги «путь-героя» и «кризис»
-  // оба resolve-ятся в «Кризис и рост» и попадают в один раздел.
-  const groups = new Map()
-  for (const article of articles) {
-    const tag = article.tag || article.category || ''
-    const resolved = libraryTopic(tag)
-    if (!groups.has(resolved.title))
-      groups.set(resolved.title, { topic: resolved.title, image: resolved.image, articles: [] })
-    groups.get(resolved.title).articles.push(article)
-  }
-  const sections = []
-  const rest = []
-  for (const [title, { topic, image, articles: items }] of groups) {
-    if (title && title !== 'Ещё почитать' && items.length >= 2)
-      sections.push({ topic, image, articles: items })
-    else rest.push(...items)
-  }
-  if (rest.length) sections.push({ ...libraryTopic('rest'), topic: 'Ещё почитать', articles: rest })
-  return sections
+export async function loadArticleSections() {
+  const articles = await fetchArticles()
+  return articleSectionsFromList(articles)
 }
 
-export function nextArticle(article, sections = articleSections()) {
-  const ordered = sections.flatMap(section => section.articles)
-  const index = ordered.findIndex(item => item.id === article.id)
-  return ordered.length > 1 ? ordered[(index + 1) % ordered.length] : null
+export function articleSections(articles = null) {
+  if (articles) return articleSectionsFromList(articles)
+  // Синхронный доступ к кешу (если уже загружен)
+  const cached = peekArticles()
+  return cached ? articleSectionsFromList(cached) : []
+}
+
+export function nextArticle(article, articles = null) {
+  const list = articles || peekArticles() || []
+  return nextArticleFromList(article, list)
 }

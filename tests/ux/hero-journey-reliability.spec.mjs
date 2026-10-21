@@ -1,44 +1,224 @@
 import { expect, test } from '@playwright/test'
+import {
+  HERO_JOURNEY_TRIALS,
+  HERO_JOURNEY_CHAPTERS,
+  HERO_JOURNEY_FINALE,
+} from '../../src/data/heroJourney.js'
+import { DEMO_HERO_JOURNEY } from '../../src/data/demoContent.js'
 
-const USER = { id: 900991, first_name: 'Тест' }
-const PROGRESS_KEY = `mx-hero-journey-progress:${USER.id}`
+import { openStepWrite } from './hero-journey-helpers.mjs'
+
+/* Листы вводки (сторис) — необязательное поле демо-шага: у такого шага лист 1
+   начинается под полоской прогресса, поэтому кадр входа стоит ниже кадра
+   завершения (одна линия держится только у шагов без листов). */
+const demoStepHasPages = id =>
+  Boolean(DEMO_HERO_JOURNEY.steps.find(step => step.id === id)?.pages?.length)
+
+const DEMO_PROGRESS_KEY = 'mx-hero-journey-progress:900001'
 const DEMO_DRAFT_KEY = 'mx-hero-journey-draft:900001:uncertainty'
 
-for (const width of [393, 789]) {
-  test(`Продолжить не обходит блокировку следующего дня (${width})`, async ({ page }) => {
-    await page.setViewportSize({ width, height: 852 })
-    await page.addInitScript(
-      ({ user, key }) => {
-        localStorage.clear()
-        localStorage.setItem('mentalix_web_user', JSON.stringify(user))
-        localStorage.setItem('mx-onboarded-v2', '1')
-        localStorage.setItem(
-          key,
-          JSON.stringify({
-            completed: { uncertainty: new Date().toISOString() },
-            signs: {},
-            reflections: {},
-            actions: {},
-          })
-        )
-      },
-      { user: USER, key: PROGRESS_KEY }
-    )
-    await page.route('**/api/**', route =>
-      route.fulfill({
-        contentType: 'application/json',
-        body: JSON.stringify([]),
+// Один целевой сценарий: обрезка применяется только на завершении,
+// первые два шага главы I проверяются в обеих Telegram-рамках.
+// Финал (в демо его нет — тексты только с сервера) — отдельным сценарием ниже.
+test('Завершение: кадр под Telegram, без большого зазора над Продолжить', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.clear()
+    sessionStorage.clear()
+    /* Шаг 4 главы I оставлен непройденным: с полностью закрытой главой
+       «Продолжить» уводит на паузу между главами, а не на карту. */
+    const ids = [
+      'uncertainty',
+      'temporality',
+      'choice',
+      'body',
+      'phone',
+      'autopilot',
+      'digital-avatar',
+      'comparison',
+      'mirror',
+      'loneliness',
+      'relationships',
+      'lost-supports',
+      'age-crises',
+      'meaning',
+      'self-assembly',
+    ]
+    localStorage.setItem(
+      'mx-hero-journey-progress:900001',
+      JSON.stringify({
+        completed: Object.fromEntries(
+          ids.map((id, i) => [id, new Date(Date.now() - (ids.length - i) * 86400000).toISOString()])
+        ),
+        signs: {},
+        reflections: {},
+        actions: {},
       })
     )
-    await page.goto('/?tab=library')
-    await page.getByTestId('library-hero').click()
-    await expect(page.getByTestId('hero-step-temporality')).toHaveAttribute('data-state', 'locked')
-    await page.getByTestId('hero-continue').click()
+  })
+
+  for (const device of [
+    { name: 'standard', width: 393, height: 852 },
+    { name: 'max', width: 440, height: 956 },
+  ]) {
+    await page.setViewportSize({ width: device.width, height: device.height })
+    await page.goto(`/?demo=1&tab=library&action=hero_journey&device=${device.name}`)
     await expect(page.getByTestId('hero-journey-map')).toBeVisible()
-    await expect(page.getByTestId('hero-step-start')).toHaveCount(0)
-    await expect(page.getByTestId('hero-step-temporality')).toBeDisabled()
+
+    for (const id of ['uncertainty', 'temporality']) {
+      await page.getByTestId(`hero-step-${id}`).click()
+      /* Лист 1 сторис идёт под полоской прогресса, поэтому кадр вводки стоит
+         ниже кадра завершения: сверку «одной линии» держат шаги без листов. */
+      const intro = page.locator('.mx-hj-step-intro .mx-hj-hero')
+      let introTop = null
+      if (!demoStepHasPages(id)) {
+        await expect(page.getByTestId('hero-step-start')).toBeVisible()
+        await expect(intro).not.toHaveClass(/mx-hj-hero--cropped/)
+        introTop = await intro.evaluate(el => el.getBoundingClientRect().top)
+      }
+
+      await openStepWrite(page)
+      await page.getByTestId('hero-write-input').fill('Проверка завершения шага')
+      await page.getByTestId('hero-write-next').click()
+      await page.getByTestId('hero-action-input').fill('Одно проверочное действие')
+      await page.getByTestId('hero-action-next').click()
+      await expect(page.getByTestId('hero-complete-map')).toBeVisible()
+      const hero = page.locator('.mx-hj-step-complete .mx-hj-hero')
+      await expect(hero).toHaveClass(/mx-hj-hero--cropped/)
+      await expect
+        .poll(() => hero.locator('img').evaluate(img => img.complete && img.naturalWidth > 0))
+        .toBe(true)
+
+      const layout = await hero.evaluate(el => {
+        const image = el.querySelector('img')
+        const controls = document.querySelector('.mx-demo-telegram-chrome__controls')
+        const content = document.querySelector('.mx-hj-complete')
+        const button = document.querySelector('[data-testid="hero-complete-map"]')
+        const column = el.closest('.mx-hj-step-complete')
+        const frame = document.querySelector('[data-mentalix-demo-frame]')
+        const rect = el.getBoundingClientRect()
+        const imageRect = image.getBoundingClientRect()
+        return {
+          top: rect.top,
+          belowControls: rect.top >= controls.getBoundingClientRect().bottom,
+          fullWidth: Math.abs(rect.width - frame.clientWidth) <= 2,
+          gap: button.getBoundingClientRect().top - content.getBoundingClientRect().bottom,
+          buttonInside:
+            button.getBoundingClientRect().bottom <= frame.getBoundingClientRect().bottom,
+          noOverflow: column.scrollHeight <= column.clientHeight + 1,
+          cropApplied: imageRect.top < rect.top && Math.abs(imageRect.width - rect.width) <= 1,
+        }
+      })
+      if (introTop !== null) {
+        expect(Math.abs(layout.top - introTop)).toBeLessThanOrEqual(1)
+      }
+      expect(layout.belowControls).toBe(true)
+      expect(layout.fullWidth).toBe(true)
+      expect(layout.gap).toBeGreaterThanOrEqual(0)
+      expect(layout.gap).toBeLessThanOrEqual(48)
+      expect(layout.buttonInside).toBe(true)
+      expect(layout.noOverflow).toBe(true)
+      expect(layout.cropApplied).toBe(true)
+      await page.getByTestId('hero-complete-map').click()
+      await expect(page.getByTestId(`hero-step-${id}`)).toHaveAttribute('data-state', 'done')
+    }
+  }
+})
+
+/*
+ * Дневного замка больше нет (решение владельца): следующий шаг открывается
+ * сразу после завершения предыдущего — в том числе первый шаг следующей главы.
+ * Обязательным остаётся только порядок: без пройденного предыдущего шага
+ * следующий закрыт. Демо-главы II–IV без текстов показаны отдельной карточкой.
+ */
+for (const width of [393, 789]) {
+  test(`Следующий шаг открыт сразу, порядок обязателен (${width})`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 852 })
+    await page.addInitScript(key => {
+      localStorage.clear()
+      sessionStorage.clear()
+      localStorage.setItem(
+        key,
+        JSON.stringify({
+          // Шаг 1 пройден сегодня: раньше это запирало шаг 2 до следующего дня.
+          completed: { uncertainty: new Date().toISOString() },
+          signs: {},
+          reflections: {},
+          actions: {},
+        })
+      )
+    }, DEMO_PROGRESS_KEY)
+    await page.goto('/?demo=1&tab=library')
+    await page.getByTestId('library-hero').click()
+    await expect(page.getByTestId('hero-journey-map')).toBeVisible()
+    // Шаг 2 открыт сразу — ждать следующего дня больше не нужно.
+    await expect(page.getByTestId('hero-step-temporality')).toHaveAttribute('data-state', 'open')
+    await expect(page.getByTestId('hero-step-temporality')).toBeEnabled()
+    // Порядок обязателен: шаг 3 без шага 2 закрыт.
+    await expect(page.getByTestId('hero-step-choice')).toHaveAttribute('data-state', 'locked')
+    await expect(page.getByTestId('hero-step-choice')).toBeDisabled()
+    // Доступные шаги главы I раскрыты, главы II–IV в демо закрыты карточкой.
+    await expect(page.locator('.mx-hj-chapter--demo-locked')).toHaveCount(3)
+    await expect(page.locator('.mx-hj-chapter--demo-locked').first()).toContainText(
+      'Полная версия — в Telegram'
+    )
+    await page.getByTestId('hero-continue').click()
+    await expect(page.getByTestId('hero-step-start')).toBeVisible()
   })
 }
+
+/*
+ * Пауза между главами: после последнего шага главы (4, 8, 12) «Продолжить»
+ * открывает экран паузы, а не следующий шаг; у промежуточных шагов поведение
+ * прежнее — сразу карта. В демо глава II идёт без текстов, поэтому «Всё равно
+ * дальше» не показывается, а «Вернусь завтра» ведёт на карту.
+ */
+test('Пауза после главы I: шаг 4 ведёт на паузу, шаг 3 — сразу на карту', async ({ page }) => {
+  await page.setViewportSize({ width: 393, height: 852 })
+  await page.addInitScript(key => {
+    localStorage.clear()
+    sessionStorage.clear()
+    localStorage.setItem(
+      key,
+      JSON.stringify({
+        completed: { uncertainty: '2026-10-01', temporality: '2026-10-02' },
+        signs: {},
+        reflections: {},
+        actions: {},
+      })
+    )
+  }, DEMO_PROGRESS_KEY)
+  await page.goto('/?demo=1&tab=library&action=hero_journey')
+  await expect(page.getByTestId('hero-journey-map')).toBeVisible()
+
+  async function passStep(id, note) {
+    await page.getByTestId(`hero-step-${id}`).click()
+    await page.getByTestId('hero-step-start').click()
+    await page.getByTestId('hero-write-input').fill(`Запись: ${note}`)
+    await page.getByTestId('hero-write-next').click()
+    await page.getByTestId('hero-action-input').fill(`Действие: ${note}`)
+    await page.getByTestId('hero-action-next').click()
+    await expect(page.getByTestId('hero-complete-map')).toBeVisible()
+  }
+
+  // Шаг 3 главу не закрывает: «Продолжить» возвращает на карту без паузы.
+  await passStep('choice', 'шаг 3')
+  await page.getByTestId('hero-complete-map').click()
+  await expect(page.getByTestId('hero-journey-map')).toBeVisible()
+  await expect(page.getByTestId('hero-pause')).toHaveCount(0)
+
+  // Шаг 4 закрывает главу I: на завершении открыта глава II, «Продолжить» — пауза.
+  await passStep('abundance', 'шаг 4')
+  await expect(page.locator('.mx-hj-complete__next-chapter')).toContainText('Открыта глава II')
+  await page.getByTestId('hero-complete-map').click()
+  await expect(page.getByTestId('hero-pause')).toBeVisible()
+  await expect(page.getByTestId('hero-pause')).toContainText('глава позади.')
+  await expect(page.getByTestId('hero-pause-next')).toHaveCount(0)
+
+  // «Вернусь завтра» — на карту, шаг 4 отмечен пройденным.
+  await page.getByTestId('hero-pause-stay').click()
+  await expect(page.getByTestId('hero-journey-map')).toBeVisible()
+  await expect(page.getByTestId('hero-step-abundance')).toHaveAttribute('data-state', 'done')
+})
 
 test('черновик сохраняется с debounce и при выходе, восстанавливается, очищается после завершения', async ({
   page,
@@ -50,7 +230,7 @@ test('черновик сохраняется с debounce и при выходе
   })
   await page.goto('/?demo=1&tab=library&action=hero_journey')
   await page.getByTestId('hero-continue').click()
-  await page.getByTestId('hero-step-start').click()
+  await openStepWrite(page)
   await page.getByTestId('hero-write-input').fill('Черновик первого шага')
   await expect
     .poll(() =>
@@ -63,14 +243,15 @@ test('черновик сохраняется с debounce и при выходе
   // Новая правка + немедленный уход до истечения debounce.
   await page.getByTestId('hero-write-input').fill('Последняя правка перед выходом')
   await page.getByTestId('demo-chrome-back').click()
-  await expect(page.getByTestId('hero-step-start')).toBeVisible()
+  /* Назад из «Запиши» возвращает вводку: у шага с листами — на первый лист. */
+  await expect(page.getByTestId('hero-story-page')).toHaveAttribute('data-page', '1')
   await page.getByTestId('demo-chrome-back').click()
   await expect(page.getByTestId('hero-journey-map')).toBeVisible()
   await page.getByTestId('demo-chrome-back').click()
   await expect(page.getByTestId('library-home')).toBeVisible()
   await page.getByTestId('library-hero').click()
   await page.getByTestId('hero-continue').click()
-  await page.getByTestId('hero-step-start').click()
+  await openStepWrite(page)
   await expect(page.getByTestId('hero-write-input')).toHaveText('Последняя правка перед выходом')
   await page.getByTestId('hero-write-next').click()
   await expect(page.getByTestId('hero-action-input')).toBeVisible()
@@ -93,11 +274,23 @@ test('черновик сохраняется с debounce и при выходе
   await expect(page.locator('.mx-library-course-progress')).toHaveText('Шаг 2 из 16')
 })
 
-test('Вступление шага 1 на 375×667 без скролла, кнопка «Начать шаг» видна', async ({ page }) => {
+/* Шаг 1 в демо идёт листами-сторис (сценарий «Вводка шага листами» ниже),
+   поэтому раскладку вступления проверяем на первом шаге без листов. */
+test('Вступление шага 2 на 375×667 без скролла, кнопка «Начать шаг» видна', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 667 })
   await page.addInitScript(() => {
     localStorage.clear()
     sessionStorage.clear()
+    // Шаг 1 пройден: «Продолжить» ведёт на шаг 2 — у него вступление без листов.
+    localStorage.setItem(
+      'mx-hero-journey-progress:900001',
+      JSON.stringify({
+        completed: { uncertainty: new Date().toISOString() },
+        signs: {},
+        reflections: {},
+        actions: {},
+      })
+    )
   })
   // frame=0: приложение на реальном viewport, как на телефоне.
   await page.goto('/?demo=1&tab=library&action=hero_journey&frame=0')
@@ -125,18 +318,18 @@ test('Вступление шага 1 на 375×667 без скролла, кн�
 })
 
 /*
- * Самый длинный текст вступления — 447 px на 360×640 (по замерам: uncertainty,
- * digital-avatar, mirror, relationships, age-crises; шаг 5 body — 405 px).
- * Проверяем longest-группу и шаг 5: колонка без скролла, кнопка «Начать шаг»
- * видна целиком и прижата к низу, картинка не ниже минимума 76 px.
+ * Шаги 5–16 и их тексты живут только на сервере, в демо текст есть у четырёх
+ * шагов главы I. У вступлений без листов проверяем колонку без скролла, кнопку
+ * «Начать шаг» целиком и прижатой к низу, картинку не ниже минимума 76 px.
+ * Вводку шага 1 нарезают листы-сторис: её раскладку держит сценарий ниже.
  */
-const LONGEST_TEXT_IDS = ['uncertainty', 'age-crises', 'body']
+const CHAPTER_I_IDS = ['temporality', 'choice', 'abundance']
 
 for (const [width, height] of [
   [360, 640],
   [375, 667],
 ]) {
-  test(`Вступление длинного шага на ${width}×${height}: без скролла, кнопка видна целиком`, async ({
+  test(`Вступление шага главы I на ${width}×${height}: без скролла, кнопка видна целиком`, async ({
     page,
   }) => {
     await page.setViewportSize({ width, height })
@@ -182,7 +375,7 @@ for (const [width, height] of [
     await page.goto('/?demo=1&tab=library&action=hero_journey&frame=0')
     await page.getByTestId('hero-journey-map').waitFor({ state: 'visible' })
 
-    for (const id of LONGEST_TEXT_IDS) {
+    for (const id of CHAPTER_I_IDS) {
       await page.getByTestId(`hero-step-${id}`).click()
       await page.getByTestId('hero-step-start').waitFor({ state: 'visible' })
       await page.waitForTimeout(100)
@@ -212,11 +405,229 @@ for (const [width, height] of [
         .evaluate(el => parseFloat(getComputedStyle(el).fontSize))
       expect(fontSize).toBeGreaterThanOrEqual(14.5)
 
+      // Длинное вступление доскролливается внутри текстового блока:
+      // последний абзац доступен выше кнопки, а не под ней.
+      const lastDescBottom = await page
+        .locator('.mx-hj-step-intro__text-scroll')
+        .evaluate(el => {
+          el.scrollTop = el.scrollHeight
+          const descs = el.querySelectorAll('.mx-hj-step-intro__desc')
+          return descs[descs.length - 1].getBoundingClientRect().bottom
+        })
+      expect(lastDescBottom).toBeLessThanOrEqual(box.y)
+
       await page.getByTestId('demo-chrome-back').click()
       await page.getByTestId('hero-journey-map').waitFor({ state: 'visible' })
     }
   })
 }
+
+/*
+ * Вводка шага листами, как в сторис: демо-шаг 1 отдаётся четырьмя листами
+ * (необязательное поле шага pages). Проверяем полоску прогресса по числу
+ * листов, листы без скролла на iPhone 390×844, вперёд — белая круглая кнопка
+ * «›» и тап по правой половине, назад — тап по левой трети и свайп вправо,
+ * а после последнего листа открывается «Запиши».
+ */
+test('Вводка шага листами: 4 сегмента, «›» вперёд, назад тапом по левой трети', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.addInitScript(() => {
+    localStorage.clear()
+    sessionStorage.clear()
+  })
+  // frame=0: приложение на реальном viewport, как на iPhone 390×844.
+  await page.goto('/?demo=1&tab=library&action=hero_journey&frame=0')
+  await page.getByTestId('hero-continue').click()
+
+  const story = page.getByTestId('hero-story-viewport')
+  const sheet = page.getByTestId('hero-story-page')
+  await expect(story).toBeVisible()
+
+  /* Лист без скролла: колонка не переполняется, документ не прокручивается,
+     шрифт текста листа не мельче читалки Библиотеки (17 px по общей шкале). */
+  async function assertSheetFits() {
+    const metrics = await page.evaluate(() => {
+      const column = document.querySelector('.mx-hj-step-intro')
+      const paragraph = document.querySelector('.mx-hj-story__text p')
+      return {
+        overflow: column.scrollHeight - column.clientHeight,
+        docOverflow:
+          document.documentElement.scrollHeight - document.documentElement.clientHeight,
+        fontSize: paragraph ? parseFloat(getComputedStyle(paragraph).fontSize) : 0,
+      }
+    })
+    expect(metrics.overflow).toBeLessThanOrEqual(0)
+    expect(metrics.docOverflow).toBeLessThanOrEqual(0)
+    expect(metrics.fontSize).toBeGreaterThanOrEqual(14.5)
+  }
+
+  // Полоска прогресса — по числу листов; лист 1 идёт с иллюстрацией шага.
+  await expect(page.locator('[data-testid="hero-story-progress"] .mx-hj-segment')).toHaveCount(4)
+  await expect(sheet).toHaveAttribute('data-page', '1')
+  await expect(sheet).toContainText('История')
+  await expect(page.locator('.mx-hj-step-intro .mx-hj-hero')).toBeVisible()
+  await assertSheetFits()
+
+  // «›» три раза — открыт четвёртый лист.
+  for (const opened of ['2', '3', '4']) {
+    await page.getByTestId('hero-story-next').click()
+    await expect(sheet).toHaveAttribute('data-page', opened)
+    await assertSheetFits()
+  }
+  await expect(sheet).toContainText('Твой шаг')
+  await expect(sheet).toContainText('Кьеркегор')
+
+  // Назад — тап по левой трети сцены; вперёд — тап по правой половине.
+  const box = await story.boundingBox()
+  const middle = Math.round(box.height / 2)
+  await story.click({ position: { x: 24, y: middle } })
+  await expect(sheet).toHaveAttribute('data-page', '3')
+  await story.click({ position: { x: Math.round(box.width - 24), y: middle } })
+  await expect(sheet).toHaveAttribute('data-page', '4')
+
+  // Свайпы (жест, а не тап): вправо — назад, влево — вперёд.
+  const touch = await page.context().newCDPSession(page)
+  async function swipe(from, to) {
+    const rect = await story.boundingBox()
+    const y = rect.y + rect.height / 2
+    await touch.send('Input.dispatchTouchEvent', {
+      type: 'touchStart',
+      touchPoints: [{ x: rect.x + rect.width * from, y }],
+    })
+    await touch.send('Input.dispatchTouchEvent', {
+      type: 'touchMove',
+      touchPoints: [{ x: rect.x + rect.width * to, y }],
+    })
+    await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
+  }
+  await swipe(0.2, 0.8)
+  await expect(sheet).toHaveAttribute('data-page', '3')
+  await swipe(0.8, 0.2)
+  await expect(sheet).toHaveAttribute('data-page', '4')
+  await touch.detach()
+
+  // «›» на последнем листе открывает «Запиши».
+  await page.getByTestId('hero-story-next').click()
+  await expect(page.getByTestId('hero-write-input')).toBeVisible()
+
+  // Назад с «Запиши» возвращает вводку на первый лист, а тап по левой трети
+  // с первого листа выходит на карту шагов.
+  await page.getByTestId('demo-chrome-back').click()
+  await expect(sheet).toHaveAttribute('data-page', '1')
+  const exitBox = await story.boundingBox()
+  await story.click({ position: { x: 24, y: Math.round(exitBox.height / 2) } })
+  await expect(page.getByTestId('hero-journey-map')).toBeVisible()
+})
+
+/*
+ * «Назад» на листах: кнопка в шапке и системный BackButton Telegram с листов
+ * 2–4 ведут на предыдущий лист, с листа 1 — на карту. Тапы и свайпы не
+ * менялись — их держит сценарий выше.
+ */
+test('«Назад» по листам: с листа 3 — на лист 2, с листа 1 — на карту', async ({ page }) => {
+  await page.setViewportSize({ width: 393, height: 852 })
+  await page.addInitScript(() => {
+    localStorage.clear()
+    sessionStorage.clear()
+  })
+  await page.goto('/?demo=1&tab=library&action=hero_journey&frame=0')
+  await page.getByTestId('hero-continue').click()
+
+  const sheet = page.getByTestId('hero-story-page')
+  await expect(sheet).toHaveAttribute('data-page', '1')
+
+  // «›» до третьего листа; «Назад» из шапки ведёт на предыдущий лист.
+  await page.getByTestId('hero-story-next').click()
+  await page.getByTestId('hero-story-next').click()
+  await expect(sheet).toHaveAttribute('data-page', '3')
+  await page.getByTestId('demo-chrome-back').click()
+  await expect(sheet).toHaveAttribute('data-page', '2')
+  await page.getByTestId('demo-chrome-back').click()
+  await expect(sheet).toHaveAttribute('data-page', '1')
+
+  // С первого листа «Назад» выходит на карту шагов.
+  await page.getByTestId('demo-chrome-back').click()
+  await expect(page.getByTestId('hero-journey-map')).toBeVisible()
+})
+
+/*
+ * Мысль листа: последний абзац, целиком жирный (**…**), рендерится отдельно —
+ * видна, прижата к низу над кнопкой «›» и не перекрывает ни текст, ни кнопку.
+ * Листы без прокрутки на 360×640, 375×667 и 393×852 (лист 1 — с картинкой).
+ */
+test('Мысль листа видна и не перекрывает кнопку «›»; листы без скролла на малых экранах', async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    localStorage.clear()
+    sessionStorage.clear()
+  })
+
+  for (const [width, height] of [
+    [360, 640],
+    [375, 667],
+    [393, 852],
+  ]) {
+    await page.setViewportSize({ width, height })
+    // frame=0: приложение на реальном viewport, как на телефоне.
+    await page.goto('/?demo=1&tab=library&action=hero_journey&frame=0')
+    await page.getByTestId('hero-continue').click()
+
+    const sheet = page.getByTestId('hero-story-page')
+    const thought = page.getByTestId('hero-story-thought')
+    const thoughtLabel = page.getByTestId('hero-story-thought-label')
+
+    for (const opened of ['1', '2', '3', '4']) {
+      if (opened !== '1') await page.getByTestId('hero-story-next').click()
+      await expect(sheet).toHaveAttribute('data-page', opened)
+      await expect(thought).toBeVisible()
+      // Над мыслью — серая метка «МЫСЛЬ» тем же стилем, что метка листа сверху.
+      await expect(thoughtLabel).toBeVisible()
+      await expect(thoughtLabel).toHaveText('Мысль')
+
+      // Мысль — именно последний жирный абзац: в тексте листа его нет.
+      if (opened === '1') {
+        await expect(thought).toHaveText(
+          'Будущее, которое Юнг годами носил в голове, исчезло за несколько месяцев.'
+        )
+        await expect(page.locator('.mx-hj-story__text')).not.toContainText(
+          'исчезло за несколько месяцев'
+        )
+      }
+
+      const layout = await page.evaluate(() => {
+        const column = document.querySelector('.mx-hj-step-intro')
+        const textScroll = document.querySelector('.mx-hj-step-intro__text-scroll')
+        const text = document.querySelector('.mx-hj-story__text')
+        const thoughtEl = document.querySelector('[data-testid="hero-story-thought"]')
+        const labelEl = document.querySelector('[data-testid="hero-story-thought-label"]')
+        const button = document.querySelector('[data-testid="hero-story-next"]')
+        const thoughtStyle = getComputedStyle(thoughtEl)
+        return {
+          overflow: column.scrollHeight - column.clientHeight,
+          docOverflow:
+            document.documentElement.scrollHeight - document.documentElement.clientHeight,
+          textScroll: textScroll.scrollHeight - textScroll.clientHeight,
+          noTextOverlap:
+            labelEl.getBoundingClientRect().top >= text.getBoundingClientRect().bottom - 1,
+          noButtonOverlap:
+            button.getBoundingClientRect().top >= thoughtEl.getBoundingClientRect().bottom - 1,
+          thoughtSize: parseFloat(thoughtStyle.fontSize),
+          thoughtWeight: thoughtStyle.fontWeight,
+        }
+      })
+      expect(layout.overflow).toBeLessThanOrEqual(0)
+      expect(layout.docOverflow).toBeLessThanOrEqual(0)
+      expect(layout.textScroll).toBeLessThanOrEqual(0)
+      expect(layout.noTextOverlap).toBe(true)
+      expect(layout.noButtonOverlap).toBe(true)
+      expect(layout.thoughtSize).toBeGreaterThanOrEqual(17) // 20 px × масштаб 0.86 = 17.2
+      expect(layout.thoughtWeight).toBe('600')
+    }
+  }
+})
 
 test('Шаг пройден на 375×667: «Продолжить» видна целиком, без скролла', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 667 })
@@ -226,12 +637,17 @@ test('Шаг пройден на 375×667: «Продолжить» видна �
   })
   await page.goto('/?demo=1&tab=library&action=hero_journey&frame=0')
   await page.getByTestId('hero-continue').click()
-  await page.getByTestId('hero-step-start').click()
+  await openStepWrite(page)
   await page.getByTestId('hero-write-input').fill('Запись первого шага')
   await page.getByTestId('hero-write-next').click()
   await page.getByTestId('hero-action-input').fill('Одно действие')
   await page.getByTestId('hero-action-next').click()
   await expect(page.getByTestId('hero-complete-map')).toBeVisible()
+
+  // «Твоя опора»: ответ из «Одно действие» показан под итогом.
+  const support = page.locator('.mx-hj-complete__support')
+  await expect(support).toBeVisible()
+  await expect(support).toContainText('Одно действие')
 
   const column = page.locator('.mx-hj-step-complete')
   // Скролла нет: ни в колонке, ни в документе.
@@ -274,7 +690,7 @@ test('Кнопка на «Запиши»: крестик при пустом п�
   })
   await page.goto('/?demo=1&tab=library&action=hero_journey&frame=0')
   await page.getByTestId('hero-continue').click()
-  await page.getByTestId('hero-step-start').click()
+  await openStepWrite(page)
 
   // Пока поле пустое — белая круглая кнопка с крестиком «×».
   const submit = page.getByTestId('hero-write-next')
@@ -287,7 +703,7 @@ test('Кнопка на «Запиши»: крестик при пустом п�
 
   // После ввода символа — в той же кнопке шеврон «›», нажатие идёт дальше.
   await page.getByTestId('hero-continue').click()
-  await page.getByTestId('hero-step-start').click()
+  await openStepWrite(page)
   await page.getByTestId('hero-write-input').fill('а')
   await expect(submit.locator('svg')).toHaveClass(/lucide-chevron-right/)
   await expect(submit).toHaveAttribute('aria-label', 'Дальше')
@@ -334,4 +750,110 @@ test('Библиотека показывает реальное число за
   })
   await page.goto('/?demo=1&tab=library')
   await expect(page.locator('.mx-library-course-progress')).toHaveText('Шаг 4 из 16')
+})
+
+/*
+ * Финал идёт только с сервера (в демо его нет): проверяем, что его текст берётся
+ * из ответа API, а кадр картинки — из локальной структуры (mergeFinaleWithLocal),
+ * и что после последнего шага паузы нет: сразу карта.
+ */
+test('Финал с сервера: свой кадр картинки и без паузы после последнего шага', async ({ page }) => {
+  await page.setViewportSize({ width: 393, height: 852 })
+  const userId = 900991
+  await page.addInitScript(
+    ({ user, key, completed }) => {
+      localStorage.clear()
+      sessionStorage.clear()
+      localStorage.setItem('mentalix_web_user', JSON.stringify(user))
+      localStorage.setItem('mx-onboarded-v2', '1')
+      localStorage.setItem(
+        key,
+        JSON.stringify({ completed, signs: {}, reflections: {}, actions: {} })
+      )
+    },
+    {
+      user: { id: userId, first_name: 'Тест' },
+      key: `mx-hero-journey-progress:${userId}`,
+      completed: Object.fromEntries(
+        HERO_JOURNEY_TRIALS.map(trial => [trial.id, '2026-10-01T12:00:00Z'])
+      ),
+    }
+  )
+  // Сервер отдаёт тексты; картинки и кадры остаются во фронтенде.
+  await page.route('**/api/**', route =>
+    route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify([]),
+    })
+  )
+  await page.route('**/api/content/hero-journey', route =>
+    route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({
+        course: {
+          title: 'Путь героя',
+          subtitle: '16 шагов · 4 главы',
+          description: '16 шагов о том, как не прожить жизнь на автопилоте.',
+        },
+        prologue: null,
+        chapters: HERO_JOURNEY_CHAPTERS,
+        trials: HERO_JOURNEY_TRIALS.map(trial => ({
+          id: trial.id,
+          number: trial.number,
+          title: `Шаг ${trial.number}`,
+          subtitle: 'Проверочный подзаголовок',
+        })),
+        finale: {
+          ...HERO_JOURNEY_FINALE,
+          title: 'Возвращение домой',
+          subtitle: 'Финал практикума',
+          intro: 'Первый абзац финала.\n\nВторой абзац финала.',
+          writePrompt: 'Что забираешь с собой?',
+          actionPrompt: 'Одно действие после практикума',
+          doneTitle: 'Путь пройден',
+          doneSummary: 'Шестнадцать шагов остались позади.',
+        },
+      }),
+    })
+  )
+
+  await page.goto('/?tab=library')
+  await page.getByTestId('library-hero').click()
+  await expect(page.getByTestId('hero-journey-map')).toBeVisible()
+  await page.getByTestId('hero-step-return').click()
+  // Заголовок вступления — из ответа сервера, а не из бандла.
+  await expect(page.getByTestId('hero-step-start')).toBeVisible()
+  await expect(page.locator('.mx-hj-step-intro__label')).toHaveText('Финал · Возвращение домой')
+  await page.getByTestId('hero-step-start').click()
+  await page.getByTestId('hero-write-input').fill('Проверка финала')
+  await page.getByTestId('hero-write-next').click()
+  await page.getByTestId('hero-action-input').fill('Одно действие финала')
+  await page.getByTestId('hero-action-next').click()
+  await expect(page.getByTestId('hero-complete-map')).toBeVisible()
+
+  // Кадр финала приходит из локальной структуры: картинка загружена, обрезка применена.
+  const hero = page.locator('.mx-hj-step-complete .mx-hj-hero')
+  await expect(hero).toHaveClass(/mx-hj-hero--cropped/)
+  const layout = await hero.evaluate(el => {
+    const image = el.querySelector('img')
+    const rect = el.getBoundingClientRect()
+    const imageRect = image.getBoundingClientRect()
+    const button = document
+      .querySelector('[data-testid="hero-complete-map"]')
+      .getBoundingClientRect()
+    return {
+      loaded: image.complete && image.naturalWidth > 0,
+      cropApplied: imageRect.top < rect.top && Math.abs(imageRect.width - rect.width) <= 1,
+      buttonVisible: button.top >= 0 && button.bottom <= window.innerHeight,
+    }
+  })
+  expect(layout.loaded).toBe(true)
+  expect(layout.cropApplied).toBe(true)
+  expect(layout.buttonVisible).toBe(true)
+
+  // После последнего шага паузы нет: сразу карта, финал отмечен пройденным.
+  await page.getByTestId('hero-complete-map').click()
+  await expect(page.getByTestId('hero-journey-map')).toBeVisible()
+  await expect(page.getByTestId('hero-pause')).toHaveCount(0)
+  await expect(page.getByTestId('hero-step-return')).toHaveAttribute('data-state', 'done')
 })

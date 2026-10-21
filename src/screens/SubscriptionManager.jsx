@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { BookOpen, LineChart, Lightbulb, Lock, Users } from 'lucide-react'
 import { ProfileBody, ProfilePage } from './settings/ProfileUi'
-import { PotentialLockArt } from './settings/ProfileBannerArt'
+import { PotentialLockArt, ProUnlockedArt } from './settings/ProfileBannerArt'
 import { api } from '../lib/api'
 import { platform, platformName } from '../platform'
 import { isPreviewDemoMode } from '../lib/demoMode'
 import { PAYMENT_UI_ENABLED, PRO_PRICE, PRO_PERIOD_LABEL, TRIBUTE_TG_LINK } from '../lib/paymentConfig'
-import { getSubscriptionState, getDemoPayState } from '../lib/subscriptionState'
+import { getSubscriptionState, getDemoPayState, lockArtKind } from '../lib/subscriptionState'
 import { openSupportChat } from '../lib/support'
 import {
   CHECKOUT_ACTIONS,
@@ -21,14 +21,25 @@ import {
   checkoutAvailable,
   clearPaymentStarted,
   consumeGuestCheckout,
+  markSuccessShown,
   paymentReturnState,
   readPaymentStarted,
+  readSuccessShown,
   startCheckout,
+  webGuestLoginCopy,
 } from '../lib/yookassaCheckout'
+import SubscriptionSuccessScreen from './SubscriptionSuccess'
 import './SubscriptionManager.css'
 
 /* Единственная кнопка оплаты: цена и период — из paymentConfig, не хардкодим. */
 const PAY_CTA = `Оформить Pro — ${PRO_PRICE} ${PRO_PERIOD_LABEL}`
+
+/*
+ * Вход по email на вебе выключен, пока у проекта нет своего домена в Resend
+ * (продакшн-сборка задаёт VITE_EMAIL_LOGIN_ENABLED=false, см. WebAuthScreen.jsx).
+ * Тогда экран гостя ведёт в Telegram Login и не упоминает email вовсе.
+ */
+const emailLoginEnabled = import.meta.env.VITE_EMAIL_LOGIN_ENABLED !== 'false'
 
 /*
  * «подписка.» — единственный тариф Mentalix Pro.
@@ -37,8 +48,10 @@ const PAY_CTA = `Оформить Pro — ${PRO_PRICE} ${PRO_PERIOD_LABEL}`
  * статичный экран с описанием Pro и неактивной кнопкой «Оплата скоро появится».
  *
  * При включённом флаге — состояния экрана по ответу /api/subscription:
- *   guest   — «Сначала сохрани прогресс по email» + кнопка оплаты, которая
- *             ведёт в существующий флоу «Сохранить прогресс по email»
+ *   guest   — веб: «Войди через Telegram, чтобы оформить Pro» + кнопка
+ *             «Войти через Telegram» — она ведёт в существующий экран входа
+ *             (Telegram Login), после входа оплата продолжается сама;
+ *             Telegram: прежний флоу «Сохранить прогресс по email»
  *   base    — описание Pro + кнопка «Оформить Pro» (цена из paymentConfig)
  *   pro     — «Pro до <дата>», «осталось N дн.»
  *   expired — «Срок Pro закончился» + кнопка продления
@@ -56,7 +69,7 @@ const PAY_CTA = `Оформить Pro — ${PRO_PRICE} ${PRO_PERIOD_LABEL}`
  * только свежий ответ /api/subscription (has_pro). Фронтенд ничего не
  * подтверждает локально, платёжные данные не вводит и не хранит.
  */
-const FEATURES = [
+export const FEATURES = [
   [Users, 'Спутники без ограничений', 'Наставник и другие спутники отвечают глубже и без лимита'],
   [BookOpen, 'Практикумы', '«Путь героя» и новые практикумы'],
   [LineChart, 'Полная аналитика и история', 'Все записи и связи между ними'],
@@ -68,40 +81,52 @@ const MONTHS = [
   'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря',
 ]
 
-function formatProDate(isoDate) {
+export function formatProDate(isoDate) {
   if (!isoDate) return null
   const d = new Date(isoDate)
   if (Number.isNaN(d.getTime())) return null
   return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]}`
 }
 
-export default function SubscriptionManager({ user, tier: _tier, onBack, onGuestLogin }) {
+export default function SubscriptionManager({ user, tier: _tier, onBack, onGuestLogin, onOpenPrivacy }) {
   // ── Флаг выключен: поведение ровно как сейчас ──
   if (!PAYMENT_UI_ENABLED) {
-    return <LegacySubscriptionManager onBack={onBack} />
+    return <LegacySubscriptionManager onBack={onBack} onOpenPrivacy={onOpenPrivacy} />
   }
 
   return (
-    <SubscriptionManagerEnabled user={user} onBack={onBack} onGuestLogin={onGuestLogin} />
+    <SubscriptionManagerEnabled user={user} onBack={onBack} onGuestLogin={onGuestLogin} onOpenPrivacy={onOpenPrivacy} />
   )
 }
 
 /* Прежний статичный экран — при выключенном флаге. */
-function LegacySubscriptionManager({ onBack }) {
+function LegacySubscriptionManager({ onBack, onOpenPrivacy }) {
   return (
     <ProfilePage
       title="подписка."
       onBack={onBack}
       testId="profile-screen-subscription"
       footer={
-        <button
-          type="button"
-          disabled
-          data-testid="subscription-pay-button"
-          className="mx-profile-disabled-cta"
-        >
-          <Lock size={14} aria-hidden="true" /> Оплата скоро появится
-        </button>
+        <>
+          <button
+            type="button"
+            disabled
+            data-testid="subscription-pay-button"
+            className="mx-profile-disabled-cta"
+          >
+            <Lock size={14} aria-hidden="true" /> Оплата скоро появится
+          </button>
+          {onOpenPrivacy && (
+            <button
+              type="button"
+              className="mx-subscription-support"
+              data-testid="subscription-privacy-link"
+              onClick={onOpenPrivacy}
+            >
+              Политика конфиденциальности
+            </button>
+          )}
+        </>
       }
     >
       <ProfileBody>
@@ -139,8 +164,17 @@ function LegacySubscriptionManager({ onBack }) {
 }
 
 /* Экран с состояниями оплаты — при включённом флаге. */
-function SubscriptionManagerEnabled({ user, onBack, onGuestLogin }) {
-  const isGuest = !user || user.is_guest || !user.email
+function SubscriptionManagerEnabled({ user, onBack, onGuestLogin, onOpenPrivacy }) {
+  const inTelegram = platformName === 'telegram'
+  /*
+   * Гость — анонимная веб-сессия (is_guest): подписку не к чему привязать.
+   * В вебе отсутствие email гостём не считается: после входа через Telegram
+   * аккаунт есть, email не обязателен, и оплата должна открываться — на этом
+   * же условии держится возврат к оплате после входа (consumeGuestCheckout).
+   * В Telegram прежний признак сохранён: там экран ведёт в «Сохранить прогресс
+   * по email» (путь Tribute не меняется).
+   */
+  const isGuest = !user || Boolean(user.is_guest) || (inTelegram && !user.email)
   const [subscription, setSubscription] = useState(null)
   const [loading, setLoading] = useState(true)
   const [localPending, setLocalPending] = useState(false)
@@ -152,7 +186,6 @@ function SubscriptionManagerEnabled({ user, onBack, onGuestLogin }) {
   const aliveRef = useRef(true)
   const paidRef = useRef(false)
 
-  const inTelegram = platformName === 'telegram'
   // ЮKassa — только в вебе и только при включённом флаге: в Telegram путь Tribute.
   const webCheckout = checkoutAvailable({ enabled: PAYMENT_UI_ENABLED, platform: platformName })
 
@@ -224,6 +257,11 @@ function SubscriptionManagerEnabled({ user, onBack, onGuestLogin }) {
   // Демо-режим: ?payState= переопределяет состояние
   const demoPayState = getDemoPayState(isPreviewDemoMode)
 
+  // Экран успеха показывается один раз: флаг в sessionStorage читается при
+  // монтировании (useState), а не на каждом рендере — иначе двойной вызов API
+  // в StrictMode после markSuccessShown() переключал бы экран на «Pro активен».
+  const [successAlreadyShown] = useState(() => readSuccessShown())
+
   // Определяем состояние экрана
   let displayState
   if (demoPayState) {
@@ -232,13 +270,21 @@ function SubscriptionManagerEnabled({ user, onBack, onGuestLogin }) {
     displayState = 'loading'
   } else if (localPending && subscription && !subscription.has_pro) {
     displayState = 'pending'
-  } else if (returnState) {
-    displayState = returnState
+  } else if (returnState === 'success' && !successAlreadyShown) {
+    displayState = 'success'
+  } else if (returnState === 'pending') {
+    displayState = 'pending'
   } else {
     displayState = getSubscriptionState(subscription, isGuest)
   }
 
-  /* Гость: сначала «Сохранить прогресс по email», после входа — возврат к оплате. */
+  // Отмечаем показанный экран успеха в sessionStorage — повторное открытие
+  // (новый монтируемый экземпляр) даст обычный «Pro активен».
+  useEffect(() => {
+    if (displayState === 'success') markSuccessShown()
+  }, [displayState])
+
+  /* Гость: сначала вход (в вебе — Telegram), после входа — возврат к оплате. */
   function beginGuestFlow() {
     beginGuestCheckout()
     onGuestLogin?.()
@@ -290,20 +336,50 @@ function SubscriptionManagerEnabled({ user, onBack, onGuestLogin }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [webCheckout, isGuest, loading])
 
+  // Полноэкранный экран успеха — один раз после оплаты, вместо обычного экрана.
+  if (displayState === 'success') {
+    return (
+      <SubscriptionSuccessScreen
+        subscription={
+          demoPayState === 'success'
+            ? { expires_at: new Date(Date.now() + 30 * 86400000).toISOString(), days_left: 30 }
+            : subscription
+        }
+        onContinue={onBack}
+      />
+    )
+  }
+
   return (
     <ProfilePage
       title="подписка."
       onBack={onBack}
       testId="profile-screen-subscription"
-      footer={renderFooter({
-        state: displayState,
-        webCheckout,
-        checkoutState,
-        onTributePay: handleTributePay,
-        onWebPay: handleWebPay,
-        onCheckPayment: handleCheckPayment,
-        onLogin: onGuestLogin,
-      })}
+      footer={
+        <>
+          {renderFooter({
+            state: displayState,
+            webCheckout,
+            checkoutState,
+            guestCopy: webGuestLoginCopy({ emailLoginEnabled }),
+            onGuestCta: beginGuestFlow,
+            onTributePay: handleTributePay,
+            onWebPay: handleWebPay,
+            onCheckPayment: handleCheckPayment,
+            onLogin: onGuestLogin,
+          })}
+          {onOpenPrivacy && (
+            <button
+              type="button"
+              className="mx-subscription-support"
+              data-testid="subscription-privacy-link"
+              onClick={onOpenPrivacy}
+            >
+              Политика конфиденциальности
+            </button>
+          )}
+        </>
+      }
     >
       <ProfileBody>
         {displayState === 'loading' && (
@@ -311,19 +387,22 @@ function SubscriptionManagerEnabled({ user, onBack, onGuestLogin }) {
         )}
 
         {displayState === 'guest' && (
-          <GuestState onGuestLogin={onGuestLogin} />
+          <GuestState
+            webCheckout={webCheckout}
+            emailLoginEnabled={emailLoginEnabled}
+            onLogin={beginGuestFlow}
+          />
         )}
 
         {displayState === 'base' && (
           <BaseState />
         )}
 
-        {(displayState === 'pro' || displayState === 'success') && (
+        {displayState === 'pro' && (
           <ProState
-            paid={displayState === 'success'}
             subscription={
-              demoPayState === 'pro' || demoPayState === 'success'
-                ? { expires_at: null, days_left: 30 }
+              demoPayState === 'pro'
+                ? { expires_at: new Date(Date.now() + 30 * 86400000).toISOString(), days_left: 30 }
                 : subscription
             }
           />
@@ -345,13 +424,15 @@ function renderFooter({
   state,
   webCheckout,
   checkoutState,
+  guestCopy,
+  onGuestCta,
   onTributePay,
   onWebPay,
   onCheckPayment,
   onLogin,
 }) {
   if (state === 'guest') {
-    // В вебе кнопка оплаты гостя ведёт в флоу «Сохранить прогресс по email»,
+    // В вебе кнопка оплаты гостя ведёт на экран входа (Telegram Login),
     // после успеха возвращаемся к оплате.
     if (webCheckout) {
       return (
@@ -359,9 +440,9 @@ function renderFooter({
           type="button"
           className="mx-profile-primary"
           data-testid="subscription-pay-button"
-          onClick={onWebPay}
+          onClick={onGuestCta}
         >
-          {PAY_CTA}
+          {guestCopy.cta}
         </button>
       )
     }
@@ -453,7 +534,32 @@ function renderFooter({
 }
 
 /* ── Состояние: гость ── */
-function GuestState({ onGuestLogin }) {
+function GuestState({ webCheckout, emailLoginEnabled, onLogin }) {
+  // Веб: рабочий вход — Telegram Login; email упоминается только когда включён.
+  if (webCheckout) {
+    const copy = webGuestLoginCopy({ emailLoginEnabled })
+    return (
+      <>
+        <div className="mx-subscription-art" aria-hidden="true">
+          <PotentialLockArt />
+        </div>
+        <h2 className="mx-subscription-promise">{copy.heading}</h2>
+        <p className="mx-subscription-pitch">{copy.pitch}</p>
+        {copy.emailCta && (
+          <button
+            type="button"
+            className="mx-subscription-support"
+            data-testid="subscription-guest-email-login"
+            onClick={onLogin}
+          >
+            {copy.emailCta}
+          </button>
+        )}
+      </>
+    )
+  }
+
+  // Telegram: прежний сценарий — сохранение прогресса по email.
   return (
     <>
       <div className="mx-subscription-art" aria-hidden="true">
@@ -499,22 +605,17 @@ function BaseState() {
   )
 }
 
-/* ── Состояние: Pro активен / оплата прошла ── */
-function ProState({ paid = false, subscription }) {
+/* ── Состояние: Pro активен (обычное, не экран успеха) ── */
+function ProState({ subscription }) {
   const proDate = formatProDate(subscription?.expires_at)
   const daysLeft = subscription?.days_left
 
   return (
     <>
       <div className="mx-subscription-art" aria-hidden="true">
-        <PotentialLockArt />
+        <ProUnlockedArt />
       </div>
-      <h2 className="mx-subscription-promise">{paid ? 'Оплата прошла' : 'Pro активен'}</h2>
-      {paid && (
-        <p className="mx-subscription-pitch mx-subscription-success" data-testid="subscription-paid-success">
-          Спасибо! Pro активен.
-        </p>
-      )}
+      <h2 className="mx-subscription-promise">Pro активен</h2>
       {proDate && (
         <p className="mx-subscription-pitch">
           Pro до {proDate}
@@ -584,7 +685,7 @@ function PendingState({ showSupportHint = false }) {
   )
 }
 
-function pluralizeDays(n) {
+export function pluralizeDays(n) {
   const mod10 = n % 10
   const mod100 = n % 100
   if (mod10 === 1 && mod100 !== 11) return 'день'

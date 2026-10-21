@@ -1,5 +1,6 @@
 import { platform } from '../platform'
 import { withQuery } from './apiQuery'
+import { erasureDeliveryMethod, erasureRequestReason } from './erasureCode'
 import { demoRequest, isPreviewDemoMode } from './demoMode'
 import { isProMockMode, proMockRequest } from './proMock'
 import { resetGuestState, dispatchGuestMerged } from './guestAuth'
@@ -337,6 +338,22 @@ async function request(path, options = {}) {
     }
   }
 }
+
+/*
+ * PRO-002b/c: бюджет запроса на сборку разбора и плана недели.
+ *
+ * Генерацию делает бэкенд вызовом модели, и после неудачи он делает повтор —
+ * то есть до ДВУХ вызовов модели на один запрос. Прежние 60 с равнялись
+ * бюджету одного вызова: запрос обрывался в тот момент, когда бэкенд ещё
+ * работал (а при повторе — гарантированно раньше), и пользователь видел
+ * ошибку вместо разбора. Клиент обязан ждать оба вызова и сохранение
+ * результата: 2 × 60 с + запас 30 с.
+ *
+ * Окно опроса GET в src/lib/proGenerationPolling.js покрывает тот же бюджет
+ * (PRO_POLL_*), поэтому после 409 generation_in_progress ожидание согласовано
+ * с ожиданием ответа POST.
+ */
+const PRO_GENERATE_TIMEOUT_MS = 150_000
 
 export const api = {
   auth: {
@@ -1006,10 +1023,35 @@ export const api = {
       }
     },
 
-    eraseAccount: userId =>
+    // Одноразовый код удаления аккаунта. Бэкенд отправляет его на email, а
+    // веб-пользователю, вошедшему через Telegram (email у такого аккаунта нет),
+    // — сообщением бота. Результат:
+    //   { ok: true, delivery: 'email'|'telegram'|null }
+    //   { ok: false, reason: 'rate_limited'|'telegram_send_failed'
+    //                        |'telegram_delivery_not_configured'
+    //                        |'no_delivery_channel'|'init_data_sufficient'|'failed' }
+    // Разбор кодов ответа — src/lib/erasureCode.js. Ошибку не бросаем наружу:
+    // экран показывает причину понятным текстом.
+    requestErasureCode: async userId => {
+      try {
+        const result = await request('/privacy/account-erasure/request-code', {
+          method: 'POST',
+          body: JSON.stringify({ user_id: userId }),
+        })
+        return { ok: true, delivery: erasureDeliveryMethod(result) }
+      } catch (error) {
+        return { ok: false, reason: erasureRequestReason(error) }
+      }
+    },
+
+    eraseAccount: (userId, otpCode) =>
       request('/privacy/account-erasure', {
         method: 'POST',
-        body: JSON.stringify({ user_id: userId, confirmation: 'DELETE_MY_DATA' }),
+        body: JSON.stringify({
+          user_id: userId,
+          confirmation: 'DELETE_MY_DATA',
+          otp_code: otpCode,
+        }),
       }),
   },
 
@@ -1043,6 +1085,12 @@ export const api = {
 
   articles: {
     list: () => request('/articles'),
+  },
+
+  content: {
+    heroJourney: () => request('/content/hero-journey'),
+    library: () => request('/content/library'),
+    libraryArticle: id => request(`/content/library/${id}`),
   },
 
   themes: {
@@ -1214,7 +1262,7 @@ export const api = {
     createReport: weekStart =>
       request('/pro/report', {
         method: 'POST',
-        timeoutMs: 60_000,
+        timeoutMs: PRO_GENERATE_TIMEOUT_MS,
         body: JSON.stringify(weekStart ? { week_start: weekStart } : {}),
       }),
 
@@ -1224,7 +1272,7 @@ export const api = {
     createPlan: (weekStart, rebuild = false) =>
       request('/pro/plan', {
         method: 'POST',
-        timeoutMs: 60_000,
+        timeoutMs: PRO_GENERATE_TIMEOUT_MS,
         body: JSON.stringify({
           ...(weekStart ? { week_start: weekStart } : {}),
           ...(rebuild ? { rebuild: true } : {}),

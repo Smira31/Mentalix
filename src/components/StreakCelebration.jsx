@@ -17,7 +17,7 @@ import './StreakCelebration.css'
 export default function StreakCelebration({ streak, days = [], onDone }) {
   // Экран серии без полей ввода: высота от layout-вьюпорта, иначе
   // закрытие клавиатуры после финала чек-ина сдвигает весь экран.
-  const { style } = useFullscreenSurface({ stable: true })
+  const { style } = useFullscreenSurface({ keyboardStrategy: 'stable' })
   const { title, body } = streakCelebrationCopy(streak)
 
   useBackButton(() => {

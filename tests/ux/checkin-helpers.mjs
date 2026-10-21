@@ -24,6 +24,23 @@ export function closeStepButton(page) {
 }
 
 /**
+ * Единый символ «вперёд» на круглой кнопке шага — шеврон «›».
+ * DESIGN_SYSTEM.md §5.2 задаёт круглой кнопке «далее» именно шеврон; у стрелки
+ * «→» есть лишнее горизонтальное древко (`M5 12h14`), из-за которого шаг
+ * выбивался из общего языка интерфейса (#1078). Проверяем и объявленный
+ * символ (data-icon), и отсутствие древка в разметке кнопки.
+ * @param {import('@playwright/test').Page} page
+ * @param {string} [testId="checkin-next"] — круглая кнопка шага
+ */
+export async function expectForwardSymbol(page, testId = 'checkin-next') {
+  const button = page.locator(`[data-testid="${testId}"]`)
+  await expect(button).toBeVisible()
+  await expect(button).toHaveAttribute('data-icon', 'chevron')
+  await expect(button.locator('svg path[d="m9 18 6-6-6-6"]')).toHaveCount(1)
+  await expect(button.locator('svg path[d="M5 12h14"]')).toHaveCount(0)
+}
+
+/**
  * Шаг шкалы: выбрать значение level и нажать «Далее», если кнопка видна и активна.
  * @param {import('@playwright/test').Page} page
  * @param {number} level — уровень шкалы (1–5)

@@ -10,7 +10,7 @@
  *   веб-пользователя (cookie или Authorization: Bearer), user_id не передаём.
  *   200 → { confirmation_url } — редирект пользователя в текущей вкладке;
  *   401 (unauthorized | verified_identity_required) — нужен вход;
- *   403 guest_payment_forbidden — гость: сначала «Сохранить прогресс по email»;
+ *   403 guest_payment_forbidden — гость: сначала вход (в вебе — Telegram Login);
  *   503 (yookassa_disabled | yookassa_not_configured) — оплата недоступна;
  *   502 yookassa_create_failed — сбой, можно повторить.
  *
@@ -48,6 +48,27 @@ export const CHECKOUT_ACTIONS = {
   [CHECKOUT_AUTH]: 'Войти',
   [CHECKOUT_GUEST]: 'Сохранить прогресс по email',
   [CHECKOUT_FAILED]: 'Попробовать снова',
+}
+
+/*
+ * Копия экрана «Подписка» для гостя в вебе.
+ *
+ * Рабочий вход на вебе — Telegram Login (тот же экран входа WebAuthScreen, что
+ * и по прежней кнопке «Сохранить прогресс по email»): вход по email выключен
+ * флагом VITE_EMAIL_LOGIN_ENABLED=false, пока у проекта нет своего домена в
+ * Resend. Поэтому гостю предлагаем Telegram, а email — только когда он включён
+ * (emailCta = null — экран не упоминает email вовсе).
+ *
+ * Флоу возврата к оплате после входа не меняется: beginGuestCheckout() пишет
+ * намерение, а экран подписки после входа сам продолжает оплату.
+ */
+export function webGuestLoginCopy({ emailLoginEnabled = false } = {}) {
+  return {
+    heading: 'Войди через Telegram, чтобы оформить Pro',
+    pitch: 'Так подписка привяжется к твоему аккаунту, а записи не потеряются.',
+    cta: 'Войти через Telegram',
+    emailCta: emailLoginEnabled ? 'Войти по email' : null,
+  }
 }
 
 /*
@@ -138,6 +159,7 @@ export async function startCheckout({ create, navigate, platform = 'web', enable
 const STARTED_KEY = 'mx-yookassa-payment-started'
 const GUEST_RESUME_KEY = 'mx-yookassa-payment-resume'
 const SETTINGS_SCREEN_KEY = 'mx-settings-initial-screen'
+const SUCCESS_SHOWN_KEY = 'mx-subscription-success-shown'
 
 /* Возврат с оплаты старше суток оплатой уже не считается. */
 export const PAYMENT_RETURN_WINDOW_MS = 24 * 60 * 60 * 1000
@@ -211,9 +233,32 @@ function removeSession(key) {
   }
 }
 
+/*
+ * Экран успеха показывается один раз: флаг в sessionStorage отмечает,
+ * что успех уже показан. При новой оплате флаг снимается (markPaymentStarted),
+ * чтобы следующий возврат снова показал экран успеха.
+ */
+export function markSuccessShown() {
+  writeSession(SUCCESS_SHOWN_KEY, '1')
+}
+
+export function readSuccessShown() {
+  try {
+    return typeof window !== 'undefined' && window.sessionStorage.getItem(SUCCESS_SHOWN_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+export function clearSuccessShown() {
+  removeSession(SUCCESS_SHOWN_KEY)
+}
+
 /* Страница уходит на ЮKassa и загружается заново — отметку держим в sessionStorage. */
 export function markPaymentStarted(now = Date.now()) {
   writeSession(STARTED_KEY, String(now))
+  // Новая оплата — снимаем флаг показанного успеха.
+  removeSession(SUCCESS_SHOWN_KEY)
 }
 
 export function readPaymentStarted() {

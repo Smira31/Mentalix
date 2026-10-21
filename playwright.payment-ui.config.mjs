@@ -16,6 +16,10 @@ import { defineConfig } from '@playwright/test'
  * Production-сборка флагов не получает — выключены по умолчанию.
  * Backend не требуется: состояние задаётся dev-параметром `?demo=1&payState=…`,
  * ответ /api/subscription в сценарии возврата подменяется моком.
+ *
+ * Остальные переменные — как в продакшн-сборке (.github/workflows/firebase-hosting.yml):
+ * вход по email выключен (нет своего домена в Resend), имя бота для Telegram
+ * Login задано. Так экран гостя проверяется в той же конфигурации, что у людей.
  */
 export default defineConfig({
   testDir: './tests/ux',
@@ -37,7 +41,7 @@ export default defineConfig({
   },
   webServer: {
     command:
-      'VITE_PAYMENT_UI_ENABLED=true VITE_PRO_REVIEW_PLAN_ENABLED=true npm run dev -- --host 127.0.0.1 --port 4179',
+      'VITE_PAYMENT_UI_ENABLED=true VITE_PRO_REVIEW_PLAN_ENABLED=true VITE_EMAIL_LOGIN_ENABLED=false VITE_TELEGRAM_BOT_USERNAME=Mentalix_club_bot npm run dev -- --host 127.0.0.1 --port 4179',
     url: 'http://127.0.0.1:4179',
     reuseExistingServer: false,
     timeout: 120_000,

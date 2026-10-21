@@ -359,6 +359,35 @@
 .mx-library-course-progress progress::-moz-progress-bar {
   background: rgb(var(--c-text));
 }
+
+/* ── Загрузка и ошибка серверных статей (#1112, этап 3) ── */
+
+.mx-library-articles-skeleton {
+  display: block;
+  max-width: 60ch;
+}
+
+/* Спокойный скелет в стиле приложения: те же полосы, что у читалки. */
+.mx-library-articles-skeleton .mx-hj-skeleton {
+  margin-bottom: var(--mx-space-3);
+}
+
+.mx-library-articles-error,
+.mx-library-reader-error {
+  display: grid;
+  justify-items: start;
+  gap: var(--mx-space-5);
+}
+
+.mx-library-articles-error p,
+.mx-library-reader-error p {
+  margin: 0;
+}
+
+.mx-library-articles-error .mx-library-action,
+.mx-library-reader-error .mx-library-action {
+  width: auto;
+}
 .mx-hj-fit .mx-screen__content {
   display: flex;
   flex: 1;
