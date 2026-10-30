@@ -38,8 +38,12 @@ async function openPro(page, scenario) {
    * API Pro, поэтому статус Pro задаётся тем же способом, что в ux:pro-states.
    */
   await page.goto(`/?demo=1&frame=0&proStatus=pro&proMock=${scenario}`)
-  await expect(page.getByRole('button', { name: 'Прогресс' })).toBeVisible({ timeout: 15_000 })
-  await page.getByRole('button', { name: 'Прогресс' }).click()
+  // exact: карточка «Мысль дня» на «Сегодня» — тоже кнопка, и в тот день,
+  // когда её текст содержит «прогресс», поиск по подстроке находит две кнопки.
+  await expect(page.getByRole('button', { name: 'Прогресс', exact: true })).toBeVisible({
+    timeout: 15_000,
+  })
+  await page.getByRole('button', { name: 'Прогресс', exact: true }).click()
   await expect(page.getByTestId('progress-pro-card')).toBeVisible()
   await page.getByTestId('pro-card-open').click()
   await expect(page.locator('.mx-page-title')).toContainText('мой разбор.')
