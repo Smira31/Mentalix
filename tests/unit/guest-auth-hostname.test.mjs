@@ -47,6 +47,13 @@ test('canAutoCreateGuest: боевой хост mentalix-production.firebaseapp.
   assert.equal(canAutoCreateGuest(), true)
 })
 
+test('canAutoCreateGuest: боевой домен mentalix.space (Timeweb) → true', async () => {
+  setupEnv('mentalix.space')
+  const { canAutoCreateGuest } = await import(moduleUrl)
+  assert.equal(canAutoCreateGuest(), true)
+  assert.equal(canAutoCreateGuest('www.mentalix.space'), false)
+})
+
 test('canAutoCreateGuest: превью-канал Firebase (*--pr-*-*.web.app) → false', async () => {
   setupEnv('mentalix--pr-42-abc123.web.app')
   const { canAutoCreateGuest } = await import(moduleUrl)

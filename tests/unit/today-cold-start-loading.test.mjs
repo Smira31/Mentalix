@@ -48,7 +48,7 @@ test('Today: connecting не блокирует рендер — показыв�
   // Индикатор — отдельный <p> в основном return, а не замена всего экрана.
   // Экран «Сегодня» (день, карточки, тема) остаётся видимым.
   const connectingBlock = todaySource.match(
-    /\{connecting && \([\s\S]*?data-testid="today-connecting"[\s\S]*?Подключаемся…[\s\S]*?\)\}/
+    /\{connecting && (?:!connectionStalled && )?\([\s\S]*?data-testid="today-connecting"[\s\S]*?Подключаемся…[\s\S]*?\)\}/
   )
   assert.ok(connectingBlock, 'connecting-индикатор должен быть в основном return')
   // Не должен быть в блоке if (loading) или if (loadError)

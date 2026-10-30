@@ -168,8 +168,12 @@ async function openAnalytics(page, scenario) {
   }, MOCK_STATE_KEY)
 
   await page.goto(`/?demo=1&frame=0&proStatus=pro&proMock=${scenario}`)
-  await expect(page.getByRole('button', { name: 'Прогресс' })).toBeVisible({ timeout: 15_000 })
-  await page.getByRole('button', { name: 'Прогресс' }).click()
+  // exact: карточка «Мысль дня» на «Сегодня» — тоже кнопка, и в тот день,
+  // когда её текст содержит «прогресс», поиск по подстроке находит две кнопки.
+  await expect(page.getByRole('button', { name: 'Прогресс', exact: true })).toBeVisible({
+    timeout: 15_000,
+  })
+  await page.getByRole('button', { name: 'Прогресс', exact: true }).click()
   await expect(page.getByTestId('progress-pro-card')).toBeVisible()
 }
 
@@ -354,7 +358,7 @@ for (const viewport of VIEWPORTS) {
       // размера экрана демо-панели). Сценарий mock нужен, чтобы карточка
       // получила состояние разбора, а не ответ демо-фолбэка.
       await page.goto('/?demo=1&frame=0&proStatus=pro&proMock=ready')
-      await page.getByRole('button', { name: 'Прогресс' }).click()
+      await page.getByRole('button', { name: 'Прогресс', exact: true }).click()
       await expect(page.getByTestId('progress-pro-card')).toBeVisible()
       await expect(page.getByTestId('progress-practices')).toBeVisible()
 

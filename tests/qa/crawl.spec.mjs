@@ -662,14 +662,14 @@ test('QA обход всех экранов', async ({ browser, baseURL }) => {
     // ─── LIBRARY TAB ───
     await visitScreen(page, viewport, '14-library', 'Библиотека', allScreens, allIssues, {
       navigate: async () => {
-        await page.getByRole('button', { name: 'Библиотека' }).click()
+        await page.getByRole('button', { name: 'Библиотека', exact: true }).click()
       },
     })
 
     // ─── PROGRESS TAB ───
     await visitScreen(page, viewport, '15-progress', 'Прогресс', allScreens, allIssues, {
       navigate: async () => {
-        await page.getByRole('button', { name: 'Прогресс' }).click()
+        await page.getByRole('button', { name: 'Прогресс', exact: true }).click()
       },
     })
 

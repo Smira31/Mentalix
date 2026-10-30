@@ -943,7 +943,7 @@ test('локальный UX smoke по основному маршруту', asy
     await page.getByRole('button', { name: 'Шаги' }).click()
     await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
 
-    await page.getByRole('button', { name: 'Библиотека' }).click()
+    await page.getByRole('button', { name: 'Библиотека', exact: true }).click()
     await captureScreen({
       page,
       viewport,
@@ -968,7 +968,7 @@ test('локальный UX smoke по основному маршруту', asy
     await page.evaluate(() => window.__mxGetCurrentBackAction?.()?.())
     await expect(page.getByTestId('library-home')).toBeVisible()
 
-    await page.getByRole('button', { name: 'Прогресс' }).click()
+    await page.getByRole('button', { name: 'Прогресс', exact: true }).click()
     await captureScreen({
       page,
       viewport,
@@ -978,7 +978,7 @@ test('локальный UX smoke по основному маршруту', asy
       results,
       check: async () => {
         await expect(page.getByRole('heading', { name: 'аналитика.' })).toBeAttached()
-        await expect(page.getByRole('button', { name: 'Прогресс' })).toHaveAttribute(
+        await expect(page.getByRole('button', { name: 'Прогресс', exact: true })).toHaveAttribute(
           'aria-current',
           'page'
         )

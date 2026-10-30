@@ -117,6 +117,7 @@ function ThemeCarousel({
   theme,
   themeLoading = false,
   themeError = false,
+  themeStalled = false,
   onOpen,
   onRetry,
   onOpenAllThemes,
@@ -128,28 +129,54 @@ function ThemeCarousel({
     !Array.isArray(theme.days) ||
     theme.days.length === 0
   ) {
+    /*
+     * themesStalled — ожидание дольше 8 с. Вместо вечного «Загрузка…»
+     * показываем тихое «Нет связи» и «Повторить» (без красного и эмодзи).
+     */
+    const state = themeStalled ? 'offline' : themeLoading ? 'loading' : themeError ? 'error' : 'empty'
     return (
       <section className="mx-steps-theme-section" aria-label="Тема недели" aria-live="polite">
         <div className="mx-steps-theme-panel">
           <h2 className="mx-steps-theme-heading">
             <span className="mx-steps-theme-heading__label">Тема недели:</span>
-            <span className="mx-steps-theme-heading__name">
-              {themeLoading ? 'Загрузка…' : themeError ? 'Ошибка' : 'Скоро'}
+            <span
+              className="mx-steps-theme-heading__name"
+              data-testid={state === 'offline' ? 'steps-theme-offline' : undefined}
+            >
+              {state === 'offline'
+                ? 'Нет связи'
+                : state === 'loading'
+                  ? 'Загрузка…'
+                  : state === 'error'
+                    ? 'Ошибка'
+                    : 'Скоро'}
             </span>
           </h2>
-          {themeLoading ? (
+          {state === 'loading' ? (
             <div className="mx-steps-theme-skeleton" role="status" aria-label="Загрузка вопросов">
               <span className="animate-pulse" aria-hidden="true" />
             </div>
           ) : (
             <>
               <p className="mx-steps-empty-copy">
-                {themeError
+                {state === 'error'
                   ? 'Вопросы не загрузились. Не удалось загрузить тему. Проверь соединение и попробуй ещё раз.'
-                  : 'Пока нет вопросов. Опубликованная тема появится здесь, когда будет доступна для тебя.'}
+                  : state === 'offline'
+                    ? 'Вопросы не загрузились. Проверь соединение и попробуй ещё раз.'
+                    : 'Пока нет вопросов. Опубликованная тема появится здесь, когда будет доступна для тебя.'}
               </p>
-              {themeError && (
+              {state === 'error' && (
                 <button type="button" className="mx-steps-pill" onClick={onRetry}>
+                  Повторить
+                </button>
+              )}
+              {state === 'offline' && (
+                <button
+                  type="button"
+                  className="mx-steps-theme-retry"
+                  data-testid="steps-theme-retry"
+                  onClick={onRetry}
+                >
                   Повторить
                 </button>
               )}
@@ -262,6 +289,7 @@ export default function PracticeCatalogV2({
   themes,
   themeLoading = false,
   themesError = false,
+  themesStalled = false,
   onRetryThemes,
   onOpenPractice,
   onOpenCollection,
@@ -283,6 +311,7 @@ export default function PracticeCatalogV2({
         theme={currentTheme}
         themeLoading={themeLoading}
         themeError={themesError}
+        themeStalled={themesStalled}
         onRetry={onRetryThemes}
         onOpen={onOpenTheme}
         onOpenAllThemes={onOpenAllThemes}

@@ -8,6 +8,7 @@ import { fetchPracticesData, peekPracticesData } from '../lib/practicesDataCache
 import { fetchThemesData, peekThemesData } from '../lib/themesDataCache'
 import { useTabRefresh, useTabReset } from '../lib/tabRefresh'
 import { useScrollFade } from '../lib/useScrollFade'
+import { useSlowConnection } from '../lib/useSlowConnection'
 import { buildPracticeViewModels } from '../lib/practiceCatalogRegistry'
 import { previewPracticeAction } from '../lib/demoMode'
 
@@ -394,6 +395,8 @@ export default function Practices({
   const [ascezas, setAscezas] = useState(initialPracticesData?.ascezas ?? [])
   const [themes, setThemes] = useState(initialThemesData ?? [])
   const [themeLoading, setThemeLoading] = useState(!initialThemesData)
+  /* «Тема недели: Загрузка…» не висит вечно: через 8 с — «Нет связи» и «Повторить». */
+  const themesStalled = useSlowConnection(themeLoading)
   const [themesError, setThemesError] = useState(false)
   const themeRequestRef = useRef(0)
   const [selectedThemeDay, setSelectedThemeDay] = useState(null)
@@ -695,6 +698,7 @@ export default function Practices({
         themes={themes}
         themeLoading={themeLoading}
         themesError={themesError}
+        themesStalled={themesStalled}
         onRetryThemes={() => loadThemes({ force: true })}
         collectionsError={Boolean(loadError)}
         onRetryCollections={retryPractices}

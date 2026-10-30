@@ -313,6 +313,20 @@ screens, and keep article cards unchanged unless the owner explicitly approves t
 
 - `dist/privacy.html` — статичная страница для BotFather: её генерирует плагин `privacyPagePlugin` в `vite.config.js` из `src/content/privacyPolicy.js` (текст политики не дублируется). Шрифт Onest встроен в HTML, внешних запросов и скриптов нет.
 - В dev-сервере те же адреса отдаёт middleware плагина (`/privacy`, `/privacy/`, `/privacy.html`), в проде — rewrites в `firebase.json` выше общего `**`. Проверка: `/privacy` возвращает `<h1>Политика конфиденциальности Mentalix</h1>` и 12 секций, `/` по-прежнему отдаёт SPA.
+- Тот же плагин пишет `dist/privacy/index.html` — для Timeweb App Platform и других статических хостингов, где rewrites из `firebase.json` не читаются: `/privacy/` и `/privacy.html` работают физическими файлами. Канонический адрес со слэшем — `https://mentalix.space/privacy/`: он же в BotFather и в ссылке экрана входа (`src/screens/WebAuthScreen.jsx`); редирект в панели не нужен.
+
+### Фронтенд на Timeweb (152-ФЗ)
+
+- Инструкция по переносу — `docs/TIMEWEB_FRONTEND.md`: App Platform (frontend, `npm ci && npm run build`, `dist`), SPA Fallback вместо rewrites, домен `mentalix.space`, BotFather, откат на Firebase.
+- `VITE_API_BASE_URL` — единственный источник адреса API и должен включать `/api` (`https://api.mentalix.space/api`): клиент дописывает пути без префикса. Firebase-деплой и proxy `/api/**` остаются путём отката.
+- Гостевой вход в вебе разрешён только на боевых хостах: `mentalix.space`, `mentalix-production.web.app`, `mentalix-production.firebaseapp.com` (`src/lib/guestAuth.js`). Новый боевой домен добавляется туда же.
+- Возврат с ЮKassa, который ждёт фронт, — `https://mentalix.space/?payment=return` (параметр `payment=return`).
+- Fullscreen в Telegram запрашивается только на `ios`/`android` (`src/lib/tgFullscreen.js`); на компьютерных клиентах (`tdesktop`, `macos`, `weba`, `webk`) — только `ready()` + `expand()`, без своей рамки. Платформа `unknown` — это SDK в обычном браузере и демо-стенде, а не компьютерный клиент: там остаётся прежний путь с pessimistic default (`fullscreen=true` до подтверждения), иначе на 375×667 меняется геометрия экрана завершения шага «Пути героя» (иллюстрация 287 → 343 px). В обычном браузере на компьютере — рамка iPhone 16 Pro Max 440×956 с чёрным фоном (`src/lib/desktopFrame.js`).
+- «Нет связи» вместо вечной загрузки — общий хук `src/lib/useSlowConnection.js` (8 с) на «Сегодня» (`Подключаемся…`) и в блоке «Тема недели» на «Шагах».
+- Целевые проверки задачи: `npx playwright test --config=playwright.ux.config.mjs telegram-desktop-window.spec.mjs connection-offline-state.spec.mjs` в web-контейнере (Chromium); полный `ux:check` и WebKit остаются CI, iPhone/Telegram Desktop — ручной gate.
+- Нижняя навигация в тестах ищется только с `exact: true` (`getByRole('button', { name: 'Прогресс', exact: true })`): карточка «Мысль дня» (`today-quote-card`) — тоже кнопка, и в тот день, когда её текст содержит «прогресс», поиск по подстроке находит две кнопки и падает на strict mode. Это было единственной причиной красных шагов `ux:tap-areas` и `ux:pro-states` в CI, а не уменьшение тап-зон «Прогресса». Точный поиск уже стоит во всех наборах с нижней навигацией: `tap-areas-checkin-offset`, `demo-telegram-header`, `ux-check`, `pro-review-states`, `pro-failure-states`, `subscription-states`, `progress-tabs-visual`, `tests/qa/crawl.spec.mjs`; новые обращения к вкладкам — так же.
+- `ux:check` локально в песочнице падает на экране «Прогресс» из-за `VITE_PAYMENT_UI_ENABLED=true`/`VITE_PRO_REVIEW_PLAN_ENABLED=true` из `docker-compose.base44.yml`: демо-API отвечает 501 на `GET /subscription`, и прогон падает на runtime error. Как в CI — запускать с `-e VITE_PAYMENT_UI_ENABLED=false -e VITE_PRO_REVIEW_PLAN_ENABLED=false`.
+- WebKit-гейт тап-зон: `npx playwright test --config=playwright.tap-areas.config.mjs` (перед первым прогоном `npx playwright install --with-deps webkit`); остальные тесты набора проходят без изменений.
 
 ### Изоляция профилей в «Истории» (JOURNAL-001)
 

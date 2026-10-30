@@ -214,7 +214,17 @@ function privacyPagePlugin() {
     },
     writeBundle(options) {
       const outDir = options.dir || 'dist'
-      fs.writeFileSync(path.join(outDir, 'privacy.html'), renderPrivacyHtml())
+      const html = renderPrivacyHtml()
+      fs.writeFileSync(path.join(outDir, 'privacy.html'), html)
+      /*
+       * Timeweb App Platform (статический frontend) не читает firebase.json:
+       * при включённом SPA Fallback адрес без файла уходит в index.html.
+       * Поэтому политика дополнительно собирается физическим файлом
+       * dist/privacy/index.html — его отдаёт любой статический хостинг
+       * для /privacy/ (и для /privacy после редиректа на слэш).
+       */
+      fs.mkdirSync(path.join(outDir, 'privacy'), { recursive: true })
+      fs.writeFileSync(path.join(outDir, 'privacy', 'index.html'), html)
     },
   }
 }

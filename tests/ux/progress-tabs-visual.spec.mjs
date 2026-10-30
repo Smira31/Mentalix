@@ -203,7 +203,9 @@ test('Progress visual snapshots: Аналитика и История (demo mode
     await expect(page.getByRole('button', { name: 'Шаги' })).toBeVisible({ timeout: 15_000 })
 
     // Переход на экран «Прогресс»
-    await page.getByRole('button', { name: 'Прогресс' }).click()
+    // exact: карточка «Мысль дня» на «Сегодня» — тоже кнопка, и в тот день,
+    // когда её текст содержит «прогресс», поиск по подстроке находит две кнопки.
+    await page.getByRole('button', { name: 'Прогресс', exact: true }).click()
 
     // Дождаться появления заголовка и сегмент-бара
     await expect(page.getByRole('heading', { name: 'аналитика.' })).toBeAttached({

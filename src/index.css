@@ -1844,6 +1844,17 @@ button.mx-demo-telegram-chrome__pill:focus:not(:focus-visible) {
   background:
     radial-gradient(circle at 50% 0%, rgb(var(--c-card2) / 0.7), transparent 42%), rgb(var(--c-bg));
 }
+
+/*
+ * Обычный браузер на компьютере (не Telegram, не ?demo=1): рамка iPhone
+ * 16 Pro Max (440×956 логических px) по центру, вокруг — чёрный фон.
+ * Масштаб под высоту окна считает App.jsx (DESKTOP_FRAME_GUTTERS), поэтому
+ * высоту сцены здесь не задаём.
+ */
+.mx-preview-stage--desktop {
+  justify-content: center;
+  background: #000;
+}
 .mx-preview-device-switcher {
   display: flex;
   align-items: stretch;

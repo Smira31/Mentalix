@@ -2070,6 +2070,30 @@
   }
 }
 
+/*
+ * «Нет связи» вместо вечного «Подключаемся…»: тихий текст и тихая кнопка,
+ * без пульсации, красного и эмодзи.
+ */
+.mx-today-connecting--offline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  animation: none;
+  opacity: 1;
+}
+
+.mx-today-connecting__retry {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
 /* Stoic-подобная геометрия «Твои практики» и листов —
    перенесено в src/components/PinnedPractices.css (рядом с компонентом).
    Классы .mx-pinned-* используются только PinnedPractices, включая порталы. */

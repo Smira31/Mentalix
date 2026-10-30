@@ -279,7 +279,9 @@ test('карточка «Прогресс»: «Оформить Pro» ведёт
      * ux:pro-states / ux:pro-failure-states.
      */
     await page.goto('/?demo=1&frame=0&proStatus=pro')
-    await page.getByRole('button', { name: 'Прогресс' }).click()
+    // exact: карточка «Мысль дня» на «Сегодня» — тоже кнопка, и в тот день,
+    // когда её текст содержит «прогресс», поиск по подстроке находит две кнопки.
+    await page.getByRole('button', { name: 'Прогресс', exact: true }).click()
     await expect(page.getByTestId('progress-pro-card')).toBeVisible()
 
     await page.getByTestId('pro-card-buy-pro').click()

@@ -1,6 +1,7 @@
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { platform, platformName } from '../platform'
 import { useAutoDismissOnScroll } from '../lib/useAutoDismissOnScroll'
+import { useSlowConnection } from '../lib/useSlowConnection'
 import { api } from '../lib/api'
 import { logEngagementEvent } from '../lib/engagementEvents'
 import {
@@ -274,6 +275,12 @@ export default function Today({
   // «Подключаемся…» — ненавязчивый индикатор после перехода со скелетона
   // на экран «Сегодня», пока сервер ещё не ответил (Render free спит).
   const [connecting, setConnecting] = useState(false)
+
+  /*
+   * Через 8 с ожидания «Подключаемся…» сменяется тихим «Нет связи» и
+   * «Повторить»: индикатор больше не висит вечно, если API молчит.
+   */
+  const connectionStalled = useSlowConnection(connecting)
 
   const [loadError, setLoadError] = useState(false)
 
@@ -1427,7 +1434,7 @@ export default function Today({
           changeSub('path')
         }}
       />
-      {connecting && (
+      {connecting && !connectionStalled && (
         <p
           className="mx-today-connecting mx-type-meta text-muted"
           role="status"
@@ -1435,6 +1442,23 @@ export default function Today({
         >
           Подключаемся…
         </p>
+      )}
+      {connecting && connectionStalled && (
+        <div
+          className="mx-today-connecting mx-today-connecting--offline mx-type-meta text-muted"
+          role="status"
+          data-testid="today-connection-offline"
+        >
+          <span>Нет связи</span>
+          <button
+            type="button"
+            className="mx-today-connecting__retry mx-tap-target"
+            data-testid="today-connection-retry"
+            onClick={retryTodayData}
+          >
+            Повторить
+          </button>
+        </div>
       )}
       {refreshToast && (
         <p

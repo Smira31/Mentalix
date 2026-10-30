@@ -9,6 +9,20 @@ const INSET_NAMES = ['top', 'right', 'bottom', 'left']
  */
 const CONFIRMATION_TIMEOUT_MS = 2000
 
+/*
+ * Компьютерные клиенты Telegram: там requestFullscreen разворачивает Mini App
+ * во всё окно Telegram с огромной рамкой, поэтому им достаются только
+ * ready() + expand() — см. startNegotiation().
+ *
+ * Список именно компьютерных платформ, а не «всё, кроме мобильных»: SDK в
+ * обычном браузере (и в демо-стенде) сообщает platform «unknown», и такой
+ * случай обязан идти прежним путём — иначе у него пропадает pessimistic
+ * default (MXL-FULLSCREEN-SURFACE-RACE-001), а вместе с ним и место под
+ * контролы Telegram: на 375×667 иллюстрация завершения шага «Пути героя»
+ * вырастает с 287 до 343 px.
+ */
+const DESKTOP_FULLSCREEN_SKIP_PLATFORMS = new Set(['tdesktop', 'macos', 'weba', 'webk'])
+
 function getTelegram() {
   if (typeof window === 'undefined') {
     return {
@@ -21,6 +35,24 @@ function getTelegram() {
     webApp: window.Telegram?.WebApp ?? null,
     webView: window.Telegram?.WebView ?? null,
   }
+}
+
+/*
+ * Платформа Telegram: сначала WebApp.platform (ios/android/tdesktop/macos/
+ * weba/webk/…), при его отсутствии — по user agent, чтобы на мобильных
+ * клиентах со старым SDK поведение fullscreen не изменилось.
+ */
+function detectTelegramPlatform(webApp) {
+  const declared = String(webApp?.platform || '').toLowerCase()
+
+  if (declared) return declared
+
+  const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent || '' : ''
+
+  if (/android/i.test(userAgent)) return 'android'
+  if (/iphone|ipad|ipod/i.test(userAgent)) return 'ios'
+
+  return 'unknown'
 }
 
 function toPixels(value) {
@@ -117,6 +149,24 @@ function startNegotiation() {
     // резервировать TG_CONTROLS_HEIGHT здесь было бы чистой регрессией.
     confirmed = true
     setSnapshot(false)
+
+    return
+  }
+
+  /*
+   * Fullscreen — только мобильные клиенты Telegram. На компьютере
+   * (tdesktop, macos, weba, webk) requestFullscreen разворачивает Mini App
+   * во всё окно Telegram и оставляет огромную рамку, поэтому там достаточно
+   * ready() + expand(): приложение занимает окно Telegram как есть.
+   * Неизвестная платформа (SDK в браузере, демо) идёт прежним путём.
+   */
+  const telegramPlatform = detectTelegramPlatform(webApp)
+
+  if (DESKTOP_FULLSCREEN_SKIP_PLATFORMS.has(telegramPlatform)) {
+    confirmed = true
+    setSnapshot(false)
+    safelyRun(() => webApp?.ready?.(), 'ready()')
+    safelyRun(() => webApp?.expand?.(), 'expand()')
 
     return
   }

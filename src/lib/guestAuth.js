@@ -17,10 +17,13 @@ export const GUEST_MERGE_TOKEN_KEY = 'mentalix_guest_merge_token'
  *
  * mentalix-production.firebaseapp.com — домен по умолчанию Firebase Hosting
  * (projectId: mentalix-production), см. firebase.json.
+ * mentalix.space — боевой домен после переноса во Timeweb Cloud (152-ФЗ);
+ * запись нужна, чтобы гостевой вход в вебе работал и на новом домене.
  */
 const PRODUCTION_HOSTS = new Set([
   'mentalix-production.web.app',
   'mentalix-production.firebaseapp.com',
+  'mentalix.space',
 ])
 
 /**

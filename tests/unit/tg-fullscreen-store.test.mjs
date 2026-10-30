@@ -36,6 +36,9 @@ function setupTelegramWebApp(overrides = {}) {
 
   const webApp = {
     initData: 'mock-init-data',
+    // Мобильный клиент: negotiation fullscreen проверяется на iOS/Android.
+    // Компьютерные платформы разбирает отдельный тест ниже.
+    platform: 'ios',
     version: '8.0',
     isVersionAtLeast: ver => '8.0' >= ver,
     isFullscreen: false,
@@ -242,6 +245,48 @@ test('MXL-FULLSCREEN-SURFACE-RACE-001 initFullscreen (legacy API): вызыва�
   emit(listeners, 'fullscreenChanged', { isFullscreen: true })
 
   assert.deepEqual(seen, [true, false])
+})
+
+/*
+ * Компьютерные клиенты Telegram (Timeweb-задача «окно на компьютере»):
+ * requestFullscreen разворачивал Mini App во всё окно с огромной рамкой,
+ * поэтому на tdesktop/macos/weba/webk остаются только ready() + expand(), а
+ * shell больше не резервирует место под контролы Telegram (snapshot false).
+ * Платформа unknown — не компьютерный клиент, у неё отдельный тест ниже.
+ */
+for (const platform of ['tdesktop', 'macos', 'weba', 'webk']) {
+  test(`компьютерная платформа ${platform}: только ready/expand, без fullscreen`, async () => {
+    setupDom()
+    const { calls, listeners } = setupTelegramWebApp({ platform })
+
+    const mod = await freshModule()
+    const seen = []
+    const unsubscribe = mod.subscribeFullscreen(() => seen.push(mod.getFullscreenSnapshot()))
+
+    assert.equal(calls.ready, 1)
+    assert.equal(calls.expand, 1)
+    assert.equal(calls.requestFullscreen, 0, 'requestFullscreen не должен вызываться на компьютере')
+    assert.equal(mod.getFullscreenSnapshot(), false)
+    assert.equal((listeners.get('fullscreenChanged') || []).length, 0)
+
+    unsubscribe()
+  })
+}
+
+/*
+ * Платформа «unknown» — это SDK в обычном браузере (демо-стенд, тесты): не
+ * компьютерный клиент Telegram. Такой запуск обязан идти прежним путём с
+ * pessimistic default, иначе shell теряет место под контролы Telegram и
+ * геометрия экранов на 375×667 меняется (регрессия hero-journey 375×667).
+ */
+test('платформа unknown (SDK в браузере): прежний путь с pessimistic default', async () => {
+  setupDom()
+  const { calls } = setupTelegramWebApp({ platform: 'unknown' })
+
+  const mod = await freshModule()
+
+  assert.equal(mod.getFullscreenSnapshot(), true)
+  assert.equal(calls.requestFullscreen, 1)
 })
 
 test('SDK 8: при версии клиента < 8.0 requestFullscreen не вызывается', async () => {
