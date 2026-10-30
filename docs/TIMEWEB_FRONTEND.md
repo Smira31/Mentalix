@@ -23,9 +23,10 @@ last_verified: 2026-10-30
 Node-процесса в проде нет.
 
 Адрес API берётся **только** из `VITE_API_BASE_URL`
-(`src/lib/api.js`, `src/platform/web.adapter.js`). Значение должно включать
-префикс `/api`, потому что клиент сам дописывает пути без него
-(`/checkin`, `/subscription`, `/payments/yookassa/create`):
+(`src/lib/api.js`, `src/platform/web.adapter.js`). Все роуты backend живут под
+`/api/*` (`/api/health`, `/api/telegram/webhook`), а клиент дописывает пути без
+префикса (`/checkin`, `/subscription`, `/payments/yookassa/create`), поэтому
+префикс `/api` в значении обязателен:
 
 ```
 VITE_API_BASE_URL = https://api.mentalix.space/api
@@ -87,10 +88,11 @@ VITE_API_BASE_URL = https://api.mentalix.space/api
 Оба файла генерирует `privacyPagePlugin` в `vite.config.js` из
 `src/content/privacyPolicy.js` (текст политики не дублируется).
 
-Адрес без слэша `/privacy` при включённом SPA Fallback уйдёт в приложение.
-Если он тоже нужен, добавьте в «Настройки веб-сервера → Редиректы» правило
-`path /privacy → /privacy/`, код `301`. Для BotFather достаточно
-`https://mentalix.space/privacy/`.
+Канонический адрес — **со слэшем**: `https://mentalix.space/privacy/`. Он же
+идёт в BotFather и в текстах, и он же стоит в ссылке экрана входа
+(`src/screens/WebAuthScreen.jsx`), поэтому адреса без слэша нигде не осталось.
+Редирект в «Настройки веб-сервера → Редиректы» **не обязателен**: при
+включённом SPA Fallback `/privacy` просто откроет приложение.
 
 ## 3. Домен mentalix.space и SSL
 
@@ -119,19 +121,21 @@ VITE_API_BASE_URL = https://api.mentalix.space/api
 4. Пока идёт откатный период, старый домен Firebase можно оставить в списке
    доменов Telegram Login; адрес Mini App при этом уже новый.
 
-## 5. Что должно быть готово на стороне API
+## 5. Состояние API
 
 Фронтенд ходит на `api.mentalix.space` с `credentials: 'include'` и
 заголовком `Authorization` (`tma <initData>` в Telegram, `Bearer <token>` на
-вебе), поэтому backend должен:
+вебе).
 
-- отдавать CORS для `Origin: https://mentalix.space` с
-  `Access-Control-Allow-Credentials: true` и разрешёнными заголовками
-  `Authorization`, `Content-Type`;
-- отдавать cookie сессии host-only на `api.mentalix.space` с `SameSite=Lax`
-  (домены `mentalix.space` и `api.mentalix.space` — same-site, поэтому Lax
-  подходит и для возврата с ЮKassa);
-- принимать `YOOKASSA_RETURN_URL = https://mentalix.space/?payment=return`.
+CORS на backend **уже настроен** (mentalix-bot PR #205): `allow_origins` из
+`CORS_ALLOW_ORIGINS=https://mentalix.space`, `allow_credentials=True`,
+заголовок `Authorization` разрешён явно. Со стороны фронтенда настраивать
+CORS, прокси или cookie больше ничего не нужно: `mentalix.space` и
+`api.mentalix.space` — same-site, cookie сессии host-only на
+`api.mentalix.space` с `SameSite=Lax` работают и при возврате с ЮKassa.
+
+Единственная настройка окружения backend, которую держим в чек-листе
+переезда, — `YOOKASSA_RETURN_URL = https://mentalix.space/?payment=return`.
 
 **Точный путь возврата после оплаты, который ждёт фронтенд** —
 `https://mentalix.space/?payment=return` (параметр `payment=return`,

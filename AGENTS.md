@@ -313,7 +313,7 @@ screens, and keep article cards unchanged unless the owner explicitly approves t
 
 - `dist/privacy.html` — статичная страница для BotFather: её генерирует плагин `privacyPagePlugin` в `vite.config.js` из `src/content/privacyPolicy.js` (текст политики не дублируется). Шрифт Onest встроен в HTML, внешних запросов и скриптов нет.
 - В dev-сервере те же адреса отдаёт middleware плагина (`/privacy`, `/privacy/`, `/privacy.html`), в проде — rewrites в `firebase.json` выше общего `**`. Проверка: `/privacy` возвращает `<h1>Политика конфиденциальности Mentalix</h1>` и 12 секций, `/` по-прежнему отдаёт SPA.
-- Тот же плагин пишет `dist/privacy/index.html` — для Timeweb App Platform и других статических хостингов, где rewrites из `firebase.json` не читаются: `/privacy/` и `/privacy.html` работают физическими файлами, `/privacy` без слэша требует редиректа в панели.
+- Тот же плагин пишет `dist/privacy/index.html` — для Timeweb App Platform и других статических хостингов, где rewrites из `firebase.json` не читаются: `/privacy/` и `/privacy.html` работают физическими файлами. Канонический адрес со слэшем — `https://mentalix.space/privacy/`: он же в BotFather и в ссылке экрана входа (`src/screens/WebAuthScreen.jsx`); редирект в панели не нужен.
 
 ### Фронтенд на Timeweb (152-ФЗ)
 

@@ -303,7 +303,7 @@ export default function WebAuthScreen({ onAuthed }) {
 
       <a
         className="mx-web-auth-change"
-        href="/privacy"
+        href="/privacy/"
         data-testid="web-auth-privacy-link"
       >
         Политика конфиденциальности

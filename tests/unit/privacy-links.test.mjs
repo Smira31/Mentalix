@@ -28,7 +28,10 @@ test('WebAuthScreen содержит ссылку на политику конф
     'на экране входа есть data-testid="web-auth-privacy-link"'
   )
   assert.match(webAuthSource, /Политика конфиденциальности/)
-  assert.match(webAuthSource, /href="\/privacy"/)
+  // Канонический адрес политики — со слэшем (`/privacy/`): он собирается
+  // физическим файлом dist/privacy/index.html и не требует редиректа на
+  // статических хостингах (Timeweb App Platform), см. docs/TIMEWEB_FRONTEND.md.
+  assert.match(webAuthSource, /href="\/privacy\/"/)
 })
 
 test('SubscriptionManager содержит ссылку на политику рядом с кнопкой оплаты', () => {
