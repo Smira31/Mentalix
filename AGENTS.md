@@ -324,6 +324,8 @@ screens, and keep article cards unchanged unless the owner explicitly approves t
 - Fullscreen в Telegram запрашивается только на `ios`/`android` (`src/lib/tgFullscreen.js`); на компьютерных клиентах (`tdesktop`, `macos`, `weba`, `webk`) — только `ready()` + `expand()`, без своей рамки. Платформа `unknown` — это SDK в обычном браузере и демо-стенде, а не компьютерный клиент: там остаётся прежний путь с pessimistic default (`fullscreen=true` до подтверждения), иначе на 375×667 меняется геометрия экрана завершения шага «Пути героя» (иллюстрация 287 → 343 px). В обычном браузере на компьютере — рамка iPhone 16 Pro Max 440×956 с чёрным фоном (`src/lib/desktopFrame.js`).
 - «Нет связи» вместо вечной загрузки — общий хук `src/lib/useSlowConnection.js` (8 с) на «Сегодня» (`Подключаемся…`) и в блоке «Тема недели» на «Шагах».
 - Целевые проверки задачи: `npx playwright test --config=playwright.ux.config.mjs telegram-desktop-window.spec.mjs connection-offline-state.spec.mjs` в web-контейнере (Chromium); полный `ux:check` и WebKit остаются CI, iPhone/Telegram Desktop — ручной gate.
+- Нижняя навигация в тестах ищется только с `exact: true` (`getByRole('button', { name: 'Прогресс', exact: true })`): карточка «Мысль дня» (`today-quote-card`) — тоже кнопка, и в тот день, когда её текст содержит «прогресс», поиск по подстроке находит две кнопки и падает на strict mode. Это было единственной причиной красного шага `ux:tap-areas` в CI, а не уменьшение тап-зон «Прогресса».
+- WebKit-гейт тап-зон: `npx playwright test --config=playwright.tap-areas.config.mjs` (перед первым прогоном `npx playwright install --with-deps webkit`); остальные тесты набора проходят без изменений.
 
 ### Изоляция профилей в «Истории» (JOURNAL-001)
 

@@ -200,8 +200,11 @@ test.describe('Области нажатия и отступ «Назад»', ()
     await page.goto('/?demo=1')
 
     // Переход на «Прогресс» — как в соседнем progress-тесте: нижняя навигация.
-    await expect(page.getByRole('button', { name: 'Прогресс' })).toBeVisible()
-    await page.getByRole('button', { name: 'Прогресс' }).click()
+    // exact обязателен: «Мысль дня» — тоже кнопка, и в тот день, когда её текст
+    // содержит «прогресс», поиск по подстроке находит две кнопки (strict mode).
+    const progressNav = page.getByRole('button', { name: 'Прогресс', exact: true })
+    await expect(progressNav).toBeVisible()
+    await progressNav.click()
     await expect(page.getByTestId('progress-tab-analytics')).toBeVisible()
 
     // Переключатель периода — в строке действий сверху вкладки.
