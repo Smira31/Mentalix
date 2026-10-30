@@ -19,6 +19,8 @@ export default defineConfig({
     // Свой dev-сервер с флагом — `ux:payment-ui` (playwright.payment-ui.config.mjs).
     'profile-canonical-streak.spec.mjs',
     'demo-phone.spec.mjs',
+    'telegram-desktop-window.spec.mjs',
+    'connection-offline-state.spec.mjs',
     'demo-telegram-header.spec.mjs',
     'demo-panel.spec.mjs',
     'guest-save-reminder.spec.mjs',

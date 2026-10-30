@@ -313,6 +313,17 @@ screens, and keep article cards unchanged unless the owner explicitly approves t
 
 - `dist/privacy.html` — статичная страница для BotFather: её генерирует плагин `privacyPagePlugin` в `vite.config.js` из `src/content/privacyPolicy.js` (текст политики не дублируется). Шрифт Onest встроен в HTML, внешних запросов и скриптов нет.
 - В dev-сервере те же адреса отдаёт middleware плагина (`/privacy`, `/privacy/`, `/privacy.html`), в проде — rewrites в `firebase.json` выше общего `**`. Проверка: `/privacy` возвращает `<h1>Политика конфиденциальности Mentalix</h1>` и 12 секций, `/` по-прежнему отдаёт SPA.
+- Тот же плагин пишет `dist/privacy/index.html` — для Timeweb App Platform и других статических хостингов, где rewrites из `firebase.json` не читаются: `/privacy/` и `/privacy.html` работают физическими файлами, `/privacy` без слэша требует редиректа в панели.
+
+### Фронтенд на Timeweb (152-ФЗ)
+
+- Инструкция по переносу — `docs/TIMEWEB_FRONTEND.md`: App Platform (frontend, `npm ci && npm run build`, `dist`), SPA Fallback вместо rewrites, домен `mentalix.space`, BotFather, откат на Firebase.
+- `VITE_API_BASE_URL` — единственный источник адреса API и должен включать `/api` (`https://api.mentalix.space/api`): клиент дописывает пути без префикса. Firebase-деплой и proxy `/api/**` остаются путём отката.
+- Гостевой вход в вебе разрешён только на боевых хостах: `mentalix.space`, `mentalix-production.web.app`, `mentalix-production.firebaseapp.com` (`src/lib/guestAuth.js`). Новый боевой домен добавляется туда же.
+- Возврат с ЮKassa, который ждёт фронт, — `https://mentalix.space/?payment=return` (параметр `payment=return`).
+- Fullscreen в Telegram запрашивается только на `ios`/`android` (`src/lib/tgFullscreen.js`); на компьютере — только `ready()` + `expand()`, без своей рамки. В обычном браузере на компьютере — рамка iPhone 16 Pro Max 440×956 с чёрным фоном (`src/lib/desktopFrame.js`).
+- «Нет связи» вместо вечной загрузки — общий хук `src/lib/useSlowConnection.js` (8 с) на «Сегодня» (`Подключаемся…`) и в блоке «Тема недели» на «Шагах».
+- Целевые проверки задачи: `npx playwright test --config=playwright.ux.config.mjs telegram-desktop-window.spec.mjs connection-offline-state.spec.mjs` в web-контейнере (Chromium); полный `ux:check` и WebKit остаются CI, iPhone/Telegram Desktop — ручной gate.
 
 ### Изоляция профилей в «Истории» (JOURNAL-001)
 

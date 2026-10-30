@@ -335,6 +335,19 @@
   line-height: 1.45;
 }
 
+/* «Нет связи»: тихая кнопка-текст рядом с тихим текстом (без красного). */
+.mx-steps-theme-retry {
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #f3f3f3;
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
 /* ── 5. Коллекции ── */
 .mx-steps-collections-section {
   display: grid;

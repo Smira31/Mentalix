@@ -9,6 +9,13 @@ const INSET_NAMES = ['top', 'right', 'bottom', 'left']
  */
 const CONFIRMATION_TIMEOUT_MS = 2000
 
+/*
+ * Платформы Telegram, где fullscreen действительно нужен: только мобильные
+ * клиенты. Всё остальное (tdesktop, macos, weba, webk, unknown) живёт в
+ * обычном окне Telegram — см. startNegotiation().
+ */
+const MOBILE_FULLSCREEN_PLATFORMS = new Set(['ios', 'android'])
+
 function getTelegram() {
   if (typeof window === 'undefined') {
     return {
@@ -21,6 +28,24 @@ function getTelegram() {
     webApp: window.Telegram?.WebApp ?? null,
     webView: window.Telegram?.WebView ?? null,
   }
+}
+
+/*
+ * Платформа Telegram: сначала WebApp.platform (ios/android/tdesktop/macos/
+ * weba/webk/…), при его отсутствии — по user agent, чтобы на мобильных
+ * клиентах со старым SDK поведение fullscreen не изменилось.
+ */
+function detectTelegramPlatform(webApp) {
+  const declared = String(webApp?.platform || '').toLowerCase()
+
+  if (declared) return declared
+
+  const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent || '' : ''
+
+  if (/android/i.test(userAgent)) return 'android'
+  if (/iphone|ipad|ipod/i.test(userAgent)) return 'ios'
+
+  return 'unknown'
 }
 
 function toPixels(value) {
@@ -117,6 +142,23 @@ function startNegotiation() {
     // резервировать TG_CONTROLS_HEIGHT здесь было бы чистой регрессией.
     confirmed = true
     setSnapshot(false)
+
+    return
+  }
+
+  /*
+   * Fullscreen — только мобильные клиенты Telegram. На компьютере
+   * (tdesktop, macos, weba, webk, web, unknown) requestFullscreen разворачивает
+   * Mini App во всё окно Telegram и оставляет огромную рамку, поэтому там
+   * достаточно ready() + expand(): приложение занимает окно Telegram как есть.
+   */
+  const telegramPlatform = detectTelegramPlatform(webApp)
+
+  if (!MOBILE_FULLSCREEN_PLATFORMS.has(telegramPlatform)) {
+    confirmed = true
+    setSnapshot(false)
+    safelyRun(() => webApp?.ready?.(), 'ready()')
+    safelyRun(() => webApp?.expand?.(), 'expand()')
 
     return
   }

@@ -59,6 +59,7 @@ import { getFullscreenSnapshot, initFullscreen } from './lib/tgFullscreen'
 import { initIdleMotionPause } from './lib/idleMotion'
 import { installProtectedTextGuards } from './lib/protectedText'
 import { useStableViewportHeight } from './lib/visualViewport'
+import { DESKTOP_FRAME_VIEWPORT, desktopFrameScale } from './lib/desktopFrame'
 import { useGlobalEdgeSwipeBack } from './lib/gestures/useGlobalEdgeSwipeBack'
 
 /* ============================================================
@@ -66,6 +67,8 @@ import { useGlobalEdgeSwipeBack } from './lib/gestures/useGlobalEdgeSwipeBack'
    ============================================================ */
 
 const ONBOARDED_KEY = 'mx-onboarded-v2'
+
+
 
 /* ============================================================
    LAZY SCREENS
@@ -639,10 +642,21 @@ function App() {
     demoDevice === 'max'
       ? { width: 440, height: 956, label: 'iPhone 16 Pro Max' }
       : { width: 393, height: 852, label: 'iPhone 15 Pro' }
+  /*
+   * Логический размер рамки на компьютере: в демо — выбранный телефон,
+   * в обычном браузере — iPhone 16 Pro Max (440×956).
+   */
+  const frameViewport = previewDemoMode ? demoViewport : DESKTOP_FRAME_VIEWPORT
   const [demoScale, setDemoScale] = useState(1)
+  /*
+   * Рамка телефона на компьютере — только в обычном браузере. В Telegram
+   * (в том числе Desktop) приложение заполняет окно Telegram: там своя рамка
+   * не рисуется вовсе.
+   */
   const [desktopDeviceFrame, setDesktopDeviceFrame] = useState(
     () =>
       window.innerWidth > 700 &&
+      platformName !== 'telegram' &&
       !['localhost', '127.0.0.1'].includes(window.location.hostname) &&
       !window.matchMedia?.('(display-mode: standalone)')?.matches
   )
@@ -651,6 +665,7 @@ function App() {
     const updateDesktopFrame = () => {
       setDesktopDeviceFrame(
         window.innerWidth > 700 &&
+          platformName !== 'telegram' &&
           !['localhost', '127.0.0.1'].includes(window.location.hostname) &&
           !window.matchMedia?.('(display-mode: standalone)')?.matches
       )
@@ -665,15 +680,22 @@ function App() {
   useEffect(() => {
     if (!deviceFrameMode) return undefined
     const updateScale = () => {
-      // Единый базовый масштаб во всех web-режимах. Если окно ПК ниже
-      // iPhone viewport, фрейм может выходить за высоту окна, но интерфейс
-      // не должен становиться мельче только из-за высоты окна.
-      setDemoScale(1)
+      /*
+       * Демо-рамка (?demo=1) сохраняет единый базовый масштаб 1.
+       * В обычном браузере рамка iPhone 16 Pro Max должна влезать в окно
+       * целиком и без прокрутки страницы — если окно ниже, уменьшаем
+       * пропорционально (поля сцены сверху и снизу — 28px).
+       */
+      if (previewDemoMode) {
+        setDemoScale(1)
+        return
+      }
+      setDemoScale(desktopFrameScale(window.innerHeight, frameViewport.height))
     }
     updateScale()
     window.addEventListener('resize', updateScale)
     return () => window.removeEventListener('resize', updateScale)
-  }, [demoDevice, demoToolbar, demoViewport.height, deviceFrameMode, previewDemoMode])
+  }, [deviceFrameMode, frameViewport.height, previewDemoMode, demoDevice, demoToolbar])
 
   const checkAuth = useCallback(async () => {
     setAuthError(null)
@@ -1136,7 +1158,11 @@ function App() {
     <div
       ref={setAppRootElement}
       data-mentalix-app-root="true"
-      className={deviceFrameMode ? 'mx-preview-stage' : undefined}
+      className={
+        deviceFrameMode
+          ? `mx-preview-stage${previewDemoMode ? '' : ' mx-preview-stage--desktop'}`
+          : undefined
+      }
     >
       {previewDemoMode && demoToolbar && (
         <div className="mx-preview-device-switcher" role="tablist" aria-label="Размер экрана">
@@ -1191,14 +1217,14 @@ function App() {
       `}
         style={{
           height: deviceFrameMode
-            ? `${demoViewport.height}px`
+            ? `${frameViewport.height}px`
             : viewportHeight
               ? `${viewportHeight}px`
               : '100dvh',
-          width: deviceFrameMode ? `${demoViewport.width}px` : undefined,
+          width: deviceFrameMode ? `${frameViewport.width}px` : undefined,
           transform: deviceFrameMode ? `scale(${demoScale})` : undefined,
           marginBottom: deviceFrameMode
-            ? `${-(demoViewport.height * (1 - demoScale))}px`
+            ? `${-(frameViewport.height * (1 - demoScale))}px`
             : undefined,
           /* Профиль (overlay 'settings') в демо живёт под шапкой Telegram,
              как на устройстве: инсет шапки сохраняется и внутри оверлея. */

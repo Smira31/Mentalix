@@ -36,6 +36,9 @@ function setupTelegramWebApp(overrides = {}) {
 
   const webApp = {
     initData: 'mock-init-data',
+    // Мобильный клиент: negotiation fullscreen проверяется на iOS/Android.
+    // Компьютерные платформы разбирает отдельный тест ниже.
+    platform: 'ios',
     version: '8.0',
     isVersionAtLeast: ver => '8.0' >= ver,
     isFullscreen: false,
@@ -243,6 +246,31 @@ test('MXL-FULLSCREEN-SURFACE-RACE-001 initFullscreen (legacy API): вызыва�
 
   assert.deepEqual(seen, [true, false])
 })
+
+/*
+ * Компьютерные клиенты Telegram (Timeweb-задача «окно на компьютере»):
+ * requestFullscreen разворачивал Mini App во всё окно с огромной рамкой,
+ * поэтому вне iOS/Android остаются только ready() + expand(), а shell
+ * больше не резервирует место под контролы Telegram (snapshot false).
+ */
+for (const platform of ['tdesktop', 'macos', 'weba', 'webk', 'unknown']) {
+  test(`компьютерная платформа ${platform}: только ready/expand, без fullscreen`, async () => {
+    setupDom()
+    const { calls, listeners } = setupTelegramWebApp({ platform })
+
+    const mod = await freshModule()
+    const seen = []
+    const unsubscribe = mod.subscribeFullscreen(() => seen.push(mod.getFullscreenSnapshot()))
+
+    assert.equal(calls.ready, 1)
+    assert.equal(calls.expand, 1)
+    assert.equal(calls.requestFullscreen, 0, 'requestFullscreen не должен вызываться на компьютере')
+    assert.equal(mod.getFullscreenSnapshot(), false)
+    assert.equal((listeners.get('fullscreenChanged') || []).length, 0)
+
+    unsubscribe()
+  })
+}
 
 test('SDK 8: при версии клиента < 8.0 requestFullscreen не вызывается', async () => {
   setupDom()
