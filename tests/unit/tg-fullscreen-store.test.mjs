@@ -250,10 +250,11 @@ test('MXL-FULLSCREEN-SURFACE-RACE-001 initFullscreen (legacy API): вызыва�
 /*
  * Компьютерные клиенты Telegram (Timeweb-задача «окно на компьютере»):
  * requestFullscreen разворачивал Mini App во всё окно с огромной рамкой,
- * поэтому вне iOS/Android остаются только ready() + expand(), а shell
- * больше не резервирует место под контролы Telegram (snapshot false).
+ * поэтому на tdesktop/macos/weba/webk остаются только ready() + expand(), а
+ * shell больше не резервирует место под контролы Telegram (snapshot false).
+ * Платформа unknown — не компьютерный клиент, у неё отдельный тест ниже.
  */
-for (const platform of ['tdesktop', 'macos', 'weba', 'webk', 'unknown']) {
+for (const platform of ['tdesktop', 'macos', 'weba', 'webk']) {
   test(`компьютерная платформа ${platform}: только ready/expand, без fullscreen`, async () => {
     setupDom()
     const { calls, listeners } = setupTelegramWebApp({ platform })
@@ -271,6 +272,22 @@ for (const platform of ['tdesktop', 'macos', 'weba', 'webk', 'unknown']) {
     unsubscribe()
   })
 }
+
+/*
+ * Платформа «unknown» — это SDK в обычном браузере (демо-стенд, тесты): не
+ * компьютерный клиент Telegram. Такой запуск обязан идти прежним путём с
+ * pessimistic default, иначе shell теряет место под контролы Telegram и
+ * геометрия экранов на 375×667 меняется (регрессия hero-journey 375×667).
+ */
+test('платформа unknown (SDK в браузере): прежний путь с pessimistic default', async () => {
+  setupDom()
+  const { calls } = setupTelegramWebApp({ platform: 'unknown' })
+
+  const mod = await freshModule()
+
+  assert.equal(mod.getFullscreenSnapshot(), true)
+  assert.equal(calls.requestFullscreen, 1)
+})
 
 test('SDK 8: при версии клиента < 8.0 requestFullscreen не вызывается', async () => {
   setupDom()

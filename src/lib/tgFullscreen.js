@@ -10,11 +10,18 @@ const INSET_NAMES = ['top', 'right', 'bottom', 'left']
 const CONFIRMATION_TIMEOUT_MS = 2000
 
 /*
- * Платформы Telegram, где fullscreen действительно нужен: только мобильные
- * клиенты. Всё остальное (tdesktop, macos, weba, webk, unknown) живёт в
- * обычном окне Telegram — см. startNegotiation().
+ * Компьютерные клиенты Telegram: там requestFullscreen разворачивает Mini App
+ * во всё окно Telegram с огромной рамкой, поэтому им достаются только
+ * ready() + expand() — см. startNegotiation().
+ *
+ * Список именно компьютерных платформ, а не «всё, кроме мобильных»: SDK в
+ * обычном браузере (и в демо-стенде) сообщает platform «unknown», и такой
+ * случай обязан идти прежним путём — иначе у него пропадает pessimistic
+ * default (MXL-FULLSCREEN-SURFACE-RACE-001), а вместе с ним и место под
+ * контролы Telegram: на 375×667 иллюстрация завершения шага «Пути героя»
+ * вырастает с 287 до 343 px.
  */
-const MOBILE_FULLSCREEN_PLATFORMS = new Set(['ios', 'android'])
+const DESKTOP_FULLSCREEN_SKIP_PLATFORMS = new Set(['tdesktop', 'macos', 'weba', 'webk'])
 
 function getTelegram() {
   if (typeof window === 'undefined') {
@@ -148,13 +155,14 @@ function startNegotiation() {
 
   /*
    * Fullscreen — только мобильные клиенты Telegram. На компьютере
-   * (tdesktop, macos, weba, webk, web, unknown) requestFullscreen разворачивает
-   * Mini App во всё окно Telegram и оставляет огромную рамку, поэтому там
-   * достаточно ready() + expand(): приложение занимает окно Telegram как есть.
+   * (tdesktop, macos, weba, webk) requestFullscreen разворачивает Mini App
+   * во всё окно Telegram и оставляет огромную рамку, поэтому там достаточно
+   * ready() + expand(): приложение занимает окно Telegram как есть.
+   * Неизвестная платформа (SDK в браузере, демо) идёт прежним путём.
    */
   const telegramPlatform = detectTelegramPlatform(webApp)
 
-  if (!MOBILE_FULLSCREEN_PLATFORMS.has(telegramPlatform)) {
+  if (DESKTOP_FULLSCREEN_SKIP_PLATFORMS.has(telegramPlatform)) {
     confirmed = true
     setSnapshot(false)
     safelyRun(() => webApp?.ready?.(), 'ready()')
