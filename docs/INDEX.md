@@ -63,6 +63,12 @@ last_verified: 2026-09-22
 | [`STOIC_FEATURES_2026-07-24.md`](archive/STOIC_FEATURES_2026-07-24.md) | `archived` / 2026-09-10 | Открыть для исторического контекста; документ не является текущим источником истины. |
 | [`СОСТОЯНИЕ.md`](archive/СОСТОЯНИЕ.md)                                 | `archived` / 2026-09-10 | Открыть для исторического контекста; документ не является текущим источником истины. |
 
+### `archive/books`
+
+| Документ | Статус / проверка | Когда открывать |
+| --- | --- | --- |
+| [`tim-grover.md`](archive/books/tim-grover.md) | `archived` / 2026-11-02 | Источник исключён владельцем; только исторический контекст. |
+
 ### `archive/audits`
 
 | Файл                                                                                    | Статус                  | Зачем открывать                                                                      |
@@ -153,7 +159,6 @@ last_verified: 2026-09-22
 | [`mashina-myshleniya.md`](methodology/books/mashina-myshleniya.md)                             | `working` / 2026-09-11   | Открыть для контентной методологии и предметного материала. |
 | [`myshlenie-systemnoe-issledovanie.md`](methodology/books/myshlenie-systemnoe-issledovanie.md) | `working` / 2026-09-11   | Открыть для контентной методологии и предметного материала. |
 | [`sposoby-dumat.md`](methodology/books/sposoby-dumat.md)                                       | `working` / 2026-09-11   | Открыть для контентной методологии и предметного материала. |
-| [`tim-grover.md`](methodology/books/tim-grover.md)                                             | `working` / 2026-09-11   | Открыть для контентной методологии и предметного материала. |
 | [`troitsa.md`](methodology/books/troitsa.md)                                                   | `working` / 2026-09-11   | Открыть для контентной методологии и предметного материала. |
 | [`zasluzhennyy-sobesednik.md`](methodology/books/zasluzhennyy-sobesednik.md)                   | `working` / 2026-09-11   | Открыть для контентной методологии и предметного материала. |
 
