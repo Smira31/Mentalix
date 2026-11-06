@@ -33,6 +33,7 @@ last_verified: 2026-09-22
 | [`AGENT_ONBOARDING.md`](AGENT_ONBOARDING.md)                           | `working` / 2026-09-11    | Открыть для контекста и деталей, относящихся к этому разделу. |
 | [`AI_HANDOFF.md`](AI_HANDOFF.md)                                       | `working` / 2026-09-11    | Открыть для контекста и деталей, относящихся к этому разделу. |
 | [`COORDINATION_PROTOCOL.md`](COORDINATION_PROTOCOL.md)                 | `working` / 2026-09-11    | Открыть для контекста и деталей, относящихся к этому разделу. |
+| [`BRAND_POSITIONING.md`](BRAND_POSITIONING.md) | `current` / 2026-11-02 | Открыть для текста бренда и рекламных обещаний. |
 | [`DOCUMENTATION_GUIDE.md`](DOCUMENTATION_GUIDE.md)                     | `historical` / 2026-09-11 | Открыть для контекста и деталей, относящихся к этому разделу. |
 | [`DOCUMENTATION_OPERATING_MODEL.md`](DOCUMENTATION_OPERATING_MODEL.md) | `current` / 2026-09-11    | Открыть для контекста и деталей, относящихся к этому разделу. |
 | [`INDEX.md`](INDEX.md)                                                 | `current` / 2026-09-11    | Открыть для полного каталога документации и статусов.         |
