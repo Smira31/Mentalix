@@ -1,6 +1,6 @@
 ---
 status: normative
-last_verified: 2026-10-05
+last_verified: 2026-11-06
 ---
 
 # AGENTS.md
@@ -39,12 +39,15 @@ Russian-only — never introduce English strings into product-facing text.
 ## Project
 
 Mentalix — a Telegram Mini App (rituals, "ascezas"/abstentions, AI personas, analytics).
-This repo is the **frontend only**: React 18 + Vite 6 + Tailwind 3. Production is
-deployed from `main` to Firebase Hosting; Demo Preview uses Cloudflare Pages. The backend/bot
-(FastAPI + SQLAlchemy + aiogram + PostgreSQL on Render + Neon) lives in a separate **private**
-repo, `mentalix-bot`, and is not visible here — do not invent its API shape; if a task
-needs backend files, say so instead of guessing. Use `mentalix-bot/main` and its `RENDER.md`
-as the backend/deployment source of truth.
+This repo is the **frontend only**: React 18 + Vite 6 + Tailwind 3. Production (с 30.10.2026) —
+Timeweb App Platform, `https://mentalix.space`; API — `https://api.mentalix.space/api`
+(Timeweb, PostgreSQL 16). Demo Preview uses Cloudflare Pages. Firebase Hosting трафик не
+обслуживает, но workflow `firebase-hosting.yml` по-прежнему выкладывает сборку после CI
+(отключение — отдельным решением владельца); Cloud Run proxy, Render и Neon остановлены
+с 30.10.2026 — не деплоить и не использовать. The backend/bot
+(FastAPI + SQLAlchemy + aiogram) lives in a separate **private** repo, `mentalix-bot`, and is not
+visible here — do not invent its API shape; if a task needs backend files, say so instead of
+guessing. Use `mentalix-bot/main` and its `docs/TIMEWEB.md` as the backend/deployment source of truth.
 
 App is Russian-language, dark theme only, Telegram-first with a web fallback.
 
@@ -224,7 +227,7 @@ screens, and keep article cards unchanged unless the owner explicitly approves t
   (`Today.jsx`, `MorningPilotCard.jsx`), which are what's actually shipped. There's no
   TypeScript build configured (no tsconfig); do not recreate or extend the removed `.tsx`
   copies expecting them to compile or ship.
-- Production workflow Firebase задаёт `VITE_API_BASE_URL=/api`. Firebase Hosting направляет `/api/**` в Cloud Run `mentalix-auth-proxy` (`us-central1`); backend-репозиторий содержит same-site proxy с Render как upstream по умолчанию. Это описание настроек, не доказательство действующего Cloud Run или текущего upstream. Runtime и deployment проверяются отдельно; нельзя удалять proxy или менять auth-маршрут заодно с исправлением документации.
+- Production сейчас (с 30.10.2026) — Timeweb App Platform: фронтенд `https://mentalix.space`, API `https://api.mentalix.space/api` (Timeweb, PostgreSQL 16), `VITE_API_BASE_URL` включает `/api`. Firebase Hosting трафик не обслуживает, но workflow `firebase-hosting.yml` по-прежнему выкладывает сборку после CI — отключение отдельным решением владельца; Cloud Run `mentalix-auth-proxy` и Render остановлены с 30.10.2026: не деплоить и не использовать как источник фактов, файлы отката не удалять. Историческая схема (до 30.10.2026): Firebase `/api/**` → Cloud Run → Render. Runtime проверяется отдельно.
 
 ## Запреты
 

@@ -1,7 +1,9 @@
 ---
-status: current
-last_verified: 2026-10-15
+status: archived
+last_verified: 2026-11-06
 ---
+
+> **Не обновляется.** Задачи — GitHub Issues и Milestone «Telegram v1.0».
 
 # Mentalix — активный task index
 
