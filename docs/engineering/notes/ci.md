@@ -41,6 +41,25 @@ last_verified: 2026-11-06
 - В job `change-scope` остался шаг с прежним названием «Определить
   необходимость Render health» — это подпись шага, логика не менялась.
 
+## `docs_only`: документный PR без Playwright smoke
+
+- `change-scope` выдаёт output `docs_only`. Он равен `true`, только если ВСЕ
+  изменённые файлы PR оканчиваются на `.md` и ни один не лежит в `src/`,
+  `public/`, `tests/`, `.github/` (считается по `git diff BASE_SHA..HEAD_SHA`,
+  как и `backend_required`). Для `push` в main, `workflow_dispatch` и пустого
+  diff — `docs_only=false`.
+- При `docs_only=true` job «Playwright Chromium smoke» пропускается, а job
+  «Frontend quality» (`check:core`, `docs:check`, `docs:drift`) продолжает
+  запускаться всегда: документация проверяется ссылками и дрейфом.
+- Любой PR с кодом идёт полной проверкой (~25 минут): правило «все файлы —
+  `.md` вне `src/`, `public/`, `tests/`, `.github/`» выполняется только для
+  чистой документации, а `src/content/x.md`, `tests/notes.md` и правка любого
+  workflow сразу дают `docs_only=false`. Ослаблять smoke для PR с кодом нельзя:
+  он единственный проверяет UI и Telegram-поведение.
+- Агрегат «Функциональная проверка проекта» принимает `ux=skipped` только при
+  `docs_only=true`; любой другой `skipped`, а также `failure`/`cancelled` —
+  провал.
+
 ## Проверки документации
 
 - `npm run docs:check` падает на битых локальных ссылках, поэтому при удалении
