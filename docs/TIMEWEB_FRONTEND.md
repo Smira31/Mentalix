@@ -14,7 +14,8 @@ last_verified: 2026-10-30
   его настройки — `docs/TIMEWEB.md` там же).
 - Firebase-деплой и прокси `/api/**` **не удаляем**: это путь отката
   минимум на неделю. `firebase.json`, `.github/workflows/firebase-hosting.yml`
-  и Cloud Run `mentalix-auth-proxy` остаются как есть.
+  и Cloud Run `mentalix-auth-proxy` остаются как есть; workflow запускается
+  только вручную (`workflow_dispatch`), после CI он больше не стартует.
 
 ## 1. Что важно знать про сборку
 
@@ -150,8 +151,8 @@ CORS, прокси или cookie больше ничего не нужно: `men
    `https://mentalix-production.web.app` (Domain — `mentalix-production.web.app`).
 2. DNS: верните `mentalix.space` на прежний хостинг или оставьте Timeweb
    приложение остановленным (App Platform → «Остановить»).
-3. Фронтенд: задеплойте `main` как раньше — workflow
-   `.github/workflows/firebase-hosting.yml` собирает с `VITE_API_BASE_URL=/api`,
+3. Фронтенд: запустите Actions → «Firebase Hosting» → Run workflow (только
+   ручной запуск) — он собирает с `VITE_API_BASE_URL=/api`,
    `firebase.json` направляет `/api/**` в Cloud Run `mentalix-auth-proxy`.
 4. Backend: верните `YOOKASSA_RETURN_URL` на
    `https://mentalix-production.web.app/?payment=return` и прежний upstream
