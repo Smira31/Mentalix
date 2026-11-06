@@ -31,6 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       backend_required: ${{ steps.scope.outputs.backend_required }}
+      docs_only: ${{ steps.scope.outputs.docs_only }}
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -45,12 +46,28 @@ jobs:
           HEAD_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
+          # docs_only=true — ВСЕ изменённые файлы PR оканчиваются на .md и при
+          # этом не лежат в src/, public/, tests/, .github/. Пустой diff и push
+          # в main считаются «не только документами»: полная проверка остаётся.
           if [ "$EVENT_NAME" = "push" ] || [ "$EVENT_NAME" = "workflow_dispatch" ]; then
             echo "backend_required=true" >> "$GITHUB_OUTPUT"
+            echo "docs_only=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           changed_files="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")"
           printf '%s\n' "$changed_files"
+          # core.quotepath=false — чтобы кириллические имена файлов не приходили
+          # в кавычках и оканчивались на .md, а не на .md".
+          docs_files="$(git -c core.quotepath=false diff --name-only "$BASE_SHA" "$HEAD_SHA")"
+          docs_only=false
+          if [ -n "$docs_files" ]; then
+            not_markdown="$(printf '%s\n' "$docs_files" | grep -Ev '\.md$' || true)"
+            forbidden_path="$(printf '%s\n' "$docs_files" | grep -E '^(src|public|tests|\.github)/' || true)"
+            if [ -z "$not_markdown" ] && [ -z "$forbidden_path" ]; then
+              docs_only=true
+            fi
+          fi
+          echo "docs_only=$docs_only" >> "$GITHUB_OUTPUT"
           if printf '%s\n' "$changed_files" | grep -Eq '^(server/|api/|src/lib/api|src/platform/|package(-lock)?\.json$|\.github/workflows/|firebase\.json$|render\.yaml$|Dockerfile)'; then
             echo "backend_required=true" >> "$GITHUB_OUTPUT"
           else
@@ -140,8 +157,13 @@ jobs:
 
   ux:
     name: Playwright Chromium smoke
+    # PR, меняющий только документы, не гоняет Playwright smoke: запускаются
+    # лишь PR с кодом (docs_only=false), push в main и workflow_dispatch.
+    if: needs.change-scope.outputs.docs_only != 'true'
     runs-on: ubuntu-latest
-    needs: quality
+    needs:
+      - quality
+      - change-scope
     timeout-minutes: 30
     steps:
       - name: Checkout
@@ -329,6 +351,7 @@ jobs:
     needs:
       - quality
       - ux
+      - change-scope
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -337,6 +360,17 @@ jobs:
           set -euo pipefail
           quality='${{ needs.quality.result }}'
           ux='${{ needs.ux.result }}'
-          printf 'quality=%s\nux=%s\n' "$quality" "$ux"
+          docs_only='${{ needs.change-scope.outputs.docs_only }}'
+          printf 'quality=%s\nux=%s\ndocs_only=%s\n' "$quality" "$ux" "$docs_only"
           test "$quality" = success
-          test "$ux" = success
+          if [ "$ux" = success ]; then
+            exit 0
+          fi
+          # Пропуск ux допустим только для документного PR (docs_only=true).
+          # Любой другой skipped/failure/cancelled — провал проверки.
+          if [ "$ux" = skipped ] && [ "$docs_only" = 'true' ]; then
+            echo 'ux=skipped допустим: PR меняет только документы (docs_only=true)'
+            exit 0
+          fi
+          echo "::error::ux=$ux при docs_only=$docs_only — Playwright smoke обязателен"
+          exit 1
