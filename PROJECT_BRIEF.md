@@ -1,13 +1,13 @@
 ---
 status: current
-last_verified: 2026-10-05
+last_verified: 2026-11-06
 ---
 
 # Mentalix — краткая операционная карта
 
 > **Начинайте отсюда.** Этот файл — единая точка входа для владельца, Manus, Claude Code, Codex, GitHub Copilot и других агентов. Он отвечает на вопрос «что открыть дальше», но не заменяет продуктовые, технические или проверочные источники.
 
-Mentalix — Telegram Mini App с фронтендом React/Vite/Tailwind в этом репозитории и отдельным приватным backend-репозиторием. Production frontend размещается в Firebase Hosting, Demo Preview — в Cloudflare Pages. По конфигурации production API вызывается через `VITE_API_BASE_URL=/api`: Firebase Hosting направляет `/api/**` в Cloud Run `mentalix-auth-proxy`; proxy в backend-репозитории использует Render как upstream по умолчанию. Это описание настроек, а не подтверждение текущего production runtime. Нельзя предполагать действующий upstream, состояние данных или контракт API без отдельной проверки.
+Mentalix — Telegram Mini App с фронтендом React/Vite/Tailwind в этом репозитории и отдельным приватным backend-репозиторием. Production (сверка 06.11.2026) — Timeweb: фронтенд `https://mentalix.space` (`mentalix-frontend`), API `https://api.mentalix.space/api` (`mentalix-api`, PostgreSQL 16, кластер `mentalix-db-small`); адрес API задаёт `VITE_API_BASE_URL`. Demo Preview — в Cloudflare Pages. Firebase Hosting, Cloud Run `mentalix-auth-proxy`, Render и Neon — **откат, остановлено с 30.10.2026: не деплоить и не использовать** (переезд — PR #1133, backend #205–#208). Это описание конфигурации, а не подтверждение deploy SHA, состояния данных или контракта API без отдельной проверки.
 
 Сверка 05.10.2026 — только документация, стек и конфигурация на baseline после PR #1003; точные SHA и границы подтверждения указаны в `PROJECT_STATE.md`.
 

@@ -39,12 +39,15 @@ Russian-only — never introduce English strings into product-facing text.
 ## Project
 
 Mentalix — a Telegram Mini App (rituals, "ascezas"/abstentions, AI personas, analytics).
-This repo is the **frontend only**: React 18 + Vite 6 + Tailwind 3. Production is
-deployed from `main` to Firebase Hosting; Demo Preview uses Cloudflare Pages. The backend/bot
-(FastAPI + SQLAlchemy + aiogram + PostgreSQL on Render + Neon) lives in a separate **private**
+This repo is the **frontend only**: React 18 + Vite 6 + Tailwind 3. Production — Timeweb:
+фронтенд `https://mentalix.space` (`mentalix-frontend`), API `https://api.mentalix.space/api`
+(`mentalix-api`, PostgreSQL 16, кластер `mentalix-db-small`). Firebase Hosting, Cloud Run
+proxy, Render и Neon — **откат, остановлено с 30.10.2026** (переезд: PR #1133, backend
+#205–#208): не деплоить и не использовать. Demo Preview uses Cloudflare Pages. The backend/bot
+(FastAPI + SQLAlchemy + aiogram + PostgreSQL) lives in a separate **private**
 repo, `mentalix-bot`, and is not visible here — do not invent its API shape; if a task
-needs backend files, say so instead of guessing. Use `mentalix-bot/main` and its `RENDER.md`
-as the backend/deployment source of truth.
+needs backend files, say so instead of guessing. Use `mentalix-bot/main` as the backend source
+of truth; `RENDER.md` в нём — описание остановленного отката.
 
 App is Russian-language, dark theme only, Telegram-first with a web fallback.
 
@@ -224,7 +227,7 @@ screens, and keep article cards unchanged unless the owner explicitly approves t
   (`Today.jsx`, `MorningPilotCard.jsx`), which are what's actually shipped. There's no
   TypeScript build configured (no tsconfig); do not recreate or extend the removed `.tsx`
   copies expecting them to compile or ship.
-- Production workflow Firebase задаёт `VITE_API_BASE_URL=/api`. Firebase Hosting направляет `/api/**` в Cloud Run `mentalix-auth-proxy` (`us-central1`); backend-репозиторий содержит same-site proxy с Render как upstream по умолчанию. Это описание настроек, не доказательство действующего Cloud Run или текущего upstream. Runtime и deployment проверяются отдельно; нельзя удалять proxy или менять auth-маршрут заодно с исправлением документации.
+- Production — Timeweb: адрес API задаёт `VITE_API_BASE_URL=https://api.mentalix.space/api` (единственный источник). Firebase-деплой и маршрут `/api/**` → Cloud Run `mentalix-auth-proxy` (`us-central1`) → Render — **откат, остановлено с 30.10.2026** (PR #1133, backend #205–#208): конфигурация отката остаётся в репозитории, деплоить и использовать её нельзя. Runtime и deployment проверяются отдельно; нельзя менять код отката или auth-маршрут заодно с исправлением документации.
 
 ## Запреты
 

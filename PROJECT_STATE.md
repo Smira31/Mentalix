@@ -1,13 +1,15 @@
 ---
 status: current
-last_verified: 2026-10-15
+last_verified: 2026-11-06
 ---
 
 # PROJECT_STATE — подтверждённое состояние Mentalix
 
 Этот файл содержит только проверенные факты о репозиториях, окружениях, release provenance и активных GitHub-треках. Активный backlog находится в [`docs/TASK_INDEX.md`](docs/TASK_INDEX.md). История решений находится в [`TASKS.md`](TASKS.md), [`CHANGES.md`](CHANGES.md) и `docs/archive/`.
 
-**Последняя сверка репозитория и конфигурации:** 15.10.2026. Frontend baseline — `main` `c271ba19174c321f7ae2242acf535ba18c42c598` после PR #1057. Это снимок исходников, не exact-SHA Production. Прочитана backend deployment/proxy-документация на `0a48f04111515df0bf19a3f40f8051110bc17155`; backend runtime и deployed SHA не проверены. Решения владельца от 27.09 сохраняются, назначения исполнителей не менялись. Предыдущий snapshot после #1003 (`b1fdfb2fff939fb515afb878f72a40a14328fc03`) — исторический контекст, не подтверждение текущего production.
+**Сверка production 06.11.2026 (факты владельца):** фронтенд — Timeweb App Platform, сервис `mentalix-frontend`, `https://mentalix.space`; API — Timeweb, сервис `mentalix-api`, `https://api.mentalix.space/api`, PostgreSQL 16, кластер `mentalix-db-small`. Firebase Hosting (последний релиз 21.10.2026), Cloud Run proxy, Render (suspended) и Neon (архив) — **откат, остановлено с 30.10.2026: не деплоить и не использовать**. Переезд выполнен 30.10.2026 (PR #1133, backend #205–#208).
+
+**Сверка репозитория и конфигурации:** 15.10.2026. Frontend baseline — `main` `c271ba19174c321f7ae2242acf535ba18c42c598` после PR #1057. Это снимок исходников, не exact-SHA Production. Прочитана backend deployment/proxy-документация на `0a48f04111515df0bf19a3f40f8051110bc17155`; backend runtime и deployed SHA не проверены. Решения владельца от 27.09 сохраняются, назначения исполнителей не менялись. Предыдущий snapshot после #1003 (`b1fdfb2fff939fb515afb878f72a40a14328fc03`) — исторический контекст, не подтверждение текущего production.
 
 ## Сверка 15.10.2026: подтверждено и не проверено
 
@@ -26,11 +28,19 @@ last_verified: 2026-10-15
 - Production frontend SHA, Cloud Run runtime/upstream, Render health/version, данные и ручной Telegram/iPhone gate — NOT RUN. Локальные unit-тесты не запускались (4 известных локальных падения, в CI зелёные); lint, build и docs:check проверены в контейнере.
 - Разделы ниже с датами 27.09 и 03.10 сохраняют прежние решения и evidence; они не переаттестованы как текущее состояние продукта или базы данных.
 
-## Настроенный маршрут production API
+## Текущий маршрут production API (Timeweb, сверка 06.11.2026)
+
+Фронтенд — Timeweb App Platform, сервис `mentalix-frontend`, домен `https://mentalix.space` (SPA Fallback вместо rewrites `firebase.json`). API — Timeweb, сервис `mentalix-api`, `https://api.mentalix.space/api`; база — PostgreSQL 16, кластер `mentalix-db-small`. Адрес API задаётся переменной `VITE_API_BASE_URL` и должен включать `/api`. Схема: frontend (Timeweb) → `https://api.mentalix.space/api` (Timeweb) → PostgreSQL 16.
+
+Источник: факты владельца от 06.11.2026 и PR #1133. Это описание текущей конфигурации, а не подтверждение deploy SHA, состояния данных или ручного QA.
+
+## Откат: Firebase Hosting → Cloud Run → Render (до 30.10.2026, остановлено)
+
+Ниже — прежний маршрут **до 30.10.2026**. Firebase Hosting, Cloud Run proxy, Render и Neon остановлены; конфигурация сохраняется только для отката — не деплоить и не использовать.
 
 По конфигурации production workflow задаёт `VITE_API_BASE_URL=/api`, а `firebase.json` направляет `/api/**` в Cloud Run `mentalix-auth-proxy` (`us-central1`) перед SPA fallback. В `mentalix-bot/proxy` находится same-site proxy: upstream задаётся `BACKEND_ORIGIN`, по умолчанию Render. Схема настроек: frontend → Firebase `/api/**` → Cloud Run proxy → backend. Наличие этих файлов не подтверждает действующий сервис, его текущую переменную upstream, deploy SHA или корректность авторизации; для этого нужна отдельная read-only runtime-проверка.
 
-Источники: frontend `firebase.json` и `.github/workflows/firebase-hosting.yml` на baseline выше, backend `proxy/README.md` на указанном backend SHA. Runtime не проверялся; конфигурация в рамках этой сверки не менялась.
+Источники: frontend `firebase.json` и `.github/workflows/firebase-hosting.yml` на baseline выше, backend `proxy/README.md` на указанном backend SHA. Историческая сверка 15.10.2026; конфигурация в рамках сверки не менялась.
 
 ## Решения владельца от 27.09.2026 (цель, не утверждение о готовности)
 
@@ -48,14 +58,17 @@ last_verified: 2026-10-15
 | Card System v1      | [`docs/archive/CARD_SYSTEM_V1_2026-09-22.md`](docs/archive/CARD_SYSTEM_V1_2026-09-22.md), статус `archived`                        | Архив; не текущий источник истины                                                                                                                          |
 | Frontend            | `Smira31/Mentalix`, default branch `main`                                                                                          | [GitHub](https://github.com/Smira31/Mentalix)                                                                                                              |
 | Frontend `main`     | baseline `c271ba19174c321f7ae2242acf535ba18c42c598` после PR #1057 на момент сверки 15.10.2026; не deployed SHA                    | [commit](https://github.com/Smira31/Mentalix/commit/c271ba19174c321f7ae2242acf535ba18c42c598), [PR #1057](https://github.com/Smira31/Mentalix/pull/1057)   |
-| Production frontend | Настройки: успешный push-CI `main` → Firebase Hosting Live; ручной запуск также предусмотрен. Текущий deployed SHA не проверен     | [Firebase workflow](https://github.com/Smira31/Mentalix/actions/workflows/firebase-hosting.yml); исторический run 35119350799 не доказывает текущий deploy |
+| Production frontend | Timeweb App Platform, сервис `mentalix-frontend`, `https://mentalix.space` (с 30.10.2026); deployed SHA не проверен                        | Факты владельца 06.11.2026; переезд — PR #1133                                                                                                              |
+| Production frontend (откат) | **Остановлено с 30.10.2026, не деплоить и не использовать:** Firebase Hosting (последний релиз 21.10.2026), push-CI `main` → Firebase Live | [Firebase workflow](https://github.com/Smira31/Mentalix/actions/workflows/firebase-hosting.yml); исторический run 35119350799 не доказывает текущий deploy |
 | Backend             | `Smira31/mentalix-bot`, `main`                                                                                                     | [GitHub](https://github.com/Smira31/mentalix-bot)                                                                                                          |
-| Backend runtime     | Исторический адрес health: `https://mentalix-bot.onrender.com/api/health`; текущий статус backend не проверялся в этой docs-сверке | Приватный `mentalix-bot` и отдельная runtime-проверка обязательны для актуального статуса                                                                  |
+| Backend runtime     | Timeweb, сервис `mentalix-api`, `https://api.mentalix.space/api`; PostgreSQL 16, кластер `mentalix-db-small`                        | Факты владельца 06.11.2026; переезд — backend #205–#208                                                                                                     |
+| Backend runtime (откат) | **Остановлено с 30.10.2026:** Render (suspended), Neon (архив), Cloud Run `mentalix-auth-proxy`; исторический health `https://mentalix-bot.onrender.com/api/health` | Не деплоить и не использовать                                                                                                                             |
 | Vercel              | Git integration отключена у проектов `mentalix` и `mentalix-preview`                                                               | Vercel git context: linked projects отсутствуют                                                                                                            |
 
 ## Канонический словарь окружений
 
-- **Production:** Firebase Hosting Live channel, автоматический deploy только из `main`.
+- **Production:** Timeweb App Platform — фронтенд `https://mentalix.space`, API `https://api.mentalix.space/api` (с 30.10.2026).
+- **Откат (остановлено с 30.10.2026, не деплоить):** Firebase Hosting Live channel, Cloud Run `mentalix-auth-proxy`, Render, Neon.
 - **Local Preview:** `vite preview` после production build.
 - **UI Lab:** экспериментальные маршруты внутри репозитория; не Production.
 - **Vercel:** старый fallback, не используется для новых deploy/checks.
@@ -63,9 +76,9 @@ last_verified: 2026-10-15
 ## Hosting policy
 
 1. После QA изменения проходят обычный PR и обязательный GitHub check `Функциональная проверка проекта`.
-2. Push в `main` запускает CI; только его успешное завершение удовлетворяет автоматическому Firebase Production deploy gate. В workflow также есть ручной запуск. Это описание условий запуска, не подтверждение результата deploy.
+2. Push в `main` запускает CI. Production — Timeweb (с 30.10.2026), деплой выполняется в его панели. Firebase Production deploy gate из workflow — **откат, остановлено с 30.10.2026**; его запуск не является текущим деплоем.
 3. `Firebase Preview Channels`, `Vercel Preview` и Vercel watchdog не используются.
-4. Render backend не переносится в рамках frontend-задач.
+4. Backend (с 30.10.2026 — Timeweb `mentalix-api`) не переносится в рамках frontend-задач. Render остановлен, его возврат — только откат.
 
 Полная policy: [`docs/handoffs/2026-09-16-hosting-policy.md`](docs/handoffs/2026-09-16-hosting-policy.md).
 
