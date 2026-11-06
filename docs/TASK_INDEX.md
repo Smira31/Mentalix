@@ -1,5 +1,5 @@
 ---
-status: current
+status: archived
 last_verified: 2026-11-06
 ---
 
