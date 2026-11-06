@@ -42,8 +42,8 @@ Mentalix — a Telegram Mini App (rituals, "ascezas"/abstentions, AI personas, a
 This repo is the **frontend only**: React 18 + Vite 6 + Tailwind 3. Production (с 30.10.2026) —
 Timeweb App Platform, `https://mentalix.space`; API — `https://api.mentalix.space/api`
 (Timeweb, PostgreSQL 16). Demo Preview uses Cloudflare Pages. Firebase Hosting трафик не
-обслуживает, но workflow `firebase-hosting.yml` по-прежнему выкладывает сборку после CI
-(отключение — отдельным решением владельца); Cloud Run proxy, Render и Neon остановлены
+обслуживает, workflow `firebase-hosting.yml` запускается только вручную (`workflow_dispatch`)
+и хранит флаги прод-сборки; Cloud Run proxy, Render и Neon остановлены
 с 30.10.2026 — не деплоить и не использовать. The backend/bot
 (FastAPI + SQLAlchemy + aiogram) lives in a separate **private** repo, `mentalix-bot`, and is not
 visible here — do not invent its API shape; if a task needs backend files, say so instead of
@@ -227,7 +227,7 @@ screens, and keep article cards unchanged unless the owner explicitly approves t
   (`Today.jsx`, `MorningPilotCard.jsx`), which are what's actually shipped. There's no
   TypeScript build configured (no tsconfig); do not recreate or extend the removed `.tsx`
   copies expecting them to compile or ship.
-- Production сейчас (с 30.10.2026) — Timeweb App Platform: фронтенд `https://mentalix.space`, API `https://api.mentalix.space/api` (Timeweb, PostgreSQL 16), `VITE_API_BASE_URL` включает `/api`. Firebase Hosting трафик не обслуживает, но workflow `firebase-hosting.yml` по-прежнему выкладывает сборку после CI — отключение отдельным решением владельца; Cloud Run `mentalix-auth-proxy` и Render остановлены с 30.10.2026: не деплоить и не использовать как источник фактов, файлы отката не удалять. Историческая схема (до 30.10.2026): Firebase `/api/**` → Cloud Run → Render. Runtime проверяется отдельно.
+- Production сейчас (с 30.10.2026) — Timeweb App Platform: фронтенд `https://mentalix.space`, API `https://api.mentalix.space/api` (Timeweb, PostgreSQL 16), `VITE_API_BASE_URL` включает `/api`. Firebase Hosting трафик не обслуживает, workflow `firebase-hosting.yml` запускается только вручную (`workflow_dispatch`) и не удаляется без решения владельца; Cloud Run `mentalix-auth-proxy` и Render остановлены с 30.10.2026: не деплоить и не использовать как источник фактов, файлы отката не удалять. Историческая схема (до 30.10.2026): Firebase `/api/**` → Cloud Run → Render. Runtime проверяется отдельно.
 
 ## Запреты
 

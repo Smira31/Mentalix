@@ -16,8 +16,8 @@ permissions:
 concurrency:
   # Устаревшие PR-прогоны отменяются: у PR свой ref (refs/pull/N/merge), поэтому
   # новый push в тот же PR снимает прежний прогон и не считает минуты дважды на
-  # старых коммитах. Прогоны main НЕ отменяются — на завершение этого workflow
-  # опирается деплой Firebase Hosting (workflow_run), отмена могла бы его расстроить.
+  # старых коммитах. Прогоны main НЕ отменяются — baseline main должен доходить
+  # до конца целиком.
   group: mentalix-ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
@@ -236,15 +236,19 @@ jobs:
     if: needs.change-scope.outputs.backend_required == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    # Внешний production (Timeweb) — не гейт PR: недоступность или изменение
+    # ответа API не должно блокировать merge. Результат виден в job, но не в
+    # «Функциональная проверка проекта».
+    continue-on-error: true
     steps:
-      - name: Verify Render backend health
+      - name: Verify Timeweb backend health
         env:
-          RENDER_BACKEND_URL: https://mentalix-bot.onrender.com
+          TIMEWEB_BACKEND_URL: https://api.mentalix.space
         run: |
           set -euo pipefail
           response="$(curl --fail --silent --show-error \
             --retry 10 --retry-delay 5 --retry-all-errors --max-time 20 \
-            "$RENDER_BACKEND_URL/api/health")"
+            "$TIMEWEB_BACKEND_URL/api/health")"
           printf '%s\n' "$response"
           printf '%s\n' "$response" | jq -e '.status == "ok"' >/dev/null
 
@@ -324,7 +328,6 @@ jobs:
     if: ${{ always() }}
     needs:
       - quality
-      - backend-health
       - ux
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -333,9 +336,7 @@ jobs:
         run: |
           set -euo pipefail
           quality='${{ needs.quality.result }}'
-          backend_health='${{ needs.backend-health.result }}'
           ux='${{ needs.ux.result }}'
-          printf 'quality=%s\nbackend-health=%s\nux=%s\n' "$quality" "$backend_health" "$ux"
+          printf 'quality=%s\nux=%s\n' "$quality" "$ux"
           test "$quality" = success
-          test "$backend_health" = success -o "$backend_health" = skipped
           test "$ux" = success
