@@ -1,6 +1,6 @@
 ---
 status: current
-last_verified: 2026-11-06
+last_verified: 2026-11-07
 ---
 
 # CI: грабли и договорённости
@@ -59,6 +59,51 @@ last_verified: 2026-11-06
 - Агрегат «Функциональная проверка проекта» принимает `ux=skipped` только при
   `docs_only=true`; любой другой `skipped`, а также `failure`/`cancelled` —
   провал.
+
+## Кэш браузеров Playwright
+
+- `~/.cache/ms-playwright` кэшируется `actions/cache` с ключом
+  `${{ runner.os }}-playwright-<версия @playwright/test>`; версия читается из
+  `package-lock.json` (`packages['node_modules/@playwright/test'].version`).
+  Ключ привязан к версии, а не к хешу lock-файла: обновление любого другого
+  пакета больше не сбрасывает браузеры, а смена версии Playwright — сбрасывает
+  (браузеры разных версий несовместимы).
+- Попадание в кэш: `npx playwright install-deps chromium webkit` — только
+  системные пакеты (`libnss3`, шрифты и т.д.), без скачивания браузеров.
+  Промах: `npx playwright install --with-deps chromium webkit`.
+  Смешивать нельзя: `install --with-deps` на попадании всё равно проверяет
+  браузеры, и шаг перестаёт быть «только системные зависимости».
+- Кэш сохраняется post-шагом только успешного job. Три группы матрицы идут
+  параллельно с одним ключом: сохраняет та, что завершится первой успешно,
+  остальные получают «cache already exists» — это нормально.
+- `telegram-p0` (informational) оставлен со своим ключом `hashFiles(...)`:
+  он ставит только Chromium и в агрегат не входит.
+
+## Playwright smoke: три параллельные группы
+
+- job `ux` — матрица `group: [smoke-day, smoke-evening, webkit-gates]`,
+  `fail-fast: false`. Состав:
+  - `smoke-day`: `ux:check` (`UX_FIXED_TIME=08:00`) и `ux:mxl010`;
+  - `smoke-evening`: `ux:check` (`UX_FIXED_TIME=21:00`), `ux:journal-history`,
+    `ux:typography`;
+  - `webkit-gates`: `ux:telegram-react-depth`, `ux:react-185-checkin`,
+    `ux:tap-areas` (WebKit) и `ux:keyboard`, `ux:pro-states`,
+    `ux:pro-failure-states`, `ux:payment-ui` (Chromium, у каждого свой dev-сервер).
+- Объединение групп равно прежнему одиночному job: 12 наборов до и после,
+  ни один не дублируется. Два запуска `ux:check` отличаются только
+  `UX_FIXED_TIME` (утро/вечер) — это разные сценарии, а не дубль.
+- Каждый шаг набора помечен `if: matrix.group == '<группа>'`; без этой метки
+  набор попадёт во все три группы и время вырастет втрое.
+- Агрегат «Функциональная проверка проекта» читает `needs.ux.result`: это
+  худший результат среди всех групп, поэтому failure/cancelled/skipped любой
+  группы валит проверку. `ux=skipped` проходит только при `docs_only=true`.
+- Идентификатор job `ux` не переименовывать: на него опирается `required-check`.
+  Отображаемое имя — «Playwright smoke (<группа>)».
+- Артефакты падения — отдельные на каждую группу
+  (`playwright-artifacts-<группа>`), иначе `upload-artifact` падает на
+  конфликте имён.
+- Каждая группа делает свой `npm ci`; это дешевле, чем выигрыш от
+  параллельного запуска (npm-кэш `setup-node` общий).
 
 ## Проверки документации
 

@@ -156,7 +156,7 @@ jobs:
         run: node scripts/check-api-contract.mjs
 
   ux:
-    name: Playwright Chromium smoke
+    name: Playwright smoke (${{ matrix.group }})
     # PR, меняющий только документы, не гоняет Playwright smoke: запускаются
     # лишь PR с кодом (docs_only=false), push в main и workflow_dispatch.
     if: needs.change-scope.outputs.docs_only != 'true'
@@ -165,6 +165,18 @@ jobs:
       - quality
       - change-scope
     timeout-minutes: 30
+    strategy:
+      # Группы независимы: провал одной не отменяет остальные, и агрегат
+      # «Функциональная проверка проекта» видит результат каждой из них.
+      fail-fast: false
+      matrix:
+        # Три группы примерно равной длительности; состав и обоснование —
+        # docs/engineering/notes/ci.md. Ни один набор не дублируется и не
+        # теряется: объединение групп равно прежнему одиночному job.
+        group:
+          - smoke-day
+          - smoke-evening
+          - webkit-gates
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -178,67 +190,95 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Ключ кэша — версия @playwright/test из package-lock.json, а не хеш
+      # файла: правка любого другого пакета больше не сбрасывает браузеры.
+      - name: Определить версию @playwright/test
+        id: playwright-version
+        run: |
+          set -euo pipefail
+          version="$(node -p "require('./package-lock.json').packages['node_modules/@playwright/test'].version")"
+          test -n "$version"
+          echo "Версия @playwright/test для ключа кэша: $version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
       - name: Cache Playwright browsers
+        id: playwright-cache
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+          key: ${{ runner.os }}-playwright-${{ steps.playwright-version.outputs.version }}
 
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
+      # Попадание в кэш: браузеры уже на диске, WebKit не докачивается —
+      # ставим только системные зависимости (без них launch падает на libnss3 и др.).
+      - name: Install system dependencies (кэш браузеров найден)
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium webkit
 
-      - name: Install WebKit
-        run: npx playwright install --with-deps webkit
+      - name: Install Chromium and WebKit with system dependencies (промах кэша)
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium webkit
 
       - name: Run UX smoke
+        if: matrix.group == 'smoke-day'
         env:
           RUN_VISUAL_SNAPSHOTS: 'false'
           UX_FIXED_TIME: '08:00'
         run: npm run ux:check -- --retries=1
 
+      - name: Run MXL-010 production-like gate
+        if: matrix.group == 'smoke-day'
+        run: npm run ux:mxl010 -- --retries=1
+
       - name: Run UX smoke in evening mode
+        if: matrix.group == 'smoke-evening'
         env:
           RUN_VISUAL_SNAPSHOTS: 'false'
           UX_FIXED_TIME: '21:00'
         run: npm run ux:check -- --retries=1
 
-      - name: Run MXL-010 production-like gate
-        run: npm run ux:mxl010 -- --retries=1
-
-      - name: Run Telegram React update-depth regression in WebKit
-        run: npm run ux:telegram-react-depth
-
-      - name: Run React #185 check-in regression in WebKit
-        run: npm run ux:react-185-checkin
-
-      - name: Run tap areas and «Назад» offset gate in WebKit
-        run: npm run ux:tap-areas -- --retries=1
-
       - name: Run journal history profile isolation gate
+        if: matrix.group == 'smoke-evening'
         run: npm run ux:journal-history -- --retries=1
 
       - name: Run read-scale typography contract gate
+        if: matrix.group == 'smoke-evening'
         run: npm run ux:typography -- --retries=1
 
+      - name: Run Telegram React update-depth regression in WebKit
+        if: matrix.group == 'webkit-gates'
+        run: npm run ux:telegram-react-depth
+
+      - name: Run React #185 check-in regression in WebKit
+        if: matrix.group == 'webkit-gates'
+        run: npm run ux:react-185-checkin
+
+      - name: Run tap areas and «Назад» offset gate in WebKit
+        if: matrix.group == 'webkit-gates'
+        run: npm run ux:tap-areas -- --retries=1
+
       - name: Run keyboard focus contract gate
+        if: matrix.group == 'webkit-gates'
         run: npm run ux:keyboard -- --retries=1
 
       - name: Run Pro review states evidence gate
+        if: matrix.group == 'webkit-gates'
         run: npm run ux:pro-states -- --retries=1
 
       - name: Run Pro failure states gate
+        if: matrix.group == 'webkit-gates'
         run: npm run ux:pro-failure-states -- --retries=1
 
       # Экранам состояний подписки нужен VITE_PAYMENT_UI_ENABLED=true, поэтому
       # у набора свой dev-сервер (playwright.payment-ui.config.mjs), а не ux:check.
       - name: Run payment UI states gate
+        if: matrix.group == 'webkit-gates'
         run: npm run ux:payment-ui -- --retries=1
 
       - name: Upload Playwright artifacts on failure
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: playwright-artifacts
+          name: playwright-artifacts-${{ matrix.group }}
           path: |
             artifacts/ux-check/
             artifacts/telegram-react-update-depth/
@@ -366,6 +406,8 @@ jobs:
           if [ "$ux" = success ]; then
             exit 0
           fi
+          # `ux` — агрегат трёх параллельных групп матрицы (fail-fast: false):
+          # провал, отмена или пропуск любой группы делает результат не success.
           # Пропуск ux допустим только для документного PR (docs_only=true).
           # Любой другой skipped/failure/cancelled — провал проверки.
           if [ "$ux" = skipped ] && [ "$docs_only" = 'true' ]; then
