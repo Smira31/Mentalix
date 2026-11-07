@@ -73,6 +73,8 @@ last_verified: 2026-11-07
   Промах: `npx playwright install --with-deps chromium webkit`.
   Смешивать нельзя: `install --with-deps` на попадании всё равно проверяет
   браузеры, и шаг перестаёт быть «только системные зависимости».
+- Шаги установки печатают `::notice title=Playwright cache::hit|miss <версия>`:
+  попадание в кэш видно в аннотациях job'а, а не только в логах шага.
 - Кэш сохраняется post-шагом только успешного job. Три группы матрицы идут
   параллельно с одним ключом: сохраняет та, что завершится первой успешно,
   остальные получают «cache already exists» — это нормально.
@@ -84,11 +86,13 @@ last_verified: 2026-11-07
 - job `ux` — матрица `group: [smoke-day, smoke-evening, webkit-gates]`,
   `fail-fast: false`. Состав:
   - `smoke-day`: `ux:check` (`UX_FIXED_TIME=08:00`) и `ux:mxl010`;
-  - `smoke-evening`: `ux:check` (`UX_FIXED_TIME=21:00`), `ux:journal-history`,
-    `ux:typography`;
+  - `smoke-evening`: `ux:check` (`UX_FIXED_TIME=21:00`);
   - `webkit-gates`: `ux:telegram-react-depth`, `ux:react-185-checkin`,
-    `ux:tap-areas` (WebKit) и `ux:keyboard`, `ux:pro-states`,
-    `ux:pro-failure-states`, `ux:payment-ui` (Chromium, у каждого свой dev-сервер).
+    `ux:tap-areas` (WebKit) и `ux:journal-history`, `ux:typography`, `ux:keyboard`,
+    `ux:pro-states`, `ux:pro-failure-states`, `ux:payment-ui` (Chromium, у
+    каждого свой dev-сервер).
+- Два запуска `ux:check` — самые длинные шаги (~7–8 минут каждый), поэтому они
+  стоят в разных группах, а короткие гейты собраны в `webkit-gates`.
 - Объединение групп равно прежнему одиночному job: 12 наборов до и после,
   ни один не дублируется. Два запуска `ux:check` отличаются только
   `UX_FIXED_TIME` (утро/вечер) — это разные сценарии, а не дубль.

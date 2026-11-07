@@ -210,13 +210,21 @@ jobs:
 
       # Попадание в кэш: браузеры уже на диске, WebKit не докачивается —
       # ставим только системные зависимости (без них launch падает на libnss3 и др.).
+      # ::notice виден в аннотациях job'а: по нему проверяется попадание в кэш
+      # на повторном прогоне (в логах GitHub Actions из API его не прочитать).
       - name: Install system dependencies (кэш браузеров найден)
         if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: npx playwright install-deps chromium webkit
+        run: |
+          set -euo pipefail
+          echo "::notice title=Playwright cache::hit ${{ steps.playwright-version.outputs.version }}"
+          npx playwright install-deps chromium webkit
 
       - name: Install Chromium and WebKit with system dependencies (промах кэша)
         if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps chromium webkit
+        run: |
+          set -euo pipefail
+          echo "::notice title=Playwright cache::miss ${{ steps.playwright-version.outputs.version }}"
+          npx playwright install --with-deps chromium webkit
 
       - name: Run UX smoke
         if: matrix.group == 'smoke-day'
@@ -237,11 +245,11 @@ jobs:
         run: npm run ux:check -- --retries=1
 
       - name: Run journal history profile isolation gate
-        if: matrix.group == 'smoke-evening'
+        if: matrix.group == 'webkit-gates'
         run: npm run ux:journal-history -- --retries=1
 
       - name: Run read-scale typography contract gate
-        if: matrix.group == 'smoke-evening'
+        if: matrix.group == 'webkit-gates'
         run: npm run ux:typography -- --retries=1
 
       - name: Run Telegram React update-depth regression in WebKit
