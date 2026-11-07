@@ -234,7 +234,7 @@ jobs:
         run: npm run ux:check -- --retries=1
 
       - name: Run MXL-010 production-like gate
-        if: matrix.group == 'smoke-day'
+        if: matrix.group == 'webkit-gates'
         run: npm run ux:mxl010 -- --retries=1
 
       - name: Run UX smoke in evening mode

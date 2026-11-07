@@ -85,14 +85,15 @@ last_verified: 2026-11-07
 
 - job `ux` — матрица `group: [smoke-day, smoke-evening, webkit-gates]`,
   `fail-fast: false`. Состав:
-  - `smoke-day`: `ux:check` (`UX_FIXED_TIME=08:00`) и `ux:mxl010`;
+  - `smoke-day`: `ux:check` (`UX_FIXED_TIME=08:00`);
   - `smoke-evening`: `ux:check` (`UX_FIXED_TIME=21:00`);
-  - `webkit-gates`: `ux:telegram-react-depth`, `ux:react-185-checkin`,
-    `ux:tap-areas` (WebKit) и `ux:journal-history`, `ux:typography`, `ux:keyboard`,
-    `ux:pro-states`, `ux:pro-failure-states`, `ux:payment-ui` (Chromium, у
-    каждого свой dev-сервер).
-- Два запуска `ux:check` — самые длинные шаги (~7–8 минут каждый), поэтому они
-  стоят в разных группах, а короткие гейты собраны в `webkit-gates`.
+  - `webkit-gates`: `ux:mxl010`, `ux:telegram-react-depth`,
+    `ux:react-185-checkin`, `ux:tap-areas` (последние три — WebKit) и
+    `ux:journal-history`, `ux:typography`, `ux:keyboard`, `ux:pro-states`,
+    `ux:pro-failure-states`, `ux:payment-ui` (Chromium, у каждого свой dev-сервер).
+- Два запуска `ux:check` — самые длинные шаги (~6–7 минут каждый, 30 файлов
+  спецификаций), поэтому они стоят в разных группах и без дополнительных
+  наборов; остальные гейты собраны в `webkit-gates`.
 - Объединение групп равно прежнему одиночному job: 12 наборов до и после,
   ни один не дублируется. Два запуска `ux:check` отличаются только
   `UX_FIXED_TIME` (утро/вечер) — это разные сценарии, а не дубль.
