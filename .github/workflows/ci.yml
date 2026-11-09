@@ -28,7 +28,7 @@ env:
 jobs:
   change-scope:
     name: Определение области изменений
-    runs-on: ubuntu-latest
+    runs-on: ${{ fromJSON(vars.CI_RUNS_ON || '"ubuntu-latest"') }}
     outputs:
       backend_required: ${{ steps.scope.outputs.backend_required }}
       docs_only: ${{ steps.scope.outputs.docs_only }}
@@ -76,7 +76,7 @@ jobs:
 
   quality:
     name: Frontend quality
-    runs-on: ubuntu-latest
+    runs-on: ${{ fromJSON(vars.CI_RUNS_ON || '"ubuntu-latest"') }}
     timeout-minutes: 15
     steps:
       - name: Checkout
@@ -130,7 +130,7 @@ jobs:
     if: >-
       (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
       github.ref == 'refs/heads/main' && github.repository == 'Smira31/Mentalix'
-    runs-on: ubuntu-latest
+    runs-on: ${{ fromJSON(vars.CI_RUNS_ON || '"ubuntu-latest"') }}
     timeout-minutes: 5
     continue-on-error: true
     # Before adding the secret, restrict this environment to selected branch main.
@@ -160,7 +160,7 @@ jobs:
     # PR, меняющий только документы, не гоняет Playwright smoke: запускаются
     # лишь PR с кодом (docs_only=false), push в main и workflow_dispatch.
     if: needs.change-scope.outputs.docs_only != 'true'
-    runs-on: ubuntu-latest
+    runs-on: ${{ fromJSON(vars.CI_RUNS_ON || '"ubuntu-latest"') }}
     needs:
       - quality
       - change-scope
@@ -201,8 +201,11 @@ jobs:
           echo "Версия @playwright/test для ключа кэша: $version"
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
+      # Кэш браузеров нужен только GitHub-hosted раннеру: на self-hosted Mac
+      # браузеры остаются на диске, шаг установки всё равно выполняется.
       - name: Cache Playwright browsers
         id: playwright-cache
+        if: runner.environment == 'github-hosted'
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: ~/.cache/ms-playwright
@@ -212,19 +215,26 @@ jobs:
       # ставим только системные зависимости (без них launch падает на libnss3 и др.).
       # ::notice виден в аннотациях job'а: по нему проверяется попадание в кэш
       # на повторном прогоне (в логах GitHub Actions из API его не прочитать).
-      - name: Install system dependencies (кэш браузеров найден)
-        if: steps.playwright-cache.outputs.cache-hit == 'true'
+      # Системные пакеты — только Linux: на macOS это sudo/brew, шаг запрещён.
+      - name: Install system dependencies (кэш браузеров найден, Linux)
+        if: steps.playwright-cache.outputs.cache-hit == 'true' && runner.os == 'Linux'
         run: |
           set -euo pipefail
           echo "::notice title=Playwright cache::hit ${{ steps.playwright-version.outputs.version }}"
           npx playwright install-deps chromium webkit
 
-      - name: Install Chromium and WebKit with system dependencies (промах кэша)
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
+      - name: Install Chromium and WebKit with system dependencies (промах кэша, Linux)
+        if: steps.playwright-cache.outputs.cache-hit != 'true' && runner.os == 'Linux'
         run: |
           set -euo pipefail
           echo "::notice title=Playwright cache::miss ${{ steps.playwright-version.outputs.version }}"
           npx playwright install --with-deps chromium webkit
+
+      # macOS: те же браузеры без системных пакетов; если они уже на диске,
+      # команда завершается мгновенно — поэтому шаг выполняется всегда.
+      - name: Install Chromium and WebKit (macOS, без системных пакетов)
+        if: runner.os == 'macOS'
+        run: npx playwright install chromium webkit
 
       - name: Run UX smoke
         if: matrix.group == 'smoke-day'
@@ -304,7 +314,7 @@ jobs:
     name: Backend health
     needs: change-scope
     if: needs.change-scope.outputs.backend_required == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ${{ fromJSON(vars.CI_RUNS_ON || '"ubuntu-latest"') }}
     timeout-minutes: 5
     # Внешний production (Timeweb) — не гейт PR: недоступность или изменение
     # ответа API не должно блокировать merge. Результат виден в job, но не в
@@ -320,11 +330,22 @@ jobs:
             --retry 10 --retry-delay 5 --retry-all-errors --max-time 20 \
             "$TIMEWEB_BACKEND_URL/api/health")"
           printf '%s\n' "$response"
-          printf '%s\n' "$response" | jq -e '.status == "ok"' >/dev/null
+          # Внешние утилиты на Mac не гарантированы, проверяем на node. Ответ — через env.
+          RESPONSE="$response" node -e '
+          const body = JSON.parse(process.env.RESPONSE);
+          if (body.status !== "ok") {
+            console.error("health status:", JSON.stringify(body.status));
+            process.exit(1);
+          }
+          '
 
   security-audit:
     name: Dependency audit
-    runs-on: ubuntu-latest
+    runs-on: ${{ fromJSON(vars.CI_RUNS_ON || '"ubuntu-latest"') }}
+    # Информационный job: при заданной vars.CI_RUNS_ON (self-hosted Mac) в PR
+    # не запускается, чтобы не удлинять единственную очередь раннера.
+    # Push в main и workflow_dispatch идут как раньше.
+    if: ${{ !(github.event_name == 'pull_request' && vars.CI_RUNS_ON != '') }}
     timeout-minutes: 10
     continue-on-error: true
     steps:
@@ -352,7 +373,10 @@ jobs:
 
   telegram-p0:
     name: Telegram P0 (informational)
-    runs-on: ubuntu-latest
+    runs-on: ${{ fromJSON(vars.CI_RUNS_ON || '"ubuntu-latest"') }}
+    # Тот же принцип, что в security-audit: при заданной vars.CI_RUNS_ON
+    # информационный прогон в PR не занимает очередь Mac.
+    if: ${{ !(github.event_name == 'pull_request' && vars.CI_RUNS_ON != '') }}
     continue-on-error: true
     timeout-minutes: 25
     steps:
@@ -369,13 +393,19 @@ jobs:
         run: npm ci
 
       - name: Cache Playwright browsers
+        if: runner.environment == 'github-hosted'
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
 
-      - name: Install Chromium
+      - name: Install Chromium (Linux, с системными пакетами)
+        if: runner.os == 'Linux'
         run: npx playwright install --with-deps chromium
+
+      - name: Install Chromium (macOS, без системных пакетов)
+        if: runner.os == 'macOS'
+        run: npx playwright install chromium
 
       - name: Run telegram-p0 checks
         env:
@@ -400,7 +430,7 @@ jobs:
       - quality
       - ux
       - change-scope
-    runs-on: ubuntu-latest
+    runs-on: ${{ fromJSON(vars.CI_RUNS_ON || '"ubuntu-latest"') }}
     timeout-minutes: 5
     steps:
       - name: Verify required jobs
