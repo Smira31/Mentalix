@@ -27,7 +27,10 @@ last_verified: 2026-11-09
   Системные зависимости Playwright (`install-deps`, `--with-deps`) ставятся
   только на Linux; на macOS — `npx playwright install` без `--with-deps`
   (никаких sudo/brew в workflow).
-- `backend-health` проверяет `.status == "ok"` через `node -e`, без `jq`.
+- `TZ: UTC` в верхнем `env` файла `ci.yml` действует на все задачи: unit-тесты
+  дат написаны под UTC, а на Mac пояс раннера — Europe/Moscow (+3 ч, сдвиг на день).
+- `backend-health` проверяет статус без `node` и `jq` (на Mac их нет без
+  `setup-node`): `printf '%s' "$response" | grep -Eq '"status"[[:space:]]*:[[:space:]]*"ok"'`.
 
 ## Firebase-превью выключены
 

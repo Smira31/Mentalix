@@ -24,6 +24,9 @@ concurrency:
 env:
   NODE_VERSION: 22.22.1
   BACKEND_SHA: 193b5ab178f1a74ffc4c591bb469c92215dc9121
+  # Фиксированный пояс для всех задач: unit-тесты дат ожидают UTC, а на
+  # self-hosted Mac пояс раннера — Europe/Moscow (+3 ч, сдвиг на день).
+  TZ: UTC
 
 jobs:
   change-scope:
@@ -330,14 +333,8 @@ jobs:
             --retry 10 --retry-delay 5 --retry-all-errors --max-time 20 \
             "$TIMEWEB_BACKEND_URL/api/health")"
           printf '%s\n' "$response"
-          # Внешние утилиты на Mac не гарантированы, проверяем на node. Ответ — через env.
-          RESPONSE="$response" node -e '
-          const body = JSON.parse(process.env.RESPONSE);
-          if (body.status !== "ok") {
-            console.error("health status:", JSON.stringify(body.status));
-            process.exit(1);
-          }
-          '
+          # Без node и jq: на self-hosted Mac их нет в PATH. Только bash/grep.
+          printf '%s' "$response" | grep -Eq '"status"[[:space:]]*:[[:space:]]*"ok"'
 
   security-audit:
     name: Dependency audit
