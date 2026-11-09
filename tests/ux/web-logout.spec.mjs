@@ -31,8 +31,10 @@ async function openWebLoggedIn(browser, baseURL, viewport) {
     serviceWorkers: 'block',
   })
   // addInitScript выполняется на каждой загрузке, включая reload. Метка
-  // засева не даёт вернуть пользователя после выхода: иначе проверка
-  // «обновил → экран входа» была бы ложной.
+  // засева — собственная отметка приложения «человек вышел сам»
+  // (`mx-web-logged-out`, #1163): после выхода она остаётся на устройстве
+  // (#1166), поэтому reload не возвращает пользователя из сида — иначе
+  // проверка «обновил → экран входа» была бы ложной.
   await context.addInitScript(
     ({ user, token }) => {
       // Боевые хосты разрешают автозапуск гостя при отсутствии сессии
@@ -40,14 +42,13 @@ async function openWebLoggedIn(browser, baseURL, viewport) {
       // включает тот же путь флагом — иначе «обновил → экран входа»
       // проверял бы не боевое поведение.
       window.__MX_TEST_ALLOW_GUEST = true
-      if (localStorage.getItem('mx-web-logout-seeded') === '1') return
+      if (localStorage.getItem('mx-web-logged-out') === '1') return
       localStorage.clear()
       sessionStorage.clear()
       localStorage.setItem('mentalix_web_user', JSON.stringify(user))
       localStorage.setItem('mentalix_session_token', token)
       localStorage.setItem('mx-onboarded-v2', '1')
       localStorage.setItem('mx-app-lock-enabled', '0')
-      localStorage.setItem('mx-web-logout-seeded', '1')
     },
     { user: TEST_USER, token: TEST_SESSION_TOKEN }
   )
