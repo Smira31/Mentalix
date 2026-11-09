@@ -3,7 +3,6 @@ import { platform, platformName } from '../platform'
 import { useAutoDismissOnScroll } from '../lib/useAutoDismissOnScroll'
 import { useSlowConnection } from '../lib/useSlowConnection'
 import { api } from '../lib/api'
-import { logEngagementEvent } from '../lib/engagementEvents'
 import {
   fetchTodayDataWithRetry,
   invalidateTodayData,
@@ -318,21 +317,6 @@ export default function Today({
   const recoveryRequested = useRef(null)
   const recoveryCompleted = useRef(false)
 
-  const recoveryEvent = useCallback(
-    (event, date) => {
-      logEngagementEvent({
-        user,
-        demo: Boolean(user?.demo),
-        event,
-        entityType: 'streak_recovery',
-        entityId: date,
-        hasSession: Boolean(platform.getSessionToken?.()),
-        send: api.events.log,
-      })
-    },
-    [user]
-  )
-
   function dismissRecovery() {
     if (recovery?.date) {
       try {
@@ -340,7 +324,6 @@ export default function Today({
       } catch {
         /* */
       }
-      recoveryEvent('streak_recovery_dismissed', recovery.date)
     }
     setRecovery(null)
   }
@@ -397,19 +380,7 @@ export default function Today({
       onReturnFlowEvent?.('action_started')
     }
   }, [returnFlowActive, initialSub, onReturnFlowEvent])
-  useEffect(() => {
-    if (!newBadge?.id) return
-    logEngagementEvent({
-      user,
-      demo: Boolean(user?.demo),
-      event: 'badge_earned',
-      entityType: 'badge',
-      entityId: newBadge.id,
-      once: newBadge.id,
-      hasSession: Boolean(platform.getSessionToken?.()),
-      send: api.events.log,
-    })
-  }, [newBadge, user])
+
   const [showSeriesTooltip, setShowSeriesTooltip] = useState(() =>
     Boolean(user?.id && shouldShowSeriesTooltip(user.id))
   )
@@ -868,7 +839,6 @@ export default function Today({
           /* storage unavailable */
         }
         setRecovery(result)
-        recoveryEvent('streak_recovery_shown', result.date)
       })
       .catch(() => {})
     return () => {
@@ -881,7 +851,6 @@ export default function Today({
     user,
     initialSub,
     sub,
-    recoveryEvent,
     canonical?.recoverable,
   ])
 
@@ -1408,7 +1377,6 @@ export default function Today({
             stage={recoveryStage}
             onDismiss={dismissRecovery}
             onStart={() => {
-              recoveryEvent('streak_recovery_started', recovery.date)
               changeSub('recoveryReview')
             }}
             onClose={() => {
@@ -1508,7 +1476,6 @@ export default function Today({
           className="mx-today-recovery-banner"
           data-testid="streak-recovery-banner"
           onClick={() => {
-            recoveryEvent('streak_recovery_started', recovery.date)
             changeSub('recoveryReview')
           }}
         >

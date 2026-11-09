@@ -1300,6 +1300,8 @@ export const api = {
 
   // MXL-EVENTS: только факт действия (event_type/entity_type/entity_id) —
   // без текстов рефлексии, ответов чек-ина или содержимого чата.
+  // Контракт POST /api/events (#1161): entity_id — целое число или null,
+  // иначе сервер отвечает 422 и событие теряется.
   events: {
     log: (userId, eventType, entityType = null, entityId = null) =>
       request('/events', {
@@ -1309,7 +1311,7 @@ export const api = {
           user_id: userId,
           event_type: eventType,
           entity_type: entityType,
-          entity_id: entityId,
+          entity_id: Number.isInteger(entityId) ? entityId : null,
         }),
       }),
   },
