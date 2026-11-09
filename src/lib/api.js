@@ -297,7 +297,12 @@ async function request(path, options = {}) {
       try {
         const result = JSON.parse(raw)
         if (
-          ['/auth/guest', '/auth/guest/merge', '/auth/email/verify'].includes(path) &&
+          [
+            '/auth/guest',
+            '/auth/guest/merge',
+            '/auth/email/verify',
+            '/auth/telegram/login',
+          ].includes(path) &&
           result?.session_token
         ) {
           platform.setSessionToken?.(result.session_token)
