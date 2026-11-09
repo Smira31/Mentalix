@@ -53,21 +53,10 @@ import {
   ProfilePage,
   ProfileRow,
   ProfileVersion,
+  Toggle,
 } from './settings/ProfileUi'
-
-// iOS-переключатель, §5.4: включённый — белый.
-function Toggle({ checked, label, onChange }) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      aria-label={label}
-      onClick={() => onChange(!checked)}
-      className="mx-profile-switch"
-    />
-  )
-}
+import AiConsentSwitchRow from './settings/AiConsentSwitchRow'
+import { canManageAiContext } from '../lib/aiContextConsent'
 
 /*
  * AUD-009: настройки профиля не загрузились. Показываем ошибку с повтором,
@@ -1118,6 +1107,14 @@ export default function Settings({
 
     return (
       <ProfileBody>
+        {/* #1169: согласие на персональный контекст AI — только в Telegram. */}
+        {canManageAiContext(user) && (
+          <ProfileGroup label="Приватность">
+            <ProfileCard>
+              <AiConsentSwitchRow user={user} />
+            </ProfileCard>
+          </ProfileGroup>
+        )}
         <ProfileGroup label="Защита">
           <ProfileCard>
             <ProfileRow

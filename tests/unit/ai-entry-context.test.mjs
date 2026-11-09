@@ -4,8 +4,12 @@ import { readFile } from 'node:fs/promises'
 
 const apiSource = await readFile(new URL('../../src/lib/api.js', import.meta.url), 'utf8')
 const historySource = await readFile(new URL('../../src/screens/History.jsx', import.meta.url), 'utf8')
-const controlsSource = await readFile(
-  new URL('../../src/screens/mentalix/AiPrivacyControls.jsx', import.meta.url),
+const cardSource = await readFile(
+  new URL('../../src/screens/mentalix/AiContextConsentCard.jsx', import.meta.url),
+  'utf8'
+)
+const consentCopySource = await readFile(
+  new URL('../../src/lib/aiContextConsent.js', import.meta.url),
   'utf8'
 )
 
@@ -23,9 +27,12 @@ test('History требует Telegram context и явное confirmation до п
   assert.match(historySource, /api\.mentalix\.setCheckinContext\(user\.id, checkin\.id, nextEnabled\)/)
 })
 
-test('AI privacy panel объясняет, что global consent не открывает все journal entries', () => {
-  assert.match(controlsSource, /Глобальное согласие не открывает AI все записи/)
-  assert.match(controlsSource, /отметь конкретные\s+чек-ины/)
-  assert.match(controlsSource, /entry_selection_window_days/)
-  assert.match(controlsSource, /выбор записей для контекста удалены/)
+test('карточка согласия объясняет, что global consent не открывает все journal entries', () => {
+  // #1169: прежняя панель AiPrivacyControls не монтировалась нигде и удалена;
+  // её утверждённое объяснение перенесено в карточку «Диалога» и переключатель
+  // профиля — assertion не ослаблен, а переехал к живой поверхности.
+  assert.match(consentCopySource, /Глобальное согласие не открывает AI все записи/)
+  assert.match(consentCopySource, /Отдельные чек-ины для контекста отмечаются в «Истории»/)
+  assert.match(consentCopySource, /AI не заменяет помощь специалиста/)
+  assert.match(cardSource, /AI_CONSENT_CARD_BODY/)
 })
