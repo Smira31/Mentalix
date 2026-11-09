@@ -26,7 +26,9 @@ test('retryAuth сбрасывает authChecked и перезапускает c
 test('web без сессии вызывает общий гостевой вход и оставляет WebAuthScreen при сбое', () => {
   assert.match(appSource, /platformName === 'web' && !platform\.getSessionToken\?\.\(\)/)
   assert.match(appSource, /await loginAsGuest\(api, acceptUser\)/)
-  assert.match(appSource, /if \(!emailLink && canAutoCreateGuest\(\)\)/)
+  // #1163: после намеренного выхода автосоздание гостя не должно
+  // возвращать человека в приложение, поэтому условие дополнено отметкой.
+  assert.match(appSource, /if \(!emailLink && canAutoCreateGuest\(\) && !isWebLoggedOut\(\)\)/)
   assert.match(appSource, /\['email', 'code', 'token'\]/)
   assert.match(appSource, /if \(\(!user \|\| showGuestAuth\) && platformName === 'web'\)/)
 })

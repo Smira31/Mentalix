@@ -61,6 +61,7 @@ import { clearHistoryCache } from './lib/mentalixHistoryCache'
 import { clearSeriesSnapshots } from './lib/series'
 import { clearTrendsDataCache } from './lib/trendsDataCache'
 import { GUEST_MERGED_EVENT, loginAsGuest, canAutoCreateGuest } from './lib/guestAuth'
+import { clearWebLoggedOut, isWebLoggedOut } from './lib/webLogout'
 
 import { getFullscreenSnapshot, initFullscreen } from './lib/tgFullscreen'
 import { initIdleMotionPause } from './lib/idleMotion'
@@ -238,6 +239,8 @@ function App() {
   const [showGuestAuth, setShowGuestAuth] = useState(false)
 
   const acceptUser = useCallback(nextUser => {
+    // Любой намеренный вход снимает отметку «вышел сам» (#1163).
+    clearWebLoggedOut()
     if (nextUser?.id) {
       const changed = switchUserDataScope(nextUser.id)
       if (changed) {
@@ -753,7 +756,7 @@ function App() {
         const emailLink =
           window.location.pathname.startsWith('/auth/') ||
           ['email', 'code', 'token'].some(key => params.has(key))
-        if (!emailLink && canAutoCreateGuest()) {
+        if (!emailLink && canAutoCreateGuest() && !isWebLoggedOut()) {
           try {
             await loginAsGuest(api, acceptUser)
           } catch {
@@ -1392,6 +1395,12 @@ function App() {
                     onRegisterBack={registerSettingsBack}
                     onScrollTop={scrollAppToTop}
                     onGuestLogin={() => setShowGuestAuth(true)}
+                    onLoggedOut={() => {
+                      // ISSUE #1163: выход в вебе/PWA. Экран входа рисует
+                      // существующая ветка WebAuthScreen ниже — без перезагрузки.
+                      setOverlay(null)
+                      setUser(null)
+                    }}
                   />
                 </Suspense>
               </ScreenErrorBoundary>

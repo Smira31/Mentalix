@@ -34,6 +34,8 @@ import {
 import { DEFAULT_REVIEW_HOUR } from '../lib/todayCardState'
 import { pluralize } from '../lib/pluralize'
 import { previewProfileAction } from '../lib/demoMode'
+import { markWebLoggedOut } from '../lib/webLogout'
+import ConfirmDialog from '../components/ConfirmDialog'
 import SubscriptionManager from './SubscriptionManager'
 import DonateScreen from './DonateScreen'
 import LinkWebAccount from './LinkWebAccount'
@@ -176,6 +178,7 @@ export default function Settings({
   onRegisterBack,
   onScrollTop,
   onGuestLogin,
+  onLoggedOut,
 }) {
   const [profileStats, setProfileStats] = useState(null)
   const [profileLoading, setProfileLoading] = useState(true)
@@ -239,6 +242,9 @@ export default function Settings({
   const [erasingAccount, setErasingAccount] = useState(false)
   const [accountErased, setAccountErased] = useState(false)
   const [accountEraseError, setAccountEraseError] = useState('')
+  // ISSUE #1163: выход из аккаунта в вебе и PWA.
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false)
+  const [loggingOut, setLoggingOut] = useState(false)
   const privacyProtectedByTelegram = platformName === 'telegram' && Number(user?.id) > 0
 
   // ── «Мои данные»: скачивание экспорта (загрузка / успех / ошибка).
@@ -530,6 +536,27 @@ export default function Settings({
     } finally {
       setErasingAccount(false)
     }
+  }
+
+  // ISSUE #1163: «Выйти из аккаунта» в вебе и PWA. Токен очищает сам
+  // api.auth.logout() в finally, поэтому выход завершается и без сети.
+  // Перезагрузки нет: App сбрасывает user и показывает существующий
+  // WebAuthScreen.
+  async function logoutAccount() {
+    if (loggingOut) return
+    setLoggingOut(true)
+    try {
+      await api.auth.logout()
+    } catch {
+      // Нет сети: сессии на этом устройстве уже нет (finally в api.auth.logout).
+    }
+    platform.clearUser?.()
+    // На боевом хосте автозапуск гостя не должен вернуть человека в приложение
+    // после обновления страницы — он сам решил выйти (#1163).
+    markWebLoggedOut()
+    setLoggingOut(false)
+    setLogoutConfirmOpen(false)
+    onLoggedOut?.()
   }
 
   async function clearLocalDraft() {
@@ -1350,6 +1377,13 @@ export default function Settings({
               value={tierLabel}
               onClick={() => setScreen('subscription')}
             />
+            {!guest && platformName !== 'telegram' && (
+              <ProfileRow
+                title="Выйти из аккаунта"
+                onClick={() => setLogoutConfirmOpen(true)}
+                testId="profile-row-logout"
+              />
+            )}
           </ProfileCard>
         </ProfileGroup>
 
@@ -1375,6 +1409,17 @@ export default function Settings({
 
         <ProfileVersion>Mentalix {appVersion}</ProfileVersion>
       </ProfileBody>
+      {logoutConfirmOpen && (
+        <ConfirmDialog
+          title="Выйти из аккаунта?"
+          description="Прогресс останется в аккаунте. Чтобы вернуться, войди снова."
+          confirmLabel={loggingOut ? 'Выходим…' : 'Выйти'}
+          closeLabel="Закрыть подтверждение выхода"
+          testId="logout-confirm"
+          onConfirm={logoutAccount}
+          onCancel={() => setLogoutConfirmOpen(false)}
+        />
+      )}
     </ProfilePage>
   )
 }
