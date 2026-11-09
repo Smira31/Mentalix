@@ -71,12 +71,18 @@ test('Telegram requestAuth waits for user id AND signed initData before user-own
   }
 })
 
-test('standalone regular screens match Safari while Dialog keeps its safe-area contract', () => {
+test('standalone regular tabs keep the iOS status-bar inset while Dialog and fullscreen do not', () => {
+  // #1151: с black-translucent строка статуса лежит поверх страницы, поэтому
+  // обычные вкладки в PWA обязаны начать шапку ниже неё.
   assert.match(
     indexCss,
-    /@media \(display-mode: standalone\)[\s\S]*\.mx-app-shell:not\(.mx-dialog-app-shell\) \{\s*padding-top: 0 !important;/
+    /@media \(display-mode: standalone\)[\s\S]*\.mx-app-shell:not\(.mx-dialog-app-shell\):not\(.mx-app-shell--fullscreen\) \{\s*padding-top: var\(--app-safe-top\) !important;/
   )
-  assert.doesNotMatch(indexCss, /\.mx-app-shell:not\(.mx-dialog-app-shell\):not\(.mx-app-shell--fullscreen\)/)
+  // Обнуление inset вернуло бы дефект #1151.
+  assert.doesNotMatch(
+    indexCss,
+    /@media \(display-mode: standalone\)[\s\S]*?\.mx-app-shell:not\(.mx-dialog-app-shell\)[^{]*\{\s*padding-top: 0 !important;/
+  )
 })
 
 

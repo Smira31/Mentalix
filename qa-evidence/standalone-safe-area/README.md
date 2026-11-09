@@ -1,21 +1,48 @@
-# Синхронизация safe-area для Safari standalone
+# Safe-area в PWA iOS (standalone) — issue #1151
 
-Визуальная проверка выполнена Playwright на мобильных viewport **390×844** и **430×932** для экранов «Сегодня» и «Шаги».
+Проверка Playwright (Chromium) на viewport **393×852** и **360×640** для экранов
+«Сегодня», «Шаги» и «Диалог». Эмулированные условия iPhone: safe-area сверху
+**47px**, оболочка без Telegram-fullscreen (`?demo=1&frame=0`), standalone-блок
+взят дословно из `src/index.css`.
 
-В эмуляции iOS safe-area задан как 47px. До исправления обычные вкладки получали этот inset повторно на внешней оболочке App; после исправления регулярные вкладки используют `padding-top: 0`, как эталонный «Диалог».
+Сценарий: `scripts/standalone-safe-area-screenshots.mjs`.
+Скриншоты: `before-*.png` — до исправления, `after-*.png` — после.
+Числа: `before-metrics.json`, `after-metrics.json`.
 
-| Экран   | Viewport | Обычный Safari после | Standalone до | Standalone после |
-| ------- | -------: | -------------------: | ------------: | ---------------: |
-| Сегодня |  390×844 |                  0px |          47px |              0px |
-| Шаги    |  390×844 |                  0px |          47px |              0px |
-| Сегодня |  430×932 |                  0px |          47px |              0px |
-| Шаги    |  430×932 |                  0px |          47px |              0px |
+## Причина
+
+`index.html` просит `apple-mobile-web-app-status-bar-style=black-translucent`, поэтому
+в PWA страница занимает весь экран вместе со строкой статуса, а её высота приходит
+только в `env(safe-area-inset-top)`. Оболочка `App` владеет всей высотой (`100dvh`),
+и её верхний отступ — единственный в приложении (шапки вкладок своего не добавляют).
+Правило #698 заменило этот отступ на `padding-top: 0 !important` и оставило обычные
+вкладки без inset — шапки «Сегодня» и «Шаги» начинались под строкой статуса.
+
+## Замеры
+
+Верх шапки — `getBoundingClientRect().top` элемента шапки; «Оболочка» — `padding-top`
+у `.mx-app-shell`.
+
+| Экран    | Viewport | Safari, шапка | Standalone до | Standalone после | Оболочка до/после |
+| -------- | -------: | ------------: | ------------: | ---------------: | ----------------: |
+| Сегодня  |  393×852 |           47px |           0px |             47px |        0px → 47px |
+| Шаги     |  393×852 |           51px |           4px |             51px |        0px → 47px |
+| Диалог   |  393×852 |          122px |          122px |            122px |       47px → 47px |
+| Сегодня  |  360×640 |           47px |           0px |             47px |        0px → 47px |
+| Шаги     |  360×640 |           51px |           4px |             51px |        0px → 47px |
+| Диалог   |  360×640 |          112px |          112px |            112px |       47px → 47px |
+
+После исправления standalone совпадает с Safari: inset ровно один, второго отступа
+нет. «Диалог» и полноэкранные поверхности не изменились — у них свой контракт.
 
 ## Скриншоты
 
-- Сегодня, 390×844: до _(artifacts/standalone-safe-area/before-today-390x844-standalone.png)_ · после Safari _(artifacts/standalone-safe-area/after-today-390x844-safari.png)_ · после standalone _(artifacts/standalone-safe-area/after-today-390x844-standalone.png)_
-- Шаги, 390×844: до _(artifacts/standalone-safe-area/before-practices-390x844-standalone.png)_ · после Safari _(artifacts/standalone-safe-area/after-practices-390x844-safari.png)_ · после standalone _(artifacts/standalone-safe-area/after-practices-390x844-standalone.png)_
-- Сегодня, 430×932: до _(artifacts/standalone-safe-area/before-today-430x932-standalone.png)_ · после Safari _(artifacts/standalone-safe-area/after-today-430x932-safari.png)_ · после standalone _(artifacts/standalone-safe-area/after-today-430x932-standalone.png)_
-- Шаги, 430×932: до _(artifacts/standalone-safe-area/before-practices-430x932-standalone.png)_ · после Safari _(artifacts/standalone-safe-area/after-practices-430x932-safari.png)_ · после standalone _(artifacts/standalone-safe-area/after-practices-430x932-standalone.png)_
+- Сегодня: [до](before-standalone-today-393x852.png) · [после](after-standalone-today-393x852.png) · 360×640: [до](before-standalone-today-360x640.png) · [после](after-standalone-today-360x640.png)
+- Шаги: [до](before-standalone-practices-393x852.png) · [после](after-standalone-practices-393x852.png) · 360×640: [до](before-standalone-practices-360x640.png) · [после](after-standalone-practices-360x640.png)
+- Диалог (без изменений): [до](before-standalone-mentor-393x852.png) · [после](after-standalone-mentor-393x852.png) · 360×640: [до](before-standalone-mentor-360x640.png) · [после](after-standalone-mentor-360x640.png)
 
-Скриншоты «до» получены тем же сценарием с принудительным старым резервом 47px; скриншоты «после» — с текущим CSS-правилом standalone.
+## Ручной gate (iPhone)
+
+Chromium не доказывает поведение iOS: нужно добавить сайт на экран «Домой» и
+проверить, что «Сегодня» и «Шаги» начинаются ниже строки статуса, «Диалог» не
+съехал, в Safari и в Telegram Mini App ничего не изменилось.
