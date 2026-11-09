@@ -1,0 +1,80 @@
+[
+  {
+    "screen": "today",
+    "viewport": "393x852",
+    "safari": {
+      "shellPaddingTop": "47px",
+      "headerTop": 47
+    },
+    "standalone": {
+      "shellPaddingTop": "47px",
+      "headerTop": 47
+    },
+    "failures": []
+  },
+  {
+    "screen": "practices",
+    "viewport": "393x852",
+    "safari": {
+      "shellPaddingTop": "47px",
+      "headerTop": 51
+    },
+    "standalone": {
+      "shellPaddingTop": "47px",
+      "headerTop": 51
+    },
+    "failures": []
+  },
+  {
+    "screen": "mentor",
+    "viewport": "393x852",
+    "safari": {
+      "shellPaddingTop": "47px",
+      "headerTop": 122
+    },
+    "standalone": {
+      "shellPaddingTop": "47px",
+      "headerTop": 122
+    },
+    "failures": []
+  },
+  {
+    "screen": "today",
+    "viewport": "360x640",
+    "safari": {
+      "shellPaddingTop": "47px",
+      "headerTop": 47
+    },
+    "standalone": {
+      "shellPaddingTop": "47px",
+      "headerTop": 47
+    },
+    "failures": []
+  },
+  {
+    "screen": "practices",
+    "viewport": "360x640",
+    "safari": {
+      "shellPaddingTop": "47px",
+      "headerTop": 51
+    },
+    "standalone": {
+      "shellPaddingTop": "47px",
+      "headerTop": 51
+    },
+    "failures": []
+  },
+  {
+    "screen": "mentor",
+    "viewport": "360x640",
+    "safari": {
+      "shellPaddingTop": "47px",
+      "headerTop": 112
+    },
+    "standalone": {
+      "shellPaddingTop": "47px",
+      "headerTop": 112
+    },
+    "failures": []
+  }
+]

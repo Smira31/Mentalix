@@ -1,0 +1,92 @@
+[
+  {
+    "screen": "today",
+    "viewport": "393x852",
+    "safari": {
+      "shellPaddingTop": "47px",
+      "headerTop": 47
+    },
+    "standalone": {
+      "shellPaddingTop": "0px",
+      "headerTop": 0
+    },
+    "failures": [
+      "верх шапки 0px < 47px",
+      "отступ оболочки 0px ≠ Safari 47px"
+    ]
+  },
+  {
+    "screen": "practices",
+    "viewport": "393x852",
+    "safari": {
+      "shellPaddingTop": "47px",
+      "headerTop": 51
+    },
+    "standalone": {
+      "shellPaddingTop": "0px",
+      "headerTop": 4
+    },
+    "failures": [
+      "верх шапки 4px < 47px",
+      "отступ оболочки 0px ≠ Safari 47px"
+    ]
+  },
+  {
+    "screen": "mentor",
+    "viewport": "393x852",
+    "safari": {
+      "shellPaddingTop": "47px",
+      "headerTop": 122
+    },
+    "standalone": {
+      "shellPaddingTop": "47px",
+      "headerTop": 122
+    },
+    "failures": []
+  },
+  {
+    "screen": "today",
+    "viewport": "360x640",
+    "safari": {
+      "shellPaddingTop": "47px",
+      "headerTop": 47
+    },
+    "standalone": {
+      "shellPaddingTop": "0px",
+      "headerTop": 0
+    },
+    "failures": [
+      "верх шапки 0px < 47px",
+      "отступ оболочки 0px ≠ Safari 47px"
+    ]
+  },
+  {
+    "screen": "practices",
+    "viewport": "360x640",
+    "safari": {
+      "shellPaddingTop": "47px",
+      "headerTop": 51
+    },
+    "standalone": {
+      "shellPaddingTop": "0px",
+      "headerTop": 4
+    },
+    "failures": [
+      "верх шапки 4px < 47px",
+      "отступ оболочки 0px ≠ Safari 47px"
+    ]
+  },
+  {
+    "screen": "mentor",
+    "viewport": "360x640",
+    "safari": {
+      "shellPaddingTop": "47px",
+      "headerTop": 112
+    },
+    "standalone": {
+      "shellPaddingTop": "47px",
+      "headerTop": 112
+    },
+    "failures": []
+  }
+]
