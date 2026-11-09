@@ -2167,6 +2167,37 @@ function respond(path, options = {}) {
     return json({ text: 'Хочу разобраться в том, что сейчас для меня важно.' })
   }
 
+  /*
+   * Issue #1169: согласие на персональный контекст AI. Сервера в демо нет,
+   * но контракт повторяем: выключение снимает отметки записей, включение
+   * их сохраняет, GET отдаёт текущее состояние.
+   */
+  if (pathname === '/mentalix/consent') {
+    if (method === 'PUT') {
+      const enabled = Boolean(body.enabled)
+      writeState({
+        ...state,
+        aiConsent: enabled,
+        aiConsentCheckins: enabled ? state.aiConsentCheckins || [] : [],
+      })
+      return json({ enabled })
+    }
+    return json({
+      enabled: Boolean(state.aiConsent),
+      entry_selection_window_days: 14,
+      checkin_ids: state.aiConsentCheckins || [],
+    })
+  }
+
+  if (pathname.startsWith('/mentalix/context/checkins/') && method === 'PUT') {
+    const checkinId = pathname.split('/').pop()
+    const marks = new Set(state.aiConsentCheckins || [])
+    if (body.enabled) marks.add(checkinId)
+    else marks.delete(checkinId)
+    writeState({ ...state, aiConsentCheckins: [...marks] })
+    return json({ checkin_id: Number(checkinId), enabled: Boolean(body.enabled) })
+  }
+
   if (method === 'GET') return json([])
   if (method === 'DELETE') return json({ ok: true })
   return json({ ok: true })

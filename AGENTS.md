@@ -257,6 +257,15 @@ screens, and keep article cards unchanged unless the owner explicitly approves t
 - Для этой задачи владелец разрешил только `check:core` и целевой Playwright-файл `hero-journey-reliability.spec.mjs` (Chromium); полный `ux:check` и WebKit оставлены CI. Команды выполняются в `docker compose -f docker-compose.base44.yml exec -T web`.
 - В свежем web-контейнере браузера Playwright нет: перед прогоном нужен `npx playwright install --with-deps chromium` (в `node:22-slim` нет системных библиотек, иначе launch падает на `libglib-2.0.so.0`). Ставить только Chromium.
 
+### Доступ ИИ к записям (#1169) в Base44
+
+- Одна поверхность согласия: карточка `src/screens/mentalix/AiContextConsentCard.jsx` в начале разговора с Наблюдателем, Наставником и Спутником и переключатель «Доступ ИИ к записям» в группе «Приватность» подэкрана «твои данные.» (`src/screens/settings/AiConsentSwitchRow.jsx`). Прежняя панель `AiPrivacyControls.jsx` удалена — второго переключателя нет. Общее состояние и тексты — `src/lib/aiContextConsent.js`, поток прежний: GET/PUT `/api/mentalix/consent`.
+- Обе поверхности включаются одним условием `canManageAiContext(user)`: `platform.name === 'telegram' && Number(user.id) > 0` (как в «Истории» и вечернем разборе). В вебе и у гостя поведение не меняется, в Даймоне карточки нет.
+- «Разрешить» включает согласие и отмечает сегодняшний чек-ин (`api.checkin.today` → `setCheckinContext`), если он есть. «Не сейчас» пишет отметку через `useSynced('mx-ai-consent-snooze-v1:<userId>')` и прячет карточку на 7 дней. После реплики с `crisis: true` карточка не показывается.
+- В демо-режиме добавлены ответы `/mentalix/consent` и `/mentalix/context/checkins/:id` (`src/lib/demoMode.js`): выключение снимает отметки, состояние переживает перезагрузку — на этом стоят тесты и скриншоты.
+- Целевая проверка: `npm run ux:consent-ui` (`playwright.consent-ui.config.mjs`, Chromium; платформа Telegram включается через `window.TelegramWebviewProxy` в `tests/ux/ai-consent-ui.spec.mjs`). Кадры 393×852 и 360×640 — `qa-evidence/ai-context-consent/`. В снимках обязателен `page.screenshot({ animations: 'disabled' })`: без него первый кадр на 360×640 может оказаться пустым. Полный `ux:check` и WebKit остаются CI, iPhone/Telegram — ручной gate.
+- В свежем web-контейнере перед прогоном: `npx playwright install --with-deps chromium`.
+
 ### Защита контента от копирования (#1112, этап 1) в Base44
 
 - Один общий класс `.mx-protected-text` (стили в `src/index.css`, глобальные перехватчики copy/contextmenu — `src/lib/protectedText.js`, установка в `App.jsx`): `user-select: none` + `-webkit-user-select: none` + `-webkit-touch-callout: none`. Класс вешается на тексты «Пути героя» (заголовок/описание курса, названия глав, вступление шага, подсказки «Запиши»/«Одно действие», тексты завершения), на пролог «О курсе» и на заголовок/текст статьи в `LibraryArticleReader.jsx`.
