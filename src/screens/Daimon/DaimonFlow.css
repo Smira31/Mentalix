@@ -674,7 +674,7 @@
   background: transparent;
 }
 
-/* ── Вывод: «Что ты увидел?» — отдельный экран ── */
+/* ── Вывод: «Что тебе открылось?» — отдельный экран ── */
 .mx-daimon-insight {
   display: flex;
   flex-direction: column;

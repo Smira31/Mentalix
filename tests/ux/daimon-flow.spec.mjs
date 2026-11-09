@@ -84,7 +84,7 @@ test.describe('Даймон — флоу игры', () => {
       await page.getByTestId('daimon-chat-send').click()
     }
 
-    // Вывод — отдельный экран «Что ты увидел на этой клетке?»
+    // Вывод — отдельный экран «Что тебе открылось на этой клетке?»
     await expect(page.getByTestId('daimon-insight')).toBeVisible({ timeout: 5000 })
     await expect(page.getByTestId('daimon-skip')).toBeVisible()
     // Верхняя строка: «Клетка N · Название»

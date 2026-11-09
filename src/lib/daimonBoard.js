@@ -90,7 +90,7 @@ export const DAIMON_CELLS = CELL_DATA.map(([n, title, meaning]) => ({
 export const DAIMON_SNAKES = SNAKES
 export const DAIMON_ARROWS = ARROWS
 
-export const DAIMON_INSIGHT_PROMPT = 'Что ты увидел на этой клетке? Одной фразой.'
+export const DAIMON_INSIGHT_PROMPT = 'Что тебе открылось на этой клетке? Одной фразой.'
 
 export const DAIMON_FINAL_CELL = 36
 

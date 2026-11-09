@@ -637,7 +637,7 @@ function CellView({ game, board, userId, onInsight, onBackToBoard, onGuestLogin 
             Пропустить клетку
           </button>
         </div>
-        <h2 className="mx-daimon-insight__question">Что ты увидел на этой клетке?</h2>
+        <h2 className="mx-daimon-insight__question">Что тебе открылось на этой клетке?</h2>
         <p className="mx-daimon-insight__hint">Одной фразой</p>
         <textarea
           ref={insightRef}
@@ -645,7 +645,7 @@ function CellView({ game, board, userId, onInsight, onBackToBoard, onGuestLogin 
           value={insightText}
           onChange={e => setInsightText(e.target.value)}
           placeholder="Например: я боюсь не провала, а что скажут"
-          aria-label="Что ты увидел на этой клетке"
+          aria-label="Что тебе открылось на этой клетке"
           data-testid="daimon-insight-input"
           rows={1}
         />
