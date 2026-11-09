@@ -68,7 +68,6 @@ const BottomNavigation = forwardRef(function BottomNavigation(
    */
   const [collapsed, setCollapsed] = useState(false)
   const collapsedRef = useRef(false)
-  const tabRef = useRef(tab)
   const scrollFrame = useRef(null)
   const lastScrollY = useRef(0)
   const scrollDirection = useRef(null)
@@ -82,8 +81,6 @@ const BottomNavigation = forwardRef(function BottomNavigation(
   }
 
   useEffect(() => {
-    tabRef.current = tab
-
     /* Смена вкладки — панель всегда раскрывается, жест начинается заново. */
     applyCollapsed(false)
 
@@ -129,16 +126,9 @@ const BottomNavigation = forwardRef(function BottomNavigation(
       scrollFrame.current = null
 
       /*
-       * «Шаги» — нижняя навигация не сворачивается: у Stoic
-       * нет плавающей лампочки, и свёрнутая кнопка с иконкой
-       * Lightbulb здесь лишняя. На остальных вкладках — как было.
+       * Сворачивание одинаково на всех пяти вкладках, включая «Шаги»:
+       * решение владельца 09.11 — исключения для одной вкладки нет.
        */
-      if (tabRef.current === 'practices') {
-        applyCollapsed(false)
-        resetGesture()
-        return
-      }
-
       const currentY = Math.max(scrollRootRef?.current?.scrollTop || 0, window.scrollY || 0)
 
       const previousY = lastScrollY.current
@@ -280,7 +270,7 @@ const BottomNavigation = forwardRef(function BottomNavigation(
       style={{
         left: 'max(var(--bottom-nav-edge), var(--app-safe-left))',
         right: 'max(var(--bottom-nav-edge), var(--app-safe-right))',
-        bottom: 'calc(var(--app-safe-bottom) + var(--bottom-nav-offset))',
+        bottom: 'var(--mx-bottom-nav-bottom)',
       }}
     >
       <div

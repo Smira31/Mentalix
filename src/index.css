@@ -156,12 +156,29 @@
 
   --bottom-nav-height: 53px;
   --bottom-nav-collapsed-size: 50px;
-  --bottom-nav-offset: 8px;
+  /*
+   * Сдвиг пилюли от нижней safe-area: отрицательный — бар опущен на 12px
+   * относительно прежних 8px. Ниже нижней границы (--bottom-nav-min-edge)
+   * бар не опускается: на экранах без safe-area (Telegram, веб) он иначе
+   * ушёл бы за край.
+   */
+  --bottom-nav-offset: -4px;
+  --bottom-nav-min-edge: 6px;
   --bottom-nav-edge: 20px;
   /* Дополнительный воздух после последнего контента перед fixed-навигацией. */
   --bottom-nav-content-gap: 16px;
+  /*
+   * Единственный источник нижнего края бара: safe-area конкретного режима
+   * (env() в iOS PWA, --tg-content-safe-area-* в Telegram) + сдвиг, но не
+   * ближе 6px к краю экрана. Им же считается резерв под бар, поэтому
+   * последний контент не уходит под навигацию.
+   */
+  --mx-bottom-nav-bottom: max(
+    var(--bottom-nav-min-edge),
+    calc(var(--app-safe-bottom) + var(--bottom-nav-offset))
+  );
   --mx-bottom-nav-space: calc(
-    var(--app-safe-bottom) + var(--bottom-nav-offset) +
+    var(--mx-bottom-nav-bottom) +
       max(var(--bottom-nav-height), var(--bottom-nav-collapsed-size)) +
       var(--bottom-nav-content-gap)
   );
