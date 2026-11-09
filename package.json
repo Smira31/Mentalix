@@ -43,6 +43,7 @@
     "ux:journal-history": "playwright test --config=playwright.journal-history.config.mjs",
     "ux:journal-completion": "playwright test --config=playwright.journal-completion.config.mjs",
     "ux:protected-text": "playwright test --config=playwright.protected-text.config.mjs",
+    "ux:hero-back": "playwright test --config=playwright.hero-back.config.mjs",
     "ux:typography": "playwright test --config=playwright.typography.config.mjs",
     "ux:keyboard": "playwright test --config=playwright.keyboard.config.mjs",
     "ux:pro-states": "playwright test --config=playwright.pro-states.config.mjs",

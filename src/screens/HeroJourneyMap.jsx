@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback, useEffect, useRef, createContext, useCo
 import { Check, ChevronDown, ChevronRight, Lock } from 'lucide-react'
 
 import Screen from '../components/Screen'
+import ScreenBack from '../components/ScreenBack'
 import { HERO_COURSE, courseContent } from '../data/courses'
 import JournalTextarea from '../components/JournalTextarea'
 import SemanticGlyph from '../components/SemanticGlyph'
@@ -165,6 +166,9 @@ function Shell({
   testId,
   contentSource,
   contentStatus,
+  /* Тот же обработчик, что у системной кнопки Telegram: вне Telegram он
+     рисуется видимой круглой «Назад» (ScreenBack), в Telegram — не рисуется. */
+  onBack,
 }) {
   return (
     <Screen
@@ -181,6 +185,11 @@ function Shell({
         data-content-status={contentStatus}
         className={`flex flex-col ${fit ? 'flex-1 min-h-0' : ''} ${bodyClassName}`}
       >
+        {onBack && (
+          <div className="mx-hj-back">
+            <ScreenBack onBack={onBack} testId="hero-back" registerSystemBack={false} />
+          </div>
+        )}
         {children}
       </div>
     </Screen>
@@ -413,7 +422,7 @@ function FinaleCard({ progress, onOpenStep, onOpenSubscription }) {
   )
 }
 
-function CourseMap({ progress, onOpenStep, onOpenAbout, onOpenSubscription }) {
+function CourseMap({ progress, onOpenStep, onOpenAbout, onOpenSubscription, onBack }) {
   const {
     steps: HERO_JOURNEY_TRIALS,
     chapters: HERO_JOURNEY_CHAPTERS,
@@ -443,7 +452,12 @@ function CourseMap({ progress, onOpenStep, onOpenAbout, onOpenSubscription }) {
 
   if (HERO_JOURNEY_TRIALS.length === 0)
     return (
-      <Shell testId="hero-journey-map" contentSource={contentSource} contentStatus={contentStatus}>
+      <Shell
+        testId="hero-journey-map"
+        contentSource={contentSource}
+        contentStatus={contentStatus}
+        onBack={onBack}
+      >
         <div className="mx-hj-map__head mx-protected-text">
           <h1 className="mx-hj-map__title">{appHeading(HERO_JOURNEY_COURSE.title)}</h1>
           <p className="mx-hj-map__desc">{HERO_JOURNEY_COURSE.description}</p>
@@ -455,7 +469,12 @@ function CourseMap({ progress, onOpenStep, onOpenAbout, onOpenSubscription }) {
     )
 
   return (
-    <Shell testId="hero-journey-map" contentSource={contentSource} contentStatus={contentStatus}>
+    <Shell
+      testId="hero-journey-map"
+      contentSource={contentSource}
+      contentStatus={contentStatus}
+      onBack={onBack}
+    >
       {contentStatus === 'error' && <ContentFailure onRetry={retryContent} />}
       <div className="mx-hj-map__head mx-protected-text">
         <span className="mx-hj-eyebrow">
@@ -536,10 +555,15 @@ function CourseMap({ progress, onOpenStep, onOpenAbout, onOpenSubscription }) {
 
 /* ── Пролог «О практикуме» ── */
 
-function AboutScreen({ prologue, onBackToMap }) {
+function AboutScreen({ prologue, onBackToMap, onBack }) {
   return (
     /* Колонка без скролла: кнопка «К шагам» прижата к низу (см. __bottom в CSS). */
-    <Shell fit bodyClassName="mx-hj-about mx-protected-text" screenBodyClassName="mx-hj-about-body">
+    <Shell
+      fit
+      bodyClassName="mx-hj-about mx-protected-text"
+      screenBodyClassName="mx-hj-about-body"
+      onBack={onBack}
+    >
       <span className="mx-hj-eyebrow">{prologue.eyebrow}</span>
       <h1 className="mx-hj-about__title">{appHeading(prologue.title)}</h1>
       {prologue.paragraphs.map((para, i) => (
@@ -631,7 +655,7 @@ function StepIntro({ trial, onStart, onBack, storyIndex, onStoryIndexChange }) {
        текст слегка перехлёстывает затемнённый нижний край; кнопка
        прижата к низу (см. .mx-hj-hero--flex и __bottom в CSS). Листы сторис
        живут в той же колонке: общая геометрия картинки сохраняется. */
-    <Shell fit bodyClassName="mx-hj-step-intro" screenBodyClassName="mx-hj-intro-body">
+    <Shell fit bodyClassName="mx-hj-step-intro" screenBodyClassName="mx-hj-intro-body" onBack={onBack}>
       {pages.length > 0 ? (
         <HeroJourneyStory
           pages={pages}
@@ -706,6 +730,7 @@ function WriteScreen({
   onChange,
   onSubmit,
   onClose,
+  onBack,
   trial,
   view,
 }) {
@@ -727,7 +752,7 @@ function WriteScreen({
   return (
     /* Колонка без скролла: поле занимает свободную высоту, кнопка (floating
        toolbar JournalTextarea) прижата к низу и не скрывается за краем. */
-    <Shell fit bodyClassName="mx-hj-write-col">
+    <Shell fit bodyClassName="mx-hj-write-col" onBack={onBack}>
       <StepHeader trial={trial} view={view} />
 
       <div className="mx-hj-write mx-protected-text">
@@ -761,7 +786,7 @@ function WriteScreen({
 
 /* ── G. Шаг пройден ── */
 
-function StepComplete({ trial, progress, onBackToMap, onContinue }) {
+function StepComplete({ trial, progress, onBackToMap, onContinue, onBack }) {
   const {
     chapterForTrial,
     trialsForChapter,
@@ -793,7 +818,12 @@ function StepComplete({ trial, progress, onBackToMap, onContinue }) {
   return (
     /* Колонка без скролла: кадр done обрезается по данным шага,
        текст идёт сразу под ним, «Продолжить» — с коротким зазором. */
-    <Shell fit bodyClassName="mx-hj-step-complete" screenBodyClassName="mx-hj-complete-body">
+    <Shell
+      fit
+      bodyClassName="mx-hj-step-complete"
+      screenBodyClassName="mx-hj-complete-body"
+      onBack={onBack}
+    >
       {showDoneImage ? (
         <HeroImage
           flexible
@@ -890,13 +920,14 @@ function StepComplete({ trial, progress, onBackToMap, onContinue }) {
  * абзац те же, что на вступлении шага, кнопка — общая нижняя группа
  * шага (.mx-hj-step-intro__bottom) и тихий вторичный текст (.mx-hj-quiet-link).
  */
-function PauseScreen({ nextTrial, onStay, onContinue }) {
+function PauseScreen({ nextTrial, onStay, onContinue, onBack }) {
   return (
     <Shell
       fit
       bodyClassName="mx-hj-pause"
       screenBodyClassName="mx-hj-pause-body"
       testId="hero-pause"
+      onBack={onBack}
     >
       <span className="mx-hj-eyebrow">ПАУЗА</span>
       <h2 className="mx-hj-step-intro__title">{appHeading('Глава позади')}</h2>
@@ -1177,7 +1208,13 @@ function CourseFlow({ onBack, user, course, onOpenSubscription }) {
   }
 
   if (view === 'about' && prologue) {
-    return <AboutScreen prologue={prologue} onBackToMap={() => setView('map')} />
+    return (
+      <AboutScreen
+        prologue={prologue}
+        onBackToMap={() => setView('map')}
+        onBack={handleBack}
+      />
+    )
   }
 
   if (view === 'map' || !trial) {
@@ -1187,7 +1224,7 @@ function CourseFlow({ onBack, user, course, onOpenSubscription }) {
         onOpenStep={openStep}
         onOpenAbout={() => setView('about')}
         onOpenSubscription={onOpenSubscription}
-        onBack={onBack}
+        onBack={handleBack}
       />
     )
   }
@@ -1216,6 +1253,7 @@ function CourseFlow({ onBack, user, course, onOpenSubscription }) {
           onChange={value => changeDraft('reflection', value)}
           onSubmit={submitWrite}
           onClose={requestClose}
+          onBack={handleBack}
           trial={trial}
           view="write"
         />
@@ -1236,6 +1274,7 @@ function CourseFlow({ onBack, user, course, onOpenSubscription }) {
           onChange={value => changeDraft('action', value)}
           onSubmit={submitAction}
           onClose={requestClose}
+          onBack={handleBack}
           trial={trial}
           view="action"
         />
@@ -1271,6 +1310,7 @@ function CourseFlow({ onBack, user, course, onOpenSubscription }) {
     return (
       <PauseScreen
         nextTrial={nextOpen ? nextTrial : null}
+        onBack={handleBack}
         onStay={() => setView('map')}
         onContinue={() => {
           if (nextOpen) openStep(pauseNextStepId)
@@ -1286,7 +1326,7 @@ function CourseFlow({ onBack, user, course, onOpenSubscription }) {
       onOpenStep={openStep}
       onOpenAbout={() => setView('about')}
       onOpenSubscription={onOpenSubscription}
-      onBack={onBack}
+      onBack={handleBack}
     />
   )
 }
