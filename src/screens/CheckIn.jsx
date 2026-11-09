@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import { MotifArt } from '../components/Motif'
 import { api } from '../lib/api'
+import { logEngagementEvent } from '../lib/engagementEvents'
 import {
   BookOpen,
   BriefcaseBusiness,
@@ -56,6 +57,7 @@ import { readCanonicalCurrentStreak, readCanonicalStreakStats } from '../lib/can
 import { buildStreakDays, shouldCelebrateStreak } from '../lib/streakCelebration'
 import { useStreakBaseline } from '../lib/useStreakBaseline'
 import StreakCelebration from '../components/StreakCelebration'
+import { logOnce } from '../lib/logOnce'
 import { maybeBuildSurprise } from './mentalix/surpriseInsight'
 import { SURPRISE_MESSAGE_KEY } from './mentalix/insightDigest'
 import { seriesLogicalDateKey } from '../lib/series'
@@ -282,6 +284,19 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
     ...viewportStyle,
     paddingBottom: 0,
   }
+  const teaserLogged = useRef(false)
+  useEffect(() => {
+    if (teaserLogged.current || step !== doneStep) return
+    teaserLogged.current = true
+    logEngagementEvent({
+      user,
+      demo: isPreviewDemoMode(),
+      event: 'teaser_shown',
+      entityType: 'teaser:morning',
+      hasSession: Boolean(platform.getSessionToken?.()),
+      send: api.events.log,
+    })
+  }, [step, doneStep, user])
 
   /*
    * §6: во время горизонтального перехода (300 мс) повторная навигация
@@ -968,6 +983,7 @@ function CheckInCore({
   const [streakHistory, setStreakHistory] = useState([])
   const [surprise, setSurprise] = useState(null)
   const surpriseChecked = useRef(false)
+  const surpriseEvents = useRef(new Set())
 
   const [saving, setSaving] = useState(false)
 
@@ -1234,6 +1250,11 @@ function CheckInCore({
     maybeBuildSurprise(user).then(text => {
       if (!active || !text) return
       setSurprise(text)
+      logOnce(surpriseEvents, 'shown', () =>
+        api.events
+          .log(user.id, 'surprise_insight_shown', 'surprise_insight', null)
+          .catch(() => {})
+      )
     })
     return () => {
       active = false
@@ -1241,7 +1262,15 @@ function CheckInCore({
   }, [isEvening, step, doneStep, user])
 
   function openSurprise() {
-    if (!surprise) return
+    if (
+      !surprise ||
+      !logOnce(surpriseEvents, 'opened', () =>
+        api.events
+          .log(user.id, 'surprise_insight_opened', 'surprise_insight', null)
+          .catch(() => {})
+      )
+    )
+      return
     sessionStorage.setItem(MENTOR_PERSONA_KEY, 'dnevnik')
     sessionStorage.setItem(SURPRISE_MESSAGE_KEY, surprise)
     const url = new URL(window.location.href)
@@ -1408,6 +1437,20 @@ function CheckInCore({
    * использует overflow-y: auto из FULLSCREEN_SCROLL_CLASS, без
    * зарезервированной полосы прокрутки пустого пространства.
    */
+
+  const teaserLogged = useRef(false)
+  useEffect(() => {
+    if (!isCompletion || teaserLogged.current) return
+    teaserLogged.current = true
+    logEngagementEvent({
+      user,
+      demo: previewDemoMode,
+      event: 'teaser_shown',
+      entityType: `teaser:${isEvening ? 'evening' : 'morning'}`,
+      hasSession: Boolean(platform.getSessionToken?.()),
+      send: api.events.log,
+    })
+  }, [isCompletion, user, previewDemoMode, isEvening])
 
   const isStreakStep = step === streakStep
 

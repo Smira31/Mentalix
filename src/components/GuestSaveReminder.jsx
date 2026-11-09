@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Cloud, X } from 'lucide-react'
-import { platformName } from '../platform'
+import { platform, platformName } from '../platform'
 import { api } from '../lib/api'
 import { isDemoGuestMode } from '../lib/demoMode'
+import { logEngagementEvent } from '../lib/engagementEvents'
 import { readJournalStore } from '../lib/journalStorage'
 import { hideGuestSaveReminder, shouldShowGuestSaveReminder } from '../lib/guestSaveReminder'
 import './GuestSaveReminder.css'
@@ -33,6 +34,18 @@ export default function GuestSaveReminder({ user, hasEntries, onOpenSettings }) 
     demoGuest: isDemoGuestMode(),
   })
 
+  useEffect(() => {
+    if (!visible) return
+    logEngagementEvent({
+      user,
+      event: 'guest_save_reminder_shown',
+      entityType: 'guest_save_reminder',
+      once: 'display',
+      hasSession: Boolean(platform.getSessionToken?.()),
+      send: api.events.log,
+    })
+  }, [visible, user])
+
   if (!visible) return null
 
   return (
@@ -58,7 +71,16 @@ export default function GuestSaveReminder({ user, hasEntries, onOpenSettings }) 
           type="button"
           className="cta-pill mx-type-control mx-guest-save-reminder__action"
           data-testid="guest-save-reminder-action"
-          onClick={() => onOpenSettings?.()}
+          onClick={() => {
+            logEngagementEvent({
+              user,
+              event: 'guest_save_reminder_clicked',
+              entityType: 'guest_save_reminder',
+              hasSession: Boolean(platform.getSessionToken?.()),
+              send: api.events.log,
+            })
+            onOpenSettings?.()
+          }}
         >
           Сохранить прогресс
         </button>

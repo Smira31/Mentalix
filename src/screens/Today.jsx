@@ -3,6 +3,7 @@ import { platform, platformName } from '../platform'
 import { useAutoDismissOnScroll } from '../lib/useAutoDismissOnScroll'
 import { useSlowConnection } from '../lib/useSlowConnection'
 import { api } from '../lib/api'
+import { logEngagementEvent } from '../lib/engagementEvents'
 import {
   fetchTodayDataWithRetry,
   invalidateTodayData,
@@ -324,6 +325,14 @@ export default function Today({
       } catch {
         /* */
       }
+      logEngagementEvent({
+        user,
+        demo: Boolean(user?.demo),
+        event: 'streak_recovery_dismissed',
+        entityType: 'streak_recovery',
+        hasSession: Boolean(platform.getSessionToken?.()),
+        send: api.events.log,
+      })
     }
     setRecovery(null)
   }
@@ -380,6 +389,19 @@ export default function Today({
       onReturnFlowEvent?.('action_started')
     }
   }, [returnFlowActive, initialSub, onReturnFlowEvent])
+
+  useEffect(() => {
+    if (!newBadge?.id) return
+    logEngagementEvent({
+      user,
+      demo: Boolean(user?.demo),
+      event: 'badge_earned',
+      entityType: `badge:${newBadge.id}`,
+      once: newBadge.id,
+      hasSession: Boolean(platform.getSessionToken?.()),
+      send: api.events.log,
+    })
+  }, [newBadge, user])
 
   const [showSeriesTooltip, setShowSeriesTooltip] = useState(() =>
     Boolean(user?.id && shouldShowSeriesTooltip(user.id))
@@ -839,6 +861,14 @@ export default function Today({
           /* storage unavailable */
         }
         setRecovery(result)
+        logEngagementEvent({
+          user,
+          demo: Boolean(user?.demo),
+          event: 'streak_recovery_shown',
+          entityType: 'streak_recovery',
+          hasSession: Boolean(platform.getSessionToken?.()),
+          send: api.events.log,
+        })
       })
       .catch(() => {})
     return () => {
@@ -1377,6 +1407,14 @@ export default function Today({
             stage={recoveryStage}
             onDismiss={dismissRecovery}
             onStart={() => {
+              logEngagementEvent({
+                user,
+                demo: Boolean(user?.demo),
+                event: 'streak_recovery_started',
+                entityType: 'streak_recovery',
+                hasSession: Boolean(platform.getSessionToken?.()),
+                send: api.events.log,
+              })
               changeSub('recoveryReview')
             }}
             onClose={() => {
@@ -1476,6 +1514,14 @@ export default function Today({
           className="mx-today-recovery-banner"
           data-testid="streak-recovery-banner"
           onClick={() => {
+            logEngagementEvent({
+              user,
+              demo: Boolean(user?.demo),
+              event: 'streak_recovery_started',
+              entityType: 'streak_recovery',
+              hasSession: Boolean(platform.getSessionToken?.()),
+              send: api.events.log,
+            })
             changeSub('recoveryReview')
           }}
         >

@@ -2,13 +2,15 @@ import { useEffect, useRef, useState } from 'react'
 import { api } from '../lib/api'
 import { toLocalCalendarDate } from '../lib/dateTimezonePolicy'
 import { visibleDailyTask } from '../lib/dailyTask'
+import { logOnce } from '../lib/logOnce'
 
 // Задание необязательное: неподдерживаемый эндпоинт и сбой сети не меняют чек-ин.
 
-export default function DailyTaskPrompt() {
+export default function DailyTaskPrompt({ user }) {
   const date = toLocalCalendarDate()
   const [response, setResponse] = useState(null)
   const [busy, setBusy] = useState(false)
+  const events = useRef(new Set())
   const answered = useRef(false)
 
   useEffect(() => {
@@ -20,6 +22,12 @@ export default function DailyTaskPrompt() {
   }, [date])
 
   const task = response?.task
+  useEffect(() => {
+    if (!task || response.status !== 'new') return
+    logOnce(events, `shown:${date}:${task.id}`, () =>
+      api.events.log(user.id, 'daily_task_shown', `daily_task:${date}`, null).catch(() => {})
+    )
+  }, [response, task, user.id, date])
 
   if (!task) return null
 
@@ -30,6 +38,16 @@ export default function DailyTaskPrompt() {
     try {
       await api.mentalix.answerDailyTask(date, task.id, status)
       setResponse(current => ({ ...current, status }))
+      logOnce(events, `answer:${date}:${task.id}`, () =>
+        api.events
+          .log(
+            user.id,
+            status === 'done' ? 'daily_task_done' : 'daily_task_skipped',
+            `daily_task:${date}`,
+            null
+          )
+          .catch(() => {})
+      )
     } catch {
       answered.current = false
     } finally {
