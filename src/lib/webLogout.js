@@ -8,7 +8,7 @@
 // входа. Маркер живёт только на этом устройстве и снимается при любом
 // намеренном входе.
 
-const WEB_LOGGED_OUT_KEY = 'mx-web-logged-out'
+export const WEB_LOGGED_OUT_KEY = 'mx-web-logged-out'
 
 export function markWebLoggedOut() {
   try {

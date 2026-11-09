@@ -62,6 +62,7 @@ import { clearSeriesSnapshots } from './lib/series'
 import { clearTrendsDataCache } from './lib/trendsDataCache'
 import { GUEST_MERGED_EVENT, loginAsGuest, canAutoCreateGuest } from './lib/guestAuth'
 import { clearWebLoggedOut, isWebLoggedOut } from './lib/webLogout'
+import { clearLocalUserData } from './lib/localUserData'
 
 import { getFullscreenSnapshot, initFullscreen } from './lib/tgFullscreen'
 import { initIdleMotionPause } from './lib/idleMotion'
@@ -1398,6 +1399,14 @@ function App() {
                     onLoggedOut={() => {
                       // ISSUE #1163: выход в вебе/PWA. Экран входа рисует
                       // существующая ветка WebAuthScreen ниже — без перезагрузки.
+                      // ISSUE #1166: личные данные стираются с устройства одной
+                      // функцией; оформление устройства и отметка «вышел сам»
+                      // остаются (src/lib/localUserData.js).
+                      clearLocalUserData()
+                      clearTodayDataCache()
+                      clearHistoryCache()
+                      clearSeriesSnapshots()
+                      clearTrendsDataCache()
                       setOverlay(null)
                       setUser(null)
                     }}

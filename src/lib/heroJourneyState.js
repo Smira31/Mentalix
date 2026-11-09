@@ -61,3 +61,29 @@ export function isStepAvailable(stepNumber, prevStepId, progress) {
 export function isStepCompleted(stepId, progress) {
   return Boolean(progress.completed[stepId])
 }
+
+/*
+ * ISSUE #1166: в вебе и PWA прогресс «Пути героя» живёт только на устройстве —
+ * CloudStorage есть лишь в Telegram. Поэтому перед выходом о нём предупреждаем,
+ * а не стираем молча. Пустой прогресс (его пишет сам хук при открытии карты)
+ * данными не считается.
+ */
+export function hasLocalHeroJourneyData(userId) {
+  if (typeof window === 'undefined') return false
+  const normalized = Number(userId)
+  if (!Number.isSafeInteger(normalized) || normalized === 0) return false
+  try {
+    const storage = window.localStorage
+    const progress = parseProgress(storage.getItem(heroProgressKey(normalized)))
+    if (Object.values(progress).some(entries => Object.keys(entries).length > 0)) return true
+
+    const draftPrefix = `${scopedStorageKey('mx-hero-journey-draft:', normalized, true)}:`
+    for (let index = 0; index < storage.length; index += 1) {
+      const key = storage.key(index)
+      if (key?.startsWith(draftPrefix) && storage.getItem(key)) return true
+    }
+  } catch {
+    // Недоступное хранилище — предупреждать нечего.
+  }
+  return false
+}

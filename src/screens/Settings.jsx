@@ -14,6 +14,7 @@ import { markOnboardingResetRequested } from '../lib/onboardingReturningUser'
 import { requestMessages, biometric, cloud } from '../platform/telegram.hooks'
 import { platform, platformName } from '../platform'
 import { hasPinRecord, clearPinRecord, APP_LOCK_ENABLED_KEY } from '../lib/appLock'
+import { hasLocalHeroJourneyData } from '../lib/heroJourneyState'
 import { clearCheckinDraft } from '../lib/checkinDraft'
 import {
   TODAY_CARDS_HIDDEN_KEY,
@@ -245,6 +246,9 @@ export default function Settings({
   // ISSUE #1163: выход из аккаунта в вебе и PWA.
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false)
   const [loggingOut, setLoggingOut] = useState(false)
+  // ISSUE #1166: прогресс «Пути героя» в вебе есть только на устройстве и
+  // после выхода не сохранится — о нём предупреждаем, если он не пуст.
+  const [heroJourneyOnDevice, setHeroJourneyOnDevice] = useState(false)
   const privacyProtectedByTelegram = platformName === 'telegram' && Number(user?.id) > 0
 
   // ── «Мои данные»: скачивание экспорта (загрузка / успех / ошибка).
@@ -1380,7 +1384,10 @@ export default function Settings({
             {!guest && platformName !== 'telegram' && (
               <ProfileRow
                 title="Выйти из аккаунта"
-                onClick={() => setLogoutConfirmOpen(true)}
+                onClick={() => {
+                  setHeroJourneyOnDevice(hasLocalHeroJourneyData(user.id))
+                  setLogoutConfirmOpen(true)
+                }}
                 testId="profile-row-logout"
               />
             )}
@@ -1412,7 +1419,17 @@ export default function Settings({
       {logoutConfirmOpen && (
         <ConfirmDialog
           title="Выйти из аккаунта?"
-          description="Прогресс останется в аккаунте. Чтобы вернуться, войди снова."
+          description={
+            <>
+              Прогресс останется в аккаунте. Чтобы вернуться, войди снова.
+              {heroJourneyOnDevice && (
+                <>
+                  <br />
+                  Прогресс «Пути героя» на этом устройстве не сохранится.
+                </>
+              )}
+            </>
+          }
           confirmLabel={loggingOut ? 'Выходим…' : 'Выйти'}
           closeLabel="Закрыть подтверждение выхода"
           testId="logout-confirm"
