@@ -20,6 +20,10 @@ import fs from 'node:fs/promises'
 const SOURCE = new URL('../docs/sources/brand/owl-icon-source.jpg', import.meta.url)
 const BACKGROUND = [5, 4, 3] // #050403 — фон иконки и theme-color приложения
 const MASKABLE_CONTENT = 0.76 // сова целиком внутри центральных 80% maskable
+/* Иконки домашнего экрана: сова на 15% крупнее пропорции исходника и прижата
+   к верху — над пером 6% высоты иконки, поэтому нижняя дуга уходит за край. */
+const OWL_SCALE = 1.15
+const TOP_GAP = 0.06
 
 const source = await fs.readFile(SOURCE)
 const browser = await chromium.launch({ headless: true })
@@ -27,7 +31,7 @@ const page = await browser.newPage()
 
 /* Вся пиксельная работа — в браузере: он умеет декодировать JPEG и отдавать PNG. */
 const result = await page.evaluate(
-  async ({ b64, background, maskableContent }) => {
+  async ({ b64, background, maskableContent, owlScale, topGap }) => {
     const img = await new Promise((resolve, reject) => {
       const image = new Image()
       image.onload = () => resolve(image)
@@ -178,11 +182,12 @@ const result = await page.evaluate(
     bbox.cx = minX + bbox.w / 2
     bbox.cy = minY + bbox.h / 2
 
-    /* 6. Площадное уменьшение с произвольным окном источника. */
-    const render = (size, contentFraction) => {
+    /* 6. Площадное уменьшение с произвольным окном источника. topGap === null —
+       окно центрировано по сове; иначе верх совы стоит на topGap высоты иконки. */
+    const render = (size, contentFraction, gap = null) => {
       const side = Math.max(bbox.w, bbox.h) / contentFraction
       const x0 = bbox.cx - side / 2
-      const y0 = bbox.cy - side / 2
+      const y0 = gap === null ? bbox.cy - side / 2 : bbox.y - gap * side
       const out = document.createElement('canvas')
       out.width = size
       out.height = size
@@ -227,6 +232,8 @@ const result = await page.evaluate(
 
     /* 7. Пропорция «сова к квадрату» как на исходнике: кольцо было его рамкой. */
     const contentFraction = Math.max(bbox.w, bbox.h) / Math.max(W, H)
+    /* Иконки домашнего экрана: та же пропорция, на owlScale крупнее и с gap сверху. */
+    const homeFraction = contentFraction * owlScale
     return {
       metrics: {
         source: { width: W, height: H },
@@ -240,16 +247,24 @@ const result = await page.evaluate(
         },
         owl: bbox,
         contentFraction: +contentFraction.toFixed(4),
+        home: { contentFraction: +homeFraction.toFixed(4), topGap },
+        maskable: { contentFraction: maskableContent },
       },
       icons: {
-        'public/icons/icon-192.png': render(192, contentFraction),
-        'public/icons/icon-512.png': render(512, contentFraction),
-        'public/apple-touch-icon.png': render(180, contentFraction),
+        'public/icons/icon-192.png': render(192, homeFraction, topGap),
+        'public/icons/icon-512.png': render(512, homeFraction, topGap),
+        'public/apple-touch-icon.png': render(180, homeFraction, topGap),
         'public/icons/icon-maskable-512.png': render(512, maskableContent),
       },
     }
   },
-  { b64: source.toString('base64'), background: BACKGROUND, maskableContent: MASKABLE_CONTENT }
+  {
+    b64: source.toString('base64'),
+    background: BACKGROUND,
+    maskableContent: MASKABLE_CONTENT,
+    owlScale: OWL_SCALE,
+    topGap: TOP_GAP,
+  }
 )
 
 await browser.close()
