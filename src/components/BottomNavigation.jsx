@@ -308,7 +308,8 @@ const BottomNavigation = forwardRef(function BottomNavigation(
             collapsed && collapseScale
               ? `scale(${collapseScale.x}, ${collapseScale.y})`
               : 'scale(1, 1)',
-          transformOrigin: 'left center',
+          /* Кружок садится на ту же нижнюю линию, что и развёрнутый бар. */
+          transformOrigin: 'left bottom',
           pointerEvents: collapsed ? 'none' : 'auto',
           transition: `transform var(--mx-motion-slow) ${MOTION}`,
         }}

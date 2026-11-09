@@ -433,6 +433,21 @@ async function assertCommonScreenChecks(page, runtimeErrors) {
   }
 }
 
+/*
+ * Панель сворачивается в круглую кнопку на всех пяти вкладках, и свёрнутая
+ * панель скрывает вкладки из дерева доступности (aria-hidden="true" на nav).
+ * Перед переключением вкладки раскрываем панель тем же касанием, что и
+ * человек — по кнопке текущей вкладки; проверки вкладок остаются прежними.
+ */
+async function expandBottomNav(page) {
+  const restore = page.getByRole('button', { name: /^Открыть навигацию: / })
+
+  if ((await restore.count()) === 0) return
+
+  await restore.click()
+  await expect(page.locator('nav[aria-hidden="false"]')).toHaveCount(1)
+}
+
 async function assertClickable(locator) {
   await expect(locator).toBeVisible()
   await expect(locator).toBeEnabled()
@@ -788,7 +803,8 @@ test('локальный UX smoke по основному маршруту', asy
     await expect(page.locator('.mx-tqc-card__question').first()).toBeVisible()
     await page.getByRole('button', { name: 'Назад' }).click()
 
-    await page.getByRole('button', { name: 'Шаги' }).click()
+    await expandBottomNav(page)
+    await page.getByRole('button', { name: 'Шаги', exact: true }).click()
     await captureScreen({
       page,
       viewport,
@@ -918,10 +934,11 @@ test('локальный UX smoke по основному маршруту', asy
       },
     })
     await page.getByRole('button', { name: 'Назад' }).click()
+    await expandBottomNav(page)
     const todayNavButton = page.locator('nav[aria-hidden="false"] > button[aria-label="Сегодня"]')
     await todayNavButton.click()
     await expect(todayNavButton).toHaveAttribute('aria-current', 'page')
-    await page.getByRole('button', { name: 'Шаги' }).click()
+    await page.getByRole('button', { name: 'Шаги', exact: true }).click()
     await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
 
     await page.getByRole('button', { name: 'Открыть Аскезы' }).click()
@@ -938,11 +955,13 @@ test('локальный UX smoke по основному маршруту', asy
       },
     })
     await page.getByRole('button', { name: 'Назад' }).click()
+    await expandBottomNav(page)
     await todayNavButton.click()
     await expect(todayNavButton).toHaveAttribute('aria-current', 'page')
-    await page.getByRole('button', { name: 'Шаги' }).click()
+    await page.getByRole('button', { name: 'Шаги', exact: true }).click()
     await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
 
+    await expandBottomNav(page)
     await page.getByRole('button', { name: 'Библиотека', exact: true }).click()
     await captureScreen({
       page,
@@ -968,6 +987,7 @@ test('локальный UX smoke по основному маршруту', asy
     await page.evaluate(() => window.__mxGetCurrentBackAction?.()?.())
     await expect(page.getByTestId('library-home')).toBeVisible()
 
+    await expandBottomNav(page)
     await page.getByRole('button', { name: 'Прогресс', exact: true }).click()
     await captureScreen({
       page,
@@ -977,6 +997,7 @@ test('локальный UX smoke по основному маршруту', asy
       runtimeErrors,
       results,
       check: async () => {
+        await expandBottomNav(page)
         await expect(page.getByRole('heading', { name: 'аналитика.' })).toBeAttached()
         await expect(page.getByRole('button', { name: 'Прогресс', exact: true })).toHaveAttribute(
           'aria-current',
@@ -1058,7 +1079,8 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
     })
 
     await page.goto('/')
-    await page.getByRole('button', { name: 'Диалог' }).click()
+    await expandBottomNav(page)
+    await page.getByRole('button', { name: 'Диалог', exact: true }).click()
     await expect(page.getByRole('heading', { name: /О чём хочешь/ })).toBeVisible()
     await expect(page.getByRole('heading', { name: /Выбери роль/ })).toBeVisible()
     const cards = page.getByTestId('mentor-persona-card')
@@ -1104,19 +1126,20 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
     await expect(page.getByRole('group', { name: 'Выбор роли' })).toHaveCount(0)
     const navigationBox = await page.locator('nav').locator('..').locator('..').boundingBox()
     expect(navigationBox).not.toBeNull()
-    // Панель стоит на штатном нижнем отступе приложения: без лишнего зазора,
-    // но и без наезда на край. Отступ читаем из токена, чтобы проверка не
-    // зависела от того, прижат navbar к краю или плавает.
-    const navOffset = await page.evaluate(
-      () =>
-        Number.parseFloat(
-          getComputedStyle(document.documentElement).getPropertyValue('--bottom-nav-offset')
-        ) || 0
-    )
+    // Референс владельца 09.11: высота развёрнутого бара — 54px, нижний край —
+    // 25px от края экрана при safe-area 34px и не ближе 8px без неё
+    // (bottom = safe-area − 9px). Числа проверяем буквально, не из токенов.
+    const navGap = await page.evaluate(() => {
+      const styles = getComputedStyle(document.documentElement)
+      const safeBottom = Number.parseFloat(styles.getPropertyValue('--app-safe-bottom')) || 0
+
+      return { safeBottom, expected: Math.max(8, safeBottom - 9) }
+    })
     expect(
-      Math.abs(viewport.height - (navigationBox.y + navigationBox.height) - navOffset),
-      'BottomNavigation должна стоять на штатном нижнем отступе без legacy gap'
+      Math.abs(viewport.height - (navigationBox.y + navigationBox.height) - navGap.expected),
+      `BottomNavigation должна стоять на штатном нижнем отступе без лишнего зазора (safe-area ${navGap.safeBottom}px, ожидаемый зазор ${navGap.expected}px)`
     ).toBeLessThanOrEqual(0.5)
+    expect(navigationBox.height, 'Высота развёрнутого бара — 54px').toBeCloseTo(54, 1)
     // Раньше карточка была прижата к панели на 15–17px: «Диалог» был
     // фиксированным экраном. Теперь он листается страницей целиком (см.
     // tests/ux/dialog-screen.spec.mjs), поэтому здесь проверяем только то,
