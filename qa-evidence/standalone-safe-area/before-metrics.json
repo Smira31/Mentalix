@@ -4,43 +4,55 @@
     "viewport": "393x852",
     "safari": {
       "shellPaddingTop": "47px",
-      "headerTop": 47
+      "headerTop": 47,
+      "headerTopmost": true,
+      "fadeTop": 47,
+      "fadeOpacity": "0"
     },
     "standalone": {
-      "shellPaddingTop": "0px",
-      "headerTop": 0
+      "shellPaddingTop": "47px",
+      "headerTop": 47,
+      "headerTopmost": true,
+      "fadeTop": 47,
+      "fadeOpacity": "0"
     },
-    "failures": [
-      "верх шапки 0px < 47px",
-      "отступ оболочки 0px ≠ Safari 47px"
-    ]
+    "failures": []
   },
   {
     "screen": "practices",
     "viewport": "393x852",
     "safari": {
       "shellPaddingTop": "47px",
-      "headerTop": 51
+      "headerTop": 51,
+      "headerTopmost": true,
+      "fadeTop": 47,
+      "fadeOpacity": "0"
     },
     "standalone": {
-      "shellPaddingTop": "0px",
-      "headerTop": 4
+      "shellPaddingTop": "47px",
+      "headerTop": 51,
+      "headerTopmost": true,
+      "fadeTop": 47,
+      "fadeOpacity": "0"
     },
-    "failures": [
-      "верх шапки 4px < 47px",
-      "отступ оболочки 0px ≠ Safari 47px"
-    ]
+    "failures": []
   },
   {
     "screen": "mentor",
     "viewport": "393x852",
     "safari": {
       "shellPaddingTop": "47px",
-      "headerTop": 122
+      "headerTop": 122,
+      "headerTopmost": true,
+      "fadeTop": 47,
+      "fadeOpacity": "0"
     },
     "standalone": {
       "shellPaddingTop": "47px",
-      "headerTop": 122
+      "headerTop": 122,
+      "headerTopmost": true,
+      "fadeTop": 47,
+      "fadeOpacity": "0"
     },
     "failures": []
   },
@@ -49,43 +61,55 @@
     "viewport": "360x640",
     "safari": {
       "shellPaddingTop": "47px",
-      "headerTop": 47
+      "headerTop": 47,
+      "headerTopmost": true,
+      "fadeTop": 47,
+      "fadeOpacity": "0"
     },
     "standalone": {
-      "shellPaddingTop": "0px",
-      "headerTop": 0
+      "shellPaddingTop": "47px",
+      "headerTop": 47,
+      "headerTopmost": true,
+      "fadeTop": 47,
+      "fadeOpacity": "0"
     },
-    "failures": [
-      "верх шапки 0px < 47px",
-      "отступ оболочки 0px ≠ Safari 47px"
-    ]
+    "failures": []
   },
   {
     "screen": "practices",
     "viewport": "360x640",
     "safari": {
       "shellPaddingTop": "47px",
-      "headerTop": 51
+      "headerTop": 51,
+      "headerTopmost": true,
+      "fadeTop": 47,
+      "fadeOpacity": "0"
     },
     "standalone": {
-      "shellPaddingTop": "0px",
-      "headerTop": 4
+      "shellPaddingTop": "47px",
+      "headerTop": 51,
+      "headerTopmost": true,
+      "fadeTop": 47,
+      "fadeOpacity": "0"
     },
-    "failures": [
-      "верх шапки 4px < 47px",
-      "отступ оболочки 0px ≠ Safari 47px"
-    ]
+    "failures": []
   },
   {
     "screen": "mentor",
     "viewport": "360x640",
     "safari": {
       "shellPaddingTop": "47px",
-      "headerTop": 112
+      "headerTop": 112,
+      "headerTopmost": true,
+      "fadeTop": 47,
+      "fadeOpacity": "0"
     },
     "standalone": {
       "shellPaddingTop": "47px",
-      "headerTop": 112
+      "headerTop": 112,
+      "headerTopmost": true,
+      "fadeTop": 47,
+      "fadeOpacity": "0"
     },
     "failures": []
   }

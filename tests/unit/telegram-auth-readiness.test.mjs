@@ -71,17 +71,44 @@ test('Telegram requestAuth waits for user id AND signed initData before user-own
   }
 })
 
-test('standalone regular tabs keep the iOS status-bar inset while Dialog and fullscreen do not', () => {
+/* Медиа-блок standalone целиком, вместе с вложенными правилами. */
+function readStandaloneBlock(css) {
+  const marker = '@media (display-mode: standalone) and (max-width: 700px)'
+  const start = css.indexOf(marker)
+  assert.notEqual(start, -1, `в src/index.css нет блока ${marker}`)
+  let depth = 0
+  const open = css.indexOf('{', start)
+  for (let i = open; i < css.length; i += 1) {
+    if (css[i] === '{') depth += 1
+    else if (css[i] === '}') {
+      depth -= 1
+      if (depth === 0) return css.slice(open + 1, i)
+    }
+  }
+  throw new Error('Не найден конец блока standalone в src/index.css')
+}
+
+test('standalone regular tabs keep the iOS status-bar inset plus a token gap while Dialog and fullscreen do not', () => {
   // #1151: с black-translucent строка статуса лежит поверх страницы, поэтому
   // обычные вкладки в PWA обязаны начать шапку ниже неё.
+  // #1156: одного inset мало — его верхняя граница и есть низ строки статуса,
+  // поэтому между строкой и шапкой обязателен зазор токеном ритма (12–16px,
+  // без локальных пиксельных значений).
+  const standaloneBlock = readStandaloneBlock(indexCss)
+
   assert.match(
-    indexCss,
-    /@media \(display-mode: standalone\)[\s\S]*\.mx-app-shell:not\(.mx-dialog-app-shell\):not\(.mx-app-shell--fullscreen\) \{\s*padding-top: var\(--app-safe-top\) !important;/
+    standaloneBlock,
+    /\.mx-app-shell:not\(\.mx-dialog-app-shell\):not\(\.mx-app-shell--fullscreen\) \{\s*padding-top: calc\(var\(--app-safe-top\) \+ var\(--mx-space-(?:3|4)\)\) !important;/
   )
-  // Обнуление inset вернуло бы дефект #1151.
-  assert.doesNotMatch(
-    indexCss,
-    /@media \(display-mode: standalone\)[\s\S]*?\.mx-app-shell:not\(.mx-dialog-app-shell\)[^{]*\{\s*padding-top: 0 !important;/
+  // Вернуться к голому inset (или к нулю) — значит снова прижать шапку к строке.
+  assert.doesNotMatch(standaloneBlock, /padding-top: var\(--app-safe-top\) !important;/)
+  assert.doesNotMatch(standaloneBlock, /padding-top: 0 !important;/)
+
+  // Слой затухания начинает там же, где контент: тот же safe-inset плюс зазор,
+  // иначе шапка гаснет раньше, чем в Safari, и на прокрутке виден «прыжок».
+  assert.match(
+    standaloneBlock,
+    />\s*\.mx-scroll-fade-top \{\s*top: calc\(var\(--app-safe-top\) \+ var\(--mx-space-(?:3|4)\)\);/
   )
 })
 
