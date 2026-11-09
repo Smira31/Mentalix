@@ -11,13 +11,15 @@
  *
  * Для каждого экрана снимаются два состояния:
  *   safari     — обычная вкладка Safari (без standalone-блока);
- *   standalone — верх шапки должен быть ниже 47px, а отступ оболочки должен
- *                совпасть с Safari (второго inset быть не должно).
+ *   standalone — верх шапки должен быть ниже 47px с зазором SHOT_GAP (#1156),
+ *                шапка и оболочка смещены ровно на этот зазор (второго inset
+ *                нет), слой затухания стоит на верху контента и в покое
+ *                невидим, верх шапки принадлежит самой шапке.
  * «Диалог» в standalone обязан совпасть с Safari: у него свой контракт.
  *
  * Запуск (в web-контейнере):
  *   node scripts/standalone-safe-area-screenshots.mjs
- *   SHOT_DIR=qa-evidence/standalone-safe-area SHOT_PREFIX=after \
+ *   SHOT_DIR=qa-evidence/standalone-safe-area SHOT_PREFIX=after SHOT_GAP=16 \
  *     node scripts/standalone-safe-area-screenshots.mjs
  * Код возврата 1 — хотя бы одна проверка не прошла.
  */
@@ -33,15 +35,20 @@ const prefix = process.env.SHOT_PREFIX || 'current'
    отдаёт в env(safe-area-inset-top) при viewport-fit=cover. */
 const SAFE_TOP = 47
 
+/* Зазор между строкой статуса и шапкой (#1156) задаётся в standalone-блоке
+   токеном ритма. Ожидаемое значение в пикселях передаётся SHOT_GAP: 0 — состояние
+   после #1153 (до правки), 16 — текущее (--mx-space-4). */
+const GAP = Number(process.env.SHOT_GAP ?? 0)
+
 const viewports = [
   { name: '393x852', width: 393, height: 852 },
   { name: '360x640', width: 360, height: 640 },
 ]
 
 const screens = [
-  { name: 'today', tab: 'today', header: '.mx-demo-today-header', checkHeader: true },
-  { name: 'practices', tab: 'practices', header: '.mx-steps-header-row', checkHeader: true },
-  { name: 'mentor', tab: 'mentor', header: '.mx-dialog-hero__content', checkHeader: false },
+  { name: 'today', tab: 'today', header: '.mx-demo-today-header', checkHeader: true, gap: true },
+  { name: 'practices', tab: 'practices', header: '.mx-steps-header-row', checkHeader: true, gap: true },
+  { name: 'mentor', tab: 'mentor', header: '.mx-dialog-hero__content', checkHeader: false, gap: false },
 ]
 
 /* Медиа-блок standalone целиком, вместе с вложенными правилами. */
@@ -101,9 +108,22 @@ for (const viewport of viewports) {
       page.evaluate(headerSelector => {
         const shell = document.querySelector('.mx-app-shell')
         const header = document.querySelector(headerSelector)
+        const fade = document.querySelector('.mx-scroll-fade-top')
+        const headerRect = header ? header.getBoundingClientRect() : null
+        /* Перекрытие верхним слоем: самая верхняя точка шапки должна
+           принадлежать самой шапке, а не fixed-слою затухания. */
+        const hit = headerRect
+          ? document.elementFromPoint(
+              Math.round(headerRect.left + headerRect.width / 2),
+              Math.round(headerRect.top + 2)
+            )
+          : null
         return {
           shellPaddingTop: shell ? getComputedStyle(shell).paddingTop : null,
-          headerTop: header ? Math.round(header.getBoundingClientRect().top) : null,
+          headerTop: headerRect ? Math.round(headerRect.top) : null,
+          headerTopmost: headerRect ? Boolean(hit && header.contains(hit)) : null,
+          fadeTop: fade ? Math.round(fade.getBoundingClientRect().top) : null,
+          fadeOpacity: fade ? getComputedStyle(fade).opacity : null,
         }
       }, screen.header)
 
@@ -120,13 +140,35 @@ for (const viewport of viewports) {
     await page.waitForTimeout(80)
     await page.screenshot({ path: `${outputDir}/${prefix}-safari-${suffix}.png`, fullPage: false })
 
+    const expectedGap = screen.gap ? GAP : 0
     const failures = []
     if (standalone.headerTop === null) failures.push(`шапка ${screen.header} не найдена`)
-    if (screen.checkHeader && standalone.headerTop !== null && standalone.headerTop < SAFE_TOP) {
-      failures.push(`верх шапки ${standalone.headerTop}px < ${SAFE_TOP}px`)
+    if (screen.checkHeader && standalone.headerTop !== null && standalone.headerTop < SAFE_TOP + expectedGap) {
+      failures.push(`верх шапки ${standalone.headerTop}px < ${SAFE_TOP + expectedGap}px`)
     }
-    if (standalone.shellPaddingTop !== safari.shellPaddingTop) {
+    /* Оболочка и шапка смещаются ровно на зазор: второго отступа нет. */
+    if (standalone.shellPaddingTop !== safari.shellPaddingTop && expectedGap === 0) {
       failures.push(`отступ оболочки ${standalone.shellPaddingTop} ≠ Safari ${safari.shellPaddingTop}`)
+    }
+    if (
+      safari.headerTop !== null &&
+      standalone.headerTop !== null &&
+      standalone.headerTop - safari.headerTop !== expectedGap
+    ) {
+      failures.push(`шапка сместилась на ${standalone.headerTop - safari.headerTop}px вместо ${expectedGap}px`)
+    }
+    /* Слой затухания держит ту же относительную позицию, что в Safari. */
+    if (standalone.fadeTop === null || safari.fadeTop === null) {
+      failures.push('слой затухания .mx-scroll-fade-top не найден')
+    } else if (standalone.fadeTop - safari.fadeTop !== expectedGap) {
+      failures.push(`слой затухания ${standalone.fadeTop}px, отрыв от Safari ${standalone.fadeTop - safari.fadeTop}px вместо ${expectedGap}px`)
+    }
+    /* В покое шапку ничего не перекрывает и не приглушает. */
+    if (standalone.fadeOpacity !== '0') {
+      failures.push(`слой затухания виден в покое: opacity ${standalone.fadeOpacity}`)
+    }
+    if (standalone.headerTopmost === false) {
+      failures.push('верх шапки перекрыт другим слоем')
     }
 
     results.push({ screen: screen.name, viewport: viewport.name, safari, standalone, failures })
@@ -142,8 +184,11 @@ console.table(
     Viewport: row.viewport,
     'Шапка Safari': row.safari.headerTop,
     'Шапка standalone': row.standalone.headerTop,
-    'Оболочка Safari': row.safari.shellPaddingTop,
     'Оболочка standalone': row.standalone.shellPaddingTop,
+    'Затухание Safari': row.safari.fadeTop,
+    'Затухание standalone': row.standalone.fadeTop,
+    'Затухание opacity': row.standalone.fadeOpacity,
+    'Верх шапки — её': row.standalone.headerTopmost,
     Итог: row.failures.length === 0 ? 'PASS' : 'FAIL',
   }))
 )
@@ -154,5 +199,7 @@ if (failed.length > 0) {
   for (const row of failed) console.error(`FAIL ${row.screen} ${row.viewport}: ${row.failures.join('; ')}`)
   process.exitCode = 1
 } else {
-  console.log(`PASS: верх шапки ниже ${SAFE_TOP}px, отступ оболочки совпадает с Safari; «Диалог» не изменился`)
+  console.log(
+    `PASS: зазор ${GAP}px над шапкой, слой затухания на верху контента и невидим в покое; «Диалог» не изменился`
+  )
 }

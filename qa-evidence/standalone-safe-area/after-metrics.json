@@ -4,11 +4,17 @@
     "viewport": "393x852",
     "safari": {
       "shellPaddingTop": "47px",
-      "headerTop": 47
+      "headerTop": 47,
+      "headerTopmost": true,
+      "fadeTop": 47,
+      "fadeOpacity": "0"
     },
     "standalone": {
-      "shellPaddingTop": "47px",
-      "headerTop": 47
+      "shellPaddingTop": "63px",
+      "headerTop": 63,
+      "headerTopmost": true,
+      "fadeTop": 63,
+      "fadeOpacity": "0"
     },
     "failures": []
   },
@@ -17,11 +23,17 @@
     "viewport": "393x852",
     "safari": {
       "shellPaddingTop": "47px",
-      "headerTop": 51
+      "headerTop": 51,
+      "headerTopmost": true,
+      "fadeTop": 47,
+      "fadeOpacity": "0"
     },
     "standalone": {
-      "shellPaddingTop": "47px",
-      "headerTop": 51
+      "shellPaddingTop": "63px",
+      "headerTop": 67,
+      "headerTopmost": true,
+      "fadeTop": 63,
+      "fadeOpacity": "0"
     },
     "failures": []
   },
@@ -30,11 +42,17 @@
     "viewport": "393x852",
     "safari": {
       "shellPaddingTop": "47px",
-      "headerTop": 122
+      "headerTop": 122,
+      "headerTopmost": true,
+      "fadeTop": 47,
+      "fadeOpacity": "0"
     },
     "standalone": {
       "shellPaddingTop": "47px",
-      "headerTop": 122
+      "headerTop": 122,
+      "headerTopmost": true,
+      "fadeTop": 47,
+      "fadeOpacity": "0"
     },
     "failures": []
   },
@@ -43,11 +61,17 @@
     "viewport": "360x640",
     "safari": {
       "shellPaddingTop": "47px",
-      "headerTop": 47
+      "headerTop": 47,
+      "headerTopmost": true,
+      "fadeTop": 47,
+      "fadeOpacity": "0"
     },
     "standalone": {
-      "shellPaddingTop": "47px",
-      "headerTop": 47
+      "shellPaddingTop": "63px",
+      "headerTop": 63,
+      "headerTopmost": true,
+      "fadeTop": 63,
+      "fadeOpacity": "0"
     },
     "failures": []
   },
@@ -56,11 +80,17 @@
     "viewport": "360x640",
     "safari": {
       "shellPaddingTop": "47px",
-      "headerTop": 51
+      "headerTop": 51,
+      "headerTopmost": true,
+      "fadeTop": 47,
+      "fadeOpacity": "0"
     },
     "standalone": {
-      "shellPaddingTop": "47px",
-      "headerTop": 51
+      "shellPaddingTop": "63px",
+      "headerTop": 67,
+      "headerTopmost": true,
+      "fadeTop": 63,
+      "fadeOpacity": "0"
     },
     "failures": []
   },
@@ -69,11 +99,17 @@
     "viewport": "360x640",
     "safari": {
       "shellPaddingTop": "47px",
-      "headerTop": 112
+      "headerTop": 112,
+      "headerTopmost": true,
+      "fadeTop": 47,
+      "fadeOpacity": "0"
     },
     "standalone": {
       "shellPaddingTop": "47px",
-      "headerTop": 112
+      "headerTop": 112,
+      "headerTopmost": true,
+      "fadeTop": 47,
+      "fadeOpacity": "0"
     },
     "failures": []
   }
