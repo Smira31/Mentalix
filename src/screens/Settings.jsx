@@ -10,6 +10,7 @@ import { Check } from 'lucide-react'
 import { version as appVersion } from '../../package.json'
 import { api } from '../lib/api'
 import { forget, useSynced } from '../lib/store'
+import { markOnboardingResetRequested } from '../lib/onboardingReturningUser'
 import { requestMessages, biometric, cloud } from '../platform/telegram.hooks'
 import { platform, platformName } from '../platform'
 import { hasPinRecord, clearPinRecord, APP_LOCK_ENABLED_KEY } from '../lib/appLock'
@@ -896,6 +897,13 @@ export default function Settings({
                  * не начнётся — кнопка будет молча не работать.
                  */
                 await forget('mx-onboarded-v2')
+
+                /*
+                 * #1154: в web знакомый человек определяется по серверным
+                 * данным, поэтому сброс нужно запомнить на этом устройстве —
+                 * иначе после перезагрузки отметка вернулась бы сама.
+                 */
+                markOnboardingResetRequested(user?.id)
 
                 window.location.reload()
               }}

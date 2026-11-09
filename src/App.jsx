@@ -19,6 +19,13 @@ import PreviewApiDiagnostic from './components/PreviewApiDiagnostic'
 import SessionRestoreError from './components/SessionRestoreError'
 import TabSkeleton from './components/TabSkeleton'
 import { useSynced } from './lib/store'
+import {
+  clearOnboardingResetRequested,
+  isOnboardingResetRequested,
+  resolveOnboardingGate,
+  shouldProbeServerOnboarding,
+  useServerOnboardingStatus,
+} from './lib/onboardingReturningUser'
 import { hasPinRecord, APP_LOCK_ENABLED_KEY } from './lib/appLock'
 import { ACCENT_COLOR_KEY, DEFAULT_ACCENT, parseAccent } from './lib/accentColor'
 import { DEFAULT_THEME, parseTheme, THEME_KEY } from './lib/theme'
@@ -356,12 +363,49 @@ function App() {
    */
   const [onboardedFlag, setOnboardedFlag] = useSynced(ONBOARDED_KEY, '0')
 
+  /*
+   * ISSUE #1154: отметка «знакомство пройдено» живёт в localStorage и в
+   * CloudStorage Telegram. Вне Telegram второго хранилища нет, а Safari и PWA
+   * на iOS держат localStorage раздельно — знакомый человек снова видел
+   * знакомство. Флага локально нет — спрашиваем сервер (GET /profile) и
+   * знакомого пускаем в приложение без знакомства.
+   */
+  const profileProbe = useCallback(
+    (userId, options) => api.profile.get(userId, { ...options, silentDiagnostics: true }),
+    []
+  )
+
+  const serverOnboarding = useServerOnboardingStatus({
+    userId: user?.id,
+    enabled: shouldProbeServerOnboarding({
+      userId: user?.id,
+      onboarded: onboardedFlag === '1',
+      platformName,
+      previewDemo: isPreviewDemoMode(),
+      showGuestAuth,
+      resetRequested: isOnboardingResetRequested(user?.id),
+    }),
+    getProfile: profileProbe,
+  })
+
   // Demo builds are synthetic users only: they skip onboarding in DEV or
   // Vercel Preview, without writing the user's synced onboarding flag.
   // isPreviewDemoMode itself requires ?demo=1 and an allowed preview host.
-  const onboarded =
-    onboardedFlag === '1' || (isPreviewDemoMode() && !isDemoOnboardingRequested())
+  const onboardingGate = resolveOnboardingGate({
+    flag: onboardedFlag,
+    previewDemo: isPreviewDemoMode(),
+    demoOnboardingRequested: isDemoOnboardingRequested(),
+    serverStatus: serverOnboarding,
+  })
+  const onboarded = onboardingGate.onboarded
+  const onboardingPending = onboardingGate.pending
   const [recoveryAllowedAtLaunch] = useState(() => onboardedFlag === '1' || isPreviewDemoMode())
+
+  /* Знакомого по серверу запоминаем прежним флагом: следующий запуск сразу
+     открывает приложение, без запроса к серверу. */
+  useEffect(() => {
+    if (serverOnboarding === 'known' && onboardedFlag !== '1') setOnboardedFlag('1')
+  }, [serverOnboarding, onboardedFlag, setOnboardedFlag])
 
   /*
    * Блокировка приложения (PIN/биометрия). Синхронизируется только факт
@@ -1013,6 +1057,8 @@ function App() {
      * main shell so its first frame already has the correct top inset.
      */
     setFullscreen(getFullscreenSnapshot())
+    // Знакомство пройдено — отметка «просил пройти заново» больше не нужна.
+    clearOnboardingResetRequested()
     setOnboardedFlag('1')
   }, [setOnboardedFlag])
 
@@ -1042,6 +1088,12 @@ function App() {
      ============================================================ */
 
   if (user && !onboarded && !showGuestAuth) {
+    /*
+     * Пока определяем знакомого по серверным данным — нейтральная загрузка:
+     * знакомство не должно мелькать перед основным экраном.
+     */
+    if (onboardingPending) return <Splash />
+
     return (
       <Suspense fallback={<Splash />}>
         <Onboarding user={user} onFinish={completeOnboarding} />

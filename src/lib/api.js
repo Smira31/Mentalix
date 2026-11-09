@@ -1056,7 +1056,10 @@ export const api = {
   },
 
   profile: {
-    get: userId => request(withQuery('/profile', { user_id: userId })),
+    // Второй аргумент — те же опции request() (signal, silentDiagnostics):
+    // проверка знакомого в web/PWA (#1154) должна быть тихой и с своим бюджетом.
+    get: (userId, options = {}) =>
+      request(withQuery('/profile', { user_id: userId }), options),
 
     getSettings: userId => request(withQuery('/profile/settings', { user_id: userId })),
 
