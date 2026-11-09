@@ -27,12 +27,13 @@ test('History требует Telegram context и явное confirmation до п
   assert.match(historySource, /api\.mentalix\.setCheckinContext\(user\.id, checkin\.id, nextEnabled\)/)
 })
 
-test('карточка согласия объясняет, что global consent не открывает все journal entries', () => {
-  // #1169: прежняя панель AiPrivacyControls не монтировалась нигде и удалена;
-  // её утверждённое объяснение перенесено в карточку «Диалога» и переключатель
-  // профиля — assertion не ослаблен, а переехал к живой поверхности.
-  assert.match(consentCopySource, /Глобальное согласие не открывает AI все записи/)
-  assert.match(consentCopySource, /Отдельные чек-ины для контекста отмечаются в «Истории»/)
-  assert.match(consentCopySource, /AI не заменяет помощь специалиста/)
+test('карточка согласия объясняет, какие записи видит собеседник и куда они уходят', () => {
+  // #1169: прежняя панель AiPrivacyControls удалена; утверждённые владельцем
+  // тексты живут в карточке «Диалога» и переключателе профиля. Assertion
+  // переехал к живой поверхности и проверяет все три обязательных смысла:
+  // отмеченные чек-ины из «Истории», передачу в GigaChat для ответа и выход.
+  assert.match(consentCopySource, /которые ты отметишь в «Истории»/)
+  assert.match(consentCopySource, /Записи передаются в GigaChat \(ПАО Сбербанк\) только для ответа/)
+  assert.match(consentCopySource, /Выключить можно в любой момент/)
   assert.match(cardSource, /AI_CONSENT_CARD_BODY/)
 })

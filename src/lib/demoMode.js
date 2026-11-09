@@ -909,6 +909,7 @@ function daimonTestMode() {
  *   sendError    — две неудачные отправки подряд
  *   dailyLimit   — первая отправка отдаёт 429 daily_limit
  *   slowCreate   — медленное создание разговора (индикатор в чате)
+ *   crisis       — ответ собеседника приходит с crisis: true
  */
 const DIALOG_TEST_MODES = [
   'historyError',
@@ -917,6 +918,7 @@ const DIALOG_TEST_MODES = [
   'sendError',
   'dailyLimit',
   'slowCreate',
+  'crisis',
 ]
 
 let guidedCatalogFailuresLeft = 1
@@ -1626,6 +1628,9 @@ function respond(path, options = {}) {
       role: 'assistant',
       content: `${personaName} рядом. Давай разберём это спокойно: что в этой ситуации сейчас важнее всего заметить?`,
     }
+    // ?dialogTest=crisis: ответ собеседника просит поддержки. Метка та же,
+    // что приходит от backend и уже читается «Диалогом» (message.crisis).
+    if (dialogTestMode() === 'crisis') reply.crisis = true
     // Отдельные разговоры: сохраняем в conversation или в общий массив.
     const convId = body.conversation_id
     const conversations = [...(state.conversations || [])]

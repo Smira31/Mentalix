@@ -202,6 +202,7 @@ export function ProfileRow({
   testId,
   valueHeading = false,
   disabled = false,
+  subtitleLines = 2,
 }) {
   const Component = onClick ? 'button' : 'div'
   const showChevron = Boolean(onClick) && !right
@@ -218,7 +219,16 @@ export function ProfileRow({
     >
       <span className="mx-profile-row__text">
         <span className="mx-profile-row__title">{title}</span>
-        {subtitle && <span className="mx-profile-row__subtitle">{subtitle}</span>}
+        {/* subtitleLines: по умолчанию две строки, как раньше. Длинной подписи
+            согласия на записи передаётся больше строк — текст не обрезается. */}
+        {subtitle && (
+          <span
+            className="mx-profile-row__subtitle"
+            style={subtitleLines !== 2 ? { WebkitLineClamp: subtitleLines } : undefined}
+          >
+            {subtitle}
+          </span>
+        )}
       </span>
       {value != null && <ValueTag className="mx-profile-row__value">{value}</ValueTag>}
       {right}

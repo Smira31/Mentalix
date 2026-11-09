@@ -10,7 +10,7 @@ import { useEffect, useState } from 'react'
 import { api } from '../../lib/api'
 import {
   AI_CONSENT_SWITCH_SUBTITLE,
-  AI_CONSENT_TITLE,
+  AI_CONSENT_SWITCH_TITLE,
   canManageAiContext,
   readAiConsentEnabled,
 } from '../../lib/aiContextConsent'
@@ -75,13 +75,14 @@ export default function AiConsentSwitchRow({ user }) {
   return (
     <>
       <ProfileRow
-        title={AI_CONSENT_TITLE}
+        title={AI_CONSENT_SWITCH_TITLE}
         subtitle={AI_CONSENT_SWITCH_SUBTITLE}
+        subtitleLines={4}
         testId="profile-ai-consent-row"
         right={
           <Toggle
             checked={enabled === true}
-            label={AI_CONSENT_TITLE}
+            label={AI_CONSENT_SWITCH_TITLE}
             onChange={toggle}
             disabled={saving || enabled === null}
             testId="profile-ai-consent-toggle"
