@@ -7,8 +7,10 @@ import PillButton from '../../components/ui/PillButton'
 import { api } from '../../lib/api'
 import { useSynced } from '../../lib/store'
 import {
+  AI_CONSENT_ALLOW_LABEL,
   AI_CONSENT_CARD_BODY,
-  AI_CONSENT_TITLE,
+  AI_CONSENT_CARD_TITLE,
+  AI_CONSENT_SNOOZE_LABEL,
   AI_CONTEXT_PERSONAS,
   aiConsentSnoozeKey,
   canManageAiContext,
@@ -98,14 +100,16 @@ export default function AiContextConsentCard({ user, persona, hidden = false }) 
   return (
     <section
       data-testid="ai-consent-card"
-      aria-label={AI_CONSENT_TITLE}
+      aria-label={AI_CONSENT_CARD_TITLE}
       className="mb-3"
     >
       <Card className="p-4">
         <div className="flex items-start gap-3">
           <ShieldCheck size={18} className="mt-0.5 shrink-0 text-gold" aria-hidden="true" />
           <div className="min-w-0 flex-1">
-            <p className="text-[15px] font-semibold leading-snug text-cream">{AI_CONSENT_TITLE}</p>
+            <p className="text-[15px] font-semibold leading-snug text-cream">
+              {AI_CONSENT_CARD_TITLE}
+            </p>
             <p className="mt-1 text-[13px] leading-relaxed text-muted">{AI_CONSENT_CARD_BODY}</p>
             {error && (
               <p role="status" className="mt-2 text-[12px] leading-relaxed text-muted">
@@ -120,7 +124,7 @@ export default function AiContextConsentCard({ user, persona, hidden = false }) 
                 disabled={saving}
                 className="flex-1"
               >
-                Разрешить
+                {AI_CONSENT_ALLOW_LABEL}
               </PillButton>
               <button
                 type="button"
@@ -129,7 +133,7 @@ export default function AiContextConsentCard({ user, persona, hidden = false }) 
                 disabled={saving}
                 onClick={snooze}
               >
-                Не сейчас
+                {AI_CONSENT_SNOOZE_LABEL}
               </button>
             </div>
           </div>

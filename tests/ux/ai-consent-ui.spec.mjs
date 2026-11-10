@@ -3,10 +3,11 @@ import { expect, test } from '@playwright/test'
 /*
  * Issue #1169 — «Доступ ИИ к записям».
  *
- * Три сценария задачи, каждый на своих 393×852 и 360×640:
+ * Четыре сценария задачи, каждый на своих 393×852 и 360×640:
  *   1. карточка в «Диалоге» → «Разрешить» → доступ включён;
  *   2. Профиль → «Приватность» → переключатель выключить → выключено;
- *   3. «Не сейчас» → карточка не показывается снова.
+ *   3. «Не сейчас» → карточка не показывается снова;
+ *   4. после реплики собеседника с меткой crisis карточки нет.
  *
  * Демо-режим даёт пользователя и чат без backend; платформа Telegram —
  * TelegramWebviewProxy (так же, как в connection-offline-state). Никаких
@@ -101,7 +102,7 @@ for (const viewport of VIEWPORTS) {
 
         const card = page.getByTestId('ai-consent-card')
         await expect(card).toBeVisible()
-        await expect(card).toContainText('Доступ ИИ к записям')
+        await expect(card).toContainText('Показать собеседникам твои записи?')
         // animations: 'disabled' — кадр снимается после завершения входных
         // анимаций экрана; без этого на 360×640 первый кадр мог быть пустым.
         await page.screenshot({ path: `${SHOTS}/${viewport.name}-card.png`, animations: 'disabled' })
@@ -188,6 +189,31 @@ for (const viewport of VIEWPORTS) {
         await page.reload()
         await openChatWithCompanion(page)
         await expect(page.getByTestId('ai-consent-card')).toHaveCount(0)
+      } finally {
+        await context.close()
+      }
+    })
+
+    test('после реплики собеседника с crisis карточки нет', async ({ browser }) => {
+      // ?dialogTest=crisis: ответ собеседника приходит с меткой crisis: true,
+      // которую «Диалог» уже читает у реплики (message.crisis).
+      const { context, page } = await openTelegramDemo(
+        browser,
+        viewport,
+        '&tab=mentor&dialogTest=crisis'
+      )
+
+      try {
+        await openChatWithCompanion(page)
+
+        const card = page.getByTestId('ai-consent-card')
+        await expect(card).toBeVisible()
+
+        await page.getByTestId('mentor-input').fill('Мне сейчас очень тяжело')
+        await page.getByTestId('mentor-composer-action').click()
+
+        await expect(page.getByTestId('chat-message-assistant').last()).toBeVisible()
+        await expect(card).toHaveCount(0)
       } finally {
         await context.close()
       }

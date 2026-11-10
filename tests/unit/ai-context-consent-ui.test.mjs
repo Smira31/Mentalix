@@ -44,13 +44,15 @@ test('«Не сейчас» прячет карточку на 7 дней чер
   assert.match(cardSource, /useSynced\(aiConsentSnoozeKey\(userId\), '0'\)/)
   assert.match(cardSource, /setSnoozedAt\(String\(Date\.now\(\)\)\)/)
   assert.match(cardSource, /isAiConsentSnoozed\(snoozedAt\)/)
-  assert.match(cardSource, />\s*Не сейчас\s*</)
+  // Дословный «Не сейчас» проверяет ai-context-consent-copy.test.mjs;
+  // здесь важно, что кнопка берёт утверждённую константу.
+  assert.match(cardSource, /\{AI_CONSENT_SNOOZE_LABEL\}/)
 })
 
 test('Профиль: группа «Приватность» с одним переключателем, второго переключателя нет', async () => {
   assert.match(settingsSource, /<ProfileGroup label="Приватность">/)
   assert.match(settingsSource, /<AiConsentSwitchRow user=\{user\} \/>/)
-  assert.match(rowSource, /AI_CONSENT_TITLE/)
+  assert.match(rowSource, /AI_CONSENT_SWITCH_TITLE/)
   assert.match(rowSource, /testId="profile-ai-consent-toggle"/)
   assert.match(rowSource, /setContextConsent\(userId, next\)/)
   // Прежняя панель согласия удалена: два разных переключателя запрещены.
