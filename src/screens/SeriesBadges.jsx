@@ -9,8 +9,9 @@ import { readCanonicalStreakStats, serverSeriesBadges } from '../lib/canonicalSt
 import { badgeCategoryLabel, badgeGroups, daysSinceRegistration, upcomingBadges } from '../lib/badgeCatalog'
 import { badgeEarnedDate, featuredBadge, featuredBadgeCaption } from '../lib/featuredBadge'
 import { buildMvpBadges } from '../lib/badgesMvp'
+import { logEngagementEvent } from '../lib/engagementEvents'
 import { formatCount } from '../lib/pluralize'
-import { platformName } from '../platform'
+import { platform, platformName } from '../platform'
 import { buildServerSeriesViewModel, countUniqueCheckinDates } from '../lib/series'
 import { useSheetSwipeDown } from '../lib/gestures/useSheetSwipeDown'
 import { getNearestMilestones } from '../lib/milestones'
@@ -641,6 +642,19 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
       })
     : []
   const badges = [...mvpBadges, ...serverBadges]
+  const freezeSeen = useRef(false)
+  useEffect(() => {
+    if (activeTab !== 'stats' || !visibleModel || freezeSeen.current) return
+    freezeSeen.current = true
+    logEngagementEvent({
+      user,
+      demo: isPreviewDemoMode(),
+      event: 'streak_freeze_seen',
+      entityType: 'streak_freeze',
+      hasSession: Boolean(platform.getSessionToken?.()),
+      send: api.events.log,
+    })
+  }, [activeTab, visibleModel, user])
 
   const content = (
     <div
