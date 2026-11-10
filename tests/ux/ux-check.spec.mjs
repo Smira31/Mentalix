@@ -934,9 +934,66 @@ test('локальный UX smoke по основному маршруту', asy
       },
     })
     await page.getByRole('button', { name: 'Назад' }).click()
+    const diagNav = async label => {
+      const data = await page.evaluate(() => {
+        const out = { html: document.documentElement.className, samples: [] }
+        const root = document.querySelector('.mx-app-scroll-root')
+        out.scrollTop = root?.scrollTop
+        out.scrollHeight = root?.scrollHeight
+        out.windowY = window.scrollY
+        out.navCount = document.querySelectorAll('.mx-bottom-nav').length
+        const btn = document.querySelector('.mx-bottom-nav nav > button[aria-label="Сегодня"]')
+        const chain = []
+        for (let n = btn; n && n !== document.body; n = n.parentElement) {
+          const cs = getComputedStyle(n)
+          const r = n.getBoundingClientRect()
+          chain.push({
+            tag: n.tagName,
+            cls: String(n.className).replace(/\s+/g, ' ').trim().slice(0, 80),
+            aria: n.getAttribute('aria-hidden'),
+            display: cs.display,
+            visibility: cs.visibility,
+            opacity: cs.opacity,
+            transform: cs.transform,
+            rect: [Math.round(r.x), Math.round(r.y), Math.round(r.width), Math.round(r.height)],
+          })
+        }
+        out.chain = chain
+        const restore = document.querySelector('.mx-bottom-nav__restore')
+        out.restore = restore && {
+          aria: restore.getAttribute('aria-hidden'),
+          vis: getComputedStyle(restore).visibility,
+        }
+        return out
+      })
+      console.log(`DIAG-1171 ${label} ${viewport.name} ${JSON.stringify(data)}`)
+    }
+    const sampleAria = async label => {
+      const seq = []
+      for (let i = 0; i < 20; i += 1) {
+        seq.push(
+          await page.evaluate(() => {
+            const nav = document.querySelector('.mx-bottom-nav nav')
+            const root = document.querySelector('.mx-app-scroll-root')
+            return `${nav?.getAttribute('aria-hidden')}/${nav && getComputedStyle(nav).visibility}/${Math.round(root?.scrollTop || 0)}`
+          })
+        )
+        await page.waitForTimeout(100)
+      }
+      console.log(`DIAG-1171 ${label} ${viewport.name} seq ${seq.join(' ')}`)
+    }
+    await diagNav('after-back')
+    await sampleAria('after-back')
     await expandBottomNav(page)
+    await diagNav('after-expand')
+    await sampleAria('after-expand')
     const todayNavButton = page.locator('nav[aria-hidden="false"] > button[aria-label="Сегодня"]')
-    await todayNavButton.click()
+    try {
+      await todayNavButton.click({ timeout: 10_000 })
+    } catch (error) {
+      await diagNav('click-failed')
+      throw error
+    }
     await expect(todayNavButton).toHaveAttribute('aria-current', 'page')
     await page.getByRole('button', { name: 'Шаги', exact: true }).click()
     await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()

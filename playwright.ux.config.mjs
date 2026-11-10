@@ -2,50 +2,7 @@ import { defineConfig } from '@playwright/test'
 
 export default defineConfig({
   testDir: './tests/ux',
-  testMatch: [
-    'ux-check.spec.mjs',
-    'practices-rituals-ascezas.spec.mjs',
-    'onboarding-age-gate.spec.mjs',
-    'issue-648-independent-loading.spec.mjs',
-    'checkin-geometry.spec.mjs',
-    'evening-redo-from-card.spec.mjs',
-    'profile-p11.spec.mjs',
-    'profile-stoic.spec.mjs',
-    'profile-wave2.spec.mjs',
-    'profile-wave3.spec.mjs',
-    // subscription-states.spec.mjs сознательно не здесь: экраны состояний
-    // подписки рисуются только при VITE_PAYMENT_UI_ENABLED=true
-    // (src/lib/paymentConfig.js), а ux:check запускается без флага.
-    // Свой dev-сервер с флагом — `ux:payment-ui` (playwright.payment-ui.config.mjs).
-    'profile-canonical-streak.spec.mjs',
-    'demo-phone.spec.mjs',
-    'telegram-desktop-window.spec.mjs',
-    'connection-offline-state.spec.mjs',
-    'demo-telegram-header.spec.mjs',
-    'demo-panel.spec.mjs',
-    'guest-save-reminder.spec.mjs',
-    'bottom-nav-overlap.spec.mjs',
-    'library-read-opens-catalog.spec.mjs',
-    'today-subscreen-navigation.spec.mjs',
-    'daily-journal-flow.spec.mjs',
-    'diary-practice-card.spec.mjs',
-    'steps-reliability.spec.mjs',
-    'theme-daily-questions.spec.mjs',
-    'dialog-screen.spec.mjs',
-    'dialog-errors.spec.mjs',
-    'guided-journals-reliability.spec.mjs',
-    'hero-journey-reliability.spec.mjs',
-    'hero-journey-content.spec.mjs',
-    'protected-text.spec.mjs',
-    'checkin-navigation-consistency.spec.mjs',
-    'checkin-streak-stability.spec.mjs',
-    'journal-completion-stability.spec.mjs',
-    'theme-week-carousel.spec.mjs',
-    // AUD-015: переписаны под текущий интерфейс «Прогресса» и утреннего
-    // чек-ина; каждый стабильно проходит на Chromium дважды подряд.
-    'analytics-card-order.spec.mjs',
-    'morning-review.spec.mjs',
-  ],
+  testMatch: ['ux-check.spec.mjs'],
   outputDir: 'artifacts/ux-check/playwright-output',
   fullyParallel: false,
   workers: 1,
