@@ -300,6 +300,7 @@ import DailyJournalFlow from './DailyJournal/DailyJournalFlow'
 import DaimonFlow from './Daimon/DaimonFlow'
 import ThemeCarouselScreen from './ThemeCarouselScreen'
 import ThemeScreen from './ThemeScreen'
+import { notifyScrollRestored } from '../lib/scrollRestored'
 
 function PracticesCatalogLoading() {
   return (
@@ -435,7 +436,10 @@ export default function Practices({
   useLayoutEffect(() => {
     if (!catalogVisible || savedScrollRef.current == null) return
     const root = document.querySelector('.mx-app-scroll-root')
-    if (root) root.scrollTop = savedScrollRef.current
+    if (root) {
+      root.scrollTop = savedScrollRef.current
+      notifyScrollRestored()
+    }
     savedScrollRef.current = null
   }, [catalogVisible])
 

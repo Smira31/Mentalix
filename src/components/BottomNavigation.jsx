@@ -3,6 +3,7 @@ import { BookOpen, ChartNoAxesColumn, Compass, House, Lightbulb } from 'lucide-r
 
 import { platform } from '../platform'
 import { isPreviewDemoMode } from '../lib/demoMode'
+import { SCROLL_RESTORED_EVENT } from '../lib/scrollRestored'
 import '../styles/demo-bottom-navigation.css'
 
 // MXL-NAV-IA-001 (#514): целевой нижний tab bar «Сегодня · Шаги · Диалог ·
@@ -68,7 +69,6 @@ const BottomNavigation = forwardRef(function BottomNavigation(
    */
   const [collapsed, setCollapsed] = useState(false)
   const collapsedRef = useRef(false)
-  const tabRef = useRef(tab)
   const scrollFrame = useRef(null)
   const lastScrollY = useRef(0)
   const scrollDirection = useRef(null)
@@ -82,8 +82,6 @@ const BottomNavigation = forwardRef(function BottomNavigation(
   }
 
   useEffect(() => {
-    tabRef.current = tab
-
     /* Смена вкладки — панель всегда раскрывается, жест начинается заново. */
     applyCollapsed(false)
 
@@ -98,16 +96,30 @@ const BottomNavigation = forwardRef(function BottomNavigation(
    * (переключение вкладок): событие scroll придёт уже с новой позицией,
    * и ложное сворачивание исключено.
    */
-  useImperativeHandle(ref, () => ({
-    reset: () => {
-      applyCollapsed(false)
+  const resetToCurrentScroll = () => {
+    applyCollapsed(false)
 
-      const root = scrollRootRef?.current
-      lastScrollY.current = Math.max(root?.scrollTop || 0, window.scrollY || 0)
-      scrollDirection.current = null
-      scrollDistance.current = 0
-    },
+    const root = scrollRootRef?.current
+    lastScrollY.current = Math.max(root?.scrollTop || 0, window.scrollY || 0)
+    scrollDirection.current = null
+    scrollDistance.current = 0
+  }
+
+  useImperativeHandle(ref, () => ({
+    reset: resetToCurrentScroll,
   }))
+
+  /*
+   * Экран внутри вкладки вернул сохранённую прокрутку (например, «Назад»
+   * из «Ритуалов» в «Шаги») — это не жест: без сброса скачок на сотни
+   * пикселей читался как прокрутка вниз и панель сворачивалась сама.
+   */
+  useEffect(() => {
+    window.addEventListener(SCROLL_RESTORED_EVENT, resetToCurrentScroll)
+    return () => window.removeEventListener(SCROLL_RESTORED_EVENT, resetToCurrentScroll)
+    // resetToCurrentScroll читает только ref'ы — подписка одна на жизнь панели.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   /*
    * Скролл-логика сворачивания — та же, что раньше жила в App, но теперь она
@@ -129,16 +141,9 @@ const BottomNavigation = forwardRef(function BottomNavigation(
       scrollFrame.current = null
 
       /*
-       * «Шаги» — нижняя навигация не сворачивается: у Stoic
-       * нет плавающей лампочки, и свёрнутая кнопка с иконкой
-       * Lightbulb здесь лишняя. На остальных вкладках — как было.
+       * Сворачивание одинаково на всех пяти вкладках, включая «Шаги»:
+       * решение владельца 09.11 — исключения для одной вкладки нет.
        */
-      if (tabRef.current === 'practices') {
-        applyCollapsed(false)
-        resetGesture()
-        return
-      }
-
       const currentY = Math.max(scrollRootRef?.current?.scrollTop || 0, window.scrollY || 0)
 
       const previousY = lastScrollY.current
@@ -280,7 +285,7 @@ const BottomNavigation = forwardRef(function BottomNavigation(
       style={{
         left: 'max(var(--bottom-nav-edge), var(--app-safe-left))',
         right: 'max(var(--bottom-nav-edge), var(--app-safe-right))',
-        bottom: 'calc(var(--app-safe-bottom) + var(--bottom-nav-offset))',
+        bottom: 'var(--mx-bottom-nav-bottom)',
       }}
     >
       <div
@@ -318,7 +323,8 @@ const BottomNavigation = forwardRef(function BottomNavigation(
             collapsed && collapseScale
               ? `scale(${collapseScale.x}, ${collapseScale.y})`
               : 'scale(1, 1)',
-          transformOrigin: 'left center',
+          /* Кружок садится на ту же нижнюю линию, что и развёрнутый бар. */
+          transformOrigin: 'left bottom',
           pointerEvents: collapsed ? 'none' : 'auto',
           transition: `transform var(--mx-motion-slow) ${MOTION}`,
         }}
