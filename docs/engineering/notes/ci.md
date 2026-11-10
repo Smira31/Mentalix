@@ -1,12 +1,36 @@
 ---
 status: current
-last_verified: 2026-11-07
+last_verified: 2026-11-09
 ---
 
 # CI: грабли и договорённости
 
 Рабочие заметки по GitHub Actions. Не заменяет `docs/ci-cd-audit-2026-09-22.md`
 (датированный аудит) и `.github/workflows/` (источник правды).
+
+## Self-hosted раннер на Mac (`vars.CI_RUNS_ON`)
+
+- Все восемь задач `ci.yml` берут раннер из переменной репозитория:
+  `runs-on: ${{ fromJSON(vars.CI_RUNS_ON || '"ubuntu-latest"') }}`. Переменной
+  нет — поведение прежнее (`ubuntu-latest`); других условий выбора раннера нет.
+- Включить Mac: Settings → Secrets and variables → Actions → Variables →
+  `CI_RUNS_ON` = `["self-hosted","macOS","mentalix-mac"]`.
+- Откат: удалить переменную `CI_RUNS_ON` (или очистить значение) — все задачи
+  снова пойдут на `ubuntu-latest`.
+- Раннер `mentalix-mac` запускается вручную под пользователем `mentalixci`;
+  в GitHub он виден как Idle. Пока раннер не запущен, задачи стоят в очереди.
+- При заданной `CI_RUNS_ON` информационные `security-audit` и `telegram-p0` в PR
+  не запускаются (push в main и `workflow_dispatch` — как раньше): в
+  `required-check` они не входят, но занимали бы единственную очередь Mac.
+- Кэш `~/.cache/ms-playwright` включается только на GitHub-hosted
+  (`runner.environment == 'github-hosted'`); на Mac браузеры остаются на диске.
+  Системные зависимости Playwright (`install-deps`, `--with-deps`) ставятся
+  только на Linux; на macOS — `npx playwright install` без `--with-deps`
+  (никаких sudo/brew в workflow).
+- `TZ: UTC` в верхнем `env` файла `ci.yml` действует на все задачи: unit-тесты
+  дат написаны под UTC, а на Mac пояс раннера — Europe/Moscow (+3 ч, сдвиг на день).
+- `backend-health` проверяет статус без `node` и `jq` (на Mac их нет без
+  `setup-node`): `printf '%s' "$response" | grep -Eq '"status"[[:space:]]*:[[:space:]]*"ok"'`.
 
 ## Firebase-превью выключены
 
