@@ -12,7 +12,7 @@ export const TODAY_CARD_IDS = ['pulse', 'dayProgress', 'theme', 'quote']
 export const TODAY_CARD_LABELS = {
   pulse: {
     title: 'Пульс',
-    subtitle: '«Сегодня в пути вместе с тобой»',
+    subtitle: '«Сегодня день отмечают»',
   },
   dayProgress: {
     title: 'День',

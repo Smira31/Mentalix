@@ -404,7 +404,7 @@ export default function Onboarding({ user, onFinish }) {
                 data-testid="onboarding-enter"
                 className="cta-pill text-[16px] py-[var(--mx-space-4)] mx-auto mt-[var(--mx-space-8)] disabled:opacity-30"
               >
-                Войти
+                Начать
               </button>
             )}
           </div>

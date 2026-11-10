@@ -31,6 +31,7 @@ import GuestSaveReminder from '../components/GuestSaveReminder'
 import { useSynced } from '../lib/store'
 import { getDailyThought } from '../data/dailyThoughts'
 import { TODAY_CARDS_HIDDEN_KEY, parseHiddenCards } from '../lib/todayCardVisibility'
+import { formatCount } from '../lib/pluralize'
 import { peekThemeDetail, fetchThemeDetail } from '../lib/themeDetailCache'
 import { TodayCompareControl } from '../components/TodayMotionExperiment'
 import { readCanonicalStreakStats } from '../lib/canonicalStreak'
@@ -1582,7 +1583,10 @@ export default function Today({
           >
             {activeToday != null
               ? activeToday < 20
-                ? `Сегодня в пути вместе с тобой: ${activeToday}`
+                ? `Сегодня день ${activeToday === 1 ? 'отмечает' : 'отмечают'} ${formatCount(
+                    activeToday,
+                    ['человек', 'человека', 'человек']
+                  )}`
                 : `Сегодня свой путь продолжили ${activeToday.toLocaleString('ru-RU')} человек`
               : '\u00A0'}
           </p>

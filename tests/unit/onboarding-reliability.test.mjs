@@ -4,12 +4,12 @@ import test from 'node:test'
 
 const src = fs.readFileSync(new URL('../../src/screens/Onboarding.jsx', import.meta.url), 'utf8')
 
-// ── 1. Двойной тап «Войти» → один запрос ──
+// ── 1. Двойной тап «Начать» → один запрос ──
 
 test('finish() guarded against double-submit', () => {
   // Флаг submitting проверяется в начале finish()
   assert.match(src, /async function finish\(\)\s*\{[\s\S]*if \(submitting\) return/)
-  // Кнопка «Войти» блокируется на время запроса
+  // Кнопка «Начать» блокируется на время запроса
   assert.match(src, /disabled=\{revealed < PLAN_CARDS\.length \|\| submitting\}/)
 })
 
