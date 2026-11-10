@@ -1577,11 +1577,11 @@ export default function Today({
           <p
             className="mx-today-pulse"
             style={{
-              opacity: activeToday != null ? 1 : 0,
+              opacity: activeToday > 0 ? 1 : 0,
               transition: 'opacity 200ms ease',
             }}
           >
-            {activeToday != null
+            {activeToday > 0
               ? activeToday < 20
                 ? `Сегодня день ${activeToday === 1 ? 'отмечает' : 'отмечают'} ${formatCount(
                     activeToday,
