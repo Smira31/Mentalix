@@ -934,6 +934,11 @@ test('локальный UX smoke по основному маршруту', asy
       },
     })
     await page.getByRole('button', { name: 'Назад' }).click()
+    // Регрессия #1171: возврат в «Шаги» восстанавливает прокрутку программно —
+    // это не жест, панель не должна свернуться сама через мгновение.
+    await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
+    await page.waitForTimeout(600)
+    await expect(page.locator('nav[aria-hidden="false"]')).toHaveCount(1)
     await expandBottomNav(page)
     const todayNavButton = page.locator('nav[aria-hidden="false"] > button[aria-label="Сегодня"]')
     await todayNavButton.click()
