@@ -57,7 +57,7 @@ export default function StreakRecovery({ recovery, stage = 'offer', onDismiss, o
                 ? `Серия спасена: ${streakDaysLabel(recovery.streak_before + 1)}`
                 : expired
                   ? 'Вчерашний день уже нельзя вернуть'
-                  : 'Серия прервалась… но её можно вернуть!'}
+                  : 'Серия остановилась. Вчерашний день можно вернуть.'}
             </h1>
             {!saved && !expired && (
               <p className="mt-5 max-w-xs text-[15px] leading-relaxed text-muted">
