@@ -10,6 +10,12 @@ const analytics = await readFile(
   new URL('../../src/screens/Analytics.jsx', import.meta.url),
   'utf8'
 )
+// §5.4: переключатель один на профиль — его реализация живёт в ProfileUi
+// (после #1169 её переиспользует «Доступ ИИ к записям»).
+const profileUi = await readFile(
+  new URL('../../src/screens/settings/ProfileUi.jsx', import.meta.url),
+  'utf8'
+)
 
 const normalizedSettings = settings.replace(/\s+/g, ' ')
 const normalizedAnalytics = analytics.replace(/\s+/g, ' ')
@@ -18,7 +24,8 @@ test('Settings persists descriptive Insights visibility with owner settings cont
   assert.match(settings, /setInsightsEnabled\(s\?\.insights_enabled !== false\)/)
   assert.match(settings, /api\.profile\.saveSettings\(user\.id, \{ insights_enabled: nextEnabled \}\)/)
   assert.match(settings, /title="Показывать описательные наблюдения"/)
-  assert.match(settings, /role="switch"/)
+  assert.match(settings, /<Toggle/)
+  assert.match(profileUi, /role="switch"/)
 })
 
 test('opt-out explains that deterministic observations are hidden without deleting data', () => {
