@@ -33,7 +33,7 @@ test('карточка согласия объясняет, какие запи�
   // переехал к живой поверхности и проверяет все три обязательных смысла:
   // отмеченные чек-ины из «Истории», передачу в GigaChat для ответа и выход.
   assert.match(consentCopySource, /которые ты отметишь в «Истории»/)
-  assert.match(consentCopySource, /Записи передаются в GigaChat \(ПАО Сбербанк\) только для ответа/)
+  assert.match(consentCopySource, /Это передаётся в GigaChat \(ПАО Сбербанк\) только для ответа/)
   assert.match(consentCopySource, /Выключить можно в любой момент/)
   assert.match(cardSource, /AI_CONSENT_CARD_BODY/)
 })
