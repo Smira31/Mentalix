@@ -1,8 +1,10 @@
 /* Card System v2 keeps demo and production navigation geometrically identical. */
-/* Геометрию сворачивания ведёт transform: scale() в BottomNavigation.jsx
-   (width/height/border-radius на iOS дают layout-thrash). border-radius
-   50% меняется мгновенно и компенсирует scaleX, чтобы после scale()
-   получился круг, а не сплюснутый овал. */
+/* Геометрию сворачивания ведёт ТОЛЬКО transform: scale() в BottomNavigation.jsx
+   (width/height на iOS дают layout-thrash). border-radius 50% меняется
+   мгновенно и компенсирует scaleX, чтобы после scale() получился круг,
+   а не сплюснутый овал. Размер пилюли в свёрнутом состоянии здесь не
+   задаётся: иначе width/height анимировались бы вместе с transform и
+   ResizeObserver пересчитывал бы масштаб по уже сжатой ширине. */
 .mx-bottom-nav.mx-demo-bottom-nav--collapsed > div {
   border-radius: 50% !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
@@ -32,7 +34,7 @@
 }
 
 .mx-bottom-nav {
-  bottom: calc(var(--app-safe-bottom) + var(--bottom-nav-offset)) !important;
+  bottom: var(--mx-bottom-nav-bottom) !important;
 }
 
 .mx-bottom-nav > div {
@@ -45,12 +47,6 @@
   -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
   backdrop-filter: blur(20px) saturate(160%) !important;
   box-shadow: var(--shadow-float) !important;
-}
-
-.mx-bottom-nav.mx-demo-bottom-nav--collapsed > div {
-  width: var(--bottom-nav-collapsed-size) !important;
-  max-width: var(--bottom-nav-collapsed-size) !important;
-  height: var(--bottom-nav-collapsed-size) !important;
 }
 
 .mx-bottom-nav > div nav {
@@ -145,7 +141,7 @@
 /* В демо-фрейме компактная кнопка сохраняет то же поведение. */
 [data-mentalix-demo-frame='true'] .mx-bottom-nav.mx-demo-bottom-nav--collapsed {
   left: var(--bottom-nav-edge) !important;
-  bottom: var(--bottom-nav-offset) !important;
+  bottom: var(--mx-bottom-nav-bottom) !important;
 }
 
 [data-mentalix-demo-frame='true'] .mx-bottom-nav.mx-demo-bottom-nav--collapsed > div {
