@@ -1251,9 +1251,14 @@ function CheckInCore({
       if (!active || !text) return
       setSurprise(text)
       logOnce(surpriseEvents, 'shown', () =>
-        api.events
-          .log(user.id, 'surprise_insight_shown', 'surprise_insight', null)
-          .catch(() => {})
+        logEngagementEvent({
+          user,
+          demo: previewDemoMode,
+          event: 'surprise_insight_shown',
+          entityType: 'surprise_insight',
+          hasSession: Boolean(platform.getSessionToken?.()),
+          send: api.events.log,
+        })
       )
     })
     return () => {
@@ -1265,9 +1270,14 @@ function CheckInCore({
     if (
       !surprise ||
       !logOnce(surpriseEvents, 'opened', () =>
-        api.events
-          .log(user.id, 'surprise_insight_opened', 'surprise_insight', null)
-          .catch(() => {})
+        logEngagementEvent({
+          user,
+          demo: previewDemoMode,
+          event: 'surprise_insight_opened',
+          entityType: 'surprise_insight',
+          hasSession: Boolean(platform.getSessionToken?.()),
+          send: api.events.log,
+        })
       )
     )
       return

@@ -44,9 +44,6 @@ const ENGAGEMENT_ENTITY_TYPES = {
   surprise_insight_shown: { exact: 'surprise_insight' },
   surprise_insight_opened: { exact: 'surprise_insight' },
   mood_practice_start: { exact: 'mood_practice' },
-  daily_task_shown: { prefix: 'daily_task:' },
-  daily_task_done: { prefix: 'daily_task:' },
-  daily_task_skipped: { prefix: 'daily_task:' },
   guest_save_reminder_shown: { exact: 'guest_save_reminder' },
   guest_save_reminder_clicked: { exact: 'guest_save_reminder' },
 }
@@ -372,6 +369,32 @@ test('вызовы всех событий вовлечённости на ме�
     missing,
     [],
     `Отправка событий вовлечённости пропала из исходников (#1162):\n${missing.join('\n')}`
+  )
+})
+
+/*
+ * Один канал отправки: событие вовлечённости не должно уходить напрямую
+ * через api.events.log, иначе демо, предпросмотр и гость без сессии снова
+ * начнут слать события (фильтр живёт только в logEngagementEvent).
+ */
+test('события вовлечённости отправляются только через logEngagementEvent', () => {
+  const violations = []
+  for (const file of sourceFiles(sourceRoot)) {
+    const source = readFileSync(file, 'utf8')
+    for (const site of directSites(file, source)) {
+      for (const eventType of valueLiterals(site.eventTypeExpression)) {
+        if (eventType in ENGAGEMENT_ENTITY_TYPES) {
+          violations.push(
+            `${site.where}: ${eventType} отправляется напрямую через api.events.log — нужен logEngagementEvent`
+          )
+        }
+      }
+    }
+  }
+  assert.deepEqual(
+    violations,
+    [],
+    `События вовлечённости минуют фильтр демо/гостя:\n${violations.join('\n')}`
   )
 })
 
