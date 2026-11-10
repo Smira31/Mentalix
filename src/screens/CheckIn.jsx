@@ -685,6 +685,13 @@ export function Face({ level, active, size = 56, showFrame = true }) {
   )
 }
 
+/*
+ * ISSUE #1183 — подписи шкалы концентрации без мужского рода и в одном месте.
+ * Одну константу используют обе шкалы focus: в SCALE_STEPS и в
+ * MORNING_FOCUS_STEP. Числовые значения 1–5 и ключи шкал при этом прежние.
+ */
+export const FOCUS_SCALE_LABELS = ['Шумно', 'Плыву', 'Держусь', 'Собранно', 'Ясно']
+
 export const SCALE_STEPS = [
   {
     key: 'mood',
@@ -709,7 +716,7 @@ export const SCALE_STEPS = [
     key: 'focus',
     title: 'Насколько ты собран?',
     hint: 'Где сейчас твоё внимание',
-    labels: ['Рассеян', 'Плыву', 'Держусь', 'Собран', 'Кристально'],
+    labels: FOCUS_SCALE_LABELS,
   },
 ]
 
@@ -732,7 +739,7 @@ const MORNING_FOCUS_STEP = {
   key: 'focus',
   title: 'Уровень концентрации',
   hint: 'Где сейчас твоё внимание',
-  labels: ['Рассеян', 'Плыву', 'Держусь', 'Собран', 'Кристально'],
+  labels: FOCUS_SCALE_LABELS,
 }
 
 export const MORNING_OPTIONAL_SCALES = [SLEEP_QUALITY_STEP, MORNING_FOCUS_STEP]
