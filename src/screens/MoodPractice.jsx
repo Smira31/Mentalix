@@ -3,6 +3,8 @@ import { createPortal } from 'react-dom'
 
 import { platform } from '../platform'
 import { api } from '../lib/api'
+import { isPreviewDemoMode } from '../lib/demoMode'
+import { logEngagementEvent } from '../lib/engagementEvents'
 import { invalidateTodayData } from '../lib/todayDataCache'
 import { RoundBackButton } from '../components/NestedScreenHeader'
 import {
@@ -111,8 +113,20 @@ export default function MoodPractice({ user, onDone }) {
     }
   })
 
+  /*
+   * MXL-EVENTS: старт практики — единственное место, где backend не может
+   * сам заметить открытие. Демо, предпросмотр и гость без сессии событие
+   * не отправляют: это решает logEngagementEvent (как teaser_shown в CheckIn).
+   */
   useEffect(() => {
-    api.events.log(user.id, 'mood_practice_start', 'mood_practice', null).catch(() => {})
+    logEngagementEvent({
+      user,
+      demo: isPreviewDemoMode(),
+      event: 'mood_practice_start',
+      entityType: 'mood_practice',
+      hasSession: Boolean(platform.getSessionToken?.()),
+      send: api.events.log,
+    })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
