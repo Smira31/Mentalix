@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import { platform } from '../platform'
@@ -110,6 +110,11 @@ export default function MoodPractice({ user, onDone }) {
       setStep(current => current - 1)
     }
   })
+
+  useEffect(() => {
+    api.events.log(user.id, 'mood_practice_start', 'mood_practice', null).catch(() => {})
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   function handleBack() {
     platform.haptic('light')
