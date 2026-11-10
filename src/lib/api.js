@@ -409,6 +409,30 @@ export const api = {
         method: 'POST',
         body: JSON.stringify({ merge_token: mergeToken }),
       }),
+    /*
+     * Issue #1189: «Почта для входа» — привязка почты к Telegram-аккаунту.
+     * Заголовок Authorization: tma <initData> тот же, что у остальных
+     * запросов (authHeader в request): cookie веба, Bearer веба и гость
+     * получают от бэкенда 401. Неверный код приходит не HTTP-ошибкой, а
+     * ответом 200 { ok: false, error: 'invalid_or_expired_code' }.
+     */
+    emailLink: {
+      get: () => request('/auth/email-link'),
+
+      requestCode: email =>
+        request('/auth/email-link/request-code', {
+          method: 'POST',
+          body: JSON.stringify({ email }),
+        }),
+
+      verify: (email, code) =>
+        request('/auth/email-link/verify', {
+          method: 'POST',
+          body: JSON.stringify({ email, code }),
+        }),
+
+      remove: () => request('/auth/email-link', { method: 'DELETE' }),
+    },
   },
   habits: {
     list: userId => request(withQuery('/habits', { user_id: userId })),

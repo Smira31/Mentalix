@@ -266,6 +266,15 @@ screens, and keep article cards unchanged unless the owner explicitly approves t
 - Целевая проверка: `npm run ux:consent-ui` (`playwright.consent-ui.config.mjs`, Chromium; платформа Telegram включается через `window.TelegramWebviewProxy` в `tests/ux/ai-consent-ui.spec.mjs`). Кадры 393×852 и 360×640 — `qa-evidence/ai-context-consent/`. В снимках обязателен `page.screenshot({ animations: 'disabled' })`: без него первый кадр на 360×640 может оказаться пустым. Полный `ux:check` и WebKit остаются CI, iPhone/Telegram — ручной gate.
 - В свежем web-контейнере перед прогоном: `npx playwright install --with-deps chromium`.
 
+### Почта для входа (#1189) в Base44
+
+- Флаг `VITE_EMAIL_LINK_ENABLED` — default false (`src/lib/emailLink.js`); в песочнице включён только через `docker-compose.base44.yml`. Production-сборка переменную не получает, строки в Профиле нет.
+- Единственная поверхность — строка «Почта для входа» в Профиль → «твои данные.» → «Личные данные» (`src/screens/settings/EmailLinkRow.jsx`) и экран привязки `EmailLinkScreen.jsx` на `<Screen>`. Условие показа — `canSeeEmailLink`: включённый флаг, `platform.name === 'telegram'` и `Number(user.id) > 0`; в вебе, у гостя и в Даймоне строки нет.
+- Контракт бэкенда (`mentalix-bot` #247): GET/POST `/auth/email-link`, POST `/auth/email-link/request-code`, POST `/auth/email-link/verify`, DELETE `/auth/email-link`; заголовок `Authorization: tma <initData>` берётся из общего `authHeader` в `src/lib/api.js`. Неверный или просроченный код — ответ 200 `{ ok: false, error: 'invalid_or_expired_code' }`, а не HTTP-ошибка.
+- Демо-ответы (`src/lib/demoMode.js`): код всегда `123456`, адрес `taken@example.com` → 409 `email_in_use`, привязка переживает перезагрузку страницы.
+- В превью песочницы строки не видно: оболочка tgShell даёт платформу web, а по условию #1189 строка живёт только в Telegram. Доказательство — целевой набор ниже, а не превью.
+- Целевая проверка: `npx playwright test --config=playwright.email-link.config.mjs` в web-контейнере (Chromium; свой dev-сервер на 4184 с `VITE_EMAIL_LINK_ENABLED=true`), перед первым прогоном `npx playwright install --with-deps chromium`. Кадры 393×852 и 360×640 — `qa-evidence/email-link/`. Полный `ux:check` и WebKit остаются CI, iPhone/Telegram — ручной gate.
+
 ### Защита контента от копирования (#1112, этап 1) в Base44
 
 - Один общий класс `.mx-protected-text` (стили в `src/index.css`, глобальные перехватчики copy/contextmenu — `src/lib/protectedText.js`, установка в `App.jsx`): `user-select: none` + `-webkit-user-select: none` + `-webkit-touch-callout: none`. Класс вешается на тексты «Пути героя» (заголовок/описание курса, названия глав, вступление шага, подсказки «Запиши»/«Одно действие», тексты завершения), на пролог «О курсе» и на заголовок/текст статьи в `LibraryArticleReader.jsx`.

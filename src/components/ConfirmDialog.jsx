@@ -44,6 +44,7 @@ export default function ConfirmDialog({
         <div className="mt-5 flex gap-2">
           <button
             type="button"
+            data-testid={testId ? `${testId}-cancel` : undefined}
             onClick={onCancel}
             className="practice-scene__choice min-h-11 flex-1 rounded-full border border-cream/15 bg-cream/5 px-4 py-3 text-[13px] font-semibold text-muted"
           >
@@ -51,6 +52,7 @@ export default function ConfirmDialog({
           </button>
           <button
             type="button"
+            data-testid={testId ? `${testId}-confirm` : undefined}
             onClick={onConfirm}
             className="practice-scene__choice min-h-11 flex-1 rounded-full border-0 bg-cream px-4 py-3 text-[13px] font-semibold text-emerald-deep"
           >

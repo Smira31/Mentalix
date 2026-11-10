@@ -73,6 +73,9 @@ const DEMO_JOURNAL_TEMPLATES = [
 ]
 const SCENARIO_KEY = 'mentalix:demo-scenario:v1'
 const NETWORK_KEY = 'mentalix:demo-network:v1'
+// Issue #1189: демо-ответы «Почты для входа» — код из письма и занятый адрес.
+export const DEMO_EMAIL_LINK_CODE = '123456'
+export const DEMO_EMAIL_LINK_TAKEN = 'taken@example.com'
 export const DEMO_SCENARIOS = ['Новый пользователь', 'Неделя', 'Серия прервалась', 'Много практик']
 export const DEMO_NETWORKS = ['Нормально', 'Медленно', 'Нет сети', 'Ошибка сервера']
 
@@ -2201,6 +2204,52 @@ function respond(path, options = {}) {
     else marks.delete(checkinId)
     writeState({ ...state, aiConsentCheckins: [...marks] })
     return json({ checkin_id: Number(checkinId), enabled: Boolean(body.enabled) })
+  }
+
+  /*
+   * Issue #1189: «Почта для входа». Сервера в демо нет, но контракт
+   * повторяем: код всегда 123456, адрес taken@example.com уже занят (409
+   * email_in_use), привязка переживает перезагрузку страницы. На этом
+   * стоят тесты и скриншоты.
+   */
+  if (pathname === '/auth/email-link' && method === 'GET') {
+    return json({ email: state.emailLinkEmail || null })
+  }
+
+  if (pathname === '/auth/email-link/request-code' && method === 'POST') {
+    const email = String(body.email || '')
+      .trim()
+      .toLowerCase()
+    if (!email.includes('@')) {
+      const error = new Error('Демо: HTTP 422')
+      error.status = 422
+      throw error
+    }
+    if (email === DEMO_EMAIL_LINK_TAKEN) {
+      const error = new Error('Демо: HTTP 409')
+      error.status = 409
+      error.body = { code: 'email_in_use' }
+      throw error
+    }
+    writeState({ ...state, emailLinkPending: email })
+    return json({ ok: true, expires_in_minutes: 10 })
+  }
+
+  if (pathname === '/auth/email-link/verify' && method === 'POST') {
+    const email = String(body.email || '')
+      .trim()
+      .toLowerCase()
+    const code = String(body.code || '').trim()
+    if (state.emailLinkPending !== email || code !== DEMO_EMAIL_LINK_CODE) {
+      return json({ ok: false, error: 'invalid_or_expired_code' })
+    }
+    writeState({ ...state, emailLinkEmail: email, emailLinkPending: null })
+    return json({ ok: true, email })
+  }
+
+  if (pathname === '/auth/email-link' && method === 'DELETE') {
+    writeState({ ...state, emailLinkEmail: null, emailLinkPending: null })
+    return json({ ok: true })
   }
 
   if (method === 'GET') return json([])
