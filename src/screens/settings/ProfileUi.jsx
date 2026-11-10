@@ -156,6 +156,26 @@ export function ProfileCard({ children, testId }) {
   )
 }
 
+/*
+ * iOS-переключатель, §5.4: включённый — белый. Один экземпляр на весь
+ * профиль: строки настроек и «Доступ ИИ к записям» (#1169) берут его
+ * отсюда, чтобы в приложении не появилось вторых переключателей.
+ */
+export function Toggle({ checked, label, onChange, disabled = false, testId }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
+      data-testid={testId}
+      disabled={disabled}
+      onClick={() => onChange(!checked)}
+      className="mx-profile-switch"
+    />
+  )
+}
+
 export function ProfileNote({ children, role, danger = false, testId }) {
   return (
     <p
