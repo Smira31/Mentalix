@@ -24,4 +24,16 @@ last_verified: 2026-11-10
 
 Ранее перечисленные здесь [#615](https://github.com/Smira31/Mentalix/issues/615), [#789](https://github.com/Smira31/Mentalix/issues/789), [#683](https://github.com/Smira31/Mentalix/issues/683), [#582](https://github.com/Smira31/Mentalix/issues/582), [#516](https://github.com/Smira31/Mentalix/issues/516), [#766](https://github.com/Smira31/Mentalix/issues/766), [#767](https://github.com/Smira31/Mentalix/issues/767) закрыты и в активных не числятся; состояние задач всегда проверяется в GitHub, а не по этому файлу.
 
-Публикация — только из `main` после зелёного CI. Зелёная сборка не заменяет ручной iPhone/Telegram gate: safe-area, клавиатура и Telegram WebView без отдельного прогона считаются непроверенными.
+## Product decision register
+
+| Тема             | Решение                                                                                                     |
+| ---------------- | ----------------------------------------------------------------------------------------------------------- |
+| Navigation       | Пять основных разделов; Today — главный вход.                                                                |
+| Dialog           | Role flow выполнен; новые изменения только через новую Issue.                                                 |
+| Product priority | Порядок задают открытые Issues выше и решения владельца; закрытые задачи в активных не числятся.              |
+| Production       | Публикация только из `main` после зелёного CI.                                                               |
+| Manual gate      | iPhone/Telegram проверка обязательна перед product release; для web/PWA действует отдельный release gate.     |
+
+## Автономная очередь
+
+Сейчас очередь `autonomous` пуста: задач вне списка открытых Issues выше нет, новые задачи требуют отдельного решения владельца. Публикация — только из `main` после зелёного CI. Зелёная сборка не заменяет ручной iPhone/Telegram gate: safe-area, клавиатура и Telegram WebView без отдельного прогона считаются непроверенными.
