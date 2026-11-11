@@ -57,6 +57,7 @@ import {
   Toggle,
 } from './settings/ProfileUi'
 import AiConsentSwitchRow from './settings/AiConsentSwitchRow'
+import EmailLinkRow from './settings/EmailLinkRow'
 import { canManageAiContext } from '../lib/aiContextConsent'
 
 /*
@@ -1140,6 +1141,8 @@ export default function Settings({
         </ProfileGroup>
         <ProfileGroup label="Личные данные">
           <ProfileCard>
+            {/* #1189: почта для входа на сайт — только Telegram и не гость. */}
+            <EmailLinkRow user={user} />
             <ProfileRow
               title="Политика и данные"
               subtitle="Хранение, черновики, синхронизация и ограничения"

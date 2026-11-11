@@ -1,0 +1,58 @@
+/* Issue #1189 — «Почта для входа»: экран привязки.
+   Отступы — только токенами; 16 px у полей ввода — правило iOS-зума. */
+
+.mx-email-link {
+  padding-top: var(--mx-space-4);
+  padding-bottom: var(--mx-space-8);
+}
+
+.mx-email-link__title {
+  margin: var(--mx-space-2) 0 var(--mx-space-3);
+}
+
+.mx-email-link__hint {
+  margin: 0;
+  color: rgb(var(--c-muted));
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
+  line-height: 1.45;
+}
+
+.mx-email-link__label {
+  display: block;
+  margin-top: var(--mx-space-5);
+  margin-bottom: var(--mx-space-2);
+  color: rgb(var(--c-muted));
+  font-size: max(11px, calc(12px * var(--mx-type-scale)));
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.mx-email-link__input {
+  width: 100%;
+  min-height: var(--mx-btn-glass-h);
+  padding-inline: var(--mx-space-4);
+  border: 1px solid rgb(var(--c-border));
+  border-radius: var(--mx-radius-control);
+  background: rgb(var(--c-card));
+  color: rgb(var(--c-text));
+  font-size: 16px;
+}
+
+.mx-email-link__input::placeholder {
+  color: rgb(var(--c-faint));
+}
+
+.mx-email-link__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mx-space-2);
+  margin-top: var(--mx-space-5);
+}
+
+.mx-email-link__error {
+  margin: var(--mx-space-4) 0 0;
+  color: rgb(252 165 165);
+  font-size: max(11px, calc(13px * var(--mx-type-scale)));
+  line-height: 1.4;
+}
