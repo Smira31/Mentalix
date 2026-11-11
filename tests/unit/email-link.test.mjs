@@ -16,6 +16,7 @@ import {
   EMAIL_LINK_ERROR_TOO_MANY,
   EMAIL_LINK_UNLINK_CONFIRM_TEXT,
   EMAIL_LINK_UNLINK_CONFIRM_TITLE,
+  RESEND_COOLDOWN_SECONDS,
   canSeeEmailLink,
   emailLinkErrorText,
   emailLinkSecondsLeft,
@@ -89,14 +90,21 @@ test('экран ввода: email, one-time-code и 16 px, фокус чере�
   assert.doesNotMatch(screenCss, /padding: \d+px/)
 })
 
-test('отсчёт повторной отправки считается от метки времени', () => {
+test('отсчёт повторной отправки — 60 с от метки времени отправки', () => {
   const now = 1_700_000_000_000
-  assert.equal(emailLinkSecondsLeft(now + 60_000, now), 60)
+  // Минутный лимит бэкенда: одно письмо в минуту, независимо от срока жизни кода.
+  assert.equal(RESEND_COOLDOWN_SECONDS, 60)
+  assert.equal(emailLinkSecondsLeft(now + RESEND_COOLDOWN_SECONDS * 1000, now), 60)
+  assert.equal(emailLinkSecondsLeft(now + 30_000, now), 30)
   assert.equal(emailLinkSecondsLeft(now - 1, now), 0)
   assert.equal(emailLinkSecondsLeft(0, now), 0)
   assert.equal(formatEmailLinkCountdown(60), '1:00')
   assert.equal(formatEmailLinkCountdown(9), '0:09')
-  assert.match(screenSource, /emailLinkSecondsLeft\(expiresAt, now\)/)
+  assert.match(screenSource, /emailLinkSecondsLeft\(cooldownUntil, now\)/)
+  assert.match(screenSource, /setCooldownUntil\(sentAt \+ RESEND_COOLDOWN_SECONDS \* 1000\)/)
+  // Срок жизни кода (expires_in_minutes) больше не участвует в отсчёте.
+  assert.doesNotMatch(screenSource, /expires_in_minutes/)
+  assert.doesNotMatch(libSource, /expires_in_minutes/)
 })
 
 test('API: новые методы с теми же заголовками, что у остальных запросов', () => {

@@ -107,7 +107,7 @@ for (const viewport of VIEWPORTS) {
         await expect(codeField).toBeVisible()
         await expect(codeField).toHaveAttribute('inputmode', 'numeric')
         await expect(codeField).toHaveAttribute('autocomplete', 'one-time-code')
-        // Отсчёт от метки времени: сразу после отправки повтор недоступен.
+        // Отсчёт от метки времени, 60 с от отправки: сразу после неё повтор недоступен.
         await expect(page.getByTestId('email-link-resend')).toBeDisabled()
         await expect(page.getByTestId('email-link-resend')).toContainText('Отправить код ещё раз')
         await page.screenshot({
@@ -169,7 +169,38 @@ for (const viewport of VIEWPORTS) {
   })
 }
 
-// 4. Неверный код — ответ 200 с ok: false, экран остаётся на шаге кода.
+// 4. Кулдаун повтора — 60 секунд от момента отправки (а не срок жизни кода).
+// Время подменяется page.clock: без него разблокировку пришлось бы ждать минутой.
+test('повторная отправка разблокируется через 60 секунд', async ({ browser }) => {
+  const context = await createContext(browser, VIEWPORTS[0])
+  const page = await context.newPage()
+
+  try {
+    await page.clock.install({ time: new Date() })
+    await page.goto('/?demo=1')
+    await openProfileData(page)
+    await openEmailLinkScreen(page)
+
+    await page.getByTestId('email-link-email-field').fill(NEW_EMAIL)
+    await page.getByTestId('email-link-request-code').click()
+
+    const resend = page.getByTestId('email-link-resend')
+    // Сразу после отправки повтор неактивен и отсчёт начинается с минуты.
+    await expect(resend).toBeDisabled()
+    await expect(resend).toContainText('1:00')
+
+    await page.clock.fastForward(59_000)
+    await expect(resend).toBeDisabled()
+
+    await page.clock.fastForward(1_000)
+    await expect(resend).toBeEnabled()
+    await expect(resend).toContainText('Отправить код ещё раз')
+  } finally {
+    await context.close()
+  }
+})
+
+// 5. Неверный код — ответ 200 с ok: false, экран остаётся на шаге кода.
 test('неверный код: «Код не подошёл. Проверь письмо.»', async ({ browser }) => {
   const context = await createContext(browser, VIEWPORTS[0])
   const page = await context.newPage()

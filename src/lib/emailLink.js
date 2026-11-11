@@ -55,12 +55,19 @@ export function emailLinkErrorText(error) {
 }
 
 /*
+ * Повторная отправка кода доступна не раньше чем через 60 секунд после
+ * отправки: бэкенд разрешает одно письмо в минуту. Срок жизни кода из
+ * ответа сервера для отсчёта не используется — это разные величины.
+ */
+export const RESEND_COOLDOWN_SECONDS = 60
+
+/*
  * Отсчёт «Отправить код ещё раз» считается от метки времени окончания
- * (Date.now() + expires_in_minutes), а не от тиков таймера: Telegram
+ * кулдауна (Date.now() + 60 с), а не от тиков таймера: Telegram
  * глушит таймеры в фоне, и накопленные тики отстают от реального времени.
  */
-export function emailLinkSecondsLeft(expiresAt, now = Date.now()) {
-  const end = Number(expiresAt)
+export function emailLinkSecondsLeft(cooldownUntil, now = Date.now()) {
+  const end = Number(cooldownUntil)
   if (!Number.isFinite(end)) return 0
   return Math.max(0, Math.ceil((end - now) / 1000))
 }

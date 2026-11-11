@@ -6,8 +6,9 @@
 //
 // Экран собран на <Screen> и деталях src/components/ui/: отступы только
 // токенами --mx-space-*, поля ввода 16 px (правило iOS-зума), фокус —
-// единственный useAutoFocusField. Отсчёт повторной отправки считается от
-// метки времени окончания, а не от тиков таймера: Telegram глушит таймеры.
+// единственный useAutoFocusField. Отсчёт повторной отправки — 60 с от момента
+// отправки (бэкенд разрешает одно письмо в минуту) — считается от метки
+// времени кулдауна, а не от тиков таймера: Telegram глушит таймеры в фоне.
 
 import { useEffect, useRef, useState } from 'react'
 
@@ -23,6 +24,7 @@ import {
   EMAIL_LINK_RESEND_LABEL,
   EMAIL_LINK_SUBTITLE,
   EMAIL_LINK_VERIFY_LABEL,
+  RESEND_COOLDOWN_SECONDS,
   emailLinkErrorText,
   emailLinkSecondsLeft,
   formatEmailLinkCountdown,
@@ -30,13 +32,11 @@ import {
 
 import './EmailLink.css'
 
-const CODE_MINUTES_FALLBACK = 10
-
 export default function EmailLinkScreen({ onBack, onLinked }) {
   const [step, setStep] = useState('email')
   const [email, setEmail] = useState('')
   const [code, setCode] = useState('')
-  const [expiresAt, setExpiresAt] = useState(0)
+  const [cooldownUntil, setCooldownUntil] = useState(0)
   const [now, setNow] = useState(() => Date.now())
   const [sending, setSending] = useState(false)
   const [verifying, setVerifying] = useState(false)
@@ -48,26 +48,26 @@ export default function EmailLinkScreen({ onBack, onLinked }) {
   useAutoFocusField(codeRef, step === 'code')
 
   useEffect(() => {
-    if (!expiresAt) return undefined
+    if (!cooldownUntil) return undefined
     // Тик только перерисовывает: остаток считается из метки времени.
     const id = window.setInterval(() => setNow(Date.now()), 1000)
     return () => window.clearInterval(id)
-  }, [expiresAt])
+  }, [cooldownUntil])
 
   const trimmedEmail = email.trim()
   const trimmedCode = code.trim()
-  const secondsLeft = emailLinkSecondsLeft(expiresAt, now)
+  const secondsLeft = emailLinkSecondsLeft(cooldownUntil, now)
 
   async function requestCode() {
     if (sending || !trimmedEmail) return
     setSending(true)
     setError('')
     try {
-      const result = await api.auth.emailLink.requestCode(trimmedEmail)
-      const minutes = Number(result?.expires_in_minutes) || CODE_MINUTES_FALLBACK
-      const issuedAt = Date.now()
-      setExpiresAt(issuedAt + minutes * 60 * 1000)
-      setNow(issuedAt)
+      await api.auth.emailLink.requestCode(trimmedEmail)
+      // Кулдаун повтора — 60 с от момента отправки, а не срок жизни кода.
+      const sentAt = Date.now()
+      setCooldownUntil(sentAt + RESEND_COOLDOWN_SECONDS * 1000)
+      setNow(sentAt)
       setCode('')
       setStep('code')
     } catch (requestError) {
