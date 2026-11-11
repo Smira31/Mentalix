@@ -41,7 +41,7 @@ const DAIMON_CARD = {
   key: 'daimon',
   name: 'Даймон',
   promise: 'Брось кубик и узнай, где ты сейчас.',
-  description: 'Внутренний голос. Первые броски бесплатно.',
+  description: 'Внутренний голос. Задаёт вопросы — ответы находишь ты.',
 }
 
 export default function PersonaPicker({

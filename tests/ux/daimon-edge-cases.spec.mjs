@@ -243,7 +243,6 @@ test('лимиты запроса и вывода: счётчик и блоки�
   await expect(page.getByTestId('daimon-request-submit')).toBeDisabled()
   await page.getByTestId('daimon-request-input').fill('Запрос для игры')
   await page.getByTestId('daimon-request-submit').click()
-  await page.getByTestId('daimon-help-done').click()
   await page.getByTestId('daimon-roll').click()
   await answerCell(page)
   await page.getByTestId('daimon-insight-input').fill('а'.repeat(250))
