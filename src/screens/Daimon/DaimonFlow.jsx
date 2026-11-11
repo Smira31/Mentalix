@@ -123,7 +123,7 @@ function IntroView({ onStart, onGames, hasGames }) {
 }
 
 /* ── Как играть ── */
-function HelpView({ onDone }) {
+function HelpView({ onDone, limit }) {
   const HelpArt = illustrations.daimonHowTo
   return (
     <div className="mx-daimon-help" data-testid="daimon-help">
@@ -136,7 +136,12 @@ function HelpView({ onDone }) {
         <p className="mx-daimon-help__text">
           Змеи тянут вниз, стрелы — вверх: попадёшь на змею — спустишься, на стрелу — поднимешься.
         </p>
-        <p className="mx-daimon-help__text">В день — 3 броска.</p>
+        {typeof limit === 'number' && (
+          <p className="mx-daimon-help__text" data-testid="daimon-help-throws">
+            В день — {formatCount(limit, ['бросок', 'броска', 'бросков'])}: так над каждой клеткой
+            есть время подумать.
+          </p>
+        )}
       </div>
       <div className="mx-daimon-help__actions">
         <PillButton variant="light" onClick={onDone} testId="daimon-help-done">
@@ -1174,7 +1179,6 @@ export default function DaimonFlow({ userId, onClose, onGuestLogin }) {
 
   // Жёсткая защита от двойного тапа по «Бросить кубик» (state не успевает обновиться).
   const rollingRef = useRef(false)
-  const helpShownRef = useRef(false)
   const timersRef = useRef([])
   const later = useCallback((fn, ms) => {
     const id = window.setTimeout(fn, ms)
@@ -1313,13 +1317,8 @@ export default function DaimonFlow({ userId, onClose, onGuestLogin }) {
       const res = await api.daimon.createGame(userId, trimmed)
       setGameState(res)
       platform.haptic('success')
-      // Первая игра — показываем «Как играть» один раз после ввода запроса.
-      if (!helpShownRef.current) {
-        helpShownRef.current = true
-        setStage('help')
-      } else {
-        setStage('board')
-      }
+      // «Как играть» не показываем само: его открывает кнопка «?» на поле.
+      setStage('board')
     } catch (err) {
       setError(
         err?.status === 422
@@ -1537,7 +1536,9 @@ export default function DaimonFlow({ userId, onClose, onGuestLogin }) {
         />
       )}
 
-      {stage === 'help' && <HelpView onDone={() => setStage('board')} />}
+      {stage === 'help' && (
+        <HelpView onDone={() => setStage('board')} limit={gameState?.game?.throws_limit} />
+      )}
 
       {stage === 'board' && gameState?.game && (
         <BoardView
