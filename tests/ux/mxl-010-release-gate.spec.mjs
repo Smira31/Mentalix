@@ -249,7 +249,7 @@ test.describe('MXL-010 automated technical gate', () => {
 
     await page.goto('/')
     await expect(
-      page.getByRole('heading', { name: 'Продолжай расти даже вне приложения.' })
+      page.getByRole('heading', { name: 'Mentalix — и вне Telegram.' })
     ).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Вход по email' })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Или через Telegram' })).toBeHidden()

@@ -1,7 +1,7 @@
 {
   "name": "Mentalix",
   "short_name": "Mentalix",
-  "description": "Личная система развития: ритуалы, аскезы, ИИ-собеседники",
+  "description": "Личное пространство для внимательного отношения к себе и осмысленных изменений",
   "start_url": "/?source=pwa",
   "display": "standalone",
   "background_color": "#050403",

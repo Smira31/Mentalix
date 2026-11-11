@@ -172,7 +172,7 @@ export default function WebAuthScreen({ onAuthed }) {
       />
 
       <h1 id="web-auth-title">
-        <strong>Продолжай расти</strong> даже вне приложения.
+        <strong>Mentalix</strong> — и вне Telegram.
       </h1>
       {emailLoginEnabled ? (
         <p className="mx-web-auth-lead">
