@@ -32,13 +32,9 @@ test.describe('Даймон — флоу игры', () => {
     await page.getByTestId('daimon-request-input').fill('Не понимаю, куда двигаться дальше в жизни')
     await page.getByTestId('daimon-request-submit').click()
 
-    // «Как играть» показывается один раз автоматически после ввода запроса
-    await expect(page.getByTestId('daimon-help')).toBeVisible()
-    await expect(page.getByTestId('daimon-help-done')).toBeVisible()
-    await page.getByTestId('daimon-help-done').click()
-
-    // Поле
+    // После ввода запроса сразу поле: «Как играть» больше не показывается само
     await expect(page.getByTestId('daimon-board')).toBeVisible()
+    await expect(page.getByTestId('daimon-help-done')).toBeHidden()
     await expect(page.getByTestId('daimon-roll')).toBeVisible()
     await expect(page.getByTestId('daimon-position')).toContainText('Начни с броска кубика')
 
@@ -50,9 +46,13 @@ test.describe('Даймон — флоу игры', () => {
     await page.getByTestId('daimon-cell-sheet').click({ position: { x: 8, y: 8 } })
     await expect(page.getByTestId('daimon-cell-sheet')).toBeHidden()
 
-    // «?» открывает «Как играть» снова
+    // «?» открывает «Как играть» снова — лимит бросков в честной формулировке
     await page.getByTestId('daimon-help').click()
     await expect(page.getByTestId('daimon-help-done')).toBeVisible()
+    await expect(page.getByTestId('daimon-help')).toContainText('3 броска')
+    await expect(page.getByTestId('daimon-help-throws')).toHaveText(
+      'В день — 3 броска: так над каждой клеткой есть время подумать.'
+    )
     await page.getByTestId('daimon-help-done').click()
     await expect(page.getByTestId('daimon-board')).toBeVisible()
 
