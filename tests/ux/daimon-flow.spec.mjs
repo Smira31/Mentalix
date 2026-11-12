@@ -181,3 +181,70 @@ test.describe('Даймон — флоу игры', () => {
     await context.close()
   })
 })
+
+/*
+ * Остаток бросков: Pro без лимита (бэкенд #254 отдаёт throws_limit = null и
+ * throws_unlimited = true) и прежний числовой лимит Free.
+ */
+const THROWS_STATE_KEY = mode => `mentalix_preview_demo_state_v6:daimon:${mode}`
+
+async function seedThrows(page, mode, patch) {
+  await page.goto(`${DEMO_URL}&frame=0&daimonTest=${mode}`, { waitUntil: 'networkidle' })
+  await expect(page.getByTestId('daimon-board')).toBeVisible()
+  await page.evaluate(
+    ({ key, values }) => {
+      const state = JSON.parse(localStorage.getItem(key))
+      Object.assign(state.daimon.game, values)
+      localStorage.setItem(key, JSON.stringify(state))
+    },
+    { key: THROWS_STATE_KEY(mode), values: patch }
+  )
+  await page.reload({ waitUntil: 'networkidle' })
+  await expect(page.getByTestId('daimon-board')).toBeVisible()
+}
+
+test('Pro без лимита: бросок активен и строка остатка без числа', async ({ page }) => {
+  await page.goto(`${DEMO_URL}&frame=0&daimonTest=proUnlimited`, { waitUntil: 'networkidle' })
+  await expect(page.getByTestId('daimon-board')).toBeVisible()
+
+  // throws_limit = null, throws_unlimited = true, throws_today = 7
+  await expect(page.getByTestId('daimon-roll')).toBeEnabled()
+  await expect(page.getByTestId('daimon-throws-left')).toHaveText('Сегодня без лимита бросков')
+
+  await page.getByTestId('daimon-help').click()
+  await expect(page.getByTestId('daimon-help-throws')).toHaveText('Бросков в день — без лимита')
+  await page.getByTestId('daimon-help-done').click()
+  await expect(page.getByTestId('daimon-board')).toBeVisible()
+
+  // Бросок сверх старого лимита (7 уже сегодня) проходит.
+  await page.getByTestId('daimon-roll').click()
+  await expect(page.getByTestId('daimon-cell-title')).toBeVisible({ timeout: 5000 })
+})
+
+test('Free: лимит 3 и 3 броска — кнопка неактивна, текст прежний', async ({ page }) => {
+  await seedThrows(page, 'nearSnake', { throws_limit: 3, throws_today: 3 })
+
+  await expect(page.getByTestId('daimon-roll')).toBeDisabled()
+  await expect(page.getByTestId('daimon-throws-left')).toHaveText(
+    'На сегодня всё. Возвращайся завтра — Даймон подождёт.'
+  )
+})
+
+test('старый ответ без throws_unlimited и с числом 3 работает как раньше', async ({ page }) => {
+  await seedThrows(page, 'nearSnake', { throws_limit: 3, throws_today: 1 })
+  await page.evaluate(key => {
+    const state = JSON.parse(localStorage.getItem(key))
+    delete state.daimon.game.throws_unlimited
+    localStorage.setItem(key, JSON.stringify(state))
+  }, THROWS_STATE_KEY('nearSnake'))
+  await page.reload({ waitUntil: 'networkidle' })
+  await expect(page.getByTestId('daimon-board')).toBeVisible()
+
+  await expect(page.getByTestId('daimon-roll')).toBeEnabled()
+  await expect(page.getByTestId('daimon-throws-left')).toHaveText('Осталось бросков сегодня: 2')
+
+  await page.getByTestId('daimon-help').click()
+  await expect(page.getByTestId('daimon-help-throws')).toHaveText(
+    'В день — 3 броска: так над каждой клеткой есть время подумать.'
+  )
+})
