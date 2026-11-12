@@ -435,6 +435,16 @@
   overflow-y: auto;
 }
 
+/*
+ * Под полосой кнопок Telegram (fullscreen или демо-эмуляция): полоса рисуется
+ * поверх веб-вью — в демо-рамке это та же зона, 56 px от края safe-area.
+ * Без этого отступа кнопка меню «…» лежит под системной «Назад» и не
+ * нажимается. В вебе класса нет и отступ остаётся прежним.
+ */
+.mx-progress-entry--tg-controls {
+  padding-top: calc(var(--app-safe-top, 0px) + var(--mx-tg-controls-h) + 8px);
+}
+
 .mx-progress-entry__top-row {
   display: flex;
   align-items: center;
@@ -442,6 +452,14 @@
   min-height: 39px;
   padding: 0 3px;
   margin-bottom: 42px;
+}
+
+/* Меню «Действия с записью» всегда справа: в Telegram собственной «назад» в
+   потоке нет (навигация системной кнопкой), и без margin-left: auto кнопка
+   меню уезжала влево. */
+.mx-progress-entry__menu {
+  position: relative;
+  margin-left: auto;
 }
 
 /* AI-лист — открывается из меню «…» */
@@ -452,6 +470,16 @@
   background: rgb(var(--c-bg, 5 4 3));
   padding: calc(var(--app-safe-top, 0px) + 8px) 15px 20px;
   overflow-y: auto;
+}
+
+/* Тот же отступ под полосой кнопок Telegram, что у экрана записи: лист
+   открывается поверх него и иначе начинается под системными кнопками. */
+.mx-progress-ai-sheet--tg-controls {
+  padding-top: calc(var(--app-safe-top, 0px) + var(--mx-tg-controls-h) + 8px);
+}
+
+.mx-progress-ai-sheet--tg-controls .mx-progress-ai-sheet__close {
+  top: calc(var(--app-safe-top, 0px) + var(--mx-tg-controls-h) + 8px);
 }
 
 .mx-progress-ai-sheet__close {

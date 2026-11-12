@@ -9,6 +9,7 @@ import {
   useVisualViewportGeometry,
 } from './visualViewport'
 import { isPreviewDemoMode } from './demoMode'
+import { isDemoEmulationActive } from './demoChrome'
 
 /*
  * ОБЩИЙ КОНТРАКТ FULLSCREEN-ЭКРАНОВ MENTALIX
@@ -53,6 +54,30 @@ import { isPreviewDemoMode } from './demoMode'
  */
 
 export const TG_CONTROLS_HEIGHT = 56
+
+/*
+ * Место под полосу кнопок Telegram (TG_CONTROLS_HEIGHT) нужно не только
+ * порталам useFullscreenSurface: обычные экраны приложения тоже уступают ей
+ * верх, иначе их собственные кнопки оказываются под системными и не
+ * нажимаются. Условие то же, что у поверхности: fullscreen в настоящем
+ * Telegram (общий store с pessimistic default) или демо-эмуляция Telegram
+ * (?demo=1). В вебе полосы нет, и отступ остаётся прежним.
+ *
+ * Экран не получает сам инсет, а только флаг: размер полосы приходит из
+ * токена --mx-tg-controls-h (src/index.css), значение которого совпадает с
+ * TG_CONTROLS_HEIGHT. Так CSS не держит «магическое» число.
+ */
+export function useTelegramControlsInset() {
+  const tgFullscreen = useSyncExternalStore(subscribeFullscreen, getFullscreenSnapshot)
+  const demoEmulation = isPreviewDemoMode() && isDemoEmulationActive()
+
+  /*
+   * Сам store в обычном браузере держит pessimistic default ~2 с (SDK там тоже
+   * есть), поэтому одной snapshot недостаточно: полоса нужна только в реальном
+   * Telegram — иначе на вебе экран на пару секунд получал бы лишний отступ.
+   */
+  return (isTelegramRuntime() && tgFullscreen) || demoEmulation
+}
 
 export const FULLSCREEN_SHELL_CLASS =
   'mx-fullscreen-surface fixed top-0 left-0 right-0 z-[60] bg-emerald-deep flex flex-col overflow-hidden'
