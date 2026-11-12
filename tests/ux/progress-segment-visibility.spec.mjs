@@ -294,10 +294,13 @@ test.describe('компактное окно (frame=0)', () => {
     // в чужом режиме — падение было именно об этом.
     await waitForCompactShell(page)
 
-    // До прокрутки сегмент виден сверху экрана
+    // До прокрутки строка кнопок стоит ниже полосы Telegram: в эмуляции
+    // fullscreen без рамки шапка с пилюлями рисуется, значит верх прокрутки —
+    // это safe-top (статус-бар) + 56 px контролов, а не 0.
     const barAtTop = await page.locator('.mx-progress-segment-bar').boundingBox()
     expect(barAtTop, 'Сегмент-бар должен существовать').not.toBeNull()
     expect(barAtTop.y, 'Сегмент-бар должен начинаться у верха экрана').toBeGreaterThanOrEqual(-1)
+    await assertTelegramControlsClearance(page, 'компактное окно, до прокрутки')
 
     // Переключение на «Историю» и прокрутка ленты вглубь
     await page.getByTestId('progress-tab-history').click()
@@ -314,8 +317,17 @@ test.describe('компактное окно (frame=0)', () => {
     await expect(bar).toBeVisible()
     const barBox = await bar.boundingBox()
     expect(barBox, 'Сегмент-бар должен иметь геометрию').not.toBeNull()
-    expect(barBox.y, 'Сегмент-бар должен быть закреплён у верха экрана').toBeGreaterThanOrEqual(-1)
-    expect(barBox.y, 'Сегмент-бар не должен уезжать за верх экрана').toBeLessThanOrEqual(60)
+    // Липкая строка останавливается на верхе прокручиваемой области — то есть
+    // сразу под полосой кнопок Telegram, а не под ней и не за верхом экрана.
+    const scrollViewportTop = await page.evaluate(
+      () => document.querySelector('.mx-app-scroll-root')?.getBoundingClientRect().top ?? -1
+    )
+    expect(scrollViewportTop, 'Прокручиваемая область должна иметь верх').toBeGreaterThan(0)
+    expect(
+      Math.abs(barBox.y - scrollViewportTop),
+      'Липкая строка должна стоять на верхе прокрутки (сразу под полосой Telegram)'
+    ).toBeLessThanOrEqual(1)
+    await assertTelegramControlsClearance(page, 'компактное окно, после прокрутки')
 
     await expect(page.getByTestId('progress-tab-analytics')).toBeVisible()
     await expect(page.getByTestId('progress-tab-history')).toBeVisible()
@@ -374,6 +386,200 @@ test.describe('демо-рамка (эмуляция Telegram fullscreen)', () =
     }
   })
 })
+
+/*
+ * Эмуляция Telegram fullscreen без рамки (?demo=1&frame=0): шапка с пилюлями
+ * Telegram («Закрыть», «⌄ ⋯») нарисована, значит приложение обязано оставить
+ * под ней место — как на устройстве в fullscreen, где стекло занимает
+ * safe-top (статус-бар) + 56 px (пилюли Telegram, TG_CONTROLS_HEIGHT).
+ *
+ * Дефект 6186ebe: в этой эмуляции шапка рисовалась, а верхние инсеты задавала
+ * только рамка. После согласования fullscreen-режима (см.
+ * src/lib/tgFullscreen.js) shell получал padding-top: 0, строка кнопок
+ * вставала на y = 12, липкая строка прилипала к y = 0 — под статус-баром и
+ * пилюлями, а пилюли «Закрыть/⋯» (y = 62…92) накрывали заголовок «история.».
+ *
+ * Порог полосы Telegram берётся из самой эмуляции: высота нарисованного
+ * статус-бара — это и есть --app-safe-top этой рамки (в демо-рамке
+ * --app-safe-top = --demo-statusbar-h), плюс 56 px контролов.
+ */
+const TG_CONTROLS_H = 56
+
+async function assertTelegramControlsClearance(page, label) {
+  const state = await page.evaluate(() => {
+    const shell = document.querySelector('.mx-app-shell')
+    const row = document.querySelector('[data-testid="progress-actions-row"]')
+    const chrome = document.querySelector('[data-demo-chrome="true"]')
+    const status = chrome?.querySelector('.mx-demo-telegram-chrome__status')
+    const title = document.querySelector(
+      '.mx-progress-analytics__title, .mx-progress-history__title'
+    )
+    if (!shell || !row || !chrome || !status) return { exists: false }
+
+    const box = el => el.getBoundingClientRect()
+    const overlaps = (a, b) =>
+      a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom
+    const pills = [...chrome.querySelectorAll('.mx-demo-telegram-chrome__pill')].map(box)
+    const rowBox = box(row)
+    const titleBox = title ? box(title) : null
+    const hits = id => {
+      const el = document.querySelector(`[data-testid="${id}"]`)
+      if (!el) return false
+      const b = box(el)
+      const at = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2)
+      return Boolean(at) && (at === el || el.contains(at))
+    }
+
+    return {
+      exists: true,
+      safeTop: +box(status).height.toFixed(1),
+      rowTop: +rowBox.top.toFixed(1),
+      pills: pills.map(b => ({ top: +b.top.toFixed(1), bottom: +b.bottom.toFixed(1) })),
+      rowOverPills: pills.filter(b => overlaps(rowBox, b)).length,
+      titleOverPills: titleBox ? pills.filter(b => overlaps(titleBox, b)).length : 0,
+      analyticsHit: hits('progress-tab-analytics'),
+      historyHit: hits('progress-tab-history'),
+      scrollTop: document.querySelector('.mx-app-scroll-root')?.scrollTop ?? null,
+    }
+  })
+
+  expect(state.exists, `Демо-шапка Telegram и строка кнопок должны быть (${label})`).toBe(true)
+  expect(
+    state.rowTop,
+    `Верх строки кнопок ниже полосы Telegram: ≥ ${state.safeTop} + ${TG_CONTROLS_H} (${label})`
+  ).toBeGreaterThanOrEqual(state.safeTop + TG_CONTROLS_H - 0.5)
+  expect(state.rowOverPills, `Кнопки Telegram не перекрывают строку кнопок (${label})`).toBe(0)
+  expect(state.titleOverPills, `Кнопки Telegram не перекрывают заголовок (${label})`).toBe(0)
+  expect(state.analyticsHit, `В центре «Аналитика» сама кнопка (${label})`).toBe(true)
+  expect(state.historyHit, `В центре «История» сама кнопка (${label})`).toBe(true)
+  return state
+}
+
+/* Прокрутка ленты «Истории» до точной позиции (0 или 300 px). */
+async function scrollToDepth(page, depth) {
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const settled = await page.evaluate(target => {
+      const root = document.querySelector('.mx-app-scroll-root')
+      if (!root) return -1
+      root.scrollTop = target
+      return root.scrollTop
+    }, depth)
+    await page.waitForTimeout(SCROLL_SETTLE_MS)
+    const after = await page.evaluate(
+      () => document.querySelector('.mx-app-scroll-root')?.scrollTop ?? -1
+    )
+    if (Math.abs(after - depth) <= 2 && Math.abs(settled - depth) <= 2) return after
+  }
+  throw new Error(`Лента «Истории» не прокручивается до ${depth}px`)
+}
+
+/* Вне Telegram (мобильный веб: демо-шапка не рисуется, рамки нет) —
+   прежнее поведение: строка прилипает к верху экрана, лишнего пустого
+   места сверху нет. */
+test.describe('мобильный веб без Telegram', () => {
+  test.use({ viewport: { width: 360, height: 640 }, hasTouch: true, isMobile: true })
+
+  test('строка прилипает к верху, пустого места нет', async ({ page }) => {
+    await page.goto('/?demo=1&frame=0&tab=trends')
+
+    await page.addStyleTag({
+      content: [
+        '[data-testid="demo-panel-badge"] { display: none !important; }',
+        '.mx-preview-device-switcher { display: none !important; }',
+      ].join('\n'),
+    })
+
+    await expect(page.getByTestId('progress-tab-analytics')).toBeVisible({ timeout: 15_000 })
+    await waitForCompactShell(page)
+    await expect(page.locator('[data-demo-chrome="true"]')).toHaveCount(0)
+
+    const atRest = await page.evaluate(() => ({
+      shellPaddingTop: getComputedStyle(document.querySelector('.mx-app-shell')).paddingTop,
+      barTop: document.querySelector('.mx-progress-segment-bar').getBoundingClientRect().top,
+    }))
+    expect(atRest.shellPaddingTop, 'Без Telegram у shell нет верхнего инсета').toBe('0px')
+    expect(atRest.barTop, 'Строка начинается у верха экрана, без лишнего места').toBeLessThan(60)
+
+    await page.getByTestId('progress-tab-history').click()
+    await expect(page.getByTestId('progress-tab-history')).toHaveAttribute(
+      'aria-selected',
+      'true'
+    )
+    await expect(page.getByTestId('progress-history-list')).toBeVisible()
+    await scrollToDepth(page, 300)
+
+    const scrolled = await page.evaluate(() => ({
+      rootTop: document.querySelector('.mx-app-scroll-root')?.getBoundingClientRect().top ?? -1,
+      barTop: document.querySelector('.mx-progress-segment-bar').getBoundingClientRect().top,
+    }))
+    expect(
+      Math.abs(scrolled.barTop - scrolled.rootTop),
+      'Без Telegram липкая строка стоит на верхе экрана'
+    ).toBeLessThanOrEqual(1)
+  })
+})
+
+const FULLSCREEN_VIEWPORTS = [
+  { width: 360, height: 640 },
+  { width: 393, height: 852 },
+]
+
+for (const viewport of FULLSCREEN_VIEWPORTS) {
+  const size = `${viewport.width}×${viewport.height}`
+
+  test.describe(`эмуляция Telegram fullscreen на ${size} (frame=0, демо-шапка)`, () => {
+    test.use({ viewport })
+
+    test('строка кнопок и заголовок ниже полосы Telegram, прокрутка 0 и 300 px', async ({
+      page,
+    }) => {
+      await page.goto('/?demo=1&frame=0&tab=trends')
+
+      await page.addStyleTag({
+        content: [
+          '[data-testid="demo-panel-badge"] { display: none !important; }',
+          '.mx-preview-device-switcher { display: none !important; }',
+        ].join('\n'),
+      })
+
+      // Эмуляция Telegram включена: шапка с пилюлями нарисована.
+      await expect(page.locator('[data-demo-chrome="true"]')).toBeVisible({ timeout: 15_000 })
+      await expect(page.getByTestId('progress-tab-analytics')).toBeVisible({ timeout: 15_000 })
+      await waitForCompactShell(page)
+
+      // «Аналитика», прокрутка 0
+      await assertTelegramControlsClearance(page, `Аналитика, прокрутка 0, ${size}`)
+      await page.screenshot({ path: `artifacts/progress-segment/${size}-analytics-0.png` })
+
+      // «История», прокрутка 0
+      await page.getByTestId('progress-tab-history').click()
+      await expect(page.getByTestId('progress-tab-history')).toHaveAttribute(
+        'aria-selected',
+        'true'
+      )
+      await expect(page.getByTestId('progress-history-list')).toBeVisible()
+      await assertTelegramControlsClearance(page, `История, прокрутка 0, ${size}`)
+      await page.screenshot({ path: `artifacts/progress-segment/${size}-history-0.png` })
+
+      // «История», прокрутка 300 px: липкая строка под полосой Telegram
+      await scrollToDepth(page, 300)
+      await assertTelegramControlsClearance(page, `История, прокрутка 300, ${size}`)
+      await page.screenshot({ path: `artifacts/progress-segment/${size}-history-300.png` })
+
+      // Назад к 0: строка на месте, ничего не уехало под шапку
+      await scrollToDepth(page, 0)
+      await assertTelegramControlsClearance(page, `История, возврат к 0, ${size}`)
+
+      // «Аналитика» после возврата
+      await page.getByTestId('progress-tab-analytics').click()
+      await expect(page.getByTestId('progress-tab-analytics')).toHaveAttribute(
+        'aria-selected',
+        'true'
+      )
+      await assertTelegramControlsClearance(page, `Аналитика после возврата, ${size}`)
+    })
+  })
+}
 
 /* Критерии приёмки по геометрии строки: 360×640 и 393×852, обе вкладки.
    Самая тесная раскладка — «История» с группировкой «Недели»: пилюля шире,

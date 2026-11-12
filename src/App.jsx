@@ -1198,11 +1198,22 @@ function App() {
       ? 'var(--app-safe-bottom)'
       : 'var(--app-content-bottom)'
 
+  // Шапка демо-эмуляции Telegram (пилюли «Закрыть/⋯») — тот же слой, что в
+  // Telegram fullscreen: приложение оставляет под ней safe-top (статус-бар)
+  // плюс 56 px контролов. Без рамки (?frame=0) шапка рисовалась, а инсеты
+  // задавала только рамка, и строка кнопок «Прогресса» уходила под пилюли.
+  const demoChromeShown = shouldRenderDemoTelegramChrome({
+    previewDemoMode,
+    platformName,
+    realPhone,
+    deviceFrameMode,
+  })
+
   // Полноэкранные листы Истории остаются внутри shell, но не закрывают шапку Telegram.
   // В demo-рамке с эмуляцией Telegram все экраны получают отступы как в
   // Telegram fullscreen: верх = safe-top (статус-бар iOS) + 56 (пилюли Telegram).
   const shellTopPadding =
-    previewDemoMode && !realPhone && deviceFrameMode
+    previewDemoMode && demoChromeShown
       ? 'calc(var(--app-safe-top) + 56px)'
       : topSafeArea
 
@@ -1290,12 +1301,7 @@ function App() {
           paddingLeft: 'var(--app-safe-left)',
         }}
       >
-        {shouldRenderDemoTelegramChrome({
-          previewDemoMode,
-          platformName,
-          realPhone,
-          deviceFrameMode,
-        }) && <DemoTelegramChrome />}
+        {demoChromeShown && <DemoTelegramChrome />}
 
         {/* ========================================================
           MENTALIX WORDMARK

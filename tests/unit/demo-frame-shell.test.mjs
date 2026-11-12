@@ -30,9 +30,16 @@ test('верхний отступ fullscreen-shell в demo = safe-top + 56 (TG_C
 })
 
 test('корневой layout в demo-рамке даёт верх = safe-top + 56 для обычных вкладок', () => {
+  // Предикат демо-шапки Telegram считается один раз и используется и для
+  // рендера шапки, и для верхнего отступа: иначе шапка рисуется, а место под
+  // неё не оставлено (дефект ?frame=0 — строка «Прогресса» уходила под пилюли).
   assert.match(
     appSource,
-    /previewDemoMode && !realPhone && deviceFrameMode\s*\?\s*'calc\(var\(--app-safe-top\) \+ 56px\)'/
+    /const demoChromeShown = shouldRenderDemoTelegramChrome\(\{[\s\S]*?\}\)/
+  )
+  assert.match(
+    appSource,
+    /const shellTopPadding =\s*previewDemoMode && demoChromeShown\s*\?\s*'calc\(var\(--app-safe-top\) \+ 56px\)'\s*:\s*topSafeArea/
   )
   // Библиотека не получает отдельную компенсацию демо-шапки.
   assert.doesNotMatch(appSource, /calc\(max\(var\(--app-safe-top\), var\(--demo-statusbar-h/)

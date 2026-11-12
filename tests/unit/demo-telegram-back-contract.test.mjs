@@ -19,8 +19,9 @@ test('Demo Telegram chrome — эмуляция без пропсов, лева�
   // App shell владеет единственной шапкой и оставляет её видимой на вложенных экранах.
   assert.match(
     app,
-    /shouldRenderDemoTelegramChrome\(\{\s*previewDemoMode,\s*platformName,\s*realPhone,\s*deviceFrameMode,\s*\}\)\s*&&\s*<DemoTelegramChrome \/>/
+    /const demoChromeShown = shouldRenderDemoTelegramChrome\(\{\s*previewDemoMode,\s*platformName,\s*realPhone,\s*deviceFrameMode,\s*\}\)/
   )
+  assert.match(app, /\{demoChromeShown && <DemoTelegramChrome \/>\}/)
 })
 
 test('вложенные экраны регистрируют системный back, chrome его не дублирует', () => {

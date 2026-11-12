@@ -1704,6 +1704,16 @@ html.mx-is-scrolling *::after {
   --demo-statusbar-h: 59px;
 }
 
+/* Демо-эмуляция Telegram без рамки (?frame=0): шапка с пилюлями
+   «Закрыть/⋯» нарисована (DemoTelegramChrome), а верхние инсеты раньше
+   задавала только рамка — контент и липкая строка «Прогресса» уходили под
+   статус-бар и пилюли. Повторяем инсеты рамки: статус-бар + 56 px контролов
+   (padding-top shell задаёт App.jsx, как в Telegram fullscreen). */
+.mx-app-shell:not([data-mentalix-demo-frame='true']):has(> .mx-demo-telegram-chrome) {
+  --app-safe-top: 62px;
+  --demo-statusbar-h: 62px;
+}
+
 /* Чисто визуальный слой поверх всех экранов, включая
    fullscreen-порталы (z-60): pointer-events: none, z выше всего. */
 .mx-demo-telegram-chrome {
