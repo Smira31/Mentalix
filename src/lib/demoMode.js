@@ -892,7 +892,16 @@ function buildDaimonBoardResponse() {
   }
 }
 
-const DAIMON_TEST_MODES = ['chatError', 'crisis', 'slow', 'nearSnake', 'nearFinish', 'bounce']
+const DAIMON_TEST_MODES = [
+  'chatError',
+  'crisis',
+  'slow',
+  'nearSnake',
+  'nearFinish',
+  'bounce',
+  // Pro без лимита: бэкенд mentalix-bot #254 отдаёт throws_limit = null.
+  'proUnlimited',
+]
 
 // ?daimonTest= — только в превью-демо (demoRequest работает лишь в demo-режиме).
 function daimonTestMode() {
@@ -1009,6 +1018,10 @@ function buildDaimonTestGame(mode) {
   if (mode === 'nearSnake') return { ...base, position: 10 }
   if (mode === 'nearFinish') return { ...base, position: 33 }
   if (mode === 'bounce') return { ...base, position: 34 }
+  // Pro без лимита: limit = null, unlimited = true, уже много бросков сегодня.
+  if (mode === 'proUnlimited') {
+    return { ...base, throws_today: 7, throws_limit: null, throws_unlimited: true }
+  }
 
   if (mode === 'chatError' || mode === 'crisis') {
     const move = {
@@ -1826,7 +1839,10 @@ function respond(path, options = {}) {
       error.status = 409
       throw error
     }
-    if (game.throws_today >= game.throws_limit) {
+    // Pro без лимита (throws_limit = null / throws_unlimited = true) не упирается
+    // в дневной счётчик; с числом — прежняя проверка.
+    const unlimitedThrows = game.throws_unlimited === true || game.throws_limit == null
+    if (!unlimitedThrows && game.throws_today >= game.throws_limit) {
       const error = new Error('На сегодня всё')
       error.status = 429
       throw error

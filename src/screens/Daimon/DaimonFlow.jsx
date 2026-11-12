@@ -123,7 +123,7 @@ function IntroView({ onStart, onGames, hasGames }) {
 }
 
 /* ── Как играть ── */
-function HelpView({ onDone, limit }) {
+function HelpView({ onDone, limit, unlimited = false }) {
   const HelpArt = illustrations.daimonHowTo
   return (
     <div className="mx-daimon-help" data-testid="daimon-help">
@@ -136,11 +136,17 @@ function HelpView({ onDone, limit }) {
         <p className="mx-daimon-help__text">
           Змеи тянут вниз, стрелы — вверх: попадёшь на змею — спустишься, на стрелу — поднимешься.
         </p>
-        {typeof limit === 'number' && (
+        {unlimited ? (
           <p className="mx-daimon-help__text" data-testid="daimon-help-throws">
-            В день — {formatCount(limit, ['бросок', 'броска', 'бросков'])}: так над каждой клеткой
-            есть время подумать.
+            Бросков в день — без лимита
           </p>
+        ) : (
+          typeof limit === 'number' && (
+            <p className="mx-daimon-help__text" data-testid="daimon-help-throws">
+              В день — {formatCount(limit, ['бросок', 'броска', 'бросков'])}: так над каждой клеткой
+              есть время подумать.
+            </p>
+          )
         )}
       </div>
       <div className="mx-daimon-help__actions">
@@ -310,6 +316,7 @@ function BoardView({
   onOpenPath,
   onNewGame,
   throwsLeft,
+  throwsUnlimited = false,
   paywallMessage,
   rollError,
   onRetryRoll,
@@ -383,7 +390,7 @@ function BoardView({
               variant="light"
               onClick={onRoll}
               testId="daimon-roll"
-              disabled={throwsLeft <= 0 || rolling}
+              disabled={(!throwsUnlimited && throwsLeft <= 0) || rolling}
             >
               {rolling ? (
                 <>
@@ -402,9 +409,11 @@ function BoardView({
           {!paywallMessage && !pendingMove && (
             <>
               <p className="mx-daimon-board__throws" data-testid="daimon-throws-left">
-                {throwsLeft <= 0
-                  ? 'На сегодня всё. Возвращайся завтра — Даймон подождёт.'
-                  : `Осталось бросков сегодня: ${throwsLeft}`}
+                {throwsUnlimited
+                  ? 'Сегодня без лимита бросков'
+                  : throwsLeft <= 0
+                    ? 'На сегодня всё. Возвращайся завтра — Даймон подождёт.'
+                    : `Осталось бросков сегодня: ${throwsLeft}`}
               </p>
               {passedCount > 0 && (
                 <button
@@ -1476,7 +1485,16 @@ export default function DaimonFlow({ userId, onClose, onGuestLogin }) {
     platform.haptic('light')
   }
 
-  const throwsLeft = gameState?.game ? gameState.game.throws_limit - gameState.game.throws_today : 0
+  // Pro без лимита: бэкенд (mentalix-bot #254) отдаёт throws_limit = null и
+  // throws_unlimited = true. Старый ответ без поля и с числом работает как раньше.
+  const throwsUnlimited = Boolean(
+    gameState?.game &&
+      (gameState.game.throws_unlimited === true || gameState.game.throws_limit == null)
+  )
+  const throwsLeft =
+    gameState?.game && !throwsUnlimited
+      ? gameState.game.throws_limit - gameState.game.throws_today
+      : 0
   const paywallEnabled = gameState?.game?.paywall_enabled
   const position = gameState?.game?.position || 0
   const showPaywall = paywallEnabled && position > (gameState?.game?.free_until_cell || 12)
@@ -1537,7 +1555,11 @@ export default function DaimonFlow({ userId, onClose, onGuestLogin }) {
       )}
 
       {stage === 'help' && (
-        <HelpView onDone={() => setStage('board')} limit={gameState?.game?.throws_limit} />
+        <HelpView
+          onDone={() => setStage('board')}
+          limit={gameState?.game?.throws_limit}
+          unlimited={throwsUnlimited}
+        />
       )}
 
       {stage === 'board' && gameState?.game && (
@@ -1550,6 +1572,7 @@ export default function DaimonFlow({ userId, onClose, onGuestLogin }) {
           onOpenPath={handleOpenPath}
           onNewGame={handleNewGame}
           throwsLeft={throwsLeft}
+          throwsUnlimited={throwsUnlimited}
           paywallMessage={
             showPaywall ? 'Mentalix Pro' : error?.includes('На сегодня') ? error : null
           }
