@@ -20,7 +20,6 @@ import { isGuestUser, resetGuestState, dispatchGuestMerged } from '../lib/guestA
 
 import PersonaPicker from './mentalix/PersonaPicker'
 import Conversation from './mentalix/Conversation'
-import AiContextConsentLine from './mentalix/AiContextConsentLine'
 import AllConversationsScreen from './mentalix/AllConversationsScreen'
 import './mentalix/DialogNotice.css'
 
@@ -118,7 +117,6 @@ export function ConversationChat({
   creatingConversation = false,
   creationError = '',
   onRetryCreate = null,
-  onOpenPrivacy = null,
 }) {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState(() => readChatDraft(conversationId) ?? initialText)
@@ -400,13 +398,6 @@ export function ConversationChat({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, initialPrompt, initialDisplayText])
 
-  /*
-   * Issue #1169: после кризисного ответа карточку согласия не показываем —
-   * человеку в этот момент не до настроек приватности. Флаг кризиса приходит
-   * в самой реплике (контракт Даймона, crisis: true).
-   */
-  const hasCrisisReply = messages.some(message => message.crisis)
-
   return (
     <Conversation
       userId={user.id}
@@ -420,17 +411,7 @@ export function ConversationChat({
       onSend={send}
       onBack={onBack}
       onNewConversation={onNewConversation}
-      contextSlot={
-        <>
-          {contextSlot}
-          <AiContextConsentLine
-            user={user}
-            persona={persona}
-            hidden={hasCrisisReply}
-            onConfigure={onOpenPrivacy}
-          />
-        </>
-      }
+      contextSlot={contextSlot}
       footerSlot={footerSlot}
       historyError={historyError}
       onRetryHistory={() => setHistoryAttempt(attempt => attempt + 1)}
@@ -447,13 +428,7 @@ export function ConversationChat({
 // MENTALIX
 // ============================================================
 
-export default function MentalixChat({
-  user,
-  onPersonaChange,
-  onRegisterBack,
-  onOpenDaimon,
-  onOpenPrivacy = null,
-}) {
+export default function MentalixChat({ user, onPersonaChange, onRegisterBack, onOpenDaimon }) {
   const [pending, setPending] = useState(() => readPendingMentor())
   const [surpriseMessage] = useState(() =>
     pending.persona === 'dnevnik' ? sessionStorage.getItem(SURPRISE_MESSAGE_KEY) : null
@@ -656,7 +631,6 @@ export default function MentalixChat({
       creatingConversation={creatingConversation}
       creationError={conversationError}
       onRetryCreate={handleNewConversation}
-      onOpenPrivacy={onOpenPrivacy}
     />
   )
 }

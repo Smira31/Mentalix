@@ -3,16 +3,15 @@ import test from 'node:test'
 import { readFile } from 'node:fs/promises'
 
 /*
- * Приватность — «Доступ ИИ к записям»: тихая строка в «Диалоге», строка
- * переключателя и окно согласия в Профиле. Тексты утверждены дословно —
- * тест сверяет их посимвольно, держит один источник (src/lib/aiContextConsent.js)
- * и требует, чтобы обе поверхности брали текст из констант, а не из разметки.
+ * Приватность — «Доступ ИИ к записям»: строка переключателя и окно согласия
+ * в Профиле. Тексты утверждены дословно — тест сверяет их посимвольно и
+ * держит один источник (src/lib/aiContextConsent.js), из которого Профиль
+ * берёт текст, а не из разметки. В «Диалоге» поверхности нет.
  */
 
 const read = path => readFile(new URL(`../../${path}`, import.meta.url), 'utf8')
 
 const libSource = await read('src/lib/aiContextConsent.js')
-const lineSource = await read('src/screens/mentalix/AiContextConsentLine.jsx')
 const rowSource = await read('src/screens/settings/AiConsentSwitchRow.jsx')
 
 // Значение константы из исходника: строка в одинарных кавычках.
@@ -22,19 +21,12 @@ function stringConstant(source, name) {
   return match[1].replace(/\\(.)/g, '$1')
 }
 
-const lineText = stringConstant(libSource, 'AI_CONSENT_LINE_TEXT')
-const lineAction = stringConstant(libSource, 'AI_CONSENT_LINE_ACTION')
 const switchTitle = stringConstant(libSource, 'AI_CONSENT_SWITCH_TITLE')
 const switchSubtitle = stringConstant(libSource, 'AI_CONSENT_SWITCH_SUBTITLE')
 const dialogTitle = stringConstant(libSource, 'AI_CONSENT_DIALOG_TITLE')
 const dialogBody = stringConstant(libSource, 'AI_CONSENT_DIALOG_BODY')
 const dialogConfirm = stringConstant(libSource, 'AI_CONSENT_DIALOG_CONFIRM')
 const dialogCancel = stringConstant(libSource, 'AI_CONSENT_DIALOG_CANCEL')
-
-test('тихая строка «Диалога» — дословно', () => {
-  assert.equal(lineText, 'Собеседники не видят твои записи')
-  assert.equal(lineAction, 'Настроить')
-})
 
 test('строка переключателя в Профиле — дословно', () => {
   assert.equal(switchTitle, 'Собеседники видят мои записи')
@@ -56,8 +48,6 @@ test('окно согласия — дословно', () => {
 
 test('видимые тексты без латиницы AI — только «ИИ» и название модели', () => {
   for (const text of [
-    lineText,
-    lineAction,
     switchTitle,
     switchSubtitle,
     dialogTitle,
@@ -71,9 +61,7 @@ test('видимые тексты без латиницы AI — только «
   assert.match(dialogBody, /GigaChat \(ПАО Сбербанк\)/)
 })
 
-test('обе поверхности берут тексты из своих констант', () => {
-  assert.match(lineSource, /\{AI_CONSENT_LINE_TEXT\}/)
-  assert.match(lineSource, /\{AI_CONSENT_LINE_ACTION\}/)
+test('Профиль берёт тексты из своих констант', () => {
   assert.match(rowSource, /title=\{AI_CONSENT_SWITCH_TITLE\}/)
   assert.match(rowSource, /subtitle=\{AI_CONSENT_SWITCH_SUBTITLE\}/)
   assert.match(rowSource, /label=\{AI_CONSENT_SWITCH_TITLE\}/)
@@ -83,12 +71,14 @@ test('обе поверхности берут тексты из своих ко
   assert.match(rowSource, /cancelLabel=\{AI_CONSENT_DIALOG_CANCEL\}/)
 })
 
-test('неиспользуемых текстов карточки не осталось', () => {
-  // Тексты прежней карточки удалены вместе с карточкой — второй поверхности нет.
+test('неиспользуемых текстов карточки и строки не осталось', () => {
+  // Тексты прежних поверхностей «Диалога» удалены вместе с ними.
   assert.doesNotMatch(libSource, /AI_CONSENT_CARD_TITLE/)
   assert.doesNotMatch(libSource, /AI_CONSENT_CARD_BODY/)
   assert.doesNotMatch(libSource, /AI_CONSENT_ALLOW_LABEL/)
   assert.doesNotMatch(libSource, /AI_CONSENT_SNOOZE_LABEL/)
+  assert.doesNotMatch(libSource, /AI_CONSENT_LINE_TEXT/)
+  assert.doesNotMatch(libSource, /AI_CONSENT_LINE_ACTION/)
   assert.doesNotMatch(libSource, /Показать собеседникам твои записи/)
   assert.doesNotMatch(libSource, /GigaChat \(ПАО Сбербанк\) только для ответа/)
 })

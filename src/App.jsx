@@ -324,23 +324,6 @@ function App() {
   const closeTodaySeries = useCallback(() => setTodaySeriesOpen(false), [])
 
   const openSettings = useCallback(() => setOverlay('settings'), [])
-
-  /*
-   * Приватность из «Диалога»: та же навигация в Профиль, что у остальных
-   * входов, — ключ намерения + оверлей, новых маршрутов нет. Профиль
-   * открывается на под-экране «твои данные.», где группа «Приватность»
-   * стоит первой.
-   */
-  const openPrivacySettings = useCallback(() => {
-    platform.haptic('light')
-    try {
-      sessionStorage.setItem('mx-settings-initial-sub', 'data')
-    } catch {
-      /* приватный режим: откроется корень профиля */
-    }
-    setOverlay('settings')
-  }, [])
-
   const openTodaySeries = useCallback(() => setTodaySeriesOpen(true), [])
   const openDemoPanel = useCallback(() => setDemoPanelOpen(true), [])
 
@@ -1519,7 +1502,6 @@ function App() {
                           onPersonaChange={setMentorPersonaOpen}
                           onRegisterBack={registerMentorBack}
                           onOpenDaimon={openDaimonFromMentor}
-                          onOpenPrivacy={openPrivacySettings}
                         />
                       </Suspense>
                     </ScreenErrorBoundary>

@@ -1,10 +1,10 @@
 // src/lib/aiContextConsent.js
 //
 // Приватность — «Доступ ИИ к записям». Один источник состояния согласия и
-// всех формулировок на фронтенде: тихая строка в начале «Диалога» и
-// переключатель в Профиле работают с уже существующим контрактом
-// GET/PUT /api/mentalix/consent (api.mentalix.contextConsent /
-// setContextConsent). Новых endpoint'ов нет.
+// всех формулировок на фронтенде: переключатель в Профиле работает с уже
+// существующим контрактом GET/PUT /api/mentalix/consent
+// (api.mentalix.contextConsent / setContextConsent). Новых endpoint'ов нет.
+// В «Диалоге» о доступе не говорится ничего — только здесь.
 
 import { platformName } from '../platform'
 
@@ -24,7 +24,7 @@ export function canManageAiContext(user) {
 /*
  * Ответ GET /api/mentalix/consent: текущий бэкенд отдаёт `enabled`, прежние
  * ответы в тестах и моках — `context_consent`. Читаем оба, чтобы выключенное
- * согласие не выглядело включённым, а пустой ответ не включал строку
+ * согласие не выглядело включённым, а пустой ответ не включал переключатель
  * поверх уже разрешённого доступа.
  */
 export function readAiConsentEnabled(payload) {
@@ -32,13 +32,6 @@ export function readAiConsentEnabled(payload) {
   if (typeof payload.enabled === 'boolean') return payload.enabled
   return payload.context_consent === true
 }
-
-/*
- * «Диалог»: тихая строка вместо карточки. Согласие включается только
- * в Профиле, в окне; строка лишь объясняет состояние и ведёт туда.
- */
-export const AI_CONSENT_LINE_TEXT = 'Собеседники не видят твои записи'
-export const AI_CONSENT_LINE_ACTION = 'Настроить'
 
 /* Профиль → «твои данные.» → «Приватность»: строка переключателя. */
 export const AI_CONSENT_SWITCH_TITLE = 'Собеседники видят мои записи'

@@ -1,17 +1,17 @@
 import { expect, test } from '@playwright/test'
 
 /*
- * Приватность — «Доступ ИИ к записям»: тихая строка в «Диалоге» вместо
- * карточки и окно согласия при включении переключателя в Профиле.
+ * Приватность — «Доступ ИИ к записям». Единственная поверхность согласия —
+ * Профиль → «твои данные.» → «Приватность»: переключатель и окно согласия.
+ * В «Диалоге» о доступе нет ничего — ни карточки, ни строки, ни значка.
  *
  * Сценарии задачи, каждый на своих 393×852 и 360×640:
- *   1. строка «Собеседники не видят твои записи · Настроить» ведёт
- *      в Профиль → «твои данные.» → группа «Приватность»;
+ *   1. «Диалог» пуст от согласия у всех трёх собеседников и при выключенном
+ *      доступе (демо-сервер стартует с выключенным согласием);
  *   2. включение переключателя без подтверждения в окне не отправляет
  *      PUT /api/mentalix/consent и не переживает перезагрузку;
- *   3. «Включить» в окне сохраняет доступ, и строка в «Диалоге» исчезает;
- *   4. выключение сохраняется сразу, без окна;
- *   5. после реплики собеседника с меткой crisis строки нет.
+ *   3. «Включить» в окне сохраняет доступ; «Диалог» остаётся без поверхности;
+ *   4. выключение сохраняется сразу, без окна.
  *
  * Демо-режим (?demo=1) отвечает на /mentalix/consent сам (src/lib/demoMode.js),
  * поэтому сетевого запроса в тесте нет: «не отправлен» проверяется по
@@ -30,6 +30,9 @@ const SHOTS = 'qa-evidence/ai-context-consent'
 
 const SWITCH_TITLE = 'Собеседники видят мои записи'
 const DIALOG_TITLE = 'Собеседники увидят твои записи'
+
+// Собеседники, в разговоре с которыми раньше спрашивали согласие.
+const PERSONAS = ['mayak', 'kompas', 'dnevnik']
 
 async function openTelegramDemo(browser, viewport, query = '') {
   const context = await browser.newContext({
@@ -54,9 +57,9 @@ async function openTelegramDemo(browser, viewport, query = '') {
   return { context, page }
 }
 
-async function openChatWithCompanion(page) {
+async function openChatWithCompanion(page, persona = 'mayak') {
   await expect(page.getByTestId('dialog-entry')).toBeVisible({ timeout: 15_000 })
-  await page.getByTestId('mentor-start-mayak').click()
+  await page.getByTestId(`mentor-start-${persona}`).click()
   await expect(page.getByTestId('mentor-input')).toBeVisible()
 }
 
@@ -66,6 +69,14 @@ async function openProfileData(page) {
   await expect(page.getByTestId('profile-screen')).toBeVisible()
   await page.getByTestId('profile-row-data').click()
   await expect(page.getByTestId('profile-sub-data')).toBeVisible()
+}
+
+/* Ни одного следа согласия в «Диалоге». */
+async function expectNoConsentSurface(page) {
+  await expect(page.getByTestId('ai-consent-card')).toHaveCount(0)
+  await expect(page.getByTestId('ai-consent-line')).toHaveCount(0)
+  await expect(page.getByTestId('ai-consent-allow')).toHaveCount(0)
+  await expect(page.getByTestId('ai-consent-configure')).toHaveCount(0)
 }
 
 /*
@@ -87,7 +98,7 @@ async function openConsentDialog(page) {
   return { toggle, dialog }
 }
 
-test('вне Telegram поведение не меняется: ни строки, ни группы «Приватность»', async ({
+test('вне Telegram поведение не меняется: ни поверхности в «Диалоге», ни группы «Приватность»', async ({
   browser,
 }) => {
   // Тот же демо-режим, но без TelegramWebviewProxy — платформа web.
@@ -108,7 +119,7 @@ test('вне Telegram поведение не меняется: ни строк�
   try {
     await page.goto('/?demo=1&tab=mentor')
     await openChatWithCompanion(page)
-    await expect(page.getByTestId('ai-consent-line')).toHaveCount(0)
+    await expectNoConsentSurface(page)
 
     await page.goto('/?demo=1')
     await openProfileData(page)
@@ -121,43 +132,29 @@ test('вне Telegram поведение не меняется: ни строк�
 
 for (const viewport of VIEWPORTS) {
   test.describe(`Доступ ИИ к записям — ${viewport.name}`, () => {
-    test('тихая строка в «Диалоге» ведёт в Профиль → «Приватность»', async ({ browser }) => {
-      const { context, page } = await openTelegramDemo(browser, viewport, '&tab=mentor')
+    test('в «Диалоге» нет карточки и строки — у всех собеседников', async ({ browser }) => {
+      for (const persona of PERSONAS) {
+        const { context, page } = await openTelegramDemo(browser, viewport, '&tab=mentor')
 
-      try {
-        await openChatWithCompanion(page)
+        try {
+          await openChatWithCompanion(page, persona)
 
-        const line = page.getByTestId('ai-consent-line')
-        await expect(line).toBeVisible()
-        await expect(line).toContainText('Собеседники не видят твои записи')
-        // Карточки согласия и иконки-щита в «Диалоге» больше нет.
-        await expect(page.getByTestId('ai-consent-card')).toHaveCount(0)
-        await expect(page.getByTestId('ai-consent-allow')).toHaveCount(0)
-        // Строка остаётся одной строкой и не вылезает по ширине.
-        const lineBox = await line.boundingBox()
-        expect(lineBox.height).toBeLessThanOrEqual(36)
-        expect(lineBox.x + lineBox.width).toBeLessThanOrEqual(viewport.width)
-        // animations: 'disabled' — кадр снимается после входных анимаций.
-        await page.screenshot({
-          path: `${SHOTS}/${viewport.name}-dialog-line.png`,
-          animations: 'disabled',
-        })
+          // Доступ по умолчанию выключен (демо-сервер стартует с 'off'), но
+          // в «Диалоге» об этом не говорится ничего.
+          await expectNoConsentSurface(page)
+          await expect(page.getByTestId('mentor-input')).toBeVisible()
 
-        await page.getByTestId('ai-consent-configure').click()
-
-        // «Настроить» открывает существующий под-экран профиля, где группа
-        // «Приватность» стоит первой — она уже в поле зрения.
-        await expect(page.getByTestId('profile-sub-data')).toBeVisible()
-        const row = page.getByTestId('profile-ai-consent-row')
-        await expect(row).toBeVisible()
-        await expect(row).toBeInViewport()
-        await expect(row).toContainText(SWITCH_TITLE)
-        await page.screenshot({
-          path: `${SHOTS}/${viewport.name}-profile.png`,
-          animations: 'disabled',
-        })
-      } finally {
-        await context.close()
+          if (persona === 'mayak') {
+            // Кадр «Диалог без карточки»: animations: 'disabled' — снимаем
+            // после входных анимаций, иначе кадр может оказаться пустым.
+            await page.screenshot({
+              path: `${SHOTS}/${viewport.name}-dialog.png`,
+              animations: 'disabled',
+            })
+          }
+        } finally {
+          await context.close()
+        }
       }
     })
 
@@ -199,9 +196,7 @@ for (const viewport of VIEWPORTS) {
       }
     })
 
-    test('«Включить» в окне сохраняет доступ, строка в «Диалоге» исчезает', async ({
-      browser,
-    }) => {
+    test('«Включить» в окне сохраняет доступ', async ({ browser }) => {
       const { context, page } = await openTelegramDemo(browser, viewport)
 
       try {
@@ -227,10 +222,10 @@ for (const viewport of VIEWPORTS) {
           animations: 'disabled',
         })
 
-        // Возврат в «Диалог»: строки нет — доступ включён на сервере.
+        // «Диалог» и при включённом доступе о согласии молчит.
         await page.goto('/?demo=1&tab=mentor')
         await openChatWithCompanion(page)
-        await expect(page.getByTestId('ai-consent-line')).toHaveCount(0)
+        await expectNoConsentSurface(page)
       } finally {
         await context.close()
       }
@@ -270,31 +265,6 @@ for (const viewport of VIEWPORTS) {
           'aria-checked',
           'false'
         )
-      } finally {
-        await context.close()
-      }
-    })
-
-    test('после реплики собеседника с crisis строки нет', async ({ browser }) => {
-      // ?dialogTest=crisis: ответ собеседника приходит с меткой crisis: true,
-      // которую «Диалог» уже читает у реплики (message.crisis).
-      const { context, page } = await openTelegramDemo(
-        browser,
-        viewport,
-        '&tab=mentor&dialogTest=crisis'
-      )
-
-      try {
-        await openChatWithCompanion(page)
-
-        const line = page.getByTestId('ai-consent-line')
-        await expect(line).toBeVisible()
-
-        await page.getByTestId('mentor-input').fill('Мне сейчас очень тяжело')
-        await page.getByTestId('mentor-composer-action').click()
-
-        await expect(page.getByTestId('chat-message-assistant').last()).toBeVisible()
-        await expect(line).toHaveCount(0)
       } finally {
         await context.close()
       }
