@@ -55,6 +55,7 @@
     "ux:donation": "playwright test --config=playwright.donation.config.mjs",
     "ux:privacy": "playwright test --config=playwright.privacy.config.mjs",
     "ux:telegram-p0": "playwright test --config=playwright.telegram-p0.config.mjs",
+    "ux:voice-lab": "playwright test --config=playwright.voice-lab.config.mjs",
     "ux:daimon": "playwright test --config=playwright.daimon.config.mjs",
     "ux:today-drafts": "playwright test --config=playwright.today-drafts.config.mjs",
     "ux:bottom-nav": "playwright test --config=playwright.bottom-nav.config.mjs",
