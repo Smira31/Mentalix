@@ -1,17 +1,24 @@
 import { expect, test } from '@playwright/test'
 
 /*
- * Issue #1169 — «Доступ ИИ к записям».
+ * Приватность — «Доступ ИИ к записям»: тихая строка в «Диалоге» вместо
+ * карточки и окно согласия при включении переключателя в Профиле.
  *
- * Четыре сценария задачи, каждый на своих 393×852 и 360×640:
- *   1. карточка в «Диалоге» → «Разрешить» → доступ включён;
- *   2. Профиль → «Приватность» → переключатель выключить → выключено;
- *   3. «Не сейчас» → карточка не показывается снова;
- *   4. после реплики собеседника с меткой crisis карточки нет.
+ * Сценарии задачи, каждый на своих 393×852 и 360×640:
+ *   1. строка «Собеседники не видят твои записи · Настроить» ведёт
+ *      в Профиль → «твои данные.» → группа «Приватность»;
+ *   2. включение переключателя без подтверждения в окне не отправляет
+ *      PUT /api/mentalix/consent и не переживает перезагрузку;
+ *   3. «Включить» в окне сохраняет доступ, и строка в «Диалоге» исчезает;
+ *   4. выключение сохраняется сразу, без окна;
+ *   5. после реплики собеседника с меткой crisis строки нет.
  *
- * Демо-режим даёт пользователя и чат без backend; платформа Telegram —
- * TelegramWebviewProxy (так же, как в connection-offline-state). Никаких
- * waitForTimeout: только ожидание состояния.
+ * Демо-режим (?demo=1) отвечает на /mentalix/consent сам (src/lib/demoMode.js),
+ * поэтому сетевого запроса в тесте нет: «не отправлен» проверяется по
+ * состоянию демо-сервера в localStorage (оно переживает перезагрузку) и по
+ * повторному чтению после reload. Платформа Telegram включается заменой
+ * TelegramWebviewProxy — без неё поверхность согласия по условию не видна.
+ * Никаких waitForTimeout: только ожидание состояния.
  */
 
 const VIEWPORTS = [
@@ -20,6 +27,9 @@ const VIEWPORTS = [
 ]
 
 const SHOTS = 'qa-evidence/ai-context-consent'
+
+const SWITCH_TITLE = 'Собеседники видят мои записи'
+const DIALOG_TITLE = 'Собеседники увидят твои записи'
 
 async function openTelegramDemo(browser, viewport, query = '') {
   const context = await browser.newContext({
@@ -58,7 +68,26 @@ async function openProfileData(page) {
   await expect(page.getByTestId('profile-sub-data')).toBeVisible()
 }
 
-test('вне Telegram поведение не меняется: ни карточки, ни группы «Приватность»', async ({
+/*
+ * Состояние согласия проверяется перезагрузкой и повторным чтением
+ * переключателя, а не по конкретному хранилищу: в песочнице согласие
+ * обслуживает dev-мок Pro (VITE_PRO_MOCK), в CI — демо-ответы
+ * src/lib/demoMode.js. Оба переживают reload.
+ */
+
+async function openConsentDialog(page) {
+  const toggle = page.getByTestId('profile-ai-consent-toggle')
+  await expect(toggle).toHaveAttribute('aria-checked', 'false')
+  await toggle.click()
+
+  const dialog = page.getByTestId('ai-consent-dialog')
+  await expect(dialog).toBeVisible()
+  await expect(dialog).toContainText(DIALOG_TITLE)
+
+  return { toggle, dialog }
+}
+
+test('вне Telegram поведение не меняется: ни строки, ни группы «Приватность»', async ({
   browser,
 }) => {
   // Тот же демо-режим, но без TelegramWebviewProxy — платформа web.
@@ -79,7 +108,7 @@ test('вне Telegram поведение не меняется: ни карто�
   try {
     await page.goto('/?demo=1&tab=mentor')
     await openChatWithCompanion(page)
-    await expect(page.getByTestId('ai-consent-card')).toHaveCount(0)
+    await expect(page.getByTestId('ai-consent-line')).toHaveCount(0)
 
     await page.goto('/?demo=1')
     await openProfileData(page)
@@ -92,70 +121,73 @@ test('вне Telegram поведение не меняется: ни карто�
 
 for (const viewport of VIEWPORTS) {
   test.describe(`Доступ ИИ к записям — ${viewport.name}`, () => {
-    test('карточка в «Диалоге»: «Разрешить» включает доступ и карточка исчезает', async ({
-      browser,
-    }) => {
+    test('тихая строка в «Диалоге» ведёт в Профиль → «Приватность»', async ({ browser }) => {
       const { context, page } = await openTelegramDemo(browser, viewport, '&tab=mentor')
 
       try {
         await openChatWithCompanion(page)
 
-        const card = page.getByTestId('ai-consent-card')
-        await expect(card).toBeVisible()
-        await expect(card).toContainText('Показать собеседникам твои записи?')
-        // animations: 'disabled' — кадр снимается после завершения входных
-        // анимаций экрана; без этого на 360×640 первый кадр мог быть пустым.
-        await page.screenshot({ path: `${SHOTS}/${viewport.name}-card.png`, animations: 'disabled' })
-
-        await page.getByTestId('ai-consent-allow').click()
+        const line = page.getByTestId('ai-consent-line')
+        await expect(line).toBeVisible()
+        await expect(line).toContainText('Собеседники не видят твои записи')
+        // Карточки согласия и иконки-щита в «Диалоге» больше нет.
         await expect(page.getByTestId('ai-consent-card')).toHaveCount(0)
+        await expect(page.getByTestId('ai-consent-allow')).toHaveCount(0)
+        // Строка остаётся одной строкой и не вылезает по ширине.
+        const lineBox = await line.boundingBox()
+        expect(lineBox.height).toBeLessThanOrEqual(36)
+        expect(lineBox.x + lineBox.width).toBeLessThanOrEqual(viewport.width)
+        // animations: 'disabled' — кадр снимается после входных анимаций.
+        await page.screenshot({
+          path: `${SHOTS}/${viewport.name}-dialog-line.png`,
+          animations: 'disabled',
+        })
 
-        // Состояние доступа сохранено сервером: после перезагрузки карточки нет.
-        await page.reload()
-        await openChatWithCompanion(page)
-        await expect(page.getByTestId('ai-consent-card')).toHaveCount(0)
+        await page.getByTestId('ai-consent-configure').click()
 
-        // И в профиле переключатель показывает включённый доступ.
-        await page.goto('/?demo=1')
-        await openProfileData(page)
-        await expect(page.getByTestId('profile-ai-consent-toggle')).toHaveAttribute(
-          'aria-checked',
-          'true'
-        )
+        // «Настроить» открывает существующий под-экран профиля, где группа
+        // «Приватность» стоит первой — она уже в поле зрения.
+        await expect(page.getByTestId('profile-sub-data')).toBeVisible()
+        const row = page.getByTestId('profile-ai-consent-row')
+        await expect(row).toBeVisible()
+        await expect(row).toBeInViewport()
+        await expect(row).toContainText(SWITCH_TITLE)
+        await page.screenshot({
+          path: `${SHOTS}/${viewport.name}-profile.png`,
+          animations: 'disabled',
+        })
       } finally {
         await context.close()
       }
     })
 
-    test('Профиль → «Приватность»: выключение в одно касание', async ({ browser }) => {
+    test('включение переключателя без подтверждения в окне не отправляет PUT /api/mentalix/consent', async ({
+      browser,
+    }) => {
       const { context, page } = await openTelegramDemo(browser, viewport)
 
       try {
         await openProfileData(page)
 
-        await expect(page.getByTestId('profile-ai-consent-row')).toContainText(
-          'Доступ ИИ к записям'
-        )
-
-        const toggle = page.getByTestId('profile-ai-consent-toggle')
-        await expect(toggle).toHaveAttribute('aria-checked', 'false')
-
-        await toggle.click()
-        await expect(toggle).toHaveAttribute('aria-checked', 'true')
-        await page.getByTestId('profile-ai-consent-row').scrollIntoViewIfNeeded()
+        const { toggle, dialog } = await openConsentDialog(page)
+        await expect(dialog).toBeVisible()
+        // Окно с длинным текстом целиком помещается в экран.
+        const dialogBox = await dialog.boundingBox()
+        expect(dialogBox.y).toBeGreaterThanOrEqual(0)
+        expect(dialogBox.y + dialogBox.height).toBeLessThanOrEqual(viewport.height)
         await page.screenshot({
-          path: `${SHOTS}/${viewport.name}-profile-on.png`,
+          path: `${SHOTS}/${viewport.name}-consent-dialog.png`,
           animations: 'disabled',
         })
 
-        await toggle.click()
-        await expect(toggle).toHaveAttribute('aria-checked', 'false')
-        await page.screenshot({
-          path: `${SHOTS}/${viewport.name}-profile-off.png`,
-          animations: 'disabled',
-        })
+        await dialog.getByTestId('ai-consent-dialog-cancel').click()
+        await expect(dialog).toHaveCount(0)
 
-        // Выключение сохранилось на сервере, а не только в состоянии экрана.
+        // Переключатель остался выключенным.
+        await expect(toggle).toHaveAttribute('aria-checked', 'false')
+
+        // И после перезагрузки доступа нет — PUT действительно не ушёл,
+        // а не просто не изменил состояние экрана.
         await page.reload()
         await openProfileData(page)
         await expect(page.getByTestId('profile-ai-consent-toggle')).toHaveAttribute(
@@ -167,34 +199,83 @@ for (const viewport of VIEWPORTS) {
       }
     })
 
-    test('«Не сейчас» скрывает карточку на 7 дней', async ({ browser }) => {
-      const { context, page } = await openTelegramDemo(browser, viewport, '&tab=mentor')
+    test('«Включить» в окне сохраняет доступ, строка в «Диалоге» исчезает', async ({
+      browser,
+    }) => {
+      const { context, page } = await openTelegramDemo(browser, viewport)
 
       try {
-        await openChatWithCompanion(page)
-        await expect(page.getByTestId('ai-consent-card')).toBeVisible()
+        await openProfileData(page)
 
-        await page.getByTestId('ai-consent-snooze').click()
-        await expect(page.getByTestId('ai-consent-card')).toHaveCount(0)
+        const { toggle, dialog } = await openConsentDialog(page)
+        await dialog.getByTestId('ai-consent-dialog-confirm').click()
+        await expect(dialog).toHaveCount(0)
 
-        const snoozed = await page.evaluate(() => {
-          const key = Object.keys(localStorage).find(name =>
-            name.startsWith('mx-ai-consent-snooze-v1')
-          )
-          return key ? Number(localStorage.getItem(key)) : 0
-        })
-        expect(snoozed).toBeGreaterThan(0)
+        await expect(toggle).toHaveAttribute('aria-checked', 'true')
 
-        // Отметка переживает перезагрузку: карточка не возвращается.
+        // «Включить» сохранило доступ на сервере, а не только на экране.
         await page.reload()
+        await openProfileData(page)
+        await expect(page.getByTestId('profile-ai-consent-toggle')).toHaveAttribute(
+          'aria-checked',
+          'true'
+        )
+
+        await page.getByTestId('profile-ai-consent-row').scrollIntoViewIfNeeded()
+        await page.screenshot({
+          path: `${SHOTS}/${viewport.name}-profile-on.png`,
+          animations: 'disabled',
+        })
+
+        // Возврат в «Диалог»: строки нет — доступ включён на сервере.
+        await page.goto('/?demo=1&tab=mentor')
         await openChatWithCompanion(page)
-        await expect(page.getByTestId('ai-consent-card')).toHaveCount(0)
+        await expect(page.getByTestId('ai-consent-line')).toHaveCount(0)
       } finally {
         await context.close()
       }
     })
 
-    test('после реплики собеседника с crisis карточки нет', async ({ browser }) => {
+    test('выключение сохраняется сразу, без окна', async ({ browser }) => {
+      const { context, page } = await openTelegramDemo(browser, viewport)
+
+      try {
+        // Сначала включаем через окно, иначе выключать нечего.
+        await openProfileData(page)
+        const first = await openConsentDialog(page)
+        await first.dialog.getByTestId('ai-consent-dialog-confirm').click()
+        await expect(first.toggle).toHaveAttribute('aria-checked', 'true')
+
+        await page.reload()
+        await openProfileData(page)
+
+        const toggle = page.getByTestId('profile-ai-consent-toggle')
+        await expect(toggle).toHaveAttribute('aria-checked', 'true')
+
+        await toggle.click()
+        // Выключение — без окна согласия.
+        await expect(page.getByTestId('ai-consent-dialog')).toHaveCount(0)
+        await expect(toggle).toHaveAttribute('aria-checked', 'false')
+
+        await page.getByTestId('profile-ai-consent-row').scrollIntoViewIfNeeded()
+        await page.screenshot({
+          path: `${SHOTS}/${viewport.name}-profile-off.png`,
+          animations: 'disabled',
+        })
+
+        // Выключение сохранено на сервере, а не только в состоянии экрана.
+        await page.reload()
+        await openProfileData(page)
+        await expect(page.getByTestId('profile-ai-consent-toggle')).toHaveAttribute(
+          'aria-checked',
+          'false'
+        )
+      } finally {
+        await context.close()
+      }
+    })
+
+    test('после реплики собеседника с crisis строки нет', async ({ browser }) => {
       // ?dialogTest=crisis: ответ собеседника приходит с меткой crisis: true,
       // которую «Диалог» уже читает у реплики (message.crisis).
       const { context, page } = await openTelegramDemo(
@@ -206,14 +287,14 @@ for (const viewport of VIEWPORTS) {
       try {
         await openChatWithCompanion(page)
 
-        const card = page.getByTestId('ai-consent-card')
-        await expect(card).toBeVisible()
+        const line = page.getByTestId('ai-consent-line')
+        await expect(line).toBeVisible()
 
         await page.getByTestId('mentor-input').fill('Мне сейчас очень тяжело')
         await page.getByTestId('mentor-composer-action').click()
 
         await expect(page.getByTestId('chat-message-assistant').last()).toBeVisible()
-        await expect(card).toHaveCount(0)
+        await expect(line).toHaveCount(0)
       } finally {
         await context.close()
       }

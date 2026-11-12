@@ -20,7 +20,7 @@ import { isGuestUser, resetGuestState, dispatchGuestMerged } from '../lib/guestA
 
 import PersonaPicker from './mentalix/PersonaPicker'
 import Conversation from './mentalix/Conversation'
-import AiContextConsentCard from './mentalix/AiContextConsentCard'
+import AiContextConsentLine from './mentalix/AiContextConsentLine'
 import AllConversationsScreen from './mentalix/AllConversationsScreen'
 import './mentalix/DialogNotice.css'
 
@@ -118,6 +118,7 @@ export function ConversationChat({
   creatingConversation = false,
   creationError = '',
   onRetryCreate = null,
+  onOpenPrivacy = null,
 }) {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState(() => readChatDraft(conversationId) ?? initialText)
@@ -422,7 +423,12 @@ export function ConversationChat({
       contextSlot={
         <>
           {contextSlot}
-          <AiContextConsentCard user={user} persona={persona} hidden={hasCrisisReply} />
+          <AiContextConsentLine
+            user={user}
+            persona={persona}
+            hidden={hasCrisisReply}
+            onConfigure={onOpenPrivacy}
+          />
         </>
       }
       footerSlot={footerSlot}
@@ -441,7 +447,13 @@ export function ConversationChat({
 // MENTALIX
 // ============================================================
 
-export default function MentalixChat({ user, onPersonaChange, onRegisterBack, onOpenDaimon }) {
+export default function MentalixChat({
+  user,
+  onPersonaChange,
+  onRegisterBack,
+  onOpenDaimon,
+  onOpenPrivacy = null,
+}) {
   const [pending, setPending] = useState(() => readPendingMentor())
   const [surpriseMessage] = useState(() =>
     pending.persona === 'dnevnik' ? sessionStorage.getItem(SURPRISE_MESSAGE_KEY) : null
@@ -644,6 +656,7 @@ export default function MentalixChat({ user, onPersonaChange, onRegisterBack, on
       creatingConversation={creatingConversation}
       creationError={conversationError}
       onRetryCreate={handleNewConversation}
+      onOpenPrivacy={onOpenPrivacy}
     />
   )
 }

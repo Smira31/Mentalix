@@ -1,14 +1,19 @@
 // src/screens/settings/AiConsentSwitchRow.jsx
 //
-// Issue #1169 — переключатель «Доступ ИИ к записям» в группе «Приватность».
-// Это единственный переключатель согласия в интерфейсе: карточка в «Диалоге»
-// только включает доступ, а выключить его можно здесь и обратно — здесь же.
+// Приватность — переключатель «Собеседники видят мои записи» в группе
+// «Приватность». Это единственное место, где согласие включается: включение
+// открывает окно с честным текстом, выключение срабатывает сразу.
 // Поток прежний: GET/PUT /api/mentalix/consent (api.mentalix.*).
 
 import { useEffect, useState } from 'react'
 
+import ConfirmDialog from '../../components/ConfirmDialog'
 import { api } from '../../lib/api'
 import {
+  AI_CONSENT_DIALOG_BODY,
+  AI_CONSENT_DIALOG_CANCEL,
+  AI_CONSENT_DIALOG_CONFIRM,
+  AI_CONSENT_DIALOG_TITLE,
   AI_CONSENT_SWITCH_SUBTITLE,
   AI_CONSENT_SWITCH_TITLE,
   canManageAiContext,
@@ -23,6 +28,7 @@ export default function AiConsentSwitchRow({ user }) {
   const [enabled, setEnabled] = useState(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [confirmOpen, setConfirmOpen] = useState(false)
 
   useEffect(() => {
     if (!allowed) return undefined
@@ -55,8 +61,8 @@ export default function AiConsentSwitchRow({ user }) {
     ) : null
   }
 
-  async function toggle(next) {
-    if (saving || enabled === null) return
+  async function save(next) {
+    if (saving) return
 
     setSaving(true)
     setError('')
@@ -72,6 +78,22 @@ export default function AiConsentSwitchRow({ user }) {
     }
   }
 
+  /*
+   * Включение — только через окно согласия. «Не сейчас», фон и закрытие
+   * окна ничего не отправляют: переключатель остаётся выключенным.
+   * Выключение ни о чём не спрашивает — это возврат к «не видят».
+   */
+  function toggle(next) {
+    if (saving) return
+
+    if (next) {
+      setConfirmOpen(true)
+      return
+    }
+
+    void save(false)
+  }
+
   return (
     <>
       <ProfileRow
@@ -84,7 +106,7 @@ export default function AiConsentSwitchRow({ user }) {
             checked={enabled === true}
             label={AI_CONSENT_SWITCH_TITLE}
             onChange={toggle}
-            disabled={saving || enabled === null}
+            disabled={saving}
             testId="profile-ai-consent-toggle"
           />
         }
@@ -93,6 +115,22 @@ export default function AiConsentSwitchRow({ user }) {
         <ProfileNote role="status" danger testId="profile-ai-consent-save-error">
           {error}
         </ProfileNote>
+      )}
+      {confirmOpen && (
+        <ConfirmDialog
+          title={AI_CONSENT_DIALOG_TITLE}
+          titleId="ai-consent-dialog-title"
+          description={AI_CONSENT_DIALOG_BODY}
+          confirmLabel={AI_CONSENT_DIALOG_CONFIRM}
+          cancelLabel={AI_CONSENT_DIALOG_CANCEL}
+          closeLabel="Закрыть окно согласия"
+          testId="ai-consent-dialog"
+          onConfirm={() => {
+            setConfirmOpen(false)
+            void save(true)
+          }}
+          onCancel={() => setConfirmOpen(false)}
+        />
       )}
     </>
   )

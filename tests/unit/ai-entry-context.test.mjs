@@ -4,8 +4,8 @@ import { readFile } from 'node:fs/promises'
 
 const apiSource = await readFile(new URL('../../src/lib/api.js', import.meta.url), 'utf8')
 const historySource = await readFile(new URL('../../src/screens/History.jsx', import.meta.url), 'utf8')
-const cardSource = await readFile(
-  new URL('../../src/screens/mentalix/AiContextConsentCard.jsx', import.meta.url),
+const rowSource = await readFile(
+  new URL('../../src/screens/settings/AiConsentSwitchRow.jsx', import.meta.url),
   'utf8'
 )
 const consentCopySource = await readFile(
@@ -27,13 +27,13 @@ test('History требует Telegram context и явное confirmation до п
   assert.match(historySource, /api\.mentalix\.setCheckinContext\(user\.id, checkin\.id, nextEnabled\)/)
 })
 
-test('карточка согласия объясняет, какие записи видит собеседник и куда они уходят', () => {
-  // #1169: прежняя панель AiPrivacyControls удалена; утверждённые владельцем
-  // тексты живут в карточке «Диалога» и переключателе профиля. Assertion
-  // переехал к живой поверхности и проверяет все три обязательных смысла:
-  // отмеченные чек-ины из «Истории», передачу в GigaChat для ответа и выход.
+test('окно согласия объясняет, какие записи видит собеседник и куда они уходят', () => {
+  // #1169: прежняя панель AiPrivacyControls удалена, карточка «Диалога»
+  // заменена тихой строкой. Утверждённые владельцем тексты живут в окне
+  // согласия в профиле и проверяют три обязательных смысла: отмеченные
+  // чек-ины из «Истории», передачу в GigaChat для ответа и выход.
   assert.match(consentCopySource, /которые ты отметишь в «Истории»/)
-  assert.match(consentCopySource, /Это передаётся в GigaChat \(ПАО Сбербанк\) только для ответа/)
+  assert.match(consentCopySource, /записи передаются туда только для ответа/)
   assert.match(consentCopySource, /Выключить можно в любой момент/)
-  assert.match(cardSource, /AI_CONSENT_CARD_BODY/)
+  assert.match(rowSource, /AI_CONSENT_DIALOG_BODY/)
 })
