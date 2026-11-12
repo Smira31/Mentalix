@@ -20,7 +20,6 @@ import { isGuestUser, resetGuestState, dispatchGuestMerged } from '../lib/guestA
 
 import PersonaPicker from './mentalix/PersonaPicker'
 import Conversation from './mentalix/Conversation'
-import AiContextConsentCard from './mentalix/AiContextConsentCard'
 import AllConversationsScreen from './mentalix/AllConversationsScreen'
 import './mentalix/DialogNotice.css'
 
@@ -399,13 +398,6 @@ export function ConversationChat({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, initialPrompt, initialDisplayText])
 
-  /*
-   * Issue #1169: после кризисного ответа карточку согласия не показываем —
-   * человеку в этот момент не до настроек приватности. Флаг кризиса приходит
-   * в самой реплике (контракт Даймона, crisis: true).
-   */
-  const hasCrisisReply = messages.some(message => message.crisis)
-
   return (
     <Conversation
       userId={user.id}
@@ -419,12 +411,7 @@ export function ConversationChat({
       onSend={send}
       onBack={onBack}
       onNewConversation={onNewConversation}
-      contextSlot={
-        <>
-          {contextSlot}
-          <AiContextConsentCard user={user} persona={persona} hidden={hasCrisisReply} />
-        </>
-      }
+      contextSlot={contextSlot}
       footerSlot={footerSlot}
       historyError={historyError}
       onRetryHistory={() => setHistoryAttempt(attempt => attempt + 1)}
