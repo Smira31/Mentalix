@@ -16,7 +16,6 @@ import '../components/ui-lab/ProgressRedesignExperiment.css'
 import './Analytics.css'
 import ProfileScopedHistory from './progress/ProfileScopedHistory'
 import ScreenBack from '../components/ScreenBack'
-import DemoTelegramHeader from '../components/DemoTelegramHeader'
 import './progress/ProgressScreen.css'
 import './progress/ProgressAnalytics.css'
 import {
@@ -748,7 +747,6 @@ function BottomPeriodPill({ granularity, offset, onPrev, onNext, canNext }) {
 const PROGRESS_SEGMENT_KEY = 'mx-progress-segment'
 
 export default function Analytics({
-  active = true,
   user,
   onGoCheckin,
   onRedo,
@@ -994,68 +992,72 @@ export default function Analytics({
       className="mx-progress-redesign mx-progress-redesign--live mx-type-page w-full max-w-md px-[var(--mx-screen-x)] animate-fade-in"
     >
       <div className="mx-progress-segment-bar">
-        <DemoTelegramHeader active={active}>
-          <div className="mx-progress-segment-row">
-            <div
-              className="mx-progress-segment"
-              role="tablist"
-              aria-label="Прогресс: Аналитика и История"
-            >
-              <button
-                type="button"
-                role="tab"
-                data-testid="progress-tab-analytics"
-                aria-selected={activeTab === 'analytics'}
-                onClick={() => handleSegmentClick('analytics')}
-              >
-                Аналитика
-              </button>
-              <button
-                type="button"
-                role="tab"
-                data-testid="progress-tab-history"
-                aria-selected={activeTab === 'history'}
-                onClick={() => handleSegmentClick('history')}
-              >
-                История
-              </button>
-            </div>
-          </div>
-        </DemoTelegramHeader>
+        {/* Строка кнопок вкладки: слева переключатель «Аналитика | История»,
+            справа — кнопки текущей вкладки (период в «Аналитике», группировка,
+            фильтры и поиск в «Истории», порталом из ProgressHistory).
+            Отдельной полосы под кнопками Telegram больше нет: fixed-строка
+            внутри прокрутки на iOS WebKit переставала отрисовываться после
+            переключения вкладок. */}
         <div className="mx-progress-actions-row" data-testid="progress-actions-row">
-          {activeTab === 'analytics' && (
+          <div
+            className="mx-progress-segment"
+            role="tablist"
+            aria-label="Прогресс: Аналитика и История"
+          >
             <button
               type="button"
-              className="mx-progress-period-trigger mx-tap-target"
-              data-testid="progress-period-trigger"
-              aria-expanded={periodMenuOpen}
-              aria-controls="progress-period-menu"
-              onClick={() => setPeriodMenuOpen(v => !v)}
+              role="tab"
+              data-testid="progress-tab-analytics"
+              aria-selected={activeTab === 'analytics'}
+              onClick={() => handleSegmentClick('analytics')}
             >
-              {gran.label}
-              <span className="mx-progress-period-trigger__chevron" aria-hidden="true">
-                ⌄
-              </span>
+              Аналитика
             </button>
-          )}
-          {activeTab === 'analytics' && periodMenuOpen && (
-            <ProgressGlassMenu
-              id="progress-period-menu"
-              role="menu"
-              aria-label="Период аналитики"
-              style={{ position: 'absolute', right: 16, top: '100%' }}
+            <button
+              type="button"
+              role="tab"
+              data-testid="progress-tab-history"
+              aria-selected={activeTab === 'history'}
+              onClick={() => handleSegmentClick('history')}
             >
-              {ANALYTICS_GRANULARITIES.map(g => (
-                <ProgressGlassMenuItem
-                  key={g.id}
-                  label={g.label}
-                  role="menuitemradio"
-                  selected={granularity === g.id}
-                  onClick={() => selectGranularity(g.id)}
-                />
-              ))}
-            </ProgressGlassMenu>
-          )}
+              История
+            </button>
+          </div>
+          <div className="mx-progress-actions-row__actions" data-testid="progress-row-actions">
+            {activeTab === 'analytics' && (
+              <button
+                type="button"
+                className="mx-progress-period-trigger mx-tap-target"
+                data-testid="progress-period-trigger"
+                aria-expanded={periodMenuOpen}
+                aria-controls="progress-period-menu"
+                onClick={() => setPeriodMenuOpen(v => !v)}
+              >
+                {gran.label}
+                <span className="mx-progress-period-trigger__chevron" aria-hidden="true">
+                  ⌄
+                </span>
+              </button>
+            )}
+            {activeTab === 'analytics' && periodMenuOpen && (
+              <ProgressGlassMenu
+                id="progress-period-menu"
+                role="menu"
+                aria-label="Период аналитики"
+                style={{ position: 'absolute', right: 16, top: '100%' }}
+              >
+                {ANALYTICS_GRANULARITIES.map(g => (
+                  <ProgressGlassMenuItem
+                    key={g.id}
+                    label={g.label}
+                    role="menuitemradio"
+                    selected={granularity === g.id}
+                    onClick={() => selectGranularity(g.id)}
+                  />
+                ))}
+              </ProgressGlassMenu>
+            )}
+          </div>
         </div>
       </div>
 

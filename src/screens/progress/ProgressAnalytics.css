@@ -8,7 +8,9 @@
 }
 
 .mx-progress-segment-bar {
-  position: relative;
+  position: sticky;
+  top: 0;
+  z-index: 40;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -16,88 +18,17 @@
   background: rgb(var(--c-bg, 5 4 3));
 }
 
-/* Компактное окно Telegram (Desktop, без fullscreen) и web: сегмент-бар
-   живёт внутри скролл-контейнера, поэтому фиксируется сверху — паттерн
-   Stoic («Значки | Статистика» в SeriesBadges). Раньше position:relative
-   увозил пилюлю «Аналитика | История» вместе с лентой истории, и она
-   пропадала с экрана. z-index выше fade-слоя под шапкой
-   (.mx-scroll-fade-top, 30) и ниже оверлеев записей и листов (90+).
-   В fullscreen и демо-рамке правило не действует: там строка вынесена
-   в полосу кнопок Telegram (fixed/портал). */
-.mx-app-shell:not(.mx-app-shell--fullscreen):not([data-mentalix-demo-frame='true'])
-  .mx-progress-segment-bar {
-  position: sticky;
-  top: 0;
-  z-index: 40;
-}
+/* Строка кнопок одна на все режимы: слева переключатель «Аналитика | История»,
+   справа кнопки активной вкладки. Паттерн Stoic («Значки | Статистика» в
+   SeriesBadges): липкая строка на фоне --c-bg, а не fixed-слой в полосе кнопок
+   Telegram. Fixed-строка жила внутри скролл-контейнера и после переключения
+   вкладок переставала отрисовываться в iOS WebKit (will-change не помогал).
+   z-index выше fade-слоя под шапкой (.mx-scroll-fade-top, 30) и ниже оверлеев
+   записей и листов (90+). */
 
-/* ── Сегмент «Аналитика | История» между кнопками Telegram ──
-   В fullscreen (Telegram) и demo-рамке контент начинается ниже
-   56-px полосы Telegram-контролов. Поднимаем пилюлю сегмента в
-   эту полосу — между левой (Назад/Закрыть) и правой (⋯) кнопками.
-   42-px сегмент центрируется в 56-px полосе: (56−42)/2 = 7px от
-   верха контролов, т.е. на 49px выше верха скролл-контента. */
-[data-mentalix-demo-frame='true'] .mx-progress-segment-bar,
-.mx-app-shell--fullscreen .mx-progress-segment-bar {
-  padding-top: 0;
-}
-
-/* Сегмент в полосе кнопок Telegram — как «Значки | Статистика» в SeriesBadges:
-   строка зафиксирована в зоне кнопок (--app-safe-top) и не прокручивается.
-   Раньше её поднимал отрицательный отступ внутри скролла, но скролл-контейнер
-   обрезал строку — на iPhone оставался виден только краешек сегмента. */
-/* Защита от бага iOS WebKit: fixed-строка живёт ВНУТРИ скролл-контейнера
-   (.mx-app-scroll-root, overflow-x: clip), а переключение «Аналитика ↔ История»
-   мутирует контент скроллера и сам сегмент-бар (карточки ↔ лента истории,
-   портальные кнопки в .mx-progress-actions-row). В WebKit после такой мутации
-   fixed-элемент внутри скроллера перестаёт перерисовываться: раскладка и
-   тапы работают, а отрисовка пропадает — пилюля невидима, но кликабельна.
-   will-change: transform выводит строку в отдельный композитный слой,
-   который WebKit обновляет независимо от мутаций скролла. Вид и поведение
-   не меняются; правило действует только в fullscreen (единственный режим,
-   где строка fixed). Если на реальном устройстве дефект останется, следующий
-   шаг — вынести строку порталом из скролл-контейнера, как это делает
-   DemoTelegramHeader в демо-рамке. */
-.mx-app-shell--fullscreen .mx-progress-segment-bar > .mx-progress-segment-row {
-  position: fixed;
-  top: var(--app-safe-top);
-  left: 50%;
-  right: auto;
-  transform: translateX(-50%);
-  will-change: transform;
-  z-index: 80;
-  width: min(200px, calc(100% - 2 * (var(--mx-screen-x) + 88px)));
-  height: 56px;
-  align-items: center;
-  margin-top: 0;
-  pointer-events: none;
-}
-
-.mx-app-shell--fullscreen
-  .mx-progress-segment-bar
-  > .mx-progress-segment-row
-  > .mx-progress-segment {
-  width: 100%;
-  height: 42px;
-  pointer-events: auto;
-}
-
-[data-mentalix-demo-frame='true'] .mx-progress-actions-row,
-.mx-app-shell--fullscreen .mx-progress-actions-row {
-  margin-top: 7px;
-}
-
-.mx-progress-segment-row {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-}
-
-/* Мобильное демо без рамки: бейдж демо-панели (fixed, top:12px, right:12px,
-   z-index:9999) перекрывает правую кнопку сегмента «История».
-   Сдвигаем сегмент-бар ниже бейджа. Только для реального телефона в демо
-   без Telegram-рамки и без fullscreen — в fullscreen сегмент уже в полосе
-   кнопок, в рамке — порталится в DemoTelegramHeader. */
+/* Мобильное демо بدون рамки: бейдж демо-панели (fixed, top:12px, right:12px,
+   z-index:9999) перекрывает правые кнопки строки. Сдвигаем строку ниже
+   бейджа — только на реальном телефоне в демо без Telegram-рамки. */
 .mx-real-phone-demo .mx-app-shell:not(.mx-app-shell--fullscreen) .mx-progress-segment-bar {
   padding-top: var(--mx-space-12);
 }
@@ -105,11 +36,19 @@
 .mx-progress-actions-row {
   position: relative;
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
   gap: 11px;
   width: 100%;
   padding: 8px 3px 0 0;
+}
+
+/* Кнопки активной вкладки — справа от сегмента (портал «Истории» тоже сюда) */
+.mx-progress-actions-row__actions {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
 }
 
 /* Пилюля периода в строке действий (справа) */

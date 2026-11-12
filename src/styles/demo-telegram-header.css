@@ -10,7 +10,8 @@
   font-family: 'Onest', sans-serif;
 }
 
-.mx-demo-telegram-header .mx-progress-segment-row,
+/* «Аналитика | История» в шапку демо больше не выносится: сегмент живёт
+   в строке кнопок вкладки. Здесь остаются только табы «Значков/Статистики». */
 .mx-demo-telegram-header .mx-path-header {
   position: static;
   width: 100%;
@@ -19,16 +20,10 @@
   background: transparent;
 }
 
-.mx-demo-telegram-header .mx-progress-segment,
 .mx-demo-telegram-header .mx-path-tabs {
   width: 100%;
   height: var(--demo-header-h);
   background: rgb(var(--c-card2));
-}
-
-/* Без рамки нет эмуляции Telegram: сегмент остаётся внутри видимой прокрутки. */
-.mx-real-phone-demo .mx-app-shell--fullscreen .mx-progress-segment-row {
-  margin-top: 0;
 }
 
 /* Карточка начинается на том же уровне, что в Telegram, без дубля ✕. */

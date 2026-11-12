@@ -16,7 +16,11 @@ test('демо выносит сегменты из scroll-root, не меняя
   assert.match(header, /\[data-mentalix-demo-frame='true'\]\[data-demo-mode='true'\]/)
   assert.match(header, /if \(!frame\) return children/)
   assert.match(header, /if \(!active\) return null/)
-  assert.match(analytics, /<DemoTelegramHeader active=\{active\}>/)
+  // «Аналитика | История» больше не выносится в полосу кнопок Telegram:
+  // сегмент стоит в строке кнопок вкладки (слева от кнопок активной вкладки).
+  assert.doesNotMatch(analytics, /<DemoTelegramHeader/)
+  assert.match(analytics, /data-testid="progress-actions-row"/)
+  assert.match(analytics, /data-testid="progress-row-actions"/)
   assert.match(app, /active=\{tab === 'trends'\}/)
   assert.match(badges, /<DemoTelegramHeader>/)
   assert.match(badges, /platformName === 'telegram' \|\| isDemoEmulationActive\(\)/)

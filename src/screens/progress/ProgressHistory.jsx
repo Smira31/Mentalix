@@ -833,9 +833,9 @@ export default function ProgressHistory({
     }
   }
 
-  // ── Портал кнопок в сегмент-бар ──
+  // ── Портал кнопок в строку кнопок вкладки (справа от сегмента) ──
   useEffect(() => {
-    const el = document.querySelector('.mx-progress-actions-row')
+    const el = document.querySelector('[data-testid="progress-row-actions"]')
     if (el) setPortalTarget(el)
   }, [])
 

@@ -27,13 +27,16 @@ for (const device of ['standard', 'max']) {
     const history = page.getByTestId('progress-tab-history')
     await expectClickable(analytics)
     await expectClickable(history)
+    // Сегмент «Аналитика | История» живёт в строке кнопок вкладки, а не в полосе
+    // кнопок Telegram: fixed-строка внутри прокрутки теряла отрисовку на iOS.
+    expect(
+      await analytics.evaluate(button => button.closest('[data-testid="demo-telegram-header"]'))
+    ).toBeNull()
     expect(
       await analytics.evaluate(button =>
-        button
-          .closest('[data-testid="demo-telegram-header"]')
-          ?.parentElement?.getAttribute('data-demo-mode')
+        Boolean(button.closest('[data-testid="progress-actions-row"]'))
       )
-    ).toBe('true')
+    ).toBe(true)
     await history.click()
     await expect(history).toHaveAttribute('aria-selected', 'true')
     await analytics.click()
