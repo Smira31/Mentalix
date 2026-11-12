@@ -3,6 +3,8 @@ import { defineConfig } from '@playwright/test'
 // JOURNAL-001: профильная изоляция поверхности «История» (Прогресс → История).
 // Смена профиля полной загрузкой (?demo=1&guest=1) — journal-history-profile-isolation;
 // смена пропа user в живом React-дереве на настоящих компонентах — journal-history-component-isolation.
+// Экран записи «Истории» под кнопками Telegram (меню «Действия с записью») —
+// progress-entry-telegram-menu.
 // Базовый URL и webServer — как в playwright.ux.config.mjs; запуск:
 // npx playwright test --config=playwright.journal-history.config.mjs
 export default defineConfig({
@@ -10,6 +12,7 @@ export default defineConfig({
   testMatch: [
     'journal-history-profile-isolation.spec.mjs',
     'journal-history-component-isolation.spec.mjs',
+    'progress-entry-telegram-menu.spec.mjs',
   ],
   outputDir: 'artifacts/journal-history/playwright-output',
   fullyParallel: false,

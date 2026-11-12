@@ -331,6 +331,11 @@
   --mx-btn-round-h: 45px;
   --mx-btn-glass-h: 49px;
 
+  /* Высота полосы кнопок Telegram в fullscreen — TG_CONTROLS_HEIGHT
+     (src/lib/fullscreenSurface.js). Один токен для всех экранов, чтобы
+     отступ под контролы Telegram нигде не задавался числом на месте. */
+  --mx-tg-controls-h: 56px;
+
   /* Верх экрана под шапкой Telegram: safe-top + контролы (56) + воздух (16). */
   --mx-screen-top: calc(var(--app-safe-top) + 56px + 16px);
 

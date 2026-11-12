@@ -27,6 +27,7 @@ import { api } from '../../lib/api'
 import { platform, platformName } from '../../platform'
 import ScreenBack from '../../components/ScreenBack'
 import { useBackButton } from '../../platform/telegram.hooks'
+import { useTelegramControlsInset } from '../../lib/fullscreenSurface'
 import {
   DAILY_JOURNAL_PAGE_SIZE,
   diaryPageCursor,
@@ -153,6 +154,9 @@ function EntryScreen({
   const [redoConfirm, setRedoConfirm] = useState(null)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
   const [aiSheetOpen, setAiSheetOpen] = useState(false)
+  /* В Telegram fullscreen полоса кнопок лежит поверх веб-вью: экран записи и
+     лист «AI» уступают ей верх (в вебе класс не добавляется). */
+  const tgControlsInset = useTelegramControlsInset()
 
   useBackButton(() => {
     setAiSheetOpen(false)
@@ -166,11 +170,14 @@ function EntryScreen({
   const canDelete = Boolean(checkin)
 
   return (
-    <div className="mx-progress-entry animate-fade-in" data-testid="progress-entry-screen">
+    <div
+      className={`mx-progress-entry animate-fade-in${tgControlsInset ? ' mx-progress-entry--tg-controls' : ''}`}
+      data-testid="progress-entry-screen"
+    >
       <div className="mx-progress-entry__top-row">
         <ScreenBack onBack={onBack} className="mx-progress-entry__back" />
         {(canRedoMorning || canRedoEvening || canDelete) && (
-          <div style={{ position: 'relative' }}>
+          <div className="mx-progress-entry__menu">
             <button
               type="button"
               className="mx-progress-entry__menu-button"
@@ -255,7 +262,10 @@ function EntryScreen({
 
       {/* AI-лист — открывается из меню «…» */}
       {aiSheetOpen && checkin && (
-        <div className="mx-progress-ai-sheet" data-testid="progress-ai-sheet">
+        <div
+          className={`mx-progress-ai-sheet${tgControlsInset ? ' mx-progress-ai-sheet--tg-controls' : ''}`}
+          data-testid="progress-ai-sheet"
+        >
           <button
             type="button"
             className="mx-progress-ai-sheet__close"
