@@ -16,7 +16,7 @@ import '../components/ui-lab/ProgressRedesignExperiment.css'
 import './Analytics.css'
 import ProfileScopedHistory from './progress/ProfileScopedHistory'
 import ScreenBack from '../components/ScreenBack'
-import DemoTelegramHeader from '../components/DemoTelegramHeader'
+import ProgressSegmentHeader from './progress/ProgressSegmentHeader'
 import './progress/ProgressScreen.css'
 import './progress/ProgressAnalytics.css'
 import {
@@ -994,7 +994,7 @@ export default function Analytics({
       className="mx-progress-redesign mx-progress-redesign--live mx-type-page w-full max-w-md px-[var(--mx-screen-x)] animate-fade-in"
     >
       <div className="mx-progress-segment-bar">
-        <DemoTelegramHeader active={active}>
+        <ProgressSegmentHeader active={active}>
           <div className="mx-progress-segment-row">
             <div
               className="mx-progress-segment"
@@ -1021,7 +1021,7 @@ export default function Analytics({
               </button>
             </div>
           </div>
-        </DemoTelegramHeader>
+        </ProgressSegmentHeader>
         <div className="mx-progress-actions-row" data-testid="progress-actions-row">
           {activeTab === 'analytics' && (
             <button
