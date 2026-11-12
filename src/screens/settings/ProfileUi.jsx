@@ -263,6 +263,10 @@ export function ProfileChips({ options, value, onChange, label }) {
   )
 }
 
-export function ProfileVersion({ children }) {
-  return <p className="mx-profile-version">{children}</p>
+export function ProfileVersion({ children, onClick, testId }) {
+  return (
+    <p className="mx-profile-version" onClick={onClick} data-testid={testId}>
+      {children}
+    </p>
+  )
 }

@@ -43,6 +43,7 @@ import LinkWebAccount from './LinkWebAccount'
 import AppLock from './AppLock'
 import PrivacyNotice from './PrivacyNotice'
 import WillingnessToPayTest from './WillingnessToPayTest'
+import VoiceLab from './VoiceLab'
 import Profile from './Profile'
 import { ProfileBanners } from './settings/ProfileBanners'
 import {
@@ -646,7 +647,7 @@ export default function Settings({
     if (action === 'profile_wtp') return 'wtp-test'
     if (action === 'privacy') return 'privacy-notice'
     return null
-  }) // null | 'quotes' | 'subscription' | 'donate' | 'link-web' | 'privacy-notice' | 'app-lock-setup' | 'wtp-test'
+  }) // null | 'quotes' | 'subscription' | 'donate' | 'link-web' | 'privacy-notice' | 'app-lock-setup' | 'wtp-test' | 'voice-lab'
   // null — тариф ещё не загружен: «подписка.» показывает скелетон.
   const [tier, setTier] = useState(null)
   // Под-экран профиля: null — корень «твой профиль.».
@@ -666,6 +667,30 @@ export default function Settings({
     setSub(next)
     onScrollTop?.()
   }
+
+  /*
+   * Скрытый вход в лабораторию голоса (этап 0): 7 быстрых нажатий по номеру
+   * версии внизу профиля. В меню и вкладках экрана нет, ссылок на него нет.
+   */
+  const versionTapsRef = useRef(0)
+  const versionTapTimerRef = useRef(null)
+
+  function handleVersionTap() {
+    clearTimeout(versionTapTimerRef.current)
+    versionTapsRef.current += 1
+
+    if (versionTapsRef.current >= 7) {
+      versionTapsRef.current = 0
+      setScreen('voice-lab')
+      return
+    }
+
+    versionTapTimerRef.current = setTimeout(() => {
+      versionTapsRef.current = 0
+    }, 1500)
+  }
+
+  useEffect(() => () => clearTimeout(versionTapTimerRef.current), [])
 
   // Demo Preview: «Назад» демо-шапки Telegram ведёт на шаг назад внутри профиля.
   useEffect(() => {
@@ -727,6 +752,10 @@ export default function Settings({
 
   if (screen === 'wtp-test') {
     return <WillingnessToPayTest user={user} onBack={() => setScreen(null)} />
+  }
+
+  if (screen === 'voice-lab') {
+    return <VoiceLab onBack={() => setScreen(null)} />
   }
 
   const tierLabel = tier == null ? null : tier === 'pro' ? 'Про' : 'Базовый'
@@ -1414,7 +1443,9 @@ export default function Settings({
           </ProfileCard>
         </ProfileGroup>
 
-        <ProfileVersion>Mentalix {appVersion}</ProfileVersion>
+        <ProfileVersion onClick={handleVersionTap} testId="profile-version">
+          Mentalix {appVersion}
+        </ProfileVersion>
       </ProfileBody>
       {logoutConfirmOpen && (
         <ConfirmDialog
