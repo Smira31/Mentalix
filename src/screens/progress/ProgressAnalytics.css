@@ -26,29 +26,46 @@
    z-index выше fade-слоя под шапкой (.mx-scroll-fade-top, 30) и ниже оверлеев
    записей и листов (90+). */
 
-/* Мобильное демо بدون рамки: бейдж демо-панели (fixed, top:12px, right:12px,
+/* Мобильное демо без рамки: бейдж демо-панели (fixed, top:12px, right:12px,
    z-index:9999) перекрывает правые кнопки строки. Сдвигаем строку ниже
    бейджа — только на реальном телефоне в демо без Telegram-рамки. */
 .mx-real-phone-demo .mx-app-shell:not(.mx-app-shell--fullscreen) .mx-progress-segment-bar {
   padding-top: var(--mx-space-12);
 }
 
+/* Одна строка во всю ширину контента: правого отступа у строки нет, поэтому
+   крайняя правая кнопка совпадает с правым краем карточек ниже, а сегмент —
+   с левым (--mx-screen-x). Зазоры — --mx-space-2: это первый шаг сжатия на
+   узком экране, при 11 px три кнопки «Истории» + сегмент не помещаются в
+   328 px контента на 360×640. */
 .mx-progress-actions-row {
   position: relative;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 11px;
+  gap: var(--mx-space-2);
   width: 100%;
-  padding: 8px 3px 0 0;
+  padding: var(--mx-space-2) 0 0;
 }
 
-/* Кнопки активной вкладки — справа от сегмента (портал «Истории» тоже сюда) */
+/* Кнопки активной вкладки — справа от сегмента (портал «Истории» тоже сюда).
+   flex: none — кнопки не сжимаются: иначе контейнер ужимался, а кнопки
+   вылезали за его правый край (поиск на 360×640 уходил за поле экрана). */
 .mx-progress-actions-row__actions {
   display: flex;
+  flex: none;
   align-items: center;
-  gap: 11px;
-  min-width: 0;
+  gap: var(--mx-space-2);
+}
+
+/* 360×640: первый шаг сжатия по §5.5 — зазоры между кнопками 8 → 4.
+   Внутренние отступы сегмента и его ширина сжимаются в ProgressScreen.css. */
+@media (max-width: 380px) {
+  .mx-progress-actions-row,
+  .mx-progress-actions-row__actions,
+  .mx-progress-history-actions {
+    gap: var(--mx-space-1);
+  }
 }
 
 /* Пилюля периода в строке действий (справа) */
@@ -57,7 +74,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  height: 39px;
+  height: var(--mx-progress-actions-h);
   padding: 0 14px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 999px;
@@ -83,8 +100,10 @@
 }
 
 /* ── Шапка вкладки ── */
+/* Зазор от строки кнопок до заголовка — один токен для обеих вкладок
+   (тот же --mx-space-2 стоит у .mx-progress-history в ProgressScreen.css). */
 .mx-progress-analytics {
-  padding-top: 8px;
+  padding-top: var(--mx-space-2);
 }
 
 .mx-progress-analytics__title {

@@ -14,10 +14,16 @@
   background: transparent;
 }
 
+/* Высота сегмента — общий токен строки кнопок (как у пилюли и круглых кнопок).
+   Ширина: 177 px по §5.5, но на узком экране сегмент ужимается первым из
+   сегментов строки (flex-shrink) и никогда не становится уже своих подписей
+   (min-width: max-content) — текст «Аналитика» и «История» остаётся целиком. */
 .mx-progress-segment {
   display: grid;
-  width: 177px;
-  height: 42px;
+  flex: 0 1 177px;
+  width: auto;
+  min-width: max-content;
+  height: var(--mx-progress-actions-h);
   grid-template-columns: 1fr 1fr;
   padding: 0;
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -27,11 +33,13 @@
 
 .mx-progress-segment button {
   min-width: 0;
+  padding: 0 var(--mx-space-2);
   border: 0;
   border-radius: 999px;
   background: transparent;
   color: rgb(var(--c-muted, 133 133 133));
   font: inherit;
+  white-space: nowrap;
   font-size: max(11px, calc(13px * var(--mx-type-scale)));
   font-weight: 600;
   line-height: 1.2;
@@ -48,8 +56,10 @@
 
 /* ── Вкладка «История»: список по дням ── */
 
+/* Зазор от строки кнопок до заголовка — тот же токен, что у «Аналитики»
+   (.mx-progress-analytics в ProgressAnalytics.css): 8 px на обеих вкладках. */
 .mx-progress-history {
-  padding-top: var(--mx-space-1);
+  padding-top: var(--mx-space-2);
 }
 
 .mx-progress-history__title {
@@ -838,16 +848,18 @@
 
 .mx-progress-history-actions {
   display: flex;
+  flex: none;
   align-items: center;
   align-self: flex-end;
-  gap: 11px;
+  gap: var(--mx-space-2);
 }
 
 .mx-progress-grouping-pill {
   display: inline-flex;
+  flex: none;
   align-items: center;
   gap: 6px;
-  height: 39px;
+  height: var(--mx-progress-actions-h);
   padding: 0 14px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 999px;
@@ -872,9 +884,10 @@
 
 .mx-progress-action-btn {
   display: grid;
+  flex: none;
   place-items: center;
-  width: 39px;
-  height: 39px;
+  width: var(--mx-progress-actions-h);
+  height: var(--mx-progress-actions-h);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 999px;
   background: var(--mx-glass-bg);
@@ -890,6 +903,16 @@
 .mx-progress-action-btn--active {
   background: rgb(var(--c-text, 243 243 243));
   color: rgb(var(--c-bg, 5 4 3));
+}
+
+/* 360×640: сегмент + пилюля «Недели» + фильтр + поиск шире строки контента.
+   Ужимаем по порядку §5.5: зазоры между кнопками (8 → 4, в
+   ProgressAnalytics.css) и внутренние отступы сегмента (8 → 4) — подписи
+   остаются целиком, шрифт и видимый размер круглых кнопок (44 px) не меняются. */
+@media (max-width: 380px) {
+  .mx-progress-segment button {
+    padding-inline: var(--mx-space-1);
+  }
 }
 
 /* ── Группировка: заголовки и карточки периодов (§5.5) ── */

@@ -1007,6 +1007,7 @@ export default function Analytics({
             <button
               type="button"
               role="tab"
+              className="mx-tap-target"
               data-testid="progress-tab-analytics"
               aria-selected={activeTab === 'analytics'}
               onClick={() => handleSegmentClick('analytics')}
@@ -1016,6 +1017,7 @@ export default function Analytics({
             <button
               type="button"
               role="tab"
+              className="mx-tap-target"
               data-testid="progress-tab-history"
               aria-selected={activeTab === 'history'}
               onClick={() => handleSegmentClick('history')}

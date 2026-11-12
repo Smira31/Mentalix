@@ -15,8 +15,9 @@ import { expect, test } from '@playwright/test'
 //     остаётся видимым при прокрутке истории (липкая строка сверху).
 //  2. Демо-рамка (эмуляция Telegram fullscreen): ?demo=1 — сегмента нет
 //     в полосе Telegram, пять переключений подряд не теряют его.
-//  3. Узкий экран 360×640: сегмент и кнопки вкладки не перекрываются,
-//     текст кнопок не обрезан.
+//  3. Узкие экраны 360×640 и 393×852: все элементы строки внутри полей и
+//     совпадают с краями карточек, зона нажатия ≥ 44×44, высоты из одного
+//     токена, зазор до заголовка одинаков на обеих вкладках.
 //
 // Полный ux:check и WebKit остаются CI; локально — только этот файл.
 
@@ -108,42 +109,120 @@ async function assertSegmentPaintedAndReachable(page, label) {
 }
 
 /* Строка кнопок: слева сегмент, справа кнопки активной вкладки.
-   Проверяем одну строку (по вертикали), отсутствие наложения и то,
-   что подписи кнопок не обрезаны собственной шириной. */
+   Критерии приёмки PR (ранее проверялся только собственный бокс контейнера,
+   поэтому выход кнопки за поля экрана проходил незамеченным):
+   1) левый край сегмента и правый край крайней правой кнопки лежат внутри
+      полей контента (--mx-screen-x) и совпадают с краями карточек ниже —
+      допуск 1 px;
+   2) зона нажатия каждого контрола ≥ 44×44 — своя или невидимая
+      .mx-tap-target::before, а подписи не обрезаны собственной шириной;
+   3) сегмент, пилюля и круглые кнопки одной высоты, равной токену
+      --mx-progress-actions-h;
+   4) зазор до заголовка возвращается наружу: тест сравнивает его между
+      вкладками, чтобы он не зависел от экрана. */
+const ROW_EDGE_TOLERANCE = 1
+const MIN_TAP_SIZE = 44
+
 async function assertActionsRowLayout(page, label) {
   const state = await page.evaluate(() => {
+    const rect = el => el.getBoundingClientRect()
     const row = document.querySelector('[data-testid="progress-actions-row"]')
-    const pill = document.querySelector('.mx-progress-segment')
+    const segment = document.querySelector('.mx-progress-segment')
     const actions = document.querySelector('[data-testid="progress-row-actions"]')
-    if (!row || !pill || !actions) return { exists: false }
+    if (!row || !segment || !actions) return { exists: false }
 
-    const rowBox = row.getBoundingClientRect()
-    const pillBox = pill.getBoundingClientRect()
-    const actionsBox = actions.getBoundingClientRect()
+    const root = document.querySelector('.mx-progress-redesign')
+    const rootStyle = getComputedStyle(root)
+    const rootBox = rect(root)
+    const content = {
+      left: rootBox.left + parseFloat(rootStyle.paddingLeft),
+      right: rootBox.right - parseFloat(rootStyle.paddingRight),
+    }
 
-    const buttons = [pill, ...row.querySelectorAll('[data-testid="progress-row-actions"] button')]
-    const clipped = buttons
-      .filter(button => button.offsetParent !== null)
-      .filter(button => button.scrollWidth > button.clientWidth + 1)
-      .map(button => button.textContent.trim())
+    // Поля экрана сверяем с краями карточек контента ниже строки.
+    const card = root.querySelector(
+      '.mx-progress-card, .mx-progress-mood-card, .mx-progress-history__group, ' +
+        '.mx-progress-history__empty, .mx-progress-history__period-section'
+    )
+
+    const controls = [segment, ...actions.querySelectorAll('button')].filter(
+      el => el.offsetParent !== null
+    )
+    const metrics = controls.map(el => {
+      const box = rect(el)
+      const before = getComputedStyle(el, '::before')
+      const hasBefore = before.content !== 'none' && before.content !== 'normal'
+      return {
+        id: el.getAttribute('data-testid') || el.className.split(' ')[0],
+        label: el.textContent.trim(),
+        left: box.left,
+        right: box.right,
+        height: box.height,
+        tapWidth: hasBefore ? Math.max(box.width, parseFloat(before.width) || 0) : box.width,
+        tapHeight: hasBefore ? Math.max(box.height, parseFloat(before.height) || 0) : box.height,
+        clipped: el.scrollWidth > el.clientWidth + 1,
+      }
+    })
+
+    const title = root.querySelector('.mx-progress-analytics__title, .mx-progress-history__title')
+    const rowBox = rect(row)
 
     return {
       exists: true,
-      sameRow:
-        pillBox.top >= rowBox.top - 1 && pillBox.bottom <= rowBox.bottom + 1,
-      noOverlap: pillBox.right <= actionsBox.left + 1,
-      insideRow: actionsBox.right <= rowBox.right + 1,
-      clipped,
+      content,
+      card: card ? { left: rect(card).left, right: rect(card).right } : null,
+      controls: metrics,
+      heights: [...new Set(metrics.map(item => Math.round(item.height)))],
+      tokenHeight: Math.round(
+        parseFloat(getComputedStyle(row).getPropertyValue('--mx-progress-actions-h')) || 0
+      ),
+      titleGap: title ? +(rect(title).top - rowBox.bottom).toFixed(1) : null,
     }
   })
 
   expect(state.exists, `Строка кнопок должна существовать (${label})`).toBe(true)
-  expect(state.sameRow, `Сегмент должен стоять в строке кнопок (${label})`).toBe(true)
-  expect(state.noOverlap, `Сегмент и кнопки вкладки не должны перекрываться (${label})`).toBe(
-    true
+
+  const first = state.controls[0]
+  const last = state.controls[state.controls.length - 1]
+
+  expect(
+    first.left,
+    `Левый край сегмента внутри полей экрана (${label})`
+  ).toBeGreaterThanOrEqual(state.content.left - ROW_EDGE_TOLERANCE)
+  expect(
+    last.right,
+    `Правый край последней кнопки внутри полей экрана (${label})`
+  ).toBeLessThanOrEqual(state.content.right + ROW_EDGE_TOLERANCE)
+
+  if (state.card) {
+    expect(
+      Math.abs(first.left - state.card.left),
+      `Сегмент должен совпадать с левым краем карточки ниже (${label})`
+    ).toBeLessThanOrEqual(ROW_EDGE_TOLERANCE)
+    expect(
+      Math.abs(last.right - state.card.right),
+      `Последняя кнопка должна совпадать с правым краем карточки ниже (${label})`
+    ).toBeLessThanOrEqual(ROW_EDGE_TOLERANCE)
+  }
+
+  const smallTapTargets = state.controls
+    .filter(item => item.tapWidth < MIN_TAP_SIZE - 0.5 || item.tapHeight < MIN_TAP_SIZE - 0.5)
+    .map(item => `${item.id || item.label}: ${Math.round(item.tapWidth)}×${Math.round(item.tapHeight)}`)
+  expect(smallTapTargets, `Зона нажатия каждого контрола ≥ 44×44 (${label})`).toEqual([])
+
+  expect(
+    state.controls.filter(item => item.clipped).map(item => item.label),
+    `Текст кнопок не должен обрезаться (${label})`
+  ).toEqual([])
+
+  expect(state.tokenHeight, `Токен высоты строки должен быть задан (${label})`).toBe(
+    MIN_TAP_SIZE
   )
-  expect(state.insideRow, `Кнопки вкладки не должны выходить за строку (${label})`).toBe(true)
-  expect(state.clipped, `Текст кнопок не должен обрезаться (${label})`).toEqual([])
+  expect(state.heights, `Сегмент, пилюля и круглые кнопки одной высоты (${label})`).toEqual([
+    state.tokenHeight,
+  ])
+
+  return state
 }
 
 // Окно Telegram Desktop: ширина как у мини-аппа (~400–450 px)
@@ -296,28 +375,55 @@ test.describe('демо-рамка (эмуляция Telegram fullscreen)', () =
   })
 })
 
-test.describe('узкий экран 360×640 (frame=0)', () => {
-  test.use({ viewport: { width: 360, height: 640 } })
+/* Критерии приёмки по геометрии строки: 360×640 и 393×852, обе вкладки.
+   Самая тесная раскладка — «История» с группировкой «Недели»: пилюля шире,
+   чем «Дни», поэтому проверяем и её. */
+const ROW_VIEWPORTS = [
+  { width: 360, height: 640 },
+  { width: 393, height: 852 },
+]
 
-  test('сегмент и кнопки вкладки не перекрываются, текст не обрезан', async ({ page }) => {
-    await page.goto('/?demo=1&frame=0&tab=trends')
+for (const viewport of ROW_VIEWPORTS) {
+  const size = `${viewport.width}×${viewport.height}`
 
-    await page.addStyleTag({
-      content: [
-        '[data-testid="demo-panel-badge"] { display: none !important; }',
-        '.mx-preview-device-switcher { display: none !important; }',
-      ].join('\n'),
+  test.describe(`поля строки на ${size} (frame=0)`, () => {
+    test.use({ viewport })
+
+    test('строка кнопок внутри полей на обеих вкладках', async ({ page }) => {
+      await page.goto('/?demo=1&frame=0&tab=trends')
+
+      await page.addStyleTag({
+        content: [
+          '[data-testid="demo-panel-badge"] { display: none !important; }',
+          '.mx-preview-device-switcher { display: none !important; }',
+        ].join('\n'),
+      })
+
+      await expect(page.getByTestId('progress-tab-analytics')).toBeVisible({ timeout: 15_000 })
+      const analytics = await assertActionsRowLayout(page, `Аналитика, ${size}`)
+
+      await page.getByTestId('progress-tab-history').click()
+      await expect(page.getByTestId('progress-tab-history')).toHaveAttribute(
+        'aria-selected',
+        'true'
+      )
+      await expect(page.getByTestId('history-action-buttons')).toBeVisible()
+      const historyDays = await assertActionsRowLayout(page, `История, «Дни», ${size}`)
+
+      // Самая широкая пилюля группировки — «Недели»
+      await page.getByTestId('history-grouping-pill').click()
+      await page.getByTestId('history-grouping-week').click()
+      await expect(page.getByTestId('history-grouping-pill')).toContainText('Недели')
+      const historyWeeks = await assertActionsRowLayout(page, `История, «Недели», ${size}`)
+
+      expect(
+        analytics.titleGap,
+        `Зазор от строки до заголовка одинаков на «Аналитике» и «Истории» (${size})`
+      ).toBe(historyDays.titleGap)
+      expect(
+        historyWeeks.titleGap,
+        `Зазор от строки до заголовка не зависит от группировки (${size})`
+      ).toBe(historyDays.titleGap)
     })
-
-    await expect(page.getByTestId('progress-tab-analytics')).toBeVisible({ timeout: 15_000 })
-    await assertActionsRowLayout(page, 'Аналитика, 360×640')
-
-    await page.getByTestId('progress-tab-history').click()
-    await expect(page.getByTestId('progress-tab-history')).toHaveAttribute(
-      'aria-selected',
-      'true'
-    )
-    await expect(page.getByTestId('history-action-buttons')).toBeVisible()
-    await assertActionsRowLayout(page, 'История, 360×640')
   })
-})
+}
