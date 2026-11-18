@@ -162,10 +162,7 @@ jobs:
     name: Playwright smoke (${{ matrix.group }})
     # PR, меняющий только документы, не гоняет Playwright smoke: запускаются
     # лишь PR с кодом (docs_only=false), push в main и workflow_dispatch.
-    # Job остаётся путём self-hosted раннера (vars.CI_RUNS_ON, macOS): job-контейнер
-    # на macOS не поддерживается, поэтому установка браузеров и системных пакетов
-    # здесь прежняя. GitHub-hosted Linux идёт в ux-linux в образе Playwright.
-    if: needs.change-scope.outputs.docs_only != 'true' && vars.CI_RUNS_ON != ''
+    if: needs.change-scope.outputs.docs_only != 'true'
     runs-on: ${{ fromJSON(vars.CI_RUNS_ON || '"ubuntu-latest"') }}
     needs:
       - quality
@@ -222,19 +219,49 @@ jobs:
       # ::notice виден в аннотациях job'а: по нему проверяется попадание в кэш
       # на повторном прогоне (в логах GitHub Actions из API его не прочитать).
       # Системные пакеты — только Linux: на macOS это sudo/brew, шаг запрещён.
+      # Установка ограничена по времени: в smoke-day #1209 apt занял ~26 минут,
+      # и job ждал его целиком. Теперь попытка — не дольше 7 минут (при промахе
+      # кэша 8 минут на браузеры и пакеты), повтор ровно один; если зависимости
+      # так и не встали, шаг падает, а не висит до общего таймаута job'а.
       - name: Install system dependencies (кэш браузеров найден, Linux)
         if: steps.playwright-cache.outputs.cache-hit == 'true' && runner.os == 'Linux'
+        timeout-minutes: 16
         run: |
           set -euo pipefail
           echo "::notice title=Playwright cache::hit ${{ steps.playwright-version.outputs.version }}"
-          npx playwright install-deps chromium webkit
+          install_deps() {
+            timeout --signal=TERM --kill-after=30s 420 npx playwright install-deps chromium webkit
+          }
+          # Убитый по таймауту apt оставляет блокировки и незавершённые пакеты:
+          # без снятия блокировки повторная попытка упала бы на «Could not get lock».
+          recover_apt() {
+            sudo rm -f /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock /var/lib/apt/lists/lock /var/cache/apt/archives/lock || true
+            sudo dpkg --configure -a || true
+          }
+          if ! install_deps; then
+            echo "::warning::Системные пакеты не встали за 7 минут — одна повторная попытка"
+            recover_apt
+            install_deps
+          fi
 
       - name: Install Chromium and WebKit with system dependencies (промах кэша, Linux)
         if: steps.playwright-cache.outputs.cache-hit != 'true' && runner.os == 'Linux'
+        timeout-minutes: 18
         run: |
           set -euo pipefail
           echo "::notice title=Playwright cache::miss ${{ steps.playwright-version.outputs.version }}"
-          npx playwright install --with-deps chromium webkit
+          install_browsers() {
+            timeout --signal=TERM --kill-after=30s 480 npx playwright install --with-deps chromium webkit
+          }
+          recover_apt() {
+            sudo rm -f /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock /var/lib/apt/lists/lock /var/cache/apt/archives/lock || true
+            sudo dpkg --configure -a || true
+          }
+          if ! install_browsers; then
+            echo "::warning::Браузеры и системные пакеты не встали за 8 минут — одна повторная попытка"
+            recover_apt
+            install_browsers
+          fi
 
       # macOS: те же браузеры без системных пакетов; если они уже на диске,
       # команда завершается мгновенно — поэтому шаг выполняется всегда.
@@ -294,148 +321,6 @@ jobs:
 
       # Экранам состояний подписки нужен VITE_PAYMENT_UI_ENABLED=true, поэтому
       # у набора свой dev-сервер (playwright.payment-ui.config.mjs), а не ux:check.
-      - name: Run payment UI states gate
-        if: matrix.group == 'webkit-gates'
-        run: npm run ux:payment-ui -- --retries=1
-
-      - name: Upload Playwright artifacts on failure
-        if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: playwright-artifacts-${{ matrix.group }}
-          path: |
-            artifacts/ux-check/
-            artifacts/telegram-react-update-depth/
-            artifacts/react-185-checkin/
-            artifacts/tap-areas/
-            artifacts/journal-history/
-            artifacts/typography-readable/
-            artifacts/keyboard-focus/
-            artifacts/pro-states/
-            artifacts/payment-ui/
-            test-results/
-          if-no-files-found: ignore
-
-  # GitHub-hosted Linux: официальный образ Playwright уже содержит Chromium и
-  # WebKit вместе с системными пакетами, поэтому apt (установка заняла ~26 минут
-  # в smoke-day #1209) и скачивание браузеров здесь не выполняются вовсе.
-  # Тег образа фиксирован: контейнер job'а выбирается до выполнения шагов, и
-  # вычислить версию из package-lock.json в этот момент нельзя. Совпадение тега
-  # с @playwright/test проверяет шаг «Проверить образ Playwright» — при
-  # обновлении Playwright меняются обе строки в этом файле.
-  # При заданном vars.CI_RUNS_ON (self-hosted macOS) job пропускается: на macOS
-  # job-контейнеры не поддерживаются, там работает ux с прежней установкой.
-  ux-linux:
-    name: Playwright smoke (${{ matrix.group }})
-    if: needs.change-scope.outputs.docs_only != 'true' && vars.CI_RUNS_ON == ''
-    runs-on: ubuntu-latest
-    container:
-      image: mcr.microsoft.com/playwright:v1.65.0-noble
-    needs:
-      - quality
-      - change-scope
-    timeout-minutes: 30
-    strategy:
-      # Те же три группы и то же fail-fast, что в ux: провал одной группы не
-      # отменяет остальные, и агрегат видит результат каждой из них.
-      fail-fast: false
-      matrix:
-        group:
-          - smoke-day
-          - smoke-evening
-          - webkit-gates
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-
-      - name: Setup Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      # Браузеры лежат в образе по пути PLAYWRIGHT_BROWSERS_PATH=/ms-playwright,
-      # поэтому отдельной установки и кэша браузеров нет. Проверка падает, если
-      # тег образа разошёлся с lock-файлом или браузеров нужной ревизии нет.
-      # shell: bash — в job-контейнере GitHub по умолчанию `sh -e`, где нет
-      # pipefail; остальные шаги этого файла идут под bash.
-      - name: Проверить образ Playwright
-        shell: bash
-        run: |
-          set -euo pipefail
-          # Единственный источник версии образа — строка `image:` выше.
-          image_version="$(sed -n 's/^ *image: *mcr\.microsoft\.com\/playwright:v\([0-9][0-9.]*\)-noble.*/\1/p' .github/workflows/ci.yml | head -n 1)"
-          lock_version="$(node -p "require('./package-lock.json').packages['node_modules/@playwright/test'].version")"
-          printf 'образ: v%s\n@playwright/test: %s\n' "$image_version" "$lock_version"
-          test -n "$image_version"
-          if [ "$image_version" != "$lock_version" ]; then
-            echo "::error::Образ Playwright v$image_version не совпадает с @playwright/test $lock_version — обновите тег образа в ux-linux"
-            exit 1
-          fi
-          missing=0
-          for path in $(npx playwright install --dry-run chromium webkit | sed -n 's/^ *Install location: *//p'); do
-            if [ -d "$path" ]; then
-              echo "есть: $path"
-            else
-              echo "::error::в образе нет браузера $path"
-              missing=1
-            fi
-          done
-          test "$missing" -eq 0
-
-      - name: Run UX smoke
-        if: matrix.group == 'smoke-day'
-        env:
-          RUN_VISUAL_SNAPSHOTS: 'false'
-          UX_FIXED_TIME: '08:00'
-        run: npm run ux:check -- --retries=1
-
-      - name: Run MXL-010 production-like gate
-        if: matrix.group == 'webkit-gates'
-        run: npm run ux:mxl010 -- --retries=1
-
-      - name: Run UX smoke in evening mode
-        if: matrix.group == 'smoke-evening'
-        env:
-          RUN_VISUAL_SNAPSHOTS: 'false'
-          UX_FIXED_TIME: '21:00'
-        run: npm run ux:check -- --retries=1
-
-      - name: Run journal history profile isolation gate
-        if: matrix.group == 'webkit-gates'
-        run: npm run ux:journal-history -- --retries=1
-
-      - name: Run read-scale typography contract gate
-        if: matrix.group == 'webkit-gates'
-        run: npm run ux:typography -- --retries=1
-
-      - name: Run Telegram React update-depth regression in WebKit
-        if: matrix.group == 'webkit-gates'
-        run: npm run ux:telegram-react-depth
-
-      - name: Run React #185 check-in regression in WebKit
-        if: matrix.group == 'webkit-gates'
-        run: npm run ux:react-185-checkin
-
-      - name: Run tap areas and «Назад» offset gate in WebKit
-        if: matrix.group == 'webkit-gates'
-        run: npm run ux:tap-areas -- --retries=1
-
-      - name: Run keyboard focus contract gate
-        if: matrix.group == 'webkit-gates'
-        run: npm run ux:keyboard -- --retries=1
-
-      - name: Run Pro review states evidence gate
-        if: matrix.group == 'webkit-gates'
-        run: npm run ux:pro-states -- --retries=1
-
-      - name: Run Pro failure states gate
-        if: matrix.group == 'webkit-gates'
-        run: npm run ux:pro-failure-states -- --retries=1
-
       - name: Run payment UI states gate
         if: matrix.group == 'webkit-gates'
         run: npm run ux:payment-ui -- --retries=1
@@ -571,7 +456,6 @@ jobs:
     needs:
       - quality
       - ux
-      - ux-linux
       - change-scope
     runs-on: ${{ fromJSON(vars.CI_RUNS_ON || '"ubuntu-latest"') }}
     timeout-minutes: 5
@@ -581,28 +465,19 @@ jobs:
           set -euo pipefail
           quality='${{ needs.quality.result }}'
           ux='${{ needs.ux.result }}'
-          ux_linux='${{ needs.ux-linux.result }}'
           docs_only='${{ needs.change-scope.outputs.docs_only }}'
-          printf 'quality=%s\nux=%s\nux-linux=%s\ndocs_only=%s\n' "$quality" "$ux" "$ux_linux" "$docs_only"
+          printf 'quality=%s\nux=%s\ndocs_only=%s\n' "$quality" "$ux" "$docs_only"
           test "$quality" = success
-          # Smoke идёт ровно в одном из двух job'ов — по режиму раннера:
-          # ux-linux на GitHub-hosted Linux (образ Playwright), ux на self-hosted
-          # (vars.CI_RUNS_ON, macOS). Второй в этом прогоне всегда skipped.
-          # Каждый job — агрегат трёх параллельных групп матрицы (fail-fast:
-          # false): провал, отмена или пропуск любой группы делает результат не
-          # success, поэтому failure/cancelled не проходит ни одна ветка ниже.
-          if [ "$ux_linux" = success ] && [ "$ux" = skipped ]; then
-            echo 'smoke=ux-linux (GitHub-hosted Linux, образ Playwright)'
+          if [ "$ux" = success ]; then
             exit 0
           fi
-          if [ "$ux" = success ] && [ "$ux_linux" = skipped ]; then
-            echo 'smoke=ux (self-hosted, vars.CI_RUNS_ON)'
+          # `ux` — агрегат трёх параллельных групп матрицы (fail-fast: false):
+          # провал, отмена или пропуск любой группы делает результат не success.
+          # Пропуск ux допустим только для документного PR (docs_only=true).
+          # Любой другой skipped/failure/cancelled — провал проверки.
+          if [ "$ux" = skipped ] && [ "$docs_only" = 'true' ]; then
+            echo 'ux=skipped допустим: PR меняет только документы (docs_only=true)'
             exit 0
           fi
-          # Оба пропущены допустимо только для документного PR (docs_only=true).
-          if [ "$ux" = skipped ] && [ "$ux_linux" = skipped ] && [ "$docs_only" = 'true' ]; then
-            echo 'smoke=skipped допустим: PR меняет только документы (docs_only=true)'
-            exit 0
-          fi
-          echo "::error::ux=$ux ux-linux=$ux_linux при docs_only=$docs_only — Playwright smoke обязателен"
+          echo "::error::ux=$ux при docs_only=$docs_only — Playwright smoke обязателен"
           exit 1
