@@ -176,10 +176,14 @@ jobs:
         # Три группы примерно равной длительности; состав и обоснование —
         # docs/engineering/notes/ci.md. Ни один набор не дублируется и не
         # теряется: объединение групп равно прежнему одиночному job.
-        group:
-          - smoke-day
-          - smoke-evening
-          - webkit-gates
+        #
+        # GitHub-hosted Linux гоняет здесь только webkit-gates: smoke-day и
+        # smoke-evening уходят в ux-linux с официальным образом Playwright.
+        # Причина разделения — гейт ux:pro-states. На базовом коммите он
+        # проходил на этом (хостовом) пути раннера, а в контейнере упал на
+        # проверке «прокрутка сохранена» (43 px). Шаги установки и состав
+        # наборов webkit-gates здесь те же, что были до появления образа.
+        group: ${{ fromJSON(vars.CI_RUNS_ON == '' && '["webkit-gates"]' || '["smoke-day","smoke-evening","webkit-gates"]') }}
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -343,6 +347,106 @@ jobs:
             test-results/
           if-no-files-found: ignore
 
+  # GitHub-hosted Linux, группы smoke-day и smoke-evening: официальный образ
+  # Playwright уже содержит Chromium и WebKit вместе с системными пакетами,
+  # поэтому apt (в #1209 установка заняла ~26 минут) и скачивание браузеров
+  # здесь не выполняются вовсе. Обе группы прошли в образе в прогоне #44305419993.
+  #
+  # webkit-gates в образе не запускается: на базовом коммите гейт ux:pro-states
+  # проходил на хостовом пути раннера, а в контейнере упал на проверке
+  # «прокрутка сохранена» (43 px). Поэтому webkit-gates остался в ux с прежними
+  # шагами установки — состав наборов и все проверки сохранены.
+  #
+  # Тег образа фиксирован: контейнер job'а выбирается до выполнения шагов, и
+  # вычислить версию из package-lock.json в этот момент нельзя. Совпадение тега
+  # с @playwright/test проверяет шаг «Проверить образ Playwright» — при
+  # обновлении Playwright меняются обе строки в этом файле.
+  # При заданном vars.CI_RUNS_ON (self-hosted macOS) job пропускается: на macOS
+  # job-контейнеры не поддерживаются, там работают группы в job ux.
+  ux-linux:
+    name: Playwright smoke (${{ matrix.group }})
+    if: needs.change-scope.outputs.docs_only != 'true' && vars.CI_RUNS_ON == ''
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.65.0-noble
+    needs:
+      - quality
+      - change-scope
+    timeout-minutes: 30
+    strategy:
+      # Группы независимы: провал одной не отменяет другую, и агрегат
+      # «Функциональная проверка проекта» видит результат каждой из них.
+      fail-fast: false
+      matrix:
+        group:
+          - smoke-day
+          - smoke-evening
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Браузеры лежат в образе по пути PLAYWRIGHT_BROWSERS_PATH=/ms-playwright,
+      # поэтому отдельной установки и кэша браузеров нет. Проверка падает, если
+      # тег образа разошёлся с lock-файлом или браузеров нужной ревизии нет.
+      # shell: bash — в job-контейнере GitHub по умолчанию `sh -e`, где нет
+      # pipefail; остальные шаги этого файла идут под bash.
+      - name: Проверить образ Playwright
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Единственный источник версии образа — строка `image:` выше.
+          image_version="$(sed -n 's/^ *image: *mcr\.microsoft\.com\/playwright:v\([0-9][0-9.]*\)-noble.*/\1/p' .github/workflows/ci.yml | head -n 1)"
+          lock_version="$(node -p "require('./package-lock.json').packages['node_modules/@playwright/test'].version")"
+          printf 'образ: v%s\n@playwright/test: %s\n' "$image_version" "$lock_version"
+          test -n "$image_version"
+          if [ "$image_version" != "$lock_version" ]; then
+            echo "::error::Образ Playwright v$image_version не совпадает с @playwright/test $lock_version — обновите тег образа в ux-linux"
+            exit 1
+          fi
+          missing=0
+          for path in $(npx playwright install --dry-run chromium webkit | sed -n 's/^ *Install location: *//p'); do
+            if [ -d "$path" ]; then
+              echo "есть: $path"
+            else
+              echo "::error::в образе нет браузера $path"
+              missing=1
+            fi
+          done
+          test "$missing" -eq 0
+
+      - name: Run UX smoke
+        if: matrix.group == 'smoke-day'
+        env:
+          RUN_VISUAL_SNAPSHOTS: 'false'
+          UX_FIXED_TIME: '08:00'
+        run: npm run ux:check -- --retries=1
+
+      - name: Run UX smoke in evening mode
+        if: matrix.group == 'smoke-evening'
+        env:
+          RUN_VISUAL_SNAPSHOTS: 'false'
+          UX_FIXED_TIME: '21:00'
+        run: npm run ux:check -- --retries=1
+
+      - name: Upload Playwright artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: playwright-artifacts-${{ matrix.group }}
+          path: |
+            artifacts/ux-check/
+            test-results/
+          if-no-files-found: ignore
+
   backend-health:
     name: Backend health
     needs: change-scope
@@ -456,6 +560,7 @@ jobs:
     needs:
       - quality
       - ux
+      - ux-linux
       - change-scope
     runs-on: ${{ fromJSON(vars.CI_RUNS_ON || '"ubuntu-latest"') }}
     timeout-minutes: 5
@@ -465,19 +570,53 @@ jobs:
           set -euo pipefail
           quality='${{ needs.quality.result }}'
           ux='${{ needs.ux.result }}'
+          linux='${{ needs.ux-linux.result }}'
           docs_only='${{ needs.change-scope.outputs.docs_only }}'
-          printf 'quality=%s\nux=%s\ndocs_only=%s\n' "$quality" "$ux" "$docs_only"
-          test "$quality" = success
-          if [ "$ux" = success ]; then
+          runs_on='${{ vars.CI_RUNS_ON }}'
+          printf 'quality=%s\nux=%s\nux-linux=%s\ndocs_only=%s\nself_hosted=%s\n' \
+            "$quality" "$ux" "$linux" "$docs_only" "${runs_on:+yes}"
+          if [ "$quality" != success ]; then
+            echo "::error::quality=$quality — Frontend quality обязателен"
+            exit 1
+          fi
+
+          # Все три группы Playwright (smoke-day, smoke-evening, webkit-gates)
+          # обязательны в любом режиме: в self-hosted они идут в матрице ux,
+          # на GitHub-hosted Linux — webkit-gates в ux, smoke-группы в ux-linux.
+          # Провал, отмена или неожиданный пропуск любой группы — провал проверки.
+          # Пропуск Playwright допустим только для документного PR (docs_only=true).
+
+          if [ "$docs_only" = 'true' ]; then
+            if [ "$ux" != skipped ] || [ "$linux" != skipped ]; then
+              echo "::error::docs_only=true, но ux=$ux, ux-linux=$linux — ожидался skipped"
+              exit 1
+            fi
+            echo 'Playwright пропущен: PR меняет только документы (docs_only=true)'
             exit 0
           fi
-          # `ux` — агрегат трёх параллельных групп матрицы (fail-fast: false):
-          # провал, отмена или пропуск любой группы делает результат не success.
-          # Пропуск ux допустим только для документного PR (docs_only=true).
-          # Любой другой skipped/failure/cancelled — провал проверки.
-          if [ "$ux" = skipped ] && [ "$docs_only" = 'true' ]; then
-            echo 'ux=skipped допустим: PR меняет только документы (docs_only=true)'
+
+          if [ -n "$runs_on" ]; then
+            # self-hosted (macOS): job-контейнеры недоступны, все три группы в ux.
+            if [ "$linux" != skipped ]; then
+              echo "::error::self-hosted режим: ux-linux=$linux, ожидался skipped"
+              exit 1
+            fi
+            if [ "$ux" = success ]; then
+              echo 'self-hosted: ux=success (smoke-day, smoke-evening, webkit-gates)'
+              exit 0
+            fi
+            echo "::error::ux=$ux — Playwright smoke (три группы) обязателен"
+            exit 1
+          fi
+
+          # GitHub-hosted Linux: webkit-gates в ux, smoke-группы в ux-linux.
+          if [ "$ux" != success ]; then
+            echo "::error::ux=$ux — webkit-gates обязателен"
+            exit 1
+          fi
+          if [ "$linux" = success ]; then
+            echo 'GitHub-hosted Linux: ux=success (webkit-gates), ux-linux=success (smoke-day, smoke-evening)'
             exit 0
           fi
-          echo "::error::ux=$ux при docs_only=$docs_only — Playwright smoke обязателен"
+          echo "::error::ux-linux=$linux — smoke-day и smoke-evening обязательны"
           exit 1
