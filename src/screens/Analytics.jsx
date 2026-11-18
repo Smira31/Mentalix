@@ -1,4 +1,12 @@
-import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 
 import { pluralize } from '../lib/pluralize'
 import { useTabRefresh, useTabReset } from '../lib/tabRefresh'
@@ -785,6 +793,11 @@ export default function Analytics({
   // Возврат из Pro перечитывает готовность разбора: карточка показывает
   // состояние по данным, а не по факту открытия экрана.
   const [proRefresh, setProRefresh] = useState(0)
+  // Позиция аналитики до входа в Pro. Пока Pro открыт, раскладка над
+  // карточкой может измениться (полоса сегмента перестраивается при смене
+  // fullscreen-резерва), и браузер сдвигает scrollTop, удерживая контент.
+  // «Назад» обязан вернуть ту же позицию, а не сдвинутую.
+  const proReturnScroll = useRef(null)
 
   useEffect(() => {
     writeCardPreferences(cardPreferences)
@@ -854,6 +867,21 @@ export default function Analytics({
     if (scrollRoot) {
       scrollPositions.current[activeTab] = scrollRoot.scrollTop
     }
+  }
+
+  // Pro — вложенный экран поверх аналитики: при возврате восстанавливаем
+  // позицию, снятую при входе, после того как поверхность уже размонтирована.
+  useLayoutEffect(() => {
+    if (proOpen || proReturnScroll.current === null) return
+    const scrollRoot = rootRef.current?.closest('.mx-app-scroll-root')
+    if (scrollRoot) scrollRoot.scrollTop = proReturnScroll.current
+    proReturnScroll.current = null
+  }, [proOpen])
+
+  function openPro() {
+    const scrollRoot = rootRef.current?.closest('.mx-app-scroll-root')
+    proReturnScroll.current = scrollRoot ? scrollRoot.scrollTop : null
+    setProOpen(true)
   }
 
   function handleSegmentClick(next) {
@@ -1116,7 +1144,7 @@ export default function Analytics({
               key={profileScopeKey(user.id)}
               user={user}
               refreshToken={proRefresh}
-              onOpen={() => setProOpen(true)}
+              onOpen={openPro}
               onOpenSubscription={onOpenSubscription}
             />
           )}
