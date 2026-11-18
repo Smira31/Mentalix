@@ -1,22 +1,34 @@
 import { parseReturnFlow } from './returnFlow.js'
 import { resolveTodayCardStates } from './todayCardState.js'
 
+// SRC-02: start_param может нести метку источника после «__»:
+// morning_v1__src_ig_1911. Экран выбирается по части ДО разделителя, метку
+// сохраняет бэкенд (SRC-01, mentalix-bot) — фронт её не отправляет.
+const START_PARAM_SEPARATOR = '__'
+
+export function deepLinkScreenParam(startParam) {
+  if (typeof startParam !== 'string') return ''
+  return startParam.split(START_PARAM_SEPARATOR)[0]
+}
+
 // В Telegram start_param приходит из initDataUnsafe, в браузере — из ?startapp=.
 export function parseContextualDeepLink(search, startParam) {
   const params = new URLSearchParams(search)
   const action = params.get('action')
+  // Часть до «__»; чистая метка src_<код> не совпадёт ни с одним экраном → «Сегодня».
+  const screen = deepLinkScreenParam(startParam)
   // Явная ссылка игры важнее оставшегося action/start_param от «Сегодня».
   if (
     (params.get('tab') === 'practices' && params.get('sub') === 'daimon') ||
-    startParam === 'daimon'
+    screen === 'daimon'
   ) {
     return { sub: null, returnFlow: null, practicesSub: 'daimon' }
   }
-  const returnFlow = parseReturnFlow(startParam)
+  const returnFlow = parseReturnFlow(screen)
   if (returnFlow) return { sub: returnFlow === 'evening_v1' ? 'evening' : 'checkin', returnFlow }
   // start_param 'journal' (Telegram initDataUnsafe.start_param, в вебе ?startapp=journal)
   // — открывает журнал сразу; «Назад» из журнала → «Сегодня».
-  if (startParam === 'journal') return { sub: null, returnFlow: null, practicesSub: 'journal' }
+  if (screen === 'journal') return { sub: null, returnFlow: null, practicesSub: 'journal' }
   if (action === 'checkin') return { sub: 'contextualCheckin', returnFlow: null }
   if (action === 'evening' || action === 'breathing') return { sub: action, returnFlow: null }
   if (action === 'theme') return { sub: 'theme', returnFlow: null }
