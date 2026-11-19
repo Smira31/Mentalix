@@ -219,19 +219,61 @@ jobs:
       # ::notice виден в аннотациях job'а: по нему проверяется попадание в кэш
       # на повторном прогоне (в логах GitHub Actions из API его не прочитать).
       # Системные пакеты — только Linux: на macOS это sudo/brew, шаг запрещён.
+      # Установка ограничена по времени: в smoke-day #1209 apt занял ~26 минут,
+      # и job ждал его целиком. Теперь попытка — не дольше 7 минут (при промахе
+      # кэша 8 минут на браузеры и пакеты), повтор ровно один; если зависимости
+      # так и не встали, шаг падает, а не висит до общего таймаута job'а.
       - name: Install system dependencies (кэш браузеров найден, Linux)
         if: steps.playwright-cache.outputs.cache-hit == 'true' && runner.os == 'Linux'
+        timeout-minutes: 16
         run: |
           set -euo pipefail
           echo "::notice title=Playwright cache::hit ${{ steps.playwright-version.outputs.version }}"
-          npx playwright install-deps chromium webkit
+          install_deps() {
+            timeout --signal=TERM --kill-after=30s 420 npx playwright install-deps chromium webkit
+          }
+          # Убитый по таймауту apt может ещё держать блокировку dpkg. Lock-файлы
+          # не удаляем: ждём, пока блокировку отпустит её владелец, — не дольше 2 минут.
+          wait_apt_lock() {
+            for _ in $(seq 1 24); do
+              if ! sudo fuser -vw /var/lib/dpkg/lock-frontend >/dev/null 2>&1; then
+                return 0
+              fi
+              sleep 5
+            done
+            echo "::warning::Блокировка /var/lib/dpkg/lock-frontend не освободилась за 2 минуты — повторяем без ожидания"
+          }
+          if ! install_deps; then
+            echo "::warning::Системные пакеты не встали за 7 минут — одна повторная попытка"
+            wait_apt_lock
+            install_deps
+          fi
 
       - name: Install Chromium and WebKit with system dependencies (промах кэша, Linux)
         if: steps.playwright-cache.outputs.cache-hit != 'true' && runner.os == 'Linux'
+        timeout-minutes: 18
         run: |
           set -euo pipefail
           echo "::notice title=Playwright cache::miss ${{ steps.playwright-version.outputs.version }}"
-          npx playwright install --with-deps chromium webkit
+          install_browsers() {
+            timeout --signal=TERM --kill-after=30s 480 npx playwright install --with-deps chromium webkit
+          }
+          # Убитый по таймауту apt может ещё держать блокировку dpkg. Lock-файлы
+          # не удаляем: ждём, пока блокировку отпустит её владелец, — не дольше 2 минут.
+          wait_apt_lock() {
+            for _ in $(seq 1 24); do
+              if ! sudo fuser -vw /var/lib/dpkg/lock-frontend >/dev/null 2>&1; then
+                return 0
+              fi
+              sleep 5
+            done
+            echo "::warning::Блокировка /var/lib/dpkg/lock-frontend не освободилась за 2 минуты — повторяем без ожидания"
+          }
+          if ! install_browsers; then
+            echo "::warning::Браузеры и системные пакеты не встали за 8 минут — одна повторная попытка"
+            wait_apt_lock
+            install_browsers
+          fi
 
       # macOS: те же браузеры без системных пакетов; если они уже на диске,
       # команда завершается мгновенно — поэтому шаг выполняется всегда.
