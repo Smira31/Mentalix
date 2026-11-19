@@ -232,15 +232,20 @@ jobs:
           install_deps() {
             timeout --signal=TERM --kill-after=30s 420 npx playwright install-deps chromium webkit
           }
-          # Убитый по таймауту apt оставляет блокировки и незавершённые пакеты:
-          # без снятия блокировки повторная попытка упала бы на «Could not get lock».
-          recover_apt() {
-            sudo rm -f /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock /var/lib/apt/lists/lock /var/cache/apt/archives/lock || true
-            sudo dpkg --configure -a || true
+          # Убитый по таймауту apt может ещё держать блокировку dpkg. Lock-файлы
+          # не удаляем: ждём, пока блокировку отпустит её владелец, — не дольше 2 минут.
+          wait_apt_lock() {
+            for _ in $(seq 1 24); do
+              if ! sudo fuser -vw /var/lib/dpkg/lock-frontend >/dev/null 2>&1; then
+                return 0
+              fi
+              sleep 5
+            done
+            echo "::warning::Блокировка /var/lib/dpkg/lock-frontend не освободилась за 2 минуты — повторяем без ожидания"
           }
           if ! install_deps; then
             echo "::warning::Системные пакеты не встали за 7 минут — одна повторная попытка"
-            recover_apt
+            wait_apt_lock
             install_deps
           fi
 
@@ -253,13 +258,20 @@ jobs:
           install_browsers() {
             timeout --signal=TERM --kill-after=30s 480 npx playwright install --with-deps chromium webkit
           }
-          recover_apt() {
-            sudo rm -f /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock /var/lib/apt/lists/lock /var/cache/apt/archives/lock || true
-            sudo dpkg --configure -a || true
+          # Убитый по таймауту apt может ещё держать блокировку dpkg. Lock-файлы
+          # не удаляем: ждём, пока блокировку отпустит её владелец, — не дольше 2 минут.
+          wait_apt_lock() {
+            for _ in $(seq 1 24); do
+              if ! sudo fuser -vw /var/lib/dpkg/lock-frontend >/dev/null 2>&1; then
+                return 0
+              fi
+              sleep 5
+            done
+            echo "::warning::Блокировка /var/lib/dpkg/lock-frontend не освободилась за 2 минуты — повторяем без ожидания"
           }
           if ! install_browsers; then
             echo "::warning::Браузеры и системные пакеты не встали за 8 минут — одна повторная попытка"
-            recover_apt
+            wait_apt_lock
             install_browsers
           fi
 
